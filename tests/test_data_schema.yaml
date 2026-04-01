@@ -1,0 +1,310 @@
+# =============================================================================
+# tests/test_data_schema.yaml — Test Dataset Schema Documentation
+# =============================================================================
+# Covers all tables seeded by tests/seed_test_data.py.
+# Idempotency: every table uses ON CONFLICT DO NOTHING keyed on the stable
+#   external-ref column listed under `idempotency_key`.
+# Validation: every column with a CHECK constraint is mirrored in
+#   _validate_record() inside seed_test_data.py.
+# =============================================================================
+
+schema_version: "1.0.0"
+database: postgresql_14
+source_migration: db/migrations/001_up.sql
+seeder_module: tests.seed_test_data
+
+tables:
+
+  # ---------------------------------------------------------------------------
+  - name: accounts
+    description: >
+      Core user accounts for the P2P payment platform.
+      Passwords are stored as bcrypt/argon2 hashes — never plaintext.
+    idempotency_key: username          # UNIQUE constraint; ON CONFLICT DO NOTHING
+    seed_rows: 6
+    test_coverage:
+      active_accounts: 4              # alice, bob, carol, frank
+      suspended_accounts: 1           # dave
+      closed_accounts: 1              # eve
+      zero_balance: 2                 # carol, eve — edge case for non-negative check
+    columns:
+      - name: account_id
+        type: BIGSERIAL
+        nullable: false
+        notes: Auto-assigned PK; do not include in seed rows.
+      - name: username
+        type: VARCHAR(255)
+        nullable: false
+        unique: true
+        validation: required
+        seed_convention: "<name>_test" suffix identifies test rows for teardown.
+      - name: password
+        type: VARCHAR(255)
+        nullable: false
+        validation: required
+        notes: >
+          Seed value is a placeholder bcrypt string.
+          Never use in production; never store plaintext.
+      - name: email
+        type: VARCHAR(255)
+        nullable: true
+        unique: true
+      - name: balance
+        type: DECIMAL(10,2)
+        nullable: false
+        default: "0.00"
+        check: "balance >= 0.00"
+        validation: non_negative
+      - name: status
+        type: VARCHAR(50)
+        nullable: false
+        default: active
+        check: "status IN ('active','suspended','closed')"
+        validation: enum
+        allowed_values: [active, suspended, closed]
+      - name: created_at
+        type: TIMESTAMPTZ
+        nullable: false
+        default: NOW()
+      - name: updated_at
+        type: TIMESTAMPTZ
+        nullable: false
+        default: NOW()
+        notes: Auto-updated by trg_accounts_updated_at trigger.
+
+  # ---------------------------------------------------------------------------
+  - name: p2p_transfers
+    description: >
+      Peer-to-peer money transfers between accounts.
+      No self-transfers allowed (enforced by DB check and application validator).
+    idempotency_key: reference         # UNIQUE; ON CONFLICT (reference) DO NOTHING
+    seed_rows: 8
+    test_coverage:
+      completed: 4
+      pending: 2
+      failed: 1                        # insufficient funds edge case
+      reversed: 1                      # duplicate-payment edge case
+    columns:
+      - name: transfer_id
+        type: BIGSERIAL
+        nullable: false
+        notes: Auto-assigned PK.
+      - name: sender_id
+        type: BIGINT
+        nullable: false
+        references: accounts.account_id
+        notes: Resolved from username at seed-time by _resolve_account_ids().
+      - name: receiver_id
+        type: BIGINT
+        nullable: false
+        references: accounts.account_id
+      - name: amount
+        type: DECIMAL(10,2)
+        nullable: false
+        check: "amount > 0.00"
+        validation: positive
+      - name: status
+        type: VARCHAR(50)
+        nullable: false
+        default: pending
+        check: "status IN ('pending','completed','failed','reversed')"
+        validation: enum
+        allowed_values: [pending, completed, failed, reversed]
+      - name: reference
+        type: TEXT
+        nullable: true
+        unique: true
+        default: gen_random_uuid()
+        seed_convention: "TEST-TXN-NNNN" prefix identifies test rows for teardown.
+      - name: notes
+        type: TEXT
+        nullable: true
+      - name: created_at
+        type: TIMESTAMPTZ
+        nullable: false
+        default: NOW()
+      - name: updated_at
+        type: TIMESTAMPTZ
+        nullable: false
+        default: NOW()
+    constraints:
+      - name: chk_p2p_no_self_transfer
+        expression: "sender_id <> receiver_id"
+        validation_rule: no_self_transfer
+
+  # ---------------------------------------------------------------------------
+  - name: virtual_cards
+    description: >
+      Virtual payment cards linked to accounts.
+      One card per account holder (UNIQUE on card_holder_id).
+      Full PAN is never stored — only the last four digits.
+    idempotency_key: card_holder_id    # UNIQUE; ON CONFLICT (card_holder_id) DO NOTHING
+    seed_rows: 4
+    test_coverage:
+      debit: 2                         # alice (active), frank (nearly-expired → warning)
+      credit: 1                        # bob (active)
+      prepaid: 1                       # carol (frozen)
+      nearly_expired: 1                # frank — triggers warning-severity check
+    columns:
+      - name: card_id
+        type: BIGSERIAL
+        nullable: false
+      - name: card_holder_id
+        type: BIGINT
+        nullable: false
+        references: accounts.account_id
+        unique: true
+      - name: card_type
+        type: VARCHAR(255)
+        nullable: false
+        check: "card_type IN ('debit','credit','prepaid')"
+        validation: enum
+        allowed_values: [debit, credit, prepaid]
+      - name: card_expiry_date
+        type: DATE
+        nullable: false
+        validation: card_not_expired   # warning (not blocking) when past today
+      - name: card_last_four
+        type: CHAR(4)
+        nullable: true
+        notes: Masked PAN only.
+      - name: spending_limit
+        type: DECIMAL(10,2)
+        nullable: true
+      - name: status
+        type: VARCHAR(50)
+        nullable: false
+        default: active
+        check: "status IN ('active','frozen','cancelled')"
+        validation: enum
+        allowed_values: [active, frozen, cancelled]
+      - name: created_at
+        type: TIMESTAMPTZ
+        nullable: false
+        default: NOW()
+      - name: updated_at
+        type: TIMESTAMPTZ
+        nullable: false
+        default: NOW()
+
+  # ---------------------------------------------------------------------------
+  - name: spending_insights
+    description: >
+      Aggregated daily spending records per account and category.
+      No UNIQUE constraint — idempotency enforced by teardown_all() deleting
+      rows for the test accounts before each re-seed.
+    idempotency_key: teardown_pattern  # DELETE WHERE account_id IN test accounts
+    seed_rows: 12
+    test_coverage:
+      categories: [food, transport, entertainment, utilities]
+      accounts_covered: [alice_test, bob_test, carol_test, frank_test]
+      zero_amount_edge_case: 1        # carol: free-sample, tests non_negative check
+    columns:
+      - name: id
+        type: BIGSERIAL
+        nullable: false
+      - name: account_id
+        type: BIGINT
+        nullable: false
+        references: accounts.account_id
+        validation: required
+      - name: date
+        type: DATE
+        nullable: false
+        default: CURRENT_DATE
+        validation: required
+      - name: category
+        type: VARCHAR(255)
+        nullable: false
+        validation: required
+      - name: amount
+        type: DECIMAL(10,2)
+        nullable: false
+        check: "amount >= 0.00"
+        validation: non_negative
+      - name: source_ref
+        type: BIGINT
+        nullable: true
+        references: p2p_transfers.transfer_id
+      - name: created_at
+        type: TIMESTAMPTZ
+        nullable: false
+        default: NOW()
+
+  # ---------------------------------------------------------------------------
+  - name: investment_options
+    description: >
+      Static catalogue of investable products. One entry per product name.
+      Includes an inactive product (crypto basket) to test is_active filtering.
+    idempotency_key: name              # name is functionally unique; DO NOTHING on conflict
+    seed_rows: 5
+    test_coverage:
+      risk_levels: [low, medium, high, very_high]
+      inactive: 1                      # Test Crypto Basket — tests is_active=false path
+    columns:
+      - name: id
+        type: BIGSERIAL
+        nullable: false
+      - name: name
+        type: VARCHAR(255)
+        nullable: false
+        seed_convention: "Test " prefix identifies test rows for teardown.
+        validation: required
+      - name: asset_type
+        type: VARCHAR(255)
+        nullable: false
+        validation: required
+      - name: risk_level
+        type: VARCHAR(50)
+        nullable: false
+        check: "risk_level IN ('low','medium','high','very_high')"
+        validation: enum
+        allowed_values: [low, medium, high, very_high]
+      - name: return_potential
+        type: DECIMAL(10,2)
+        nullable: false
+        check: "return_potential >= 0.00"
+        validation: non_negative
+      - name: description
+        type: TEXT
+        nullable: true
+      - name: min_investment
+        type: DECIMAL(10,2)
+        nullable: false
+        default: "0.00"
+        validation: non_negative
+      - name: is_active
+        type: BOOLEAN
+        nullable: false
+        default: true
+      - name: created_at
+        type: TIMESTAMPTZ
+        nullable: false
+        default: NOW()
+      - name: updated_at
+        type: TIMESTAMPTZ
+        nullable: false
+        default: NOW()
+
+# =============================================================================
+# Teardown identifiers — how seed_test_data.teardown_all() finds test rows
+# =============================================================================
+teardown_patterns:
+  accounts:          "username LIKE '%_test'"
+  p2p_transfers:     "reference LIKE 'TEST-TXN-%'"
+  virtual_cards:     "card_holder_id IN (SELECT account_id FROM accounts WHERE username LIKE '%_test')"
+  spending_insights: "account_id IN (SELECT account_id FROM accounts WHERE username LIKE '%_test')"
+  investment_options: "name LIKE 'Test %'"
+
+# =============================================================================
+# Validation severity matrix
+# =============================================================================
+validation_severity:
+  critical:
+    - required fields missing
+    - self-transfer (sender_id == receiver_id)
+  error:
+    - enum value not in allowed list
+    - non-negative / positive numeric constraint violated
+  warning:
+    - card_expiry_date in the past (card still insertable; logged)

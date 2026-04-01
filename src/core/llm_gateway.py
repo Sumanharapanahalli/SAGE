@@ -976,60 +976,76 @@ class LLMGateway:
                 except Exception as lf_err:
                     self.logger.debug("Langfuse trace init failed (non-fatal): %s", lf_err)
 
-            try:
-                result = self.provider.generate(prompt, system_prompt)
-                elapsed = time.time() - start
-                self.logger.info("Generation done in %.2fs", elapsed)
-                # Roll daily counter over at UTC midnight
-                self._maybe_reset_daily()
-                # Estimate tokens as (input + output chars) / 4
-                input_tokens  = (len(prompt) + len(system_prompt)) // 4
-                output_tokens = len(result) // 4
-                self._usage["calls"] += 1
-                self._usage["calls_today"] += 1
-                self._usage["estimated_tokens"] += input_tokens + output_tokens
+            # --- OpenTelemetry span (no-op if SDK not installed) ---
+            from src.core.tracing import trace_llm_call as _otel_trace
 
-                # ----------------------------------------------------------------
-                # T1-004: Record cost after successful generation
-                # ----------------------------------------------------------------
+            with _otel_trace(
+                provider=self.provider.provider_name(),
+                model=getattr(self.provider, "model", "unknown"),
+                prompt_length=len(prompt),
+                system_prompt_length=len(system_prompt),
+                trace_name=trace_name,
+                trace_id=trace_id,
+            ) as _otel_span:
                 try:
-                    from src.core import cost_tracker as _ct
-                    from src.core.tenant import get_current_tenant
-                    _tenant = get_current_tenant()
-                    _solution = ""
-                    try:
-                        from src.core.project_loader import project_config as _pc
-                        _solution = _pc.project_name or ""
-                    except Exception:
-                        pass
-                    _model = getattr(self.provider, "model", "unknown")
-                    _ct.record_usage(_tenant, _solution, _model, input_tokens, output_tokens, trace_id)
-                except Exception:
-                    pass  # cost tracking is non-fatal
+                    result = self.provider.generate(prompt, system_prompt)
+                    elapsed = time.time() - start
+                    self.logger.info("Generation done in %.2fs", elapsed)
+                    # Roll daily counter over at UTC midnight
+                    self._maybe_reset_daily()
+                    # Estimate tokens as (input + output chars) / 4
+                    input_tokens  = (len(prompt) + len(system_prompt)) // 4
+                    output_tokens = len(result) // 4
+                    self._usage["calls"] += 1
+                    self._usage["calls_today"] += 1
+                    self._usage["estimated_tokens"] += input_tokens + output_tokens
 
-                # Close Langfuse generation span with output
-                if _lf_generation is not None:
-                    try:
-                        _lf_generation.end(
-                            output=result,
-                            usage={"total_tokens": input_tokens + output_tokens},
-                        )
-                    except Exception as lf_err:
-                        self.logger.debug("Langfuse generation.end failed (non-fatal): %s", lf_err)
+                    # OTel: record output metrics on span
+                    _otel_span.set_attribute("llm.output_tokens", output_tokens)
+                    _otel_span.set_attribute("llm.input_tokens", input_tokens)
+                    _otel_span.set_attribute("llm.duration_s", elapsed)
 
-                return result
-            except ValueError:
-                # Re-raise budget/PII errors as-is (not wrapped as "Error: ...")
-                raise
-            except Exception as e:
-                self.logger.error("Generation failed: %s", e)
-                self._usage["errors"] += 1
-                if _lf_generation is not None:
+                    # ----------------------------------------------------------------
+                    # T1-004: Record cost after successful generation
+                    # ----------------------------------------------------------------
                     try:
-                        _lf_generation.end(output=f"ERROR: {e}", level="ERROR")
+                        from src.core import cost_tracker as _ct
+                        from src.core.tenant import get_current_tenant
+                        _tenant = get_current_tenant()
+                        _solution = ""
+                        try:
+                            from src.core.project_loader import project_config as _pc
+                            _solution = _pc.project_name or ""
+                        except Exception:
+                            pass
+                        _model = getattr(self.provider, "model", "unknown")
+                        _ct.record_usage(_tenant, _solution, _model, input_tokens, output_tokens, trace_id)
                     except Exception:
-                        pass
-                return "Error: " + str(e)
+                        pass  # cost tracking is non-fatal
+
+                    # Close Langfuse generation span with output
+                    if _lf_generation is not None:
+                        try:
+                            _lf_generation.end(
+                                output=result,
+                                usage={"total_tokens": input_tokens + output_tokens},
+                            )
+                        except Exception as lf_err:
+                            self.logger.debug("Langfuse generation.end failed (non-fatal): %s", lf_err)
+
+                    return result
+                except ValueError:
+                    # Re-raise budget/PII errors as-is (not wrapped as "Error: ...")
+                    raise
+                except Exception as e:
+                    self.logger.error("Generation failed: %s", e)
+                    self._usage["errors"] += 1
+                    if _lf_generation is not None:
+                        try:
+                            _lf_generation.end(output=f"ERROR: {e}", level="ERROR")
+                        except Exception:
+                            pass
+                    return "Error: " + str(e)
 
     def generate_for_task(self, task_type: str, prompt: str,
                           system_prompt: str = "You are a helpful AI assistant.",

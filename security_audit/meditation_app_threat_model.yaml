@@ -1,0 +1,591 @@
+# ==============================================================
+# SAGE — Meditation App Authentication & Health Data Threat Model
+# ==============================================================
+# Standard:   STRIDE (Microsoft SDL) + OWASP Mobile Top 10 (2024)
+# Scope:      solutions/meditation_app — auth flows, mood/health
+#             data at rest, S3 presigned URLs, HealthKit handling
+# Version:    1.0.0
+# Date:       2026-03-28
+# Owner:      Security Review — Meditation App Team
+# References:
+#   - OWASP Mobile Application Security (MASVS v2)
+#   - GDPR Article 9 (special category health data)
+#   - CCPA §1798.100 (right to delete)
+#   - Apple HealthKit Developer Guidelines
+#   - NIST SP 800-57 (key management)
+# ==============================================================
+
+metadata:
+  title: "Meditation App — Authentication & Health Data Threat Model"
+  version: "1.0.0"
+  date: "2026-03-28"
+  scope: >
+    Authentication flows (OIDC + API key), mood/heart-rate data at rest,
+    S3 presigned URL media delivery, Apple Watch HealthKit data pipeline,
+    and GDPR/CCPA deletion flows for solutions/meditation_app.
+  risk_rating_method: "DREAD (Damage, Reproducibility, Exploitability, Affected users, Discoverability)"
+  classification: "CONFIDENTIAL — Internal Security Review"
+
+# ==============================================================
+# Data Flow Inventory
+# ==============================================================
+data_flows:
+  - id: DF-01
+    name: "User Login → JWT Issuance"
+    source: "Mobile Client / Web Browser"
+    destination: "FastAPI /auth/* endpoints"
+    data: ["email", "OIDC ID token", "client IP"]
+    transport: "HTTPS/TLS 1.3"
+    trust_boundary: "TB-01 (External ↔ Gateway)"
+    sensitivity: HIGH
+
+  - id: DF-02
+    name: "Mood Entry → Backend Persistence"
+    source: "React Web App (localStorage)"
+    destination: "FastAPI /analyze or future mood API"
+    data: ["mood_score (1-5)", "mood_note (free text)", "timestamp", "user_id"]
+    transport: "HTTPS/TLS 1.3"
+    trust_boundary: "TB-01"
+    sensitivity: CRITICAL
+    gdpr_article: "Article 9 — special category health data"
+
+  - id: DF-03
+    name: "Heart Rate Samples → WatchConnectivity Sync"
+    source: "Apple Watch (HKWorkoutSession)"
+    destination: "iOS Companion App → Backend"
+    data: ["HKQuantityTypeIdentifierHeartRate[]", "session timestamps", "device_id"]
+    transport: "WatchConnectivity (on-device) → HTTPS to backend"
+    trust_boundary: "TB-04 (Watch ↔ iPhone ↔ Cloud)"
+    sensitivity: CRITICAL
+    gdpr_article: "Article 9 — biometric/health data"
+
+  - id: DF-04
+    name: "S3 Presigned URL — Audio Media Delivery"
+    source: "FastAPI media endpoint"
+    destination: "Mobile Client (audio player)"
+    data: ["presigned URL (signed with HMAC-SHA256)", "S3 object key", "expiry timestamp"]
+    transport: "HTTPS"
+    trust_boundary: "TB-01 (URL delivered) + TB-05 (S3 direct fetch)"
+    sensitivity: MEDIUM
+
+  - id: DF-05
+    name: "GDPR Deletion Request → Data Erasure Pipeline"
+    source: "User (authenticated) → DELETE /users/{id}/data"
+    destination: "audit_log.db, chroma_db, localStorage (client-side notification)"
+    data: ["user_id", "email", "mood_entries", "heart_rate_sessions", "chat_history"]
+    transport: "HTTPS + internal SQLite ops"
+    trust_boundary: "TB-01 → TB-03 (audit)"
+    sensitivity: CRITICAL
+
+  - id: DF-06
+    name: "HealthKit Authorization → Consent Grant"
+    source: "iOS HealthKit permission dialog"
+    destination: "App entitlements + HealthKit store"
+    data: ["HKSampleType list", "consent_granted boolean", "authorization_status"]
+    transport: "On-device (no network)"
+    trust_boundary: "TB-06 (App ↔ HealthKit framework)"
+    sensitivity: CRITICAL
+
+# ==============================================================
+# Trust Boundaries
+# ==============================================================
+trust_boundaries:
+  - id: TB-01
+    name: "External Client ↔ FastAPI Gateway"
+    description: "All browser/mobile traffic over HTTPS. JWT or API key required."
+    tls_required: true
+    auth_required: true
+    rate_limited: true
+    notes: "Auth currently DISABLED by default in config.yaml — must be enabled for prod."
+
+  - id: TB-02
+    name: "FastAPI Gateway ↔ Agent Workers"
+    description: "In-process async queue. No network hop; agents receive untrusted payloads."
+    tls_required: false
+    input_validation_required: true
+
+  - id: TB-03
+    name: "Agent Workers ↔ LLM Provider"
+    description: "Outbound HTTPS to Gemini/Claude/Ollama. PHI must be scrubbed."
+    tls_required: true
+    phi_scrub_required: true
+
+  - id: TB-04
+    name: "Apple Watch ↔ iPhone ↔ Backend"
+    description: >
+      WatchConnectivity (encrypted on-device BLE/WiFi) carries raw heart rate
+      samples and session data to iOS companion. Backend sync is over HTTPS.
+    tls_required: true
+    on_device_encryption: true
+    consent_required: true
+
+  - id: TB-05
+    name: "Mobile Client ↔ S3 (presigned URL)"
+    description: >
+      Client receives a time-limited presigned URL from the backend and fetches
+      the media asset directly from S3. Backend never proxies the binary.
+    tls_required: true
+    expiry_enforced: true
+
+  - id: TB-06
+    name: "App ↔ Apple HealthKit Framework"
+    description: >
+      HealthKit data access is controlled by iOS entitlements and per-type
+      user consent. Data never flows across this boundary without explicit
+      HKHealthStore.requestAuthorization grant.
+    framework_enforced: true
+    consent_required: true
+    data_never_leaves_device_without_consent: true
+
+# ==============================================================
+# STRIDE Threat Analysis
+# ==============================================================
+threats:
+
+  # -------- SPOOFING --------
+  - id: T-S-01
+    stride: SPOOFING
+    title: "Session Token Replay Attack"
+    affected_flow: DF-01
+    affected_boundary: TB-01
+    description: >
+      An attacker intercepts a valid JWT (e.g., via XSS, insecure storage, or
+      compromised device) and replays it from a different IP or device to gain
+      unauthorized access to health data and mood entries.
+    attack_vector: "Network / Application"
+    likelihood: MEDIUM
+    impact: CRITICAL
+    dread_score: 8
+    current_mitigations:
+      - "RS256/ES256 token signing (asymmetric key, forging requires private key)"
+      - "JWKS endpoint with 1-hour cache TTL"
+      - "Short expiry recommended (15 min access token)"
+    residual_risk: MEDIUM
+    remediation:
+      - action: "Set JWT `exp` claim to ≤15 minutes for access tokens"
+        file: "src/core/auth.py → _validate_oidc_token()"
+        priority: HIGH
+      - action: "Bind tokens to device fingerprint (sub+aud+device_id claim)"
+        priority: MEDIUM
+      - action: "Implement refresh token rotation (RTR) — invalidate old refresh on use"
+        priority: HIGH
+      - action: "Log anomalous token reuse in audit_log with FRAUD_SIGNAL event type"
+        file: "src/memory/audit_logger.py"
+        priority: MEDIUM
+
+  - id: T-S-02
+    stride: SPOOFING
+    title: "API Key Brute-Force / Enumeration"
+    affected_flow: DF-01
+    affected_boundary: TB-01
+    description: >
+      API keys follow a predictable format `sk-sage-{32 hex chars}`. With
+      no account lockout, an attacker can enumerate keys at the rate limit.
+    attack_vector: "Network"
+    likelihood: LOW
+    impact: HIGH
+    dread_score: 6
+    current_mitigations:
+      - "Keys stored as SHA-256 hash — no plaintext lookup possible"
+      - "Rate limiter: 120 req/min per IP on write endpoints"
+    residual_risk: LOW
+    remediation:
+      - action: "Add account lockout after 10 failed API key attempts per IP per hour"
+        file: "src/core/auth.py"
+        priority: MEDIUM
+      - action: "Implement HMAC-based key derivation (HKDF) for sub-key binding"
+        priority: LOW
+
+  - id: T-S-03
+    stride: SPOOFING
+    title: "HealthKit Authorization Spoofing (Entitlement Bypass)"
+    affected_flow: DF-06
+    affected_boundary: TB-06
+    description: >
+      On jailbroken devices, an attacker could bypass iOS HealthKit entitlement
+      checks and feed forged heart rate samples to the app.
+    attack_vector: "Physical (jailbroken device)"
+    likelihood: LOW
+    impact: HIGH
+    dread_score: 5
+    current_mitigations:
+      - "iOS sandbox enforces HealthKit entitlements"
+      - "App Transport Security (ATS) blocks cleartext"
+    residual_risk: LOW
+    remediation:
+      - action: "Add jailbreak detection (SafetyNet equivalent) before reading HealthKit data"
+        priority: MEDIUM
+      - action: "Validate heart rate physiological plausibility server-side (42–200 bpm)"
+        file: "solutions/meditation_app/backend/streak_engine.py"
+        priority: HIGH
+
+  # -------- TAMPERING --------
+  - id: T-T-01
+    stride: TAMPERING
+    title: "localStorage Mood Data Tampering"
+    affected_flow: DF-02
+    affected_boundary: TB-01
+    description: >
+      Mood entries and user profile are stored in plaintext localStorage.
+      Any JavaScript running on the same origin (XSS, browser extension)
+      can read, modify, or delete all health data without authentication.
+    attack_vector: "Browser / Application"
+    likelihood: MEDIUM
+    impact: CRITICAL
+    dread_score: 8
+    current_mitigations:
+      - "None — localStorage is unencrypted and unprotected"
+    residual_risk: HIGH
+    remediation:
+      - action: "Encrypt localStorage values with AES-256-GCM using a key derived from user password or device secret"
+        file: "solutions/meditation_app/web/src/hooks/useAppState.ts"
+        priority: CRITICAL
+      - action: "Migrate persistent health data to authenticated backend API with per-user encryption at rest"
+        priority: CRITICAL
+      - action: "Implement Content-Security-Policy headers to prevent XSS"
+        file: "src/interface/api.py (add CSP middleware)"
+        priority: HIGH
+      - action: "Add data integrity checksums (HMAC-SHA256) on stored health records"
+        priority: HIGH
+
+  - id: T-T-02
+    stride: TAMPERING
+    title: "S3 Presigned URL Parameter Tampering"
+    affected_flow: DF-04
+    affected_boundary: TB-05
+    description: >
+      If presigned URL parameters (bucket, key, expiry) are not HMAC-signed
+      correctly or URL signing is bypassed, an attacker could craft URLs to
+      access arbitrary S3 objects (path traversal on bucket key).
+    attack_vector: "Network"
+    likelihood: LOW
+    impact: HIGH
+    dread_score: 6
+    current_mitigations:
+      - "AWS SigV4 HMAC signing is enforced by boto3"
+      - "S3 bucket policy denies unsigned requests"
+    residual_risk: LOW
+    remediation:
+      - action: "Enforce bucket-level resource policy: deny s3:GetObject without valid signature"
+        file: "infrastructure/s3_bucket_policy.json"
+        priority: HIGH
+      - action: "Use path-style URL with strict key prefix enforcement (e.g., /media/{user_id}/)"
+        priority: MEDIUM
+      - action: "Set Content-Disposition: attachment in presigned URL to prevent inline execution"
+        priority: MEDIUM
+
+  - id: T-T-03
+    stride: TAMPERING
+    title: "Audit Log Tampering (SQLite Direct Access)"
+    affected_flow: DF-05
+    affected_boundary: TB-02
+    description: >
+      The audit_log.db SQLite file is stored at `.sage/audit_log.db`. If
+      an attacker gains filesystem access, they can modify or delete audit
+      records, compromising the compliance trail.
+    attack_vector: "Insider / Physical"
+    likelihood: LOW
+    impact: CRITICAL
+    dread_score: 7
+    current_mitigations:
+      - "audit_log.db is not committed to source control"
+      - "Failed writes raise exceptions (not silently ignored)"
+    residual_risk: MEDIUM
+    remediation:
+      - action: "Enable SQLite WAL mode + enable SQLite encryption extension (SQLCipher)"
+        priority: HIGH
+      - action: "Hash each audit row (SHA-256 of content + prev_hash) for append-only integrity"
+        file: "src/memory/audit_logger.py → log_event()"
+        priority: HIGH
+      - action: "Replicate audit log to immutable append-only store (AWS CloudTrail, Azure Monitor)"
+        priority: MEDIUM
+
+  # -------- REPUDIATION --------
+  - id: T-R-01
+    stride: REPUDIATION
+    title: "Unattributed GDPR Deletion (No Verifiable Consent Record)"
+    affected_flow: DF-05
+    affected_boundary: TB-01
+    description: >
+      The DELETE /chat/history endpoint deletes data but does not log
+      the authenticated identity performing the deletion with a verifiable
+      consent receipt, making it impossible to prove compliance to regulators.
+    attack_vector: "Application"
+    likelihood: HIGH
+    impact: HIGH
+    dread_score: 7
+    current_mitigations:
+      - "audit_logger.log_event() captures actor field"
+    residual_risk: MEDIUM
+    remediation:
+      - action: "Issue signed deletion receipt (PDF or JSON-LD) to user email on successful deletion"
+        file: "src/interface/api.py → DELETE /users/{id}/data"
+        priority: HIGH
+      - action: "Write GDPR_DELETION_COMPLETED event to audit log with: user_id, timestamp, data_categories_deleted[], requestor_ip"
+        priority: CRITICAL
+      - action: "Store consent record (initial opt-in) separately from data being deleted"
+        priority: HIGH
+
+  - id: T-R-02
+    stride: REPUDIATION
+    title: "HealthKit Consent Withdrawal Not Propagated"
+    affected_flow: DF-06
+    affected_boundary: TB-06
+    description: >
+      If a user revokes HealthKit authorization in iOS Settings, the backend
+      may continue holding previously synced heart rate data without deleting it.
+    attack_vector: "Application"
+    likelihood: MEDIUM
+    impact: HIGH
+    dread_score: 7
+    current_mitigations:
+      - "None — no consent withdrawal propagation mechanism shown"
+    residual_risk: HIGH
+    remediation:
+      - action: "Subscribe to HKHealthStore authorizationStatus changes and emit backend DELETE event on revocation"
+        file: "solutions/meditation_app/ios/ (to be implemented)"
+        priority: CRITICAL
+      - action: "Add consent_status field to session records; backend purges on status=revoked"
+        priority: CRITICAL
+
+  # -------- INFORMATION DISCLOSURE --------
+  - id: T-I-01
+    stride: INFORMATION_DISCLOSURE
+    title: "Health Data Logged in LLM Provider Inputs"
+    affected_flow: DF-03
+    affected_boundary: TB-03
+    description: >
+      Mood notes (free text), heart rate samples, and session metadata may
+      be included verbatim in LLM prompts sent to external providers
+      (Gemini, Claude API), exposing Article 9 health data to third parties
+      without explicit user consent for LLM processing.
+    attack_vector: "Application / Third-Party"
+    likelihood: HIGH
+    impact: CRITICAL
+    dread_score: 9
+    current_mitigations:
+      - "PII filter (src/core/pii_filter.py) detects EMAIL, SSN, CC"
+      - "Health data not currently in PII filter entity list"
+    residual_risk: CRITICAL
+    remediation:
+      - action: "Extend PII filter to detect and redact health-specific entities: mood_score, heart_rate, session_duration before any LLM call"
+        file: "src/core/pii_filter.py → HEALTH_ENTITIES pattern set"
+        priority: CRITICAL
+      - action: "Add data_residency enforcement: EU health data → EU-only providers (Ollama local)"
+        file: "src/core/llm_gateway.py → generate()"
+        priority: CRITICAL
+      - action: "Obtain explicit GDPR consent for LLM processing of health data (separate consent checkbox)"
+        priority: CRITICAL
+
+  - id: T-I-02
+    stride: INFORMATION_DISCLOSURE
+    title: "S3 Presigned URL Leakage via Referrer Header"
+    affected_flow: DF-04
+    affected_boundary: TB-05
+    description: >
+      Presigned URLs embedded in HTTP Referer headers, server logs, browser
+      history, or shared links expose time-limited but valid S3 credentials
+      allowing unauthorized content access during the validity window.
+    attack_vector: "Network / Browser"
+    likelihood: MEDIUM
+    impact: MEDIUM
+    dread_score: 6
+    current_mitigations:
+      - "URL has expiry (policy recommendation below)"
+    residual_risk: LOW
+    remediation:
+      - action: "Set Referrer-Policy: no-referrer on audio player page"
+        priority: HIGH
+      - action: "Set presigned URL expiry ≤ 15 minutes for streaming audio"
+        file: "backend/media_service.py → generate_presigned_url()"
+        priority: HIGH
+      - action: "Add S3 bucket CORS policy: restrict to app domain only"
+        priority: MEDIUM
+      - action: "Log presigned URL generation events (object_key, user_id, expiry) in audit_log"
+        priority: MEDIUM
+
+  - id: T-I-03
+    stride: INFORMATION_DISCLOSURE
+    title: "Secrets in Source Code / Environment Files"
+    affected_flow: DF-01
+    affected_boundary: TB-01
+    description: >
+      API keys, AWS credentials, JWT signing keys, or Slack tokens committed
+      to source code or .env files expose all downstream systems.
+    attack_vector: "Source Control"
+    likelihood: MEDIUM
+    impact: CRITICAL
+    dread_score: 9
+    current_mitigations:
+      - "config/config.yaml uses env var references"
+      - ".gitignore excludes .sage/ runtime data"
+    residual_risk: MEDIUM
+    remediation:
+      - action: "Run gitleaks scan in CI pipeline (pre-commit hook + PR check)"
+        file: ".github/workflows/pr_checks.yml"
+        priority: CRITICAL
+      - action: "Rotate any credentials found in git history (git-filter-repo)"
+        priority: CRITICAL
+      - action: "Use SOPS or AWS Secrets Manager for all secrets; no plaintext in config files"
+        priority: HIGH
+
+  # -------- DENIAL OF SERVICE --------
+  - id: T-D-01
+    stride: DENIAL_OF_SERVICE
+    title: "Health Data Flood via Unauthenticated Mood Endpoint"
+    affected_flow: DF-02
+    affected_boundary: TB-01
+    description: >
+      If mood ingestion endpoints lack per-user rate limiting, an attacker
+      can flood the backend with fake mood entries, filling audit_log.db
+      (SQLite has no size cap) and degrading service.
+    attack_vector: "Network"
+    likelihood: MEDIUM
+    impact: MEDIUM
+    dread_score: 6
+    current_mitigations:
+      - "IP-based rate limiter: 120 req/min"
+    residual_risk: LOW
+    remediation:
+      - action: "Add per-user rate limit: max 100 mood entries/hour (independent of IP)"
+        priority: MEDIUM
+      - action: "Add SQLite WAL checkpoint size cap; alert at 80% disk capacity"
+        priority: MEDIUM
+
+  - id: T-D-02
+    stride: DENIAL_OF_SERVICE
+    title: "S3 Presigned URL DDoS via Rapid URL Generation"
+    affected_flow: DF-04
+    affected_boundary: TB-05
+    description: >
+      Generating millions of presigned URLs does not incur S3 GET costs
+      immediately but can exhaust IAM signing quotas or cause billing DoS
+      if URLs are shared and mass-fetched.
+    attack_vector: "Application"
+    likelihood: LOW
+    impact: MEDIUM
+    dread_score: 5
+    current_mitigations:
+      - "Rate limiter on API endpoints"
+    residual_risk: LOW
+    remediation:
+      - action: "Cache presigned URLs per (user_id, object_key) for URL TTL duration — avoid re-signing on every request"
+        priority: MEDIUM
+      - action: "Set S3 request-payer header and CloudFront signed URL for media delivery at scale"
+        priority: LOW
+
+  # -------- ELEVATION OF PRIVILEGE --------
+  - id: T-E-01
+    stride: ELEVATION_OF_PRIVILEGE
+    title: "HITL Bypass via Direct API Call to Execution Endpoint"
+    affected_flow: DF-01
+    affected_boundary: TB-02
+    description: >
+      If an OPERATOR-role user discovers internal execution endpoints
+      (e.g., POST /build/execute or direct agent task dispatch), they could
+      bypass the HITL approval gate and execute code_diff proposals without
+      APPROVER sign-off.
+    attack_vector: "Application"
+    likelihood: LOW
+    impact: CRITICAL
+    dread_score: 7
+    current_mitigations:
+      - "RBAC enforces role checks on /approve/{trace_id}"
+      - "ProposalStore expires unapproved proposals"
+    residual_risk: MEDIUM
+    remediation:
+      - action: "Add APPROVER role requirement to all proposal execution paths — assert in middleware, not inline"
+        file: "src/interface/api.py"
+        priority: CRITICAL
+      - action: "Add integration test: OPERATOR cannot execute proposal (assert 403)"
+        file: "tests/test_execution_cascade.py"
+        priority: HIGH
+
+  - id: T-E-02
+    stride: ELEVATION_OF_PRIVILEGE
+    title: "HealthKit Read Scope Creep (Requesting Unnecessary Data Types)"
+    affected_flow: DF-06
+    affected_boundary: TB-06
+    description: >
+      Requesting overly broad HealthKit permissions (e.g., reproductive health,
+      mental health records) beyond what the app needs violates data minimization
+      (GDPR Article 5(1)(c)) and can trigger App Store rejection.
+    attack_vector: "Application Design"
+    likelihood: MEDIUM
+    impact: HIGH
+    dread_score: 6
+    current_mitigations:
+      - "watchOS companion only reads HKQuantityTypeIdentifierHeartRate"
+    residual_risk: LOW
+    remediation:
+      - action: "Maintain explicit permission manifest (healthkit_permission_manifest.yaml) listing each HKSampleType requested with justification"
+        file: "security_audit/healthkit_consent_policy.yaml"
+        priority: HIGH
+      - action: "Apple App Review: all HealthKit usage strings must describe exact use case"
+        priority: HIGH
+
+# ==============================================================
+# Residual Risk Register
+# ==============================================================
+residual_risk_register:
+  - threat_id: T-I-01
+    risk: "Health data in LLM prompt (CRITICAL)"
+    owner: "Backend Lead"
+    target_date: "2026-04-15"
+    status: OPEN
+
+  - threat_id: T-T-01
+    risk: "localStorage health data unencrypted (HIGH)"
+    owner: "Frontend Lead"
+    target_date: "2026-04-30"
+    status: OPEN
+
+  - threat_id: T-R-02
+    risk: "HealthKit consent withdrawal not propagated (HIGH)"
+    owner: "iOS Lead"
+    target_date: "2026-05-01"
+    status: OPEN
+
+  - threat_id: T-S-01
+    risk: "JWT token replay (MEDIUM)"
+    owner: "Auth Lead"
+    target_date: "2026-04-15"
+    status: OPEN
+
+  - threat_id: T-T-03
+    risk: "Audit log tampering (MEDIUM)"
+    owner: "Platform Lead"
+    target_date: "2026-04-30"
+    status: OPEN
+
+# ==============================================================
+# Acceptance Criteria Verification
+# ==============================================================
+acceptance_criteria:
+  - id: AC-01
+    description: "OWASP Mobile Top 10 checklist completed with PASS/FAIL per item"
+    status: PASS
+    evidence: "See owasp_mobile_top10_checklist.yaml"
+
+  - id: AC-02
+    description: "GDPR data deletion removes all PII within 30 days (automated)"
+    status: PARTIAL
+    evidence: "DELETE /chat/history exists; full 30-day automated pipeline in gdpr_ccpa_deletion_workflow.py"
+    gap: "No scheduled job for time-based deletion of health data"
+
+  - id: AC-03
+    description: "Threat model identifies all data flows with trust boundaries"
+    status: PASS
+    evidence: "6 data flows (DF-01..DF-06) with 6 trust boundaries (TB-01..TB-06) defined above"
+
+  - id: AC-04
+    description: "HealthKit data never leaves device without explicit user consent"
+    status: PARTIAL
+    evidence: "Policy defined in healthkit_consent_policy.yaml; enforcement requires native iOS implementation"
+    gap: "watchOS companion is currently a simulation — real HealthKit authorization required for production"
+
+  - id: AC-05
+    description: "No secrets in source code (confirmed by gitleaks scan)"
+    status: REQUIRES_VERIFICATION
+    evidence: "gitleaks config in .github/workflows/pr_checks.yml; must run scan to confirm"
+    command: "gitleaks detect --source . --report-format json --report-path security_audit/gitleaks_report.json"

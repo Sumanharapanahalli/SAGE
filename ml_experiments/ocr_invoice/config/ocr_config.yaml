@@ -1,0 +1,81 @@
+# ── OCR Invoice / Receipt — Experiment Configuration ─────────────────────────
+# All tunable knobs in one place; train.py reads this via OmegaConf / PyYAML.
+
+experiment:
+  name: "trocr_invoice_ocr"
+  seed: 42
+  mlflow_tracking_uri: "sqlite:///mlruns.db"   # swap for remote URI in CI/CD
+  run_tags:
+    domain: "invoice_ocr"
+    model_family: "trocr"
+    stage: "development"
+
+# ── Data ──────────────────────────────────────────────────────────────────────
+data:
+  raw_dir: "data/raw"                  # images + annotations live here
+  processed_dir: "data/processed"
+  annotation_file: "data/annotations.csv"  # columns: image_path, text, doc_type, split
+  image_extensions: [".jpg", ".jpeg", ".png", ".tiff"]
+
+  # Stratification key — ensures balanced doc_type distribution across splits
+  stratify_col: "doc_type"             # values: invoice | receipt | mixed
+  splits:
+    train: 0.70
+    val:   0.15
+    test:  0.15
+
+  # Image pre-processing (applied before TrOCR processor)
+  resize:
+    width: 384
+    height: 384
+  augmentation:
+    enabled: true          # training set only — NEVER applied to val/test
+    random_brightness: 0.2
+    random_contrast: 0.2
+    random_rotation_deg: 3
+    jpeg_quality_range: [60, 100]   # simulates scan quality variance
+
+# ── Model ─────────────────────────────────────────────────────────────────────
+model:
+  base_checkpoint: "microsoft/trocr-base-printed"
+  max_target_length: 128   # max tokens per line
+  beam_size: 4
+
+# ── Training ──────────────────────────────────────────────────────────────────
+training:
+  output_dir: "artifacts/checkpoints"
+  num_epochs: 10
+  per_device_train_batch_size: 16
+  per_device_eval_batch_size: 32
+  learning_rate: 5.0e-5
+  warmup_steps: 500
+  weight_decay: 0.01
+  fp16: true                # disable on CPU
+  gradient_accumulation_steps: 2
+  save_strategy: "epoch"
+  evaluation_strategy: "epoch"
+  load_best_model_at_end: true
+  metric_for_best_model: "cer"       # lower is better
+  greater_is_better: false
+  early_stopping_patience: 3
+
+# ── Evaluation & SLA ──────────────────────────────────────────────────────────
+evaluation:
+  metrics: ["cer", "wer", "exact_match", "field_accuracy"]
+  cer_threshold: 0.05        # fail CI if CER > 5 %
+  wer_threshold: 0.10        # fail CI if WER > 10 %
+  latency_sla_ms: 500        # p95 inference latency budget per image
+  latency_n_samples: 200     # images to benchmark
+
+  # Bias evaluation slices — must cover all groups in the bias report
+  bias_slices:
+    doc_type:   ["invoice", "receipt", "mixed"]
+    scan_quality: ["high", "medium", "low"]   # derived from JPEG quality metadata
+    language:   ["en", "fr", "de", "es", "other"]
+
+# ── Artifacts ─────────────────────────────────────────────────────────────────
+artifacts:
+  model_dir:       "artifacts/model"
+  model_card_path: "artifacts/model_card.yaml"
+  eval_report_path: "artifacts/eval_report.json"
+  bias_report_path: "artifacts/bias_report.json"

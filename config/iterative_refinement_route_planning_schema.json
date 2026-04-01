@@ -1,0 +1,246 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sage:iterative_refinement_route_planning_schema",
+  "title": "SAGE Iterative Refinement Route Planning Configuration Schema",
+  "description": "Validates iterative_refinement_route_planning.yaml after environment-variable substitution. All required top-level keys must be present; unknown top-level keys are rejected.",
+  "type": "object",
+  "required": ["llm", "refinement", "route_planning", "tool_registry", "system_prompts", "audit", "hitl"],
+  "additionalProperties": false,
+  "properties": {
+    "llm": {
+      "type": "object",
+      "required": ["provider", "model", "temperature", "max_tokens", "timeout_seconds", "retry"],
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "type": "string",
+          "enum": ["gemini", "claude-code", "ollama", "local", "generic-cli", "claude"]
+        },
+        "model":           {"type": "string", "minLength": 1},
+        "temperature":     {"type": "number",  "minimum": 0.0, "maximum": 1.0},
+        "max_tokens":      {"type": "integer", "minimum": 256, "maximum": 32768},
+        "timeout_seconds": {"type": "integer", "minimum": 10,  "maximum": 600},
+        "retry": {
+          "type": "object",
+          "required": ["max_attempts", "backoff_base_seconds", "retryable_errors"],
+          "additionalProperties": false,
+          "properties": {
+            "max_attempts":         {"type": "integer", "minimum": 1, "maximum": 10},
+            "backoff_base_seconds": {"type": "number",  "minimum": 0.5, "maximum": 60},
+            "retryable_errors": {
+              "type": "array",
+              "items": {"type": "string"},
+              "minItems": 1
+            }
+          }
+        }
+      }
+    },
+    "refinement": {
+      "type": "object",
+      "required": [
+        "max_rounds", "quality_threshold", "min_improvement_per_round",
+        "role_temperatures", "rubric", "critique_injection_mode",
+        "emit_intermediate_results"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "max_rounds":                {"type": ["integer", "string"]},
+        "quality_threshold":         {"type": ["integer", "number", "string"]},
+        "min_improvement_per_round": {"type": ["integer", "number", "string"]},
+        "role_temperatures": {
+          "type": "object",
+          "required": ["generator", "critic", "refiner", "verifier"],
+          "additionalProperties": false,
+          "properties": {
+            "generator": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+            "critic":    {"type": "number", "minimum": 0.0, "maximum": 1.0},
+            "refiner":   {"type": "number", "minimum": 0.0, "maximum": 1.0},
+            "verifier":  {"type": "number", "minimum": 0.0, "maximum": 1.0}
+          }
+        },
+        "rubric": {
+          "type": "object",
+          "required": ["route_validity", "cost_optimality", "constraint_compliance", "narrative_quality"],
+          "additionalProperties": false,
+          "properties": {
+            "route_validity":        {"type": "number", "minimum": 0.0, "maximum": 1.0},
+            "cost_optimality":       {"type": "number", "minimum": 0.0, "maximum": 1.0},
+            "constraint_compliance": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+            "narrative_quality":     {"type": "number", "minimum": 0.0, "maximum": 1.0}
+          }
+        },
+        "critique_injection_mode": {
+          "type": "string",
+          "enum": ["structured", "full"]
+        },
+        "emit_intermediate_results": {"type": "boolean"}
+      }
+    },
+    "route_planning": {
+      "type": "object",
+      "required": ["algorithm", "graph_source", "cost_weights", "constraints", "heuristic", "output"],
+      "additionalProperties": false,
+      "properties": {
+        "algorithm": {
+          "type": "string",
+          "enum": ["dijkstra", "astar", "bfs", "dfs", "bellman_ford"]
+        },
+        "graph_source": {
+          "type": "string",
+          "enum": ["inline", "file"]
+        },
+        "graph_file": {"type": "string"},
+        "cost_weights": {
+          "type": "object",
+          "required": ["distance", "time", "risk"],
+          "additionalProperties": false,
+          "properties": {
+            "distance": {"type": ["number", "string"]},
+            "time":     {"type": ["number", "string"]},
+            "risk":     {"type": ["number", "string"]}
+          }
+        },
+        "constraints": {
+          "type": "object",
+          "required": ["max_hops", "max_distance_km", "avoid_node_types", "avoid_edge_labels"],
+          "additionalProperties": false,
+          "properties": {
+            "max_hops":          {"type": ["integer", "string"]},
+            "max_distance_km":   {"type": ["number",  "string"]},
+            "avoid_node_types":  {"type": "array", "items": {"type": "string"}},
+            "avoid_edge_labels": {"type": "array", "items": {"type": "string"}}
+          }
+        },
+        "heuristic": {
+          "type": "object",
+          "required": ["function", "weight"],
+          "additionalProperties": false,
+          "properties": {
+            "function": {
+              "type": "string",
+              "enum": ["straight_line", "manhattan", "haversine"]
+            },
+            "weight": {"type": "number", "minimum": 0.1, "maximum": 10.0}
+          }
+        },
+        "output": {
+          "type": "object",
+          "required": [
+            "include_total_cost", "include_intermediate_nodes",
+            "include_cost_breakdown", "include_refinement_history", "narrative"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "include_total_cost":         {"type": "boolean"},
+            "include_intermediate_nodes": {"type": "boolean"},
+            "include_cost_breakdown":     {"type": "boolean"},
+            "include_refinement_history": {
+              "oneOf": [
+                {"type": "boolean"},
+                {"type": "string", "enum": ["true", "false"]}
+              ]
+            },
+            "narrative": {
+              "oneOf": [
+                {"type": "boolean"},
+                {"type": "string", "enum": ["true", "false"]}
+              ]
+            }
+          }
+        }
+      }
+    },
+    "tool_registry": {
+      "type": "object",
+      "required": ["scan_dirs", "enabled", "disabled", "sandbox", "schema_validation"],
+      "additionalProperties": false,
+      "properties": {
+        "scan_dirs": {
+          "type": "array",
+          "items": {"type": "string"},
+          "minItems": 1
+        },
+        "enabled": {
+          "oneOf": [
+            {"type": "string", "const": "*"},
+            {"type": "array", "items": {"type": "string"}, "minItems": 1}
+          ]
+        },
+        "disabled": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "sandbox": {
+          "type": "object",
+          "required": ["enabled", "timeout_seconds", "allow_network"],
+          "additionalProperties": false,
+          "properties": {
+            "enabled":         {"type": "boolean"},
+            "timeout_seconds": {"type": "integer", "minimum": 1, "maximum": 300},
+            "allow_network":   {"type": "boolean"}
+          }
+        },
+        "schema_validation": {
+          "type": "object",
+          "required": ["enabled", "strict"],
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {"type": "boolean"},
+            "strict":  {"type": "boolean"}
+          }
+        }
+      }
+    },
+    "system_prompts": {
+      "type": "object",
+      "required": ["generator", "critic", "refiner", "verifier"],
+      "additionalProperties": false,
+      "properties": {
+        "generator": {"$ref": "#/$defs/prompt_block"},
+        "critic":    {"$ref": "#/$defs/prompt_block"},
+        "refiner":   {"$ref": "#/$defs/prompt_block"},
+        "verifier":  {"$ref": "#/$defs/prompt_block"}
+      }
+    },
+    "audit": {
+      "type": "object",
+      "required": ["enabled", "log_raw_llm_output"],
+      "additionalProperties": false,
+      "properties": {
+        "enabled":            {"type": "boolean"},
+        "log_raw_llm_output": {"type": "boolean"}
+      }
+    },
+    "hitl": {
+      "type": "object",
+      "required": ["enabled", "always_require_approval"],
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "oneOf": [
+            {"type": "boolean"},
+            {"type": "string", "enum": ["true", "false"]}
+          ]
+        },
+        "always_require_approval": {
+          "type": "array",
+          "items": {"type": "string"},
+          "minItems": 1
+        }
+      }
+    }
+  },
+  "$defs": {
+    "prompt_block": {
+      "type": "object",
+      "required": ["inline", "variables", "max_chars"],
+      "additionalProperties": false,
+      "properties": {
+        "inline":    {"type": "string", "minLength": 1},
+        "variables": {"type": "object", "additionalProperties": {"type": "string"}},
+        "max_chars": {"type": "integer", "minimum": 100, "maximum": 128000}
+      }
+    }
+  }
+}

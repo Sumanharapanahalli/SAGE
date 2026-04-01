@@ -1,0 +1,44 @@
+---
+# NLU Intent Classifier — Training Configuration
+# All hyperparameters versioned here; changes trigger new MLflow run
+
+experiment:
+  name: "nlu_intent_classification"
+  tracking_uri: "mlruns"          # local MLflow; change to remote URI in CI
+  random_seed: 42
+
+data:
+  dataset: "clinc_oos"            # HuggingFace dataset id (or local path)
+  label_column: "intent"
+  text_column: "text"
+  test_size: 0.15
+  val_size: 0.15                  # fraction of training set
+  stratify: true
+  max_length: 128
+  # Bias evaluation slices (column → values to evaluate separately)
+  bias_slices: []                 # set to e.g. ["domain"] for slice-aware eval
+
+model:
+  backbone: "distilbert-base-uncased"
+  num_labels: null                # inferred from data
+  dropout: 0.1
+
+training:
+  epochs: 5
+  batch_size: 32
+  learning_rate: 2.0e-5
+  weight_decay: 0.01
+  warmup_ratio: 0.1
+  gradient_clip: 1.0
+  early_stopping_patience: 3
+  fp16: false                     # set true if CUDA available
+
+inference:
+  latency_sla_ms: 50             # P95 single-sample latency SLA
+  num_latency_samples: 200       # warm-up + measure iterations
+
+output:
+  model_dir: "artifacts/model"
+  model_card_path: "artifacts/model_card.yaml"
+  metrics_path: "artifacts/metrics.json"
+  tokenizer_dir: "artifacts/tokenizer"

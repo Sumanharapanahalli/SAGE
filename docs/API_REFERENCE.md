@@ -705,6 +705,62 @@ Modular YAML-based skill registry with visibility tiers (public/private/disabled
 
 ---
 
+## Observability — Tracing & Events
+
+### OpenTelemetry Distributed Tracing (Layer 1)
+
+Non-invasive tracing across all SAGE components. Graceful no-op when the OTel SDK is not installed.
+
+**Setup:** `pip install opentelemetry-api opentelemetry-sdk`
+
+**Python API (`src/core/tracing.py`):**
+
+| Function | Description |
+|---|---|
+| `init_tracing(service_name, exporter)` | Initialize TracerProvider (idempotent). Returns provider. |
+| `get_tracer(name)` | Get a cached tracer for a component (e.g., `"llm-gateway"`) |
+| `trace_llm_call(provider, model, ...)` | Context manager wrapping LLM generate() with GenAI semantic convention attributes |
+| `inject_context(carrier)` | Inject trace context into a dict (for cross-process propagation) |
+| `extract_context(carrier)` | Extract trace context from a dict |
+| `traced_publish(bus, event_type, data)` | Publish on EventBus wrapped in a tracing span |
+| `StatusCode` | Re-exported OTel StatusCode (OK, ERROR, UNSET) — works as no-op stub too |
+
+**LLM Gateway integration:** Every `generate()` call automatically creates a span with attributes: `gen_ai.system`, `gen_ai.request.model`, `llm.prompt_length`, `llm.input_tokens`, `llm.output_tokens`, `llm.duration_s`, `sage.trace_id`.
+
+**Config (`config/config.yaml`):**
+```yaml
+observability:
+  opentelemetry:
+    service_name: "sage-framework"
+    # exporter: "otlp"
+    # otlp_endpoint: "http://localhost:4317"
+```
+
+---
+
+### CloudEvents Envelope (Layer 2)
+
+Standardized event format (CloudEvents v1.0 spec) for all SAGE events. Zero external dependencies.
+
+**Python API (`src/modules/cloud_events.py`):**
+
+| Function | Description |
+|---|---|
+| `CloudEvent(type, source, data, ...)` | Create a CloudEvent with auto-generated id and timestamp |
+| `CloudEvent.to_json()` / `from_json(s)` | JSON serialization roundtrip |
+| `CloudEvent.to_dict()` / `from_dict(d)` | Dict serialization roundtrip |
+| `proposal_event(action, proposal_id, data)` | Factory: `sage.proposal.{action}` event |
+| `build_event(action, run_id, data)` | Factory: `sage.build.{action}` event |
+| `gym_event(action, session_id, data)` | Factory: `sage.gym.{action}` event |
+| `llm_event(action, data)` | Factory: `sage.llm.{action}` event |
+| `publish_cloud_event(bus, event)` | Publish CloudEvent on EventBus (type → routing key) |
+
+**Event type conventions:** `sage.<domain>.<action>` (e.g., `sage.proposal.created`, `sage.build.task_completed`, `sage.gym.session_completed`).
+
+**Extension attributes:** Pass SAGE-specific metadata via `extensions={"sagetenant": "team-a", "sagetraceid": "..."}`.
+
+---
+
 ## Notes
 
 - All write endpoints that affect shared state go through the **Proposal Store** and require `POST /approve/{trace_id}` before executing.

@@ -1,0 +1,11 @@
+# Decision Tree from Scratch — Iris Classification
+# Pinned for reproducibility.
+#
+# Core numeric stack
+numpy==1.26.4
+# Used ONLY for:
+#   - load_iris()                (data loading)
+#   - train_test_split(stratify) (stratified splits)
+#   - accuracy_score, f1_score, classification_report, confusion_matrix
+#   (the Decision Tree itself uses NO sklearn estimators)
+scikit-learn==1.4.2

@@ -1,0 +1,402 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+$id: "https://sage-framework.ai/schemas/contract/v1.0.0"
+title: Contract
+description: >
+  JSON Schema Draft-7 for structured contract entities extracted by the
+  SAGE document-entity extraction pipeline.  Covers NDAs, service
+  agreements, employment contracts, SaaS subscriptions, and licensing
+  agreements. Every extracted leaf carries a confidence sub-object.
+type: object
+required:
+  - document_id
+  - document_type
+  - extraction_run_id
+  - contract_title
+  - contract_type
+  - effective_date
+  - parties
+
+additionalProperties: false
+
+definitions:
+  confidence:
+    type: object
+    required: [score, method]
+    additionalProperties: false
+    properties:
+      score:
+        type: number
+        minimum: 0.0
+        maximum: 1.0
+      method:
+        type: string
+        minLength: 1
+        maxLength: 128
+
+  extracted_string:
+    type: object
+    required: [value, confidence]
+    additionalProperties: false
+    properties:
+      value:
+        type: string
+        minLength: 1
+        maxLength: 2048
+      confidence:
+        $ref: "#/definitions/confidence"
+
+  extracted_number:
+    type: object
+    required: [value, confidence]
+    additionalProperties: false
+    properties:
+      value:
+        type: number
+      confidence:
+        $ref: "#/definitions/confidence"
+
+  extracted_boolean:
+    type: object
+    required: [value, confidence]
+    additionalProperties: false
+    properties:
+      value:
+        type: boolean
+      confidence:
+        $ref: "#/definitions/confidence"
+
+  extracted_date:
+    type: object
+    required: [value, confidence]
+    additionalProperties: false
+    properties:
+      value:
+        type: string
+        pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+      confidence:
+        $ref: "#/definitions/confidence"
+
+  extracted_duration:
+    type: object
+    required: [value, unit, confidence]
+    additionalProperties: false
+    properties:
+      value:
+        type: number
+        minimum: 0
+      unit:
+        type: string
+        enum: [days, weeks, months, years]
+      confidence:
+        $ref: "#/definitions/confidence"
+
+  address:
+    type: object
+    required: [raw]
+    additionalProperties: false
+    properties:
+      raw:
+        $ref: "#/definitions/extracted_string"
+      street:
+        $ref: "#/definitions/extracted_string"
+      city:
+        $ref: "#/definitions/extracted_string"
+      state:
+        $ref: "#/definitions/extracted_string"
+      postal_code:
+        type: object
+        required: [value, confidence]
+        additionalProperties: false
+        properties:
+          value:
+            type: string
+            pattern: "^[A-Z0-9 \\-]{3,10}$"
+          confidence:
+            $ref: "#/definitions/confidence"
+      country:
+        type: object
+        required: [value, confidence]
+        additionalProperties: false
+        properties:
+          value:
+            type: string
+            pattern: "^[A-Z]{2}$"
+          confidence:
+            $ref: "#/definitions/confidence"
+
+  signatory:
+    type: object
+    required: [name]
+    additionalProperties: false
+    properties:
+      name:
+        $ref: "#/definitions/extracted_string"
+      title:
+        $ref: "#/definitions/extracted_string"
+      email:
+        type: object
+        required: [value, confidence]
+        additionalProperties: false
+        properties:
+          value:
+            type: string
+            format: email
+          confidence:
+            $ref: "#/definitions/confidence"
+      signature_date:
+        $ref: "#/definitions/extracted_date"
+
+  party:
+    type: object
+    required: [name, role]
+    additionalProperties: false
+    properties:
+      name:
+        $ref: "#/definitions/extracted_string"
+      role:
+        type: object
+        required: [value, confidence]
+        additionalProperties: false
+        properties:
+          value:
+            type: string
+            enum:
+              - disclosing_party
+              - receiving_party
+              - service_provider
+              - client
+              - employer
+              - employee
+              - licensor
+              - licensee
+              - buyer
+              - seller
+              - lessee
+              - lessor
+              - guarantor
+              - other
+          confidence:
+            $ref: "#/definitions/confidence"
+      entity_type:
+        type: object
+        required: [value, confidence]
+        additionalProperties: false
+        properties:
+          value:
+            type: string
+            enum: [individual, corporation, llc, partnership, government, nonprofit, other]
+          confidence:
+            $ref: "#/definitions/confidence"
+      registration_number:
+        $ref: "#/definitions/extracted_string"
+      jurisdiction:
+        $ref: "#/definitions/extracted_string"
+      address:
+        $ref: "#/definitions/address"
+      signatories:
+        type: array
+        items:
+          $ref: "#/definitions/signatory"
+
+  financial_term:
+    type: object
+    required: [amount, currency]
+    additionalProperties: false
+    properties:
+      label:
+        type: string
+        description: Human-readable label, e.g. "Annual License Fee"
+      amount:
+        $ref: "#/definitions/extracted_number"
+      currency:
+        type: object
+        required: [value, confidence]
+        additionalProperties: false
+        properties:
+          value:
+            type: string
+            pattern: "^[A-Z]{3}$"
+          confidence:
+            $ref: "#/definitions/confidence"
+      frequency:
+        type: object
+        required: [value, confidence]
+        additionalProperties: false
+        properties:
+          value:
+            type: string
+            enum: [one_time, weekly, monthly, quarterly, annually, other]
+          confidence:
+            $ref: "#/definitions/confidence"
+      payment_due_days:
+        $ref: "#/definitions/extracted_number"
+
+  clause:
+    type: object
+    required: [clause_type, text_snippet]
+    additionalProperties: false
+    properties:
+      clause_type:
+        type: string
+        enum:
+          - confidentiality
+          - non_compete
+          - non_solicitation
+          - indemnification
+          - limitation_of_liability
+          - termination
+          - governing_law
+          - dispute_resolution
+          - intellectual_property
+          - warranty
+          - force_majeure
+          - assignment
+          - entire_agreement
+          - amendment
+          - notice
+          - data_protection
+          - other
+      text_snippet:
+        $ref: "#/definitions/extracted_string"
+      section_reference:
+        type: string
+        description: Section number as it appears in the document, e.g. "§4.2"
+
+# ── Top-level document fields ─────────────────────────────────────────────────
+properties:
+  document_id:
+    type: string
+    minLength: 1
+    maxLength: 128
+
+  document_type:
+    type: string
+    enum: [contract]
+
+  extraction_run_id:
+    type: string
+    minLength: 1
+    maxLength: 128
+
+  source_file:
+    type: string
+
+  page_count:
+    type: integer
+    minimum: 1
+
+  contract_title:
+    $ref: "#/definitions/extracted_string"
+
+  contract_type:
+    type: object
+    required: [value, confidence]
+    additionalProperties: false
+    properties:
+      value:
+        type: string
+        enum:
+          - nda
+          - service_agreement
+          - employment_contract
+          - saas_subscription
+          - software_license
+          - lease_agreement
+          - purchase_agreement
+          - partnership_agreement
+          - consulting_agreement
+          - distribution_agreement
+          - other
+      confidence:
+        $ref: "#/definitions/confidence"
+
+  contract_id:
+    $ref: "#/definitions/extracted_string"
+
+  effective_date:
+    $ref: "#/definitions/extracted_date"
+
+  expiry_date:
+    $ref: "#/definitions/extracted_date"
+
+  term_duration:
+    $ref: "#/definitions/extracted_duration"
+
+  auto_renewal:
+    $ref: "#/definitions/extracted_boolean"
+
+  termination_notice_period:
+    $ref: "#/definitions/extracted_duration"
+
+  parties:
+    type: array
+    minItems: 2
+    items:
+      $ref: "#/definitions/party"
+
+  governing_law:
+    type: object
+    required: [jurisdiction, confidence]
+    additionalProperties: false
+    properties:
+      jurisdiction:
+        type: string
+        minLength: 2
+      confidence:
+        $ref: "#/definitions/confidence"
+
+  dispute_resolution:
+    type: object
+    required: [value, confidence]
+    additionalProperties: false
+    properties:
+      value:
+        type: string
+        enum: [litigation, arbitration, mediation, negotiation, other]
+      confidence:
+        $ref: "#/definitions/confidence"
+
+  financial_terms:
+    type: array
+    items:
+      $ref: "#/definitions/financial_term"
+
+  key_clauses:
+    type: array
+    items:
+      $ref: "#/definitions/clause"
+
+  confidentiality_period:
+    $ref: "#/definitions/extracted_duration"
+
+  non_compete_period:
+    $ref: "#/definitions/extracted_duration"
+
+  liability_cap:
+    $ref: "#/definitions/extracted_number"
+
+  sla_uptime_percent:
+    type: object
+    required: [value, confidence]
+    additionalProperties: false
+    properties:
+      value:
+        type: number
+        minimum: 0.0
+        maximum: 100.0
+      confidence:
+        $ref: "#/definitions/confidence"
+
+  data_processing_addendum:
+    $ref: "#/definitions/extracted_boolean"
+
+  exhibit_count:
+    type: integer
+    minimum: 0
+
+  notes:
+    $ref: "#/definitions/extracted_string"
+
+  metadata:
+    type: object
+    additionalProperties: true

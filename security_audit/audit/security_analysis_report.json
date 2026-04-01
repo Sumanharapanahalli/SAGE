@@ -1,0 +1,151 @@
+{
+  "files": [
+    {
+      "path": "security_audit/security_scanner.py",
+      "content": "Main security scanner: STRIDE checks (8), PHI encryption validation, access audit schema verification, dependency CVE scan via pip-audit, CycloneDX SBOM generation. CLI: python3 security_audit/security_scanner.py [--sbom-out] [--report-out]. Exit 0 = all CRITICAL/HIGH pass; exit 1 = failures present."
+    },
+    {
+      "path": "security_audit/threat_model.yaml",
+      "content": "Full STRIDE threat model: 6 categories, 12 threats, 5 trust boundaries, 6 assets, residual risk register, HIPAA/NIST SP 800-53 compliance mapping. Covers T-S-01/02 (Spoofing), T-T-01/02 (Tampering), T-R-01 (Repudiation), T-I-01/02/03/04 (Information Disclosure), T-D-01/02 (Denial of Service), T-E-01/02 (Elevation of Privilege)."
+    },
+    {
+      "path": "security_audit/sbom.json",
+      "content": "CycloneDX 1.5 SBOM. 154 Python runtime components enumerated via importlib.metadata. Includes purl (pkg:pypi/<name>@<version>), license metadata, and origin URLs. Serial: urn:uuid:25f548f3-be69-48e9-950d-c7b282c1e163. Generated: 2026-03-27T22:31:56Z."
+    },
+    {
+      "path": "security_audit/audit/scan_report.json",
+      "content": "Live scan output. 10 checks total: 4 PASS, 4 FAIL, 2 WARN. 3 CRITICAL/HIGH fails requiring remediation before production PHI deployment (see findings below)."
+    }
+  ],
+  "sections_count": 7,
+  "word_count": 1840,
+  "references": [
+    "STRIDE (Microsoft SDL) — Threat Modeling methodology",
+    "OWASP Top 10 2021 — A01 Broken Access Control, A02 Cryptographic Failures, A03 Injection, A05 Security Misconfiguration, A07 Auth Failures",
+    "HIPAA Security Rule 45 CFR §164.312(a)(1), §164.312(a)(2)(iv), §164.312(b), §164.312(e)(1), §164.312(e)(2)(ii)",
+    "NIST SP 800-53 Rev 5 — AC-2, AU-3, AU-9, SC-8, SC-28, SI-10",
+    "NIST SP 800-111 — Guide to Storage Encryption",
+    "NIST SP 800-52 Rev 2 — TLS Guidelines",
+    "CycloneDX Specification v1.5 — SBOM format",
+    "CWE-200 Information Exposure, CWE-269 Privilege Escalation, CWE-287 Authentication, CWE-312 PHI at Rest, CWE-319 PHI in Transit",
+    "IEC 62443-3-3 — Industrial Automation & Control Systems Security",
+    "pip-audit — Python dependency CVE scanner (PyPA)"
+  ],
+  "standard_clauses_covered": [
+    "HIPAA §164.312(a)(1) — Access Control",
+    "HIPAA §164.312(a)(2)(iv) — Encryption and Decryption",
+    "HIPAA §164.312(b) — Audit Controls",
+    "HIPAA §164.312(e)(1) — Transmission Security",
+    "HIPAA §164.312(e)(2)(ii) — Encryption in Transit",
+    "NIST SP 800-53 AC-2 — Account Management",
+    "NIST SP 800-53 AU-3 — Audit Record Content",
+    "NIST SP 800-53 AU-9 — Protection of Audit Information",
+    "NIST SP 800-53 SC-8 — Transmission Confidentiality",
+    "NIST SP 800-53 SC-28 — Protection of Information at Rest",
+    "NIST SP 800-53 SI-10 — Information Input Validation",
+    "STRIDE-S — Spoofing",
+    "STRIDE-T — Tampering",
+    "STRIDE-R — Repudiation",
+    "STRIDE-I — Information Disclosure",
+    "STRIDE-D — Denial of Service",
+    "STRIDE-E — Elevation of Privilege"
+  ],
+  "root_cause_analysis": {
+    "scan_overall_status": "FAIL",
+    "critical_high_fails": 3,
+    "dependency_cves": 0,
+    "sbom_components": 154,
+    "stride_categories_covered": [
+      "Spoofing", "Tampering", "Repudiation",
+      "Information Disclosure", "Denial of Service", "Elevation of Privilege"
+    ],
+    "findings_requiring_remediation": [
+      {
+        "check_id": "STRIDE-T-01",
+        "severity": "HIGH",
+        "status": "FAIL",
+        "title": "Audit log contains UPDATE/DELETE statements",
+        "root_cause": "audit_logger.py includes a Delete/DELETE SQL path (likely for cleanup/migration). Compliance requires the event table to be append-only.",
+        "remediation": "Remove UPDATE/DELETE from audit_logger.py event table logic. Use a separate maintenance table for any cleanup operations, never the event rows.",
+        "effort": "LOW",
+        "priority": 1
+      },
+      {
+        "check_id": "STRIDE-R-01",
+        "severity": "MEDIUM",
+        "status": "FAIL",
+        "title": "Audit schema missing trace_id or actor field",
+        "root_cause": "The audit_logger.py CREATE TABLE statement does not include all mandatory non-repudiation fields required by HIPAA §164.312(b).",
+        "remediation": "Add trace_id TEXT NOT NULL and actor TEXT NOT NULL columns to the CREATE TABLE statement. Populate from X-Trace-ID header and UserIdentity.sub on every event.",
+        "effort": "LOW",
+        "priority": 2
+      },
+      {
+        "check_id": "STRIDE-I-02",
+        "severity": "CRITICAL",
+        "status": "FAIL",
+        "title": "No PHI encryption-at-rest configuration detected",
+        "root_cause": "config.yaml lacks encryption.at_rest: true and SAGE_ENCRYPT_AT_REST env var is not set. SQLite .db files written to .sage/ are unencrypted on disk.",
+        "remediation": "Option A (preferred): Enable OS-level filesystem encryption (LUKS on Linux, BitLocker on Windows) for the .sage/ directory. Set encryption.at_rest: true in config.yaml to signal encrypted deployment. Option B: Integrate SQLCipher (pysqlcipher3) for application-layer encryption. Provide key via SAGE_DB_ENCRYPTION_KEY env var.",
+        "effort": "MEDIUM",
+        "priority": 1
+      },
+      {
+        "check_id": "AUDIT-01",
+        "severity": "HIGH",
+        "status": "FAIL",
+        "title": "Audit log schema missing required fields",
+        "root_cause": "Same root cause as STRIDE-R-01. actor/user_id field absent from CREATE TABLE in audit_logger.py.",
+        "remediation": "Align with STRIDE-R-01 remediation — add actor, trace_id fields. Schema migration: ALTER TABLE audit_log ADD COLUMN actor TEXT; for existing databases.",
+        "effort": "LOW",
+        "priority": 2
+      }
+    ],
+    "warnings": [
+      {
+        "check_id": "STRIDE-D-01",
+        "severity": "MEDIUM",
+        "status": "WARN",
+        "title": "No application-level rate limiting",
+        "note": "Production deployments should add slowapi middleware. WAF rate limiting at infra layer is acceptable as interim mitigation."
+      },
+      {
+        "check_id": "STRIDE-I-03",
+        "severity": "CRITICAL",
+        "status": "PASS",
+        "title": "TLS in transit: PASS (reference in config.yaml)",
+        "note": "TLS detected via config reference. Verify reverse-proxy enforces TLS 1.2+ with HSTS header in deployment."
+      }
+    ],
+    "acceptance_criteria_status": {
+      "AC1_stride_all_categories": "PASS — all 6 STRIDE categories covered in threat_model.yaml and scanner",
+      "AC2_no_critical_high_vulns": "FAIL — 3 CRITICAL/HIGH findings require remediation before PHI production deployment",
+      "AC3_sbom_generated": "PASS — CycloneDX 1.5 SBOM generated with 154 components at security_audit/sbom.json",
+      "AC4_phi_encryption": "PARTIAL — in-transit PASS (TLS config present); at-rest FAIL (no encryption.at_rest config)",
+      "AC5_audit_logging": "FAIL — audit schema missing actor/trace_id fields; UPDATE/DELETE present in audit_logger.py"
+    },
+    "remediation_roadmap": [
+      {
+        "sprint": 1,
+        "items": [
+          "Remove DELETE from audit_logger.py event table (STRIDE-T-01, AUDIT-01) — 1 day",
+          "Add actor + trace_id columns to audit schema (STRIDE-R-01, AUDIT-01) — 1 day"
+        ]
+      },
+      {
+        "sprint": 2,
+        "items": [
+          "Enable filesystem encryption for .sage/ in deployment runbook (STRIDE-I-02) — 2 days",
+          "Set encryption.at_rest: true in config.yaml + document SAGE_ENCRYPT_AT_REST — 0.5 days"
+        ]
+      },
+      {
+        "sprint": 3,
+        "items": [
+          "Add slowapi rate limiting middleware to api.py (STRIDE-D-01) — 1 day",
+          "Integrate pip-audit into CI/CD pipeline for continuous dependency scanning — 0.5 days"
+        ]
+      }
+    ]
+  }
+}

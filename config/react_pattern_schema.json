@@ -1,0 +1,174 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sage:react_pattern_schema",
+  "title": "SAGE ReAct Pattern Configuration Schema",
+  "description": "Validates react_pattern.yaml after environment-variable substitution.",
+  "type": "object",
+  "required": ["llm", "tool_registry", "system_prompt", "react_loop"],
+  "additionalProperties": false,
+  "properties": {
+    "llm": {
+      "type": "object",
+      "required": ["provider", "model", "temperature", "max_tokens", "timeout_seconds", "retry"],
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "type": "string",
+          "enum": ["gemini", "claude-code", "ollama", "local", "generic-cli", "claude"],
+          "description": "LLM provider identifier."
+        },
+        "model": {"type": "string", "minLength": 1},
+        "temperature": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0
+        },
+        "max_tokens": {
+          "type": "integer",
+          "minimum": 256,
+          "maximum": 32768
+        },
+        "timeout_seconds": {
+          "type": "integer",
+          "minimum": 10,
+          "maximum": 600
+        },
+        "retry": {
+          "type": "object",
+          "required": ["max_attempts", "backoff_base_seconds", "retryable_errors"],
+          "additionalProperties": false,
+          "properties": {
+            "max_attempts": {"type": "integer", "minimum": 1, "maximum": 10},
+            "backoff_base_seconds": {"type": "number", "minimum": 0.5, "maximum": 60},
+            "retryable_errors": {
+              "type": "array",
+              "items": {"type": "string"},
+              "minItems": 1
+            }
+          }
+        }
+      }
+    },
+    "tool_registry": {
+      "type": "object",
+      "required": ["scan_dirs", "enabled", "disabled", "sandbox", "schema_validation"],
+      "additionalProperties": false,
+      "properties": {
+        "scan_dirs": {
+          "type": "array",
+          "items": {"type": "string"},
+          "minItems": 1
+        },
+        "enabled": {
+          "oneOf": [
+            {"type": "string", "const": "*"},
+            {"type": "array", "items": {"type": "string"}}
+          ]
+        },
+        "disabled": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "sandbox": {
+          "type": "object",
+          "required": ["enabled", "timeout_seconds", "allow_network"],
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {"type": "boolean"},
+            "timeout_seconds": {"type": "integer", "minimum": 1, "maximum": 300},
+            "allow_network": {"type": "boolean"}
+          }
+        },
+        "schema_validation": {
+          "type": "object",
+          "required": ["enabled", "strict"],
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {"type": "boolean"},
+            "strict": {"type": "boolean"}
+          }
+        }
+      }
+    },
+    "system_prompt": {
+      "type": "object",
+      "required": ["mode", "file", "inline", "variables", "max_chars"],
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["file", "inline"]
+        },
+        "file": {"type": "string", "minLength": 1},
+        "inline": {"type": "string", "minLength": 1},
+        "variables": {
+          "type": "object",
+          "required": ["agent_role", "domain"],
+          "properties": {
+            "agent_role": {"type": "string", "minLength": 1},
+            "domain": {"type": "string", "minLength": 1}
+          },
+          "additionalProperties": {"type": "string"}
+        },
+        "max_chars": {"type": "integer", "minimum": 100, "maximum": 128000}
+      }
+    },
+    "react_loop": {
+      "type": "object",
+      "required": ["max_iterations", "early_stop_on_final_answer", "parsing", "observation", "audit", "hitl"],
+      "additionalProperties": false,
+      "properties": {
+        "max_iterations": {"type": "integer", "minimum": 1, "maximum": 100},
+        "early_stop_on_final_answer": {"type": "boolean"},
+        "parsing": {
+          "type": "object",
+          "required": ["thought_prefix", "action_prefix", "observation_prefix", "final_answer_prefix", "strict"],
+          "additionalProperties": false,
+          "properties": {
+            "thought_prefix": {"type": "string", "minLength": 1},
+            "action_prefix": {"type": "string", "minLength": 1},
+            "observation_prefix": {"type": "string", "minLength": 1},
+            "final_answer_prefix": {"type": "string", "minLength": 1},
+            "strict": {"type": "boolean"}
+          }
+        },
+        "observation": {
+          "type": "object",
+          "required": ["max_chars", "truncation_marker"],
+          "additionalProperties": false,
+          "properties": {
+            "max_chars": {"type": "integer", "minimum": 100},
+            "truncation_marker": {"type": "string"}
+          }
+        },
+        "audit": {
+          "type": "object",
+          "required": ["enabled", "log_raw_llm_output"],
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {"type": "boolean"},
+            "log_raw_llm_output": {"type": "boolean"}
+          }
+        },
+        "hitl": {
+          "type": "object",
+          "required": ["enabled", "always_require_approval"],
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "oneOf": [
+                {"type": "boolean"},
+                {"type": "string", "enum": ["true", "false"]}
+              ]
+            },
+            "always_require_approval": {
+              "type": "array",
+              "items": {"type": "string"},
+              "minItems": 1
+            }
+          }
+        }
+      }
+    }
+  }
+}

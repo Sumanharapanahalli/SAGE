@@ -6,7 +6,7 @@
  * via localhost internally, no external ports exposed.
  *
  * Architecture:
- *   Webview HTML/JS (sandboxed) ←→ postMessage ←→ Extension ←→ Backend API
+ *   Webview HTML/JS (sandboxed) <-> postMessage <-> Extension <-> Backend API
  *
  * The webview makes NO direct HTTP calls. All API calls are proxied through
  * the extension host via VS Code's message passing. This ensures:
@@ -84,15 +84,27 @@ export class DashboardPanel {
 
   private async sendUpdate() {
     try {
-      const [health, approvals, queue] = await Promise.all([
+      const [health, approvals, queue, agents] = await Promise.all([
         this.api.getStatus().catch(() => null),
         this.api.getPendingApprovals().catch(() => []),
         this.api.getQueue().catch(() => []),
+        this.api.getAgents().catch(() => []),
       ]);
+
+      // Derive display-friendly fields for the webview
+      const projectName = health ? this.api.getProjectName(health) : "";
+      const providerName = health ? this.api.getProviderName(health) : "";
 
       this.panel.webview.postMessage({
         type: "update",
-        data: { health, approvals, queue },
+        data: {
+          health,
+          approvals,
+          queue,
+          agents,
+          projectName,
+          providerName,
+        },
       });
     } catch {
       // Backend unreachable — webview will show offline state
@@ -320,7 +332,7 @@ export class DashboardPanel {
 
   <script>
     const vscode = acquireVsCodeApi();
-    let currentData = { health: null, approvals: [], queue: [] };
+    let currentData = { health: null, approvals: [], queue: [], agents: [], projectName: '', providerName: '' };
 
     // Tab switching
     document.querySelectorAll('.nav-tab').forEach(tab => {
@@ -346,7 +358,7 @@ export class DashboardPanel {
     });
 
     function render() {
-      const { health, approvals, queue } = currentData;
+      const { health, approvals, queue, agents, projectName, providerName } = currentData;
 
       // Status badge
       const badge = document.getElementById('statusBadge');
@@ -354,34 +366,37 @@ export class DashboardPanel {
       badge.textContent = online ? 'Online' : 'Offline';
       badge.className = 'status ' + (online ? 'online' : 'offline');
 
-      // Solution name
-      document.getElementById('solutionName').textContent =
-        health?.project ? health.project : '';
+      // Solution name (pre-extracted by extension host)
+      document.getElementById('solutionName').textContent = projectName || '';
 
       // Stats
       document.getElementById('approvalCount').textContent = approvals?.length ?? '-';
       document.getElementById('queueCount').textContent = queue?.length ?? '-';
-      document.getElementById('llmProvider').textContent =
-        health?.provider ?? '-';
+      document.getElementById('agentCount').textContent = agents?.length ?? '-';
+      document.getElementById('llmProvider').textContent = providerName || '-';
 
       // Approvals list
       const approvalsList = document.getElementById('approvalsList');
       if (!approvals || approvals.length === 0) {
         approvalsList.innerHTML = '<div class="empty">No pending approvals</div>';
       } else {
-        approvalsList.innerHTML = approvals.map(p => \`
+        approvalsList.innerHTML = approvals.map(p => {
+          const pType = p.action_type || p.proposal_type || 'unknown';
+          const rClass = p.risk_class || 'INFORMATIONAL';
+          return \`
           <div class="proposal-card">
-            <div class="type">\${esc(p.proposal_type)}</div>
+            <div class="type">\${esc(pType)}</div>
             <div class="meta">
-              <span class="risk \${esc(p.risk_class)}">\${esc(p.risk_class)}</span>
+              <span class="risk \${esc(rClass)}">\${esc(rClass)}</span>
               &nbsp; \${esc(p.trace_id?.slice(0, 8))}... &nbsp; \${esc(p.created_at || '')}
             </div>
+            \${p.summary ? '<div class="meta" style="opacity:0.8;">' + esc(p.summary) + '</div>' : ''}
             <div class="actions">
               <button class="btn btn-approve" onclick="approve('\${esc(p.trace_id)}')">Approve</button>
               <button class="btn btn-reject" onclick="reject('\${esc(p.trace_id)}')">Reject</button>
             </div>
           </div>
-        \`).join('');
+        \`}).join('');
       }
 
       // Queue list

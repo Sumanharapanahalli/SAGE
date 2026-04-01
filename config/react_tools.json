@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SAGE ReAct Tool Registry",
+  "description": "Declarative registry of tools available to ReAct agents. Each entry is validated against this schema at startup.",
+  "version": "1.0.0",
+  "tools": [
+    {
+      "name": "knowledge_search",
+      "description": "Search the vector knowledge base for relevant prior decisions, patterns, or domain context.",
+      "endpoint": "/knowledge/search",
+      "side_effects": false,
+      "requires_approval": false,
+      "timeout_seconds": 10,
+      "input_schema": {
+        "type": "object",
+        "required": ["query"],
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Natural-language search query."
+          },
+          "top_k": {
+            "type": "integer",
+            "default": 5,
+            "minimum": 1,
+            "maximum": 20
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "audit_log_search",
+      "description": "Search past agent proposals and human decisions in the audit log.",
+      "endpoint": "/audit/search",
+      "side_effects": false,
+      "requires_approval": false,
+      "timeout_seconds": 10,
+      "input_schema": {
+        "type": "object",
+        "required": ["query"],
+        "properties": {
+          "query": {"type": "string"},
+          "limit": {
+            "type": "integer",
+            "default": 10,
+            "minimum": 1,
+            "maximum": 50
+          },
+          "action_type": {
+            "type": "string",
+            "description": "Filter by action type (e.g. code_diff, yaml_edit)."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "task_status",
+      "description": "Retrieve the current status of a queued or running task by its trace_id.",
+      "endpoint": "/queue/status",
+      "side_effects": false,
+      "requires_approval": false,
+      "timeout_seconds": 5,
+      "input_schema": {
+        "type": "object",
+        "required": ["trace_id"],
+        "properties": {
+          "trace_id": {"type": "string"}
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "submit_proposal",
+      "description": "Submit an agent proposal for human review. Always creates a pending approval — never executes immediately.",
+      "endpoint": "/proposals",
+      "side_effects": true,
+      "requires_approval": true,
+      "timeout_seconds": 15,
+      "input_schema": {
+        "type": "object",
+        "required": ["action_type", "description", "payload"],
+        "properties": {
+          "action_type": {
+            "type": "string",
+            "enum": ["yaml_edit", "implementation_plan", "code_diff", "knowledge_add", "agent_hire"]
+          },
+          "description": {"type": "string"},
+          "payload": {"type": "object"},
+          "risk_level": {
+            "type": "string",
+            "enum": ["low", "medium", "high"],
+            "default": "medium"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "llm_generate",
+      "description": "Call the SAGE LLM gateway for sub-tasks (summarization, classification, translation). Not for primary ReAct reasoning.",
+      "endpoint": "/llm/generate",
+      "side_effects": false,
+      "requires_approval": false,
+      "timeout_seconds": 60,
+      "input_schema": {
+        "type": "object",
+        "required": ["prompt"],
+        "properties": {
+          "prompt": {"type": "string"},
+          "max_tokens": {
+            "type": "integer",
+            "default": 512,
+            "maximum": 2048
+          },
+          "temperature": {
+            "type": "number",
+            "default": 0.1,
+            "minimum": 0.0,
+            "maximum": 1.0
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  ]
+}

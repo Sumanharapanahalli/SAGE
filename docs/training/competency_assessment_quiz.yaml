@@ -1,0 +1,617 @@
+# SAGE FallGuard Wearable — Competency Assessment Quiz
+# Document ID: TRN-QUIZ-001 v1.0
+# Standard: ISO 13485:2016 §6.2.2, 21 CFR Part 820.25
+# Classification: Clinical Training Material — Controlled Document
+# Note: Must be reviewed by clinical specialist before deployment
+
+metadata:
+  document_id: TRN-QUIZ-001
+  version: "1.0"
+  title: "FallGuard Wearable Competency Assessment"
+  device: "SAGE FallGuard Wearable v1.0"
+  passing_score: 80          # Minimum score (%) required for certification — acceptance criterion
+  max_attempts: 3            # After 3 failures, re-training is mandatory before further attempts
+  time_limit_minutes: 30
+  randomize_questions: true  # Randomize order to reduce memorization bias
+  randomize_options: true
+  tracks:
+    - id: caregiver
+      name: "Caregiver Track"
+      source_document: "TRN-CG-001"
+      required_score: 80
+      question_ids: [CG-001, CG-002, CG-003, CG-004, CG-005, CG-006, CG-007, CG-008, CG-009, CG-010, CG-011, CG-012, CG-013, CG-014, CG-015]
+    - id: administrator
+      name: "Clinical Administrator Track"
+      source_document: "TRN-ADM-001"
+      required_score: 80
+      question_ids: [ADM-001, ADM-002, ADM-003, ADM-004, ADM-005, ADM-006, ADM-007, ADM-008, ADM-009, ADM-010, ADM-011, ADM-012, ADM-013, ADM-014, ADM-015]
+  certification:
+    valid_months: 12
+    issued_by: "SAGE FallGuard Training System"
+    reviewers_note: "PENDING — Clinical specialist must validate questions before system activation"
+
+---
+
+# ============================================================
+# CAREGIVER TRACK (CG)
+# ============================================================
+
+caregiver_questions:
+
+  - id: CG-001
+    type: multiple_choice
+    learning_objective: LO-1
+    source: "TRN-CG-001 — Alert Response Protocol"
+    question: >
+      When you receive a fall alert on the Care Dashboard, what is the FIRST action you must take?
+    options:
+      a: "Call the patient's next-of-kin"
+      b: "Acknowledge the alert in the Care Dashboard or mobile app"
+      c: "Immediately dial 911"
+      d: "Check the patient's chart for their medication list"
+    correct_answer: b
+    explanation: >
+      Acknowledging the alert is the mandatory first step — it timestamps your response, stops the
+      alarm, and creates the required audit record. You should acknowledge within 60 seconds.
+    points: 1
+
+  - id: CG-002
+    type: multiple_choice
+    learning_objective: LO-1
+    source: "TRN-CG-001 — Alert Response Protocol"
+    question: >
+      A fall alert has a confidence score of 75%. What is the CORRECT response per the 4-step protocol?
+    options:
+      a: "Log as a false positive and take no further action"
+      b: "Call the patient by intercom — only go to the patient if they don't answer within 30 seconds"
+      c: "Go to the patient immediately with an emergency response kit"
+      d: "Notify the charge nurse and wait for instructions"
+    correct_answer: c
+    explanation: >
+      Confidence scores ≥70% indicate a confirmed fall event. The correct response is to go to the
+      patient immediately, bringing the emergency response kit. Do not delay for phone/intercom checks
+      at this confidence level.
+    points: 1
+
+  - id: CG-003
+    type: multiple_choice
+    learning_objective: LO-1
+    source: "TRN-CG-001 — Alert Response Protocol"
+    question: >
+      What is the target time to complete an incident report after a fall event?
+    options:
+      a: "Within 5 minutes"
+      b: "Within 15 minutes"
+      c: "Within 1 hour"
+      d: "By end of shift"
+    correct_answer: b
+    explanation: >
+      Incident reports must be completed within 15 minutes of the event. This ensures accurate
+      documentation while details are fresh and supports any subsequent regulatory reporting.
+    points: 1
+
+  - id: CG-004
+    type: multiple_choice
+    learning_objective: LO-1
+    source: "TRN-CG-001 — Alert Response Protocol"
+    question: >
+      A fall alert has a confidence score of 35%. What is the appropriate response?
+    options:
+      a: "Go to the patient immediately"
+      b: "Ignore the alert — scores below 40% are always false positives"
+      c: "Call the patient by intercom or phone; if no answer within 60 seconds, proceed as a confirmed fall"
+      d: "Mark as false positive and document without visiting the patient"
+    correct_answer: c
+    explanation: >
+      Scores between 40–69% warrant a phone/intercom check first. Scores below 40% are reviewed and
+      marked as such — but NEVER marked without first attempting to verify patient safety. Option B is
+      incorrect because you must always verify.
+    points: 1
+
+  - id: CG-005
+    type: multiple_choice
+    learning_objective: LO-6
+    source: "TRN-CG-001 — Alert Response Protocol"
+    question: >
+      You respond to a high-confidence fall alert and find the patient on the floor, unconscious.
+      What is the FIRST thing you do?
+    options:
+      a: "Tap 'Escalate to Clinical' in the dashboard"
+      b: "Call 911"
+      c: "Move the patient back to bed immediately"
+      d: "Get another caregiver to help you lift the patient"
+    correct_answer: b
+    explanation: >
+      Calling 911 is the first action when a patient is unconscious after a fall. You simultaneously
+      tap 'Escalate to Clinical' (step 2), but life safety takes absolute priority. Never move a
+      patient with suspected spinal injury.
+    points: 1
+
+  - id: CG-006
+    type: multiple_choice
+    learning_objective: LO-2
+    source: "TRN-CG-001 — Device Setup"
+    question: >
+      Where should the FallGuard sensor be positioned when fitting the wearable on a patient?
+    options:
+      a: "On the outer wrist (back of the hand side)"
+      b: "On the inner wrist (pulse point)"
+      c: "On the dominant hand only"
+      d: "On the upper arm, near the elbow"
+    correct_answer: b
+    explanation: >
+      The sensor must face the inner wrist (pulse point) for accurate fall detection and heart rate
+      monitoring. Correct positioning is critical to device accuracy.
+    points: 1
+
+  - id: CG-007
+    type: multiple_choice
+    learning_objective: LO-2
+    source: "TRN-CG-001 — Device Setup"
+    question: >
+      After pairing the FallGuard device to a patient's profile, which LED status confirms a
+      successful, active connection?
+    options:
+      a: "Flashing red"
+      b: "Solid blue"
+      c: "Solid green"
+      d: "Flashing green"
+    correct_answer: c
+    explanation: >
+      Solid green indicates a connected, active device. Flashing blue indicates the device is
+      in pairing mode. Flashing green indicates sleep mode (still connected). Red indicates an error.
+    points: 1
+
+  - id: CG-008
+    type: multiple_choice
+    learning_objective: LO-2
+    source: "TRN-CG-001 — Device Setup"
+    question: >
+      A patient has fragile skin. How frequently should you check skin integrity at the device site?
+    options:
+      a: "Once per day"
+      b: "Every 8 hours"
+      c: "Once per week"
+      d: "Only if the patient reports discomfort"
+    correct_answer: b
+    explanation: >
+      For patients with fragile skin, skin integrity under the device must be assessed every 8 hours
+      (each shift) to detect early signs of pressure injury, rash, or breakdown.
+    points: 1
+
+  - id: CG-009
+    type: multiple_choice
+    learning_objective: LO-5
+    source: "TRN-CG-001 — Daily Device Checks"
+    question: >
+      During your shift start device check, you find a device has been showing "Offline" status
+      for 20 minutes. What should you do?
+    options:
+      a: "Wait until the end of the shift — short offline periods are normal"
+      b: "Immediately investigate — this requires action within the shift"
+      c: "Reboot the Care Dashboard to refresh the status"
+      d: "Email the IT department and wait for their response"
+    correct_answer: b
+    explanation: >
+      Any device showing "Offline" for more than 15 minutes requires immediate investigation. The
+      patient may be unmonitored during this period. Investigate device condition and reconnect or
+      swap to a working device.
+    points: 1
+
+  - id: CG-010
+    type: multiple_choice
+    learning_objective: LO-4
+    source: "TRN-CG-001 — Emergency Escalation"
+    question: >
+      Which of the following conditions requires BOTH calling 911 AND tapping "Escalate to Clinical"?
+    options:
+      a: "Patient pressed the call button and says they feel dizzy"
+      b: "Patient is found on the floor, conscious, and reports mild wrist pain"
+      c: "Patient is found on the floor, unconscious"
+      d: "Device generated 3 false positive alerts in 24 hours"
+    correct_answer: c
+    explanation: >
+      An unconscious patient following a fall is an immediate emergency requiring 911 AND clinical
+      escalation simultaneously. For mild injury or dizziness, follow standard assessment before
+      deciding on escalation. False positives do not trigger escalation.
+    points: 1
+
+  - id: CG-011
+    type: true_false
+    learning_objective: LO-2
+    source: "TRN-CG-001 — Device Setup"
+    question: >
+      The FallGuard wearable must be removed before a patient showers or bathes.
+    correct_answer: false
+    explanation: >
+      False. The FallGuard is IP67 water-resistant and can be worn during showers and bathing.
+      Removing it during personal hygiene creates a monitoring gap at a high-fall-risk time.
+    points: 1
+
+  - id: CG-012
+    type: multiple_choice
+    learning_objective: LO-5
+    source: "TRN-CG-001 — Daily Device Checks"
+    question: >
+      The minimum battery level at which you should proactively swap to a charged replacement device is:
+    options:
+      a: "50%"
+      b: "30%"
+      c: "15%"
+      d: "5%"
+    correct_answer: b
+    explanation: >
+      Proactively plan a swap when battery reaches 30% to avoid unplanned monitoring gaps. At 10%
+      the dashboard shows an amber warning and swap becomes urgent.
+    points: 1
+
+  - id: CG-013
+    type: multiple_choice
+    learning_objective: LO-6
+    source: "TRN-CG-001 — Scenarios"
+    question: >
+      A patient refuses to wear the FallGuard device. What is the correct action?
+    options:
+      a: "Apply the device anyway — fall safety takes priority over patient preference"
+      b: "Respect the refusal, document it in the care plan, notify the charge nurse, and assess alternative fall risk measures"
+      c: "Call the patient's family to convince them to accept the device"
+      d: "Remove the patient from the monitoring program and make no further notes"
+    correct_answer: b
+    explanation: >
+      Patient autonomy must be respected. Refusal must be documented with date, time, reason, and
+      staff name. A compensating fall risk measure must be implemented. The refusal is a care safety
+      concern, not a non-event.
+    points: 1
+
+  - id: CG-014
+    type: multiple_choice
+    learning_objective: LO-5
+    source: "TRN-CG-001 — Daily Device Checks"
+    question: >
+      What information must be included in the shift handoff documentation regarding FallGuard devices?
+    options:
+      a: "Only the device ID and battery level"
+      b: "Device status, battery level, any alerts during the shift and outcomes, skin condition at device site"
+      c: "A photograph of the device in situ"
+      d: "The number of false positives in the shift only"
+    correct_answer: b
+    explanation: >
+      Handoff documentation must include device connection status, battery level, alert history with
+      outcomes, and skin condition under the device. This ensures continuity of safe monitoring.
+    points: 1
+
+  - id: CG-015
+    type: multiple_choice
+    learning_objective: LO-3
+    source: "TRN-CG-001 — Alert Response"
+    question: >
+      Your patient generates more than 3 false positive alerts in 24 hours. What is the appropriate action?
+    options:
+      a: "Ignore subsequent alerts from this patient — the device is malfunctioning"
+      b: "Notify the charge nurse to review and potentially adjust the device sensitivity settings"
+      c: "Increase the confidence threshold on the device yourself without clinical authorization"
+      d: "Remove the device and log it for maintenance"
+    correct_answer: b
+    explanation: >
+      Frequent false positives suggest the sensitivity threshold may need adjustment. However,
+      sensitivity settings require physician or nurse practitioner authorization. Alert the charge
+      nurse — do not modify clinical settings without written authorization.
+    points: 1
+
+---
+
+# ============================================================
+# CLINICAL ADMINISTRATOR TRACK (ADM)
+# ============================================================
+
+administrator_questions:
+
+  - id: ADM-001
+    type: multiple_choice
+    learning_objective: LO-4
+    source: "TRN-ADM-001 — FDA MDR Reporting"
+    question: >
+      Under 21 CFR Part 803, a user facility must submit an MDR to the FDA within how many
+      calendar days when a medical device is suspected to have contributed to a PATIENT DEATH?
+    options:
+      a: "30 calendar days"
+      b: "15 calendar days"
+      c: "10 calendar days"
+      d: "5 calendar days"
+    correct_answer: c
+    explanation: >
+      Under 21 CFR Part 803.30, user facilities must submit MDRs for device-related deaths within
+      10 calendar days of becoming aware of the event. Serious injury reports are due within 30 days.
+    points: 1
+
+  - id: ADM-002
+    type: multiple_choice
+    learning_objective: LO-4
+    source: "TRN-ADM-001 — FDA MDR Reporting"
+    question: >
+      Which FDA form is used by user facilities (hospitals/care facilities) for Medical Device Reports?
+    options:
+      a: "FDA Form 483"
+      b: "FDA MedWatch Form 3500A"
+      c: "FDA Form 2891"
+      d: "FDA Form 356h"
+    correct_answer: b
+    explanation: >
+      User facilities submit MDRs using MedWatch Form 3500A. Form 483 is used for inspection
+      observations. Form 2891 is for device registration. Form 356h is for drug applications.
+    points: 1
+
+  - id: ADM-003
+    type: multiple_choice
+    learning_objective: LO-4
+    source: "TRN-ADM-001 — FDA MDR Reporting"
+    question: >
+      When completing the MedWatch 3500A form for a FallGuard event, which patient information
+      must NOT appear on the FDA submission?
+    options:
+      a: "Patient age range"
+      b: "Facility patient number"
+      c: "Patient's full name and date of birth"
+      d: "Patient gender"
+    correct_answer: c
+    explanation: >
+      Patient name and date of birth must be de-identified on FDA submissions to comply with HIPAA.
+      Use the facility patient number instead. Demographic information such as age range and gender
+      is acceptable.
+    points: 1
+
+  - id: ADM-004
+    type: multiple_choice
+    learning_objective: LO-4
+    source: "TRN-ADM-001 — FDA MDR Reporting"
+    question: >
+      How long must MDR documentation be retained following an FDA submission?
+    options:
+      a: "1 year"
+      b: "2 years"
+      c: "5 years"
+      d: "Indefinitely"
+    correct_answer: b
+    explanation: >
+      Under 21 CFR Part 803.18, MDR event files and documentation must be retained for a minimum
+      of 2 years from the date of submission to the FDA.
+    points: 1
+
+  - id: ADM-005
+    type: multiple_choice
+    learning_objective: LO-4
+    source: "TRN-ADM-001 — FDA MDR Reporting"
+    question: >
+      The FallGuard device failed to detect a fall that resulted in a patient being hospitalized
+      with a hip fracture. Does this require an MDR?
+    options:
+      a: "No — only device malfunctions with confirmed injury require MDRs"
+      b: "Yes — a serious injury (hospitalization) where the device was suspected to have failed meets the MDR threshold under 21 CFR Part 803"
+      c: "No — the device not detecting a fall is a limitation, not a malfunction"
+      d: "Yes, but only if the manufacturer confirms the device malfunctioned"
+    correct_answer: b
+    explanation: >
+      Under 21 CFR Part 803, a serious injury (requiring hospitalization) where the device is
+      reasonably suspected to have contributed — including by failure to function as intended —
+      meets the MDR threshold. Do not wait for manufacturer confirmation before filing.
+    points: 1
+
+  - id: ADM-006
+    type: multiple_choice
+    learning_objective: LO-3
+    source: "TRN-ADM-001 — Regulatory Reporting"
+    question: >
+      Under 21 CFR Part 803.33, when must a user facility submit the Annual MDR Summary Report?
+    options:
+      a: "June 30 each year"
+      b: "July 1 each year"
+      c: "January 1 each year"
+      d: "December 31 each year"
+    correct_answer: c
+    explanation: >
+      21 CFR Part 803.33 requires user facilities to submit an Annual Report (FDA Form 3419) to the
+      FDA by January 1 of each year, covering the prior calendar year's MDR activity.
+    points: 1
+
+  - id: ADM-007
+    type: multiple_choice
+    learning_objective: LO-1
+    source: "TRN-ADM-001 — Fleet Management"
+    question: >
+      A device in the fleet has been offline for 20 minutes. Where in the Care Dashboard do
+      you investigate this?
+    options:
+      a: "Admin → Training Registry"
+      b: "Fleet Management → Device Inventory"
+      c: "Admin → Regulatory → Incident Summary"
+      d: "Admin → Alert Routing → Escalation Chain"
+    correct_answer: b
+    explanation: >
+      Device status, including offline events, is managed in Fleet Management → Device Inventory.
+      Each device row shows connection status, battery level, and last-seen timestamp.
+    points: 1
+
+  - id: ADM-008
+    type: multiple_choice
+    learning_objective: LO-1
+    source: "TRN-ADM-001 — Fleet Management"
+    question: >
+      Before decommissioning a FallGuard device, which step is required for regulatory compliance?
+    options:
+      a: "Perform a factory reset on the device"
+      b: "Export and retain the device history log"
+      c: "Obtain patient written consent"
+      d: "Update the device firmware to the latest version"
+    correct_answer: b
+    explanation: >
+      The device history log must be exported and retained before decommissioning, as it contains
+      maintenance records and event data required under 21 CFR Part 820.184 for a minimum of 2 years.
+    points: 1
+
+  - id: ADM-009
+    type: multiple_choice
+    learning_objective: LO-6
+    source: "TRN-ADM-001 — Training Administration"
+    question: >
+      A staff member's FallGuard certification expired 2 weeks ago. What is the system behavior
+      and the correct administrative action?
+    options:
+      a: "The system automatically revokes their access to the Care Dashboard"
+      b: "The dashboard flags the condition; the administrator should ensure the staff member is not assigned as a primary alert recipient until recertification is complete"
+      c: "The expired certification has no operational impact — it is only an administrative note"
+      d: "The staff member receives 30 days of grace period with no restrictions"
+    correct_answer: b
+    explanation: >
+      The dashboard flags expired certifications and the staff member should not be assigned as a
+      primary alert recipient. The administrator must enforce this and initiate recertification.
+      Access to the dashboard itself is not automatically revoked.
+    points: 1
+
+  - id: ADM-010
+    type: multiple_choice
+    learning_objective: LO-1
+    source: "TRN-ADM-001 — Fleet Management"
+    question: >
+      Which trigger causes a device to automatically enter the Maintenance Queue?
+    options:
+      a: "More than 3 false positive alerts in 24 hours"
+      b: "Battery cycles exceeding 300"
+      c: "Device being assigned to more than 2 patients in a month"
+      d: "Device firmware version older than 6 months"
+    correct_answer: b
+    explanation: >
+      Devices are automatically queued for maintenance when battery cycles exceed 300 (approximately
+      1 year of daily use), when calibration has lapsed 30 days, when diagnostics fail, or after a
+      serious injury event. False positive rates trigger sensitivity reviews, not maintenance.
+    points: 1
+
+  - id: ADM-011
+    type: multiple_choice
+    learning_objective: LO-2
+    source: "TRN-ADM-001 — Fleet Management"
+    question: >
+      For how many years must archived patient alert history be retained after patient discharge?
+    options:
+      a: "1 year"
+      b: "3 years"
+      c: "7 years"
+      d: "10 years"
+    correct_answer: c
+    explanation: >
+      Patient alert history is archived and must be accessible for 7 years per 21 CFR Part 820.180
+      (device history record requirements). Some states have longer requirements — confirm with
+      your legal/compliance team.
+    points: 1
+
+  - id: ADM-012
+    type: multiple_choice
+    learning_objective: LO-4
+    source: "TRN-ADM-001 — FDA MDR Reporting"
+    question: >
+      After submitting an initial MDR, new information becomes available confirming a more serious
+      injury outcome. What is required?
+    options:
+      a: "No further action — the initial report is sufficient"
+      b: "Submit a corrected MDR within 5 business days"
+      c: "Submit a follow-up MedWatch 3500A within 30 days of the new information, referencing the original FDA tracking number"
+      d: "Contact the FDA by phone only — no written form is required for follow-ups"
+    correct_answer: c
+    explanation: >
+      Follow-up MDRs must be submitted within 30 days of new information becoming available. Always
+      reference the original FDA tracking number to link the reports.
+    points: 1
+
+  - id: ADM-013
+    type: multiple_choice
+    learning_objective: LO-5
+    source: "TRN-ADM-001 — Alert Routing"
+    question: >
+      During configured quiet hours, which alert type should NEVER be suppressed?
+    options:
+      a: "Low-confidence alerts (<40%)"
+      b: "Medium-confidence alerts (40–69%)"
+      c: "High-confidence confirmed fall alerts (≥70%)"
+      d: "Device battery warning alerts"
+    correct_answer: c
+    explanation: >
+      High-confidence fall alerts (≥70%) must always be sent regardless of quiet hours configuration.
+      Only low-confidence alerts may be suppressed during quiet hours. Suppressing confirmed fall
+      alerts creates unacceptable patient safety risk.
+    points: 1
+
+  - id: ADM-014
+    type: true_false
+    learning_objective: LO-4
+    source: "TRN-ADM-001 — FDA MDR Reporting"
+    question: >
+      When uncertain whether an event meets the MDR threshold, the correct approach is to withhold
+      the report until the threshold is confirmed.
+    correct_answer: false
+    explanation: >
+      False. When uncertain, the regulatory guidance is to err toward reporting. Failure to report
+      an MDR-qualifying event is a regulatory violation. The FDA can receive voluntary reports that
+      are later found to not meet the threshold — this is not a violation.
+    points: 1
+
+  - id: ADM-015
+    type: multiple_choice
+    learning_objective: LO-6
+    source: "TRN-ADM-001 — Training Administration"
+    question: >
+      A new nurse starts on Monday. What is the recommended deadline for completing their
+      FallGuard training and certification?
+    options:
+      a: "Within 30 days of start date"
+      b: "Within 5 business days of start date"
+      c: "Before their first solo shift"
+      d: "By end of probationary period (90 days)"
+    correct_answer: b
+    explanation: >
+      The recommended deadline is within 5 business days of the start date. Staff should not be
+      added as active alert recipients until certification is confirmed. Option C (before first
+      solo shift) is the minimum safety requirement; 5 business days provides a structured timeline.
+    points: 1
+
+---
+
+# ============================================================
+# SCORING AND CERTIFICATION LOGIC
+# ============================================================
+
+scoring:
+  method: percentage                    # (correct / total) * 100
+  passing_threshold: 80                 # percent — acceptance criterion: ≥80% required
+  questions_per_track: 15
+  points_per_question: 1
+  total_possible: 15
+  passing_score_raw: 12                 # 12/15 = 80%
+
+certification:
+  issued_on_pass: true
+  certificate_title: "FallGuard Wearable Competency Certificate"
+  issued_by: "SAGE FallGuard Training System"
+  tracked_in_dashboard: true           # Care Dashboard → Admin → Training Registry
+  expiry_months: 12
+  recertification_required: true
+
+remediation:
+  on_failure:
+    - Show per-question feedback with explanation for each incorrect answer
+    - Link to source document section (TRN-CG-001 or TRN-ADM-001)
+    - Allow immediate second attempt (up to max_attempts)
+  mandatory_retraining_after: 3        # attempts — full module review required before attempt 4
+
+tracking:
+  per_user_fields:
+    - staff_id
+    - staff_name
+    - role
+    - track_taken
+    - attempt_number
+    - score_percentage
+    - pass_fail
+    - completion_timestamp
+    - certificate_id
+    - expiry_date
+  dashboard_view: "Admin → Training Registry"
+  export_formats: [pdf, csv]

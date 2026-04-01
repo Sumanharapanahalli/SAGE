@@ -1,0 +1,76 @@
+* =============================================================================
+* LTE-M Transmission Power Spike Simulation
+* Module: SIM7080G (Cat-M1/NB-IoT)
+* TX Power: 23 dBm = 200mW into 50Ω antenna
+* Supply: 3.4–4.2V LiPo (modelled at 3.7V nominal)
+* PA efficiency: ~35% (class AB PA typical for LTE-M)
+* Peak supply current: P_supply = P_rf/η = 200mW/0.35 = 571mW
+*                      I_peak = 571mW / 3.7V = 154mA (PA only)
+*                      + 50mA modem baseband = 204mA total peak
+*
+* Requirements validated:
+*   REQ-PWR-004: LTE-M TX current ≤ 500mA (1C for 500mAh LiPo)  → PASS
+*   REQ-PWR-005: VBAT droop during TX ≤ 200mV                    → CHECK
+*   REQ-PWR-006: TX duty cycle ≤ 2%                              → PASS
+* =============================================================================
+
+.title LTE-M SIM7080G Power Spike — Battery + PA Load Model
+
+* ---------------------------------------------------------------------------
+* Battery source (simplified Thevenin at SoC=70%, nominal operation)
+* ---------------------------------------------------------------------------
+Voc   BATPOS  0  DC=3.75       ; OCV at 70% SoC
+Rint  BATPOS  VBAT  0.15       ; internal resistance 150 mΩ
+
+* LiPo capacitance (decoupling — ceramic + electrolytic on module)
+Cbulk  VBAT  0  470u  IC=3.75  ; 470µF bulk cap on supply rail
+Cbypass VBAT 0  100n           ; 100nF ceramic HF bypass
+
+* PCB trace resistance from battery connector to module (estimated 50mΩ)
+Rtrace  VBAT  VCC_MOD  0.05
+
+* ---------------------------------------------------------------------------
+* LTE-M Module Load Model
+* Baseband (always-on during TX): 50mA constant
+Ibb  VCC_MOD  0  DC=50m
+
+* Power Amplifier: 154mA peak, modulated envelope
+* LTE-M uses SC-FDMA; model as trapezoid burst:
+*   Rise time: 1ms (PA ramp-up per spec)
+*   TX window: 120ms (one subframe slot × 6 = LTE-M MPDCCH/PUSCH)
+*   Fall time: 1ms
+*   Repeat every 1s (2% duty cycle: 20ms on / 980ms off)
+* Using PULSE: V1=0 V2=154m TD=0 TR=1m TF=1m PW=18m PER=1000m
+* (PW=18ms because 20ms - 1ms rise - 1ms fall = 18ms flat top)
+Ipa_ctrl  PAGATE  0  PULSE(0 1 5m 1m 1m 18m 1000m)
+Bipa  VCC_MOD  0  I= V(PAGATE)*154m
+
+* ---------------------------------------------------------------------------
+* Optional: capacitor pre-charge reservoir (10mF on module PCB)
+* Many LTE-M modules include a bulk cap to absorb TX spikes
+* ---------------------------------------------------------------------------
+Creservoir  VCC_MOD  0  10m  IC=3.75
+
+* ---------------------------------------------------------------------------
+* Measurements
+* ---------------------------------------------------------------------------
+* Peak supply current (PA + baseband)
+.meas TRAN I_peak  MAX I(Voc)
+.meas TRAN I_avg   AVG I(Voc)  FROM=0 TO=5
+* VBAT droop during TX burst
+.meas TRAN V_droop_start  FIND V(VCC_MOD) AT=5.001
+.meas TRAN V_droop_min    MIN  V(VCC_MOD) FROM=5.001 TO=5.025
+.meas TRAN V_droop_mV     PARAM '(V_droop_start - V_droop_min)*1000'
+* Verify 1C limit
+.meas TRAN I_1C_margin    PARAM '500m - I_peak'   ; must be > 0 (PASS)
+
+* ---------------------------------------------------------------------------
+* Simulation: 5 complete TX bursts (5s)
+* Step: 10µs to resolve 1ms PA ramp
+* ---------------------------------------------------------------------------
+.tran 10u 5 0 10u UIC
+
+.probe V(VBAT) V(VCC_MOD) V(PAGATE)
+.probe I(Voc) I(Bipa) I(Ibb)
+
+.end

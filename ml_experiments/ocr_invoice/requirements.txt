@@ -1,0 +1,42 @@
+# OCR Invoice/Receipt Model — Production Requirements
+# Python >= 3.10
+# Install: pip install -r requirements.txt
+
+# ── Core deep learning ────────────────────────────────────────────────────────
+torch==2.2.2
+torchvision==0.17.2
+torchaudio==2.2.2
+
+# ── Hugging Face stack (TrOCR base model) ────────────────────────────────────
+transformers==4.40.1
+datasets==2.19.0
+tokenizers==0.19.1
+accelerate==0.29.3
+evaluate==0.4.1
+
+# ── Image processing ──────────────────────────────────────────────────────────
+Pillow==10.3.0
+opencv-python-headless==4.9.0.80
+albumentations==1.4.4
+
+# ── Experiment tracking ───────────────────────────────────────────────────────
+mlflow==2.12.1
+
+# ── Metrics ───────────────────────────────────────────────────────────────────
+jiwer==3.0.3          # CER / WER
+scikit-learn==1.4.2   # precision/recall/F1
+
+# ── Data / configuration ──────────────────────────────────────────────────────
+numpy==1.26.4
+pandas==2.2.2
+PyYAML==6.0.1
+python-dotenv==1.0.1
+
+# ── Latency benchmarking ─────────────────────────────────────────────────────
+tqdm==4.66.2
+
+# ── Notebook support ──────────────────────────────────────────────────────────
+ipykernel==6.29.4
+jupyterlab==4.1.8
+matplotlib==3.9.0
+seaborn==0.13.2

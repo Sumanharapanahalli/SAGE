@@ -5,6 +5,11 @@ pydantic
 # Observability — Langfuse (optional: set LANGFUSE_PUBLIC_KEY + LANGFUSE_SECRET_KEY to enable)
 langfuse
 
+# Observability — OpenTelemetry (optional: distributed tracing, graceful no-op when absent)
+opentelemetry-api>=1.20.0
+opentelemetry-sdk>=1.20.0
+# opentelemetry-exporter-otlp>=0.41b0  # Uncomment for OTLP export to Jaeger/Tempo/etc.
+
 # LLM - Claude (Anthropic API, optional — needed for provider="claude")
 anthropic>=0.40.0
 

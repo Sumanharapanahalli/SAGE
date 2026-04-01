@@ -1,0 +1,23 @@
+{
+  "name": "mindful-watchos-companion",
+  "version": "1.0.0",
+  "private": true,
+  "description": "watchOS 10 companion app simulator — breathing sessions, HealthKit HR, WatchConnectivity sync",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.1",
+    "typescript": "^5.5.3",
+    "vite": "^5.4.0"
+  }
+}

@@ -1,0 +1,148 @@
+# =============================================================================
+# ETL Pipeline Configuration
+# Version: 1.0.0
+# Schema documented in: models.sql
+# =============================================================================
+
+pipeline:
+  name: "sage_document_ingestion"
+  version: "1.0.0"
+  idempotent: true          # all upserts use external_id as dedup key
+  batch_size: 500
+  max_retries: 3
+  retry_backoff_seconds: 5
+
+# ---------------------------------------------------------------------------
+# Source connectors — add/remove without touching Python
+# ---------------------------------------------------------------------------
+sources:
+  filesystem:
+    enabled: true
+    watch_dirs:
+      - path: "data/incoming/invoices"
+        document_type: "invoice"
+        file_patterns: ["*.json", "*.csv"]
+      - path: "data/incoming/receipts"
+        document_type: "receipt"
+        file_patterns: ["*.json", "*.csv"]
+      - path: "data/incoming/contracts"
+        document_type: "contract"
+        file_patterns: ["*.json"]
+    archive_dir: "data/archive"
+    error_dir: "data/errors"
+
+  postgres_source:
+    enabled: false
+    host: "${SOURCE_PG_HOST}"
+    port: 5432
+    database: "${SOURCE_PG_DB}"
+    user: "${SOURCE_PG_USER}"
+    password: "${SOURCE_PG_PASSWORD}"
+    query_file: "queries/extract_source.sql"
+    watermark_column: "updated_at"
+
+  api:
+    enabled: false
+    base_url: "${SOURCE_API_URL}"
+    auth_header: "Authorization"
+    auth_token: "${SOURCE_API_TOKEN}"
+    endpoints:
+      - path: "/invoices"
+        document_type: "invoice"
+        page_size: 100
+      - path: "/receipts"
+        document_type: "receipt"
+        page_size: 100
+
+# ---------------------------------------------------------------------------
+# Staging database (target)
+# ---------------------------------------------------------------------------
+staging_db:
+  host: "${STAGING_PG_HOST:-localhost}"
+  port: "${STAGING_PG_PORT:-5432}"
+  database: "${STAGING_PG_DB:-sage_staging}"
+  user: "${STAGING_PG_USER:-sage}"
+  password: "${STAGING_PG_PASSWORD}"
+  pool_min: 2
+  pool_max: 10
+  connect_timeout: 10
+  schema: "public"
+  schema_file: "models.sql"          # applied idempotently on startup
+
+# ---------------------------------------------------------------------------
+# Validation rules per document type
+# ---------------------------------------------------------------------------
+validation:
+  invoice:
+    required_fields: ["external_id", "invoice_number", "invoice_date", "total_amount", "currency"]
+    numeric_non_negative: ["subtotal", "tax_amount", "discount_amount", "total_amount"]
+    date_fields: ["invoice_date", "due_date"]
+    currency_codes: ["USD", "EUR", "GBP", "JPY", "CAD"]
+    amount_range:
+      min: 0.01
+      max: 10_000_000
+    balance_check:                   # subtotal + tax - discount ≈ total (within 1 cent)
+      enabled: true
+      tolerance: 0.01
+
+  receipt:
+    required_fields: ["external_id", "transaction_date", "total_amount", "currency"]
+    numeric_non_negative: ["subtotal", "tax_amount", "tip_amount", "total_amount"]
+    date_fields: ["transaction_date"]
+    currency_codes: ["USD", "EUR", "GBP", "JPY", "CAD"]
+    amount_range:
+      min: 0.01
+      max: 50_000
+    allowed_payment_methods:
+      - cash
+      - credit_card
+      - debit_card
+      - digital_wallet
+      - check
+      - bank_transfer
+      - other
+      - unknown
+
+  contract:
+    required_fields: ["external_id", "contract_number", "title", "contract_type"]
+    date_fields: ["effective_date", "expiration_date"]
+    date_order_check:                # effective_date must be <= expiration_date
+      field_a: "effective_date"
+      field_b: "expiration_date"
+    allowed_types:
+      - msa
+      - nda
+      - sow
+      - purchase_order
+      - lease
+      - employment
+      - license
+      - service_agreement
+      - partnership
+      - other
+
+# ---------------------------------------------------------------------------
+# Observability & experiment logging
+# ---------------------------------------------------------------------------
+logging:
+  level: "INFO"
+  format: "json"
+  file: "logs/etl_{run_id}.log"
+  rotate_mb: 100
+  keep_days: 30
+
+metrics:
+  track_per_run:
+    - records_extracted
+    - records_transformed
+    - records_loaded
+    - records_failed
+    - validation_pass_rate
+    - load_duration_seconds
+    - rows_per_second
+  persist_to_db: true              # written to pipeline_runs + validation_results tables
+  export_prometheus: false
+
+alerts:
+  failure_rate_threshold: 0.05     # alert if >5% records fail
+  notify_email: "${ALERT_EMAIL}"

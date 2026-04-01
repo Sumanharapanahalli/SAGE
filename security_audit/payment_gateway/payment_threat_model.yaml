@@ -1,0 +1,623 @@
+# ============================================================
+# Payment Gateway — STRIDE Threat Model
+# ============================================================
+# Standard:  STRIDE (Microsoft SDL) + PCI DSS v4.0
+# Scope:     Payment Gateway API endpoints — charge, refund,
+#            transaction status, webhook callbacks, audit trail
+# Version:   1.0.0
+# Date:      2026-03-28
+# Owner:     Security Review — SAGE Core Team
+# References: PCI DSS v4.0, OWASP API Security Top 10 2023,
+#             HIPAA Security Rule, NIST SP 800-53 Rev 5
+# ============================================================
+
+metadata:
+  title:    "Payment Gateway API — STRIDE Threat Model"
+  version:  "1.0.0"
+  date:     "2026-03-28"
+  scope:    "POST /payment/charge, POST /payment/refund, GET /payment/status/{id}, POST /webhook/payment"
+  standards:
+    - "STRIDE (Microsoft SDL)"
+    - "PCI DSS v4.0"
+    - "OWASP API Security Top 10 (2023)"
+    - "HIPAA Security Rule (45 CFR §164.300–164.318)"
+    - "NIST SP 800-53 Rev 5"
+  reviewers:
+    - role: "Security Analyst"
+    - role: "PCI DSS Compliance Officer (QSA)"
+    - role: "Solution Architect"
+    - role: "Payment Engineering Lead"
+
+# ============================================================
+# Trust Boundaries
+# ============================================================
+trust_boundaries:
+  - id: TB-P-01
+    name: "Client Browser / Mobile App ↔ Payment API Gateway"
+    description: >
+      All payment initiation traffic from authenticated user sessions.
+      Must cross over HTTPS (TLS 1.2+). JWT or session token required.
+      PAN must be tokenized before reaching this boundary.
+    tls_required: true
+    auth_required: true
+    tokenization_required: true
+
+  - id: TB-P-02
+    name: "Payment API Gateway ↔ Payment Processor (Stripe/Braintree)"
+    description: >
+      Outbound HTTPS calls from SAGE to upstream payment processor.
+      Payment token (not raw PAN) transmitted. HMAC-signed requests.
+    tls_required: true
+    auth_required: true
+    pan_transmission: "token_only"
+
+  - id: TB-P-03
+    name: "Payment Processor Webhook ↔ SAGE /webhook/payment"
+    description: >
+      Inbound callbacks from payment processor confirming charge status.
+      Payload must be HMAC-SHA256 verified before processing.
+    webhook_signature_required: true
+    tls_required: true
+
+  - id: TB-P-04
+    name: "Payment API Gateway ↔ Audit Log / Database"
+    description: >
+      Payment events written to audit_log.db and any cardholder data store.
+      Encryption at rest (AES-256) required. PAN masked to last 4 digits.
+    encryption_at_rest_required: true
+    pan_masking_required: true
+
+  - id: TB-P-05
+    name: "Payment API Gateway ↔ Internal Agent Pipeline"
+    description: >
+      Payment status and metadata passed to SAGE agents for analytics.
+      Raw PAN must not be passed into agent context or LLM prompts.
+    phi_scrub_required: true
+    pan_pass_forbidden: true
+
+# ============================================================
+# Assets (Cardholder Data Environment — CDE)
+# ============================================================
+assets:
+  - id: PA-01
+    name: "Primary Account Number (PAN)"
+    classification: RESTRICTED
+    pci_scope: "CHD"
+    impact: CRITICAL
+    note: "Must be tokenized at API ingress; never stored unencrypted"
+
+  - id: PA-02
+    name: "Card Verification Value (CVV/CVC)"
+    classification: RESTRICTED
+    pci_scope: "SAD"
+    impact: CRITICAL
+    note: "PCI DSS Req 3.2.1 — must NOT be stored post-authorization under any circumstance"
+
+  - id: PA-03
+    name: "Cardholder Name"
+    classification: CONFIDENTIAL
+    pci_scope: "CHD"
+    impact: HIGH
+
+  - id: PA-04
+    name: "Transaction Records (amount, timestamp, last4, merchant_id)"
+    classification: CONFIDENTIAL
+    pci_scope: "Audit"
+    impact: HIGH
+    note: "Retained per PCI DSS Req 10.7 for minimum 12 months"
+
+  - id: PA-05
+    name: "Payment Processor API Keys / Webhook Signing Secret"
+    classification: SECRET
+    pci_scope: "Credentials"
+    impact: CRITICAL
+
+  - id: PA-06
+    name: "JWT Signing Secret / Session Tokens"
+    classification: SECRET
+    pci_scope: "Credentials"
+    impact: CRITICAL
+
+  - id: PA-07
+    name: "Idempotency Keys"
+    classification: INTERNAL
+    pci_scope: "Control"
+    impact: MEDIUM
+    note: "Used to prevent double-charges; must be persisted with TTL"
+
+# ============================================================
+# STRIDE Threat Catalogue — Payment Gateway
+# ============================================================
+threats:
+
+  # ──────────────────────────────────────────────────────────
+  # S — Spoofing
+  # ──────────────────────────────────────────────────────────
+
+  - id: T-PG-S-01
+    stride_category: Spoofing
+    asset: PA-06
+    pci_requirement: "Req 8"
+    title: "Forged JWT authorizes unauthorized payment charge"
+    description: >
+      An attacker presents a self-signed or expired JWT to bypass authentication
+      on POST /payment/charge, initiating an unauthorized transaction.
+    likelihood: MEDIUM
+    impact: CRITICAL
+    risk: HIGH
+    mitigations:
+      - control: "Verify JWT signature with RS256/ES256 against JWKS endpoint"
+        status: IMPLEMENTED
+        evidence: "src/core/auth.py — jose.jwt.decode() with ALGORITHMS whitelist"
+      - control: "Reject tokens with alg=none; token expiry ≤ 30 minutes for payment ops"
+        status: RECOMMENDED
+      - control: "Require MFA claim (amr=mfa) in JWT for charge operations > $50"
+        status: RECOMMENDED
+    cwe: "CWE-287"
+    owasp: "API2:2023"
+
+  - id: T-PG-S-02
+    stride_category: Spoofing
+    asset: PA-05
+    pci_requirement: "Req 8"
+    title: "Payment processor webhook spoofed — unauthorized refund triggered"
+    description: >
+      An attacker posts a forged payment processor webhook to /webhook/payment,
+      triggering a refund or status update without a real processor event.
+    likelihood: MEDIUM
+    impact: HIGH
+    risk: HIGH
+    mitigations:
+      - control: "HMAC-SHA256 verify X-Payment-Signature header before processing"
+        status: REQUIRED
+        evidence: "src/integrations/slack_approver.py pattern — apply same to payment webhook"
+      - control: "Replay protection: reject webhook events with timestamp > 5 minutes old"
+        status: RECOMMENDED
+      - control: "Allowlist processor IP ranges at firewall"
+        status: RECOMMENDED
+    cwe: "CWE-345"
+    owasp: "API5:2023"
+
+  - id: T-PG-S-03
+    stride_category: Spoofing
+    asset: PA-01
+    pci_requirement: "Req 6"
+    title: "Wildcard CORS enables cross-origin payment request forgery (CPRF)"
+    description: >
+      With allow_origins=['*'], an attacker-controlled page can issue authenticated
+      POST /payment/charge requests from a victim's browser session, initiating
+      unauthorized charges using the victim's stored payment method.
+    likelihood: HIGH
+    impact: CRITICAL
+    risk: CRITICAL
+    mitigations:
+      - control: "Replace allow_origins=['*'] with SAGE_PAYMENT_ALLOWED_ORIGINS allowlist"
+        status: REQUIRED
+        evidence: "src/interface/api.py CORSMiddleware — currently wildcarded"
+      - control: "Add SameSite=Strict to all session cookies"
+        status: REQUIRED
+      - control: "Add CSRF token requirement on payment mutation endpoints"
+        status: RECOMMENDED
+    cwe: "CWE-942"
+    owasp: "API8:2023"
+    pci_blocking: true
+
+  # ──────────────────────────────────────────────────────────
+  # T — Tampering
+  # ──────────────────────────────────────────────────────────
+
+  - id: T-PG-T-01
+    stride_category: Tampering
+    asset: PA-04
+    pci_requirement: "Req 10"
+    title: "Transaction record modified post-write in audit_log.db"
+    description: >
+      A compromised internal process issues UPDATE/DELETE against audit_log.db
+      to alter transaction amounts, erase refund records, or modify approval actors.
+    likelihood: LOW
+    impact: CRITICAL
+    risk: HIGH
+    mitigations:
+      - control: "INSERT-only schema on payment transaction table; no UPDATE/DELETE allowed"
+        status: IMPLEMENTED
+        evidence: "src/memory/audit_logger.py — INSERT-only pattern"
+      - control: "Periodic export to immutable ledger (AWS S3 WORM or blockchain anchor)"
+        status: RECOMMENDED
+      - control: "SQLite WAL with checksum; row-level HMAC for tamper detection"
+        status: RECOMMENDED
+    cwe: "CWE-693"
+    nist: "AU-9"
+
+  - id: T-PG-T-02
+    stride_category: Tampering
+    asset: PA-07
+    pci_requirement: "Req 6"
+    title: "Double-charge via missing idempotency enforcement"
+    description: >
+      Client retries a failed HTTP POST /payment/charge with the same parameters.
+      Without idempotency key enforcement, the payment processor receives two
+      separate charge requests and processes both, resulting in double-billing.
+    likelihood: MEDIUM
+    impact: HIGH
+    risk: HIGH
+    mitigations:
+      - control: "Require Idempotency-Key: <uuid4> header on all POST /payment/charge requests"
+        status: REQUIRED
+      - control: "Store processed idempotency keys in Redis with TTL=24h"
+        status: REQUIRED
+      - control: "Return HTTP 422 if Idempotency-Key header absent"
+        status: REQUIRED
+    cwe: "CWE-362"
+    owasp: "API6:2023"
+
+  - id: T-PG-T-03
+    stride_category: Tampering
+    asset: PA-01
+    pci_requirement: "Req 6"
+    title: "Missing security headers enable clickjacking on payment confirmation UI"
+    description: >
+      Without X-Frame-Options: DENY and Content-Security-Policy: frame-ancestors 'none',
+      an attacker can iframe the payment confirmation page, overlaying a decoy UI
+      to trick users into confirming malicious charges (UI redressing / clickjacking).
+    likelihood: MEDIUM
+    impact: HIGH
+    risk: HIGH
+    mitigations:
+      - control: "Add X-Frame-Options: DENY and CSP frame-ancestors 'none'"
+        status: REQUIRED
+      - control: "Add Strict-Transport-Security: max-age=63072000; preload"
+        status: REQUIRED
+      - control: "Add Content-Security-Policy: default-src 'self'; form-action 'self'"
+        status: REQUIRED
+    cwe: "CWE-1021"
+    owasp: "API8:2023"
+
+  # ──────────────────────────────────────────────────────────
+  # R — Repudiation
+  # ──────────────────────────────────────────────────────────
+
+  - id: T-PG-R-01
+    stride_category: Repudiation
+    asset: PA-04
+    pci_requirement: "Req 10"
+    title: "Charge event cannot be attributed to authenticated user identity"
+    description: >
+      POST /payment/charge executes but the audit log entry contains only
+      a trace_id without a cryptographically-bound user identity (sub/email).
+      The merchant cannot prove who initiated the charge for dispute resolution.
+    likelihood: MEDIUM
+    impact: HIGH
+    risk: HIGH
+    mitigations:
+      - control: "Include JWT sub (user_id) and email in every payment audit event"
+        status: REQUIRED
+        evidence: "src/memory/audit_logger.py actor field pattern — apply to PAYMENT_CHARGE"
+      - control: "Bind trace_id to JWT jti (JWT ID) for non-repudiation chain"
+        status: RECOMMENDED
+      - control: "Store IP address and user-agent in payment audit record"
+        status: RECOMMENDED
+    cwe: "CWE-778"
+    nist: "AU-10"
+    hipaa: "§164.312(b)"
+
+  - id: T-PG-R-02
+    stride_category: Repudiation
+    asset: PA-04
+    pci_requirement: "Req 10"
+    title: "Webhook approval events lack immutable timestamping"
+    description: >
+      Payment processor webhook callbacks update transaction status in the database,
+      but without a cryptographic timestamp (RFC 3161 TSA), disputed transactions
+      cannot prove when the status change occurred.
+    likelihood: LOW
+    impact: MEDIUM
+    risk: MEDIUM
+    mitigations:
+      - control: "Persist processor-provided event timestamps (not server-receive time)"
+        status: RECOMMENDED
+      - control: "Write webhook events to append-only audit log with UTC timestamp"
+        status: RECOMMENDED
+    cwe: "CWE-778"
+
+  # ──────────────────────────────────────────────────────────
+  # I — Information Disclosure
+  # ──────────────────────────────────────────────────────────
+
+  - id: T-PG-I-01
+    stride_category: Information Disclosure
+    asset: PA-01
+    pci_requirement: "Req 3"
+    title: "Raw PAN stored in audit_log.db without encryption"
+    description: >
+      A payment payload containing the full 16-digit PAN is written unencrypted
+      to audit_log.db input_context. Any process with filesystem access can
+      read PANs from the SQLite file, violating PCI DSS Req 3.4.
+    likelihood: MEDIUM
+    impact: CRITICAL
+    risk: CRITICAL
+    mitigations:
+      - control: "Tokenize PAN at API ingress; store payment_token not raw PAN"
+        status: REQUIRED
+      - control: "Apply AES-256 field-level encryption to any CHD column in audit table"
+        status: REQUIRED
+      - control: "Enable pii.enabled: true + custom PAN redaction pattern in pii_filter.py"
+        status: REQUIRED
+        evidence: "config/config.yaml pii.enabled: false — must be enabled"
+    cwe: "CWE-312"
+    pci_blocking: true
+
+  - id: T-PG-I-02
+    stride_category: Information Disclosure
+    asset: PA-02
+    pci_requirement: "Req 3"
+    title: "CVV persisted post-authorization in agent task context"
+    description: >
+      If an agent receives a payment task with a CVV field included, the full
+      task payload (including CVV) is stored in chroma_db vector store and
+      audit_log.db. PCI DSS Req 3.2.1 strictly prohibits any post-auth CVV storage.
+    likelihood: LOW
+    impact: CRITICAL
+    risk: CRITICAL
+    mitigations:
+      - control: "Scrub CVV/CVC from task payload before agent receives it"
+        status: REQUIRED
+      - control: "Add CVV to pii_filter.py blocked patterns list"
+        status: REQUIRED
+      - control: "Payment gateway must delete CVV from memory immediately after processor call"
+        status: REQUIRED
+    cwe: "CWE-312"
+    pci_blocking: true
+
+  - id: T-PG-I-03
+    stride_category: Information Disclosure
+    asset: PA-01
+    pci_requirement: "Req 4"
+    title: "PAN transmitted over HTTP (no TLS enforcement)"
+    description: >
+      Without HTTPSRedirectMiddleware, a deployment without a TLS-terminating
+      reverse proxy accepts plaintext HTTP. Any PAN transmitted in such a request
+      is exposed to network eavesdroppers.
+    likelihood: LOW
+    impact: CRITICAL
+    risk: HIGH
+    mitigations:
+      - control: "Add HTTPSRedirectMiddleware in api.py"
+        status: REQUIRED
+      - control: "Set HSTS max-age=63072000; includeSubDomains; preload"
+        status: REQUIRED
+      - control: "Configure nginx/caddy TLS termination with TLS 1.2+ minimum"
+        status: OPERATIONAL
+    cwe: "CWE-319"
+    hipaa: "§164.312(e)(1)"
+
+  - id: T-PG-I-04
+    stride_category: Information Disclosure
+    asset: PA-01
+    pci_requirement: "Req 3"
+    title: "PAN included verbatim in LLM prompt (SAGE agent task context)"
+    description: >
+      If a payment task description contains a raw PAN and pii.enabled: false,
+      the PAN is sent unredacted to an external LLM provider (Gemini CLI,
+      Claude Code CLI), violating PCI DSS scope containment and HIPAA.
+    likelihood: HIGH
+    impact: CRITICAL
+    risk: CRITICAL
+    mitigations:
+      - control: "Enable pii.enabled: true with PAN regex pattern (\\b4[0-9]{15}\\b etc)"
+        status: REQUIRED
+      - control: "Route payment workloads to on-premise Ollama provider only"
+        status: RECOMMENDED
+      - control: "Validate LLM output for PAN patterns before returning to client"
+        status: RECOMMENDED
+    cwe: "CWE-200"
+    hipaa: "§164.312(a)(2)(iv)"
+    pci_blocking: true
+
+  # ──────────────────────────────────────────────────────────
+  # D — Denial of Service
+  # ──────────────────────────────────────────────────────────
+
+  - id: T-PG-D-01
+    stride_category: Denial of Service
+    asset: PA-07
+    pci_requirement: "Req 6"
+    title: "Charge endpoint flooded — payment service unavailable"
+    description: >
+      An attacker floods POST /payment/charge with high request volume, exhausting
+      the LLM gateway queue and blocking legitimate payment operations.
+      PCI DSS Req 6.3.3 requires DoS protection on payment systems.
+    likelihood: MEDIUM
+    impact: HIGH
+    risk: HIGH
+    mitigations:
+      - control: "Rate limit: ≤ 10 charge req/min per IP; ≤ 3 failed auth per account"
+        status: REQUIRED
+      - control: "WAF with DDoS protection in front of payment API"
+        status: OPERATIONAL
+      - control: "Queue depth cap + back-pressure: HTTP 503 with Retry-After"
+        status: IMPLEMENTED
+        evidence: "src/core/queue_manager.py maxsize parameter"
+    cwe: "CWE-770"
+    owasp: "API4:2023"
+
+  - id: T-PG-D-02
+    stride_category: Denial of Service
+    asset: PA-05
+    pci_requirement: "Req 6"
+    title: "Card testing attack — automated PAN validation exhausts rate limits"
+    description: >
+      Attacker uses the payment endpoint as a card validator, submitting hundreds
+      of small charges with different PANs to test which are valid.
+      Each attempt consumes LLM quota and payment processor API calls.
+    likelihood: HIGH
+    impact: MEDIUM
+    risk: HIGH
+    mitigations:
+      - control: "Implement velocity check: ≤ 3 failed charges per user per hour"
+        status: REQUIRED
+      - control: "Add CAPTCHA or proof-of-work on charge endpoint after 1st failure"
+        status: RECOMMENDED
+      - control: "Alert on > 5 unique PANs from same IP in 10-minute window"
+        status: RECOMMENDED
+    cwe: "CWE-799"
+
+  # ──────────────────────────────────────────────────────────
+  # E — Elevation of Privilege
+  # ──────────────────────────────────────────────────────────
+
+  - id: T-PG-E-01
+    stride_category: Elevation of Privilege
+    asset: PA-06
+    pci_requirement: "Req 7"
+    title: "Viewer-role JWT accesses POST /payment/charge (RBAC bypass)"
+    description: >
+      Missing role-check on payment endpoints allows a viewer-role JWT to
+      initiate charges, bypassing the operator/admin RBAC requirement.
+    likelihood: MEDIUM
+    impact: CRITICAL
+    risk: HIGH
+    mitigations:
+      - control: "Add Depends(require_permission(Permission.PAYMENT_WRITE)) to charge handler"
+        status: REQUIRED
+      - control: "Integration test: viewer JWT returns 403 on POST /payment/charge"
+        status: REQUIRED
+      - control: "Separate payment RBAC roles from general agent roles"
+        status: RECOMMENDED
+    cwe: "CWE-269"
+    owasp: "API1:2023"
+
+  - id: T-PG-E-02
+    stride_category: Elevation of Privilege
+    asset: PA-01
+    pci_requirement: "Req 6"
+    title: "SQL/command injection in payment amount or transaction_id parameter"
+    description: >
+      An attacker sends a crafted amount or transaction_id parameter containing
+      SQL metacharacters or shell commands. If the API passes these to a database
+      query or subprocess without sanitization, full data access or RCE results.
+    likelihood: LOW
+    impact: CRITICAL
+    risk: HIGH
+    mitigations:
+      - control: "Validate amount as Decimal(10,2); regex allowlist for transaction_id"
+        status: REQUIRED
+      - control: "Use parameterized queries only; no string concatenation in SQL"
+        status: IMPLEMENTED
+        evidence: "src/memory/audit_logger.py — parameterized INSERT pattern"
+      - control: "Reject amount values outside [0.01, 999999.99] range"
+        status: RECOMMENDED
+    cwe: "CWE-89"
+    owasp: "API3:2023"
+
+# ============================================================
+# Residual Risk Register
+# ============================================================
+residual_risks:
+  - threat_id: T-PG-I-01
+    residual_risk: CRITICAL
+    accepted_by: "OPEN — awaiting fix"
+    rationale: >
+      Raw PAN in audit_log.db is a PCI DSS Req 3 violation. No interim mitigation
+      is acceptable. Must be remediated before any cardholder data is processed.
+    review_date: "2026-04-07"
+
+  - threat_id: T-PG-S-03
+    residual_risk: CRITICAL
+    accepted_by: "OPEN — awaiting fix"
+    rationale: >
+      Wildcard CORS on a payment API enables CPRF. Interim: restrict API to
+      internal network only until CORS allowlist is deployed.
+    review_date: "2026-04-07"
+
+  - threat_id: T-PG-I-04
+    residual_risk: CRITICAL
+    accepted_by: "OPEN — awaiting fix"
+    rationale: >
+      PAN in LLM prompt is a PCI DSS scope explosion. Enable pii.enabled: true
+      immediately. Use Ollama only for any task that may receive payment context.
+    review_date: "2026-04-07"
+
+  - threat_id: T-PG-T-02
+    residual_risk: HIGH
+    accepted_by: "Engineering Lead"
+    rationale: >
+      Double-charge risk is mitigated at the payment processor layer (Stripe
+      idempotency) for now. Application-layer idempotency is a P1 backlog item.
+    review_date: "2026-04-30"
+
+# ============================================================
+# PCI DSS SAQ-D Controls Summary
+# ============================================================
+pci_dss_saq_summary:
+  saq_type: "SAQ-D (Service Provider)"
+  assessed_date: "2026-03-28"
+  controls:
+    - requirement: "Req 3 — Protect Stored Account Data"
+      status: FAIL
+      blockers: [T-PG-I-01, T-PG-I-02]
+    - requirement: "Req 4 — Protect Data in Transit"
+      status: PARTIAL
+      blockers: [T-PG-I-03]
+      mitigated_by: "TLS at reverse proxy (nginx)"
+    - requirement: "Req 6 — Develop Secure Systems"
+      status: PARTIAL
+      blockers: [T-PG-S-03, T-PG-T-03, T-PG-T-02]
+    - requirement: "Req 7 — Restrict Access"
+      status: PARTIAL
+      blockers: [T-PG-E-01]
+    - requirement: "Req 8 — Authenticate Access"
+      status: PARTIAL
+      note: "JWT auth implemented; MFA for high-value ops not yet enforced"
+    - requirement: "Req 10 — Log and Monitor"
+      status: PARTIAL
+      blockers: [T-PG-R-01]
+    - requirement: "Req 11 — Test Security"
+      status: PARTIAL
+      note: "Static scanner and pentest plan in place; CI integration pending"
+    - requirement: "Req 12 — Security Policy"
+      status: PASS
+      note: "SBOM, threat model, and residual risk register maintained"
+
+# ============================================================
+# Compliance Mapping
+# ============================================================
+compliance_coverage:
+  PCI_DSS_v4:
+    - requirement: "3.2.1 — SAD not retained post-authorization"
+      threats: [T-PG-I-02]
+    - requirement: "3.4.1 — PAN rendered unreadable"
+      threats: [T-PG-I-01]
+    - requirement: "3.5.1 — Encryption for stored PAN"
+      threats: [T-PG-I-01]
+    - requirement: "4.2.1 — Strong cryptography in transit"
+      threats: [T-PG-I-03]
+    - requirement: "6.3.3 — Injection protection"
+      threats: [T-PG-E-02]
+    - requirement: "6.4.1 — Security headers"
+      threats: [T-PG-T-03]
+    - requirement: "7.2.1 — Access control"
+      threats: [T-PG-E-01]
+    - requirement: "8.2.1 — Strong authentication"
+      threats: [T-PG-S-01]
+    - requirement: "10.2.1 — Audit events"
+      threats: [T-PG-R-01]
+  HIPAA:
+    - clause: "§164.312(a)(2)(iv)"
+      threats: [T-PG-I-01, T-PG-I-04]
+    - clause: "§164.312(b)"
+      threats: [T-PG-R-01]
+    - clause: "§164.312(e)(1)"
+      threats: [T-PG-I-03, T-PG-S-03]
+  NIST_SP_800_53:
+    - control: "SC-8  — Transmission Confidentiality"
+      threats: [T-PG-I-03]
+    - control: "SC-28 — Protection at Rest"
+      threats: [T-PG-I-01]
+    - control: "AU-9  — Audit Record Protection"
+      threats: [T-PG-T-01]
+    - control: "AU-10 — Non-repudiation"
+      threats: [T-PG-R-01]
+    - control: "AC-3  — Access Enforcement"
+      threats: [T-PG-E-01]
+    - control: "SI-10 — Input Validation"
+      threats: [T-PG-E-02]

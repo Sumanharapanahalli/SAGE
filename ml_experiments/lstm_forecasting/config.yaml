@@ -1,0 +1,34 @@
+# Experiment configuration
+data:
+  n_samples: 2000          # synthetic series length
+  noise_std: 0.5
+  train_ratio: 0.80        # temporal split — no shuffling
+
+windows:
+  lookback: 30             # encoder input length (days)
+  horizon: 7               # decoder output length (days)
+
+model:
+  hidden_size: 128
+  num_layers: 2
+  dropout: 0.2
+  initial_teacher_forcing: 1.0   # start at 100% teacher forcing
+  final_teacher_forcing: 0.0     # anneal to 0% by end of training
+
+training:
+  epochs: 60
+  batch_size: 64
+  learning_rate: 0.001
+  weight_decay: 1.0e-5
+  patience: 10             # early stopping patience
+  seed: 42
+
+arima:
+  max_p: 5
+  max_q: 5
+  max_d: 2
+  information_criterion: "aic"
+
+mlflow:
+  experiment_name: "lstm_ts_forecasting"
+  tracking_uri: "mlruns"

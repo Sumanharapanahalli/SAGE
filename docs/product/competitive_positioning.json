@@ -1,0 +1,246 @@
+{
+  "files": [
+    {
+      "path": "docs/product/competitive_positioning.json",
+      "content": "This file — see root object for full artifact."
+    }
+  ],
+  "framework_used": "2x2 Positioning Matrix + Value Proposition Canvas",
+  "sections": [
+    "positioning_matrix",
+    "competitor_profiles",
+    "whitespace_analysis",
+    "strategic_implications"
+  ],
+  "action_items": [
+    "Publish SAGE's regulated-industry compliance story as a differentiation pillar in all external messaging",
+    "Build a dedicated 'Compliance Mode' landing page targeting ISO 13485 / IEC 62304 / DO-178C buyers",
+    "Create a comparison teardown (SAGE vs CrewAI vs AutoGen) focused on audit trail depth and HITL gates",
+    "Partner with 1-2 regulatory consultancies (medtech/avionics) to co-market the whitespace position",
+    "Add a 'Compliance Pack' to the skill marketplace (public visibility) as a proof point"
+  ],
+
+  "positioning_matrix": {
+    "axis_x": {
+      "label": "Human Control Level",
+      "left_pole": "Fully Autonomous (agents act without approval)",
+      "right_pole": "Human-in-the-Loop (agents propose, humans decide)",
+      "rationale": "Core buying criterion in regulated industries. Distinguishes tools safe for compliance-gated workflows from tools that assume full autonomy."
+    },
+    "axis_y": {
+      "label": "Domain Specialization",
+      "bottom_pole": "General Purpose (any text, any domain)",
+      "top_pole": "Domain-Specialized (firmware, PCB, medtech, avionics — purpose-built runners)",
+      "rationale": "Depth of domain tooling (compilers, DRC, SPICE, Gerbers) determines whether a framework can actually execute in vertical industries vs just orchestrate LLM calls."
+    },
+    "quadrants": {
+      "top_left":    "Domain-Specialized + Autonomous — HIGH RISK ZONE (regulated industries cannot operate here)",
+      "top_right":   "Domain-Specialized + HITL — SAGE's WHITESPACE (compliance-safe vertical AI)",
+      "bottom_left": "General Purpose + Autonomous — COMMODITY ZONE (LangGraph, AutoGen, CrewAI)",
+      "bottom_right": "General Purpose + HITL — ENTERPRISE WORKFLOW ZONE (Vertex AI, Flowise)"
+    },
+    "competitor_placement": {
+      "LangGraph":             {"x": 0.15, "y": 0.20, "quadrant": "bottom_left"},
+      "AutoGen":               {"x": 0.20, "y": 0.25, "quadrant": "bottom_left"},
+      "CrewAI":                {"x": 0.25, "y": 0.40, "quadrant": "bottom_left"},
+      "Vertex_AI_Agent_Builder": {"x": 0.60, "y": 0.20, "quadrant": "bottom_right"},
+      "Flowise":               {"x": 0.55, "y": 0.15, "quadrant": "bottom_right"},
+      "SAGE":                  {"x": 0.90, "y": 0.85, "quadrant": "top_right", "note": "WHITESPACE OWNER"}
+    }
+  },
+
+  "competitor_profiles": [
+    {
+      "name": "LangGraph",
+      "vendor": "LangChain Inc.",
+      "value_proposition": "Stateful, cyclical multi-agent orchestration for developers building complex LLM workflows. Graph-based state machine with first-class streaming and checkpointing.",
+      "pricing": {
+        "model": "Open-source (MIT). LangSmith observability platform: Free tier + $39/mo/seat Pro.",
+        "enterprise": "LangSmith Enterprise — custom pricing, SSO, dedicated support."
+      },
+      "key_differentiators": [
+        "Most mature LLM orchestration graph primitives in the OSS ecosystem",
+        "First-class interrupt/resume for human-in-the-loop (but opt-in, not mandatory)",
+        "Deep LangChain ecosystem integration (tools, retrievers, memory)",
+        "Streaming and real-time agent state inspection via LangSmith"
+      ],
+      "weaknesses": [
+        "No domain-specific execution runners (firmware, PCB, ML pipelines)",
+        "HITL is optional and unenforced — not suitable for regulated compliance",
+        "No audit log as compliance record — observability is for debugging, not regulation",
+        "Steep learning curve; graph wiring is verbose for non-developers"
+      ],
+      "target_customer": "Python developers building custom LLM-powered applications",
+      "matrix_position": "bottom_left — General Purpose + Autonomous"
+    },
+    {
+      "name": "AutoGen",
+      "vendor": "Microsoft Research",
+      "value_proposition": "Conversational multi-agent framework where agents collaborate through structured dialogue. Strong at code generation with sandboxed Docker execution.",
+      "pricing": {
+        "model": "Open-source (MIT / CC-BY). Free to self-host.",
+        "enterprise": "No direct enterprise offering; consumed via Azure AI Studio (pay-per-token)."
+      },
+      "key_differentiators": [
+        "Conversational agent topology — agents negotiate task completion through dialogue",
+        "Built-in Docker sandboxed code execution",
+        "Strong Microsoft/Azure ecosystem integration",
+        "AutoGen Studio: low-code visual agent builder (beta)"
+      ],
+      "weaknesses": [
+        "No mandatory HITL — approval gates are developer-implemented, not enforced",
+        "No domain-specific runners (firmware toolchains, EDA, SPICE simulation)",
+        "No audit log as compliance record",
+        "Agent conversations can become non-deterministic and hard to audit in regulated contexts",
+        "Primarily code-generation focused; weak for non-SWE domains"
+      ],
+      "target_customer": "Research teams and enterprises building code-centric multi-agent systems on Azure",
+      "matrix_position": "bottom_left — General Purpose + Autonomous"
+    },
+    {
+      "name": "CrewAI",
+      "vendor": "CrewAI Inc.",
+      "value_proposition": "Role-based multi-agent crews with defined agents, tasks, and tools. Simple API for assembling autonomous agent teams without deep LLM framework knowledge.",
+      "pricing": {
+        "model": "Open-source core (MIT). CrewAI+ cloud platform: Free tier (limited runs) + $99/mo Pro.",
+        "enterprise": "Enterprise plan — custom pricing, SLA, on-prem deployment."
+      },
+      "key_differentiators": [
+        "Simplest API for role-based agent teams — fastest time-to-demo",
+        "Large community and growing skill/tool marketplace",
+        "CrewAI+ managed cloud reduces infra burden",
+        "Strong ecosystem of pre-built agent templates"
+      ],
+      "weaknesses": [
+        "Fully autonomous by design — no mandatory HITL approval gates",
+        "No domain-specific execution environment (just LLM + generic tools)",
+        "No immutable audit log or compliance record",
+        "Skill depth is shallow vs domain-specialized runners",
+        "Template-driven approach limits adaptability for complex regulated workflows"
+      ],
+      "target_customer": "Non-technical teams and startups wanting quick multi-agent automation without coding depth",
+      "matrix_position": "bottom_left, trending toward bottom_right — General Purpose + Mostly Autonomous"
+    },
+    {
+      "name": "Vertex AI Agent Builder",
+      "vendor": "Google Cloud",
+      "value_proposition": "Managed enterprise AI agent platform on Google Cloud. Drag-and-drop agent construction with Gemini models, built-in grounding, and enterprise IAM.",
+      "pricing": {
+        "model": "Pay-per-use (per 1K chars input/output). No free tier for production.",
+        "enterprise": "Enterprise Agreements via Google Cloud sales — committed use discounts available."
+      },
+      "key_differentiators": [
+        "Fully managed — no infra to run or scale",
+        "Native Google Search and Vertex AI Search grounding",
+        "Enterprise-grade IAM, VPC-SC, CMEK for regulated data",
+        "Multi-modal agents (text, image, code) via Gemini"
+      ],
+      "weaknesses": [
+        "Vendor lock-in to Google Cloud; high switching cost",
+        "No domain-specific runners for firmware, PCB, simulation",
+        "HITL is available but not enforced as a compliance requirement",
+        "No open-source audit log — compliance records tied to GCP logging (external dependency)",
+        "High cost at scale; not accessible for startups or low-budget teams"
+      ],
+      "target_customer": "Enterprises already on GCP wanting managed AI agents without MLOps overhead",
+      "matrix_position": "bottom_right — General Purpose + HITL available (not enforced)"
+    },
+    {
+      "name": "Flowise",
+      "vendor": "FlowiseAI (open-source, VC-backed)",
+      "value_proposition": "Visual drag-and-drop builder for LLM flows and agent pipelines. Low-code, self-hostable, with 100+ pre-built integrations.",
+      "pricing": {
+        "model": "Open-source (Apache 2.0). Flowise Cloud: Free tier + $35/mo Starter + $99/mo Pro.",
+        "enterprise": "Enterprise self-hosted license — custom pricing."
+      },
+      "key_differentiators": [
+        "Most accessible entry point — non-developers can build agents visually",
+        "100+ pre-built nodes (LLMs, vector stores, tools, APIs)",
+        "Self-hostable with Docker in minutes",
+        "Strong community adoption; fastest-growing visual LLM builder"
+      ],
+      "weaknesses": [
+        "Visual flows break down for complex logic; not suitable for regulated multi-step agent loops",
+        "No mandatory HITL enforcement — approval is a manual node, not a system guarantee",
+        "No domain-specific runners; purely orchestration-layer tooling",
+        "No compliance audit log — audit trail is a feature gap",
+        "Scalability limits for enterprise production workloads"
+      ],
+      "target_customer": "Citizen developers, SMBs, and prototypers wanting visual LLM app construction",
+      "matrix_position": "bottom_right — General Purpose + Semi-HITL (visual, not enforced)"
+    }
+  ],
+
+  "whitespace_analysis": {
+    "whitespace_quadrant": "top_right — Domain-Specialized + Human-in-the-Loop (MANDATORY)",
+    "description": "No competitor occupies the intersection of (a) deep domain execution runners (firmware cross-compilation, PCB DRC/ERC, SPICE simulation, ML pipelines) with (b) mandatory, auditable, compliance-grade human approval gates. Every competitor either trades off domain depth for generality, or trades off HITL enforcement for autonomy speed.",
+    "whitespace_label": "Compliance-Safe Vertical AI Agents",
+    "opportunity_size": {
+      "target_segments": [
+        "Medical device manufacturers under ISO 13485 / IEC 62304 / FDA 21 CFR Part 11",
+        "Avionics software teams under DO-178C / DO-254",
+        "Automotive embedded teams under ISO 26262 / AUTOSAR",
+        "Railway systems engineers under EN 50128",
+        "Defense contractors under MIL-STD-882 / CMMC"
+      ],
+      "pain_point": "Regulated teams cannot use autonomous AI agents without risking audit failure. Existing frameworks offer HITL as an opt-in feature, not a system guarantee. SAGE makes HITL structurally mandatory — agents cannot bypass the approval gate, the audit log is immutable, and every decision is traced end-to-end.",
+      "urgency_driver": "Regulatory bodies (FDA, EASA, TÜV) are beginning to ask how AI was used in design and verification processes. Teams that cannot produce an AI audit trail are increasingly at risk of extended review cycles or rejection."
+    },
+    "sage_unique_claims": [
+      "HITL is architecturally enforced, not optional — agent proposals cannot execute without human sign-off",
+      "Immutable per-solution audit log (SQLite) is the compliance record, not a debugging tool",
+      "Domain runners (OpenFW, OpenEDA, OpenSim, OpenML) speak the toolchain language of regulated industries — not just LLM calls",
+      "Compounding intelligence via vector memory means the system gets better without retraining — zero additional compliance risk from model updates",
+      "YAML-first declarative manifest makes agent configurations version-controlled, reviewable, and auditable by non-developers (including regulators)",
+      "Open-source core + private solution isolation: regulated IP never touches a third-party server"
+    ]
+  },
+
+  "strategic_implications": [
+    {
+      "priority": 1,
+      "implication": "Own the 'Compliance-Safe AI' category before a well-funded competitor spots the whitespace",
+      "actions": [
+        "Publish a SAGE Compliance Whitepaper covering ISO 13485, IEC 62304, DO-178C, ISO 26262 alignment",
+        "Build a 'Compliance Mode' preset in project.yaml that enforces stricter HITL gates and extends audit log retention",
+        "Get SAGE cited in at least one published regulated-industry case study within 6 months"
+      ]
+    },
+    {
+      "priority": 2,
+      "implication": "LangGraph is the most technically capable competitor and could extend into regulated verticals",
+      "actions": [
+        "Monitor LangGraph's HITL roadmap — if they add mandatory approval enforcement, SAGE's moat narrows",
+        "Differentiate on domain runners (firmware, PCB, simulation) which LangGraph has no path to build",
+        "Offer a LangGraph migration guide: teams already using LangGraph can wrap their workflows in SAGE's HITL + audit layer"
+      ]
+    },
+    {
+      "priority": 3,
+      "implication": "CrewAI is fastest-growing in the non-technical buyer segment and will expand upmarket",
+      "actions": [
+        "SAGE should not compete on simplicity against CrewAI — compete on depth, compliance, and compounding intelligence",
+        "Publish a clear 'When CrewAI is wrong for you' guide targeting regulated-industry engineering leads",
+        "Position Agent Gym + Glicko-2 ratings as enterprise-grade proof of agent quality improvement — a capability CrewAI has no equivalent for"
+      ]
+    },
+    {
+      "priority": 4,
+      "implication": "Vertex AI is the enterprise default for GCP shops — SAGE must be the on-prem / air-gapped alternative",
+      "actions": [
+        "Emphasize zero-cloud-dependency: SAGE runs fully offline with Ollama — critical for defense and aerospace",
+        "Build a one-page TCO comparison: Vertex AI token costs vs SAGE self-hosted with local LLM",
+        "Target GCP shops already paying Vertex AI fees with a 'bring your own infra' SAGE migration path"
+      ]
+    },
+    {
+      "priority": 5,
+      "implication": "The skill marketplace is an untapped moat — private skills = proprietary IP, not just configuration",
+      "actions": [
+        "Launch a 'Certified Skills' program: third-party vendors publish regulated-domain skills (e.g., a TÜV-verified safety analysis skill)",
+        "Price private skill hosting as a future SaaS revenue line",
+        "Recruit 3 domain experts (one medtech, one avionics, one automotive) to contribute public skills as proof of depth"
+      ]
+    }
+  ]
+}

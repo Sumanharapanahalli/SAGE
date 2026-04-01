@@ -1,0 +1,143 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Predetermined Change Control Plan (PCCP)
+# FDA Guidance: "Marketing Submission Recommendations for a PCCP for AI/ML-Based
+#                Software as a Medical Device" (April 2023)
+#
+# SaMD: AI Symptom Checker v1.0.0
+# 510(k) Number: PENDING
+# ═══════════════════════════════════════════════════════════════════════════════
+
+document:
+  title: "Predetermined Change Control Plan — AI Symptom Checker"
+  document_id: "PCCP-001"
+  version: "1.0.0"
+  fda_guidance_reference: "FDA PCCP Guidance April 2023"
+  samd_version: "1.0.0"
+
+# ── Part 1: Description of Planned Modifications ─────────────────────────────
+planned_modifications:
+  - id: "MOD-001"
+    type: "Performance Improvement"
+    description: >
+      Re-training on expanded MIMIC-IV data releases or equivalent IRB-approved
+      datasets to maintain or improve sensitivity/specificity as the underlying
+      patient population shifts.
+    trigger: >
+      Macro AUROC drops below 0.83 on production monitoring cohort
+      (rolling 90-day window, n ≥ 1000 encounters).
+    scope: "Model weights only — architecture, features, and preprocessing unchanged"
+    requires_new_510k: false
+
+  - id: "MOD-002"
+    type: "Feature Addition"
+    description: >
+      Adding validated laboratory triage values (lactate, troponin) as input
+      features once a prospective validation study is completed.
+    trigger: "Prospective study reaches pre-specified n and demonstrates AUC improvement ≥ 0.02"
+    scope: "Feature set expansion — new ColumnTransformer columns added"
+    requires_new_510k: true
+    notes: "New 510(k) required because intended use expands to incorporate lab data."
+
+  - id: "MOD-003"
+    type: "Bias Remediation"
+    description: >
+      Post-hoc threshold calibration per demographic group if any group's
+      sensitivity for 'critical' class falls below 0.82 in production monitoring.
+    trigger: "Per-group critical sensitivity < 0.82 sustained over 60 days"
+    scope: "Decision thresholds only — no model re-training"
+    requires_new_510k: false
+
+  - id: "MOD-004"
+    type: "Model Architecture Update"
+    description: >
+      Replacing XGBoost with a transformer-based tabular model (e.g., TabNet)
+      if architectural comparison study demonstrates ≥ 0.03 improvement in
+      macro F1 with equivalent or improved fairness metrics.
+    trigger: "Formal architectural comparison study with pre-registered protocol"
+    scope: "Full model replacement — architecture, training procedure, interpretability"
+    requires_new_510k: true
+
+# ── Part 2: Modification Protocol ────────────────────────────────────────────
+modification_protocol:
+  pre_change_requirements:
+    - "Statistical justification for the change (power analysis)"
+    - "IRB approval covering the new data (if data source changes)"
+    - "Pre-specified performance thresholds for the new model"
+    - "Bias analysis protocol pre-registered before training begins"
+
+  testing_requirements:
+    - "Held-out test set: ≥ 500 samples with ≥ 50 per class"
+    - "Demographic parity difference ≤ 0.05 for all protected attributes"
+    - "Equalized odds difference ≤ 0.10 for all protected attributes"
+    - "Critical class sensitivity ≥ 0.85"
+    - "Macro AUROC ≥ 0.85"
+    - "Cohen's Kappa ≥ 0.70"
+    - "Brier score ≤ 0.20"
+
+  documentation_requirements:
+    - "Updated SVR (System Validation Report)"
+    - "Updated bias analysis report"
+    - "IEC 62304 change impact assessment"
+    - "MLflow run comparison: old run vs new run"
+    - "Clinical subject matter expert sign-off"
+
+  fda_notification:
+    - type: "Annual Summary Report"
+      triggers: ["MOD-001", "MOD-003"]
+      description: "Changes not requiring new 510(k) reported annually per PCCP"
+    - type: "New 510(k) Submission"
+      triggers: ["MOD-002", "MOD-004"]
+      description: "Changes expanding intended use or replacing core architecture"
+
+# ── Part 3: Transparency and Accountability ───────────────────────────────────
+transparency:
+  labeling_updates:
+    - "Algorithm version and training data date published in IFU (Instructions for Use)"
+    - "Known limitations section updated after each modification"
+    - "Performance summary table updated (accuracy, AUROC, sensitivity by class)"
+  clinician_notification:
+    - "In-product banner when model version changes"
+    - "Release notes emailed to clinical administrators"
+    - "30-day notice before any change that alters sensitivity/specificity"
+  audit_trail:
+    - "MLflow experiment tracking: all runs versioned and immutable"
+    - "Git tag for every released model version"
+    - "IEC 62304 change log maintained in CHANGELOG.md"
+
+# ── Part 4: Performance Monitoring Plan ──────────────────────────────────────
+monitoring:
+  cadence: "Monthly"
+  metrics_tracked:
+    - "Rolling 90-day macro AUROC vs baseline (0.85)"
+    - "Per-class sensitivity: critical, urgent, non-urgent"
+    - "Demographic parity difference per protected attribute"
+    - "Input feature distribution shift (PSI — Population Stability Index)"
+    - "Label distribution shift (concept drift detection via ADWIN)"
+  alert_thresholds:
+    macro_auroc_floor: 0.83
+    critical_sensitivity_floor: 0.82
+    demographic_parity_diff_ceiling: 0.07  # yellow alert; 0.05 = red
+    psi_warning: 0.10
+    psi_alert: 0.25
+  monitoring_dataset:
+    description: "Retrospective production encounters, de-identified, IRB-covered"
+    minimum_n: 1000
+    demographic_stratification: true
+
+# ── Part 5: Data Management ───────────────────────────────────────────────────
+data_management:
+  training_data_requirements:
+    - "IRB approval with unexpired expiry date"
+    - "Signed Data Use Agreement (DUA)"
+    - "HIPAA Safe Harbor de-identification documented"
+    - "Demographic coverage report (all age/sex/race groups ≥ 2 % of dataset)"
+    - "Data provenance hash (SHA-256 of source file)"
+  prohibited_sources:
+    - "Synthetic datasets (GANs, statistical generators)"
+    - "Exam QA corpora (e.g., USMLE question banks)"
+    - "Web-scraped clinical text without IRB approval"
+    - "Data from minors without specific IRB authorization"
+  retention:
+    training_artifacts: "10 years post-last-use (FDA MDR / 21 CFR 820.180)"
+    audit_logs: "10 years"
+    validation_reports: "10 years"

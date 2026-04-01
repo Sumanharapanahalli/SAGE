@@ -1,0 +1,18 @@
+# Boston Housing — Linear Regression via Gradient Descent
+# Python >= 3.10
+
+# Numerical core (model has zero sklearn dependency; numpy only)
+numpy==1.26.4
+
+# Data loading & Boston Housing dataset
+scikit-learn==1.4.2
+
+# Data manipulation / inspection
+pandas==2.2.2
+
+# Learning-curve plots (optional — train.py degrades gracefully without it)
+matplotlib==3.9.0
+
+# ---- stratified_kfold.py (no additional deps — numpy + scikit-learn sufficient) ----
+# numpy==1.26.4   (already pinned above)
+# scikit-learn==1.4.2  (already pinned above)

@@ -2,6 +2,7 @@
  * SAGE Solutions Tree View
  * =========================
  * Lists available solutions and allows switching.
+ * Data: GET /config/projects → { projects: [{id, name, domain, ...}], active: "..." }
  */
 
 import * as vscode from "vscode";
@@ -32,12 +33,17 @@ export class SolutionsProvider
         return [new SolutionItem("No solutions found", false)];
       }
 
-      // Get current solution from health
+      // Get current active solution
       let current = "";
       try {
-        const health = await this.api.getStatus();
-        current = health.project || "";
-      } catch {}
+        current = await this.api.getActiveSolution();
+      } catch {
+        // Fall back to health endpoint
+        try {
+          const health = await this.api.getStatus();
+          current = this.api.getProjectName(health);
+        } catch {}
+      }
 
       return solutions.map((s) => new SolutionItem(s, s === current));
     } catch {
@@ -53,9 +59,15 @@ class SolutionItem extends vscode.TreeItem {
       isActive ? "folder-opened" : "folder"
     );
     this.description = isActive ? "(active)" : "";
-    this.tooltip = isActive ? `${name} — currently active` : `Switch to ${name}`;
+    this.tooltip = isActive
+      ? `${name} — currently active`
+      : `Switch to ${name}`;
 
-    if (!isActive && name !== "Cannot reach backend" && name !== "No solutions found") {
+    if (
+      !isActive &&
+      name !== "Cannot reach backend" &&
+      name !== "No solutions found"
+    ) {
       this.command = {
         command: "sage.switchSolution",
         title: "Switch Solution",

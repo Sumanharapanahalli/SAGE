@@ -1,0 +1,375 @@
+{
+  "document_metadata": {
+    "title": "PCI DSS v4.0 Self-Assessment Questionnaire — SAQ-D (Service Provider)",
+    "scope": "SAGE Framework Payment Gateway API",
+    "assessed_date": "2026-03-28",
+    "assessor_role": "Security Analyst (Internal)",
+    "assessment_type": "Automated static analysis + manual code review",
+    "pci_dss_version": "4.0",
+    "saq_type": "SAQ-D",
+    "overall_compliance_status": "NON-COMPLIANT",
+    "blocking_findings": 5,
+    "remediation_required_before_processing": true,
+    "note": "This SAQ is produced by automated scanner + threat model analysis. A QSA review is required before formal attestation."
+  },
+
+  "requirements": [
+
+    {
+      "req_id": "Req-1",
+      "title": "Install and Maintain Network Security Controls",
+      "controls": [
+        {
+          "control_id": "1.3.1",
+          "description": "Inbound traffic to CDE restricted to necessary communications",
+          "status": "PARTIAL",
+          "evidence": "FastAPI accepts connections on :8000; no explicit ingress firewall rules verified in codebase",
+          "remediation": "Configure reverse proxy (nginx) to allowlist payment endpoint IPs; block all non-HTTPS traffic at network perimeter",
+          "finding_refs": []
+        },
+        {
+          "control_id": "1.3.2",
+          "description": "Outbound traffic from CDE restricted to necessary communications",
+          "status": "PARTIAL",
+          "evidence": "LLM gateway makes outbound HTTPS calls to Gemini/Claude — payment data must not traverse this path",
+          "remediation": "Apply PAN scrubbing before any LLM call; restrict payment agent tasks to on-premise Ollama only",
+          "finding_refs": ["T-PG-I-04"]
+        }
+      ]
+    },
+
+    {
+      "req_id": "Req-2",
+      "title": "Apply Secure Configurations to All System Components",
+      "controls": [
+        {
+          "control_id": "2.2.1",
+          "description": "Configuration standards developed for all system components",
+          "status": "PARTIAL",
+          "evidence": "config/config.yaml exists; payment-specific security config (auth, pii, encryption) not enforced as production defaults",
+          "remediation": "Add SAGE_ENV=production guard that fails startup if auth.enabled=false or pii.enabled=false",
+          "finding_refs": ["T-S-04", "T-I-06"]
+        },
+        {
+          "control_id": "2.2.7",
+          "description": "All non-console admin access encrypted with strong cryptography",
+          "status": "PARTIAL",
+          "evidence": "JWT auth implemented in src/core/auth.py; TLS depends on reverse proxy configuration",
+          "remediation": "Enforce HTTPS redirect in application layer; add HSTS header",
+          "finding_refs": ["TLS-002"]
+        }
+      ]
+    },
+
+    {
+      "req_id": "Req-3",
+      "title": "Protect Stored Account Data",
+      "controls": [
+        {
+          "control_id": "3.2.1",
+          "description": "SAD (CVV/CVC, full magnetic stripe) not retained post-authorization",
+          "status": "FAIL",
+          "severity": "CRITICAL",
+          "evidence": "No CVV scrubbing or deletion confirmation found in payment processing path. pii.enabled: false allows CVV to persist in audit_log.db",
+          "remediation": "Add CVV to pii_filter blocked patterns. Confirm CVV deleted from memory after processor response. Add automated test: assert no CVV in audit log after charge.",
+          "finding_refs": ["PAN-002", "T-PG-I-02"],
+          "pci_blocking": true
+        },
+        {
+          "control_id": "3.3.1",
+          "description": "SAD not retained after completion of authorization",
+          "status": "FAIL",
+          "severity": "CRITICAL",
+          "evidence": "Full payment payloads stored in audit_log.db input_context without PAN masking or encryption",
+          "remediation": "Tokenize PAN at API ingress (TOKEN-001). Enable pii.enabled: true with PAN patterns.",
+          "finding_refs": ["PAN-001", "T-PG-I-01"],
+          "pci_blocking": true
+        },
+        {
+          "control_id": "3.4.1",
+          "description": "PAN rendered unreadable anywhere it is stored",
+          "status": "FAIL",
+          "severity": "CRITICAL",
+          "evidence": "SQLite audit_log.db has no field-level encryption; chroma_db vector store has no CHD encryption",
+          "remediation": "Implement Fernet AES-256 field encryption on CHD columns. Enable encryption.at_rest: true in config.yaml.",
+          "finding_refs": ["ENC-001", "T-PG-I-01"],
+          "pci_blocking": true
+        },
+        {
+          "control_id": "3.5.1",
+          "description": "Primary Account Number secured with strong cryptography",
+          "status": "FAIL",
+          "severity": "CRITICAL",
+          "evidence": "No encryption at application layer; filesystem-level LUKS not confirmed",
+          "remediation": "Use AES-256 with keys managed via KMS (AWS KMS or HashiCorp Vault). Rotate keys annually minimum.",
+          "finding_refs": ["ENC-001"],
+          "pci_blocking": true
+        }
+      ]
+    },
+
+    {
+      "req_id": "Req-4",
+      "title": "Protect Cardholder Data with Strong Cryptography During Transmission",
+      "controls": [
+        {
+          "control_id": "4.2.1",
+          "description": "Strong cryptography used to safeguard PAN during transmission",
+          "status": "PARTIAL",
+          "evidence": "Reverse proxy (nginx) provides TLS 1.2+. HTTPSRedirectMiddleware not present in api.py for direct deployments.",
+          "remediation": "Add HTTPSRedirectMiddleware. Set HSTS max-age=63072000; includeSubDomains; preload. Document minimum TLS version requirement.",
+          "finding_refs": ["TLS-002", "T-PG-I-03"]
+        },
+        {
+          "control_id": "4.2.2",
+          "description": "Inventory of trusted keys and certificates maintained",
+          "status": "NOT_ASSESSED",
+          "evidence": "Certificate management outside scanner scope",
+          "remediation": "Document TLS certificate inventory; automate rotation via Let's Encrypt or AWS ACM"
+        }
+      ]
+    },
+
+    {
+      "req_id": "Req-5",
+      "title": "Protect All Systems and Networks from Malicious Software",
+      "controls": [
+        {
+          "control_id": "5.3.2",
+          "description": "Anti-malware mechanisms perform periodic scans",
+          "status": "NOT_ASSESSED",
+          "evidence": "Host-level antivirus outside scanner scope",
+          "remediation": "Deploy ClamAV or commercial AV on payment API hosts; schedule daily scans"
+        }
+      ]
+    },
+
+    {
+      "req_id": "Req-6",
+      "title": "Develop and Maintain Secure Systems and Software",
+      "controls": [
+        {
+          "control_id": "6.2.4",
+          "description": "Software engineering practices prevent introduction of vulnerabilities",
+          "status": "PARTIAL",
+          "evidence": "payload_validator.py and parameterized queries reduce injection risk. Static scanner in security_audit/ directory.",
+          "remediation": "Integrate payment_security_scanner.py into CI/CD pipeline. Add Bandit and Semgrep to pre-commit hooks.",
+          "finding_refs": ["INJECT-001"]
+        },
+        {
+          "control_id": "6.3.3",
+          "description": "All software components protected from known vulnerabilities via security patches",
+          "status": "PARTIAL",
+          "evidence": "requirements.txt has 18+ unpinned dependencies. No pip-audit in CI.",
+          "remediation": "Pin all dependencies. Add pip-audit --requirement requirements.txt to CI. Rotate patched versions within 30 days of CVE publication.",
+          "finding_refs": ["SBOM-002"]
+        },
+        {
+          "control_id": "6.4.1",
+          "description": "Public-facing web applications protected against known attacks",
+          "status": "FAIL",
+          "severity": "HIGH",
+          "evidence": "Missing X-Frame-Options, CSP, HSTS, X-Content-Type-Options headers. Wildcard CORS.",
+          "remediation": "Implement SecurityHeadersMiddleware (see HDR-001). Fix CORS-001.",
+          "finding_refs": ["HDR-001", "CORS-001", "T-PG-T-03"]
+        }
+      ]
+    },
+
+    {
+      "req_id": "Req-7",
+      "title": "Restrict Access to System Components and Cardholder Data by Business Need to Know",
+      "controls": [
+        {
+          "control_id": "7.2.1",
+          "description": "All access to system components and cardholder data is assigned minimum necessary privileges",
+          "status": "FAIL",
+          "severity": "HIGH",
+          "evidence": "No dedicated /payment/* routes with RBAC Depends() enforcement found in api.py",
+          "remediation": "Define payment routes with Depends(require_permission(Permission.PAYMENT_WRITE)). Restrict charge operations to operator/admin roles.",
+          "finding_refs": ["AUTH-001", "T-PG-E-01"]
+        },
+        {
+          "control_id": "7.2.2",
+          "description": "Access assigned based on least-privilege, job function",
+          "status": "PARTIAL",
+          "evidence": "RBAC roles defined in src/core/rbac.py; payment-specific PAYMENT_WRITE permission not yet defined",
+          "remediation": "Add Permission.PAYMENT_WRITE and Permission.PAYMENT_READ to RBAC enum. Assign only to operator/admin roles."
+        }
+      ]
+    },
+
+    {
+      "req_id": "Req-8",
+      "title": "Identify Users and Authenticate Access to System Components",
+      "controls": [
+        {
+          "control_id": "8.2.1",
+          "description": "User IDs and authentication credentials are managed",
+          "status": "PARTIAL",
+          "evidence": "JWT auth implemented in src/core/auth.py. auth.enabled: false by default — must be enforced true in production.",
+          "remediation": "Enforce auth.enabled: true at startup for any internet-facing deployment. Block high-value ops when auth is off.",
+          "finding_refs": ["T-S-04"]
+        },
+        {
+          "control_id": "8.3.6",
+          "description": "Passwords/passphrases meet minimum complexity and length requirements",
+          "status": "PARTIAL",
+          "evidence": "API key generation in src/core/api_keys.py uses SHA-256 without salt (CRYPT-001 from base scan)",
+          "remediation": "Switch to HMAC-SHA256 with secret key or bcrypt/argon2 for API key storage"
+        },
+        {
+          "control_id": "8.4.2",
+          "description": "MFA implemented for all access to the CDE",
+          "status": "NOT_IMPLEMENTED",
+          "evidence": "No MFA enforcement in JWT claims or auth middleware",
+          "remediation": "Require amr=mfa JWT claim for all charge operations > configurable threshold. Integrate with OIDC provider supporting MFA."
+        }
+      ]
+    },
+
+    {
+      "req_id": "Req-9",
+      "title": "Restrict Physical Access to Cardholder Data",
+      "controls": [
+        {
+          "control_id": "9.x",
+          "description": "Physical access controls for CDE infrastructure",
+          "status": "NOT_ASSESSED",
+          "evidence": "Physical security outside software scanner scope",
+          "remediation": "Document data center physical access controls; include in annual PCI DSS assessment"
+        }
+      ]
+    },
+
+    {
+      "req_id": "Req-10",
+      "title": "Log and Monitor All Access to System Components and Cardholder Data",
+      "controls": [
+        {
+          "control_id": "10.2.1",
+          "description": "Audit logs capture all individual user access to cardholder data",
+          "status": "PARTIAL",
+          "evidence": "AuditLogger present with INSERT-only pattern. No PAYMENT_CHARGE or PAYMENT_REFUND event types wired in api.py.",
+          "remediation": "Add payment-specific audit events: PAYMENT_CHARGE_INITIATED, PAYMENT_CHARGE_COMPLETED, PAYMENT_REFUND_REQUESTED, PAYMENT_AUTH_FAILURE. Include actor, IP, masked PAN, amount, trace_id.",
+          "finding_refs": ["AUDIT-001", "T-PG-R-01"]
+        },
+        {
+          "control_id": "10.3.2",
+          "description": "Audit log files protected to prevent modifications",
+          "status": "PASS",
+          "evidence": "audit_logger.py uses INSERT-only schema; no UPDATE/DELETE operations present"
+        },
+        {
+          "control_id": "10.4.1",
+          "description": "Daily review of security events and logs",
+          "status": "NOT_ASSESSED",
+          "evidence": "Log review process outside scanner scope",
+          "remediation": "Configure log aggregation (ELK/CloudWatch) with alerts on PAYMENT_AUTH_FAILURE and anomalous charge volumes"
+        },
+        {
+          "control_id": "10.7.1",
+          "description": "Audit log history retained for at least 12 months",
+          "status": "PARTIAL",
+          "evidence": "SQLite audit_log.db has no automated retention/archiving policy",
+          "remediation": "Export audit_log.db to S3 WORM bucket nightly. Enforce 12-month retention policy."
+        }
+      ]
+    },
+
+    {
+      "req_id": "Req-11",
+      "title": "Test Security of Systems and Networks Regularly",
+      "controls": [
+        {
+          "control_id": "11.3.1",
+          "description": "Internal vulnerability scans performed at least quarterly",
+          "status": "PARTIAL",
+          "evidence": "Static scanner (payment_security_scanner.py) available. No scheduled execution in CI.",
+          "remediation": "Add `python security_audit/payment_gateway/payment_security_scanner.py` to weekly CI schedule. Alert on any CRITICAL/HIGH finding."
+        },
+        {
+          "control_id": "11.4.1",
+          "description": "Penetration testing methodology defined and implemented",
+          "status": "PASS",
+          "evidence": "security_audit/pentest_plan.yaml defines methodology, test cases, and acceptance criteria"
+        },
+        {
+          "control_id": "11.4.3",
+          "description": "External penetration test performed at least annually",
+          "status": "NOT_COMPLETED",
+          "evidence": "No pentest results file found",
+          "remediation": "Schedule annual external pentest. Map results to security_audit/payment_gateway/pci_dss_saq.json."
+        }
+      ]
+    },
+
+    {
+      "req_id": "Req-12",
+      "title": "Support Information Security with Organizational Policies and Programs",
+      "controls": [
+        {
+          "control_id": "12.3.1",
+          "description": "Risk assessment performed at least annually",
+          "status": "PASS",
+          "evidence": "security_audit/payment_gateway/payment_threat_model.yaml and threat_model.yaml with residual risk register"
+        },
+        {
+          "control_id": "12.3.4",
+          "description": "Hardware and software technologies reviewed annually",
+          "status": "PARTIAL",
+          "evidence": "SBOM at security_audit/payment_gateway/payment_sbom.json. Pin versions to enable automated CVE tracking.",
+          "remediation": "Schedule annual SBOM review; use pip-audit for continuous monitoring"
+        },
+        {
+          "control_id": "12.6.2",
+          "description": "Security awareness program reviewed annually",
+          "status": "NOT_ASSESSED",
+          "evidence": "Training program outside scanner scope"
+        }
+      ]
+    }
+  ],
+
+  "summary": {
+    "total_controls_assessed": 24,
+    "pass": 4,
+    "partial": 12,
+    "fail": 5,
+    "not_assessed": 3,
+    "pci_blocking_issues": [
+      {
+        "finding": "CVV post-auth retention risk (Req 3.2.1)",
+        "threat": "T-PG-I-02",
+        "scanner_id": "PAN-002",
+        "action_required": "Enable pii.enabled: true; add CVV to blocked patterns; confirm delete-after-auth"
+      },
+      {
+        "finding": "PAN stored unencrypted in audit_log.db (Req 3.4.1)",
+        "threat": "T-PG-I-01",
+        "scanner_id": "ENC-001",
+        "action_required": "Implement Fernet/AES-256 field encryption; enable encryption.at_rest: true"
+      },
+      {
+        "finding": "No PAN tokenization (Req 3.5.1)",
+        "threat": "T-PG-I-01",
+        "scanner_id": "TOKEN-001",
+        "action_required": "Integrate PCI-certified token vault; never accept raw PAN at API layer"
+      },
+      {
+        "finding": "Wildcard CORS enables CPRF (Req 6.4.1)",
+        "threat": "T-PG-S-03",
+        "scanner_id": "CORS-001",
+        "action_required": "Replace allow_origins=['*'] with SAGE_PAYMENT_ALLOWED_ORIGINS"
+      },
+      {
+        "finding": "No /payment/* RBAC enforcement (Req 7.2.1)",
+        "threat": "T-PG-E-01",
+        "scanner_id": "AUTH-001",
+        "action_required": "Define payment routes with Depends(require_permission(Permission.PAYMENT_WRITE))"
+      }
+    ],
+    "next_assessment_due": "2026-06-28",
+    "qsa_review_required": true
+  }
+}

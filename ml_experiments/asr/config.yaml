@@ -1,0 +1,85 @@
+experiment:
+  name: "asr-wav2vec2-finetune"
+  version: "1.0.0"
+  seed: 42
+  output_dir: "./outputs"
+  log_dir: "./logs"
+  mlflow_tracking_uri: "sqlite:///mlruns.db"
+  mlflow_experiment: "asr-production"
+
+data:
+  dataset_name: "librispeech_asr"          # HuggingFace dataset id
+  dataset_config: "clean"                   # subset: clean | other
+  train_split: "train.100"
+  val_split: "validation"
+  test_split: "test"
+  # For custom datasets set dataset_name to null and provide paths:
+  # custom_train_manifest: "./data/train.json"
+  # custom_val_manifest: "./data/val.json"
+  # custom_test_manifest: "./data/test.json"
+  sampling_rate: 16000
+  max_audio_duration_sec: 20.0             # drop longer clips
+  min_audio_duration_sec: 0.5
+  stratify_by: "speaker_id"               # column used for stratified split
+  val_fraction: 0.05                       # fraction carved from train if no val split
+  test_fraction: 0.05
+  num_workers: 4
+  cache_dir: "./data/.cache"
+
+model:
+  base_model: "facebook/wav2vec2-base-960h"
+  freeze_feature_extractor: true           # freeze CNN feature extractor layers
+  ctc_loss_reduction: "mean"
+  ctc_zero_infinity: true
+  attention_dropout: 0.1
+  hidden_dropout: 0.1
+  feat_proj_dropout: 0.0
+  mask_time_prob: 0.05
+  layerdrop: 0.1
+
+training:
+  num_epochs: 30
+  per_device_train_batch_size: 16
+  per_device_eval_batch_size: 8
+  gradient_accumulation_steps: 2
+  learning_rate: 3.0e-4
+  lr_scheduler_type: "linear"
+  warmup_steps: 500
+  weight_decay: 0.005
+  fp16: true                               # set false if no GPU
+  gradient_checkpointing: true
+  group_by_length: true                    # bucket similar-length samples → speed
+  save_steps: 400
+  eval_steps: 400
+  logging_steps: 50
+  load_best_model_at_end: true
+  metric_for_best_model: "wer"
+  greater_is_better: false
+  early_stopping_patience: 5
+
+evaluation:
+  compute_wer: true
+  compute_cer: true
+  compute_rtf: true                        # Real-Time Factor
+  rtf_sla_threshold: 0.5                  # model must be 2× faster than real-time
+  bias_groups:                             # metadata columns to break down WER by
+    - "gender"
+    - "accent"
+    - "age_group"
+  unk_token: "<unk>"
+
+inference:
+  latency_sla_ms: 500                      # p95 latency SLA for 10-second clip
+  benchmark_runs: 100
+  device: "cuda"                           # cuda | cpu | mps
+  use_onnx: false                          # export to ONNX for production
+  batch_size: 1
+
+model_card:
+  language: "en"
+  license: "apache-2.0"
+  tags: ["automatic-speech-recognition", "wav2vec2", "librispeech"]
+  intended_uses: "Transcription of English speech in clean acoustic conditions"
+  out_of_scope: "Non-English speech, heavily accented or noisy audio"
+  limitations: "May underperform on medical, legal, or highly technical vocabulary"
+  ethical_considerations: "Evaluated for gender and accent bias; see bias report"

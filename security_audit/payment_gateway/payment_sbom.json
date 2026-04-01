@@ -1,0 +1,207 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "serialNumber": "urn:uuid:8f3c2e1a-4b5d-6e7f-8901-abc234def567",
+  "metadata": {
+    "timestamp": "2026-03-28T00:00:00.000000+00:00",
+    "tools": [
+      {
+        "name": "sage-payment-security-scanner",
+        "version": "1.0.0",
+        "description": "SAGE Framework payment gateway security scanner (payment_security_scanner.py)"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "name": "SAGE Framework — Payment Gateway Module",
+      "version": "0.0.0-dev",
+      "branch": "feature/domain-runners",
+      "purl": "pkg:github/sage-framework/sage@HEAD#payment-gateway",
+      "description": "Payment gateway API endpoints for SAGE — charge, refund, status, webhooks"
+    },
+    "properties": [
+      { "name": "pci_scope",               "value": "CDE — Cardholder Data Environment" },
+      { "name": "pci_dss_version",         "value": "4.0" },
+      { "name": "sbom_review_date",        "value": "2026-03-28" },
+      { "name": "threat_model",            "value": "security_audit/payment_gateway/payment_threat_model.yaml v1.0.0" },
+      { "name": "security_scanner",        "value": "security_audit/payment_gateway/payment_security_scanner.py" },
+      { "name": "pan_storage",             "value": "TOKENIZED_ONLY — raw PAN must not be stored (Required)" },
+      { "name": "cvv_storage",             "value": "PROHIBITED — PCI DSS Req 3.2.1" },
+      { "name": "encryption_at_rest",      "value": "NOT_MET — AES-256 field encryption required (see ENC-001)" },
+      { "name": "encryption_in_transit",   "value": "PARTIAL — TLS at reverse proxy; HTTPSRedirect not in code" },
+      { "name": "audit_logging",           "value": "PARTIAL — AuditLogger present; payment events not wired" },
+      { "name": "pii_filter",             "value": "DISABLED — pii.enabled: false; PAN may reach LLM (Critical)" },
+      { "name": "tokenization",            "value": "NOT_IMPLEMENTED — TOKEN-001 open finding" },
+      { "name": "idempotency",             "value": "NOT_IMPLEMENTED — IDEMPOTENCY-001 open finding" },
+      { "name": "cors_status",             "value": "WILDCARD — CORS-001 Critical finding; must be fixed" },
+      { "name": "auth_status",             "value": "DISABLED_BY_DEFAULT — auth.enabled: false in config.yaml" },
+      { "name": "pci_dss_saq_type",        "value": "SAQ-D (Service Provider)" },
+      { "name": "critical_findings_count", "value": "4" },
+      { "name": "high_findings_count",     "value": "6" }
+    ]
+  },
+  "vulnerabilities": [
+    {
+      "id": "CORS-001",
+      "source": { "name": "SAGE Payment Security Scanner", "url": "internal" },
+      "ratings": [ { "severity": "critical", "method": "CVSSv3" } ],
+      "description": "Wildcard CORS enables cross-origin payment request forgery",
+      "recommendation": "Restrict CORS to explicit payment origin allowlist via SAGE_PAYMENT_ALLOWED_ORIGINS",
+      "affects": [ { "ref": "pkg:github/sage-framework/sage@HEAD", "versions": [ { "version": "HEAD", "status": "affected" } ] } ]
+    },
+    {
+      "id": "ENC-001",
+      "source": { "name": "SAGE Payment Security Scanner", "url": "internal" },
+      "ratings": [ { "severity": "critical", "method": "CVSSv3" } ],
+      "description": "Cardholder data storage lacks AES-256 field-level encryption",
+      "recommendation": "Implement Fernet/AES-256 field encryption; enable encryption.at_rest: true",
+      "affects": [ { "ref": "pkg:github/sage-framework/sage@HEAD", "versions": [ { "version": "HEAD", "status": "affected" } ] } ]
+    },
+    {
+      "id": "TOKEN-001",
+      "source": { "name": "SAGE Payment Security Scanner", "url": "internal" },
+      "ratings": [ { "severity": "high", "method": "CVSSv3" } ],
+      "description": "No PAN tokenization layer — raw PANs may traverse API boundary",
+      "recommendation": "Implement PCI-certified tokenization at API ingress (Stripe, Braintree, or Vault)",
+      "affects": [ { "ref": "pkg:github/sage-framework/sage@HEAD", "versions": [ { "version": "HEAD", "status": "affected" } ] } ]
+    },
+    {
+      "id": "TLS-002",
+      "source": { "name": "SAGE Payment Security Scanner", "url": "internal" },
+      "ratings": [ { "severity": "high", "method": "CVSSv3" } ],
+      "description": "HTTPS redirect middleware absent — HTTP connections not forced to TLS",
+      "recommendation": "Add HTTPSRedirectMiddleware + HSTS header",
+      "affects": [ { "ref": "pkg:github/sage-framework/sage@HEAD", "versions": [ { "version": "HEAD", "status": "affected" } ] } ]
+    },
+    {
+      "id": "AUTH-001",
+      "source": { "name": "SAGE Payment Security Scanner", "url": "internal" },
+      "ratings": [ { "severity": "high", "method": "CVSSv3" } ],
+      "description": "No dedicated /payment/* routes with RBAC enforcement found",
+      "recommendation": "Define payment routes with Depends(require_permission(Permission.PAYMENT_WRITE))",
+      "affects": [ { "ref": "pkg:github/sage-framework/sage@HEAD", "versions": [ { "version": "HEAD", "status": "affected" } ] } ]
+    }
+  ],
+  "components": [
+    {
+      "type": "library",
+      "name": "fastapi",
+      "version": "0.115.x",
+      "purl": "pkg:pypi/fastapi@0.115.x",
+      "scope": "required",
+      "hashes": [],
+      "licenses": [ { "license": { "id": "MIT" } } ],
+      "pci_scope_note": "Payment API framework — must be on latest stable version"
+    },
+    {
+      "type": "library",
+      "name": "python-jose",
+      "version": "3.x",
+      "purl": "pkg:pypi/python-jose@3.x",
+      "scope": "required",
+      "hashes": [],
+      "licenses": [ { "license": { "id": "MIT" } } ],
+      "pci_scope_note": "JWT verification for payment auth — pin to >=3.3.0 (CVE-2024 patched)"
+    },
+    {
+      "type": "library",
+      "name": "cryptography",
+      "version": "44.x",
+      "purl": "pkg:pypi/cryptography@44.x",
+      "scope": "required",
+      "hashes": [],
+      "licenses": [ { "license": { "id": "Apache-2.0" } } ],
+      "pci_scope_note": "AES-256 and Fernet encryption for CHD at rest — pin to >=42.0.8"
+    },
+    {
+      "type": "library",
+      "name": "pydantic",
+      "version": "2.x",
+      "purl": "pkg:pypi/pydantic@2.x",
+      "scope": "required",
+      "hashes": [],
+      "licenses": [ { "license": { "id": "MIT" } } ],
+      "pci_scope_note": "Payment payload validation — strict=True on all payment models"
+    },
+    {
+      "type": "library",
+      "name": "sqlalchemy",
+      "version": "2.x",
+      "purl": "pkg:pypi/sqlalchemy@2.x",
+      "scope": "optional",
+      "hashes": [],
+      "licenses": [ { "license": { "id": "MIT" } } ],
+      "pci_scope_note": "If used for payment DB — parameterized queries required; no raw SQL"
+    },
+    {
+      "type": "library",
+      "name": "stripe",
+      "version": "NOT_INSTALLED",
+      "purl": "pkg:pypi/stripe",
+      "scope": "optional",
+      "hashes": [],
+      "licenses": [ { "license": { "id": "MIT" } } ],
+      "pci_scope_note": "Recommended PCI-certified tokenization provider — install and pin version"
+    },
+    {
+      "type": "library",
+      "name": "redis",
+      "version": "NOT_INSTALLED",
+      "purl": "pkg:pypi/redis",
+      "scope": "optional",
+      "hashes": [],
+      "licenses": [ { "license": { "id": "MIT" } } ],
+      "pci_scope_note": "Required for distributed rate limiting and idempotency key storage"
+    },
+    {
+      "type": "library",
+      "name": "presidio-analyzer",
+      "version": "NOT_INSTALLED",
+      "purl": "pkg:pypi/presidio-analyzer",
+      "scope": "required_for_phi_pci",
+      "hashes": [],
+      "licenses": [ { "license": { "id": "MIT" } } ],
+      "pci_scope_note": "PAN/PHI detection in payloads — required when pii.enabled: true"
+    },
+    {
+      "type": "library",
+      "name": "presidio-anonymizer",
+      "version": "NOT_INSTALLED",
+      "purl": "pkg:pypi/presidio-anonymizer",
+      "scope": "required_for_phi_pci",
+      "hashes": [],
+      "licenses": [ { "license": { "id": "MIT" } } ],
+      "pci_scope_note": "PAN/PHI scrubbing before LLM calls — required when pii.enabled: true"
+    },
+    {
+      "type": "library",
+      "name": "slowapi",
+      "version": "NOT_INSTALLED",
+      "purl": "pkg:pypi/slowapi",
+      "scope": "required_for_payment",
+      "hashes": [],
+      "licenses": [ { "license": { "id": "MIT" } } ],
+      "pci_scope_note": "Rate limiting on payment endpoints — required; use Redis backend in production"
+    }
+  ],
+  "pci_dss_attestation": {
+    "saq_type": "SAQ-D",
+    "version": "PCI DSS v4.0",
+    "attested_date": "2026-03-28",
+    "attestation_status": "INCOMPLETE — critical findings must be resolved",
+    "blocking_findings": [
+      "CORS-001 — Wildcard CORS (T-PG-S-03)",
+      "ENC-001  — No CHD encryption at rest (T-PG-I-01)",
+      "TOKEN-001 — No PAN tokenization (T-PG-I-01)",
+      "AUTH-001  — No payment route RBAC (T-PG-E-01)",
+      "PII disabled — PAN flows to external LLM (T-PG-I-04)"
+    ],
+    "passing_controls": [
+      "Req 10 (partial) — AuditLogger INSERT-only pattern",
+      "Req 8  (partial) — JWT auth in src/core/auth.py",
+      "Req 6  (partial) — payload_validator.py, parameterized queries",
+      "Req 12 (pass)   — Threat model and SBOM maintained"
+    ]
+  }
+}

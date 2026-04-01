@@ -1,0 +1,151 @@
+{
+  "generated_at": "2026-03-27T22:31:55.832520+00:00",
+  "scanner_version": "1.0.0",
+  "findings": [
+    {
+      "check_id": "STRIDE-S-01",
+      "category": "Spoofing",
+      "title": "Authentication enforced on all API endpoints",
+      "severity": "HIGH",
+      "status": "PASS",
+      "detail": "auth.enabled: true found in config.yaml",
+      "remediation": "Enable auth.enabled in config.yaml and enforce JWT/API-key on every endpoint.",
+      "references": [
+        "CWE-287",
+        "OWASP A07:2021"
+      ]
+    },
+    {
+      "check_id": "STRIDE-T-01",
+      "category": "Tampering",
+      "title": "Audit log is append-only (no UPDATE/DELETE on events)",
+      "severity": "HIGH",
+      "status": "FAIL",
+      "detail": "Potentially mutable SQL found: ['Delete', 'DELETE']",
+      "remediation": "Ensure audit_logger.py never issues UPDATE or DELETE against the audit_log table.",
+      "references": [
+        "CWE-693",
+        "NIST SP 800-92"
+      ]
+    },
+    {
+      "check_id": "STRIDE-R-01",
+      "category": "Repudiation",
+      "title": "Every agent action records trace_id + user identity",
+      "severity": "MEDIUM",
+      "status": "FAIL",
+      "detail": "Missing fields in audit schema: ['trace_id']",
+      "remediation": "Ensure audit_logger stores trace_id and actor fields for every event.",
+      "references": [
+        "CWE-778",
+        "ISO 27001 A.12.4.1"
+      ]
+    },
+    {
+      "check_id": "STRIDE-I-01",
+      "category": "Information Disclosure",
+      "title": "PII/PHI filter active in LLM gateway",
+      "severity": "CRITICAL",
+      "status": "PASS",
+      "detail": "pii_filter referenced in llm_gateway.py",
+      "remediation": "Import and invoke pii_filter.scrub() before every LLM generate() call.",
+      "references": [
+        "CWE-200",
+        "HIPAA \u00a7164.312(a)(2)(iv)"
+      ]
+    },
+    {
+      "check_id": "STRIDE-I-02",
+      "category": "Information Disclosure",
+      "title": "PHI encrypted at rest (SQLite WAL + key-at-rest config)",
+      "severity": "CRITICAL",
+      "status": "FAIL",
+      "detail": "No PHI encryption-at-rest configuration found. Set encryption.at_rest: true in config.yaml or SAGE_ENCRYPT_AT_REST=true.",
+      "remediation": "Enable encryption.at_rest in config.yaml and use SQLCipher or filesystem encryption.",
+      "references": [
+        "HIPAA \u00a7164.312(a)(2)(iv)",
+        "NIST SP 800-111"
+      ]
+    },
+    {
+      "check_id": "STRIDE-I-03",
+      "category": "Information Disclosure",
+      "title": "PHI encrypted in transit (TLS 1.2+ enforced)",
+      "severity": "CRITICAL",
+      "status": "PASS",
+      "detail": "TLS/HTTPS configuration reference found in config.yaml",
+      "remediation": "Set tls.min_version: 'TLSv1.2' in config.yaml and terminate TLS at the API layer.",
+      "references": [
+        "HIPAA \u00a7164.312(e)(2)(ii)",
+        "NIST SP 800-52r2"
+      ]
+    },
+    {
+      "check_id": "STRIDE-D-01",
+      "category": "Denial of Service",
+      "title": "Rate limiting configured on public API endpoints",
+      "severity": "MEDIUM",
+      "status": "WARN",
+      "detail": "No rate limiting detected in api.py. Add slowapi or equivalent to protect against DoS.",
+      "remediation": "Add slowapi / limits middleware to api.py; set rate limits in config.yaml.",
+      "references": [
+        "CWE-770",
+        "OWASP A05:2021"
+      ]
+    },
+    {
+      "check_id": "STRIDE-E-01",
+      "category": "Elevation of Privilege",
+      "title": "RBAC enforced \u2014 roles cannot exceed declared permissions",
+      "severity": "HIGH",
+      "status": "PASS",
+      "detail": "RBAC Role/Permission definitions found in rbac.py",
+      "remediation": "Ensure rbac.py Role enum and permission matrix is applied at every privileged endpoint.",
+      "references": [
+        "CWE-269",
+        "OWASP A01:2021"
+      ]
+    },
+    {
+      "check_id": "AUDIT-01",
+      "category": "Audit Logging",
+      "title": "Audit log schema missing required fields",
+      "severity": "HIGH",
+      "status": "FAIL",
+      "detail": "Missing fields: ['trace_id', 'event_type', 'status']",
+      "remediation": "Add missing fields to CREATE TABLE statement in audit_logger.py.",
+      "references": [
+        "HIPAA \u00a7164.312(b)"
+      ]
+    },
+    {
+      "check_id": "DEP-SCAN-ERROR",
+      "category": "Dependency",
+      "title": "Dependency scan error: Expecting value: line 1 column 1 (char 0)",
+      "severity": "MEDIUM",
+      "status": "WARN",
+      "detail": "Expecting value: line 1 column 1 (char 0)",
+      "remediation": "Investigate pip-audit installation and run manually.",
+      "references": []
+    }
+  ],
+  "sbom_path": "security_audit/sbom.json",
+  "summary": {
+    "total_checks": 10,
+    "passed": 4,
+    "failed": 4,
+    "warned": 2,
+    "skipped": 0,
+    "critical_high_fails": 3,
+    "sbom_components": 154,
+    "overall_status": "FAIL",
+    "stride_categories_covered": [
+      "Denial of Service",
+      "Tampering",
+      "Spoofing",
+      "Elevation of Privilege",
+      "Repudiation",
+      "Information Disclosure"
+    ]
+  }
+}

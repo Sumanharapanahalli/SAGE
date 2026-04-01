@@ -1,0 +1,203 @@
+{
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "meta": {
+    "standard": "WCAG 2.2 AA",
+    "wcag_level": "AA",
+    "note": "All accent tokens defined at their ACCESSIBLE values (4.5:1+ on their paired background). Original failing values documented in comments."
+  },
+  "colors": {
+    "comment": "All values verified >= 4.5:1 contrast ratio against their intended background",
+
+    "default": {
+      "sidebar": {
+        "bg":          { "value": "#ffffff", "on": "content" },
+        "text":        { "value": "#4b5563", "on": "#ffffff", "ratio": 7.56 },
+        "active_bg":   { "value": "#ecfdf5" },
+        "active_text": { "value": "#047857", "on": "#ecfdf5", "ratio": 5.21 },
+        "hover_bg":    { "value": "#f0fdf4" },
+        "accent":      { "value": "#047857", "on": "#ffffff", "ratio": 5.55,
+                         "was": "#10b981 (ratio 2.54, FAIL)" }
+      },
+      "accent": {
+        "base":        { "value": "#047857", "on": "#ffffff", "ratio": 5.55,
+                         "was": "#10b981 (ratio 2.54, FAIL)",
+                         "note": "Use for text links, icon fills, and focus rings on light backgrounds" },
+        "btn_bg":      { "value": "#047857", "on_text": "#ffffff", "ratio": 5.55,
+                         "was": "#10b981 (ratio 2.54, FAIL)" },
+        "btn_bg_hover":{ "value": "#065f46", "on_text": "#ffffff", "ratio": 7.67,
+                         "was": "#059669 (ratio 3.77, FAIL)" },
+        "light":       { "value": "#ecfdf5", "note": "Accent tint for backgrounds — not for text" },
+        "text":        { "value": "#ffffff", "on": "#047857", "ratio": 5.55 }
+      },
+      "badge": {
+        "bg":   { "value": "#ecfdf5" },
+        "text": { "value": "#047857", "on": "#ecfdf5", "ratio": 5.21 }
+      },
+      "rail": {
+        "bg":     { "value": "#f8fafc" },
+        "text":   { "value": "#6b7280", "on": "#f8fafc", "ratio": 4.62 },
+        "active": { "value": "#047857", "on": "#f8fafc", "ratio": 5.24 }
+      },
+      "body": {
+        "bg":   { "value": "#fafafa" },
+        "text": { "value": "#18181b", "on": "#fafafa", "ratio": 16.97 }
+      }
+    },
+
+    "dark": {
+      "bg":          { "value": "#09090b" },
+      "text":        { "value": "#f4f4f5", "on": "#09090b", "ratio": 18.10 },
+      "text_muted":  { "value": "#a1a1aa", "on": "#09090b", "ratio": 7.76,
+                       "was_override": "#71717a (ratio 4.12, FAIL for normal text)" },
+      "sidebar_bg":  { "value": "#18181b" },
+      "sidebar_text":{ "value": "#a1a1aa", "on": "#18181b", "ratio": 6.91 }
+    },
+
+    "combos": {
+      "zinc": {
+        "sidebar_bg":   "#18181b",
+        "sidebar_text": { "value": "#a1a1aa", "ratio": 6.91, "status": "PASS" },
+        "content_bg":   "#fafafa",
+        "accent":       { "value": "#71717a", "on_content": 4.63, "on_white_btn": 4.83, "status": "PASS" },
+        "accent_hover": "#52525b"
+      },
+      "night": {
+        "sidebar_bg":   "#0f172a",
+        "sidebar_text": { "value": "#94a3b8", "ratio": 6.96, "status": "PASS" },
+        "content_bg":   "#ffffff",
+        "accent": {
+          "value":        "#2563eb",
+          "was":          "#3b82f6 (ratio 3.68, FAIL)",
+          "on_content":   5.17,
+          "on_white_btn": 5.17,
+          "status":       "PASS",
+          "note":         "Promoted from accentHover — blue-600 passes AA, blue-500 did not"
+        },
+        "accent_text_only": {
+          "value":  "#1d4ed8",
+          "on_bg":  "#ffffff",
+          "ratio":  6.70,
+          "note":   "Use blue-700 for link/text rendering on white to ensure AAA headroom"
+        },
+        "accent_hover": "#1d4ed8"
+      },
+      "forest": {
+        "sidebar_bg":   "#052e16",
+        "sidebar_text": { "value": "#86efac", "ratio": 10.62, "status": "PASS" },
+        "content_bg":   "#fefce8",
+        "accent": {
+          "value":        "#15803d",
+          "was":          "#16a34a (ratio 3.19 on content, 3.30 on white, FAIL)",
+          "on_content":   4.87,
+          "on_white_btn": 5.02,
+          "status":       "PASS",
+          "note":         "Promoted from accentHover — green-700 passes AA, green-600 did not"
+        },
+        "accent_hover": "#166534"
+      },
+      "ocean": {
+        "sidebar_bg":   "#042f2e",
+        "sidebar_text": { "value": "#99f6e4", "ratio": 11.48, "status": "PASS" },
+        "content_bg":   "#f0fdfa",
+        "accent": {
+          "value":        "#0f766e",
+          "was":          "#0d9488 (ratio 3.59 on content, 3.74 on white, FAIL)",
+          "on_content":   5.47,
+          "on_white_btn": 5.47,
+          "status":       "PASS",
+          "note":         "Promoted from accentHover — teal-700 passes AA, teal-600 did not"
+        },
+        "accent_hover": "#134e4a"
+      },
+      "slate": {
+        "sidebar_bg":   "#1e293b",
+        "sidebar_text": { "value": "#94a3b8", "ratio": 5.71, "status": "PASS" },
+        "content_bg":   "#f8fafc",
+        "accent": {
+          "value":        "#4f46e5",
+          "was":          "#6366f1 (ratio 4.27 as text, 4.47 as btn bg, FAIL)",
+          "on_content":   6.02,
+          "on_white_btn": 6.29,
+          "status":       "PASS",
+          "note":         "Promoted from accentHover — indigo-600 passes AA, indigo-500 did not"
+        },
+        "accent_hover": "#4338ca"
+      },
+      "rose": {
+        "sidebar_bg":   "#1c0a0a",
+        "sidebar_text": { "value": "#fca5a5", "ratio": 10.08, "status": "PASS" },
+        "content_bg":   "#fff1f2",
+        "accent": {
+          "btn_bg":       { "value": "#e11d48", "on_text": "#ffffff", "ratio": 4.70, "status": "PASS" },
+          "text_on_light":{ "value": "#be123c", "on": "#fff1f2", "ratio": 5.77, "status": "PASS",
+                            "was": "#e11d48 (ratio 4.28 as text on rose-50, FAIL)" },
+          "note":         "Button bg #e11d48 passes AA. For text/links on rose-50 content, use #be123c"
+        },
+        "accent_hover": "#be123c"
+      }
+    }
+  },
+
+  "spacing": {
+    "comment": "8px grid system — all touch targets minimum 44px per WCAG 2.5.5",
+    "0":   { "value": "0px" },
+    "1":   { "value": "8px" },
+    "2":   { "value": "16px" },
+    "3":   { "value": "24px" },
+    "4":   { "value": "32px" },
+    "5":   { "value": "40px" },
+    "6":   { "value": "48px" },
+    "8":   { "value": "64px" },
+    "10":  { "value": "80px" },
+    "12":  { "value": "96px" },
+    "touch_target_min": { "value": "44px", "note": "WCAG 2.5.5 AA minimum touch target size" },
+    "touch_target_enhanced": { "value": "48px", "note": "WCAG 2.5.8 AAA enhanced target size" },
+    "sidebar_width":    { "value": "220px" },
+    "rail_width":       { "value": "44px" },
+    "content_padding":  { "value": "24px" },
+    "section_gap":      { "value": "16px" },
+    "component_gap":    { "value": "8px" }
+  },
+
+  "typography": {
+    "comment": "Font scale with minimum sizes for readability and contrast",
+    "font_family": {
+      "sans":  "'Inter', system-ui, sans-serif",
+      "mono":  "'JetBrains Mono', 'Fira Code', monospace",
+      "system":"system-ui, -apple-system, sans-serif"
+    },
+    "font_size": {
+      "xs":   { "value": "11px", "line_height": "16px", "note": "Avoid for body text — use only for decorative labels with high contrast" },
+      "sm":   { "value": "13px", "line_height": "20px" },
+      "base": { "value": "14px", "line_height": "22px", "note": "Framework default" },
+      "md":   { "value": "16px", "line_height": "24px" },
+      "lg":   { "value": "18px", "line_height": "28px", "note": "WCAG large text threshold — 3:1 contrast required" },
+      "xl":   { "value": "20px", "line_height": "30px" },
+      "2xl":  { "value": "24px", "line_height": "32px" },
+      "3xl":  { "value": "30px", "line_height": "40px" }
+    },
+    "font_weight": {
+      "normal": "400",
+      "medium": "500",
+      "semibold": "600",
+      "bold":   "700",
+      "large_text_bold_threshold": "700",
+      "note": "Text is 'large text' (3:1 threshold) when >= 14px bold OR >= 18px regular"
+    },
+    "letter_spacing": {
+      "tight":  "-0.025em",
+      "normal": "0em",
+      "wide":   "0.025em",
+      "wider":  "0.05em",
+      "note": "Very tight tracking on small text reduces readability — avoid on text < 14px"
+    }
+  },
+
+  "focus": {
+    "comment": "WCAG 2.4.11 (AA) requires visible focus indicator with 3:1 contrast against adjacent colors",
+    "ring_color":  { "value": "#047857", "note": "Emerald-700 on white bg = 5.55:1 ✅" },
+    "ring_offset": { "value": "2px" },
+    "ring_width":  { "value": "2px", "note": "Minimum 2px for visibility" },
+    "ring_style":  "solid"
+  }
+}

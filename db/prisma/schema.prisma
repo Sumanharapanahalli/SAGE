@@ -1,0 +1,278 @@
+// =============================================================
+// Prisma Schema — Fintech + PSP Payment Gateway
+// Provider: PostgreSQL 14+
+// =============================================================
+// Transaction isolation:
+//
+//   Financial mutations (P2P transfers, balance updates, card charges)
+//   must use Prisma's $transaction() with an explicit isolation level:
+//
+//   // SERIALIZABLE — required for all debit / credit / charge writes
+//   await prisma.$transaction(
+//     async (tx) => {
+//       await tx.transaction.create({ data: { senderId, amount, ... } });
+//       await tx.account.update({ where: { accountId: senderId },
+//         data: { balance: { decrement: amount } } });
+//     },
+//     { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }
+//   );
+//
+//   // REPEATABLE READ — balance / limit reads during authorisation
+//   await prisma.$transaction(
+//     async (tx) => { return tx.account.findUnique({ ... }); },
+//     { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead }
+//   );
+//
+// PCI DSS notes:
+//   - User.passwordHash        : bcrypt / argon2id only — never plaintext.
+//   - CardDetail.cardNumberToken  : vault token, not the raw PAN.
+//   - CardDetail.cardNumberMasked : display-safe last-four suffix only.
+//   - CVV/CVC                     : NEVER stored (PCI DSS §3.2.2).
+//                                   No cvv field exists in this schema.
+//
+// Audit trail:
+//   The audit_log table is written exclusively by SQL triggers
+//   (fn_psp_audit_log for PSP tables, fn_audit_log for V001 tables).
+//   Treat it as read-only from application code — never write directly.
+// =============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Audit Log ──────────────────────────────────────────────────
+// Populated by SQL triggers only. Sensitive fields (password_hash,
+// card_number_token) are masked by fn_psp_audit_log() before insert.
+// Do not write to this table from application code.
+model AuditLog {
+  auditId   BigInt   @id @default(autoincrement()) @map("audit_id")
+  tableName String   @map("table_name") @db.VarChar(100)
+  operation String   @map("operation")  @db.VarChar(10)
+  changedBy String   @map("changed_by")
+  changedAt DateTime @default(now()) @map("changed_at") @db.Timestamptz(6)
+  oldValues Json?    @map("old_values")
+  newValues Json?    @map("new_values")
+
+  @@index([tableName],             map: "idx_audit_table_name")
+  @@index([changedAt(sort: Desc)], map: "idx_audit_changed_at")
+  @@map("audit_log")
+}
+
+// ── V001: Accounts ─────────────────────────────────────────────
+model Account {
+  accountId BigInt   @id @default(autoincrement()) @map("account_id")
+  username  String   @unique @db.VarChar(255)
+  /// Store only bcrypt/argon2 hash — never plaintext.
+  password  String   @db.VarChar(255)
+  email     String?  @unique @db.VarChar(255)
+  balance   Decimal  @default(0.00) @db.Decimal(10, 2)
+  status    String   @default("active") @db.VarChar(50)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt      @map("updated_at") @db.Timestamptz(6)
+
+  sentTransfers     P2PTransfer[]     @relation("SentTransfers")
+  receivedTransfers P2PTransfer[]     @relation("ReceivedTransfers")
+  virtualCard       VirtualCard?
+  spendingInsights  SpendingInsight[]
+
+  @@index([username], map: "idx_accounts_username")
+  @@index([status],   map: "idx_accounts_status")
+  @@map("accounts")
+}
+
+// ── V001: P2P Transfers ────────────────────────────────────────
+model P2PTransfer {
+  transferId BigInt   @id @default(autoincrement()) @map("transfer_id")
+  senderId   BigInt   @map("sender_id")
+  receiverId BigInt   @map("receiver_id")
+  amount     Decimal  @db.Decimal(10, 2)
+  status     String   @default("pending") @db.VarChar(50)
+  reference  String?  @unique
+  notes      String?
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt      @map("updated_at") @db.Timestamptz(6)
+
+  sender           Account          @relation("SentTransfers",     fields: [senderId],   references: [accountId])
+  receiver         Account          @relation("ReceivedTransfers", fields: [receiverId], references: [accountId])
+  spendingInsights SpendingInsight[]
+
+  @@index([senderId],   map: "idx_p2p_sender_id")
+  @@index([receiverId], map: "idx_p2p_receiver_id")
+  @@index([status],     map: "idx_p2p_status")
+  @@map("p2p_transfers")
+}
+
+// ── V001: Virtual Cards ────────────────────────────────────────
+model VirtualCard {
+  cardId         BigInt   @id @default(autoincrement()) @map("card_id")
+  cardHolderId   BigInt   @unique @map("card_holder_id")
+  cardType       String   @db.VarChar(255)
+  cardExpiryDate DateTime @map("card_expiry_date") @db.Date
+  /// Last four digits only — never store or log the full PAN.
+  cardLastFour   String?  @map("card_last_four") @db.Char(4)
+  spendingLimit  Decimal? @map("spending_limit")  @db.Decimal(10, 2)
+  status         String   @default("active") @db.VarChar(50)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @updatedAt      @map("updated_at") @db.Timestamptz(6)
+
+  cardHolder Account @relation(fields: [cardHolderId], references: [accountId])
+
+  @@index([status],         map: "idx_vc_status")
+  @@index([cardExpiryDate], map: "idx_vc_expiry")
+  @@map("virtual_cards")
+}
+
+// ── V001: Spending Insights ────────────────────────────────────
+model SpendingInsight {
+  id        BigInt   @id @default(autoincrement())
+  accountId BigInt   @map("account_id")
+  date      DateTime @default(now()) @db.Date
+  category  String   @db.VarChar(255)
+  amount    Decimal  @db.Decimal(10, 2)
+  sourceRef BigInt?  @map("source_ref")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  account  Account      @relation(fields: [accountId], references: [accountId])
+  transfer P2PTransfer? @relation(fields: [sourceRef],  references: [transferId])
+
+  @@index([accountId],        map: "idx_si_account_id")
+  @@index([date(sort: Desc)], map: "idx_si_date")
+  @@index([category],         map: "idx_si_category")
+  @@index([accountId, date],  map: "idx_si_account_date")
+  @@map("spending_insights")
+}
+
+// ── V001: Investment Options ───────────────────────────────────
+model InvestmentOption {
+  id              BigInt   @id @default(autoincrement())
+  name            String   @db.VarChar(255)
+  assetType       String   @map("asset_type")       @db.VarChar(255)
+  riskLevel       String   @map("risk_level")       @db.VarChar(50)
+  returnPotential Decimal  @map("return_potential") @db.Decimal(10, 2)
+  description     String?
+  minInvestment   Decimal  @default(0.00) @map("min_investment") @db.Decimal(10, 2)
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt      @map("updated_at") @db.Timestamptz(6)
+
+  @@index([assetType], map: "idx_io_asset_type")
+  @@index([riskLevel], map: "idx_io_risk_level")
+  @@index([isActive],  map: "idx_io_is_active")
+  @@map("investment_options")
+}
+
+// ── V002: PSP Users ────────────────────────────────────────────
+// PSP account holders. Corresponds to the SQL "users" table.
+// Audit trigger masks passwordHash before writing to audit_log.
+model User {
+  userId       String   @id @default(dbgenerated("gen_random_uuid()")) @map("user_id") @db.Uuid
+  username     String   @unique @db.VarChar(100)
+  /// Hash with bcrypt (cost>=12) or argon2id before persisting — never plaintext.
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  email        String   @unique @db.VarChar(255)
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt      @map("updated_at") @db.Timestamptz(6)
+
+  cards                CardDetail[]
+  sentTransactions     Transaction[] @relation("SentTransactions")
+  receivedTransactions Transaction[] @relation("ReceivedTransactions")
+
+  @@index([email],    map: "idx_users_email")
+  @@index([username], map: "idx_users_username")
+  @@index([isActive], map: "idx_users_is_active")
+  @@map("users")
+}
+
+// ── V002: Card Details ─────────────────────────────────────────
+// PCI DSS Requirements 3.2 / 3.3:
+//   - cardNumberToken  : vault reference from tokenisation provider.
+//   - cardNumberMasked : display-safe last-four suffix only.
+//   - CVV/CVC          : NEVER present — PCI DSS §3.2.2 prohibits
+//                        post-authorisation storage of CVV/CVC.
+model CardDetail {
+  cardId           String   @id @default(dbgenerated("gen_random_uuid()")) @map("card_id") @db.Uuid
+  userId           String   @map("user_id") @db.Uuid
+  /// Vault token from your tokenisation provider (Stripe, Braintree, etc.) — never the raw PAN.
+  cardNumberToken  String   @unique @map("card_number_token") @db.VarChar(255)
+  /// Display-safe masked suffix e.g. "**** **** **** 4242".
+  cardNumberMasked String   @map("card_number_masked") @db.VarChar(19)
+  // cvv intentionally absent — PCI DSS §3.2.2
+  expiryDate       DateTime @map("expiry_date") @db.Date
+  cardType         String   @map("card_type") @db.VarChar(50)
+  billingName      String?  @map("billing_name") @db.VarChar(255)
+  isDefault        Boolean  @default(false) @map("is_default")
+  isActive         Boolean  @default(true)  @map("is_active")
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime @updatedAt      @map("updated_at") @db.Timestamptz(6)
+
+  user         User          @relation(fields: [userId], references: [userId])
+  transactions Transaction[]
+
+  @@index([userId],           map: "idx_card_user_id")
+  @@index([userId, isActive], map: "idx_card_active")
+  @@index([expiryDate],       map: "idx_card_expiry")
+  @@index([cardType],         map: "idx_card_type")
+  @@map("card_details")
+}
+
+// ── V002: Transactions ─────────────────────────────────────────
+// Records every payment event. All writes MUST use SERIALIZABLE
+// isolation. idempotencyKey prevents duplicate charges on retry.
+//
+// Status flow:
+//   PENDING -> PROCESSING -> COMPLETED
+//                         -> FAILED
+//   COMPLETED -> REFUNDED | REVERSED | DISPUTED
+//
+// initiatedAt maps to "timestamp" in the original spec; renamed to
+// avoid collision with the PostgreSQL reserved word "timestamp".
+model Transaction {
+  transactionId  String    @id @default(dbgenerated("gen_random_uuid()")) @map("transaction_id") @db.Uuid
+  senderId       String?   @map("sender_id")   @db.Uuid
+  receiverId     String?   @map("receiver_id") @db.Uuid
+  cardId         String?   @map("card_id")     @db.Uuid
+  amount         Decimal   @db.Decimal(19, 4)
+  /// ISO 4217 currency code e.g. "USD", "EUR".
+  currency       String    @default("USD") @db.Char(3)
+  /// Spec field "timestamp" — renamed initiatedAt to avoid SQL reserved-word collision.
+  initiatedAt    DateTime  @default(now()) @map("initiated_at") @db.Timestamptz(6)
+  cardType       String?   @map("card_type") @db.VarChar(50)
+  status         String    @default("PENDING") @db.VarChar(20)
+  referenceId    String?   @map("reference_id")    @db.VarChar(255)
+  /// Client-supplied key — prevents double-charges on network retry.
+  idempotencyKey String?   @unique @map("idempotency_key") @db.VarChar(255)
+  failureReason  String?   @map("failure_reason")
+  metadata       Json?
+  completedAt    DateTime? @map("completed_at") @db.Timestamptz(6)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @updatedAt      @map("updated_at") @db.Timestamptz(6)
+
+  sender   User?       @relation("SentTransactions",     fields: [senderId],   references: [userId])
+  receiver User?       @relation("ReceivedTransactions", fields: [receiverId], references: [userId])
+  card     CardDetail? @relation(fields: [cardId], references: [cardId])
+
+  @@index([senderId],                        map: "idx_txn_sender_id")
+  @@index([receiverId],                      map: "idx_txn_receiver_id")
+  @@index([cardId],                          map: "idx_txn_card_id")
+  @@index([status],                          map: "idx_txn_status")
+  @@index([initiatedAt(sort: Desc)],         map: "idx_txn_initiated_at")
+  @@index([referenceId],                     map: "idx_txn_reference_id")
+  @@index([cardType],                        map: "idx_txn_card_type")
+  @@index([senderId, status, initiatedAt],   map: "idx_txn_sender_status")
+  @@index([receiverId, status, initiatedAt], map: "idx_txn_receiver_status")
+  @@map("transactions")
+}
+
+// ── Schema Migrations Tracker ──────────────────────────────────
+model SchemaMigration {
+  version   String   @id @db.VarChar(255)
+  appliedAt DateTime @default(now()) @map("applied_at") @db.Timestamptz(6)
+
+  @@map("schema_migrations")
+}

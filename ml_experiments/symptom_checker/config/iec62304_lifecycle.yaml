@@ -1,0 +1,175 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# IEC 62304:2006+AMD1:2015 — Software Lifecycle Documentation
+# SaMD: AI Symptom Checker v1.0.0
+# FDA Pathway: 510(k) De Novo (Class II)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+document:
+  title: "IEC 62304 Software Lifecycle Plan — AI Symptom Checker"
+  document_id: "SWP-001"
+  version: "1.0.0"
+  status: "DRAFT"  # DRAFT | REVIEW | APPROVED
+  created: "2024-01-01"
+  last_revised: "2025-01-01"
+  authors:
+    - role: "Software Development Lead"
+      responsible_for: "Pipeline architecture, ML training"
+    - role: "Clinical AI Safety Engineer"
+      responsible_for: "Bias analysis, clinical validation"
+    - role: "Regulatory Affairs"
+      responsible_for: "510(k) submission, IEC 62304 audit"
+
+# ── §4.3 Software Safety Classification ──────────────────────────────────────
+safety_classification:
+  software_class: "C"  # Class C: software failure can lead to serious injury
+  rationale: >
+    The AI Symptom Checker informs clinical triage decisions. An incorrect
+    classification of a 'critical' patient as 'non-urgent' could result in
+    delayed treatment and patient harm (Class C — SERIOUS INJURY risk).
+    IEC 62304 §4.3 requires full lifecycle documentation for Class C.
+  harm_scenarios:
+    - id: "H-001"
+      description: "Critical patient triaged as non-urgent, treatment delayed"
+      severity: "SERIOUS"
+      probability: "POSSIBLE (without mitigation)"
+      mitigation: "Human clinician reviews all AI recommendations; model sensitivity ≥0.85 for critical class"
+    - id: "H-002"
+      description: "Systematic bias causing under-triage of a demographic group"
+      severity: "SERIOUS"
+      probability: "POSSIBLE (without mitigation)"
+      mitigation: "Fairness gates (DPD <0.05, EOD <0.10) enforced before deployment"
+
+# ── §5.1 Software Development Planning ───────────────────────────────────────
+development_plan:
+  software_item: "ML Symptom Checker Pipeline"
+  version: "1.0.0"
+  lifecycle_model: "Iterative-Incremental with Predetermined Change Control"
+  development_phases:
+    - phase: "Requirements"
+      activities:
+        - "Define intended use and indications for use"
+        - "Establish performance requirements (sensitivity, AUROC thresholds)"
+        - "Define demographic representation requirements"
+        - "Document FDA SaMD classification"
+      outputs: ["SRS-001 Software Requirements Specification"]
+    - phase: "Architecture"
+      activities:
+        - "Define ML pipeline architecture (preprocessing → training → evaluation → bias analysis)"
+        - "Identify SOUP (Software of Unknown Provenance): scikit-learn, XGBoost, imbalanced-learn"
+        - "Define data flow with no post-triage leakage"
+      outputs: ["SAD-001 Software Architecture Document", "SOUP-001 SOUP list"]
+    - phase: "Detailed Design"
+      activities:
+        - "Implement ColumnTransformer (fit on train only)"
+        - "Implement subject-level GroupShuffleSplit"
+        - "Implement SMOTE-NC (train only)"
+        - "Implement XGBoost + Platt calibration"
+        - "Implement bias analysis (DPD, EOD, DIR)"
+      outputs: ["SDD-001 Software Design Description"]
+    - phase: "Unit Testing"
+      activities:
+        - "Test data validator (IRB expiry, missing columns, leakage detection)"
+        - "Test stratified split (no subject overlap)"
+        - "Test preprocessor (no fit on test data)"
+        - "Test bias analyzer (group metric computation)"
+      outputs: ["SUTS-001 Unit Test Summary"]
+    - phase: "Integration Testing"
+      activities:
+        - "End-to-end pipeline with synthetic data schema-matching MIMIC-IV"
+        - "Verify MLflow logging"
+        - "Verify artifact generation"
+      outputs: ["SITS-001 Integration Test Summary"]
+    - phase: "System Validation"
+      activities:
+        - "Validate on IRB-approved held-out MIMIC-IV test set"
+        - "Statistical power analysis (n ≥ 500 per class per FDA guidance)"
+        - "Bias analysis across age / sex / race / insurance"
+        - "Performance gates: macro AUROC ≥ 0.85, critical sensitivity ≥ 0.85"
+      outputs: ["SVR-001 System Validation Report"]
+
+# ── §5.2 Software Requirements Analysis ──────────────────────────────────────
+requirements:
+  functional:
+    - id: "FR-001"
+      description: "System shall classify patient symptoms into triage categories: non-urgent, urgent, critical"
+      verification: "Accuracy ≥ 0.80 on held-out MIMIC-IV test set"
+    - id: "FR-002"
+      description: "System shall achieve sensitivity ≥ 0.85 for the 'critical' class"
+      verification: "Measured on held-out test set with ≥ 200 critical-class samples"
+    - id: "FR-003"
+      description: "System shall produce calibrated probability scores (Brier score ≤ 0.20)"
+      verification: "Brier score computed on held-out test set"
+    - id: "FR-004"
+      description: "Training data shall be IRB-approved, de-identified EHR data (MIMIC-IV or equivalent)"
+      verification: "IRB document number and expiry date validated by DataValidator at runtime"
+    - id: "FR-005"
+      description: "Bias analysis shall pass DPD ≤ 0.05 and EOD ≤ 0.10 for all protected attributes"
+      verification: "BiasAnalyzer output for gender, race, age_group, insurance"
+  non_functional:
+    - id: "NFR-001"
+      description: "All data leakage vectors shall be checked and documented"
+      verification: "DataValidator leakage_risk = false in validation report"
+    - id: "NFR-002"
+      description: "All experiments shall be tracked in MLflow with parameters and metrics"
+      verification: "MLflow run_id present in PipelineResult"
+    - id: "NFR-003"
+      description: "Model shall not be trained on synthetic or exam QA data"
+      verification: "DataValidator confirms dataset_name matches IRB-approved source"
+
+# ── §5.3 Software Architecture ────────────────────────────────────────────────
+architecture:
+  components:
+    - name: "DataValidator"
+      file: "src/pipeline/data_validator.py"
+      class: "C"
+      description: "IRB compliance gate and dataset integrity checks"
+    - name: "SymptomCheckerPipeline"
+      file: "src/pipeline/symptom_checker_pipeline.py"
+      class: "C"
+      description: "End-to-end ML training pipeline"
+    - name: "BiasAnalyzer"
+      file: "src/pipeline/bias_analysis.py"
+      class: "B"
+      description: "Demographic subgroup fairness analysis"
+  soup:
+    - name: "scikit-learn"
+      version: "1.4.2"
+      purpose: "Preprocessing, cross-validation, metrics"
+      risk_assessment: "Low — widely validated, regression-tested"
+    - name: "XGBoost"
+      version: "2.0.3"
+      purpose: "Gradient boosted tree classifier"
+      risk_assessment: "Low — deterministic, version-pinned"
+    - name: "imbalanced-learn"
+      version: "0.12.2"
+      purpose: "SMOTE-NC class balancing (train only)"
+      risk_assessment: "Low — fit on train data only; no test-set contamination risk"
+    - name: "fairlearn"
+      version: "0.10.0"
+      purpose: "Fairness metrics"
+      risk_assessment: "Low — reporting only, no effect on model"
+    - name: "MLflow"
+      version: "2.12.1"
+      purpose: "Experiment tracking and audit trail"
+      risk_assessment: "Low — logging only"
+
+# ── §5.7 Software Release ────────────────────────────────────────────────────
+release_criteria:
+  - criterion: "All unit tests pass (pytest exit code 0)"
+  - criterion: "Performance gates passed: macro AUROC ≥ 0.85, critical sensitivity ≥ 0.85"
+  - criterion: "Bias gates passed: DPD ≤ 0.05, EOD ≤ 0.10 for all protected attributes"
+  - criterion: "Validation report confirms IRB approval not expired"
+  - criterion: "MLflow run_id recorded in release notes"
+  - criterion: "SVR-001 signed off by Clinical AI Safety Engineer"
+  - criterion: "510(k) performance summary drafted from ClinicalMetrics output"
+
+# ── §6 Software Maintenance ───────────────────────────────────────────────────
+maintenance:
+  change_control: "Predetermined Change Control Plan (PCCP) — see pccp_config.yaml"
+  monitoring:
+    - "Monthly drift monitoring on production prediction distribution"
+    - "Quarterly bias re-analysis on incoming patient population"
+    - "Trigger re-training if macro AUROC drops below 0.83 in production"
+  anomaly_reporting:
+    - "All model failures involving patient harm reported per FDA MDR 21 CFR Part 803"
+    - "Adverse event log maintained in .sage/audit_log.db"

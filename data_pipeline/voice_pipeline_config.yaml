@@ -1,0 +1,182 @@
+# =============================================================================
+# Voice Data Pipeline Configuration
+# Version: 1.0.0
+# Schema documented in: voice_schema.sql
+# =============================================================================
+
+pipeline:
+  name: "sage_voice_ingestion"
+  version: "1.0.0"
+  idempotent: true          # dedup via content_hash (SHA-256) + external_id
+  batch_size: 200
+  max_retries: 3
+  retry_backoff_seconds: 5
+
+# ---------------------------------------------------------------------------
+# Source connectors
+# ---------------------------------------------------------------------------
+sources:
+  filesystem:
+    enabled: true
+    watch_dirs:
+      - path: "data/incoming/voice"
+        file_patterns: ["*.wav", "*.mp3", "*.flac", "*.ogg", "*.m4a", "*.webm", "*.aac"]
+    manifest_format: "json"         # companion .json sidecar per audio file (metadata)
+    archive_dir: "data/archive/voice"
+    error_dir: "data/errors/voice"
+
+  api:
+    enabled: false
+    base_url: "${VOICE_API_URL}"
+    auth_header: "Authorization"
+    auth_token: "${VOICE_API_TOKEN}"
+    endpoint: "/recordings"
+    page_size: 50
+
+# ---------------------------------------------------------------------------
+# Storage backend for audio files
+# ---------------------------------------------------------------------------
+storage:
+  backend: "local"                  # local | s3 | gcs | azure_blob
+  local_base_dir: "data/voice_store"
+
+  s3:
+    bucket: "${S3_VOICE_BUCKET}"
+    prefix: "recordings/"
+    region: "${AWS_REGION:-us-east-1}"
+    # Uses boto3 default credential chain (IAM role, env vars, ~/.aws/credentials)
+
+  gcs:
+    bucket: "${GCS_VOICE_BUCKET}"
+    prefix: "recordings/"
+
+# ---------------------------------------------------------------------------
+# Target database
+# ---------------------------------------------------------------------------
+staging_db:
+  host: "${VOICE_PG_HOST:-localhost}"
+  port: "${VOICE_PG_PORT:-5432}"
+  database: "${VOICE_PG_DB:-sage_voice}"
+  user: "${VOICE_PG_USER:-sage}"
+  password: "${VOICE_PG_PASSWORD}"
+  pool_min: 2
+  pool_max: 10
+  connect_timeout: 10
+  schema: "public"
+  schema_file: "voice_schema.sql"   # applied idempotently on startup
+
+# ---------------------------------------------------------------------------
+# Audio-specific validation rules
+# ---------------------------------------------------------------------------
+validation:
+  voice_recording:
+    # Fields that must be present and non-empty
+    required_fields:
+      - external_id
+      - content_hash
+      - storage_uri
+      - format
+      - duration_seconds
+      - sample_rate_hz
+      - channels
+      - file_size_bytes
+      - recorded_at
+      - language_bcp47
+      - consent_given
+      - consent_timestamp
+
+    # Supported container/codec formats
+    allowed_formats:
+      - wav
+      - mp3
+      - flac
+      - ogg
+      - m4a
+      - mp4
+      - webm
+      - aac
+
+    # Allowed sample rates (Hz)
+    allowed_sample_rates:
+      - 8000    # telephony
+      - 16000   # speech recognition standard
+      - 22050   # intermediate
+      - 24000   # high-quality speech
+      - 44100   # CD quality
+      - 48000   # professional audio
+
+    # Channel count (1=mono, 2=stereo)
+    allowed_channels: [1, 2]
+
+    # Duration bounds (seconds)
+    duration:
+      min_seconds: 0.1
+      max_seconds: 14400   # 4 hours hard ceiling
+
+    # File size bounds (bytes)
+    file_size:
+      min_bytes: 100        # avoids empty/header-only files
+      max_bytes: 2147483648 # 2 GiB
+
+    # Consent is non-negotiable: recording is rejected if consent_given != true
+    consent_required: true
+
+    # No recordings from the future (clock skew tolerance: 60s)
+    max_future_skew_seconds: 60
+
+    # quality_grade values — "unusable" triggers a warning, not hard rejection
+    reject_quality_grades: []
+    warn_quality_grades: ["unusable"]
+
+  voice_speaker:
+    required_fields:
+      - external_id
+    allowed_age_groups: ["child", "teen", "adult", "senior"]
+
+# ---------------------------------------------------------------------------
+# Optional: lightweight quality metrics computed on ingest (no ML model)
+# Requires: pydub + ffprobe on PATH.  Set enabled: false to skip.
+# ---------------------------------------------------------------------------
+quality_analysis:
+  enabled: true
+  silence_threshold_db: -50.0       # dBFS below which a frame is "silent"
+  clipping_threshold_db: -1.0       # dBFS above which a frame is "clipping"
+  min_snr_db_warn: 10.0             # warn if SNR below this
+  min_clarity_score_warn: 0.4       # warn if clarity below this
+
+# ---------------------------------------------------------------------------
+# Transcription (optional, async by default)
+# ---------------------------------------------------------------------------
+transcription:
+  enabled: false
+  engine: "whisper"                 # whisper | google_stt | azure_stt | aws_transcribe
+  model_id: "whisper-large-v3"
+  async_mode: true                  # submit job; results written by a separate worker
+  language: null                    # null = auto-detect
+
+# ---------------------------------------------------------------------------
+# Observability & experiment logging
+# ---------------------------------------------------------------------------
+logging:
+  level: "INFO"
+  format: "json"
+  file: "logs/voice_etl_{run_id}.log"
+  rotate_mb: 100
+  keep_days: 30
+
+metrics:
+  track_per_run:
+    - records_extracted
+    - records_loaded
+    - records_skipped
+    - records_failed
+    - validation_pass_rate
+    - avg_duration_seconds
+    - total_audio_hours
+    - load_duration_seconds
+  persist_to_db: true
+  export_prometheus: false
+
+alerts:
+  failure_rate_threshold: 0.05      # alert if >5 % records fail validation
+  notify_email: "${ALERT_EMAIL}"

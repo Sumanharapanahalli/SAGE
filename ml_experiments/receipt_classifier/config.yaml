@@ -1,0 +1,34 @@
+# receipt_classifier/config.yaml
+# ──────────────────────────────
+# All tuneable knobs in one place. train.py, evaluate.py, and inference.py
+# read from here. Change values here rather than in code.
+
+# ── MLflow ────────────────────────────────────────────────────────────────────
+mlflow:
+  experiment_name: "receipt_classifier"
+  tracking_uri: "mlruns"          # local file-based store; swap for remote URI
+
+# ── Training ──────────────────────────────────────────────────────────────────
+training:
+  random_state: 42
+  test_size: 0.20                 # 80/20 stratified split
+  cv_folds: 5
+  imbalance_threshold: 3.0        # max/min class ratio above which we warn
+
+# ── Model hyperparameters (GradientBoostingClassifier) ───────────────────────
+model:
+  n_estimators: 200
+  max_depth: 5
+  learning_rate: 0.08
+  subsample: 0.85
+  min_samples_leaf: 10
+
+# ── Inference SLA ─────────────────────────────────────────────────────────────
+inference:
+  latency_sla_ms: 50              # p95 single-sample must be <= 50 ms
+
+# ── Paths ─────────────────────────────────────────────────────────────────────
+paths:
+  model_dir: "models/"
+  data_dir: "data/"
+  reports_dir: "reports/"

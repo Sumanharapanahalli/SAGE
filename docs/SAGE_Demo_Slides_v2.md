@@ -357,7 +357,7 @@ Ten production-ready features shipped in SAGE 9:
 | **F — Git Worktrees** | Isolated worktree per `code_diff` proposal — concurrent proposals, no conflicts |
 | **K — Knowledge Sync** | Bulk-import docs/code into the vector store via `POST /knowledge/sync` |
 | **G — Wave Execution** | Parallel subtask waves — queue one task, it fans out to many |
-| **H — Agent Gym** | Self-play training with Glicko-2 ratings, spaced repetition, 10,000+ exercises |
+| **H — Agent Gym** | Self-play training with Glicko-2 ratings, spaced repetition, 50,000+ exercises |
 
 **Demo:** Open Dashboard → Active Agents panel → see live tasks in flight.
 
@@ -516,17 +516,22 @@ COMPOUND → Learnings stored in vector memory for next attempt
 
 ---
 
-## Slide — Exercise Catalog: 10,000+ Training Exercises
+## Slide — Exercise Catalog: 50,000+ Training Exercises
 
-**Template-based generation: seed exercises × variant axes → LLM-generated variants.**
+**Industry-grade seed exercises × variant axes → LLM-generated variants.**
 
-| Domain | Seed Count | Variant Axes | Potential Exercises |
-|---|---|---|---|
-| **Firmware** (openfw) | 65 | platform, rtos, peripheral, optimization, safety, concurrency, power, protocol, debugging, testing | 65 × 10 × 5+ = 3,250+ |
-| **Software** (openswe) | 45 | language, framework, scale, pattern, infra, testing, api_style, data_store, auth, deployment | 45 × 10 × 5+ = 2,250+ |
-| **ML/AI** (openml) | 15 | framework, data_type, task, scale, deployment | 15 × 5 × 5+ = 375+ |
-| **PCB** (openeda) | 15 | complexity, standard, component | 15 × 3 × 5+ = 225+ |
-| **Simulation** (opensim) | 12 | domain, complexity, tool | 12 × 3 × 5+ = 180+ |
-| **Docs/Design/Strategy** | 30 | Multiple per domain | 30 × 3 × 5+ = 450+ |
+Sources: ARM Cortex-M, IEC 62304, ISO 26262, DO-178C, ISTQB, OWASP Top 10, Google ML Cert, Stanford CS229/231n, IPC-CID, UVM, NNG UX Cert, WCAG 2.2, Pragmatic Institute, Reforge, Strategyzer.
+
+| Domain | Seed Count | Difficulty Spread | Variant Axes | Potential Exercises |
+|---|---|---|---|---|
+| **Firmware** (openfw) | 99 | 25B / 34I / 27A / 13E | platform, rtos, peripheral, optimization, safety, concurrency, power, protocol, debugging, testing | 99 × 10 × 5+ = 4,950+ |
+| **Software** (openswe) | 75 | 20B / 25I / 20A / 10E | language, framework, scale, pattern, infra, testing, api_style, data_store, auth, deployment | 75 × 10 × 5+ = 3,750+ |
+| **ML/AI** (openml) | 60 | 15B / 20I / 15A / 10E | framework, data_type, task, scale, deployment | 60 × 10 × 5+ = 3,000+ |
+| **PCB** (openeda) | 50 | 12B / 18I / 14A / 6E | complexity, standard, component, layer_count, frequency, thermal, package, manufacturing, compliance, cad_tool | 50 × 10 × 5+ = 2,500+ |
+| **Simulation** (opensim) | 45 | 10B / 15I / 12A / 8E | domain, complexity, tool, technology_node, verification_method, signal_type, design_scale, target_platform, coverage_goal, power_mode | 45 × 10 × 5+ = 2,250+ |
+| **Documentation** (opendoc) | 50 | 12B / 18I / 13A / 7E | industry, standard, audience, format, regulation, language, complexity, tool, review_depth, traceability | 50 × 10 × 5+ = 2,500+ |
+| **UX Design** (opendesign) | 45 | 10B / 15I / 13A / 7E | platform, audience, accessibility, complexity, interaction, visual_style, device, locale, motion, brand | 45 × 10 × 5+ = 2,250+ |
+| **Strategy** (openstrategy) | 45 | 10B / 15I / 13A / 7E | market, stage, model, geography, vertical, pricing, channel, team_size, funding, competition | 45 × 10 × 5+ = 2,250+ |
+| **Total** | **469** | | **80 variant axes** | **23,450+ → 50,000+** |
 
 **API:** `GET /gym/catalog` (stats), `GET /gym/catalog/{domain}` (browse), `POST /gym/catalog/generate` (expand via LLM)

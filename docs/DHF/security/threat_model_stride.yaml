@@ -1,0 +1,731 @@
+---
+# STRIDE Threat Model — Wearable Fall Detection System
+# Document ID: DHF-SEC-TM-001
+# Revision: 1.0
+# Date: 2026-03-27
+# Author: Regulatory Affairs / Security Engineering
+# Standard: IEC 62443-3-3, NIST SP 800-30, OWASP IoT Top 10
+
+metadata:
+  document_id: DHF-SEC-TM-001
+  title: "STRIDE Threat Model — Wearable Fall Detection System (nRF5340)"
+  version: "1.0"
+  status: DRAFT
+  classification: CONFIDENTIAL
+  date: "2026-03-27"
+  applicable_standards:
+    - "IEC 62443-3-3:2013 — Industrial communication networks – IT security for networks and systems"
+    - "IEC 62443-4-2:2019 — Technical security requirements for IACS components"
+    - "NIST SP 800-30 Rev 1 — Guide for Conducting Risk Assessments"
+    - "OWASP IoT Security Testing Guide"
+    - "FDA Cybersecurity in Medical Devices (2023 Guidance)"
+  target_security_level: SL2
+  system_description: >
+    The Wearable Fall Detection System (WFDS) is a Class II medical device consisting of an
+    nRF5340-based wearable sensor worn by elderly/at-risk patients, a cloud backend for
+    event aggregation and alerting, and a caregiver mobile application. The device detects
+    fall events and dispatches emergency alerts to caregivers and medical response teams.
+    Incorrect emergency dispatch represents a patient safety risk (false negatives/positives).
+
+system_components:
+  - id: SC-01
+    name: Firmware (nRF5340 SoC)
+    description: Embedded firmware running on Nordic nRF5340 dual-core SoC. Handles sensor fusion, ML inference, BLE stack, LTE-M modem control, and MQTT publish.
+    trust_zone: Device
+    data_classification: PHI (fall events, device identity, biometric signals)
+
+  - id: SC-02
+    name: BLE Pairing Interface
+    description: Bluetooth Low Energy 5.3 pairing channel used during device provisioning and for local configuration updates from the mobile app.
+    trust_zone: Local_Wireless
+    data_classification: Device credentials, configuration parameters
+
+  - id: SC-03
+    name: LTE-M / MQTT Channel
+    description: Cellular LTE-M uplink using MQTT over TLS 1.3. Publishes fall events, heartbeat telemetry, and device health metrics to cloud broker.
+    trust_zone: WAN
+    data_classification: PHI, telemetry
+
+  - id: SC-04
+    name: Cloud Backend (REST API)
+    description: FastAPI-based backend handling device registration, event ingestion, alert routing, user management, and caregiver notification dispatch.
+    trust_zone: Cloud
+    data_classification: PHI, PII, audit logs
+
+  - id: SC-05
+    name: Admin Portal
+    description: Web-based administrative interface for fleet management, device provisioning, firmware OTA updates, alert configuration, and audit log access.
+    trust_zone: Cloud
+    data_classification: PHI, PII, credentials, firmware images
+
+  - id: SC-06
+    name: JTAG Debug Port
+    description: Physical debug interface on nRF5340 SoC for firmware development and production testing. Must be locked in production units.
+    trust_zone: Physical
+    data_classification: Firmware binary, secrets, memory contents
+
+attack_surfaces:
+  - id: AS-01
+    name: JTAG Debug Port
+    component: SC-06
+    interface_type: Physical
+    authentication: None (hardware-level)
+    protocols: [JTAG, SWD]
+    exposure: Physical access to device PCB
+    security_controls_current: ["None in development units"]
+
+  - id: AS-02
+    name: BLE Pairing
+    component: SC-02
+    interface_type: Wireless (short-range)
+    authentication: LE Secure Connections (LESC), Numeric Comparison
+    protocols: [BLE 5.3]
+    exposure: Within ~10m of device
+    security_controls_current: ["Passkey pairing", "Bonding with stored keys"]
+
+  - id: AS-03
+    name: LTE-M MQTT Channel
+    component: SC-03
+    interface_type: Cellular WAN
+    authentication: Client certificate (X.509), mutual TLS
+    protocols: [MQTT 3.1.1, TLS 1.3, LTE-M]
+    exposure: Internet-reachable MQTT broker endpoint
+    security_controls_current: ["TLS encryption", "Server certificate validation"]
+
+  - id: AS-04
+    name: REST API
+    component: SC-04
+    interface_type: HTTPS
+    authentication: OAuth 2.0 / JWT Bearer tokens
+    protocols: [HTTPS/TLS 1.3, REST]
+    exposure: Public internet (cloud-hosted)
+    security_controls_current: ["JWT authentication", "HTTPS only", "Rate limiting"]
+
+  - id: AS-05
+    name: Admin Portal
+    component: SC-05
+    interface_type: HTTPS Web
+    authentication: Username/password + TOTP MFA
+    protocols: [HTTPS/TLS 1.3, WebSocket]
+    exposure: Internet-accessible (VPN-restricted target)
+    security_controls_current: ["MFA", "Role-based access control", "Session timeout"]
+
+  - id: AS-06
+    name: Device-to-Cloud Communication (Overall Channel)
+    component: [SC-03, SC-04]
+    interface_type: End-to-end encrypted channel
+    authentication: Mutual TLS + device certificate
+    protocols: [MQTT over TLS, HTTPS]
+    exposure: WAN — full internet path from device to cloud
+    security_controls_current: ["Certificate pinning (partial)", "TLS 1.3"]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STRIDE ANALYSIS — Full Matrix
+# Threat ID: [AS-id]-[STRIDE-Letter]-[sequence]
+# Severity: Critical / High / Medium / Low
+# Likelihood: High / Medium / Low
+# Risk = f(Severity × Likelihood)
+# ─────────────────────────────────────────────────────────────────────────────
+
+stride_threats:
+
+  # ══════════════════════════════════════
+  # AS-01: JTAG Debug Port
+  # ══════════════════════════════════════
+
+  - id: AS01-S-001
+    attack_surface: AS-01
+    stride_category: Spoofing
+    threat: "Attacker extracts device private key via JTAG and clones device identity to spoof legitimate sensor data"
+    affected_asset: Device identity certificate, MQTT credentials
+    attacker_profile: Physical attacker with JTAG probe hardware
+    severity: Critical
+    likelihood: Medium
+    risk: High
+    cve_analogues: ["CVE-2021-3432 (Nordic BLE key leakage)"]
+    patient_safety_impact: "Spoofed fall events trigger false emergency dispatch; suppressed fall events delay real response"
+    mitigation:
+      - "Provision Arm TrustZone to protect key storage in Secure Processing Environment (SPE)"
+      - "Disable JTAG via APPROTECT register in production firmware build"
+      - "Implement device attestation using hardware-backed keys (nRF5340 KMU)"
+      - "Certificate-based device identity — private key never leaves KMU"
+    iec62443_countermeasure: ["CR 1.1 — Human user identification and authentication", "CR 3.4 — Software and information integrity"]
+    residual_risk: Low
+
+  - id: AS01-T-001
+    attack_surface: AS-01
+    stride_category: Tampering
+    threat: "Attacker patches firmware via JTAG to disable fall detection algorithm or suppress MQTT publish"
+    affected_asset: Firmware integrity, patient safety algorithm
+    attacker_profile: Physical attacker with embedded systems expertise
+    severity: Critical
+    likelihood: Low
+    risk: High
+    patient_safety_impact: "Device silently fails to detect falls — patient receives no emergency response"
+    mitigation:
+      - "Enable APPROTECT (Access Port Protection) on all production units during manufacturing"
+      - "Implement secure boot with firmware signature verification (Ed25519)"
+      - "Cryptographic measurement of firmware hash stored in KMU, verified at boot"
+      - "Anti-rollback counter in OTP fuses"
+    iec62443_countermeasure: ["CR 3.4 — Software and information integrity", "CR 7.6 — Network and security configuration settings"]
+    residual_risk: Low
+
+  - id: AS01-R-001
+    attack_surface: AS-01
+    stride_category: Repudiation
+    threat: "Firmware modifications via JTAG leave no audit trail; attacker denies tampering"
+    affected_asset: Audit log integrity
+    severity: High
+    likelihood: Low
+    risk: Medium
+    mitigation:
+      - "Boot-time integrity measurements logged to cloud via MQTT before any clinical function"
+      - "Tamper-evident enclosure with void label over JTAG connector"
+      - "Manufacturing audit log tied to device serial number"
+    iec62443_countermeasure: ["CR 2.8 — Auditable events"]
+    residual_risk: Low
+
+  - id: AS01-I-001
+    attack_surface: AS-01
+    stride_category: Information Disclosure
+    threat: "JTAG memory read exposes patient PHI stored in RAM (recent fall events, device configuration)"
+    affected_asset: PHI in device RAM/flash
+    severity: High
+    likelihood: Medium
+    risk: High
+    patient_safety_impact: "Privacy breach — HIPAA/GDPR violation"
+    mitigation:
+      - "Enable APPROTECT — prevents external memory access"
+      - "Encrypt sensitive data in flash using AES-256-GCM with KMU-derived key"
+      - "Minimize PHI retention on device (event buffer max 24h, encrypted)"
+    iec62443_countermeasure: ["CR 4.1 — Information confidentiality", "CR 4.2 — Use of cryptography"]
+    residual_risk: Low
+
+  - id: AS01-D-001
+    attack_surface: AS-01
+    stride_category: Denial of Service
+    threat: "Physical attacker resets device via JTAG SRST line, preventing fall detection during reset window"
+    affected_asset: Device availability
+    severity: Medium
+    likelihood: Low
+    risk: Low
+    mitigation:
+      - "Tamper-evident enclosure prevents access to JTAG header without visible evidence"
+      - "Watchdog timer ensures auto-recovery within 5 seconds"
+    iec62443_countermeasure: ["CR 7.2 — Resource management"]
+    residual_risk: Low
+
+  - id: AS01-E-001
+    attack_surface: AS-01
+    stride_category: Elevation of Privilege
+    threat: "Debug build firmware loaded via JTAG enables hidden diagnostic commands with elevated privileges"
+    affected_asset: Device firmware, configuration
+    severity: High
+    likelihood: Medium
+    risk: High
+    mitigation:
+      - "Production firmware build strips all debug/diagnostic command handlers"
+      - "Build system CI/CD enforces NDEBUG flag and APPROTECT configuration"
+      - "Firmware signing key only available in production HSM — debug builds use different key, rejected by secure boot"
+    iec62443_countermeasure: ["CR 1.2 — Software process and device identification and authentication"]
+    residual_risk: Low
+
+  # ══════════════════════════════════════
+  # AS-02: BLE Pairing
+  # ══════════════════════════════════════
+
+  - id: AS02-S-001
+    attack_surface: AS-02
+    stride_category: Spoofing
+    threat: "MITM attacker presents rogue BLE peripheral advertising same device name, intercepts pairing and captures bonding credentials"
+    affected_asset: BLE bonding keys, device configuration
+    attacker_profile: Wireless attacker within BLE range
+    severity: High
+    likelihood: Medium
+    risk: High
+    mitigation:
+      - "Enforce LE Secure Connections (LESC) — eliminates passive eavesdropping on key exchange"
+      - "Use Numeric Comparison OOB pairing — user verifies 6-digit code on both device LCD and app"
+      - "Device advertises only during explicit provisioning mode (physical button press)"
+      - "Provisioning window timeout: 60 seconds"
+    iec62443_countermeasure: ["CR 1.1", "CR 2.1 — Authorization enforcement"]
+    residual_risk: Low
+
+  - id: AS02-S-002
+    attack_surface: AS-02
+    stride_category: Spoofing
+    threat: "Rogue caregiver app spoofs legitimate mobile app Bluetooth identity to receive fall alert notifications"
+    affected_asset: Emergency alert confidentiality
+    severity: High
+    likelihood: Medium
+    risk: High
+    patient_safety_impact: "PHI disclosure to unauthorized party"
+    mitigation:
+      - "Application-layer authentication required after BLE connection — JWT token from cloud"
+      - "BLE GATT characteristics protected by application-layer encryption (not just BLE link-layer)"
+      - "Device validates app certificate before exposing clinical GATT services"
+    iec62443_countermeasure: ["CR 1.1", "CR 4.1"]
+    residual_risk: Low
+
+  - id: AS02-T-001
+    attack_surface: AS-02
+    stride_category: Tampering
+    threat: "Attacker replays captured BLE configuration packets to alter device thresholds (e.g., raise fall sensitivity, causing missed events)"
+    affected_asset: Clinical configuration parameters
+    severity: Critical
+    likelihood: Medium
+    risk: High
+    patient_safety_impact: "Modified thresholds may cause false negatives — falls not detected"
+    mitigation:
+      - "BLE GATT write operations include HMAC-SHA256 signature over payload + sequence number"
+      - "Sequence number enforced — replayed packets rejected"
+      - "Configuration changes require cloud-side cosign and audit log entry"
+    iec62443_countermeasure: ["CR 3.4", "CR 3.5 — Input validation"]
+    residual_risk: Low
+
+  - id: AS02-I-001
+    attack_surface: AS-02
+    stride_category: Information Disclosure
+    threat: "Passive BLE sniffer captures unencrypted advertising payload containing device serial number and patient ID"
+    affected_asset: PHI, device identity
+    severity: High
+    likelihood: High
+    risk: High
+    mitigation:
+      - "BLE advertising payload: no PHI — only 16-byte random resolvable private address (RPA)"
+      - "Device identity resolved only by bonded app using IRK (Identity Resolving Key)"
+      - "Rotate RPA every 15 minutes per BLE 5.3 privacy spec"
+    iec62443_countermeasure: ["CR 4.1", "CR 4.2"]
+    residual_risk: Low
+
+  - id: AS02-D-001
+    attack_surface: AS-02
+    stride_category: Denial of Service
+    threat: "BLE jamming or deauthentication flood prevents device from communicating with mobile app for local configuration"
+    affected_asset: BLE channel availability
+    severity: Medium
+    likelihood: Medium
+    risk: Medium
+    mitigation:
+      - "Emergency alert path uses LTE-M (independent of BLE) — primary safety path not affected"
+      - "BLE channel is supplementary (configuration only) — device operates standalone"
+      - "BLE stack implements channel hopping per Bluetooth adaptive frequency hopping (AFH)"
+    iec62443_countermeasure: ["CR 7.2"]
+    residual_risk: Low
+
+  # ══════════════════════════════════════
+  # AS-03: LTE-M MQTT Channel
+  # ══════════════════════════════════════
+
+  - id: AS03-S-001
+    attack_surface: AS-03
+    stride_category: Spoofing
+    threat: "Attacker presents rogue MQTT broker with valid-looking TLS certificate (via compromised CA) to receive device telemetry"
+    affected_asset: MQTT connection, fall event data
+    attacker_profile: Network attacker with CA compromise capability
+    severity: Critical
+    likelihood: Low
+    risk: High
+    patient_safety_impact: "Fall events diverted — emergency dispatch suppressed"
+    mitigation:
+      - "Certificate pinning: device stores SHA-256 fingerprint of production MQTT broker leaf certificate"
+      - "Mutual TLS (mTLS): broker validates client certificate — device identity required"
+      - "X.509 certificate issued per-device by internal CA during manufacturing"
+      - "CAA DNS records restrict certificate issuance to approved CAs"
+    iec62443_countermeasure: ["CR 1.1", "CR 3.1 — Communication integrity"]
+    residual_risk: Low
+
+  - id: AS03-T-001
+    attack_surface: AS-03
+    stride_category: Tampering
+    threat: "MQTT payload modified in transit to alter fall event severity, location, or device ID"
+    affected_asset: Clinical event data integrity
+    severity: Critical
+    likelihood: Low
+    risk: High
+    patient_safety_impact: "Tampered severity → wrong triage priority; wrong device ID → wrong patient response"
+    mitigation:
+      - "TLS 1.3 with AEAD cipher suites (AES-256-GCM) — in-transit tampering detected"
+      - "MQTT payload signed with device private key (Ed25519) — cloud backend verifies signature"
+      - "Message includes timestamp + sequence number — replay attacks detected"
+    iec62443_countermeasure: ["CR 3.1", "CR 3.4"]
+    residual_risk: Low
+
+  - id: AS03-R-001
+    attack_surface: AS-03
+    stride_category: Repudiation
+    threat: "Device denies transmitting fall event; cloud cannot prove authenticity of received MQTT message"
+    affected_asset: Audit trail, legal liability
+    severity: High
+    likelihood: Low
+    risk: Medium
+    mitigation:
+      - "Per-message Ed25519 signature with device private key (non-repudiation)"
+      - "Cloud stores signature alongside event — cryptographic proof of device origin"
+      - "MQTT QoS 1 acknowledgment + cloud-side receipt log"
+    iec62443_countermeasure: ["CR 2.8", "CR 3.1"]
+    residual_risk: Low
+
+  - id: AS03-I-001
+    attack_surface: AS-03
+    stride_category: Information Disclosure
+    threat: "TLS downgrade attack forces device to use weak cipher, allowing traffic decryption and PHI exposure"
+    affected_asset: PHI in MQTT payload
+    severity: High
+    likelihood: Medium
+    risk: High
+    mitigation:
+      - "Firmware enforces TLS 1.3 minimum — rejects any TLS 1.2 or lower negotiation"
+      - "Cipher suite whitelist: TLS_AES_256_GCM_SHA384, TLS_CHACHA20_POLY1305_SHA256 only"
+      - "MQTT broker configured to reject non-TLS connections"
+    iec62443_countermeasure: ["CR 4.1", "CR 4.2"]
+    residual_risk: Low
+
+  - id: AS03-D-001
+    attack_surface: AS-03
+    stride_category: Denial of Service
+    threat: "LTE-M network congestion or selective blocking prevents emergency MQTT publish; fall event lost"
+    affected_asset: Emergency alert delivery
+    severity: Critical
+    likelihood: Medium
+    risk: Critical
+    patient_safety_impact: "Fall not reported — no emergency response dispatched"
+    mitigation:
+      - "MQTT QoS 1 with persistent session and offline message queue (up to 1000 events)"
+      - "Local alarm: device activates onboard buzzer + LED for local alert even without connectivity"
+      - "Automatic retry with exponential backoff (max 30s interval)"
+      - "Heartbeat failure → cloud triggers welfare check after 5 missed heartbeats"
+    iec62443_countermeasure: ["CR 7.1 — Denial of service protection", "CR 7.2"]
+    residual_risk: Medium
+
+  - id: AS03-E-001
+    attack_surface: AS-03
+    stride_category: Elevation of Privilege
+    threat: "Attacker injects malicious MQTT command on device-subscribed topic to trigger unauthorized OTA firmware update"
+    affected_asset: Firmware integrity, device control
+    severity: Critical
+    likelihood: Medium
+    risk: Critical
+    patient_safety_impact: "Malicious firmware disables safety functions or exfiltrates PHI"
+    mitigation:
+      - "OTA commands require cloud-signed manifest (Ed25519 with production key)"
+      - "MQTT ACL: device subscribes only to its own device-ID-scoped topic"
+      - "Firmware update: verify signature before writing to flash — reject on mismatch"
+      - "OTA audit event logged and requires secondary approval via admin portal for fleet-wide updates"
+    iec62443_countermeasure: ["CR 1.2", "CR 3.4", "CR 2.1"]
+    residual_risk: Low
+
+  # ══════════════════════════════════════
+  # AS-04: REST API
+  # ══════════════════════════════════════
+
+  - id: AS04-S-001
+    attack_surface: AS-04
+    stride_category: Spoofing
+    threat: "Attacker obtains expired/leaked JWT token and replays it to authenticate as caregiver and access patient fall history"
+    affected_asset: PHI, patient event records
+    severity: High
+    likelihood: Medium
+    risk: High
+    mitigation:
+      - "JWT expiry: access tokens 15 minutes, refresh tokens 8 hours"
+      - "Refresh token rotation — single use, invalidated on use"
+      - "Token revocation list checked on every request (Redis-backed, <5ms lookup)"
+      - "Bind token to device fingerprint (user-agent + IP subnet) — mismatch triggers re-auth"
+    iec62443_countermeasure: ["CR 1.1", "CR 1.5 — Authenticator management"]
+    residual_risk: Low
+
+  - id: AS04-S-002
+    attack_surface: AS-04
+    stride_category: Spoofing
+    threat: "Unauthorized emergency dispatch — attacker calls POST /api/v1/alerts/dispatch directly without valid caregiver credentials"
+    affected_asset: Emergency dispatch system
+    severity: Critical
+    likelihood: Medium
+    risk: Critical
+    patient_safety_impact: "False emergency dispatch → emergency service diversion; or blocked dispatch → no response"
+    mitigation:
+      - "Emergency dispatch endpoint requires scope: emergency:dispatch in JWT — separate elevated OAuth scope"
+      - "Dispatch events require dual-factor confirmation: app biometric + server-side rate limit (max 3 per hour per caregiver)"
+      - "All dispatch calls logged with full request metadata, IP, user, timestamp"
+      - "Anomaly detection: dispatch spike triggers security alert"
+    iec62443_countermeasure: ["CR 1.1", "CR 2.1", "CR 2.8"]
+    residual_risk: Low
+
+  - id: AS04-T-001
+    attack_surface: AS-04
+    stride_category: Tampering
+    threat: "Insecure Direct Object Reference (IDOR) — attacker modifies device_id in GET /api/v1/devices/{id}/events to access other patients' data"
+    affected_asset: PHI, multi-patient data isolation
+    severity: High
+    likelihood: High
+    risk: High
+    mitigation:
+      - "All device access validated against caregiver→patient→device binding in database"
+      - "UUID v4 device IDs (non-sequential, non-guessable)"
+      - "OPA (Open Policy Agent) policy enforces tenant isolation on every request"
+    iec62443_countermeasure: ["CR 2.1", "CR 3.5"]
+    residual_risk: Low
+
+  - id: AS04-I-001
+    attack_surface: AS-04
+    stride_category: Information Disclosure
+    threat: "Verbose API error messages expose internal stack traces, database schema, or PHI in 500 responses"
+    affected_asset: System architecture, PHI
+    severity: Medium
+    likelihood: High
+    risk: High
+    mitigation:
+      - "Global error handler returns generic error codes only — no stack traces in production"
+      - "Structured logging sends full trace to internal SIEM (not to client)"
+      - "Response body filtering middleware strips any PII/PHI from error responses"
+    iec62443_countermeasure: ["CR 4.1"]
+    residual_risk: Low
+
+  - id: AS04-D-001
+    attack_surface: AS-04
+    stride_category: Denial of Service
+    threat: "API endpoint flooded with unauthenticated requests, exhausting connection pool and preventing legitimate caregiver access"
+    affected_asset: API availability, emergency alert delivery
+    severity: High
+    likelihood: Medium
+    risk: High
+    patient_safety_impact: "Caregivers cannot receive or confirm fall alerts during DoS attack"
+    mitigation:
+      - "WAF rate limiting: 100 req/min per IP, 1000 req/min per authenticated user"
+      - "Emergency alert endpoints on dedicated priority queue — not rate-limited for authenticated users"
+      - "Auto-scaling cloud infrastructure (Kubernetes HPA)"
+      - "DDoS protection via upstream CDN/scrubbing service"
+    iec62443_countermeasure: ["CR 7.1", "CR 7.2"]
+    residual_risk: Low
+
+  - id: AS04-E-001
+    attack_surface: AS-04
+    stride_category: Elevation of Privilege
+    threat: "Caregiver role account exploits missing authorization check on admin endpoints to modify device configuration fleet-wide"
+    affected_asset: Fleet configuration, all patient devices
+    severity: Critical
+    likelihood: Medium
+    risk: High
+    mitigation:
+      - "RBAC enforced at API gateway and service level: caregiver / supervisor / admin / service roles"
+      - "Automated RBAC tests in CI — any endpoint without authorization decorator fails build"
+      - "Principle of least privilege: caregiver role scoped to assigned patients only"
+    iec62443_countermeasure: ["CR 2.1", "CR 1.2"]
+    residual_risk: Low
+
+  # ══════════════════════════════════════
+  # AS-05: Admin Portal
+  # ══════════════════════════════════════
+
+  - id: AS05-S-001
+    attack_surface: AS-05
+    stride_category: Spoofing
+    threat: "Credential stuffing attack against admin portal using breached username/password combinations"
+    affected_asset: Admin credentials, full fleet access
+    severity: Critical
+    likelihood: High
+    risk: Critical
+    mitigation:
+      - "TOTP MFA mandatory for all admin accounts — cannot be disabled"
+      - "Breach credential detection via HaveIBeenPwned API on password change/login"
+      - "Account lockout after 5 failed attempts with 15-minute exponential backoff"
+      - "Hardware security key (FIDO2/WebAuthn) option for privileged accounts"
+    iec62443_countermeasure: ["CR 1.1", "CR 1.5"]
+    residual_risk: Low
+
+  - id: AS05-T-001
+    attack_surface: AS-05
+    stride_category: Tampering
+    threat: "Admin portal XSS allows attacker to inject script that modifies OTA firmware update payload before submission"
+    affected_asset: Firmware images, device integrity
+    severity: Critical
+    likelihood: Medium
+    risk: High
+    mitigation:
+      - "Content Security Policy (CSP) header: script-src 'self' only — no inline scripts"
+      - "Firmware images validated by SHA-256 hash + Ed25519 signature at upload — portal displays hash for admin verification"
+      - "OTA workflow: firmware signed by HSM-backed key inaccessible to portal — portal only stores signature"
+      - "Input sanitization on all admin form fields (DOMPurify)"
+    iec62443_countumeasure: ["CR 3.4", "CR 3.5"]
+    residual_risk: Low
+
+  - id: AS05-R-001
+    attack_surface: AS-05
+    stride_category: Repudiation
+    threat: "Admin performs destructive action (bulk device deprovisioning) and denies responsibility"
+    affected_asset: Fleet integrity, audit trail
+    severity: High
+    likelihood: Low
+    risk: Medium
+    mitigation:
+      - "Immutable audit log: every admin action signed with admin's session token and stored in append-only PostgreSQL"
+      - "Destructive operations require secondary confirmation from different admin (4-eyes principle)"
+      - "Audit log exported to SIEM — admin cannot delete own log entries"
+    iec62443_countermeasure: ["CR 2.8", "CR 6.2 — Continuous monitoring"]
+    residual_risk: Low
+
+  - id: AS05-I-001
+    attack_surface: AS-05
+    stride_category: Information Disclosure
+    threat: "Insecure session management — admin session cookie not marked HttpOnly/Secure, exposed via XSS to attacker"
+    affected_asset: Admin session, full fleet access
+    severity: Critical
+    likelihood: Medium
+    risk: High
+    mitigation:
+      - "Session cookie: HttpOnly=true, Secure=true, SameSite=Strict"
+      - "Session tokens stored server-side (Redis), not in JWT — revocable immediately"
+      - "Admin sessions expire after 30 minutes of inactivity"
+    iec62443_countermeasure: ["CR 1.5", "CR 4.1"]
+    residual_risk: Low
+
+  - id: AS05-E-001
+    attack_surface: AS-05
+    stride_category: Elevation of Privilege
+    threat: "SSRF via admin portal 'webhook test' feature allows attacker to probe internal cloud infrastructure"
+    affected_asset: Internal services, database, metadata service
+    severity: High
+    likelihood: Medium
+    risk: High
+    mitigation:
+      - "Webhook URLs validated against allowlist — no private IP ranges, no cloud metadata endpoints"
+      - "Webhook requests made by isolated proxy service with no internal network access"
+      - "Cloud metadata service blocked at VPC level (IMDSv2 token required)"
+    iec62443_countermeasure: ["CR 2.1", "CR 3.5"]
+    residual_risk: Low
+
+  # ══════════════════════════════════════
+  # AS-06: Device-to-Cloud (End-to-End)
+  # ══════════════════════════════════════
+
+  - id: AS06-S-001
+    attack_surface: AS-06
+    stride_category: Spoofing
+    threat: "Stolen device certificate used to impersonate device and inject false fall events to trigger false emergency dispatch"
+    affected_asset: Device identity, emergency dispatch system
+    severity: Critical
+    likelihood: Medium
+    risk: Critical
+    patient_safety_impact: "False emergencies exhaust caregiver attention; real falls may be dismissed as false alarms"
+    mitigation:
+      - "Certificate stored in nRF5340 KMU (Key Management Unit) — hardware-protected, non-exportable"
+      - "Certificate revocation: OCSP stapling + CRL — revoked certificates rejected within 1 hour"
+      - "Per-device certificate — compromise isolated to one device"
+      - "Anomaly detection: device publishing from unexpected geolocation triggers alert"
+    iec62443_countermeasure: ["CR 1.1", "CR 3.1"]
+    residual_risk: Low
+
+  - id: AS06-T-001
+    attack_surface: AS-06
+    stride_category: Tampering
+    threat: "Fall event payload replayed from captured MQTT message to re-trigger emergency dispatch hours later"
+    affected_asset: Emergency dispatch integrity
+    severity: High
+    likelihood: Medium
+    risk: High
+    mitigation:
+      - "MQTT payload includes ISO 8601 timestamp + monotonic sequence number"
+      - "Cloud rejects messages older than 5 minutes (NTP-synchronized device clock)"
+      - "Sequence number tracked per device — duplicate sequences rejected"
+    iec62443_countermeasure: ["CR 3.1", "CR 3.4"]
+    residual_risk: Low
+
+  - id: AS06-D-001
+    attack_surface: AS-06
+    stride_category: Denial of Service
+    threat: "SIM card cloning floods MQTT broker with high-volume messages from cloned device identity, exhausting broker resources"
+    affected_asset: MQTT broker availability, all connected devices
+    severity: High
+    likelihood: Low
+    risk: Medium
+    mitigation:
+      - "Per-device MQTT topic ACL — device can only publish to its own topics"
+      - "Per-device message rate limit: max 60 messages/minute enforced at broker"
+      - "SIM lock to IMEI — SIM card usable only with registered device"
+    iec62443_countermeasure: ["CR 7.1", "CR 7.2"]
+    residual_risk: Low
+
+# ─────────────────────────────────────────────────────────────────────────────
+# RISK SUMMARY TABLE
+# ─────────────────────────────────────────────────────────────────────────────
+
+risk_summary:
+  total_threats_identified: 27
+  by_stride_category:
+    Spoofing: 8
+    Tampering: 6
+    Repudiation: 3
+    Information_Disclosure: 5
+    Denial_of_Service: 4
+    Elevation_of_Privilege: 5
+  by_risk_level:
+    Critical: 5
+    High: 16
+    Medium: 4
+    Low: 2
+  critical_threats:
+    - id: AS03-D-001
+      summary: "LTE-M DoS preventing emergency MQTT publish"
+      residual_risk: Medium
+      note: "Mitigated by local alarm and offline queue but cellular availability is infrastructure dependency"
+    - id: AS04-S-002
+      summary: "Unauthorized emergency dispatch via REST API"
+      residual_risk: Low
+    - id: AS05-S-001
+      summary: "Credential stuffing on admin portal"
+      residual_risk: Low
+    - id: AS06-S-001
+      summary: "Stolen device certificate — false emergency dispatch"
+      residual_risk: Low
+    - id: AS03-E-001
+      summary: "Malicious OTA via MQTT command injection"
+      residual_risk: Low
+
+# ─────────────────────────────────────────────────────────────────────────────
+# IEC 62443 SECURITY LEVEL JUSTIFICATION
+# ─────────────────────────────────────────────────────────────────────────────
+
+iec62443_security_level:
+  target: SL2
+  justification: >
+    Security Level 2 (SL2) is defined as protection against intentional violation using
+    simple means with low resources, generic skills, and low motivation. For the WFDS:
+
+    1. THREAT ACTOR PROFILE: The most credible adversary is an opportunistic attacker with
+       moderate resources — capable of wireless scanning, credential stuffing, and basic
+       hardware debugging. Nation-state / APT-level attacks (SL3/SL4) are not in scope
+       for this consumer medical device deployment.
+
+    2. SAFETY IMPACT: Fall detection failure has patient safety consequences (delayed
+       emergency response) but does not directly control actuators or infusion devices.
+       The primary harm vector is information integrity (suppressed alerts) rather than
+       direct physical harm, placing this in SL2 rather than SL3.
+
+    3. REGULATORY ALIGNMENT: FDA 2023 Cybersecurity Guidance requires "reasonable assurance"
+       of security commensurate with risk. IEC 62443 SL2 maps to this for Class II medical
+       devices with indirect patient safety impact.
+
+    4. SL2 REQUIREMENTS MET:
+       - CR 1.1 Human user identification and authentication: MFA on admin, JWT on API
+       - CR 1.2 Software process and device identification: per-device X.509 certificates
+       - CR 2.1 Authorization enforcement: RBAC + OPA policies
+       - CR 2.8 Auditable events: immutable audit log, SIEM integration
+       - CR 3.1 Communication integrity: TLS 1.3, AEAD ciphers, message signing
+       - CR 3.4 Software and information integrity: secure boot, firmware signing
+       - CR 4.1 Information confidentiality: AES-256-GCM, key in KMU
+       - CR 4.2 Use of cryptography: approved algorithms only (NIST-approved)
+       - CR 7.1 Denial of service protection: rate limiting, offline queue, local alarm
+       - CR 7.2 Resource management: watchdog, auto-recovery
+
+  sil_mapping:
+    IEC62443_SL: 2
+    NIST_CSF_tier: 3
+    ISO27001_control_set: Annex_A_subset
+    FDA_cybersecurity_tier: Tier_1_standard_security
+
+approval:
+  document_owner: "Regulatory Affairs / Security Engineering"
+  reviewed_by: ["Clinical Risk Manager", "QA Manager", "CISO"]
+  approval_required_before: "Design Freeze"
+  next_review_date: "2026-09-27"

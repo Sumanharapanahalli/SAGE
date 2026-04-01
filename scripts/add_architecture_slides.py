@@ -17,6 +17,9 @@ New slides:
  11.  Solution Isolation Model (.sage/ per solution)
  12.  MCP Tool Architecture (Framework + Solution Layers)
  13.  Integration Architecture — Graceful Degradation
+ 14.  Sandboxed Execution — 3-Tier Isolation Cascade
+ 15.  Agentic Patterns — 0→1 Greenfield Build
+ 16.  Agentic Patterns — 1→N Incremental Refinement
 """
 
 import copy
@@ -755,6 +758,210 @@ def slide_integration_architecture(prs):
     return slide
 
 
+def slide_sandboxed_execution(prs):
+    """Slide 14: Sandboxed Execution — 3-Tier Cascade."""
+    slide = prs.slides.add_slide(blank_layout(prs))
+    slide_bg(slide)
+    header_band(slide, "Sandboxed Execution — 3-Tier Isolation Cascade",
+                "OpenShell (container) → SandboxRunner (local clone) → OpenSWE (autonomous coding)")
+
+    # 3-tier cascade diagram
+    tiers = [
+        ("Tier 1: OpenShell", "NVIDIA container sandbox",
+         [
+             "SSH-based execution inside container",
+             "YAML security policies (commands, files, network)",
+             "GPU-accelerated (ML training, inference)",
+             "Full process + filesystem isolation",
+             "Graceful degradation if unavailable",
+         ], SAGE_DARK),
+        ("Tier 2: SandboxRunner", "Local repo isolation",
+         [
+             "Clones solution repo → temp working dir",
+             "Creates isolated branch per execution",
+             "Restricts file ops to sandbox directory",
+             "Primitives: execute(), read_file(), write_file()",
+             "Configurable retain for debugging",
+         ], SAGE_TEAL),
+        ("Tier 3: OpenSWE", "Autonomous coding agent",
+         [
+             "Repo explore → implement → test → PR",
+             "Internal 3-tier: SWE agent → LangGraph → LLM direct",
+             "Unified output: {files_changed, tests_passed, pr_url}",
+             "Integrates with build orchestrator wave execution",
+         ], SAGE_GREEN),
+    ]
+
+    for i, (title, subtitle, bullets, color) in enumerate(tiers):
+        l = Inches(0.4) + i * Inches(4.3)
+        w = Inches(4.0)
+        # Header box
+        diagram_box(slide, title, l, Inches(1.7), w, Inches(0.45), fill=color, sz=11)
+        add_text(slide, subtitle, l + Inches(0.1), Inches(2.2), w - Inches(0.2),
+                 Inches(0.3), sz=10, italic=True, color=GREY, align=PP_ALIGN.CENTER)
+        # Bullets
+        add_multiline(slide, bullets, l + Inches(0.15), Inches(2.6),
+                      w - Inches(0.3), sz=10, color=SAGE_DARK, bullet="• ", line_h=Inches(0.26))
+
+        # Arrow between tiers
+        if i < 2:
+            arrow_l = l + w + Inches(0.02)
+            add_text(slide, "fallback →", arrow_l, Inches(1.78), Inches(0.8), Inches(0.3),
+                     sz=9, bold=True, color=SAGE_AMBER, align=PP_ALIGN.CENTER)
+
+    # Bottom: cascade flow
+    top3 = Inches(4.8)
+    add_rect(slide, Inches(0.4), top3, Inches(12.5), Inches(2.0), fill_color=SAGE_DARK)
+    section_label(slide, "Cascade Logic (build_orchestrator.py)", Inches(0.6), top3 + Inches(0.1), Inches(3.5))
+
+    cascade_lines = [
+        "1. Try OpenShell: if NVIDIA container available + task needs isolation → SSH exec in container",
+        "2. Fallback to SandboxRunner: clone repo, isolate branch, execute locally",
+        "3. Fallback to OpenSWE: autonomous coding agent (explore → implement → test → PR)",
+        "4. Each tier returns same format: {success, output, files_changed} — orchestrator is tier-agnostic",
+        "",
+        "Key files: openshell_runner.py (Tier 1), sandbox_runner.py (Tier 2), openswe_runner.py (Tier 3)",
+    ]
+    add_multiline(slide, cascade_lines, Inches(0.6), top3 + Inches(0.45),
+                  Inches(12), sz=10, color=SAGE_MINT, bullet="", line_h=Inches(0.26))
+
+    footer_band(slide)
+    return slide
+
+
+def slide_agentic_patterns_0to1(prs):
+    """Slide 15: Agentic Patterns — 0→1 Greenfield Build."""
+    slide = prs.slides.add_slide(blank_layout(prs))
+    slide_bg(slide)
+    header_band(slide, "Agentic Patterns — 0→1 Greenfield Build",
+                "Idea → Domain Detection → Decomposition → Critic → HITL → Wave Build → Ship")
+
+    # Left: Pipeline stages
+    section_label(slide, "0→1 Pipeline Stages", Inches(0.4), Inches(1.65), Inches(2.5))
+    stages = [
+        ("Description Input", "Plain-language product idea", SAGE_DARK),
+        ("Domain Detection", "13 DOMAIN_RULES — auto-selects compliance, toolchains", SAGE_TEAL),
+        ("Workforce Assembly", "19 agents, 5 teams from WORKFORCE_REGISTRY", SAGE_DARK),
+        ("Hierarchical Decomposition", "LLM → 32 task types → dependency graph", SAGE_TEAL),
+        ("Critic Reviews Plan", "CriticAgent scores 0-100, flaws, suggestions", SAGE_AMBER),
+        ("HITL Plan Approval", "Human reviews decomposed plan", SAGE_RED),
+        ("Wave Execution", "Independent tasks in parallel, deps sequential", SAGE_GREEN),
+        ("Critic Reviews Code", "Per-task quality review", SAGE_AMBER),
+        ("Integration Merge", "All outputs combined", SAGE_DARK),
+        ("Critic Reviews Integration", "System-level review", SAGE_AMBER),
+        ("HITL Final Approval", "Human signs off on completed build", SAGE_RED),
+    ]
+
+    y = Inches(2.0)
+    for label, desc, color in stages:
+        diagram_box(slide, label, Inches(0.5), y, Inches(2.8), Inches(0.32), fill=color, sz=8)
+        add_text(slide, desc, Inches(3.5), y + Inches(0.02), Inches(3.5), Inches(0.28),
+                 sz=9, color=SAGE_DARK)
+        y += Inches(0.4)
+
+    # Right: Patterns used
+    section_label(slide, "Patterns in 0→1", Inches(7.2), Inches(1.65), Inches(2))
+    patterns = [
+        ("ReAct", "Per-task: observe → think → act → observe"),
+        ("Hierarchical Decomp", "Description → task graph (32 types)"),
+        ("Wave Parallel", "_compute_waves() groups independent work"),
+        ("Adaptive Router", "Q-learning: scores[task][agent], ε=0.2"),
+        ("Actor-Critic", "CriticAgent at 3 checkpoints (plan/code/integration)"),
+        ("HITL Gates", "2 mandatory stops: post-plan, post-integration"),
+        ("Anti-Drift", "Checkpoint after each state, BUILD_DRIFT_WARNING"),
+        ("Iterative Refine", "Score < threshold → retry with critic feedback"),
+    ]
+    y = Inches(2.0)
+    for name, desc in patterns:
+        add_text(slide, name, Inches(7.3), y, Inches(2), Inches(0.24),
+                 sz=9, bold=True, color=SAGE_TEAL)
+        add_text(slide, desc, Inches(9.4), y, Inches(3.5), Inches(0.24),
+                 sz=9, color=SAGE_DARK)
+        y += Inches(0.3)
+
+    # Bottom note
+    add_rect(slide, Inches(0.4), Inches(6.4), Inches(12.5), Inches(0.55), fill_color=WARN_BG)
+    add_text(slide, ("0→1 starts cold: AdaptiveRouter uses uniform scores, domain detected fresh, "
+                     "full workforce assembled. Every decision during the build trains the router "
+                     "and critic for future 1→N refinements."),
+             Inches(0.5), Inches(6.42), Inches(12.3), Inches(0.5),
+             sz=10, italic=True, color=SAGE_DARK)
+
+    footer_band(slide)
+    return slide
+
+
+def slide_agentic_patterns_1toN(prs):
+    """Slide 16: Agentic Patterns — 1→N Refinement."""
+    slide = prs.slides.add_slide(blank_layout(prs))
+    slide_bg(slide)
+    header_band(slide, "Agentic Patterns — 1→N Incremental Refinement",
+                "Same orchestrator, scoped to changes. Router warm. Critic calibrated. Intelligence compounds.")
+
+    # Left: What's different in 1→N
+    section_label(slide, "How 1→N Differs from 0→1", Inches(0.4), Inches(1.65), Inches(3))
+    diffs = [
+        ("Domain", "Already known — skips detection"),
+        ("Workforce", "Stable — router has learned agent strengths"),
+        ("Decomposition", "Scoped to the change, not the whole product"),
+        ("Router Scores", "Warm — compounded from prior builds (EMA)"),
+        ("Critic Calibration", "Higher baseline — knows existing quality"),
+        ("Anti-Drift", "Compares against established baseline, not blank"),
+    ]
+    y = Inches(2.0)
+    for label, desc in diffs:
+        add_text(slide, label, Inches(0.5), y, Inches(1.8), Inches(0.24),
+                 sz=10, bold=True, color=SAGE_TEAL)
+        add_text(slide, desc, Inches(2.4), y, Inches(4.5), Inches(0.24),
+                 sz=10, color=SAGE_DARK)
+        y += Inches(0.3)
+
+    # Right: Compounding intelligence diagram
+    section_label(slide, "Compounding Intelligence Loop", Inches(7.2), Inches(1.65), Inches(3))
+    loop_boxes = [
+        ("0→1 Build", "Router starts uniform\nCritic calibrates", SAGE_DARK),
+        ("Human Feedback", "Approvals + rejections\nstored with reasoning", SAGE_RED),
+        ("Vector Store", "Prior decisions retrieved\nfor next context", SAGE_TEAL),
+        ("1→N Refinement", "Router warm, critic tuned\nFaster + higher quality", SAGE_GREEN),
+    ]
+    y = Inches(2.0)
+    for label, desc, color in loop_boxes:
+        diagram_box(slide, label, Inches(7.3), y, Inches(2.2), Inches(0.55), fill=color, sz=9)
+        add_text(slide, desc, Inches(9.7), y + Inches(0.04), Inches(3), Inches(0.48),
+                 sz=9, color=SAGE_DARK)
+        if label != "1→N Refinement":
+            arrow_down(slide, Inches(8.3), y + Inches(0.55))
+        y += Inches(0.75)
+
+    # Feedback arrow back to top
+    add_text(slide, "↻ compounds back", Inches(10.5), Inches(4.85), Inches(2), Inches(0.3),
+             sz=9, bold=True, color=SAGE_GREEN)
+
+    # Bottom: Triggers for 1→N
+    top3 = Inches(4.3)
+    section_label(slide, "1→N Triggers", Inches(0.4), top3, Inches(1.8))
+    triggers = [
+        "Feature request (from Improvements page, scope: solution)",
+        "Bug report (from monitoring agent or human)",
+        "Critic-identified improvement (score below threshold on re-eval)",
+        "Human correction during approval (rejection feedback → improvement task)",
+        "External event (Slack webhook, n8n trigger, GitHub issue)",
+    ]
+    add_multiline(slide, triggers, Inches(0.5), top3 + Inches(0.35),
+                  Inches(6.5), sz=10, color=SAGE_DARK, bullet="• ", line_h=Inches(0.26))
+
+    # Bottom summary
+    add_rect(slide, Inches(0.4), Inches(6.2), Inches(12.5), Inches(0.7), fill_color=SAGE_DARK)
+    add_text(slide, ("The same 8 patterns power both 0→1 and 1→N. The difference is state: "
+                     "0→1 starts cold, 1→N starts warm. Every build makes the next one better — "
+                     "this is the Memento principle applied to the entire product lifecycle."),
+             Inches(0.6), Inches(6.3), Inches(12.1), Inches(0.55),
+             sz=11, color=SAGE_MINT)
+
+    footer_band(slide)
+    return slide
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # Main — Insert slides into existing deck
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -783,6 +990,9 @@ def main():
         slide_solution_isolation,
         slide_mcp_architecture,
         slide_integration_architecture,
+        slide_sandboxed_execution,
+        slide_agentic_patterns_0to1,
+        slide_agentic_patterns_1toN,
     ]
 
     for builder in builders:
@@ -796,7 +1006,7 @@ def main():
     print(f"       ({len(new_prs.slides)} slides)")
     print(f"\n  Share both decks:")
     print(f"    1. SageAI_Tech_Pitch.pptx           — overview (17 slides)")
-    print(f"    2. SageAI_Architecture_DeepDive.pptx — deep dive (9 slides)")
+    print(f"    2. SageAI_Architecture_DeepDive.pptx — deep dive (12 slides)")
     print(f"\n  Or merge them: copy deep-dive slides after slide 4 of the tech pitch.")
 
 

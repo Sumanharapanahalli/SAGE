@@ -1,0 +1,9 @@
+# Decision Tree (Info Gain + REP) — Iris Experiment
+# Python >= 3.11
+
+# Core numerics
+numpy==1.26.4
+
+# Dataset loading, metrics, split utilities, scaler
+# (decision_tree.py itself has zero sklearn dependency)
+scikit-learn==1.4.2

@@ -1,0 +1,172 @@
+# NER Dataset Schema Documentation
+# ==================================
+# Version: 1.0.0
+# Last updated: 2026-03-28
+#
+# This file is the authoritative schema reference for the NER data pipeline.
+# It covers: raw input format, processed output format, and the SQLite
+# persistence schema.  Keep this file in sync with validators.py and init_db.sql.
+
+# ── Allowed entity types ──────────────────────────────────────────────────────
+entity_types:
+  - label: PER
+    description: "Named person or fictional character"
+    examples: ["Steve Jobs", "Marie Curie", "Sherlock Holmes"]
+
+  - label: ORG
+    description: "Company, institution, or organization"
+    examples: ["Apple Inc.", "WHO", "NASA"]
+
+  - label: LOC
+    description: "Physical location (mountain, river, building)"
+    examples: ["Mount Everest", "Thames River", "Eiffel Tower"]
+
+  - label: GPE
+    description: "Geo-political entity (country, city, state)"
+    examples: ["United States", "London", "California"]
+
+  - label: DATE
+    description: "Absolute or relative date expression"
+    examples: ["January 2024", "last Tuesday", "Q3 2025"]
+
+  - label: TIME
+    description: "Time of day or duration"
+    examples: ["3 pm", "two hours", "midnight"]
+
+  - label: MONEY
+    description: "Monetary value with or without currency"
+    examples: ["$1.5 million", "€50", "two hundred dollars"]
+
+  - label: PRODUCT
+    description: "Named product (software, hardware, consumer goods)"
+    examples: ["iPhone 15", "GPT-4", "Tesla Model S"]
+
+  - label: EVENT
+    description: "Named event (conference, war, natural disaster)"
+    examples: ["World War II", "WWDC 2024", "Hurricane Katrina"]
+
+  - label: MISC
+    description: "Miscellaneous named entity not covered by above types"
+    examples: ["Python", "IEEE 802.11"]
+
+# ── BIO tagging scheme ────────────────────────────────────────────────────────
+bio_scheme:
+  version: BIO2
+  tags:
+    O:      "Outside — not part of any entity"
+    B-TYPE: "Beginning of an entity of TYPE"
+    I-TYPE: "Continuation of an entity of TYPE"
+  rules:
+    - "I-X must always be preceded by B-X or I-X (same type)"
+    - "B-X may appear without any preceding O (sentence-initial entity)"
+    - "O may appear freely"
+  example:
+    text: "Steve Jobs founded Apple in Cupertino ."
+    tokens:
+      - {token: "Steve",    tag: "B-PER"}
+      - {token: "Jobs",     tag: "I-PER"}
+      - {token: "founded",  tag: "O"}
+      - {token: "Apple",    tag: "B-ORG"}
+      - {token: "in",       tag: "O"}
+      - {token: "Cupertino",tag: "B-GPE"}
+      - {token: ".",        tag: "O"}
+
+# ── Raw input (JSONL) schema ─────────────────────────────────────────────────
+raw_input:
+  format: JSONL
+  encoding: UTF-8
+  max_chars_per_doc: 100000
+  min_chars_per_doc: 1
+  required_fields:
+    doc_id:
+      type: string
+      pattern: "^[\\w\\-]+$"
+      description: "Unique document identifier (alphanumeric + _ + -)"
+    text:
+      type: string
+      description: "Raw UTF-8 document text"
+    entities:
+      type: array
+      items:
+        start:
+          type: integer
+          description: "Inclusive character offset"
+        end:
+          type: integer
+          description: "Exclusive character offset (end > start)"
+        label:
+          type: string
+          enum: [PER, ORG, LOC, GPE, DATE, TIME, MONEY, PRODUCT, EVENT, MISC]
+  optional_fields:
+    source:
+      type: string
+      default: "unknown"
+      description: "Data provenance tag"
+    language:
+      type: string
+      pattern: "^[a-z]{2}$"
+      default: "en"
+  validation_rules:
+    - "No overlapping entity spans"
+    - "All spans within text character bounds"
+    - "doc_id unique within a pipeline run"
+
+# ── Processed output (CoNLL-2003) schema ─────────────────────────────────────
+processed_output:
+  format: CoNLL-2003
+  encoding: UTF-8
+  columns:
+    - name: token
+      description: "Surface form of the token"
+    - name: bio_tag
+      description: "BIO2 tag (O | B-TYPE | I-TYPE)"
+  sentence_boundary: "blank line between sentences"
+  files:
+    train.conll:
+      split_ratio: 0.70
+      stratification: entity_density_bucket
+    val.conll:
+      split_ratio: 0.15
+      stratification: entity_density_bucket
+    test.conll:
+      split_ratio: 0.15
+      stratification: entity_density_bucket
+  manifest: pipeline_manifest.json
+
+# ── Stratification buckets ────────────────────────────────────────────────────
+stratification:
+  key: entity_density_bucket
+  buckets:
+    empty:  {description: "0 entities",  entity_count_range: [0, 0]}
+    low:    {description: "1-2 entities", entity_count_range: [1, 2]}
+    medium: {description: "3-5 entities", entity_count_range: [3, 5]}
+    high:   {description: ">5 entities",  entity_count_range: [6, null]}
+
+# ── Idempotency guarantees ────────────────────────────────────────────────────
+idempotency:
+  mechanism: SHA-256 content hash per document
+  scope: within a single pipeline run (tracked in memory)
+  guarantee: >
+    Running the pipeline twice on identical input produces byte-identical
+    CoNLL files, identical manifest checksums, and identical split sizes.
+    Duplicate documents (same text, different doc_id) are silently skipped.
+
+# ── Quality thresholds ────────────────────────────────────────────────────────
+quality_thresholds:
+  max_o_token_ratio: 0.95
+  min_sentences_per_split: 10
+  warn_if_entity_type_missing_from_split: true
+
+# ── Experiment logging ────────────────────────────────────────────────────────
+experiment_logging:
+  backend: ExperimentLogger (local JSONL)
+  log_dir: experiments/
+  file: ner_prep_runs.jsonl
+  logged_metrics:
+    - sentences_train
+    - sentences_val
+    - sentences_test
+    - tokens_total
+    - docs_rejected
+    - class_imbalance_flag
+    - entity_<TYPE>_count (per type)

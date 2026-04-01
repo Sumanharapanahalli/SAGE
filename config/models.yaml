@@ -1,0 +1,105 @@
+# =============================================================================
+# Model Registry
+# Maps document/task types to model file paths, versions, and metadata.
+#
+# Paths are resolved relative to the project root unless absolute.
+# The model registry loader validates file existence at startup.
+# =============================================================================
+
+models:
+
+  # --------------------------------------------------------------------------
+  # Named Entity Recognition
+  # --------------------------------------------------------------------------
+  ner:
+    description: "Extracts entities (names, dates, org, amounts) from document text"
+    type: spacy_model
+    path: "${NER_MODEL_PATH}"      # resolved from env at load time
+    version: "1.2.0"
+    language: en
+    document_types:
+      - invoice
+      - contract
+      - medical_report
+      - legal_brief
+      - financial_statement
+    min_confidence: 0.75
+    batch_size: 32
+
+  # --------------------------------------------------------------------------
+  # Table Detection & Extraction
+  # --------------------------------------------------------------------------
+  table_detection:
+    description: "Detects and extracts tabular structures from document images"
+    type: pytorch_weights
+    path: "${TABLE_MODEL_PATH}"
+    version: "1.0.0"
+    architecture: table_transformer
+    document_types:
+      - invoice
+      - financial_statement
+      - lab_report
+      - purchase_order
+    input:
+      format: image
+      size: [800, 800]
+      normalize: true
+    output:
+      format: bounding_boxes
+      labels: [table, row, column, header, cell]
+    min_confidence: 0.60
+    device: cpu              # "cpu" | "cuda" — override via TABLE_MODEL_DEVICE env var
+
+  # --------------------------------------------------------------------------
+  # Document Classifier
+  # --------------------------------------------------------------------------
+  document_classifier:
+    description: "Classifies documents into predefined categories"
+    type: pytorch_weights
+    path: "${CLASSIFIER_MODEL_PATH}"
+    version: "2.1.0"
+    architecture: bert_classification_head
+    document_types: all       # handles any document type
+    classes:
+      - invoice
+      - contract
+      - medical_report
+      - legal_brief
+      - financial_statement
+      - lab_report
+      - purchase_order
+      - resume
+      - tax_form
+      - other
+    input:
+      format: text
+      max_tokens: 512
+      tokenizer: bert-base-uncased
+    min_confidence: 0.55
+    fallback_class: other    # assigned when max confidence < min_confidence
+
+# --------------------------------------------------------------------------
+# Routing rules: document_type -> ordered list of models to run
+# --------------------------------------------------------------------------
+pipelines:
+  invoice:
+    - document_classifier
+    - ner
+    - table_detection
+
+  contract:
+    - document_classifier
+    - ner
+
+  financial_statement:
+    - document_classifier
+    - ner
+    - table_detection
+
+  lab_report:
+    - document_classifier
+    - table_detection
+
+  default:
+    - document_classifier
+    - ner

@@ -233,6 +233,15 @@ SAGE-scope feature requests (improvements to the framework itself) are routed to
 | 22.5 | Research program (Markdown-as-skill) | `auto_research.py` (`load_program`) | program.md guides experiment hypotheses |
 | 22.6 | Research exercise catalog (64 seeds) | `exercise_seeds.py` (`AUTORESEARCH_SEEDS`) | Hyperparameters, architecture, training, evaluation |
 | 22.7 | Auto-research skill YAML | `skills/public/auto_research.yaml` | research_engineer, ml_researcher roles |
+| 23 | OpenTelemetry Distributed Tracing | `src/core/tracing.py` | Layer 1 communication — spans, context propagation |
+| 23.1 | Graceful no-op when SDK absent | `tracing.py` (`_NoOpTracer`, `_NoOpSpan`) | Zero impact without `opentelemetry-sdk` |
+| 23.2 | LLM gateway span integration | `tracing.py` (`trace_llm_call`) + `llm_gateway.py` | GenAI semantic conventions on every generate() |
+| 23.3 | Context propagation helpers | `tracing.py` (`inject_context`, `extract_context`) | Cross-process trace context via carrier dicts |
+| 23.4 | EventBus span linkage | `tracing.py` (`traced_publish`) | Wrap event publishing with tracing spans |
+| 24 | CloudEvents Envelope | `src/modules/cloud_events.py` | Layer 2 communication — v1.0 spec structured events |
+| 24.1 | CloudEvent dataclass | `cloud_events.py` (`CloudEvent`) | Required + optional + extension attributes, JSON roundtrip |
+| 24.2 | SAGE event factories | `cloud_events.py` (`proposal_event`, `build_event`, `gym_event`, `llm_event`) | Typed constructors per domain |
+| 24.3 | EventBus integration | `cloud_events.py` (`publish_cloud_event`) | Route CloudEvents through existing EventBus |
 
 ---
 

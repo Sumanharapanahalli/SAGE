@@ -26,34 +26,27 @@ export class StatusProvider implements vscode.TreeDataProvider<StatusItem> {
   async getChildren(): Promise<StatusItem[]> {
     try {
       const health = await this.api.getStatus();
+      const isOk = health.status === "ok" || health.status === "healthy";
       const items: StatusItem[] = [
         new StatusItem(
           "Backend",
-          health.status === "ok" || health.status === "healthy"
-            ? "Running"
-            : "Stopped",
-          health.status === "ok" || health.status === "healthy"
-            ? "$(check)"
-            : "$(error)"
+          isOk ? "Running" : "Stopped",
+          isOk ? "check" : "error"
         ),
       ];
 
-      if (health.project) {
-        items.push(new StatusItem("Solution", health.project, "$(folder)"));
+      const projectName = this.api.getProjectName(health);
+      if (projectName) {
+        items.push(new StatusItem("Solution", projectName, "folder"));
       }
 
-      if (health.provider) {
-        items.push(new StatusItem("LLM Provider", health.provider, "$(hubot)"));
+      const provider = this.api.getProviderName(health);
+      if (provider) {
+        items.push(new StatusItem("LLM Provider", provider, "hubot"));
       }
 
-      if (health.endpoints) {
-        items.push(
-          new StatusItem(
-            "Endpoints",
-            `${health.endpoints}`,
-            "$(symbol-method)"
-          )
-        );
+      if (health.version) {
+        items.push(new StatusItem("Version", health.version, "tag"));
       }
 
       // Fetch approval count
@@ -63,14 +56,14 @@ export class StatusProvider implements vscode.TreeDataProvider<StatusItem> {
           new StatusItem(
             "Pending Approvals",
             `${approvals.length}`,
-            "$(bell-dot)"
+            "bell-dot"
           )
         );
       }
 
       return items;
     } catch {
-      return [new StatusItem("Backend", "Not reachable", "$(circle-slash)")];
+      return [new StatusItem("Backend", "Not reachable", "circle-slash")];
     }
   }
 }
@@ -78,7 +71,7 @@ export class StatusProvider implements vscode.TreeDataProvider<StatusItem> {
 class StatusItem extends vscode.TreeItem {
   constructor(label: string, value: string, icon: string) {
     super(`${label}: ${value}`, vscode.TreeItemCollapsibleState.None);
-    this.iconPath = new vscode.ThemeIcon(icon.replace("$(", "").replace(")", ""));
+    this.iconPath = new vscode.ThemeIcon(icon);
     this.tooltip = `${label}: ${value}`;
   }
 }

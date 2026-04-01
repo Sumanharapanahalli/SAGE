@@ -1,0 +1,988 @@
+{
+  "document": {
+    "id": "RR-TELEHEALTH-001",
+    "title": "PHI Security Risk Register — HIPAA-Compliant Telehealth Platform",
+    "version": "1.0.0",
+    "date": "2026-03-28",
+    "classification": "CONFIDENTIAL",
+    "methodology": "STRIDE + FMEA hybrid. RPN = Severity × Likelihood × (6 - Detectability). Scales: Severity 1-5, Likelihood 1-5, Detectability 1-5 (5=easily detected).",
+    "review_cycle": "Annual or after material security event",
+    "regulatory_basis": [
+      "45 CFR §164.308(a)(1) — Risk Analysis requirement",
+      "45 CFR §164.308(a)(1)(ii)(B) — Risk Management",
+      "NIST SP 800-30 Rev 1",
+      "HITRUST CSF v11 Control Category 09"
+    ],
+    "risk_thresholds": {
+      "CRITICAL": "RPN >= 60",
+      "HIGH": "RPN 30-59",
+      "MEDIUM": "RPN 15-29",
+      "LOW": "RPN < 15"
+    }
+  },
+
+  "risk_register": [
+    {
+      "id": "RR-001",
+      "stride_category": "Spoofing",
+      "threat_id": "S-01",
+      "title": "Patient Identity Spoofing via Credential Stuffing",
+      "attack_surface": "AS-01 — Patient Authentication Endpoint",
+      "phi_categories_at_risk": [
+        "Names", "Dates", "Phone numbers", "Email addresses",
+        "Medical record numbers", "Health plan beneficiary numbers",
+        "Diagnosis codes", "Medication records"
+      ],
+      "threat_description": "Attacker uses breached credentials to authenticate as a patient, gaining full PHI access including medical history, prescriptions, and appointment records.",
+      "vulnerability": "Password reuse by patients, absent or bypassable MFA",
+      "threat_actor": "Organized cybercriminal, opportunistic attacker",
+      "existing_controls": "Password complexity requirements, basic rate limiting",
+      "severity": 5,
+      "severity_rationale": "Full PHI access for compromised account; HIPAA breach notification required",
+      "likelihood": 4,
+      "likelihood_rationale": "Credential stuffing is commodity attack; healthcare sector targeted frequently",
+      "detectability": 3,
+      "detectability_rationale": "Login anomalies partially detectable via geo/velocity; credential stuffing may blend with normal traffic",
+      "rpn_inherent": 60,
+      "risk_level_inherent": "CRITICAL",
+      "required_controls": [
+        {
+          "control_id": "C-S-01a",
+          "description": "Mandatory MFA for all patient accounts",
+          "type": "Preventive",
+          "priority": "P0",
+          "nist_control": "IA-2(1)",
+          "hipaa_safeguard": "§164.312(d) — Person or entity authentication"
+        },
+        {
+          "control_id": "C-S-01b",
+          "description": "Rate limiting ≤5 attempts/min/IP + CAPTCHA on login",
+          "type": "Preventive",
+          "priority": "P0",
+          "nist_control": "AC-7",
+          "hipaa_safeguard": "§164.312(a)(2)(i) — Unique user identification"
+        },
+        {
+          "control_id": "C-S-01c",
+          "description": "Breached password check via HaveIBeenPwned API",
+          "type": "Preventive",
+          "priority": "P1",
+          "nist_control": "IA-5(1)",
+          "hipaa_safeguard": "§164.308(a)(5)(ii)(D)"
+        },
+        {
+          "control_id": "C-S-01d",
+          "description": "Geo-velocity anomaly detection → step-up auth",
+          "type": "Detective",
+          "priority": "P1",
+          "nist_control": "SI-4",
+          "hipaa_safeguard": "§164.308(a)(1)(ii)(D)"
+        }
+      ],
+      "severity_residual": 5,
+      "likelihood_residual": 1,
+      "detectability_residual": 5,
+      "rpn_residual": 10,
+      "risk_level_residual": "LOW",
+      "risk_owner": "CISO",
+      "target_remediation_date": "2026-06-30",
+      "status": "OPEN",
+      "hipaa_breach_notification_required": true,
+      "patient_harm_possible": false
+    },
+    {
+      "id": "RR-002",
+      "stride_category": "Spoofing",
+      "threat_id": "S-02",
+      "title": "Provider Identity Spoofing for Fraudulent Prescription",
+      "attack_surface": "AS-03 — E-Prescription API",
+      "phi_categories_at_risk": [
+        "Names", "Dates", "Addresses", "Medical record numbers",
+        "Diagnosis codes", "DEA registration (provider PHI link)"
+      ],
+      "threat_description": "Attacker compromises provider credentials via phishing and issues fraudulent controlled substance prescriptions using the provider's DEA registration.",
+      "vulnerability": "Provider credential phishing, absent hardware MFA for prescription actions",
+      "threat_actor": "Drug diverter, compromised credential broker",
+      "existing_controls": "Standard password + SMS MFA",
+      "severity": 5,
+      "severity_rationale": "Patient harm from controlled substance misuse; DEA regulatory action; HIPAA breach",
+      "likelihood": 3,
+      "likelihood_rationale": "Providers are high-value phishing targets; SMS MFA bypassable via SIM swap",
+      "detectability": 3,
+      "detectability_rationale": "Anomalous prescribing volume may be detected; single fraudulent Rx difficult to catch in real time",
+      "rpn_inherent": 45,
+      "risk_level_inherent": "HIGH",
+      "required_controls": [
+        {
+          "control_id": "C-S-02a",
+          "description": "FIDO2/WebAuthn hardware MFA for all prescription actions",
+          "type": "Preventive",
+          "priority": "P0",
+          "nist_control": "IA-2(6)",
+          "hipaa_safeguard": "DEA 21 CFR §1311.116"
+        },
+        {
+          "control_id": "C-S-02b",
+          "description": "Re-authentication required after 15 min idle before prescribing",
+          "type": "Preventive",
+          "priority": "P0",
+          "nist_control": "AC-11",
+          "hipaa_safeguard": "§164.312(a)(2)(iii) — Automatic logoff"
+        },
+        {
+          "control_id": "C-S-02c",
+          "description": "ML-based prescribing anomaly detection (volume, drug class, geography)",
+          "type": "Detective",
+          "priority": "P1",
+          "nist_control": "SI-4(22)",
+          "hipaa_safeguard": "§164.308(a)(1)(ii)(D)"
+        }
+      ],
+      "severity_residual": 5,
+      "likelihood_residual": 1,
+      "detectability_residual": 4,
+      "rpn_residual": 10,
+      "risk_level_residual": "LOW",
+      "risk_owner": "Chief Medical Officer + CISO",
+      "target_remediation_date": "2026-06-30",
+      "status": "OPEN",
+      "hipaa_breach_notification_required": true,
+      "patient_harm_possible": true
+    },
+    {
+      "id": "RR-003",
+      "stride_category": "Spoofing",
+      "threat_id": "S-04",
+      "title": "Tenant Isolation Bypass via Header Manipulation",
+      "attack_surface": "AS-07 — Multi-Tenant Admin API",
+      "phi_categories_at_risk": [
+        "All 18 HIPAA identifiers for target tenant's entire patient population"
+      ],
+      "threat_description": "Attacker manipulates X-SAGE-Tenant header to access another tenant's PHI schema, bypassing multi-tenant isolation.",
+      "vulnerability": "Tenant validation tied only to header value, not cryptographically bound to JWT",
+      "threat_actor": "Malicious tenant employee, API attacker",
+      "existing_controls": "Header-based tenant routing",
+      "severity": 5,
+      "severity_rationale": "Mass PHI breach — entire tenant population. HIPAA breach notification for all affected individuals.",
+      "likelihood": 2,
+      "likelihood_rationale": "Requires valid authentication + knowledge of target tenant ID",
+      "detectability": 2,
+      "detectability_rationale": "Cross-tenant access may appear as normal activity without specific monitoring",
+      "rpn_inherent": 40,
+      "risk_level_inherent": "HIGH",
+      "required_controls": [
+        {
+          "control_id": "C-S-04a",
+          "description": "Bind tenant ID to JWT claims — header must match signed token",
+          "type": "Preventive",
+          "priority": "P0",
+          "nist_control": "IA-8",
+          "hipaa_safeguard": "§164.308(a)(4)(ii)(B)"
+        },
+        {
+          "control_id": "C-S-04b",
+          "description": "PostgreSQL Row-Level Security as defense-in-depth",
+          "type": "Preventive",
+          "priority": "P0",
+          "nist_control": "AC-3(3)",
+          "hipaa_safeguard": "§164.312(a)(1)"
+        }
+      ],
+      "severity_residual": 5,
+      "likelihood_residual": 1,
+      "detectability_residual": 5,
+      "rpn_residual": 5,
+      "risk_level_residual": "LOW",
+      "risk_owner": "Platform Engineering Lead",
+      "target_remediation_date": "2026-05-31",
+      "status": "OPEN",
+      "hipaa_breach_notification_required": true,
+      "patient_harm_possible": false
+    },
+    {
+      "id": "RR-004",
+      "stride_category": "Tampering",
+      "threat_id": "T-01",
+      "title": "E-Prescription Tampering — Drug/Dosage Modification",
+      "attack_surface": "AS-03 — E-Prescription API",
+      "phi_categories_at_risk": [
+        "Names", "Dates", "Addresses", "Medical record numbers",
+        "Prescription content (medication, dosage, quantity)"
+      ],
+      "threat_description": "Attacker with write access modifies prescription content (drug name, dosage, patient identity) after provider signature but before pharmacy transmission.",
+      "vulnerability": "Prescription records mutable without cryptographic integrity protection",
+      "threat_actor": "Drug diverter, malicious insider, external attacker",
+      "existing_controls": "Application-level access controls",
+      "severity": 5,
+      "severity_rationale": "Patient harm from wrong medication or dosage is life-threatening; DEA violation",
+      "likelihood": 2,
+      "likelihood_rationale": "Requires privileged database access or API access control bypass",
+      "detectability": 3,
+      "detectability_rationale": "Modification detectable by comparing to provider's original signed version if signing implemented",
+      "rpn_inherent": 30,
+      "risk_level_inherent": "HIGH",
+      "required_controls": [
+        {
+          "control_id": "C-T-01a",
+          "description": "Cryptographic prescription signing (ECDSA P-384) by prescribing provider",
+          "type": "Preventive",
+          "priority": "P0",
+          "nist_control": "AU-10",
+          "hipaa_safeguard": "DEA EPCS 21 CFR §1311.140"
+        },
+        {
+          "control_id": "C-T-01b",
+          "description": "Immutable prescription audit trail with hash chain",
+          "type": "Detective",
+          "priority": "P0",
+          "nist_control": "AU-9",
+          "hipaa_safeguard": "§164.312(b)"
+        },
+        {
+          "control_id": "C-T-01c",
+          "description": "Pharmacy-side signature verification before dispensing",
+          "type": "Preventive",
+          "priority": "P0",
+          "nist_control": "SC-8(1)",
+          "hipaa_safeguard": "DEA EPCS 21 CFR §1311.215"
+        }
+      ],
+      "severity_residual": 5,
+      "likelihood_residual": 1,
+      "detectability_residual": 5,
+      "rpn_residual": 5,
+      "risk_level_residual": "LOW",
+      "risk_owner": "Chief Medical Officer + CISO",
+      "target_remediation_date": "2026-06-30",
+      "status": "OPEN",
+      "hipaa_breach_notification_required": true,
+      "patient_harm_possible": true
+    },
+    {
+      "id": "RR-005",
+      "stride_category": "Tampering",
+      "threat_id": "T-03",
+      "title": "Audit Log Tampering to Conceal PHI Breach",
+      "attack_surface": "AS-09 — Audit Log Export API",
+      "phi_categories_at_risk": [
+        "Audit metadata — not direct PHI but destroys breach detection capability"
+      ],
+      "threat_description": "Attacker with database access deletes or modifies audit log entries to erase evidence of unauthorized PHI access, defeating HIPAA compliance requirements.",
+      "vulnerability": "Mutable audit log database with DBA access grants",
+      "threat_actor": "Malicious insider (DBA), APT post-compromise",
+      "existing_controls": "Standard database access controls",
+      "severity": 4,
+      "severity_rationale": "Destroys HIPAA §164.312(b) compliance; masks breach from detection and notification",
+      "likelihood": 2,
+      "likelihood_rationale": "Requires DBA-level access; insider threat scenario",
+      "detectability": 2,
+      "detectability_rationale": "Deletion of audit records removes the evidence needed to detect the tampering",
+      "rpn_inherent": 32,
+      "risk_level_inherent": "HIGH",
+      "required_controls": [
+        {
+          "control_id": "C-T-03a",
+          "description": "WORM storage for audit logs (S3 Object Lock, compliance mode)",
+          "type": "Preventive",
+          "priority": "P0",
+          "nist_control": "AU-9(3)",
+          "hipaa_safeguard": "§164.312(b) — Audit controls"
+        },
+        {
+          "control_id": "C-T-03b",
+          "description": "Hash chain integrity — each log entry references SHA-256 of prior",
+          "type": "Preventive",
+          "priority": "P0",
+          "nist_control": "AU-10",
+          "hipaa_safeguard": "§164.312(b)"
+        },
+        {
+          "control_id": "C-T-03c",
+          "description": "Real-time streaming to immutable external SIEM (no local delete path)",
+          "type": "Preventive",
+          "priority": "P0",
+          "nist_control": "AU-4(1)",
+          "hipaa_safeguard": "§164.308(a)(1)(ii)(D)"
+        }
+      ],
+      "severity_residual": 4,
+      "likelihood_residual": 1,
+      "detectability_residual": 5,
+      "rpn_residual": 4,
+      "risk_level_residual": "LOW",
+      "risk_owner": "CISO",
+      "target_remediation_date": "2026-05-31",
+      "status": "OPEN",
+      "hipaa_breach_notification_required": false,
+      "patient_harm_possible": false
+    },
+    {
+      "id": "RR-006",
+      "stride_category": "Tampering",
+      "threat_id": "T-04",
+      "title": "AI Symptom Checker Adversarial Input — Triage Manipulation",
+      "attack_surface": "AS-05 — AI Triage Inference Endpoint",
+      "phi_categories_at_risk": [
+        "Patient safety (indirect) — triage decision integrity"
+      ],
+      "threat_description": "Adversarially crafted inputs manipulate AI triage model to return dangerously incorrect recommendations, potentially downgrading urgent conditions to low priority.",
+      "vulnerability": "No input validation layer before model inference; model not tested against adversarial inputs",
+      "threat_actor": "Sophisticated attacker, disgruntled patient, security researcher",
+      "existing_controls": "Basic input length validation",
+      "severity": 5,
+      "severity_rationale": "Delayed emergency care from incorrect triage is potentially fatal",
+      "likelihood": 2,
+      "likelihood_rationale": "Requires AI adversarial expertise; healthcare models less commonly targeted than financial",
+      "detectability": 2,
+      "detectability_rationale": "Adversarial inputs may not trigger obvious anomalies; model output may look plausible",
+      "rpn_inherent": 40,
+      "risk_level_inherent": "HIGH",
+      "required_controls": [
+        {
+          "control_id": "C-T-04a",
+          "description": "Semantic input validation layer before model inference",
+          "type": "Preventive",
+          "priority": "P0",
+          "nist_control": "SI-10",
+          "hipaa_safeguard": "Clinical safety requirement"
+        },
+        {
+          "control_id": "C-T-04b",
+          "description": "Low-confidence outputs escalate to human triage automatically",
+          "type": "Preventive",
+          "priority": "P0",
+          "nist_control": "SI-4",
+          "hipaa_safeguard": "FDA AI/ML SaMD guidance"
+        },
+        {
+          "control_id": "C-T-04c",
+          "description": "Emergency keyword bypass — chest pain, stroke symptoms always → urgent pathway",
+          "type": "Preventive",
+          "priority": "P0",
+          "nist_control": "CP-2",
+          "hipaa_safeguard": "Clinical safety requirement"
+        }
+      ],
+      "severity_residual": 5,
+      "likelihood_residual": 1,
+      "detectability_residual": 4,
+      "rpn_residual": 10,
+      "risk_level_residual": "LOW",
+      "risk_owner": "Chief Medical Officer + ML Platform Lead",
+      "target_remediation_date": "2026-06-30",
+      "status": "OPEN",
+      "hipaa_breach_notification_required": false,
+      "patient_harm_possible": true
+    },
+    {
+      "id": "RR-007",
+      "stride_category": "Information Disclosure",
+      "threat_id": "I-01",
+      "title": "FHIR Bulk Export — Mass PHI Exfiltration",
+      "attack_surface": "AS-04 — EHR FHIR Integration Endpoint",
+      "phi_categories_at_risk": [
+        "All 18 HIPAA identifiers for entire tenant patient population"
+      ],
+      "threat_description": "Compromised integration partner uses FHIR $export operation to download entire patient population PHI for a tenant within minutes.",
+      "vulnerability": "FHIR $export accessible to any system-level OAuth client without additional approval gate",
+      "threat_actor": "Compromised integration partner, malicious insider, nation-state",
+      "existing_controls": "OAuth 2.0 token required",
+      "severity": 5,
+      "severity_rationale": "Mass PHI breach — potentially millions of patient records; mandatory notification for all affected",
+      "likelihood": 3,
+      "likelihood_rationale": "Integration partner compromise is a realistic attack vector; supply chain incidents increasing",
+      "detectability": 3,
+      "detectability_rationale": "Large data transfer may trigger volume-based alerts; pattern recognizable in access logs",
+      "rpn_inherent": 45,
+      "risk_level_inherent": "HIGH",
+      "required_controls": [
+        {
+          "control_id": "C-I-01a",
+          "description": "FHIR $export requires explicit tenant admin approval — HITL gate",
+          "type": "Preventive",
+          "priority": "P0",
+          "nist_control": "AC-17(2)",
+          "hipaa_safeguard": "§164.312(a)(1) — Access control"
+        },
+        {
+          "control_id": "C-I-01b",
+          "description": "Rate limit bulk export: max 1000 records/min; alert on full export",
+          "type": "Preventive",
+          "priority": "P0",
+          "nist_control": "SC-5",
+          "hipaa_safeguard": "§164.308(a)(1)(ii)(B)"
+        },
+        {
+          "control_id": "C-I-01c",
+          "description": "DLP: PHI export destinations restricted to systems with active BAAs",
+          "type": "Preventive",
+          "priority": "P0",
+          "nist_control": "AC-4",
+          "hipaa_safeguard": "§164.314(a) — BAA requirements"
+        },
+        {
+          "control_id": "C-I-01d",
+          "description": "Bulk export anomaly alert → SOC immediate investigation",
+          "type": "Detective",
+          "priority": "P1",
+          "nist_control": "SI-4(22)",
+          "hipaa_safeguard": "§164.308(a)(1)(ii)(D)"
+        }
+      ],
+      "severity_residual": 5,
+      "likelihood_residual": 1,
+      "detectability_residual": 4,
+      "rpn_residual": 10,
+      "risk_level_residual": "LOW",
+      "risk_owner": "Platform Integration Lead + CISO",
+      "target_remediation_date": "2026-06-30",
+      "status": "OPEN",
+      "hipaa_breach_notification_required": true,
+      "patient_harm_possible": false
+    },
+    {
+      "id": "RR-008",
+      "stride_category": "Information Disclosure",
+      "threat_id": "I-03",
+      "title": "PHI Leakage via Mobile Push Notifications on Lock Screen",
+      "attack_surface": "AS-11 — Mobile Application",
+      "phi_categories_at_risk": [
+        "Names", "Appointment details", "Lab result summaries",
+        "Medication reminders", "Diagnosis-adjacent information"
+      ],
+      "threat_description": "Push notifications containing PHI displayed on device lock screen, visible to anyone holding the device without authentication.",
+      "vulnerability": "Notification payload includes PHI content; no lock-screen suppression policy",
+      "threat_actor": "Unauthorized device holder, co-habitant, thief",
+      "existing_controls": "None currently",
+      "severity": 3,
+      "severity_rationale": "Incidental PHI disclosure; HIPAA violation; patient privacy harm",
+      "likelihood": 4,
+      "likelihood_rationale": "Extremely common — most notifications include content by default; device sharing is frequent",
+      "detectability": 1,
+      "detectability_rationale": "Physical disclosure events are invisible to platform monitoring",
+      "rpn_inherent": 60,
+      "risk_level_inherent": "CRITICAL",
+      "required_controls": [
+        {
+          "control_id": "C-I-03a",
+          "description": "Push notifications contain ZERO PHI — message only: 'You have a new message'",
+          "type": "Preventive",
+          "priority": "P0",
+          "nist_control": "SC-28",
+          "hipaa_safeguard": "HHS OCR Mobile Device Guidance"
+        },
+        {
+          "control_id": "C-I-03b",
+          "description": "App requires biometric/PIN re-auth before displaying notification content",
+          "type": "Preventive",
+          "priority": "P0",
+          "nist_control": "IA-11",
+          "hipaa_safeguard": "NIST SP 800-124 Rev 2"
+        },
+        {
+          "control_id": "C-I-03c",
+          "description": "Server-side enforcement of notification content policy — cannot be overridden by client",
+          "type": "Preventive",
+          "priority": "P0",
+          "nist_control": "AC-3",
+          "hipaa_safeguard": "§164.312(c)(1)"
+        }
+      ],
+      "severity_residual": 3,
+      "likelihood_residual": 1,
+      "detectability_residual": 3,
+      "rpn_residual": 9,
+      "risk_level_residual": "LOW",
+      "risk_owner": "Mobile Engineering Lead",
+      "target_remediation_date": "2026-05-15",
+      "status": "OPEN",
+      "hipaa_breach_notification_required": true,
+      "patient_harm_possible": false
+    },
+    {
+      "id": "RR-009",
+      "stride_category": "Information Disclosure",
+      "threat_id": "I-04",
+      "title": "S3 PHI Bucket Public Misconfiguration",
+      "attack_surface": "TB-03 — Cloud Data Layer",
+      "phi_categories_at_risk": [
+        "Medical documents", "Consultation recordings", "Lab reports",
+        "All uploaded PHI files for misconfigured tenant"
+      ],
+      "threat_description": "S3 bucket ACL or policy accidentally set to public, exposing all PHI objects stored in the tenant's prefix to the public internet.",
+      "vulnerability": "Manual S3 configuration without automated policy enforcement or detection",
+      "threat_actor": "Opportunistic scanner, data broker, nation-state",
+      "existing_controls": "Manual S3 configuration process",
+      "severity": 5,
+      "severity_rationale": "Mass PHI public exposure; OCR investigation; multi-million dollar penalties",
+      "likelihood": 2,
+      "likelihood_rationale": "Cloud misconfiguration is extremely common; major healthcare breaches attributed to S3 misconfigs",
+      "detectability": 2,
+      "detectability_rationale": "Without automated scanning, public buckets may persist undetected for days or weeks",
+      "rpn_inherent": 40,
+      "risk_level_inherent": "HIGH",
+      "required_controls": [
+        {
+          "control_id": "C-I-04a",
+          "description": "AWS S3 Block Public Access at organization level — cannot be overridden",
+          "type": "Preventive",
+          "priority": "P0",
+          "nist_control": "CM-6",
+          "hipaa_safeguard": "AWS HIPAA Whitepaper"
+        },
+        {
+          "control_id": "C-I-04b",
+          "description": "IaC (Terraform) enforces private ACL — PR CI gate blocks public bucket configs",
+          "type": "Preventive",
+          "priority": "P0",
+          "nist_control": "CM-7",
+          "hipaa_safeguard": "CIS AWS Benchmark 2.1.5"
+        },
+        {
+          "control_id": "C-I-04c",
+          "description": "AWS Config rule alerts on public bucket within 60 seconds",
+          "type": "Detective",
+          "priority": "P0",
+          "nist_control": "CM-7(1)",
+          "hipaa_safeguard": "§164.308(a)(1)(ii)(D)"
+        }
+      ],
+      "severity_residual": 5,
+      "likelihood_residual": 1,
+      "detectability_residual": 5,
+      "rpn_residual": 5,
+      "risk_level_residual": "LOW",
+      "risk_owner": "Cloud Infrastructure Lead",
+      "target_remediation_date": "2026-05-31",
+      "status": "OPEN",
+      "hipaa_breach_notification_required": true,
+      "patient_harm_possible": false
+    },
+    {
+      "id": "RR-010",
+      "stride_category": "Information Disclosure",
+      "threat_id": "I-05",
+      "title": "IDOR — Unauthorized Patient Record Access via Predictable IDs",
+      "attack_surface": "AS-04, AS-06 — EHR and Document APIs",
+      "phi_categories_at_risk": [
+        "Medical records of other patients", "Lab results", "Clinical notes"
+      ],
+      "threat_description": "Authenticated patient increments medical record ID parameter to access another patient's records without authorization check on record ownership.",
+      "vulnerability": "Sequential or predictable resource IDs without per-resource authorization check",
+      "threat_actor": "Curious patient, malicious user",
+      "existing_controls": "Authentication required",
+      "severity": 4,
+      "severity_rationale": "Unauthorized PHI access for potentially thousands of patients",
+      "likelihood": 3,
+      "likelihood_rationale": "BOLA/IDOR is OWASP API Security #1; trivial to exploit if IDs are sequential",
+      "detectability": 3,
+      "detectability_rationale": "Enumeration pattern detectable via anomaly detection; individual accesses may not trigger alerts",
+      "rpn_inherent": 36,
+      "risk_level_inherent": "HIGH",
+      "required_controls": [
+        {
+          "control_id": "C-I-05a",
+          "description": "All resource IDs are UUIDs v4 — cryptographically non-enumerable",
+          "type": "Preventive",
+          "priority": "P0",
+          "nist_control": "SC-28",
+          "hipaa_safeguard": "§164.312(a)(1)"
+        },
+        {
+          "control_id": "C-I-05b",
+          "description": "Authorization check on every resource access — requester must own resource or have explicit grant",
+          "type": "Preventive",
+          "priority": "P0",
+          "nist_control": "AC-3",
+          "hipaa_safeguard": "§164.308(a)(4)(ii)(C)"
+        },
+        {
+          "control_id": "C-I-05c",
+          "description": "Automated BOLA test suite in CI pipeline",
+          "type": "Detective",
+          "priority": "P1",
+          "nist_control": "RA-5",
+          "hipaa_safeguard": "§164.308(a)(8)"
+        }
+      ],
+      "severity_residual": 4,
+      "likelihood_residual": 1,
+      "detectability_residual": 5,
+      "rpn_residual": 4,
+      "risk_level_residual": "LOW",
+      "risk_owner": "Backend Engineering Lead",
+      "target_remediation_date": "2026-05-31",
+      "status": "OPEN",
+      "hipaa_breach_notification_required": true,
+      "patient_harm_possible": false
+    },
+    {
+      "id": "RR-011",
+      "stride_category": "Denial of Service",
+      "threat_id": "D-01",
+      "title": "DDoS Attack on Video Consultation Infrastructure",
+      "attack_surface": "AS-02 — WebRTC Signaling Service",
+      "phi_categories_at_risk": [
+        "N/A — availability threat with patient safety implications"
+      ],
+      "threat_description": "Volumetric DDoS targeting WebRTC signaling disrupts active clinical consultations. Patients mid-consultation lose connection, potentially delaying acute care.",
+      "vulnerability": "WebRTC signaling service exposed to public internet for client connectivity",
+      "threat_actor": "Hacktivist, ransomware group, competitor",
+      "existing_controls": "Basic CDN rate limiting",
+      "severity": 4,
+      "severity_rationale": "Disrupted clinical care; potential patient harm for time-sensitive consultations",
+      "likelihood": 3,
+      "likelihood_rationale": "Healthcare is a top DDoS target; video infrastructure is attractive high-impact target",
+      "detectability": 3,
+      "detectability_rationale": "DDoS traffic volume detectable; application-layer attacks harder to distinguish from legitimate traffic",
+      "rpn_inherent": 36,
+      "risk_level_inherent": "HIGH",
+      "required_controls": [
+        {
+          "control_id": "C-D-01a",
+          "description": "AWS Shield Advanced / Cloudflare with automatic DDoS mitigation",
+          "type": "Preventive",
+          "priority": "P0",
+          "nist_control": "SC-5",
+          "hipaa_safeguard": "§164.308(a)(7) — Contingency plan"
+        },
+        {
+          "control_id": "C-D-01b",
+          "description": "Geographic rate limiting and IP reputation filtering at CDN edge",
+          "type": "Preventive",
+          "priority": "P0",
+          "nist_control": "SC-7",
+          "hipaa_safeguard": "§164.308(a)(7)(ii)(C)"
+        },
+        {
+          "control_id": "C-D-01d",
+          "description": "Automatic consultation reconnect with state preservation (max 60s grace)",
+          "type": "Corrective",
+          "priority": "P1",
+          "nist_control": "CP-10",
+          "hipaa_safeguard": "SLA: 99.9% consultation completion"
+        },
+        {
+          "control_id": "C-D-01e",
+          "description": "Automatic phone consultation fallback if video fails for >60s",
+          "type": "Corrective",
+          "priority": "P1",
+          "nist_control": "CP-7",
+          "hipaa_safeguard": "§164.308(a)(7)(ii)(B)"
+        }
+      ],
+      "severity_residual": 4,
+      "likelihood_residual": 1,
+      "detectability_residual": 5,
+      "rpn_residual": 4,
+      "risk_level_residual": "LOW",
+      "risk_owner": "Platform SRE Lead",
+      "target_remediation_date": "2026-06-30",
+      "status": "OPEN",
+      "hipaa_breach_notification_required": false,
+      "patient_harm_possible": true
+    },
+    {
+      "id": "RR-012",
+      "stride_category": "Denial of Service",
+      "threat_id": "D-03",
+      "title": "Ransomware Targeting PHI Storage",
+      "attack_surface": "TB-03 — Data Layer",
+      "phi_categories_at_risk": [
+        "All stored PHI — entire platform if backups inaccessible"
+      ],
+      "threat_description": "Ransomware encrypts or deletes PHI databases and S3 objects. Double extortion: data exfiltrated before encryption. Without immutable backups, patient records irrecoverable.",
+      "vulnerability": "Mutable backup storage; broad lateral movement possible if network not segmented",
+      "threat_actor": "Ransomware group (LockBit, BlackCat, etc.)",
+      "existing_controls": "Daily backups to same account",
+      "severity": 5,
+      "severity_rationale": "Care disruption; mass PHI breach; HIPAA notification for all patients; financial extortion",
+      "likelihood": 3,
+      "likelihood_rationale": "Healthcare is #1 ransomware target by sector; average ransom demand $1.3M",
+      "detectability": 2,
+      "detectability_rationale": "Ransomware deployment often detected only after encryption begins; dwell time average 16 days",
+      "rpn_inherent": 45,
+      "risk_level_inherent": "HIGH",
+      "required_controls": [
+        {
+          "control_id": "C-D-03a",
+          "description": "S3 Object Lock (compliance mode, WORM) — ransomware cannot delete",
+          "type": "Preventive",
+          "priority": "P0",
+          "nist_control": "CP-9(8)",
+          "hipaa_safeguard": "§164.308(a)(7)(ii)(A)"
+        },
+        {
+          "control_id": "C-D-03b",
+          "description": "3-2-1 backup strategy with offsite immutable copy in separate AWS account",
+          "type": "Preventive",
+          "priority": "P0",
+          "nist_control": "CP-9",
+          "hipaa_safeguard": "§164.308(a)(7)"
+        },
+        {
+          "control_id": "C-D-03c",
+          "description": "Network segmentation — data tier not reachable except via application API",
+          "type": "Preventive",
+          "priority": "P0",
+          "nist_control": "SC-7(3)",
+          "hipaa_safeguard": "§164.312(a)(1)"
+        },
+        {
+          "control_id": "C-D-03d",
+          "description": "RTO ≤ 4h, RPO ≤ 1h — tested quarterly in DR exercise",
+          "type": "Corrective",
+          "priority": "P1",
+          "nist_control": "CP-4",
+          "hipaa_safeguard": "§164.308(a)(7)(ii)(B)"
+        }
+      ],
+      "severity_residual": 5,
+      "likelihood_residual": 2,
+      "detectability_residual": 4,
+      "rpn_residual": 10,
+      "risk_level_residual": "LOW",
+      "risk_owner": "CISO + Cloud Infrastructure Lead",
+      "target_remediation_date": "2026-06-30",
+      "status": "OPEN",
+      "hipaa_breach_notification_required": true,
+      "patient_harm_possible": true
+    },
+    {
+      "id": "RR-013",
+      "stride_category": "Elevation of Privilege",
+      "threat_id": "E-02",
+      "title": "Mass Assignment Vulnerability — Self-Privilege Escalation",
+      "attack_surface": "AS-07, AS-03 — Admin and Prescription APIs",
+      "phi_categories_at_risk": [
+        "All PHI accessible at elevated privilege level"
+      ],
+      "threat_description": "Authenticated user submits JSON payload with 'role':'admin' or 'tenant_scope':'all' fields. Unvalidated ORM binding maps these directly to database record, granting elevated privileges.",
+      "vulnerability": "ORM mass assignment — request body fields not allowlisted; arbitrary JSON bound to model",
+      "threat_actor": "Any authenticated user, bug bounty researcher",
+      "existing_controls": "None — vulnerability by design in many ORM frameworks",
+      "severity": 5,
+      "severity_rationale": "Self-escalation to admin enables unrestricted platform-wide PHI access",
+      "likelihood": 3,
+      "likelihood_rationale": "OWASP API Security #6; exploitable by any authenticated user with basic API knowledge",
+      "detectability": 2,
+      "detectability_rationale": "Role change via update endpoint may not trigger privilege escalation alerts",
+      "rpn_inherent": 50,
+      "risk_level_inherent": "CRITICAL",
+      "required_controls": [
+        {
+          "control_id": "C-E-02a",
+          "description": "Allowlist-based request schema validation — never bind arbitrary JSON to ORM model",
+          "type": "Preventive",
+          "priority": "P0",
+          "nist_control": "SI-10",
+          "hipaa_safeguard": "OWASP API Security API6:2023"
+        },
+        {
+          "control_id": "C-E-02b",
+          "description": "Role changes require separate privileged endpoint with elevated MFA auth",
+          "type": "Preventive",
+          "priority": "P0",
+          "nist_control": "AC-6(1)",
+          "hipaa_safeguard": "§164.308(a)(4)(ii)(B)"
+        },
+        {
+          "control_id": "C-E-02c",
+          "description": "SAST rules for ORM mass assignment patterns in CI pipeline",
+          "type": "Detective",
+          "priority": "P1",
+          "nist_control": "SA-11",
+          "hipaa_safeguard": "§164.308(a)(8)"
+        }
+      ],
+      "severity_residual": 5,
+      "likelihood_residual": 1,
+      "detectability_residual": 5,
+      "rpn_residual": 5,
+      "risk_level_residual": "LOW",
+      "risk_owner": "Backend Engineering Lead",
+      "target_remediation_date": "2026-05-15",
+      "status": "OPEN",
+      "hipaa_breach_notification_required": true,
+      "patient_harm_possible": false
+    },
+    {
+      "id": "RR-014",
+      "stride_category": "Elevation of Privilege",
+      "threat_id": "E-03",
+      "title": "SQL Injection — Tenant Isolation Bypass",
+      "attack_surface": "AS-04, AS-03, AS-08 — Multiple API Endpoints",
+      "phi_categories_at_risk": [
+        "Cross-tenant PHI — potentially all tenants' patient data"
+      ],
+      "threat_description": "Unsanitized filter parameters injected into SQL queries bypass schema-per-tenant isolation using UNION attacks or postgres system table access.",
+      "vulnerability": "String concatenation in SQL query construction; no parameterized queries",
+      "threat_actor": "Skilled external attacker, malicious tenant user",
+      "existing_controls": "Basic input validation on some endpoints",
+      "severity": 5,
+      "severity_rationale": "Multi-tenant PHI breach — complete isolation failure affects all tenants",
+      "likelihood": 2,
+      "likelihood_rationale": "Parameterized queries are standard practice; SQLi possible only where not implemented",
+      "detectability": 3,
+      "detectability_rationale": "SQL error patterns and UNION keywords detectable by WAF; blind SQLi less visible",
+      "rpn_inherent": 30,
+      "risk_level_inherent": "HIGH",
+      "required_controls": [
+        {
+          "control_id": "C-E-03a",
+          "description": "Parameterized queries / ORM exclusively — no string concatenation in SQL",
+          "type": "Preventive",
+          "priority": "P0",
+          "nist_control": "SI-10",
+          "hipaa_safeguard": "OWASP Top 10 A03:2021"
+        },
+        {
+          "control_id": "C-E-03b",
+          "description": "PostgreSQL RLS — app user cannot query schemas outside their tenant",
+          "type": "Preventive",
+          "priority": "P0",
+          "nist_control": "AC-3(3)",
+          "hipaa_safeguard": "§164.312(a)(1)"
+        },
+        {
+          "control_id": "C-E-03c",
+          "description": "WAF SQL injection ruleset (OWASP ModSecurity CRS)",
+          "type": "Preventive",
+          "priority": "P0",
+          "nist_control": "SC-7",
+          "hipaa_safeguard": "§164.312(c)(1)"
+        },
+        {
+          "control_id": "C-E-03d",
+          "description": "Automated SQLi DAST scan in CI (every PR touching database queries)",
+          "type": "Detective",
+          "priority": "P1",
+          "nist_control": "RA-5",
+          "hipaa_safeguard": "§164.308(a)(8)"
+        }
+      ],
+      "severity_residual": 5,
+      "likelihood_residual": 1,
+      "detectability_residual": 5,
+      "rpn_residual": 5,
+      "risk_level_residual": "LOW",
+      "risk_owner": "Backend Engineering Lead",
+      "target_remediation_date": "2026-05-31",
+      "status": "OPEN",
+      "hipaa_breach_notification_required": true,
+      "patient_harm_possible": false
+    }
+  ],
+
+  "risk_summary": {
+    "total_risks": 14,
+    "inherent_risk_distribution": {
+      "CRITICAL": 3,
+      "HIGH": 10,
+      "MEDIUM": 1,
+      "LOW": 0
+    },
+    "residual_risk_distribution": {
+      "CRITICAL": 0,
+      "HIGH": 0,
+      "MEDIUM": 0,
+      "LOW": 14
+    },
+    "risks_with_patient_harm_possible": 5,
+    "risks_requiring_hipaa_breach_notification": 10,
+    "top_priority_controls": [
+      {
+        "priority": "P0 — Implement Before Go-Live",
+        "controls": [
+          "Mandatory MFA for all users (patients: TOTP; providers: FIDO2)",
+          "JWT algorithm whitelist (RS256 only, reject alg:none)",
+          "Parameterized queries everywhere — eliminate SQL injection surface",
+          "S3 Block Public Access at organization level",
+          "Push notifications — zero PHI policy",
+          "FHIR $export HITL approval gate",
+          "Allowlist-based API request schema validation (anti-mass-assignment)",
+          "Audit log WORM storage (S3 Object Lock compliance mode)",
+          "DTLS-SRTP certificate pinning for video streams",
+          "Cryptographic prescription signing (DEA EPCS compliance)"
+        ]
+      },
+      {
+        "priority": "P1 — Implement Within 90 Days",
+        "controls": [
+          "FHIR bulk export anomaly detection",
+          "ML-based prescribing pattern anomaly detection",
+          "SAST/DAST integration in CI pipeline",
+          "Network segmentation (web/app/data tiers)",
+          "3-2-1 immutable backup strategy",
+          "Geo-velocity login anomaly detection"
+        ]
+      }
+    ],
+    "compliance_gaps": [
+      {
+        "gap": "DEA EPCS cryptographic prescription signing not yet implemented",
+        "regulation": "21 CFR §1311.140",
+        "severity": "CRITICAL",
+        "risks_affected": ["RR-002", "RR-004"]
+      },
+      {
+        "gap": "HIPAA §164.312(b) audit controls — audit log not yet immutable/WORM",
+        "regulation": "45 CFR §164.312(b)",
+        "severity": "HIGH",
+        "risks_affected": ["RR-005"]
+      },
+      {
+        "gap": "Mobile push notification PHI policy not enforced",
+        "regulation": "HHS OCR Mobile Device Guidance",
+        "severity": "CRITICAL",
+        "risks_affected": ["RR-008"]
+      },
+      {
+        "gap": "FHIR $export lacks HITL approval gate",
+        "regulation": "HIPAA §164.312(a)(1) Minimum Necessary Standard",
+        "severity": "HIGH",
+        "risks_affected": ["RR-007"]
+      }
+    ]
+  },
+
+  "standards_coverage": {
+    "hipaa_security_rule_controls_addressed": [
+      "§164.308(a)(1) — Risk Analysis and Management",
+      "§164.308(a)(3) — Workforce Authorization",
+      "§164.308(a)(4) — Information Access Management",
+      "§164.308(a)(5) — Security Awareness Training",
+      "§164.308(a)(7) — Contingency Plan",
+      "§164.308(a)(8) — Evaluation",
+      "§164.312(a)(1) — Access Control",
+      "§164.312(a)(2)(i) — Unique User Identification",
+      "§164.312(a)(2)(iii) — Automatic Logoff",
+      "§164.312(a)(2)(iv) — Encryption and Decryption",
+      "§164.312(b) — Audit Controls",
+      "§164.312(c)(1) — Integrity",
+      "§164.312(d) — Person or Entity Authentication",
+      "§164.312(e)(1) — Transmission Security",
+      "§164.314(a) — Business Associate Contracts"
+    ],
+    "nist_controls_addressed": [
+      "AC-2, AC-3, AC-4, AC-5, AC-6, AC-7, AC-11, AC-17",
+      "AU-4, AU-9, AU-10",
+      "CP-4, CP-7, CP-9, CP-10",
+      "IA-2, IA-5, IA-8, IA-11",
+      "RA-5",
+      "SA-11",
+      "SC-5, SC-7, SC-8, SC-28",
+      "SI-4, SI-10"
+    ],
+    "owasp_threats_addressed": [
+      "OWASP Top 10 A01:2021 — Broken Access Control (IDOR, BOLA)",
+      "OWASP Top 10 A03:2021 — Injection (SQL)",
+      "OWASP Top 10 A05:2021 — Security Misconfiguration",
+      "OWASP Top 10 A07:2021 — Identification and Authentication Failures",
+      "OWASP API Security API1:2023 — BOLA",
+      "OWASP API Security API3:2023 — Broken Object Property Level Authorization",
+      "OWASP API Security API4:2023 — Unrestricted Resource Consumption",
+      "OWASP API Security API6:2023 — Mass Assignment"
+    ]
+  }
+}

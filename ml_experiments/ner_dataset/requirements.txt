@@ -1,0 +1,28 @@
+# NER Dataset Preparation Pipeline
+# Python >= 3.10
+
+# Core data handling
+pandas==2.2.2
+numpy==1.26.4
+
+# Validation (Pydantic v2)
+pydantic==2.7.1
+
+# NLP tokenization
+spacy==3.7.4
+# Download model: python -m spacy download en_core_web_sm
+
+# Evaluation — entity-level F1, precision, recall
+seqeval==1.2.2
+
+# Experiment tracking (JSON-based, mirrors ExperimentLogger in src/)
+# (uses project-local src/experiment_logger.py — no extra dep needed)
+
+# YAML config loading
+PyYAML==6.0.1
+
+# Rich terminal output for pipeline run summaries
+rich==13.7.1
+
+# Optional: HuggingFace Datasets export
+# datasets==2.19.1

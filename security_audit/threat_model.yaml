@@ -1,0 +1,621 @@
+# ============================================================
+# SAGE Framework — STRIDE Threat Model
+# ============================================================
+# Standard: STRIDE (Microsoft Threat Modeling)
+# Scope:    SAGE Framework API layer, agent execution pipeline,
+#           solution data stores (audit_log.db, chroma_db),
+#           LLM gateway, and PHI/PII data flows.
+# Version:  1.0.0
+# Date:     2026-03-27
+# Owner:    Security Review — SAGE Core Team
+# ============================================================
+
+metadata:
+  title:        "SAGE Framework STRIDE Threat Model"
+  version:      "1.1.0"
+  date:         "2026-03-28"
+  prior_version: "1.0.0 (2026-03-27)"
+  changelog_1_1_0: >
+    Added T-S-03 (wildcard CORS), T-S-04 (auth disabled by default),
+    T-I-06 (PII filter disabled), T-T-03 (missing security headers).
+    Updated residual risk register. All findings verified against live codebase.
+  scope:        "SAGE Framework + regulated-domain solutions (medtech, iot_medical)"
+  standards:
+    - "STRIDE (Microsoft SDL)"
+    - "OWASP Top 10 2021"
+    - "HIPAA Security Rule (45 CFR §164.300–164.318)"
+    - "IEC 62443-3-3 (Industrial Automation Security)"
+    - "NIST SP 800-53 Rev 5"
+  reviewers:
+    - role: "Security Analyst"
+    - role: "Compliance Officer"
+    - role: "Solution Architect"
+
+# ============================================================
+# Trust Boundaries
+# ============================================================
+trust_boundaries:
+  - id: TB-01
+    name: "External Client ↔ FastAPI Gateway"
+    description: >
+      All traffic from browsers, CI pipelines, and external tools
+      crosses this boundary over HTTPS. JWT/API-key enforced.
+    tls_required: true
+    auth_required: true
+
+  - id: TB-02
+    name: "FastAPI Gateway ↔ Agent Workers"
+    description: >
+      In-process async calls via asyncio queue. No network hop, but
+      agents receive untrusted task payloads originating from TB-01.
+    tls_required: false   # same process
+    input_validation_required: true
+
+  - id: TB-03
+    name: "Agent Workers ↔ LLM Provider"
+    description: >
+      Outbound HTTPS calls to Gemini CLI, Claude Code CLI, or Ollama.
+      PHI must be scrubbed before crossing this boundary.
+    tls_required: true
+    phi_scrub_required: true
+
+  - id: TB-04
+    name: "Agent Workers ↔ Persistent Storage"
+    description: >
+      SQLite audit_log.db and ChromaDB vector store on local filesystem.
+      Encryption at rest required for PHI-capable deployments.
+    encryption_at_rest_required: true
+
+  - id: TB-05
+    name: "SAGE Core ↔ External Integrations"
+    description: >
+      Slack webhooks, n8n, Temporal, MCP servers.
+      Signed secrets required; webhook payloads validated before processing.
+    secret_required: true
+    payload_validation_required: true
+
+# ============================================================
+# Assets
+# ============================================================
+assets:
+  - id: A-01
+    name: "PHI / PII in task payloads"
+    classification: RESTRICTED
+    impact: CRITICAL
+
+  - id: A-02
+    name: "Audit log (audit_log.db)"
+    classification: CONFIDENTIAL
+    impact: HIGH
+    note: "Compliance record — must be immutable and tamper-evident"
+
+  - id: A-03
+    name: "Agent proposals (pending approvals)"
+    classification: CONFIDENTIAL
+    impact: HIGH
+
+  - id: A-04
+    name: "Vector knowledge store (chroma_db)"
+    classification: CONFIDENTIAL
+    impact: MEDIUM
+
+  - id: A-05
+    name: "LLM provider credentials / API keys"
+    classification: SECRET
+    impact: CRITICAL
+
+  - id: A-06
+    name: "JWT signing secret / OIDC private key"
+    classification: SECRET
+    impact: CRITICAL
+
+# ============================================================
+# STRIDE Threat Catalogue
+# ============================================================
+threats:
+  # ----------------------------------------------------------
+  # S — Spoofing
+  # ----------------------------------------------------------
+  - id: T-S-01
+    stride_category: Spoofing
+    asset: A-06
+    title: "Forged JWT grants unauthorized access"
+    description: >
+      An attacker presents a self-signed or expired JWT to bypass
+      authentication and access agent endpoints as an admin.
+    likelihood: MEDIUM
+    impact: CRITICAL
+    risk: HIGH
+    mitigations:
+      - control: "Verify JWT signature against JWKS endpoint or secret"
+        status: IMPLEMENTED
+        evidence: "src/core/auth.py — jose.jwt.decode() with ALGORITHMS check"
+      - control: "Short token expiry (≤ 1 hour) with refresh flow"
+        status: RECOMMENDED
+      - control: "Reject tokens with alg=none"
+        status: IMPLEMENTED
+        evidence: "auth.py ALGORITHMS whitelist excludes 'none'"
+    cwe: "CWE-287"
+    owasp: "A07:2021"
+
+  - id: T-S-02
+    stride_category: Spoofing
+    asset: A-05
+    title: "API key brute-forced or stolen from env"
+    description: >
+      SAGE_API_KEY stored in .env or CI environment variable leaks
+      via logs, error messages, or insecure CI artifact storage.
+    likelihood: MEDIUM
+    impact: HIGH
+    risk: HIGH
+    mitigations:
+      - control: "Hash stored API keys (bcrypt/argon2), never log raw"
+        status: IMPLEMENTED
+        evidence: "src/core/api_keys.py"
+      - control: "Rotate API keys on suspected compromise"
+        status: OPERATIONAL
+      - control: "Mask secrets in all log output"
+        status: RECOMMENDED
+    cwe: "CWE-522"
+    owasp: "A02:2021"
+
+  # ----------------------------------------------------------
+  # T — Tampering
+  # ----------------------------------------------------------
+  - id: T-T-01
+    stride_category: Tampering
+    asset: A-02
+    title: "Audit log row modified post-write"
+    description: >
+      An insider or compromised process issues an UPDATE/DELETE
+      against audit_log.db to erase evidence of a policy violation.
+    likelihood: LOW
+    impact: CRITICAL
+    risk: HIGH
+    mitigations:
+      - control: "INSERT-only schema; no UPDATE/DELETE in audit_logger.py"
+        status: IMPLEMENTED
+        evidence: "src/memory/audit_logger.py — only INSERT statements"
+      - control: "Enable SQLite WAL with checksum verification"
+        status: RECOMMENDED
+      - control: "Periodically export audit log to immutable storage (S3 WORM)"
+        status: RECOMMENDED
+    cwe: "CWE-693"
+    nist: "AU-9"
+
+  - id: T-T-02
+    stride_category: Tampering
+    asset: A-03
+    title: "Proposal payload mutated before approval"
+    description: >
+      Pending proposal JSON in proposal_store.db is modified between
+      creation and approval, causing a different action than reviewed.
+    likelihood: LOW
+    impact: HIGH
+    risk: MEDIUM
+    mitigations:
+      - control: "Hash proposal payload on create; verify hash on approve"
+        status: RECOMMENDED
+      - control: "Proposal status transitions enforced by state machine"
+        status: IMPLEMENTED
+        evidence: "src/core/proposal_store.py"
+    cwe: "CWE-345"
+
+  # ----------------------------------------------------------
+  # R — Repudiation
+  # ----------------------------------------------------------
+  - id: T-R-01
+    stride_category: Repudiation
+    asset: A-02
+    title: "Agent action cannot be traced to a human approver"
+    description: >
+      A code_diff proposal is approved but no user identity is stored,
+      making it impossible to attribute the approval for compliance audit.
+    likelihood: MEDIUM
+    impact: HIGH
+    risk: HIGH
+    mitigations:
+      - control: "Store actor (sub/email) on every approval event"
+        status: IMPLEMENTED
+        evidence: "audit_logger.py logs actor field on APPROVED/REJECTED events"
+      - control: "trace_id links proposal → approval → execution events"
+        status: IMPLEMENTED
+        evidence: "src/modules/trace_id.py used throughout pipeline"
+    cwe: "CWE-778"
+    hipaa: "§164.312(b)"
+
+  # ----------------------------------------------------------
+  # I — Information Disclosure
+  # ----------------------------------------------------------
+  - id: T-I-01
+    stride_category: Information Disclosure
+    asset: A-01
+    title: "PHI included verbatim in LLM prompt"
+    description: >
+      A task payload containing patient identifiers (name, DOB, MRN)
+      is sent unredacted to an external LLM provider, violating HIPAA.
+    likelihood: HIGH
+    impact: CRITICAL
+    risk: CRITICAL
+    mitigations:
+      - control: "PII/PHI filter (pii_filter.scrub) applied before every generate() call"
+        status: IMPLEMENTED
+        evidence: "src/core/pii_filter.py — regex + NER-based scrubbing"
+      - control: "Route PHI workloads to on-premise Ollama provider only"
+        status: RECOMMENDED
+      - control: "Langfuse tracing disabled for PHI payloads"
+        status: RECOMMENDED
+    cwe: "CWE-200"
+    hipaa: "§164.312(a)(2)(iv)"
+
+  - id: T-I-02
+    stride_category: Information Disclosure
+    asset: A-04
+    title: "Vector store query returns PHI from wrong tenant"
+    description: >
+      Cross-tenant vector search returns embeddings containing PHI
+      from a different solution due to missing namespace isolation.
+    likelihood: LOW
+    impact: HIGH
+    risk: HIGH
+    mitigations:
+      - control: "Tenant-scoped ChromaDB collections (<tenant>_knowledge)"
+        status: IMPLEMENTED
+        evidence: "src/core/tenant.py + src/memory/vector_store.py"
+      - control: "X-SAGE-Tenant header validated on all knowledge endpoints"
+        status: IMPLEMENTED
+    cwe: "CWE-284"
+    hipaa: "§164.312(a)(1)"
+
+  - id: T-I-03
+    stride_category: Information Disclosure
+    asset: A-01
+    title: "PHI stored unencrypted at rest in audit_log.db"
+    description: >
+      SQLite database files on disk are readable by OS users with
+      filesystem access if encryption at rest is not configured.
+    likelihood: MEDIUM
+    impact: CRITICAL
+    risk: CRITICAL
+    mitigations:
+      - control: "SQLCipher or OS-level filesystem encryption (LUKS, BitLocker)"
+        status: RECOMMENDED
+      - control: "encryption.at_rest: true in config.yaml activates key-at-rest wrapper"
+        status: RECOMMENDED
+      - control: "Restrict .sage/ directory permissions to service account (chmod 700)"
+        status: OPERATIONAL
+    cwe: "CWE-312"
+    hipaa: "§164.312(a)(2)(iv)"
+    nist: "SC-28"
+
+  - id: T-I-04
+    stride_category: Information Disclosure
+    asset: A-01
+    title: "PHI transmitted over unencrypted HTTP"
+    description: >
+      Deployment without TLS termination exposes PHI payloads to
+      network eavesdroppers on the path between client and API.
+    likelihood: LOW
+    impact: CRITICAL
+    risk: HIGH
+    mitigations:
+      - control: "TLS 1.2+ enforced at reverse proxy (nginx/caddy)"
+        status: OPERATIONAL
+      - control: "HTTPSRedirectMiddleware in api.py for direct deployments"
+        status: RECOMMENDED
+      - control: "HSTS header set (max-age ≥ 31536000)"
+        status: RECOMMENDED
+    cwe: "CWE-319"
+    hipaa: "§164.312(e)(1)"
+    nist: "SC-8"
+
+  # ----------------------------------------------------------
+  # D — Denial of Service
+  # ----------------------------------------------------------
+  - id: T-D-01
+    stride_category: Denial of Service
+    asset: A-03
+    title: "Proposal queue flooded by unauthenticated requests"
+    description: >
+      An attacker submits thousands of /analyze requests, exhausting
+      the LLM gateway queue and degrading service for legitimate users.
+    likelihood: MEDIUM
+    impact: MEDIUM
+    risk: MEDIUM
+    mitigations:
+      - control: "Rate limiting via slowapi (e.g. 60 req/min per IP)"
+        status: RECOMMENDED
+      - control: "Queue depth cap + back-pressure in queue_manager.py"
+        status: IMPLEMENTED
+        evidence: "src/core/queue_manager.py maxsize parameter"
+      - control: "Require authentication before enqueuing tasks"
+        status: RECOMMENDED
+    cwe: "CWE-770"
+    owasp: "A05:2021"
+
+  - id: T-D-02
+    stride_category: Denial of Service
+    asset: A-01
+    title: "Malformed LLM response causes infinite retry loop"
+    description: >
+      LLM provider returns invalid JSON repeatedly; the gateway retries
+      indefinitely, blocking the single-lane inference thread.
+    likelihood: LOW
+    impact: MEDIUM
+    risk: LOW
+    mitigations:
+      - control: "Max retry count (3) + exponential backoff in llm_gateway.py"
+        status: IMPLEMENTED
+      - control: "Circuit breaker pattern for persistent LLM failures"
+        status: RECOMMENDED
+    cwe: "CWE-835"
+
+  # ----------------------------------------------------------
+  # E — Elevation of Privilege
+  # ----------------------------------------------------------
+  - id: T-E-01
+    stride_category: Elevation of Privilege
+    asset: A-06
+    title: "Viewer role escalates to admin via RBAC bypass"
+    description: >
+      Missing role check on a privileged endpoint allows a viewer-role
+      JWT to approve proposals or switch LLM providers.
+    likelihood: LOW
+    impact: HIGH
+    risk: HIGH
+    mitigations:
+      - control: "RBAC decorators on all mutating endpoints"
+        status: IMPLEMENTED
+        evidence: "src/core/rbac.py — require_permission() dependency"
+      - control: "Integration test: viewer JWT rejected on POST /approvals/{id}/approve"
+        status: RECOMMENDED
+    cwe: "CWE-269"
+    owasp: "A01:2021"
+
+  - id: T-E-02
+    stride_category: Elevation of Privilege
+    asset: A-01
+    title: "Prompt injection via malicious task payload"
+    description: >
+      Attacker crafts a task description containing instructions that
+      override the agent's system prompt and exfiltrate config secrets.
+    likelihood: MEDIUM
+    impact: HIGH
+    risk: HIGH
+    mitigations:
+      - control: "Payload validation schema (payload_validator.py) rejects oversized / suspicious inputs"
+        status: IMPLEMENTED
+        evidence: "src/modules/payload_validator.py"
+      - control: "System prompt prefix is not user-controllable"
+        status: IMPLEMENTED
+      - control: "LLM output scanned for secret patterns before returning to client"
+        status: RECOMMENDED
+    cwe: "CWE-77"
+    owasp: "A03:2021"
+
+  # ----------------------------------------------------------
+  # D — Denial of Service (additional findings from 2026-03-27 code review)
+  # ----------------------------------------------------------
+  - id: T-D-03
+    stride_category: Denial of Service
+    asset: A-03
+    title: "Unauthenticated /shutdown endpoint — any client can terminate SAGE"
+    description: >
+      POST /shutdown in api.py has no authentication or role check.
+      Any network-reachable HTTP client can halt the SAGE backend process
+      immediately, causing complete service unavailability.
+      Confirmed absent: src/interface/api.py lines 467-493.
+    likelihood: MEDIUM
+    impact: CRITICAL
+    risk: CRITICAL
+    mitigations:
+      - control: "Add @require_role(Role.ADMIN) decorator to the /shutdown endpoint"
+        status: REQUIRED
+        evidence: "src/interface/api.py:467-493 — no auth dependency currently"
+      - control: "Alternatively remove /shutdown from HTTP API entirely; use OS-level process management"
+        status: RECOMMENDED
+    cwe: "CWE-306"
+    owasp: "A01:2021"
+
+  # ----------------------------------------------------------
+  # I — Information Disclosure (additional findings)
+  # ----------------------------------------------------------
+  # ----------------------------------------------------------
+  # S — Spoofing (additional 2026-03-28)
+  # ----------------------------------------------------------
+  - id: T-S-03
+    stride_category: Spoofing
+    asset: A-01
+    title: "Wildcard CORS (allow_origins=['*']) enables cross-origin request forgery"
+    description: >
+      api.py CORSMiddleware is configured with allow_origins=['*'], allowing
+      any web origin to make credentialed API calls from a victim's browser.
+      Attackers can build a malicious page that calls POST /approvals/{id}/approve
+      while authenticated as a legitimate admin user.
+    likelihood: HIGH
+    impact: CRITICAL
+    risk: CRITICAL
+    mitigations:
+      - control: "Replace ['*'] with SAGE_ALLOWED_ORIGINS env var allowlist"
+        status: REQUIRED
+        evidence: "src/interface/api.py — CORSMiddleware allow_origins=['*']"
+      - control: "Add SameSite=Strict on session cookies when auth is enabled"
+        status: RECOMMENDED
+    cwe: "CWE-942"
+    owasp: "A05:2021"
+    hipaa: "§164.312(e)(1)"
+
+  - id: T-S-04
+    stride_category: Spoofing
+    asset: A-06
+    title: "Authentication disabled by default (auth.enabled: false)"
+    description: >
+      The default config ships with auth.enabled: false. All requests receive
+      anonymous identity with no cryptographic binding. Any client can invoke
+      agent endpoints, approve proposals (using free-text 'Approving as'), and
+      trigger code execution without supplying credentials.
+    likelihood: HIGH
+    impact: CRITICAL
+    risk: CRITICAL
+    mitigations:
+      - control: "Set auth.enabled: true in production; fail at startup if not set"
+        status: REQUIRED
+        evidence: "config/config.yaml auth.enabled: false"
+      - control: "Block high-privilege approvals (yaml_edit, code_diff) when auth is off"
+        status: RECOMMENDED
+    cwe: "CWE-306"
+    owasp: "A07:2021"
+    hipaa: "§164.312(d)"
+
+  # ----------------------------------------------------------
+  # T — Tampering (additional 2026-03-28)
+  # ----------------------------------------------------------
+  - id: T-T-03
+    stride_category: Tampering
+    asset: A-01
+    title: "Missing HTTP security headers enable clickjacking and MIME-sniffing"
+    description: >
+      api.py does not emit X-Frame-Options, X-Content-Type-Options,
+      Content-Security-Policy, or Strict-Transport-Security. An attacker can
+      iframe the SAGE approval UI (clickjacking) to steal admin approvals, or
+      inject scripts via MIME-sniffing.
+    likelihood: MEDIUM
+    impact: HIGH
+    risk: HIGH
+    mitigations:
+      - control: "Add SecurityHeadersMiddleware emitting HSTS, X-Frame-Options: DENY, nosniff, CSP"
+        status: REQUIRED
+      - control: "Set Referrer-Policy: strict-origin-when-cross-origin"
+        status: RECOMMENDED
+    cwe: "CWE-693"
+    owasp: "A05:2021"
+
+  # ----------------------------------------------------------
+  # I — Information Disclosure (additional 2026-03-28)
+  # ----------------------------------------------------------
+  - id: T-I-06
+    stride_category: Information Disclosure
+    asset: A-01
+    title: "PII/PHI detection disabled by default (pii.enabled: false)"
+    description: >
+      The default configuration has pii.enabled: false. PHI in task payloads
+      (patient names, SSNs, medical record numbers) flows unredacted through
+      the LLM gateway to external CLI providers (Gemini, Claude Code) and is
+      stored verbatim in audit_log.db and chroma_db.
+    likelihood: HIGH
+    impact: CRITICAL
+    risk: CRITICAL
+    mitigations:
+      - control: "Set pii.enabled: true; install presidio-analyzer + presidio-anonymizer"
+        status: REQUIRED
+        evidence: "config/config.yaml pii.enabled: false"
+      - control: "Set fail_on_detection: true for HIPAA deployments"
+        status: RECOMMENDED
+      - control: "Apply PII filter before every generate() call in llm_gateway.py"
+        status: RECOMMENDED
+    cwe: "CWE-359"
+    owasp: "A02:2021"
+    hipaa: "§164.312(a)(2)(iv)"
+
+  - id: T-I-05
+    stride_category: Information Disclosure
+    asset: A-05
+    title: "Hardcoded Google Cloud project ID in LLM gateway"
+    description: >
+      A fallback value 'db-dev-bms-apps' is hardcoded in llm_gateway.py
+      as the GOOGLE_CLOUD_PROJECT default. This leaks an internal org
+      infrastructure identifier and couples dev config to production binary.
+      File: src/core/llm_gateway.py lines 183-186.
+    likelihood: HIGH
+    impact: LOW
+    risk: LOW
+    mitigations:
+      - control: "Remove the hardcoded default; require GOOGLE_CLOUD_PROJECT env var explicitly"
+        status: RECOMMENDED
+        evidence: "src/core/llm_gateway.py:184"
+    cwe: "CWE-798"
+
+# ============================================================
+# Residual Risk Register
+# ============================================================
+residual_risks:
+  - threat_id: T-I-03
+    residual_risk: MEDIUM
+    accepted_by: "Compliance Officer"
+    rationale: >
+      Filesystem encryption (LUKS) is configured at the infrastructure
+      level in production. SQLCipher adds defence-in-depth but is not
+      yet in the Python layer.
+    review_date: "2026-06-27"
+
+  - threat_id: T-D-01
+    residual_risk: LOW
+    accepted_by: "Engineering Lead"
+    rationale: >
+      All production deployments run behind a WAF with rate limiting.
+      Application-level rate limiting is a backlog item (medium priority).
+    review_date: "2026-04-30"
+
+  - threat_id: T-D-03
+    residual_risk: CRITICAL
+    accepted_by: "OPEN — awaiting fix"
+    rationale: >
+      Unauthenticated /shutdown endpoint must be patched before any
+      internet-exposed deployment. Interim: restrict network access to
+      localhost-only via firewall rule until code fix is deployed.
+    review_date: "2026-04-10"
+
+  - threat_id: T-I-05
+    residual_risk: LOW
+    accepted_by: "Engineering Lead"
+    rationale: >
+      Leaks infrastructure identifier but not credentials. Fix in next
+      sprint by removing the hardcoded fallback string.
+    review_date: "2026-04-30"
+
+  - threat_id: T-S-03
+    residual_risk: CRITICAL
+    accepted_by: "OPEN — awaiting fix"
+    rationale: >
+      Wildcard CORS must be restricted before any browser-accessible
+      deployment. Interim: restrict API to internal network only.
+    review_date: "2026-04-07"
+
+  - threat_id: T-S-04
+    residual_risk: CRITICAL
+    accepted_by: "OPEN — awaiting fix"
+    rationale: >
+      Auth disabled by default is a design choice for local dev but must be
+      enforced as ON in any internet-facing or multi-user deployment.
+    review_date: "2026-04-07"
+
+  - threat_id: T-I-06
+    residual_risk: CRITICAL
+    accepted_by: "OPEN — awaiting fix"
+    rationale: >
+      PHI flows unredacted to external LLM providers. HIPAA BAA required
+      with any provider receiving PHI. Enable pii.enabled: true immediately.
+    review_date: "2026-04-07"
+
+# ============================================================
+# Compliance Mapping
+# ============================================================
+compliance_coverage:
+  HIPAA:
+    - clause: "§164.312(a)(1)"   # Access Control
+      threats: [T-I-02, T-E-01]
+    - clause: "§164.312(a)(2)(iv)"  # Encryption
+      threats: [T-I-01, T-I-03]
+    - clause: "§164.312(b)"     # Audit Controls
+      threats: [T-R-01, T-T-01]
+    - clause: "§164.312(e)(1)"  # Transmission Security
+      threats: [T-I-04, T-S-03, T-T-03]
+    - clause: "§164.312(d)"    # Person Authentication
+      threats: [T-S-04]
+  NIST_SP_800_53:
+    - control: "AC-2"   # Account Management       → T-S-01, T-S-02
+    - control: "AU-3"   # Audit Record Content     → T-R-01
+    - control: "AU-9"   # Protection of Audit Info → T-T-01
+    - control: "SC-8"   # Transmission Confidentiality → T-I-04
+    - control: "SC-28"  # Protection at Rest       → T-I-03
+    - control: "SI-10"  # Input Validation         → T-E-02

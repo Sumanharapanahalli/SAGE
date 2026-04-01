@@ -1,0 +1,63 @@
+# ResNet-18 Fine-tuning Configuration
+experiment:
+  name: resnet18_10class_finetune
+  seed: 42
+  mlflow_tracking_uri: ./mlruns
+
+data:
+  data_dir: ./data          # Root folder: data/<class_name>/*.jpg (ImageFolder layout)
+  image_size: 224
+  val_split: 0.15           # Fraction of train set used for validation
+  test_split: 0.15          # Fraction of full dataset reserved for test (stratified)
+  num_workers: 4
+
+augmentation:
+  random_horizontal_flip: true
+  random_rotation: 15
+  color_jitter:
+    brightness: 0.3
+    contrast: 0.3
+    saturation: 0.2
+  normalize:
+    mean: [0.485, 0.456, 0.406]   # ImageNet statistics
+    std:  [0.229, 0.224, 0.225]
+
+model:
+  backbone: resnet18
+  pretrained: true
+  num_classes: 10
+  dropout: 0.4
+  # Layers to unfreeze during fine-tuning (progressive unfreezing)
+  unfreeze_schedule:
+    - epoch: 0   # Only head
+      layers: [fc]
+    - epoch: 3   # + layer4
+      layers: [layer4, fc]
+    - epoch: 7   # Full model
+      layers: [layer3, layer4, fc]
+
+training:
+  epochs: 50
+  batch_size: 32
+  label_smoothing: 0.1
+
+optimizer:
+  name: AdamW
+  lr: 1.0e-3          # Peak LR (reached after warmup)
+  weight_decay: 1.0e-4
+  backbone_lr_multiplier: 0.1   # Backbone uses lr * multiplier
+
+scheduler:
+  warmup_epochs: 3            # Linear warmup
+  cosine_t_max: 47            # epochs - warmup_epochs
+  min_lr: 1.0e-6
+
+early_stopping:
+  patience: 10
+  monitor: val_acc            # val_acc | val_loss
+  min_delta: 0.001
+  restore_best_weights: true
+
+output:
+  checkpoint_dir: ./checkpoints
+  best_model_path: ./checkpoints/best_model.pt

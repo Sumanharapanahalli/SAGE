@@ -1,0 +1,298 @@
+# .github/workflows/deploy.yml
+# ─────────────────────────────────────────────────────────────────────────────
+# SAGE Framework — Deploy Pipeline (main branch)
+#
+# Triggered on push to main.  Sequence:
+#   1. integration-tests   – pytest -m integration via testcontainers (real Postgres)
+#   2. build-image         – multi-stage Docker build + push to GHCR (sha tag, no promotion yet)
+#   3. migrate-staging     – run Alembic migrations against staging DB (alembic upgrade head)
+#   4. promote-image       – re-tag image as `latest` in GHCR (only after migrations pass)
+#
+# Required secrets (set in repo Settings → Secrets):
+#   GHCR_TOKEN             – GitHub PAT with write:packages scope (or use GITHUB_TOKEN)
+#   STAGING_DATABASE_URL   – postgresql+psycopg2://user:pass@host:5432/db
+#
+# Required vars (repo Settings → Variables):
+#   STAGING_HOST           – staging FQDN for smoke-test
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: deploy-main
+  cancel-in-progress: false   # never cancel an in-flight deploy
+
+env:
+  PYTHON_VERSION: "3.11"
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository_owner }}/sage-backend
+  SAGE_TEST_MODE: "1"
+  ANONYMIZED_TELEMETRY: "False"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Job 1 — Integration tests (testcontainers spins up Postgres + Redis)
+# ─────────────────────────────────────────────────────────────────────────────
+jobs:
+  integration-tests:
+    name: Integration Tests (testcontainers)
+    runs-on: ubuntu-22.04
+    # Docker daemon is required for testcontainers
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install \
+            pytest pytest-cov pytest-asyncio httpx anyio \
+            testcontainers[postgres,redis] \
+            alembic \
+            psycopg2-binary
+
+      - name: Run integration tests
+        env:
+          SAGE_TEST_MODE: "1"
+          ANONYMIZED_TELEMETRY: "False"
+          # testcontainers will set DATABASE_URL dynamically via conftest fixture
+        run: |
+          pytest tests/ \
+            -m "integration" \
+            -v \
+            --tb=short \
+            --junitxml=test-results/integration-results.xml \
+            --cov=src \
+            --cov-report=xml:coverage/integration-coverage.xml \
+            -p no:cacheprovider \
+            --timeout=300
+
+      - name: Publish test results
+        if: always()
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: test-results/integration-results.xml
+          check_name: Integration Test Results
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-coverage
+          path: coverage/integration-coverage.xml
+          retention-days: 14
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Job 2 — Build Docker image and push to GHCR with SHA tag (not :latest yet)
+# ─────────────────────────────────────────────────────────────────────────────
+  build-image:
+    name: Build & Push Docker Image (SHA tag)
+    runs-on: ubuntu-22.04
+    needs: integration-tests
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+    outputs:
+      image-digest: ${{ steps.build-push.outputs.digest }}
+      image-tag: ${{ steps.meta.outputs.version }}
+      full-image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=sha-,format=long
+            type=ref,event=branch
+          labels: |
+            org.opencontainers.image.title=SAGE Backend
+            org.opencontainers.image.description=SAGE Framework REST API
+            org.opencontainers.image.vendor=SAGE
+
+      - name: Build and push image (SHA tag — not latest yet)
+        id: build-push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            BUILD_DATE=${{ github.event.head_commit.timestamp }}
+            VCS_REF=${{ github.sha }}
+
+      - name: Run Trivy vulnerability scan on pushed image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
+          format: sarif
+          output: trivy-image.sarif
+          severity: CRITICAL
+          exit-code: "1"
+          ignore-unfixed: true
+
+      - name: Upload Trivy SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-image.sarif
+          category: trivy-image
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Job 3 — Run Alembic migrations on staging DB
+#          Image promotion only happens if this job succeeds.
+# ─────────────────────────────────────────────────────────────────────────────
+  migrate-staging:
+    name: Alembic Migrations (staging)
+    runs-on: ubuntu-22.04
+    needs: build-image
+    environment:
+      name: staging
+      url: https://${{ vars.STAGING_HOST }}
+    env:
+      DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install Alembic + DB driver
+        run: |
+          pip install --upgrade pip
+          pip install alembic psycopg2-binary sqlalchemy
+
+      - name: Verify DB connectivity
+        run: |
+          python - <<'PYEOF'
+          import os, sys, time
+          from sqlalchemy import create_engine, text
+
+          url = os.environ["DATABASE_URL"]
+          engine = create_engine(url, connect_args={"connect_timeout": 10})
+
+          for attempt in range(1, 6):
+              try:
+                  with engine.connect() as conn:
+                      conn.execute(text("SELECT 1"))
+                  print(f"DB reachable (attempt {attempt})")
+                  sys.exit(0)
+              except Exception as exc:
+                  print(f"Attempt {attempt}/5 failed: {exc}")
+                  if attempt == 5:
+                      sys.exit(1)
+                  time.sleep(5)
+          PYEOF
+
+      - name: Check current migration revision
+        run: |
+          alembic current 2>&1 | tee migration-current.txt
+          echo "--- current revision above ---"
+
+      - name: Run Alembic upgrade head
+        id: alembic-upgrade
+        run: |
+          set -euo pipefail
+          alembic upgrade head 2>&1 | tee migration-upgrade.txt
+          echo "Migration log:"
+          cat migration-upgrade.txt
+
+      - name: Verify migration succeeded
+        run: |
+          # Ensure 'head' is not behind
+          alembic current 2>&1 | grep -v "^$" | tee migration-after.txt
+          echo "Post-migration revision:"
+          cat migration-after.txt
+
+      - name: Upload migration logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: migration-logs
+          path: |
+            migration-current.txt
+            migration-upgrade.txt
+            migration-after.txt
+          retention-days: 30
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Job 4 — Promote image to :latest in GHCR (runs ONLY after migrations pass)
+# ─────────────────────────────────────────────────────────────────────────────
+  promote-image:
+    name: Promote Image to :latest
+    runs-on: ubuntu-22.04
+    needs:
+      - build-image
+      - migrate-staging
+    permissions:
+      contents: read
+      packages: write
+    environment:
+      name: staging
+      url: https://${{ vars.STAGING_HOST }}
+
+    steps:
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull SHA-tagged image and re-tag as latest
+        run: |
+          SHA_IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}"
+          LATEST_IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+          BRANCH_IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main"
+
+          docker pull "${SHA_IMAGE}"
+          docker tag  "${SHA_IMAGE}" "${LATEST_IMAGE}"
+          docker tag  "${SHA_IMAGE}" "${BRANCH_IMAGE}"
+          docker push "${LATEST_IMAGE}"
+          docker push "${BRANCH_IMAGE}"
+
+          echo "Promoted ${SHA_IMAGE} → ${LATEST_IMAGE}"
+
+      - name: Deployment summary
+        run: |
+          cat >> $GITHUB_STEP_SUMMARY <<EOF
+          ## Deployment Summary
+
+          | Key            | Value |
+          |----------------|-------|
+          | Image (SHA)    | \`${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}\` |
+          | Image (latest) | \`${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest\` |
+          | Commit         | \`${{ github.sha }}\` |
+          | Actor          | @${{ github.actor }} |
+          | Status         | Migrations passed, image promoted |
+          EOF

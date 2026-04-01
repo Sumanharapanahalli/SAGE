@@ -1,0 +1,823 @@
+{
+  "files": [
+    {
+      "path": "docs/product/value_proposition_canvas.json",
+      "content": "This file — see root object for full Strategyzer Value Proposition Canvas."
+    }
+  ],
+  "framework_used": "Strategyzer Value Proposition Canvas v2 (Osterwalder & Pigneur)",
+  "sections": [
+    "Customer Profile — Functional Jobs",
+    "Customer Profile — Social & Emotional Jobs",
+    "Customer Profile — Pains (Extreme / Significant / Moderate)",
+    "Customer Profile — Gains (Required / Expected / Desired / Unexpected)",
+    "Value Map — Products & Services",
+    "Value Map — Pain Relievers",
+    "Value Map — Gain Creators",
+    "Fit Analysis — Strong Fits with Competitive Moat Ratings",
+    "Gap Analysis — Unaddressed Pains & Under-served Gains",
+    "Action Items — RICE Scored"
+  ],
+
+  "metadata": {
+    "product": "SAGE Framework — Smart Agentic-Guided Empowerment",
+    "canvas_version": "2.0",
+    "date": "2026-03-26",
+    "author_role": "product_manager",
+    "framework": "Strategyzer Value Proposition Canvas",
+    "customer_segment": "Engineering leads and product teams in regulated industries (medical devices, automotive, avionics, railways, IoT) building software-intensive products who need autonomous AI agents that maintain compliance and amplify human judgment.",
+    "sub_segments": [
+      "Medical device software teams (IEC 62304 / ISO 13485 / FDA)",
+      "Embedded firmware & PCB hardware teams (ISO 26262, IEC 61508)",
+      "ML / data science practitioners building production pipelines",
+      "Full-stack product engineering teams (SWE + devops + QA)",
+      "Solo founders and small teams building 0→1 software products",
+      "Technical product managers and product strategists"
+    ],
+    "next_review_trigger": "After 5 user interviews validating HITL compliance fit, or after GAP-01/GAP-02 shipped"
+  },
+
+  "customer_profile": {
+    "functional_jobs": [
+      {
+        "id": "FJ-01",
+        "priority": "critical",
+        "job": "Triage and root-cause errors, logs, and production signals quickly and accurately",
+        "context": "On-call engineers spend hours manually correlating signals; they need root-cause in minutes, not hours"
+      },
+      {
+        "id": "FJ-02",
+        "priority": "critical",
+        "job": "Generate, review, and approve code changes with documented, auditable review trails",
+        "context": "Regulated teams cannot merge without traceable, structured review evidence for auditors"
+      },
+      {
+        "id": "FJ-03",
+        "priority": "critical",
+        "job": "Run compliance-grade multi-step workflows: plan → human approval → implement → verify",
+        "context": "ISO 13485, IEC 62304, ISO 26262, DO-178C all require human-in-the-loop sign-off; no shortcuts"
+      },
+      {
+        "id": "FJ-04",
+        "priority": "high",
+        "job": "Produce compliance-ready documentation: DHFs, SRS, test reports, risk registers",
+        "context": "Regulated teams must deliver auditable artifacts for FDA submissions and notified-body inspections"
+      },
+      {
+        "id": "FJ-05",
+        "priority": "high",
+        "job": "Onboard an AI capability to a new domain (firmware, ML, PCB, docs) without building from scratch",
+        "context": "Domain-specific AI setup takes weeks; teams need YAML-first rapid configuration, not custom Python"
+      },
+      {
+        "id": "FJ-06",
+        "priority": "high",
+        "job": "Maintain institutional knowledge as team members rotate in and out",
+        "context": "Domain expertise is siloed in individuals; agents should compound that knowledge, not lose it"
+      },
+      {
+        "id": "FJ-07",
+        "priority": "high",
+        "job": "Orchestrate cross-domain product builds (firmware + ML + web + QA) as one coordinated workflow",
+        "context": "Multi-domain products require multiple specialist agents working in parallel waves, not sequentially"
+      },
+      {
+        "id": "FJ-08",
+        "priority": "medium",
+        "job": "Track AI agent skill improvement over time with statistically meaningful metrics",
+        "context": "Teams need evidence that their AI agents are measurably improving to justify continued investment"
+      },
+      {
+        "id": "FJ-09",
+        "priority": "medium",
+        "job": "Switch or test multiple LLM providers without rearchitecting the stack",
+        "context": "Model landscape changes monthly; vendor lock-in is an operational and cost risk"
+      },
+      {
+        "id": "FJ-10",
+        "priority": "medium",
+        "job": "Generate strategy artifacts — PRDs, roadmaps, GTM plans — that connect directly to execution",
+        "context": "PMs need structured strategy outputs that translate into agent task graphs, not blank-page LLM chats"
+      }
+    ],
+
+    "social_emotional_jobs": [
+      {
+        "id": "SEJ-01",
+        "job": "Feel confident that AI suggestions won't cause regulatory or safety violations",
+        "emotion": "Trust / Safety",
+        "priority": "critical"
+      },
+      {
+        "id": "SEJ-02",
+        "job": "Demonstrate to auditors and regulators that AI decisions are traceable and human-approved",
+        "emotion": "Credibility / Accountability",
+        "priority": "critical"
+      },
+      {
+        "id": "SEJ-03",
+        "job": "Show leadership that AI investment is accelerating delivery, not creating technical or compliance risk",
+        "emotion": "Status / Justification",
+        "priority": "high"
+      },
+      {
+        "id": "SEJ-04",
+        "job": "Avoid context-switching between 10+ different AI tools — want one stable platform to invest in",
+        "emotion": "Simplicity / Control",
+        "priority": "high"
+      },
+      {
+        "id": "SEJ-05",
+        "job": "Feel that the system gets smarter over time rather than repeating the same mistakes",
+        "emotion": "Progress / Momentum",
+        "priority": "high"
+      },
+      {
+        "id": "SEJ-06",
+        "job": "Maintain human authority — agents assist and propose; humans decide. Always.",
+        "emotion": "Autonomy / Dignity",
+        "priority": "critical"
+      }
+    ],
+
+    "pains": {
+      "extreme": [
+        {
+          "id": "P-01",
+          "pain": "AI systems that act without human approval create compliance liability and erode trust — teams revert to manual workflows after incidents",
+          "consequence": "Regulatory non-compliance, recall risk, legal liability, and permanent AI adoption stall in safety-critical products",
+          "frequency": "Every time a generic AI tool is deployed in a regulated context"
+        },
+        {
+          "id": "P-02",
+          "pain": "Generic LLM assistants (ChatGPT, Copilot) have no domain toolchain awareness — they describe firmware changes but cannot compile or verify them",
+          "consequence": "Hallucinated outputs pass code review but fail at build time; engineers still do all domain verification manually",
+          "frequency": "Every AI-assisted domain task"
+        },
+        {
+          "id": "P-03",
+          "pain": "Compliance and audit documentation consumes 20–40% of engineering time in regulated domains",
+          "consequence": "Delayed releases, missed regulatory deadlines, costly notified-body resubmissions",
+          "frequency": "Every release cycle"
+        }
+      ],
+      "significant": [
+        {
+          "id": "P-04",
+          "pain": "Institutional knowledge evaporates when key engineers leave — no compounding memory across decisions",
+          "consequence": "New team members repeat solved problems; domain onboarding takes months instead of days"
+        },
+        {
+          "id": "P-05",
+          "pain": "AI tool fragmentation: firmware uses IAR/GCC agents, ML uses Jupyter-integrated tools, PCB uses KiCad plugins — no unified agent layer",
+          "consequence": "Domain-specific AI adoption is piecemeal, inconsistent, and creates 5–10 separate maintenance burdens"
+        },
+        {
+          "id": "P-06",
+          "pain": "No feedback loop from human corrections back to AI — the same analysis mistakes repeat across sessions",
+          "consequence": "Teams lose confidence in the AI; adoption stalls; agents remain stuck at initial quality level"
+        },
+        {
+          "id": "P-07",
+          "pain": "Adding a new agent role, task type, or domain requires Python code changes and full redeployment",
+          "consequence": "Teams that need firmware + PCB + ML runners must maintain three separate codebases or wait for engineering bandwidth"
+        },
+        {
+          "id": "P-08",
+          "pain": "Building a 0→1 product requires assembling and coordinating separate specialist tools for each domain role",
+          "consequence": "Coordination overhead consumes more time than the actual work; small teams cannot orchestrate at scale"
+        }
+      ],
+      "moderate": [
+        {
+          "id": "P-09",
+          "pain": "LLM cost unpredictability when scaling AI to entire engineering teams",
+          "consequence": "Budgeting is impossible; usage spikes create surprise bills; procurement blocks adoption"
+        },
+        {
+          "id": "P-10",
+          "pain": "Multi-step workflows lose state when a service restarts mid-execution",
+          "consequence": "Long-running builds (firmware compile + test + doc generation) require manual restart and re-verification"
+        },
+        {
+          "id": "P-11",
+          "pain": "No consistent way to measure whether AI agents are improving quality over time",
+          "consequence": "Cannot justify AI investment to stakeholders; no basis for agent curriculum or training investment"
+        },
+        {
+          "id": "P-12",
+          "pain": "Strategy artifacts (PRDs, roadmaps) are disconnected from the execution layer — strategy and execution drift",
+          "consequence": "PMs write PRDs; engineers interpret them differently; planned features are not what gets built"
+        }
+      ]
+    },
+
+    "gains": {
+      "required": [
+        {
+          "id": "G-01",
+          "gain": "Every agent action produces a tamper-evident audit trail ready for regulatory inspection",
+          "metric": "Zero manual audit prep time; trace_id links every proposal to its approval"
+        },
+        {
+          "id": "G-02",
+          "gain": "Human-in-the-loop approval gate before any consequential agent action executes — not configurable away",
+          "metric": "100% approval gate coverage on all solution-level agent proposals"
+        },
+        {
+          "id": "G-03",
+          "gain": "Domain-specific AI behavior configurable via YAML, not Python code",
+          "metric": "New domain live in < 2 hours; zero Python changes required"
+        }
+      ],
+      "expected": [
+        {
+          "id": "G-04",
+          "gain": "Agents execute real domain toolchain operations — compile, DRC, train, verify — not just describe them",
+          "metric": "Verifiable artifacts per task: ARM binary with size/stack metrics, Gerber files, model checkpoint with eval scores"
+        },
+        {
+          "id": "G-05",
+          "gain": "System knowledge compounds — each human correction improves future agent proposals without retraining",
+          "metric": "Vector memory recall rate; measurable reduction in repeated errors across sessions"
+        },
+        {
+          "id": "G-06",
+          "gain": "One unified platform for all domains — firmware, ML, PCB, strategy, UX, SWE — not 10 separate tools",
+          "metric": "Single deployment; shared approval UI; unified audit log across all domains"
+        },
+        {
+          "id": "G-07",
+          "gain": "Analysis-to-decision cycle compressed from hours to minutes",
+          "metric": "5-phase lean loop latency; proposal generated and queued for approval in < 2 minutes"
+        }
+      ],
+      "desired": [
+        {
+          "id": "G-08",
+          "gain": "Measurable agent skill improvement over time via statistically calibrated ratings",
+          "metric": "Glicko-2 rating trending upward; rating deviation shrinking (confidence increasing)"
+        },
+        {
+          "id": "G-09",
+          "gain": "A solo founder or small team can operate with the throughput of a 20-person engineering org",
+          "metric": "10x output per engineer; 0→1 product delivered in days, not months"
+        },
+        {
+          "id": "G-10",
+          "gain": "Private proprietary skill IP (YAML) versioned, reusable across clients, never exposed publicly",
+          "metric": "SAGE_SKILLS_DIR isolation; zero skill IP in public SAGE repo"
+        },
+        {
+          "id": "G-11",
+          "gain": "LLM provider swappable at runtime with zero code changes or downtime",
+          "metric": "POST /llm/switch completes in < 1s; no proposal gate required"
+        }
+      ],
+      "unexpected_delight": [
+        {
+          "id": "G-12",
+          "gain": "Agents self-improve through spaced repetition training without any human involvement",
+          "metric": "Agents improve Glicko-2 rating from 1000 baseline through autonomous gym sessions"
+        },
+        {
+          "id": "G-13",
+          "gain": "470 industry-grade exercise seeds expandable to 50,000+ domain training scenarios via LLM generation",
+          "metric": "Exercise catalog grows on demand; domain difficulty auto-calibrates to agent success rate"
+        }
+      ]
+    }
+  },
+
+  "value_map": {
+    "products_and_services": [
+      {
+        "id": "PS-01",
+        "category": "Core Platform",
+        "name": "FastAPI Agent Gateway (155 endpoints, 25 categories)",
+        "description": "Single public interface: analysis, proposals, approvals, builds, gym, skills, LLM switching, evals, multi-tenant routing"
+      },
+      {
+        "id": "PS-02",
+        "category": "Governance",
+        "name": "HITL Approval Engine + SQLite Audit Log",
+        "description": "Two-tier proposal store (risk-classified, expiry-aware); mandatory gate for solution-level proposals; immediate execution for framework control ops; per-solution audit_log.db"
+      },
+      {
+        "id": "PS-03",
+        "category": "Intelligence",
+        "name": "Vector Memory + Compounding Context (ChromaDB)",
+        "description": "Per-solution knowledge store; CRUD + bulk import; Phase 5 feedback ingestion on every rejection; Memento-principle compounding"
+      },
+      {
+        "id": "PS-04",
+        "category": "Domain Runners",
+        "name": "Open<Role> Runner Architecture (8 runners, BaseRunner interface)",
+        "description": "OpenSWE (software), OpenFW (firmware), OpenEDA (PCB), OpenSim (SPICE/Verilog), OpenML (ML), OpenDoc (compliance docs), OpenDesign (UX), OpenStrategy (PRDs/roadmaps)"
+      },
+      {
+        "id": "PS-05",
+        "category": "Orchestration",
+        "name": "Build Orchestrator (0→1→N Pipeline)",
+        "description": "13-domain detection via DOMAIN_RULES; WORKFORCE_REGISTRY (19 agents, 5 teams); 32 task types; Q-learning adaptive router; actor-critic review; wave-parallel execution; anti-drift checkpoints"
+      },
+      {
+        "id": "PS-06",
+        "category": "Training",
+        "name": "Agent Gym (MuZero-style self-play, Glicko-2, spaced repetition)",
+        "description": "Play → grade → N-critic critique → reflect → compound loop; Glicko-2 ratings with RD + volatility; spaced repetition for failed exercises; adaptive exercise selection (3 tiers)"
+      },
+      {
+        "id": "PS-07",
+        "category": "Training Content",
+        "name": "Scalable Exercise Catalog (~470 seeds → 50,000+ variants)",
+        "description": "8 domains, 10 variant axes per domain; LLM-generated variants persisted in SQLite; difficulty auto-calibration based on agent success rates"
+      },
+      {
+        "id": "PS-08",
+        "category": "Quality",
+        "name": "N-Provider Multi-Critic (Gemini + Claude + Ollama + any provider)",
+        "description": "Parallel LLM critique; weighted aggregation (primary 1.5x); disagreement flagging (>20pt gap); flaw deduplication across providers"
+      },
+      {
+        "id": "PS-09",
+        "category": "Skills",
+        "name": "Modular Skill Marketplace (8 public YAML skill families)",
+        "description": "JD-sourced; hot-reload; public/private/disabled visibility tiers; role-mapped; version-aware; SAGE_SKILLS_DIR for private IP isolation"
+      },
+      {
+        "id": "PS-10",
+        "category": "Execution Isolation",
+        "name": "3-Tier Sandboxed Execution Cascade",
+        "description": "OpenShell (NVIDIA container, YAML security policies, SSH-based) → SandboxRunner (local branch clone) → OpenSWE (direct LLM); graceful degradation"
+      },
+      {
+        "id": "PS-11",
+        "category": "Configuration",
+        "name": "YAML-First Solution Model (project.yaml + prompts.yaml + tasks.yaml)",
+        "description": "3 files fully describe any agent team for any domain; no Python required; hot-reload; /onboarding/generate LLM wizard generates all 3 from plain language"
+      },
+      {
+        "id": "PS-12",
+        "category": "LLM Flexibility",
+        "name": "Multi-Provider LLM Gateway (5 providers, 4 require no API key)",
+        "description": "Gemini CLI, Claude Code CLI, Ollama, local GGUF, generic-CLI; thread-safe singleton; runtime hot-swap via POST /llm/switch"
+      },
+      {
+        "id": "PS-13",
+        "category": "UI",
+        "name": "React 18 Dashboard (16+ modules, per-solution theming, guided tour)",
+        "description": "Approval inbox, live console, stats strip (10s polling), org graph, gym leaderboard; 5-area accordion nav; role-based access control; solution-scoped branding"
+      }
+    ],
+
+    "pain_relievers": [
+      {
+        "id": "PR-01",
+        "addresses_pain": ["P-01"],
+        "reliever": "HITL approval gate is architecturally enforced — not a feature flag, not configurable away. Solution-level proposals cannot execute without human sign-off. The code path does not exist.",
+        "strength": "extreme",
+        "products": ["PS-02"]
+      },
+      {
+        "id": "PR-02",
+        "addresses_pain": ["P-02"],
+        "reliever": "Domain runners execute real toolchain operations: OpenFW cross-compiles ARM binaries with size/stack metrics; OpenEDA runs DRC/ERC and generates Gerbers; OpenML trains and evaluates models. Not simulated output — verifiable artifacts.",
+        "strength": "extreme",
+        "products": ["PS-04"]
+      },
+      {
+        "id": "PR-03",
+        "addresses_pain": ["P-03"],
+        "reliever": "Audit log auto-captures every proposal, approval, rejection, and correction with trace_id. Zero manual documentation overhead for compliance evidence. Per-solution isolation (.sage/audit_log.db) means the artifact travels with the solution.",
+        "strength": "extreme",
+        "products": ["PS-02"]
+      },
+      {
+        "id": "PR-04",
+        "addresses_pain": ["P-04"],
+        "reliever": "Vector memory stores every decision with reasoning. Future agents retrieve prior decisions as enriched context. Memento principle: behavioral improvement via retrieval, not retraining. Institutional knowledge survives team changes.",
+        "strength": "high",
+        "products": ["PS-03"]
+      },
+      {
+        "id": "PR-05",
+        "addresses_pain": ["P-05"],
+        "reliever": "8 domain runners under one BaseRunner interface; unified API, shared approval UI, single audit log. One SAGE deployment covers firmware + ML + PCB + strategy + SWE — no separate tool maintenance per domain.",
+        "strength": "high",
+        "products": ["PS-04", "PS-13"]
+      },
+      {
+        "id": "PR-06",
+        "addresses_pain": ["P-06"],
+        "reliever": "SAGE Lean Loop Phase 5 (Compound): every human rejection triggers feedback ingestion into vector memory. The rejection reasoning — not just 'rejected' — enriches future proposal context. Same mistake cannot repeat silently.",
+        "strength": "high",
+        "products": ["PS-03"]
+      },
+      {
+        "id": "PR-07",
+        "addresses_pain": ["P-07"],
+        "reliever": "YAML-first solution config: add roles (prompts.yaml), task types (tasks.yaml), and skills (YAML files) with zero Python changes. Hot-reload via POST /skills/reload. New domain live in hours.",
+        "strength": "high",
+        "products": ["PS-09", "PS-11"]
+      },
+      {
+        "id": "PR-08",
+        "addresses_pain": ["P-08"],
+        "reliever": "Build Orchestrator assembles the right workforce automatically from a plain-language description. 13-domain detection → WORKFORCE_REGISTRY selects agents and teams → task graph with 32 types → wave-parallel execution.",
+        "strength": "high",
+        "products": ["PS-05"]
+      },
+      {
+        "id": "PR-09",
+        "addresses_pain": ["P-09"],
+        "reliever": "Ollama and local GGUF providers run fully offline at zero API cost. Provider hot-swap means cost-sensitive teams dial down to free tiers instantly. Langfuse observability (Phase 0) scaffolded for per-call cost tracking.",
+        "strength": "medium",
+        "products": ["PS-12"]
+      },
+      {
+        "id": "PR-10",
+        "addresses_pain": ["P-10"],
+        "reliever": "Anti-drift checkpoints (_checkpoint() after each state, _restore_runs() on startup) + Temporal durable workflows (LangGraph fallback). Long-running builds survive restarts without losing state.",
+        "strength": "medium",
+        "products": ["PS-05"]
+      },
+      {
+        "id": "PR-11",
+        "addresses_pain": ["P-11"],
+        "reliever": "Agent Gym Glicko-2 ratings with RD (uncertainty) and volatility (consistency) provide statistically calibrated benchmarks. GET /gym/analytics: trends, weaknesses, improvement rate. Measurable AI ROI.",
+        "strength": "high",
+        "products": ["PS-06", "PS-07"]
+      },
+      {
+        "id": "PR-12",
+        "addresses_pain": ["P-12"],
+        "reliever": "OpenStrategy runner generates structured PRD/roadmap artifacts that feed directly into Build Orchestrator task graph decomposition. Strategy → execution is one API call, not a manual handoff.",
+        "strength": "medium",
+        "products": ["PS-04", "PS-05"]
+      }
+    ],
+
+    "gain_creators": [
+      {
+        "id": "GC-01",
+        "addresses_gain": ["G-01", "G-02"],
+        "creator": "Per-solution SQLite audit log (.sage/audit_log.db) + mandatory two-tier HITL gate. Regulatory-grade compliance record auto-generated with zero developer overhead. Travels with the solution, not the framework.",
+        "strength": "required",
+        "products": ["PS-02"]
+      },
+      {
+        "id": "GC-02",
+        "addresses_gain": ["G-03"],
+        "creator": "3-file YAML configuration (starter template → copy → customize → run) + /onboarding/generate LLM wizard that generates all 3 YAMLs from a plain-language description. New domain live in < 2 hours.",
+        "strength": "required",
+        "products": ["PS-11"]
+      },
+      {
+        "id": "GC-03",
+        "addresses_gain": ["G-04"],
+        "creator": "Domain runners execute and verify real artifacts: ARM binary with size/stack/heap metrics (OpenFW), Gerber + BOM + DRC report (OpenEDA), trained model + eval metrics (OpenML), DHF + compliance cross-reference (OpenDoc).",
+        "strength": "required",
+        "products": ["PS-04"]
+      },
+      {
+        "id": "GC-04",
+        "addresses_gain": ["G-05"],
+        "creator": "MuZero-style reflect loop: play → grade → N-critic critique → reflect → compound into vector memory. Each training session's learnings enrich the next proposal's context. Flat inference cost, compounding quality.",
+        "strength": "expected",
+        "products": ["PS-03", "PS-06"]
+      },
+      {
+        "id": "GC-05",
+        "addresses_gain": ["G-06"],
+        "creator": "8 Open<Role> runners under BaseRunner + shared FastAPI gateway + unified approval UI + single audit log. One SAGE instance handles the entire engineering org regardless of domain mix.",
+        "strength": "expected",
+        "products": ["PS-04", "PS-13"]
+      },
+      {
+        "id": "GC-06",
+        "addresses_gain": ["G-07"],
+        "creator": "5-phase SAGE Lean Loop (Surface → Contextualize → Propose → Decide → Compound). Vector memory at Phase 2 eliminates cold-start. Parallel wave execution at Phase 3-4. Proposal queued in < 2 minutes from signal.",
+        "strength": "expected",
+        "products": ["PS-01", "PS-03", "PS-05"]
+      },
+      {
+        "id": "GC-07",
+        "addresses_gain": ["G-08"],
+        "creator": "Glicko-2 ratings with RD (uncertainty shrinks with data), volatility (consistency tracking), confidence intervals (rating ± 2×RD), and streak detection. /gym/analytics: improvement rate, weakness breakdown, curriculum progression.",
+        "strength": "desired",
+        "products": ["PS-06"]
+      },
+      {
+        "id": "GC-08",
+        "addresses_gain": ["G-09"],
+        "creator": "Build Orchestrator assembles 19 agents in 5 teams, executing 32 task types in parallel waves with Q-learning routing that learns agent strengths. Solo founder gets full-team throughput on demand.",
+        "strength": "desired",
+        "products": ["PS-05"]
+      },
+      {
+        "id": "GC-09",
+        "addresses_gain": ["G-10"],
+        "creator": "SAGE_SKILLS_DIR + SAGE_SOLUTIONS_DIR env vars mount private IP at startup without ever touching the public SAGE repo. visibility: private skills never exported. Full IP isolation for proprietary domain expertise.",
+        "strength": "required",
+        "products": ["PS-09", "PS-11"]
+      },
+      {
+        "id": "GC-10",
+        "addresses_gain": ["G-11"],
+        "creator": "POST /llm/switch is a framework control operation — executes immediately, no proposal gate. Thread-safe singleton gateway handles the swap in < 1s. Ollama/local GGUF = zero cost fallback.",
+        "strength": "expected",
+        "products": ["PS-12"]
+      },
+      {
+        "id": "GC-11",
+        "addresses_gain": ["G-12"],
+        "creator": "Agent Gym spaced repetition (failed exercises: +1, +3, +7, +15, +30 session intervals) + adaptive selection (optimal zone 40-70% success rate) + N-critic grading. Agents improve autonomously without human-driven training sessions.",
+        "strength": "unexpected_delight",
+        "products": ["PS-06", "PS-07"]
+      },
+      {
+        "id": "GC-12",
+        "addresses_gain": ["G-13"],
+        "creator": "POST /gym/catalog/generate triggers LLM variant generation from 470 industry-grade seeds × 10 variant axes × 8 domains. Variants persisted in SQLite. Domain difficulty auto-calibrates to agent success rates.",
+        "strength": "unexpected_delight",
+        "products": ["PS-07"]
+      }
+    ]
+  },
+
+  "fit_gap_analysis": {
+    "overall_fit_score": "82 / 100",
+    "fit_summary": "SAGE achieves strong-to-critical fit on its three highest-stakes pain points: HITL compliance enforcement, real domain toolchain execution, and compounding institutional memory. These are structurally unreachable by generic LLM assistants. Fit weakens in cost visibility, non-technical self-service onboarding, and making the compounding intelligence story visible in the UI.",
+
+    "strong_fits": [
+      {
+        "id": "FIT-01",
+        "label": "Critical Pain → Structural Pain Reliever",
+        "pain_ids": ["P-01"],
+        "reliever_ids": ["PR-01"],
+        "gain_ids": ["G-01", "G-02"],
+        "description": "HITL approval gate is architecturally enforced — not a config option, not a feature flag. The code path for unapproved solution-level execution does not exist. This directly addresses the #1 adoption blocker in regulated industries: AI acting without accountability.",
+        "competitive_moat": "CRITICAL — no generic LLM assistant (Copilot, ChatGPT, Cursor) enforces this at platform level. Requires architectural commitment that cannot be bolted on.",
+        "evidence": "Two-tier proposal store; SQLite audit_log.db per solution; trace_id on every event; SOUL.md Law 1 enshrined in code"
+      },
+      {
+        "id": "FIT-02",
+        "label": "Critical Pain → Domain-Specific Pain Reliever",
+        "pain_ids": ["P-02"],
+        "reliever_ids": ["PR-02"],
+        "gain_ids": ["G-04"],
+        "description": "Domain runners execute real toolchain operations. This closes the 'hallucination gap' — agents don't describe what to do, they do it and return verifiable domain artifacts. OpenFW cross-compiles; OpenEDA runs DRC/ERC; OpenML trains and evaluates.",
+        "competitive_moat": "HIGH — requires deep domain engineering per runner (compiler toolchains, EDA rules, ML pipelines). Each runner adds meaningful switching cost. Hard to replicate at breadth.",
+        "evidence": "8 BaseRunner subclasses; execute() + verify() + grade_exercise() per runner; Docker toolchain images per domain"
+      },
+      {
+        "id": "FIT-03",
+        "label": "Extreme Pain → Automatic Pain Reliever",
+        "pain_ids": ["P-03"],
+        "reliever_ids": ["PR-03"],
+        "gain_ids": ["G-01"],
+        "description": "Per-solution audit log auto-captures all compliance evidence. IEC 62304 / ISO 13485 teams spend 20-40% of release cycle on audit prep — SAGE eliminates the manual documentation portion entirely.",
+        "competitive_moat": "MEDIUM — audit logging itself is replicable; SAGE's moat is the per-solution isolation model (.sage/ travels with solution, not framework) and the dual-purpose design (compliance record + AI training signal).",
+        "evidence": ".sage/audit_log.db per solution; SAGE_SOLUTIONS_DIR isolation; every event has trace_id, tenant_id, timestamp"
+      },
+      {
+        "id": "FIT-04",
+        "label": "High Pain → Compounding Pain Reliever",
+        "pain_ids": ["P-04", "P-06"],
+        "reliever_ids": ["PR-04", "PR-06"],
+        "gain_ids": ["G-05"],
+        "description": "Vector memory + Phase 5 feedback compounding is the Memento principle in production. Every rejection writes the human's reasoning — not just 'rejected' — back into the retrieval context. Institutional knowledge accumulates and compounds with each interaction.",
+        "competitive_moat": "HIGH — compounding memory across sessions is architecturally unique. Competitors cache outputs; SAGE compounds decisions.",
+        "evidence": "ChromaDB per solution; bulk import; Phase 5 in SAGE Lean Loop; rejection feedback format in audit_log"
+      },
+      {
+        "id": "FIT-05",
+        "label": "High Pain → Consolidation Pain Reliever",
+        "pain_ids": ["P-05"],
+        "reliever_ids": ["PR-05"],
+        "gain_ids": ["G-06"],
+        "description": "Single platform for 8+ domain runners eliminates tool fragmentation. One deployment, one approval UI, one audit log for a team doing firmware + ML + PCB + strategy work simultaneously.",
+        "competitive_moat": "MEDIUM — breadth of domain coverage is the moat. Each additional runner increases the platform's stickiness and the cost of switching away.",
+        "evidence": "BaseRunner ABC with 4 required methods; runner registry (get_runner_for_role); 8 runners all under same API surface"
+      },
+      {
+        "id": "FIT-06",
+        "label": "Desired Gain → Measurable Gain Creator",
+        "pain_ids": ["P-11"],
+        "reliever_ids": ["PR-11"],
+        "gain_ids": ["G-08"],
+        "description": "Glicko-2 ratings with statistical confidence intervals are the first sports-science-grade skill measurement applied to AI agents. This is not a 'score' — it's a calibrated rating with uncertainty quantification that shrinks as data accumulates.",
+        "competitive_moat": "HIGH — no competing agent framework has a principled skill measurement system. This enables a unique 'agent performance management' narrative for enterprise buyers.",
+        "evidence": "SkillRating dataclass; Glicko-2 update algorithm; GymDB SQLite persistence; /gym/analytics endpoint"
+      }
+    ],
+
+    "gaps": [
+      {
+        "id": "GAP-01",
+        "type": "Unaddressed Pain",
+        "pain_ids": ["P-09"],
+        "gain_ids": [],
+        "severity": "medium",
+        "gap": "No built-in LLM cost dashboard or per-solution budget controls — enterprise buyers cannot forecast or cap AI spend",
+        "impact": "Blocks procurement approval; CFOs demand cost predictability before committing to platform contracts",
+        "recommendation": "Add /costs endpoint with per-solution token/call tracking; surface in React Costs page; add budget_threshold per project.yaml with alert on breach. Langfuse integration is already scaffolded.",
+        "effort": "M (3-5 days)",
+        "files": ["src/interface/api.py", "src/core/llm_gateway.py", "web/src/pages/Costs.tsx"]
+      },
+      {
+        "id": "GAP-02",
+        "type": "Under-served Gain",
+        "pain_ids": [],
+        "gain_ids": ["G-03"],
+        "severity": "medium",
+        "gap": "Onboarding wizard exists at API level (POST /onboarding/generate) but no guided UI flow for non-technical domain owners — self-service adoption blocked for PMs and business analysts who cannot use curl",
+        "impact": "The buyer (PM, domain owner, compliance officer) cannot self-serve; engineers must mediate onboarding, creating a bottleneck",
+        "recommendation": "Build OnboardingWizard UI modal into a 5-step guided flow: describe domain → select compliance standards → preview generated YAML → confirm → activate solution. TourContext already has wizardOpen/closeWizard hooks.",
+        "effort": "M (3-5 days)",
+        "files": ["web/src/components/OnboardingWizard.tsx", "web/src/context/TourContext.tsx"]
+      },
+      {
+        "id": "GAP-03",
+        "type": "Missing Gain Creator (UI)",
+        "pain_ids": ["P-11"],
+        "gain_ids": ["G-08"],
+        "severity": "medium",
+        "gap": "Agent Gym ratings and analytics are API-only — the compounding intelligence story is invisible to users who don't call the API directly",
+        "impact": "The strongest retention driver (agents visibly improving over time) is hidden. Users churn before seeing value compound.",
+        "recommendation": "Build /gym UI page: agent leaderboard with Glicko-2 ratings, rating trend sparklines, upcoming spaced repetition queue, recent session history, curriculum progression by role.",
+        "effort": "M (3-5 days)",
+        "files": ["web/src/pages/Gym.tsx", "web/src/App.tsx", "web/src/components/layout/Sidebar.tsx", "web/src/registry/modules.ts"]
+      },
+      {
+        "id": "GAP-04",
+        "type": "Missing Gain Creator (Executive)",
+        "pain_ids": [],
+        "gain_ids": ["G-09"],
+        "severity": "medium",
+        "gap": "No executive-facing ROI dashboard — leadership cannot see AI utilization, approval rates, quality trends, or time-saved estimates at a glance",
+        "impact": "AI investment is hard to justify to CFO/CTO without measurable metrics; renewal conversations stall",
+        "recommendation": "Add /reports endpoint: monthly proposals, approval/rejection rate, agent gym improvement trends, estimated hours saved, domain breakdown. Surface as executive summary page in UI.",
+        "effort": "L (1-2 weeks)",
+        "files": ["src/interface/api.py (/reports)", "web/src/pages/Reports.tsx"]
+      },
+      {
+        "id": "GAP-05",
+        "type": "Weak Gain Creator (Strategy→Execution)",
+        "pain_ids": ["P-12"],
+        "gain_ids": ["G-07"],
+        "severity": "low-medium",
+        "gap": "OpenStrategy runner generates PRDs and roadmaps but they are not automatically decomposed into Build Orchestrator task graphs — strategy-to-execution handoff is still manual",
+        "impact": "Breaks the lean loop from strategy through execution; PM artifacts don't translate to agent action without engineer mediation",
+        "recommendation": "Add POST /strategy/execute: takes OpenStrategy PRD output → auto-decomposes into Build Orchestrator task graph → submits as pending plan for HITL approval.",
+        "effort": "M (3-5 days)",
+        "files": ["src/interface/api.py", "src/core/build_orchestrator.py", "src/integrations/openstrategy_runner.py"]
+      },
+      {
+        "id": "GAP-06",
+        "type": "Positioning Gap",
+        "pain_ids": [],
+        "gain_ids": ["G-09"],
+        "severity": "low",
+        "gap": "The 1-person company north-star vision is not prominently surfaced in onboarding or documentation — solo founders and indie builders don't self-identify as the target user",
+        "impact": "The most viral segment (founders, indie hackers) discovers SAGE only through word-of-mouth; not through intentional positioning",
+        "recommendation": "Add 'Solo Founder' persona to onboarding wizard; create starter solution template pre-configured for 1-person SaaS company; add case study to docs highlighting 0→1 speed.",
+        "effort": "S (1-2 days)",
+        "files": ["solutions/starter/project.yaml", "docs/onboarding/"]
+      },
+      {
+        "id": "GAP-07",
+        "type": "Technical Gap",
+        "pain_ids": ["P-10"],
+        "gain_ids": [],
+        "severity": "low",
+        "gap": "Build Orchestrator Q-learning router scores are in-memory only — lost on every restart, relearning from scratch each build",
+        "impact": "Adaptive routing has to relearn agent strengths from scratch after any deployment; wastes early builds on suboptimal routing",
+        "recommendation": "Persist AdaptiveRouter scores dict to SQLite (.sage/router_scores.db); restore on startup via _restore_runs() pattern already used for build state.",
+        "effort": "S (1-2 days)",
+        "files": ["src/core/build_orchestrator.py"]
+      }
+    ]
+  },
+
+  "action_items": [
+    {
+      "id": "AI-01",
+      "priority": "P1",
+      "rice_score": 480,
+      "rice_breakdown": {"reach": 8, "impact": 9, "confidence": 8, "effort": 1.5},
+      "title": "LLM Cost Dashboard — per-solution token tracking + budget threshold alerts",
+      "closes_gap": "GAP-01",
+      "rationale": "Closes the enterprise procurement blocker. Langfuse integration already scaffolded in llm_gateway.py — lower effort than it appears.",
+      "owner": "platform_engineer",
+      "files": ["src/interface/api.py", "src/core/llm_gateway.py", "web/src/pages/Costs.tsx"],
+      "effort": "M (3-5 days)",
+      "acceptance_criteria": "GET /costs returns per-solution daily token/call breakdown; budget_threshold in project.yaml triggers alert event in audit log; React Costs page renders usage chart"
+    },
+    {
+      "id": "AI-02",
+      "priority": "P1",
+      "rice_score": 432,
+      "rice_breakdown": {"reach": 9, "impact": 8, "confidence": 9, "effort": 1.5},
+      "title": "OnboardingWizard UI — 5-step guided flow for non-technical domain owners",
+      "closes_gap": "GAP-02",
+      "rationale": "TourContext already has wizardOpen/closeWizard hooks; wizard component is referenced but not fully implemented. High confidence on effort estimate.",
+      "owner": "frontend_engineer",
+      "files": ["web/src/components/OnboardingWizard.tsx", "web/src/context/TourContext.tsx"],
+      "effort": "M (3-5 days)",
+      "acceptance_criteria": "PM can describe a domain in plain language, select compliance standards, preview generated YAML, and activate a new solution — entirely in UI with no curl or CLI required"
+    },
+    {
+      "id": "AI-03",
+      "priority": "P2",
+      "rice_score": 288,
+      "rice_breakdown": {"reach": 6, "impact": 8, "confidence": 9, "effort": 1.5},
+      "title": "Agent Gym UI Page — leaderboard, rating trend sparklines, spaced repetition queue",
+      "closes_gap": "GAP-03",
+      "rationale": "Makes the strongest retention driver (compounding agent intelligence) visible. All data is available via existing /gym/* endpoints.",
+      "owner": "frontend_engineer",
+      "files": ["web/src/pages/Gym.tsx", "web/src/App.tsx", "web/src/components/layout/Sidebar.tsx", "web/src/registry/modules.ts", "web/src/components/layout/Header.tsx"],
+      "effort": "M (3-5 days)",
+      "acceptance_criteria": "User can see all agent Glicko-2 ratings, 30-day trend chart, upcoming spaced repetition exercises, and recent session history in the UI without calling any API directly"
+    },
+    {
+      "id": "AI-04",
+      "priority": "P2",
+      "rice_score": 240,
+      "rice_breakdown": {"reach": 5, "impact": 8, "confidence": 8, "effort": 1.3},
+      "title": "Executive ROI Dashboard — approval rates, agent improvement trends, time-saved estimates",
+      "closes_gap": "GAP-04",
+      "rationale": "Critical for renewal conversations. Audit log already contains all raw data; aggregation layer needed.",
+      "owner": "fullstack_engineer",
+      "files": ["src/interface/api.py (/reports endpoint)", "web/src/pages/Reports.tsx"],
+      "effort": "L (1-2 weeks)",
+      "acceptance_criteria": "CTO-level summary page: monthly proposal volume, approval rate, top agent by improvement rate, domain activity breakdown, estimated hours saved formula"
+    },
+    {
+      "id": "AI-05",
+      "priority": "P2",
+      "rice_score": 192,
+      "rice_breakdown": {"reach": 4, "impact": 8, "confidence": 8, "effort": 1.3},
+      "title": "Strategy → Execution Bridge: POST /strategy/execute → Build Orchestrator task graph",
+      "closes_gap": "GAP-05",
+      "rationale": "Completes the lean loop from strategy through execution. OpenStrategy runner already produces structured PRD artifacts.",
+      "owner": "backend_engineer",
+      "files": ["src/interface/api.py", "src/core/build_orchestrator.py", "src/integrations/openstrategy_runner.py"],
+      "effort": "M (3-5 days)",
+      "acceptance_criteria": "POST /strategy/execute takes a PRD artifact ID, auto-decomposes into Build Orchestrator task graph, submits as pending plan requiring HITL approval before any execution"
+    },
+    {
+      "id": "AI-06",
+      "priority": "P3",
+      "rice_score": 140,
+      "rice_breakdown": {"reach": 5, "impact": 7, "confidence": 8, "effort": 2.0},
+      "title": "Persist AdaptiveRouter Q-learning scores to SQLite for cross-restart retention",
+      "closes_gap": "GAP-07",
+      "rationale": "Low-effort, high-correctness fix. Router already has the scores dict; just needs SQLite persistence using the existing _restore_runs pattern.",
+      "owner": "backend_engineer",
+      "files": ["src/core/build_orchestrator.py"],
+      "effort": "S (1-2 days)",
+      "acceptance_criteria": "Router scores survive service restart; second build routes to same agents as first without re-learning period; scores visible in GET /build/router/stats"
+    },
+    {
+      "id": "AI-07",
+      "priority": "P3",
+      "rice_score": 120,
+      "rice_breakdown": {"reach": 5, "impact": 6, "confidence": 8, "effort": 2.0},
+      "title": "Solo Founder Starter Template + persona in OnboardingWizard",
+      "closes_gap": "GAP-06",
+      "rationale": "Lowest effort item; highest viral potential. Founders share tools that make them feel like a 20-person team.",
+      "owner": "product_manager",
+      "files": ["solutions/starter/project.yaml", "docs/"],
+      "effort": "S (1-2 days)",
+      "acceptance_criteria": "Solo Founder persona option in onboarding wizard; starter template includes single-founder-optimized active_modules list and prompts; case study added to docs"
+    },
+    {
+      "id": "AI-08",
+      "priority": "P1-validation",
+      "rice_score": null,
+      "title": "User Interview Program — 5 regulated-industry engineering leads to validate FIT-01 as primary sales wedge",
+      "closes_gap": "hypothesis validation (not a gap)",
+      "rationale": "HITL compliance fit is the sharpest differentiator. Validate that it is the primary purchase driver before investing in go-to-market messaging.",
+      "owner": "product_manager",
+      "effort": "2 weeks of recruiting + interviewing",
+      "acceptance_criteria": "5 interviews completed; HITL compliance ranked as top-3 purchase driver in 4+ interviews; secondary drivers documented for messaging hierarchy"
+    }
+  ],
+
+  "vpc_summary_card": {
+    "headline_value_proposition": "SAGE is the only agentic AI framework that executes real domain toolchains (firmware, PCB, ML, strategy) with architecturally enforced human approval and a self-improving memory layer — purpose-built for teams where AI errors carry regulatory or safety consequences.",
+    "top_3_fits": [
+      "FIT-01 — Architecturally enforced HITL gate (P-01 → PR-01): zero generic AI tool offers this; it is the compliance moat that cannot be bolted on",
+      "FIT-02 — Real toolchain execution via domain runners (P-02 → PR-02): agents produce verifiable artifacts, not hallucinated descriptions of what to do",
+      "FIT-04 — Compounding vector memory from human feedback (P-04/P-06 → PR-04/PR-06): institutional knowledge survives team rotation and compounds over time"
+    ],
+    "top_3_gaps_to_close": [
+      "GAP-01 — Cost visibility dashboard: blocks enterprise procurement without per-solution budget tracking",
+      "GAP-02 — Non-technical onboarding UI: self-service adoption requires a guided wizard, not just a POST endpoint",
+      "GAP-03 — Agent Gym UI page: the compounding intelligence story must be visible, not hidden behind API calls"
+    ],
+    "positioning_statement": "For engineering teams in regulated or complex software domains, SAGE is the agentic AI platform that combines domain-specialist execution, mandatory human oversight, and compounding institutional memory — unlike generic LLM assistants that hallucinate domain actions and create compliance liability."
+  }
+}

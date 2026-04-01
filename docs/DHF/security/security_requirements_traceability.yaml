@@ -1,0 +1,622 @@
+---
+# Security Requirements Traceability Matrix (SRTM)
+# Document ID: DHF-SEC-SRTM-001
+# Revision: 1.0
+# Date: 2026-03-27
+# Standard: IEC 62443-3-3:2013, IEC 62443-4-2:2019, FDA Cybersecurity Guidance 2023
+
+metadata:
+  document_id: DHF-SEC-SRTM-001
+  title: "Security Requirements Traceability Matrix — Wearable Fall Detection System"
+  version: "1.0"
+  status: DRAFT
+  parent_document: DHF-SEC-TM-001
+  date: "2026-03-27"
+  purpose: >
+    Maps each identified STRIDE threat to one or more security requirements. Each requirement
+    traces forward to its implementation artifact and backward to its threat source.
+    This matrix satisfies FDA 21 CFR Part 820.30(g) and IEC 62443-4-2 traceability requirements.
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECURITY REQUIREMENTS
+# Format:
+#   SR-NNN: Security Requirement
+#   source_threats: [threat IDs from STRIDE model]
+#   iec62443_cr: IEC 62443 Countermeasure Requirement(s)
+#   category: Firmware | BLE | MQTT | API | Portal | Identity | Crypto | Availability
+#   priority: P1-Critical / P2-High / P3-Medium / P4-Low
+#   verification_method: Test | Inspection | Analysis | Demonstration
+#   implementation_artifact: File or system component
+#   test_reference: Test case ID(s)
+#   status: Open | In_Progress | Implemented | Verified
+# ─────────────────────────────────────────────────────────────────────────────
+
+security_requirements:
+
+  # ═══════════════════════════
+  # DEVICE IDENTITY PROVISIONING
+  # ═══════════════════════════
+
+  - id: SR-001
+    title: "Per-Device X.509 Certificate — Hardware-Protected Private Key"
+    description: >
+      Each device SHALL be provisioned with a unique X.509v3 client certificate during
+      manufacturing. The private key SHALL be generated and stored exclusively within the
+      nRF5340 Key Management Unit (KMU) and SHALL NOT be exportable in any operational mode.
+    source_threats: [AS01-S-001, AS06-S-001, AS03-S-001]
+    iec62443_cr: ["CR 1.2", "CR 4.2"]
+    category: Identity
+    priority: P1-Critical
+    rationale: "Device identity is the foundation of mTLS authentication. Exportable keys enable device impersonation and false emergency dispatch."
+    implementation_artifact: "firmware/src/identity/device_cert.c, manufacturing/provisioning_script.py"
+    acceptance_criteria:
+      - "Private key confirmed non-exportable via JTAG read attempt (all bytes 0xFF)"
+      - "Certificate CN matches device serial number in manufacturing database"
+      - "MQTT broker rejects connection without valid client certificate"
+    verification_method: Test
+    test_reference: ["SEC-T-001", "SEC-T-002"]
+    status: Open
+
+  - id: SR-002
+    title: "Certificate Revocation via OCSP Stapling and CRL"
+    description: >
+      The cloud backend SHALL check certificate revocation status for every device connection
+      via OCSP stapling. The MQTT broker SHALL maintain a current CRL updated every 4 hours.
+      Revoked device certificates SHALL be rejected within 1 hour of revocation event.
+    source_threats: [AS06-S-001]
+    iec62443_cr: ["CR 1.1", "CR 1.5"]
+    category: Identity
+    priority: P1-Critical
+    implementation_artifact: "src/integrations/cert_manager.py, infrastructure/mqtt_broker_config.yaml"
+    acceptance_criteria:
+      - "Revoked certificate rejected at broker within 60 minutes of revocation"
+      - "OCSP response cached maximum 1 hour"
+      - "CRL download verified on broker startup and every 4 hours"
+    verification_method: Test
+    test_reference: ["SEC-T-003"]
+    status: Open
+
+  # ═══════════════════════════
+  # FIRMWARE SECURITY
+  # ═══════════════════════════
+
+  - id: SR-003
+    title: "JTAG/SWD Access Port Protection (APPROTECT)"
+    description: >
+      All production firmware builds SHALL enable APPROTECT on the nRF5340 SoC, preventing
+      external debugger access to memory and CPU registers. APPROTECT SHALL be configured
+      during manufacturing and verified as a production release gate. Factory reset SHALL
+      NOT disable APPROTECT.
+    source_threats: [AS01-S-001, AS01-T-001, AS01-I-001, AS01-E-001]
+    iec62443_cr: ["CR 3.4"]
+    category: Firmware
+    priority: P1-Critical
+    implementation_artifact: "firmware/src/production_lock.c, firmware/CMakeLists.txt (PRODUCTION_BUILD flag)"
+    acceptance_criteria:
+      - "APPROTECT register reads 0x00 (locked) on all production units"
+      - "JTAG probe connection attempt returns AHB-AP access denied on production firmware"
+      - "CI/CD pipeline rejects firmware image without PRODUCTION_BUILD=1 flag for release builds"
+    verification_method: ["Test", "Inspection"]
+    test_reference: ["SEC-T-010", "SEC-T-011"]
+    status: Open
+
+  - id: SR-004
+    title: "Secure Boot with Ed25519 Firmware Signature Verification"
+    description: >
+      The nRF5340 bootloader SHALL verify the Ed25519 digital signature of each firmware
+      image before execution. Signature verification SHALL occur in the Secure Processing
+      Environment (SPE) using the device's provisioned trust anchor public key. Images
+      failing verification SHALL NOT be booted and SHALL trigger a security event log entry.
+    source_threats: [AS01-T-001, AS03-E-001]
+    iec62443_cr: ["CR 3.4", "CR 7.6"]
+    category: Firmware
+    priority: P1-Critical
+    implementation_artifact: "firmware/bootloader/secure_boot.c, keys/firmware_signing_pubkey.pem"
+    acceptance_criteria:
+      - "Tampered firmware image (1 bit flipped) rejected at boot — device halts with error code 0xDEAD"
+      - "Firmware signed with non-production key rejected"
+      - "Boot measurement hash published to cloud via MQTT before any clinical function enabled"
+    verification_method: Test
+    test_reference: ["SEC-T-012", "SEC-T-013", "SEC-T-014"]
+    status: Open
+
+  - id: SR-005
+    title: "Anti-Rollback Protection via OTP Fuse Counter"
+    description: >
+      The firmware SHALL maintain an anti-rollback version counter in OTP fuses. The bootloader
+      SHALL reject firmware images with version numbers below the current fuse counter value.
+      Counter SHALL be incremented on each successful firmware update deployment.
+    source_threats: [AS01-T-001, AS03-E-001]
+    iec62443_cr: ["CR 3.4"]
+    category: Firmware
+    priority: P2-High
+    implementation_artifact: "firmware/bootloader/anti_rollback.c"
+    acceptance_criteria:
+      - "Downgrade to previous firmware version rejected by bootloader"
+      - "Anti-rollback counter monotonically increases and cannot be decremented"
+    verification_method: Test
+    test_reference: ["SEC-T-015"]
+    status: Open
+
+  - id: SR-006
+    title: "PHI Encryption at Rest — AES-256-GCM with KMU Key"
+    description: >
+      All PHI stored in device flash (fall events, patient ID, configuration) SHALL be
+      encrypted using AES-256-GCM. The encryption key SHALL be stored in the nRF5340 KMU
+      and SHALL NOT be accessible from the Non-Secure Processing Environment (NSPE).
+      Plaintext PHI SHALL NOT be written to flash at any time.
+    source_threats: [AS01-I-001]
+    iec62443_cr: ["CR 4.1", "CR 4.2"]
+    category: Crypto
+    priority: P1-Critical
+    implementation_artifact: "firmware/src/storage/encrypted_store.c"
+    acceptance_criteria:
+      - "Flash memory dump contains no plaintext patient ID or fall timestamps"
+      - "AES key confirmed stored in KMU slot — not accessible from NSPE memory map"
+      - "Decryption fails after KMU key slot cleared (factory reset scenario)"
+    verification_method: ["Test", "Analysis"]
+    test_reference: ["SEC-T-020"]
+    status: Open
+
+  # ═══════════════════════════
+  # BLE SECURITY
+  # ═══════════════════════════
+
+  - id: SR-007
+    title: "BLE LE Secure Connections with Numeric Comparison OOB Pairing"
+    description: >
+      BLE pairing SHALL use LE Secure Connections (LESC) with Numeric Comparison out-of-band
+      verification. Legacy pairing modes (LE Legacy, Just Works) SHALL be disabled.
+      The device SHALL reject any pairing request not using LESC Numeric Comparison.
+    source_threats: [AS02-S-001]
+    iec62443_cr: ["CR 1.1", "CR 2.1"]
+    category: BLE
+    priority: P1-Critical
+    implementation_artifact: "firmware/src/ble/pairing.c"
+    acceptance_criteria:
+      - "Pairing attempt with legacy mode rejected — device returns 'Pairing Failed (reason 0x05)'"
+      - "Just Works pairing attempt rejected"
+      - "LESC Numeric Comparison pairing succeeds with matching 6-digit code"
+    verification_method: Test
+    test_reference: ["SEC-T-030", "SEC-T-031"]
+    status: Open
+
+  - id: SR-008
+    title: "BLE Resolvable Private Address (RPA) Rotation"
+    description: >
+      The device SHALL use Bluetooth resolvable private addresses (RPA) for all advertising
+      and connection events. RPA SHALL rotate every 15 minutes. The device advertising payload
+      SHALL NOT contain plaintext patient ID, device serial number, or any PHI.
+    source_threats: [AS02-I-001]
+    iec62443_cr: ["CR 4.1"]
+    category: BLE
+    priority: P2-High
+    implementation_artifact: "firmware/src/ble/privacy.c"
+    acceptance_criteria:
+      - "BLE sniffer capture shows RPA changes every 15 minutes"
+      - "Advertising payload contains no ASCII-readable patient or device identifiers"
+      - "Only bonded devices with correct IRK can resolve device identity"
+    verification_method: Test
+    test_reference: ["SEC-T-032"]
+    status: Open
+
+  - id: SR-009
+    title: "BLE GATT Configuration Writes — HMAC-SHA256 Authentication"
+    description: >
+      All GATT characteristic writes for device configuration SHALL include an HMAC-SHA256
+      authentication tag over the payload and a monotonically increasing sequence number.
+      The device SHALL reject writes with invalid HMAC or out-of-sequence sequence numbers.
+      Session HMAC key SHALL be negotiated during authenticated app session.
+    source_threats: [AS02-T-001]
+    iec62443_cr: ["CR 3.1", "CR 3.4", "CR 3.5"]
+    category: BLE
+    priority: P2-High
+    implementation_artifact: "firmware/src/ble/gatt_auth.c, mobile_app/lib/ble/config_writer.dart"
+    acceptance_criteria:
+      - "Configuration write without HMAC rejected (device returns GATT error 0x87)"
+      - "Replayed configuration packet with old sequence number rejected"
+      - "HMAC verification passes for valid write from authenticated app"
+    verification_method: Test
+    test_reference: ["SEC-T-033", "SEC-T-034"]
+    status: Open
+
+  - id: SR-010
+    title: "BLE Advertising Only in Explicit Provisioning Mode"
+    description: >
+      The device SHALL advertise BLE only when explicitly enabled by a physical button press
+      (3-second hold). BLE advertising SHALL automatically stop after 60 seconds if no
+      connection is established. In normal operation, BLE SHALL be in non-discoverable mode.
+    source_threats: [AS02-S-001, AS02-D-001]
+    iec62443_cr: ["CR 2.1"]
+    category: BLE
+    priority: P2-High
+    implementation_artifact: "firmware/src/ble/advertiser.c"
+    acceptance_criteria:
+      - "Device not discoverable in normal operation (BLE scanner shows no advertisements)"
+      - "Advertising starts on 3-second button hold"
+      - "Advertising stops after 60 seconds if no connection"
+    verification_method: Test
+    test_reference: ["SEC-T-035"]
+    status: Open
+
+  # ═══════════════════════════
+  # MQTT / LTE-M SECURITY
+  # ═══════════════════════════
+
+  - id: SR-011
+    title: "Mutual TLS with Certificate Pinning for MQTT"
+    description: >
+      The device SHALL establish MQTT connections using mutual TLS (mTLS) with client
+      certificate authentication. The firmware SHALL pin the SHA-256 fingerprint of the
+      production MQTT broker certificate and reject connections to any broker with a
+      different fingerprint, even if the certificate is otherwise valid.
+    source_threats: [AS03-S-001, AS06-S-001]
+    iec62443_cr: ["CR 1.1", "CR 3.1", "CR 4.2"]
+    category: MQTT
+    priority: P1-Critical
+    implementation_artifact: "firmware/src/mqtt/tls_config.c"
+    acceptance_criteria:
+      - "MQTT connection with self-signed broker certificate rejected"
+      - "MQTT connection to broker with mismatched pinned fingerprint rejected"
+      - "mTLS handshake succeeds with valid production broker certificate"
+      - "TLS 1.3 confirmed in Wireshark capture (no TLS 1.2 or lower)"
+    verification_method: Test
+    test_reference: ["SEC-T-040", "SEC-T-041", "SEC-T-042"]
+    status: Open
+
+  - id: SR-012
+    title: "MQTT Payload Ed25519 Signature — Non-Repudiation"
+    description: >
+      All MQTT messages published by the device SHALL include an Ed25519 digital signature
+      over the JSON payload, including timestamp and sequence number. The cloud backend
+      SHALL verify the signature before processing any message. Messages with invalid
+      signatures SHALL be rejected and logged as security events.
+    source_threats: [AS03-T-001, AS03-R-001, AS06-T-001]
+    iec62443_cr: ["CR 3.1", "CR 3.4", "CR 2.8"]
+    category: MQTT
+    priority: P1-Critical
+    implementation_artifact: "firmware/src/mqtt/message_signer.c, src/integrations/mqtt_verifier.py"
+    acceptance_criteria:
+      - "Message with tampered payload field rejected by backend (signature mismatch)"
+      - "Message with valid signature processed normally"
+      - "Signature verification failure logged as SECURITY_EVENT in audit log"
+      - "Message replay (duplicate timestamp + sequence) rejected"
+    verification_method: Test
+    test_reference: ["SEC-T-043", "SEC-T-044"]
+    status: Open
+
+  - id: SR-013
+    title: "MQTT Offline Queue with QoS 1 and Local Alarm Fallback"
+    description: >
+      The device SHALL maintain a persistent MQTT offline message queue (minimum 1000 events,
+      encrypted at rest) for use when LTE-M connectivity is unavailable. On fall detection,
+      the device SHALL immediately activate the onboard buzzer and LED indicator regardless
+      of connectivity status. Emergency events SHALL be queued for delivery and retried with
+      exponential backoff (max 30-second interval).
+    source_threats: [AS03-D-001]
+    iec62443_cr: ["CR 7.1", "CR 7.2"]
+    category: Availability
+    priority: P1-Critical
+    patient_safety_note: "This requirement directly addresses patient safety — fall notification MUST not be silently lost"
+    implementation_artifact: "firmware/src/mqtt/offline_queue.c, firmware/src/alarm/local_alert.c"
+    acceptance_criteria:
+      - "Fall event generates local buzzer alert within 500ms — verified without LTE-M connectivity"
+      - "Queued events delivered after connectivity restored (verified with 2-hour offline simulation)"
+      - "Queue stores minimum 1000 events without overflow"
+      - "Queue persists across device power cycle"
+    verification_method: ["Test", "Demonstration"]
+    test_reference: ["SEC-T-050", "SEC-T-051", "SEC-T-052"]
+    status: Open
+
+  - id: SR-014
+    title: "TLS 1.3 Minimum — Cipher Suite Enforcement"
+    description: >
+      All network communications (MQTT, HTTPS, CoAP) SHALL use TLS 1.3 as the minimum
+      protocol version. Cipher suites SHALL be restricted to AEAD suites:
+      TLS_AES_256_GCM_SHA384 and TLS_CHACHA20_POLY1305_SHA256. All other cipher suites,
+      TLS versions, and SSL versions SHALL be disabled.
+    source_threats: [AS03-I-001]
+    iec62443_cr: ["CR 4.1", "CR 4.2"]
+    category: Crypto
+    priority: P1-Critical
+    implementation_artifact: "firmware/src/net/tls_policy.c, infrastructure/mqtt_broker_config.yaml"
+    acceptance_criteria:
+      - "TLS handshake with TLS 1.2 client rejected by broker"
+      - "TLS handshake with CBC cipher suite rejected"
+      - "Confirmed TLS 1.3 with AES-256-GCM in network capture"
+    verification_method: Test
+    test_reference: ["SEC-T-045"]
+    status: Open
+
+  - id: SR-015
+    title: "MQTT Per-Device Topic ACL and Rate Limiting"
+    description: >
+      The MQTT broker SHALL enforce per-device topic ACLs restricting each device certificate
+      to publish/subscribe only on its own device-ID-scoped topic namespace
+      (devices/{device_id}/#). The broker SHALL enforce a per-device message rate limit
+      of 60 messages per minute. Rate limit violations SHALL be logged.
+    source_threats: [AS03-E-001, AS06-D-001]
+    iec62443_cr: ["CR 2.1", "CR 7.1"]
+    category: MQTT
+    priority: P2-High
+    implementation_artifact: "infrastructure/mqtt_acl.conf, infrastructure/mosquitto.conf"
+    acceptance_criteria:
+      - "Device A cannot publish to devices/device-B/events (rejected with PUBACK reason code)"
+      - "61 messages in 60 seconds → 61st message rejected and rate limit event logged"
+    verification_method: Test
+    test_reference: ["SEC-T-046", "SEC-T-047"]
+    status: Open
+
+  # ═══════════════════════════
+  # REST API SECURITY
+  # ═══════════════════════════
+
+  - id: SR-016
+    title: "Emergency Dispatch — Elevated OAuth Scope + Rate Limit"
+    description: >
+      The emergency dispatch endpoint (POST /api/v1/alerts/dispatch) SHALL require a JWT
+      with the emergency:dispatch scope, which is granted only after biometric re-authentication
+      in the caregiver app. The endpoint SHALL enforce a rate limit of 3 dispatches per
+      caregiver per hour. All dispatch events SHALL be logged with full request metadata.
+    source_threats: [AS04-S-002]
+    iec62443_cr: ["CR 1.1", "CR 2.1", "CR 2.8"]
+    category: API
+    priority: P1-Critical
+    patient_safety_note: "Unauthorized dispatch = false emergency; blocked dispatch = no response. Both are patient safety events."
+    implementation_artifact: "src/interface/api.py:dispatch_emergency, src/auth/scopes.py"
+    acceptance_criteria:
+      - "Request without emergency:dispatch scope returns 403 Forbidden"
+      - "4th dispatch within 60 minutes returns 429 Too Many Requests"
+      - "Dispatch event logged with caregiver ID, timestamp, patient ID, device ID"
+      - "App biometric authentication required before dispatch token issued"
+    verification_method: ["Test", "Inspection"]
+    test_reference: ["SEC-T-060", "SEC-T-061", "SEC-T-062"]
+    status: Open
+
+  - id: SR-017
+    title: "API RBAC — Caregiver Scoped to Assigned Patients Only"
+    description: >
+      All API endpoints accessing patient data SHALL validate that the authenticated caregiver
+      is assigned to the requested patient in the database. Requests accessing data for
+      unassigned patients SHALL return 403 (not 404) to prevent enumeration.
+      RBAC policies SHALL be enforced via OPA policy engine, not inline code.
+    source_threats: [AS04-T-001, AS04-E-001]
+    iec62443_cr: ["CR 2.1"]
+    category: API
+    priority: P1-Critical
+    implementation_artifact: "src/auth/opa_policy.rego, src/interface/api.py"
+    acceptance_criteria:
+      - "Caregiver A accessing patient assigned to caregiver B returns 403"
+      - "Admin role can access all patients (with audit log entry)"
+      - "OPA policy test suite: 100% of authorization rules have passing test cases"
+    verification_method: Test
+    test_reference: ["SEC-T-063", "SEC-T-064"]
+    status: Open
+
+  - id: SR-018
+    title: "JWT Rotation and Short Expiry"
+    description: >
+      Access tokens SHALL expire after 15 minutes. Refresh tokens SHALL expire after 8 hours
+      and be single-use (rotation on use). Token revocation SHALL be enforced via Redis
+      blocklist checked on every authenticated request. Response time for revocation check
+      SHALL be under 10ms (p99).
+    source_threats: [AS04-S-001]
+    iec62443_cr: ["CR 1.5"]
+    category: API
+    priority: P2-High
+    implementation_artifact: "src/auth/token_manager.py"
+    acceptance_criteria:
+      - "Access token rejected 16 minutes after issuance"
+      - "Refresh token rejected on second use (already rotated)"
+      - "Revoked token rejected within 100ms"
+      - "Revocation check latency <10ms p99 under load test"
+    verification_method: Test
+    test_reference: ["SEC-T-065"]
+    status: Open
+
+  - id: SR-019
+    title: "API DoS Protection — WAF and Priority Queue"
+    description: >
+      The API gateway SHALL enforce rate limits of 100 requests/minute per IP (unauthenticated)
+      and 1000 requests/minute per authenticated user. Emergency alert endpoints SHALL be
+      served from a dedicated high-priority processing queue not subject to general rate limits
+      for authenticated caregivers. DDoS protection SHALL be provided by upstream scrubbing.
+    source_threats: [AS04-D-001]
+    iec62443_cr: ["CR 7.1", "CR 7.2"]
+    category: Availability
+    priority: P2-High
+    implementation_artifact: "infrastructure/api_gateway_config.yaml, src/interface/api.py"
+    acceptance_criteria:
+      - "101st unauthenticated request per minute returns 429"
+      - "Emergency alert endpoint processes request during simulated 10k req/s load test"
+    verification_method: ["Test", "Demonstration"]
+    test_reference: ["SEC-T-066"]
+    status: Open
+
+  # ═══════════════════════════
+  # ADMIN PORTAL SECURITY
+  # ═══════════════════════════
+
+  - id: SR-020
+    title: "Admin Portal — Mandatory TOTP MFA"
+    description: >
+      All admin portal accounts SHALL require Time-based One-Time Password (TOTP) MFA.
+      MFA SHALL NOT be bypassable by any account including superadmin. Failed MFA attempts
+      SHALL count toward account lockout. Privileged accounts (fleet admin) SHALL support
+      FIDO2/WebAuthn hardware key as MFA option.
+    source_threats: [AS05-S-001]
+    iec62443_cr: ["CR 1.1", "CR 1.5"]
+    category: Portal
+    priority: P1-Critical
+    implementation_artifact: "web/src/auth/mfa.tsx, src/auth/totp_validator.py"
+    acceptance_criteria:
+      - "Login without valid TOTP rejected even with correct password"
+      - "5 failed MFA attempts trigger 15-minute lockout"
+      - "FIDO2 WebAuthn key accepted as alternative to TOTP for admin accounts"
+      - "MFA cannot be disabled via any API call"
+    verification_method: Test
+    test_reference: ["SEC-T-070", "SEC-T-071"]
+    status: Open
+
+  - id: SR-021
+    title: "Admin Portal — Content Security Policy (CSP)"
+    description: >
+      The admin portal SHALL include a Content Security Policy header with script-src 'self'
+      and no inline scripts. All form inputs SHALL be sanitized with DOMPurify. The portal
+      SHALL include X-Frame-Options: DENY and X-Content-Type-Options: nosniff headers.
+    source_threats: [AS05-T-001]
+    iec62443_cr: ["CR 3.5"]
+    category: Portal
+    priority: P2-High
+    implementation_artifact: "web/vite.config.ts (CSP headers), web/src/utils/sanitize.ts"
+    acceptance_criteria:
+      - "CSP header present on all responses: script-src 'self'"
+      - "Injected script tag in form field not executed"
+      - "X-Frame-Options: DENY confirmed in response headers"
+    verification_method: ["Test", "Inspection"]
+    test_reference: ["SEC-T-072", "SEC-T-073"]
+    status: Open
+
+  - id: SR-022
+    title: "Admin Portal — Secure Session Cookie Configuration"
+    description: >
+      Admin session cookies SHALL be configured with HttpOnly=true, Secure=true,
+      SameSite=Strict. Session tokens SHALL be stored server-side (Redis) and expire
+      after 30 minutes of inactivity. Session SHALL be invalidated on logout.
+    source_threats: [AS05-I-001]
+    iec62443_cr: ["CR 1.5", "CR 4.1"]
+    category: Portal
+    priority: P2-High
+    implementation_artifact: "src/auth/session_manager.py"
+    acceptance_criteria:
+      - "Set-Cookie header includes HttpOnly, Secure, SameSite=Strict"
+      - "Session token not accessible via document.cookie in browser console"
+      - "Session invalidated 30 minutes after last request"
+      - "Logout endpoint invalidates session server-side"
+    verification_method: ["Test", "Inspection"]
+    test_reference: ["SEC-T-074"]
+    status: Open
+
+  - id: SR-023
+    title: "Firmware OTA — HSM-Signed Manifest and 4-Eyes Approval"
+    description: >
+      OTA firmware update manifests SHALL be signed by an HSM-backed production signing key
+      (not accessible via any web interface). Fleet-wide OTA deployments SHALL require
+      approval from two distinct admin accounts (4-eyes principle) before execution.
+      Per-device OTA retains single admin approval but is logged with full audit trail.
+    source_threats: [AS05-T-001, AS03-E-001]
+    iec62443_cr: ["CR 3.4", "CR 2.1", "CR 2.8"]
+    category: Firmware
+    priority: P1-Critical
+    implementation_artifact: "src/core/ota_manager.py, infrastructure/hsm_signing_service/"
+    acceptance_criteria:
+      - "OTA manifest without HSM signature rejected by device"
+      - "Fleet-wide OTA rejected if only one admin approval present"
+      - "Firmware file hash displayed to admin for manual verification before approval"
+      - "All OTA events in audit log with approver identities"
+    verification_method: ["Test", "Inspection"]
+    test_reference: ["SEC-T-075", "SEC-T-076"]
+    status: Open
+
+  # ═══════════════════════════
+  # AUDIT AND MONITORING
+  # ═══════════════════════════
+
+  - id: SR-024
+    title: "Immutable Audit Log — All Security Events"
+    description: >
+      All security-relevant events SHALL be logged to an append-only audit log stored in
+      PostgreSQL with WAL replication. Log entries SHALL include: event type, actor identity,
+      timestamp (UTC), device ID, IP address, outcome, and cryptographic hash of previous entry
+      (hash chain for tamper detection). Audit logs SHALL be exported to SIEM every 5 minutes.
+    source_threats: [AS01-R-001, AS03-R-001, AS05-R-001, AS04-S-002]
+    iec62443_cr: ["CR 2.8", "CR 6.2"]
+    category: Audit
+    priority: P1-Critical
+    implementation_artifact: "src/memory/audit_logger.py"
+    acceptance_criteria:
+      - "Attempt to delete audit log entry fails (foreign key + trigger constraint)"
+      - "Hash chain verified — tampered entry detectable"
+      - "SIEM receives events within 10 minutes of occurrence"
+      - "All 24 security event types generate log entries (verified by test matrix)"
+    verification_method: Test
+    test_reference: ["SEC-T-080", "SEC-T-081"]
+    status: Open
+
+  - id: SR-025
+    title: "Boot Integrity Measurement Published to Cloud"
+    description: >
+      On every boot, the device SHALL compute a SHA-256 hash of the active firmware image
+      and publish a signed boot measurement event to the cloud via MQTT before enabling
+      any clinical functions. The cloud SHALL compare the measurement against the expected
+      hash for the device's assigned firmware version and alert on mismatch.
+    source_threats: [AS01-T-001, AS01-R-001]
+    iec62443_cr: ["CR 3.4", "CR 2.8"]
+    category: Firmware
+    priority: P2-High
+    implementation_artifact: "firmware/src/boot/integrity_reporter.c, src/integrations/boot_verifier.py"
+    acceptance_criteria:
+      - "Boot measurement event received by cloud within 30 seconds of device boot"
+      - "Tampered firmware generates mismatch alert in cloud (verified in lab)"
+      - "Clinical functions disabled until boot measurement confirmed"
+    verification_method: Test
+    test_reference: ["SEC-T-082"]
+    status: Open
+
+# ─────────────────────────────────────────────────────────────────────────────
+# TRACEABILITY SUMMARY
+# ─────────────────────────────────────────────────────────────────────────────
+
+traceability_summary:
+  total_requirements: 25
+  by_category:
+    Identity: 2
+    Firmware: 5
+    BLE: 4
+    MQTT: 5
+    API: 4
+    Portal: 4
+    Crypto: 0  # covered within Firmware/MQTT categories
+    Availability: 2
+    Audit: 2
+  by_priority:
+    P1-Critical: 16
+    P2-High: 9
+  coverage_matrix:
+    threat_to_requirement:
+      AS01-S-001: [SR-001, SR-003, SR-006]
+      AS01-T-001: [SR-003, SR-004, SR-005, SR-025]
+      AS01-R-001: [SR-024, SR-025]
+      AS01-I-001: [SR-003, SR-006]
+      AS01-D-001: [SR-003]
+      AS01-E-001: [SR-003, SR-004]
+      AS02-S-001: [SR-007, SR-010]
+      AS02-S-002: [SR-007, SR-009]
+      AS02-T-001: [SR-009]
+      AS02-I-001: [SR-008]
+      AS02-D-001: [SR-010, SR-013]
+      AS03-S-001: [SR-011]
+      AS03-T-001: [SR-012]
+      AS03-R-001: [SR-012, SR-024]
+      AS03-I-001: [SR-014]
+      AS03-D-001: [SR-013]
+      AS03-E-001: [SR-015, SR-023]
+      AS04-S-001: [SR-018]
+      AS04-S-002: [SR-016, SR-024]
+      AS04-T-001: [SR-017]
+      AS04-I-001: [SR-017]
+      AS04-D-001: [SR-019]
+      AS04-E-001: [SR-017]
+      AS05-S-001: [SR-020]
+      AS05-T-001: [SR-021, SR-023]
+      AS05-R-001: [SR-024]
+      AS05-I-001: [SR-022]
+      AS05-E-001: [SR-017]
+      AS06-S-001: [SR-001, SR-002, SR-011]
+      AS06-T-001: [SR-012]
+      AS06-D-001: [SR-015]
+
+  uncovered_threats: []
+  open_requirements: 25
+  in_progress_requirements: 0
+  verified_requirements: 0

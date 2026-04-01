@@ -1,0 +1,171 @@
+# ==============================================================
+# SAGE[ai] - ReAct Route Planning Configuration
+# Domain: route planning algorithm agent
+# Inherits base ReAct loop conventions from react_pattern.yaml.
+# Environment-specific values use ${ENV_VAR:-default} substitution.
+# Override any value via environment variable at startup.
+# ==============================================================
+
+# --- LLM Component (route-planning tuned) ---
+llm:
+  provider: "${REACT_LLM_PROVIDER:-claude-code}"
+  model: "${REACT_LLM_MODEL:-claude-sonnet-4-6}"
+
+  # Slightly higher temperature for diverse path exploration;
+  # still deterministic enough for verifiable route traces.
+  temperature: 0.2
+  max_tokens: 4096
+  timeout_seconds: 120
+
+  retry:
+    max_attempts: 3
+    backoff_base_seconds: 2
+    retryable_errors:
+      - "rate_limit"
+      - "timeout"
+      - "service_unavailable"
+
+# --- Route Planning Domain Parameters ---
+route_planning:
+  # Algorithm family selected at runtime.
+  # Valid: dijkstra | astar | bfs | dfs | bellman_ford
+  algorithm: "${ROUTE_ALGORITHM:-astar}"
+
+  # Graph representation loaded into agent context.
+  # "inline" = provided in the task payload JSON.
+  # "file"   = loaded from graph_file path.
+  graph_source: "${ROUTE_GRAPH_SOURCE:-inline}"
+  graph_file: "${ROUTE_GRAPH_FILE:-}"
+
+  # Cost function weights (must sum to 1.0)
+  cost_weights:
+    distance: "${ROUTE_COST_DISTANCE:-0.5}"
+    time: "${ROUTE_COST_TIME:-0.3}"
+    risk: "${ROUTE_COST_RISK:-0.2}"
+
+  # Hard constraints enforced before the agent proposes any route.
+  constraints:
+    max_hops: "${ROUTE_MAX_HOPS:-20}"
+    max_distance_km: "${ROUTE_MAX_DISTANCE_KM:-500}"
+    avoid_node_types: []
+    avoid_edge_labels: []
+
+  # Heuristic parameters (A* only — ignored for other algorithms)
+  heuristic:
+    # straight_line | manhattan | haversine
+    function: "${ROUTE_HEURISTIC:-haversine}"
+    weight: 1.0           # > 1.0 is inadmissible (faster but suboptimal)
+
+  # Output format for the final route proposal
+  output:
+    include_total_cost: true
+    include_intermediate_nodes: true
+    include_cost_breakdown: true
+    # Emit a human-readable turn-by-turn narrative alongside the node list.
+    narrative: "${ROUTE_OUTPUT_NARRATIVE:-true}"
+
+# --- Tool Registry (route-planning tools) ---
+tool_registry:
+  scan_dirs:
+    - "${SAGE_SOLUTIONS_DIR:-solutions}/starter/mcp_servers"
+    - "${ROUTE_TOOLS_DIR:-tools/route_planning}"
+
+  # Restrict to route-specific tools only.
+  enabled:
+    - "get_graph"
+    - "get_node"
+    - "get_neighbours"
+    - "get_edge_cost"
+    - "haversine_distance"
+    - "validate_route"
+    - "render_route_svg"
+
+  # Destructive or privileged operations never exposed to this agent.
+  disabled:
+    - "delete_solution"
+    - "drop_database"
+    - "exec_arbitrary_shell"
+    - "write_graph"
+
+  sandbox:
+    enabled: true
+    timeout_seconds: 30
+    allow_network: false
+
+  schema_validation:
+    enabled: true
+    strict: true
+
+# --- System Prompt Component ---
+system_prompt:
+  mode: "${REACT_PROMPT_MODE:-inline}"
+  file: "${REACT_PROMPT_FILE:-config/react_system_prompt.yaml}"
+
+  inline: |
+    You are a route-planning agent operating within the SAGE framework.
+    Your goal: {goal}
+    Graph source: {graph_source}  Algorithm: {algorithm}
+
+    You have access to these tools:
+      - get_graph()                       -- load the full graph
+      - get_node(node_id)                 -- node metadata (coordinates, type)
+      - get_neighbours(node_id)           -- adjacent nodes with edge labels
+      - get_edge_cost(src, dst, weights)  -- weighted cost for one hop
+      - haversine_distance(n1, n2)        -- straight-line distance in km
+      - validate_route(node_list)         -- verify a candidate route is valid
+      - render_route_svg(node_list)       -- produce an SVG visualisation
+
+    Reason step-by-step using the ReAct pattern:
+      THOUGHT:      What do I know about the graph? What is my next planning step?
+      ACTION:       Which tool to call and with what exact arguments.
+      OBSERVATION:  Verbatim tool output -- never paraphrase or fabricate.
+      ... (repeat until a complete, validated route exists)
+      FINAL ANSWER: The optimal route as an ordered list of node IDs,
+                    total cost breakdown, and a one-paragraph narrative.
+
+    Rules:
+    - Never fabricate edge costs or distances.
+    - Respect all hard constraints (max_hops, max_distance_km).
+    - Call validate_route before emitting FINAL ANSWER.
+    - If validate_route fails, re-plan rather than reporting a broken route.
+    - If a tool fails twice, escalate with the exact error; do not guess.
+
+  variables:
+    agent_role: "${REACT_AGENT_ROLE:-route_planner}"
+    domain: "${REACT_DOMAIN:-route planning}"
+    goal: "${ROUTE_GOAL:-Find the optimal route between start and destination}"
+    graph_source: "${ROUTE_GRAPH_SOURCE:-inline}"
+    algorithm: "${ROUTE_ALGORITHM:-astar}"
+
+  max_chars: 8000
+
+# --- ReAct Loop Component ---
+react_loop:
+  # Route planning rarely needs more than 15 iterations.
+  max_iterations: 15
+  early_stop_on_final_answer: true
+
+  parsing:
+    thought_prefix: "THOUGHT:"
+    action_prefix: "ACTION:"
+    observation_prefix: "OBSERVATION:"
+    final_answer_prefix: "FINAL ANSWER:"
+    strict: true
+
+  observation:
+    # Graph dumps can be verbose; keep context window manageable.
+    max_chars: 3000
+    truncation_marker: "... [truncated]"
+
+  audit:
+    enabled: true
+    log_raw_llm_output: false
+
+  hitl:
+    # Route proposals are non-destructive reads; HITL off by default
+    # for interactive planning. Override to true in regulated contexts.
+    enabled: "${REACT_HITL_ENABLED:-false}"
+    always_require_approval:
+      - "write_graph"
+      - "yaml_edit"
+      - "knowledge_delete"

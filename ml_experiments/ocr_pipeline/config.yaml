@@ -1,0 +1,49 @@
+preprocessing:
+  target_dpi: 300
+  max_skew_angle: 15.0
+  denoise_h: 10
+  denoise_template_window: 7
+  denoise_search_window: 21
+  binarize_block_size: 11
+  binarize_c: 2
+  enhance_contrast: true
+  contrast_clip_limit: 2.0
+
+ocr:
+  engine: "tesseract"          # tesseract | paddleocr | ensemble
+  tesseract_lang: "eng"
+  tesseract_config: "--oem 3 --psm 6"
+  paddle_lang: "en"
+  confidence_threshold: 0.5
+  ensemble_strategy: "confidence_weighted"
+
+classifier:
+  model_type: "layoutlm"       # layoutlm | cnn
+  layoutlm_pretrained: "microsoft/layoutlm-base-uncased"
+  cnn_backbone: "efficientnet_b0"
+  num_classes: 3
+  classes: ["invoice", "receipt", "contract"]
+  max_seq_length: 512
+  image_size: 224
+
+training:
+  seed: 42
+  test_size: 0.15
+  val_size: 0.15
+  batch_size: 16
+  learning_rate: 2.0e-5
+  num_epochs: 20
+  warmup_ratio: 0.1
+  weight_decay: 0.01
+  patience: 5
+  min_delta: 0.001
+  gradient_clip: 1.0
+  fp16: true
+  mlflow_experiment: "ocr_document_classifier"
+  output_dir: "runs/classifier"
+
+evaluation:
+  char_accuracy_threshold: 0.90
+  classifier_accuracy_threshold: 0.95
+  bias_protected_attributes: ["document_class", "language", "scan_quality"]
+  report_dir: "reports"

@@ -1,0 +1,18 @@
+# Core
+torch==2.3.1
+torchvision==0.18.1
+
+# Data / preprocessing
+numpy==1.26.4
+scikit-learn==1.5.0
+
+# Distributed comms (PowerSGD hook — included in torch, listed for clarity)
+# torch.distributed.algorithms.ddp_comm_hooks requires no extra install
+
+# Optional experiment tracking (uncomment one; same API as built-in SQLite logger)
+# mlflow==2.14.1
+# wandb==0.17.3
+# comet-ml==3.43.2
+
+# Optional: multi-node rendezvous backends
+# torch-elastic==0.2.2   # for Kubernetes / Slurm elastic training

@@ -1,0 +1,123 @@
+##############################################################################
+# Model Card — Invoice Data Classifier
+# https://huggingface.co/docs/hub/model-cards
+##############################################################################
+
+model_details:
+  name: invoice_classifier
+  version: "1.0.0"
+  type: multiclass_classification
+  framework: XGBoost 2.0.3 + scikit-learn 1.4.2
+  language: Python 3.11+
+  license: MIT
+  authors:
+    - SAGE ML Team
+  contact: ml@example.com
+  date_created: "2026-03-28"
+  description: >
+    Classifies business invoices into one of five categories
+    (vendor_invoice, credit_note, proforma, recurring_subscription,
+    expense_report) using structured features (amounts, dates, categories)
+    combined with TF-IDF text features extracted from vendor names,
+    line-item descriptions, and payment terms.
+
+intended_use:
+  primary_use: >
+    Automated invoice routing and accounts-payable workflow triage.
+    Reduces manual classification overhead in enterprise finance systems.
+  out_of_scope:
+    - Personal financial documents or bank statements
+    - Invoices in languages other than English (model trained on English only)
+    - Real-time streaming ingestion with sub-10 ms latency requirements
+    - Fraud detection (separate model required)
+
+training_data:
+  description: >
+    Synthetic invoice dataset generated to match the statistical distribution
+    of enterprise AP systems. Replace with real data before production
+    deployment.
+  size: 5000 samples
+  class_distribution:
+    vendor_invoice: "40%"
+    credit_note: "20%"
+    proforma: "15%"
+    recurring_subscription: "15%"
+    expense_report: "10%"
+  split:
+    train: "70% stratified"
+    validation: "10% stratified"
+    test: "20% stratified"
+  preprocessing:
+    - TF-IDF (max_features=5000, ngram_range=[1,2], sublinear_tf=True)
+    - StandardScaler on numeric features (fit on train only)
+    - OneHotEncoder on categorical features (fit on train only)
+    - SMOTE applied if class imbalance detected (threshold: <5% or >80% share)
+
+evaluation_results:
+  # Populated by train.py — values below are indicative targets
+  val_accuracy: ~0.91
+  val_macro_f1: ~0.90
+  test_accuracy: ~0.91
+  test_macro_f1: ~0.90
+  inference_latency_p99_ms: "<100"
+  sla_met: true
+  note: >
+    See artifacts/eval_summary.json for exact run-specific numbers.
+    Run bias_evaluation.py for fairness metrics.
+
+bias_and_fairness:
+  sensitive_attributes:
+    - department
+    - currency
+  metrics_used:
+    - demographic_parity_difference (threshold: 0.10)
+    - equalized_odds_difference (threshold: 0.10)
+  findings: >
+    Bias evaluation performed across department and currency groups.
+    Flags raised automatically when |demographic_parity_difference| > 0.10
+    or |equalized_odds_difference| > 0.10 for any class.
+    See artifacts/bias_report.json for group-level breakdown.
+  mitigation_applied:
+    - SMOTE to address class imbalance in training data
+
+limitations:
+  - Model trained on synthetic data; production performance may differ
+  - Text features English-only
+  - Confidence scores not calibrated (Platt scaling not applied in v1.0)
+  - Not designed for documents with scanned/OCR text noise
+
+ethical_considerations:
+  - Model should not be used for automatic payment approval without human review
+  - Department-level bias must be reviewed quarterly and retrained if thresholds exceeded
+  - Audit logs must be retained per company financial compliance policy
+
+performance_sla:
+  inference_latency_p99_ms: 100
+  throughput_samples_per_second: ">500 (batch mode)"
+  availability: "N/A — embedded library, no network dependency"
+
+reproducibility:
+  random_seed: 42
+  python_version: "3.11"
+  dependencies: see requirements.txt
+  artifact_hash: "computed at training time — see artifacts/eval_summary.json"
+  mlflow_tracking: "sqlite:///logs/mlflow.db"
+
+model_lineage:
+  trained_by: train.py
+  evaluated_by: bias_evaluation.py
+  inference_module: inference.py
+  artifacts:
+    - artifacts/model.joblib
+    - artifacts/tfidf.joblib
+    - artifacts/scaler.joblib
+    - artifacts/ohe.joblib
+    - artifacts/label_encoder.joblib
+    - artifacts/eval_summary.json
+    - artifacts/bias_report.json
+    - artifacts/shap_importance.json
+
+changelog:
+  - version: "1.0.0"
+    date: "2026-03-28"
+    notes: "Initial production release. Synthetic data baseline."

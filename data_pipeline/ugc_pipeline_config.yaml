@@ -1,0 +1,222 @@
+# =============================================================================
+# UGC Ingestion Pipeline Configuration
+# Version: 1.0.0
+# Schema: ugc_schema.sql
+#
+# Environment variable substitution: ${VAR:-default}
+# All secrets come from env vars — never hard-coded here.
+# =============================================================================
+
+pipeline:
+  name: "ugc_ingestion"
+  version: "1.0.0"
+  idempotent: true          # dedup key = content_hash (SHA-256 of platform+id+text)
+  batch_size: 200
+  max_retries: 3
+  retry_backoff_seconds: 5
+
+# ---------------------------------------------------------------------------
+# Source connectors
+# ---------------------------------------------------------------------------
+sources:
+
+  # ---- Filesystem (JSONL / JSON / CSV platform export dumps) ---------------
+  filesystem:
+    enabled: true
+    watch_dirs:
+      - path: "data/incoming/ugc/reddit"
+        platform: "reddit"
+        file_patterns: ["*.jsonl", "*.json"]
+      - path: "data/incoming/ugc/twitter"
+        platform: "twitter"
+        file_patterns: ["*.jsonl", "*.json"]
+      - path: "data/incoming/ugc/app_store"
+        platform: "app_store"
+        file_patterns: ["*.json", "*.csv"]
+      - path: "data/incoming/ugc/play_store"
+        platform: "play_store"
+        file_patterns: ["*.json", "*.csv"]
+      - path: "data/incoming/ugc/yelp"
+        platform: "yelp"
+        file_patterns: ["*.json"]
+      - path: "data/incoming/ugc/hackernews"
+        platform: "hackernews"
+        file_patterns: ["*.jsonl", "*.json"]
+    archive_dir: "data/archive/ugc"
+    error_dir: "data/errors/ugc"
+
+  # ---- Reddit API (PRAW-compatible) ----------------------------------------
+  reddit_api:
+    enabled: false
+    client_id:     "${REDDIT_CLIENT_ID}"
+    client_secret: "${REDDIT_CLIENT_SECRET}"
+    user_agent:    "${REDDIT_USER_AGENT:-sage-ugc-collector/1.0}"
+    subreddits:
+      - name: "technology"
+        limit: 500
+        sort: "new"
+      - name: "science"
+        limit: 500
+        sort: "new"
+      - name: "MachineLearning"
+        limit: 200
+        sort: "top"
+    include_comments: true
+    max_comments_per_post: 50
+    min_score: 1              # skip downvoted noise
+
+  # ---- Twitter/X API v2 ----------------------------------------------------
+  twitter_api:
+    enabled: false
+    bearer_token: "${TWITTER_BEARER_TOKEN}"
+    search_queries:
+      - query: "machine learning -is:retweet lang:en"
+        max_results: 100
+      - query: "artificial intelligence -is:retweet lang:en"
+        max_results: 100
+    expansions: ["author_id", "referenced_tweets.id"]
+    tweet_fields: ["created_at", "public_metrics", "lang", "possibly_sensitive"]
+
+  # ---- App Store / Play Store (via public RSS or unofficial API) -----------
+  store_reviews_api:
+    enabled: false
+    app_store:
+      app_ids:
+        - "${APP_STORE_APP_ID_1:-0}"
+      country_codes: ["us", "gb", "au"]
+      max_pages: 10
+    play_store:
+      package_names:
+        - "${PLAY_STORE_PACKAGE_1:-com.example.app}"
+      lang: "en"
+      max_count: 200
+
+  # ---- Synthetic sample generator (bootstrap / CI use) --------------------
+  sample_generator:
+    enabled: true             # produces deterministic seed data for initial load & tests
+    seed: 42
+    counts:
+      reddit:     200
+      twitter:    150
+      app_store:  100
+      play_store: 100
+      yelp:        80
+      hackernews:  70
+    platforms:
+      - reddit
+      - twitter
+      - app_store
+      - play_store
+      - yelp
+      - hackernews
+    content_type_weights:     # relative sampling weights per type
+      post:    0.30
+      comment: 0.35
+      review:  0.20
+      thread:  0.10
+      answer:  0.05
+    star_rating_distribution: # only for review-type records
+      "1.0": 0.10
+      "2.0": 0.10
+      "3.0": 0.20
+      "4.0": 0.30
+      "5.0": 0.30
+    languages: ["en", "fr", "de", "es", "pt"]
+    language_weights: [0.70, 0.10, 0.08, 0.08, 0.04]
+
+# ---------------------------------------------------------------------------
+# Target database
+# ---------------------------------------------------------------------------
+staging_db:
+  host:     "${STAGING_PG_HOST:-localhost}"
+  port:     "${STAGING_PG_PORT:-5432}"
+  database: "${STAGING_PG_DB:-sage_staging}"
+  user:     "${STAGING_PG_USER:-sage}"
+  password: "${STAGING_PG_PASSWORD}"
+  connect_timeout: 10
+  schema_file: "ugc_schema.sql"      # applied idempotently on startup
+
+# ---------------------------------------------------------------------------
+# Validation rules
+# ---------------------------------------------------------------------------
+validation:
+  ugc:
+    required_fields:
+      - external_id
+      - platform
+      - content_type
+      - raw_text
+    text_length:
+      min: 5            # strip pure whitespace / single-emoji posts
+      max: 40000        # guard against pathological payloads
+    allowed_content_types:
+      - post
+      - comment
+      - review
+      - thread
+      - answer
+      - other
+    allowed_platforms:
+      - reddit
+      - twitter
+      - app_store
+      - play_store
+      - yelp
+      - hackernews
+      - stackover
+      - synthetic
+    star_rating_range:
+      min: 1.0
+      max: 5.0
+    # PII detection — flag (do NOT block) records matching these patterns
+    pii_patterns:
+      email:   true     # RFC-5322 pattern
+      phone:   true     # E.164 / common US/UK patterns
+      ssn:     true     # US SSN pattern
+      cc:      false    # credit-card detection disabled by default (high FP rate)
+    language_detection:
+      enabled: true     # requires langdetect; falls back gracefully if unavailable
+      min_text_length: 20  # only detect language for texts this long or longer
+
+# ---------------------------------------------------------------------------
+# Stratified split (for downstream ML tasks — no data leakage)
+# ---------------------------------------------------------------------------
+ml_split:
+  test_size: 0.15
+  val_size: 0.10          # carved from training set
+  stratify_by: "content_type"   # field used to preserve class distribution
+  random_seed: 42
+  # Scalers/encoders must ONLY be fit on the training split.
+  # The pipeline exports split indices; fitting happens in a separate step.
+
+# ---------------------------------------------------------------------------
+# Experiment / run tracking
+# ---------------------------------------------------------------------------
+logging:
+  level: "INFO"
+  format: "json"
+  file: "logs/ugc_etl_{run_id}.log"
+  rotate_mb: 50
+  keep_days: 14
+
+metrics:
+  track_per_run:
+    - records_read
+    - records_loaded
+    - records_skipped_duplicate
+    - records_failed
+    - validation_pass_rate
+    - pii_flag_rate
+    - load_duration_seconds
+    - rows_per_second
+    - class_distribution          # per platform × content_type counts
+  persist_to_db: true
+  mlflow:
+    enabled: false
+    tracking_uri: "${MLFLOW_TRACKING_URI:-http://localhost:5000}"
+    experiment_name: "ugc_ingestion"
+
+alerts:
+  failure_rate_threshold: 0.05    # alert if >5 % records fail
+  pii_flag_rate_threshold: 0.10   # alert if >10 % records contain PII hints
+  notify_email: "${ALERT_EMAIL}"

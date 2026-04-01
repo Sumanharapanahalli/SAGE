@@ -201,12 +201,20 @@ system:
   parallel_enabled: true                 # set false to revert to single-lane for all projects
   parallel_max_workers: 4               # max threads in the wave executor pool
 
-# --- Observability (Langfuse — optional, self-hosted or cloud) ---
+# --- Observability ---
 observability:
+  # Langfuse (optional, self-hosted or cloud)
   langfuse_enabled: false
   langfuse_host: "http://localhost:3000"  # self-hosted endpoint
   # langfuse_public_key: "${LANGFUSE_PUBLIC_KEY}"
   # langfuse_secret_key: "${LANGFUSE_SECRET_KEY}"
+
+  # OpenTelemetry (optional — graceful no-op when SDK not installed)
+  # Install: pip install opentelemetry-api opentelemetry-sdk
+  opentelemetry:
+    service_name: "sage-framework"
+    # exporter: "otlp"                     # otlp | console | none
+    # otlp_endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT}"  # e.g. http://localhost:4317
 
 # --- Orchestration ---
 orchestration:

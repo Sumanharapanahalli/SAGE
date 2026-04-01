@@ -1,0 +1,52 @@
+# OCR Pipeline — pinned dependencies
+# Python 3.10+
+
+# Image processing
+opencv-python==4.9.0.80
+opencv-contrib-python==4.9.0.80
+Pillow==10.3.0
+scikit-image==0.22.0
+numpy==1.26.4
+
+# OCR engines
+pytesseract==0.3.10
+paddlepaddle==2.6.1
+paddleocr==2.7.3
+
+# PDF handling
+pdf2image==1.17.0
+pypdf2==3.0.1
+pdfplumber==0.11.0
+
+# ML / Deep Learning
+torch==2.2.2
+torchvision==0.17.2
+transformers==4.40.1
+datasets==2.19.1
+tokenizers==0.19.1
+accelerate==0.30.0
+timm==0.9.16
+
+# Training utilities
+scikit-learn==1.4.2
+mlflow==2.12.1
+optuna==3.6.1
+
+# Metrics
+jiwer==3.0.3          # CER/WER
+seqeval==1.2.2
+
+# Data
+pandas==2.2.2
+pyarrow==16.0.0
+
+# Config
+pyyaml==6.0.1
+omegaconf==2.3.0
+python-dotenv==1.0.1
+
+# Utilities
+tqdm==4.66.4
+rich==13.7.1
+click==8.1.7
+loguru==0.7.2

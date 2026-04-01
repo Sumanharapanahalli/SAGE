@@ -1,0 +1,391 @@
+# ==============================================================
+# SAGE[ai] - Multi-Agent Sequential Pipeline Configuration
+# Domain: Route Planning Algorithm
+# Pattern: ReAct (each agent in the pipeline runs its own
+#          Thought->Action->Observation loop before passing state
+#          to the next stage).
+#
+# Pipeline stages (sequential):
+#   1. planner    -- decompose goal, build search graph context
+#   2. solver     -- run path-finding algorithm (A*/Dijkstra/...)
+#   3. validator  -- verify route constraints, call validate_route
+#   4. narrator   -- emit human-readable turn-by-turn summary
+#
+# Environment-specific values use ${ENV_VAR:-default} substitution.
+# Every overridable value has a safe production default.
+# Schema validation runs at load time via react_route_planning_pipeline_schema.json.
+# ==============================================================
+
+# --- Pipeline Identity ---
+pipeline:
+  name: "${PIPELINE_NAME:-route_planning_pipeline}"
+  version: "${PIPELINE_VERSION:-1.0.0}"
+  # fail_fast: abort remaining stages when any stage fails
+  # continue:  run all stages, collect errors, surface at end
+  on_stage_failure: "${PIPELINE_ON_FAILURE:-fail_fast}"
+  # Maximum wall-clock seconds for the entire pipeline (all stages)
+  timeout_seconds: "${PIPELINE_TIMEOUT_SECONDS:-600}"
+  audit:
+    enabled: true
+    log_raw_llm_output: false
+    trace_id_header: "X-SAGE-Trace-ID"
+
+# --- Shared LLM Settings (inherited by all stages unless overridden) ---
+llm:
+  provider: "${REACT_LLM_PROVIDER:-claude-code}"
+  model: "${REACT_LLM_MODEL:-claude-sonnet-4-6}"
+  temperature: 0.1
+  max_tokens: 4096
+  timeout_seconds: 120
+  retry:
+    max_attempts: 3
+    backoff_base_seconds: 2
+    retryable_errors:
+      - "rate_limit"
+      - "timeout"
+      - "service_unavailable"
+
+# --- Shared Tool Registry (all stages use this unless overridden) ---
+tool_registry:
+  scan_dirs:
+    - "${SAGE_SOLUTIONS_DIR:-solutions}/starter/mcp_servers"
+    - "${ROUTE_TOOLS_DIR:-tools/route_planning}"
+  disabled:
+    - "delete_solution"
+    - "drop_database"
+    - "exec_arbitrary_shell"
+    - "write_graph"
+  sandbox:
+    enabled: true
+    timeout_seconds: 30
+    allow_network: false
+  schema_validation:
+    enabled: true
+    strict: true
+
+# --- Route Planning Domain Parameters ---
+route_planning:
+  algorithm: "${ROUTE_ALGORITHM:-astar}"
+  graph_source: "${ROUTE_GRAPH_SOURCE:-inline}"
+  graph_file: "${ROUTE_GRAPH_FILE:-}"
+  cost_weights:
+    distance: "${ROUTE_COST_DISTANCE:-0.5}"
+    time: "${ROUTE_COST_TIME:-0.3}"
+    risk: "${ROUTE_COST_RISK:-0.2}"
+  constraints:
+    max_hops: "${ROUTE_MAX_HOPS:-20}"
+    max_distance_km: "${ROUTE_MAX_DISTANCE_KM:-500}"
+    avoid_node_types: []
+    avoid_edge_labels: []
+  heuristic:
+    # straight_line | manhattan | haversine
+    function: "${ROUTE_HEURISTIC:-haversine}"
+    weight: 1.0
+  output:
+    include_total_cost: true
+    include_intermediate_nodes: true
+    include_cost_breakdown: true
+    narrative: "${ROUTE_OUTPUT_NARRATIVE:-true}"
+
+# --- HITL Gate ---
+hitl:
+  # Route reads are non-destructive; HITL off by default.
+  # Set to true in regulated or safety-critical deployments.
+  enabled: "${REACT_HITL_ENABLED:-false}"
+  always_require_approval:
+    - "write_graph"
+    - "yaml_edit"
+    - "knowledge_delete"
+
+# --- Stage Definitions ---
+# Each stage runs a single ReAct agent. Outputs are serialised into
+# pipeline_state and injected as context into the next stage.
+stages:
+
+  # ----------------------------------------------------------------
+  # Stage 1 - PLANNER
+  # Decomposes the routing goal, loads graph metadata, identifies
+  # start/end nodes, and selects the algorithm variant.
+  # ----------------------------------------------------------------
+  - id: "planner"
+    name: "Route Planner"
+    role: "${PIPELINE_PLANNER_ROLE:-route_planner}"
+    description: "Decompose routing goal and prepare graph context"
+
+    llm:
+      temperature: 0.15         # Slightly exploratory for goal decomposition
+
+    tools:
+      enabled:
+        - "get_graph"
+        - "get_node"
+        - "get_neighbours"
+        - "haversine_distance"
+
+    react_loop:
+      max_iterations: 8
+      early_stop_on_final_answer: true
+      parsing:
+        thought_prefix: "THOUGHT:"
+        action_prefix: "ACTION:"
+        observation_prefix: "OBSERVATION:"
+        final_answer_prefix: "FINAL ANSWER:"
+        strict: true
+      observation:
+        max_chars: 3000
+        truncation_marker: "... [truncated]"
+
+    system_prompt:
+      inline: |
+        You are a route-planning agent (PLANNER stage) in a multi-agent pipeline.
+        Goal: {goal}
+        Graph source: {graph_source}  Preferred algorithm: {algorithm}
+
+        Your job:
+        1. Load the graph and identify start/destination nodes.
+        2. Inspect neighbourhoods to understand graph density.
+        3. Choose the most appropriate algorithm (override if needed).
+        4. Output a structured plan: start_node, end_node, algorithm, rationale.
+
+        FINAL ANSWER must be valid JSON with keys:
+          start_node, end_node, algorithm, node_count, edge_sample, rationale
+
+        Tools available: get_graph, get_node, get_neighbours, haversine_distance
+        Rules:
+        - Never fabricate node IDs or coordinates.
+        - Verify start and destination nodes exist before outputting FINAL ANSWER.
+      variables:
+        goal: "${ROUTE_GOAL:-Find the optimal route between start and destination}"
+        graph_source: "${ROUTE_GRAPH_SOURCE:-inline}"
+        algorithm: "${ROUTE_ALGORITHM:-astar}"
+      max_chars: 8000
+
+    # Fields from this stage's FINAL ANSWER injected into pipeline_state
+    output_fields:
+      - "start_node"
+      - "end_node"
+      - "algorithm"
+      - "rationale"
+
+  # ----------------------------------------------------------------
+  # Stage 2 - SOLVER
+  # Executes the path-finding algorithm, produces a candidate route.
+  # Receives planner outputs as context.
+  # ----------------------------------------------------------------
+  - id: "solver"
+    name: "Route Solver"
+    role: "${PIPELINE_SOLVER_ROLE:-route_solver}"
+    description: "Execute path-finding and produce candidate route"
+
+    llm:
+      temperature: 0.05         # Deterministic: algorithm execution
+
+    tools:
+      enabled:
+        - "get_node"
+        - "get_neighbours"
+        - "get_edge_cost"
+        - "haversine_distance"
+
+    react_loop:
+      max_iterations: 15
+      early_stop_on_final_answer: true
+      parsing:
+        thought_prefix: "THOUGHT:"
+        action_prefix: "ACTION:"
+        observation_prefix: "OBSERVATION:"
+        final_answer_prefix: "FINAL ANSWER:"
+        strict: true
+      observation:
+        max_chars: 3000
+        truncation_marker: "... [truncated]"
+
+    system_prompt:
+      inline: |
+        You are a route-planning agent (SOLVER stage) in a multi-agent pipeline.
+        Planner context: start={start_node}, end={end_node}, algorithm={algorithm}
+        Cost weights: distance={cost_distance}, time={cost_time}, risk={cost_risk}
+        Constraints: max_hops={max_hops}, max_distance_km={max_distance_km}
+        Heuristic: {heuristic}
+
+        Your job:
+        1. Implement {algorithm} step by step using available tools.
+        2. Expand nodes, compute costs, track the open/closed sets explicitly.
+        3. Respect all hard constraints (max_hops, max_distance_km).
+        4. Terminate when destination reached or no path exists.
+
+        FINAL ANSWER must be valid JSON with keys:
+          node_path (ordered list), total_cost, cost_breakdown, iterations_used
+
+        Tools available: get_node, get_neighbours, get_edge_cost, haversine_distance
+        Rules:
+        - Never fabricate edge costs.
+        - If no valid path exists within constraints, report {"node_path": [], "reason": "..."}
+      variables:
+        start_node: "${ROUTE_START_NODE:-A}"
+        end_node: "${ROUTE_END_NODE:-Z}"
+        algorithm: "${ROUTE_ALGORITHM:-astar}"
+        cost_distance: "${ROUTE_COST_DISTANCE:-0.5}"
+        cost_time: "${ROUTE_COST_TIME:-0.3}"
+        cost_risk: "${ROUTE_COST_RISK:-0.2}"
+        max_hops: "${ROUTE_MAX_HOPS:-20}"
+        max_distance_km: "${ROUTE_MAX_DISTANCE_KM:-500}"
+        heuristic: "${ROUTE_HEURISTIC:-haversine}"
+      max_chars: 8000
+
+    # pipeline_state fields injected into this stage's prompt variables
+    input_fields:
+      - "start_node"
+      - "end_node"
+      - "algorithm"
+
+    output_fields:
+      - "node_path"
+      - "total_cost"
+      - "cost_breakdown"
+
+  # ----------------------------------------------------------------
+  # Stage 3 - VALIDATOR
+  # Verifies the candidate route: constraints, connectivity, costs.
+  # May trigger re-solve if validation fails (up to max_retries).
+  # ----------------------------------------------------------------
+  - id: "validator"
+    name: "Route Validator"
+    role: "${PIPELINE_VALIDATOR_ROLE:-route_validator}"
+    description: "Verify route constraints, connectivity, and cost accuracy"
+
+    llm:
+      temperature: 0.0          # Fully deterministic: verification pass
+
+    tools:
+      enabled:
+        - "get_node"
+        - "get_edge_cost"
+        - "validate_route"
+
+    # Retry policy: if validate_route returns failure, loop back to solver
+    retry_on_failure:
+      enabled: true
+      max_retries: "${VALIDATOR_MAX_RETRIES:-2}"
+      retry_stage: "solver"
+
+    react_loop:
+      max_iterations: 6
+      early_stop_on_final_answer: true
+      parsing:
+        thought_prefix: "THOUGHT:"
+        action_prefix: "ACTION:"
+        observation_prefix: "OBSERVATION:"
+        final_answer_prefix: "FINAL ANSWER:"
+        strict: true
+      observation:
+        max_chars: 2000
+        truncation_marker: "... [truncated]"
+
+    system_prompt:
+      inline: |
+        You are a route-planning agent (VALIDATOR stage) in a multi-agent pipeline.
+        Candidate route: {node_path}
+        Claimed total cost: {total_cost}
+        Constraints: max_hops={max_hops}, max_distance_km={max_distance_km}
+
+        Your job:
+        1. Call validate_route(node_path) to check connectivity.
+        2. Spot-check at least 3 edge costs from get_edge_cost.
+        3. Verify hop count <= max_hops and total distance <= max_distance_km.
+        4. Report PASS or FAIL with specific findings.
+
+        FINAL ANSWER must be valid JSON with keys:
+          verdict ("pass"|"fail"), findings (list), verified_cost
+
+        Tools available: get_node, get_edge_cost, validate_route
+        Rules:
+        - Never approve a route that fails validate_route.
+        - If costs are more than 5% off, mark as FAIL.
+      variables:
+        node_path: "${ROUTE_NODE_PATH:-[]}"
+        total_cost: "${ROUTE_TOTAL_COST:-0}"
+        max_hops: "${ROUTE_MAX_HOPS:-20}"
+        max_distance_km: "${ROUTE_MAX_DISTANCE_KM:-500}"
+      max_chars: 8000
+
+    input_fields:
+      - "node_path"
+      - "total_cost"
+      - "cost_breakdown"
+
+    output_fields:
+      - "verdict"
+      - "findings"
+      - "verified_cost"
+
+  # ----------------------------------------------------------------
+  # Stage 4 - NARRATOR
+  # Translates the validated route into a human-readable summary
+  # with turn-by-turn directions and cost breakdown.
+  # ----------------------------------------------------------------
+  - id: "narrator"
+    name: "Route Narrator"
+    role: "${PIPELINE_NARRATOR_ROLE:-route_narrator}"
+    description: "Produce human-readable turn-by-turn route summary"
+    # Only runs when validator verdict == "pass"
+    condition: "${NARRATOR_CONDITION:-verdict == 'pass'}"
+
+    llm:
+      temperature: 0.3          # Slightly creative for natural language output
+      max_tokens: 2048
+
+    tools:
+      enabled:
+        - "get_node"
+        - "render_route_svg"
+
+    react_loop:
+      max_iterations: 4
+      early_stop_on_final_answer: true
+      parsing:
+        thought_prefix: "THOUGHT:"
+        action_prefix: "ACTION:"
+        observation_prefix: "OBSERVATION:"
+        final_answer_prefix: "FINAL ANSWER:"
+        strict: true
+      observation:
+        max_chars: 2000
+        truncation_marker: "... [truncated]"
+
+    system_prompt:
+      inline: |
+        You are a route-planning agent (NARRATOR stage) in a multi-agent pipeline.
+        Validated route: {node_path}
+        Total cost: {verified_cost}  Findings: {findings}
+        Goal: {goal}
+
+        Your job:
+        1. Fetch node metadata (name, coordinates) for each waypoint.
+        2. Produce a turn-by-turn narrative (plain English directions).
+        3. Optionally call render_route_svg for a visual map.
+        4. Output a concise summary suitable for the end user.
+
+        FINAL ANSWER must be valid JSON with keys:
+          summary (string), steps (list of strings), svg_url (string or null)
+
+        Tools available: get_node, render_route_svg
+        Rules:
+        - Keep steps concise (one sentence each).
+        - Do not repeat raw node IDs in user-facing text; use node names.
+      variables:
+        node_path: "${ROUTE_NODE_PATH:-[]}"
+        verified_cost: "${ROUTE_TOTAL_COST:-0}"
+        findings: "${ROUTE_FINDINGS:-[]}"
+        goal: "${ROUTE_GOAL:-Find the optimal route between start and destination}"
+      max_chars: 8000
+
+    input_fields:
+      - "node_path"
+      - "verified_cost"
+      - "findings"
+
+    output_fields:
+      - "summary"
+      - "steps"
+      - "svg_url"

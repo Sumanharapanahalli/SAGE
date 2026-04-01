@@ -1,0 +1,20 @@
+# Word2Vec skip-gram with negative sampling — from scratch in PyTorch
+# Python >= 3.10
+
+# Deep learning
+torch==2.10.0
+
+# Numerical
+numpy==2.4.3
+
+# ML utilities (stratified splits, t-SNE)
+scikit-learn==1.8.0
+
+# Experiment tracking
+mlflow==3.10.1
+
+# Visualisation
+matplotlib==3.10.8
+
+# Corpus (auto-downloads Brown + Reuters)
+nltk==3.9.3

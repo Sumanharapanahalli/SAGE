@@ -1,0 +1,546 @@
+{
+  "artifact": "JTBD User Personas — SAGE Framework",
+  "version": "2.0.0",
+  "created": "2026-03-26",
+  "framework_used": "Jobs to Be Done (JTBD) + RICE Scoring",
+  "sections": [
+    "Functional Job",
+    "Emotional Job",
+    "Social Job",
+    "Hiring Criteria",
+    "Firing Criteria",
+    "Current Solutions",
+    "Quantitative Sizing",
+    "Success Metrics",
+    "Pain Points"
+  ],
+  "action_items": [
+    "Add persona-branching onboarding wizard: ask 'What describes you best?' on first run and pre-configure approval gate defaults (P1=strict, P2=minimal, P3=tenant-scoped)",
+    "Build a compliance-first starter template for P1 that ships with IEC 62304 / ISO 13485 task YAML pre-wired and DHF document generation prompts",
+    "Create a zero-friction quickstart path for P2: single 'make demo' command that spins up a working 3-agent team from a plain-English description in under 5 minutes",
+    "Add per-tenant LLM spend metering and budget caps (cost_limit_usd per solution) to satisfy P3 FinOps requirements",
+    "Instrument audit_log.db with persona-segment tags so SAGE can surface per-archetype analytics and validate RICE assumptions empirically",
+    "Publish official SAGE Docker image with SSO/OIDC middleware hooks to unblock P3 enterprise procurement",
+    "Write a 'regulated industry' cookbook (SAGE + IEC 62304 traceability) as a publicly available reference implementation to drive P1 inbound"
+  ],
+  "personas": [
+    {
+      "id": "P1",
+      "name": "Marcus Chen",
+      "title": "Engineering Manager, Medical Devices",
+      "archetype": "Regulated Industry Engineering Lead",
+      "tagline": "I need my AI agents to be auditable — my regulator will ask.",
+      "representative_roles": [
+        "Engineering Manager — Medical Devices",
+        "Lead Systems Engineer — Avionics",
+        "Senior Technical Lead — Automotive Safety",
+        "Principal Engineer — Industrial IoT"
+      ],
+      "representative_solutions": [
+        "medtech_team",
+        "iot_medical",
+        "automotive",
+        "avionics"
+      ],
+      "context": {
+        "company_size": "50–5,000 employees",
+        "industry": "Medical devices, avionics, automotive, railway, industrial safety",
+        "team_size": "5–30 engineers",
+        "compliance_burden": ["ISO 13485", "IEC 62304", "ISO 26262", "DO-178C", "IEC 61508"],
+        "ai_maturity": "Cautious adopter — has tried GitHub Copilot, wary of hallucinations in safety-critical paths"
+      },
+      "functional_job": {
+        "statement": "When managing a cross-functional engineering team on a regulated product, I want to automate the tedious compliance documentation, review cycles, and change impact analysis so that I can ship features faster without accumulating audit debt.",
+        "sub_jobs": [
+          "Trace every AI-suggested code change to a requirement ID automatically",
+          "Generate draft DHF/IQ/OQ/PQ documentation from agent outputs",
+          "Route agent proposals through the correct approval chain based on risk tier",
+          "Keep a tamper-evident log of every AI decision for regulator inspection",
+          "Run DRC/ERC and static analysis on hardware artifacts without manual toolchain setup"
+        ],
+        "outcome_metric": "Reduce compliance documentation effort by ≥40% per release cycle"
+      },
+      "emotional_job": {
+        "statement": "I want to feel confident that deploying AI in my workflow will not get me, my team, or my company sanctioned — and that I am not the last person standing between a bad AI output and a patient.",
+        "core_fear": "An AI agent produces a plausible-sounding but wrong recommendation that passes review and causes a field failure or FDA warning letter",
+        "desired_feeling": "In control — every agent action is visible, reversible, and traceable to a human decision",
+        "tension": "Wants AI productivity gains but is professionally and personally liable for every output that ships"
+      },
+      "social_job": {
+        "statement": "I want to be known internally as the leader who modernised our development process without cutting corners on quality — and externally as someone regulators and customers trust to run a rigorous shop.",
+        "peer_signal": "Peers at conferences who adopted AI tools recklessly got burned; this persona wants to be the counter-example",
+        "internal_narrative": "'I brought AI to our team AND we passed our ISO audit cleanly'",
+        "external_narrative": "Presents SAGE-generated audit trail at notified body review as evidence of controlled AI use"
+      },
+      "hiring_criteria": {
+        "trigger_events": [
+          "Upcoming regulatory submission deadline with backlog of undocumented AI-assisted changes",
+          "New hire onboarding: needs agent-guided knowledge transfer for regulated processes",
+          "Post-incident: a manual review missed something; wants AI-assisted triage with human gate",
+          "Competitor shipped a comparable product 30% faster — pressure to accelerate without cutting compliance",
+          "FDA/CE MDR audit found traceability gaps in AI-assisted development"
+        ],
+        "switch_threshold": "Will evaluate SAGE when: (1) at least 1 compliance gap is attributed to manual documentation, OR (2) release velocity is below 60% of target for 2+ consecutive sprints due to documentation overhead",
+        "must_have_before_hiring": [
+          "HITL approval gate is non-negotiable — agents must never self-approve safety-critical changes",
+          "Audit log is immutable and per-solution isolated",
+          "Graceful degradation if LLM provider is unavailable — no production stoppage",
+          "On-premise or private cloud deployment option for data residency requirements"
+        ]
+      },
+      "firing_criteria": {
+        "dealbreakers": [
+          "Any agent proposal executes without explicit human approval on safety-classified tasks",
+          "Audit log is incomplete, purgeable, or shared across solutions (cross-contamination risk)",
+          "Hallucinated compliance references (e.g., wrong standard version cited in draft DHF)",
+          "Cannot demonstrate to auditor that AI output was reviewed before implementation",
+          "Vendor lock-in to a single LLM provider violating procurement or security policy"
+        ],
+        "tolerance_level": "Zero tolerance for compliance failures; moderate tolerance for capability gaps if roadmap is credible"
+      },
+      "current_solutions_displaced": [
+        {
+          "tool": "GitHub Copilot",
+          "use_case": "Code suggestions for embedded C and firmware",
+          "why_insufficient": "No audit trail, no domain runners for cross-compilation or DRC, no HITL gate for regulated changes"
+        },
+        {
+          "tool": "Jira + Confluence",
+          "use_case": "Manual requirements traceability and compliance documentation",
+          "why_insufficient": "Fully manual, no AI generation, documentation debt accumulates faster than it is cleared"
+        },
+        {
+          "tool": "MATLAB / Simulink",
+          "use_case": "Model-based development and simulation",
+          "why_insufficient": "Domain-specific, no agent orchestration, no connection to software development lifecycle"
+        },
+        {
+          "tool": "Altium Designer",
+          "use_case": "PCB design and DRC",
+          "why_insufficient": "No agent assistance for layout decisions, no integration with firmware or compliance workflows"
+        },
+        {
+          "tool": "Custom internal scripts",
+          "use_case": "Cobbled-together compliance report generators",
+          "why_insufficient": "Brittle, undocumented, not maintained, no LLM reasoning"
+        }
+      ],
+      "quantitative_sizing": {
+        "tam": {
+          "description": "Global engineering leads in regulated industries (medical, aero/defense, auto, industrial)",
+          "headcount_estimate": 1200000,
+          "arpu_annual_usd": 4800,
+          "tam_usd": 5760000000,
+          "source": "IDC 2024 Worldwide Safety-Critical Engineering Workforce Report; BLS SOC codes 17-2112, 17-2141, 17-2072"
+        },
+        "sam": {
+          "description": "Regulated engineering leads at companies with 50+ employees with active AI tooling budget (15% of TAM)",
+          "headcount_estimate": 180000,
+          "sam_usd": 864000000,
+          "rationale": "IDC estimates 15% of regulated engineering orgs have approved AI-assisted development spend in 2025"
+        },
+        "som_3yr": {
+          "description": "Reachable via direct outreach, conference presence (MD&M, Embedded World, AutoSens), and open-source community — 3% SAM capture",
+          "headcount_estimate": 5400,
+          "som_usd": 25920000,
+          "growth_driver": "FDA AI/ML SaMD guidance 2024 creating urgency for auditable AI tooling"
+        },
+        "willingness_to_pay_monthly_usd": {
+          "low": 300,
+          "mid": 600,
+          "high": 1200,
+          "rationale": "Benchmarked against Jira Advanced Roadmaps ($35/user/mo) + Confluence ($10/user/mo) + compliance tooling — SAGE replaces $100–200/user/mo in tooling across a 5-person team"
+        },
+        "conversion_likelihood_score": 7,
+        "rice": {
+          "reach_users_per_quarter": 5400,
+          "impact_1_to_3": 3,
+          "confidence_pct": 75,
+          "effort_person_weeks": 8,
+          "rice_score": 15188,
+          "note": "High RICE due to strong willingness-to-pay and clear pain; effort moderate because runner and audit infrastructure already built"
+        }
+      },
+      "success_metrics": [
+        "Compliance documentation effort reduced by ≥40% per release (hours saved per release cycle tracked in audit log)",
+        "Zero compliance findings attributable to AI-assisted changes in annual regulatory audit",
+        "HITL approval turnaround time under 4 hours for standard proposals (tracked in proposal_store.py timestamps)",
+        "Agent-generated DHF sections accepted by regulatory specialist with fewer than 2 revision rounds on average",
+        "Domain runner verification pass rate (DRC/ERC/static analysis) above 90% on first submission"
+      ],
+      "pain_points": [
+        {
+          "rank": 1,
+          "pain": "Documentation debt compounds faster than the team can clear it — every AI-assisted change requires manual traceability updates in Confluence and Jira, consuming 15–25% of sprint capacity",
+          "severity": "Critical — directly blocks regulatory submissions and causes schedule slippage"
+        },
+        {
+          "rank": 2,
+          "pain": "No safe AI tooling exists for regulated domains — available tools (Copilot, ChatGPT) have no audit trail, no HITL gate, and no domain awareness for embedded C, PCB, or firmware verification",
+          "severity": "High — forces teams to ban AI tools outright or use them unofficially, creating shadow risk"
+        },
+        {
+          "rank": 3,
+          "pain": "Cross-functional context loss — when an engineer leaves or a consultant finishes, domain knowledge (design decisions, compliance rationale) evaporates; no institutional memory layer exists",
+          "severity": "Medium-High — onboarding new engineers costs 4–8 weeks; repeated mistakes in compliance reviews"
+        }
+      ]
+    },
+    {
+      "id": "P2",
+      "name": "Priya Nair",
+      "title": "Solo Technical Founder",
+      "archetype": "Solo Founder / Micro-Team CTO",
+      "tagline": "I am the entire product, engineering, and ops department. I need agents that can be the rest.",
+      "representative_roles": [
+        "Solo SaaS Founder",
+        "Technical Co-Founder (pre-Series A, up to 5 employees)",
+        "Indie Hacker building a productised service",
+        "Consulting firm owner automating delivery"
+      ],
+      "representative_solutions": [
+        "four_in_a_line",
+        "meditation_app",
+        "board_games",
+        "starter"
+      ],
+      "context": {
+        "company_size": "1–10 people",
+        "industry": "Consumer apps, B2B SaaS, developer tools, content platforms, consulting",
+        "team_size": "Usually 1 (the founder) plus occasional contractors",
+        "compliance_burden": "Minimal to none — GDPR basics, App Store guidelines",
+        "ai_maturity": "Power user — living in AI tools daily, frustrated by context-switching between ChatGPT, Cursor agents, and manual deployment"
+      },
+      "functional_job": {
+        "statement": "When building and iterating a product with a team of one, I want to delegate entire work streams — development, documentation, UX review, GTM copy — to autonomous agents so that I can focus only on decisions that require my judgment as the founder.",
+        "sub_jobs": [
+          "Spin up a domain-specific agent team from a plain-English description in under 10 minutes",
+          "Have agents propose and self-execute routine tasks (CI fixes, dependency updates, README drafts) without interrupting my flow",
+          "Compound agent knowledge over time so I am not re-explaining the same context every session",
+          "Switch between LLM providers based on cost and capability without changing workflows",
+          "Build custom MCP tools that integrate my SaaS stack (Stripe, Supabase, Vercel) into agent context"
+        ],
+        "outcome_metric": "Ship features 3x faster; reduce context-switching overhead to under 30 minutes per day"
+      },
+      "emotional_job": {
+        "statement": "I want to feel like I have a full team backing me — that I am not the bottleneck on every decision and that momentum compounds rather than resets every Monday morning.",
+        "core_fear": "Running out of runway because I am too slow to ship, or burning out from being the single point of failure on everything",
+        "desired_feeling": "Leverage — the sensation that the output of the week is disproportionate to the hours I put in",
+        "tension": "Wants maximum autonomy from agents but does not want to lose control of product direction or quality bar"
+      },
+      "social_job": {
+        "statement": "I want to be known in founder and indie hacker communities as someone who figured out how to run a real company alone — as proof that the one-person billion-dollar company is possible.",
+        "peer_signal": "Twitter/X threads from founders showing impressive output with tiny teams are aspirational references",
+        "internal_narrative": "'I shipped a full product this sprint and barely wrote any boilerplate code myself'",
+        "external_narrative": "Posts a SAGE workflow demo that generates traction in the Indie Hackers / Hacker News community, signals technical sophistication to early investors"
+      },
+      "hiring_criteria": {
+        "trigger_events": [
+          "Just shipped v1, now drowning in support tickets, feature requests, and tech debt simultaneously",
+          "Lost a week re-explaining project context after hitting Claude/GPT context window limits",
+          "Tried to hire a contractor but onboarding took longer than doing the work themselves",
+          "Competitor with the same team size is shipping 2x faster (visible via public changelogs)",
+          "First B2B customer asking for audit log or change history before signing a contract"
+        ],
+        "switch_threshold": "Will adopt SAGE when: (1) context loss from AI session resets costs 4+ hours per week, OR (2) a specific domain workflow (firmware, ML pipeline, PCB) requires toolchain integration beyond raw LLM prompting",
+        "must_have_before_hiring": [
+          "Zero-friction local setup — single 'make venv' plus 'make run' command",
+          "Works with free LLM providers (Gemini CLI, Ollama) — no surprise API bills on day one",
+          "Onboarding wizard generates working YAML config from plain English in under 5 minutes",
+          "Agent memory persists across sessions — no context amnesia",
+          "Can run entirely offline for IP-sensitive projects"
+        ]
+      },
+      "firing_criteria": {
+        "dealbreakers": [
+          "Setup complexity exceeds 30 minutes for a net-new solution",
+          "Agents require constant hand-holding — approval gate interrupts for every trivial action",
+          "No visibility into what agents are doing — black box execution",
+          "Memory does not compound — same mistakes made in session 10 as session 1",
+          "Cannot extend with custom MCP tools without touching framework Python"
+        ],
+        "tolerance_level": "Low tolerance for friction and setup complexity; high tolerance for rough edges on features they do not use yet"
+      },
+      "current_solutions_displaced": [
+        {
+          "tool": "ChatGPT / Claude.ai (browser)",
+          "use_case": "Ad-hoc code generation, planning, copywriting",
+          "why_insufficient": "No persistent memory, no multi-agent coordination, no domain-specific toolchain, context resets destroy compounding value"
+        },
+        {
+          "tool": "Cursor / Windsurf",
+          "use_case": "AI-assisted code editing in IDE",
+          "why_insufficient": "Scoped to code only — no product strategy, documentation, UX, or GTM agents; no vector memory; no approval workflow"
+        },
+        {
+          "tool": "Linear",
+          "use_case": "Task tracking and sprint planning",
+          "why_insufficient": "Purely manual — requires the founder to decompose every task; no AI-assisted planning or autonomous task execution"
+        },
+        {
+          "tool": "Notion AI",
+          "use_case": "Documentation and knowledge base",
+          "why_insufficient": "No agentic execution — generates text but does not act; no integration with code or deployment workflows"
+        },
+        {
+          "tool": "Zapier / Make (no-code automation)",
+          "use_case": "Workflow automation between SaaS tools",
+          "why_insufficient": "Rule-based only, no reasoning, cannot handle novel situations or produce creative output"
+        }
+      ],
+      "quantitative_sizing": {
+        "tam": {
+          "description": "Global solo and micro-team technical founders and indie hackers actively building products",
+          "headcount_estimate": 4500000,
+          "arpu_annual_usd": 600,
+          "tam_usd": 2700000000,
+          "source": "GitHub 2024 Developer Survey (100M developers); Stack Overflow 2024 Survey; Indie Hackers self-reported founder count"
+        },
+        "sam": {
+          "description": "Technical founders with at least 1 live product and active AI tooling spend; English-language primary market",
+          "headcount_estimate": 500000,
+          "sam_usd": 300000000,
+          "rationale": "Approximately 11% of GitHub developers self-identify as indie product builders with paying customers; 50% are English-primary"
+        },
+        "som_3yr": {
+          "description": "Reachable via open-source GitHub presence, Hacker News, Reddit, developer newsletters, ProductHunt — 5% SAM capture",
+          "headcount_estimate": 25000,
+          "som_usd": 15000000,
+          "growth_driver": "Explosive growth in AI-native founder archetype post-GPT-4; SAGE's open-source model is the primary acquisition channel"
+        },
+        "willingness_to_pay_monthly_usd": {
+          "low": 19,
+          "mid": 49,
+          "high": 99,
+          "rationale": "Benchmarked against Cursor Pro ($20/mo), Linear ($8/user/mo), Notion AI ($10/user/mo) — total AI tooling spend typically $50–150/mo; SAGE replaces most of that stack"
+        },
+        "conversion_likelihood_score": 8,
+        "rice": {
+          "reach_users_per_quarter": 25000,
+          "impact_1_to_3": 3,
+          "confidence_pct": 85,
+          "effort_person_weeks": 4,
+          "rice_score": 159375,
+          "note": "Highest RICE score — enormous reach, self-serve acquisition, low effort because onboarding wizard and starter template already exist"
+        }
+      },
+      "success_metrics": [
+        "Features shipped per week increases by 3x within 90 days of adopting SAGE (tracked via git commit frequency)",
+        "Context-switching time between AI tools drops below 30 minutes per day (self-reported in weekly check-in prompt)",
+        "Agent memory reuse rate above 60% — majority of new tasks leverage prior vector store context rather than re-prompting from scratch",
+        "Time-to-first-working-agent-for-new-domain under 10 minutes (measured via onboarding wizard telemetry)",
+        "LLM API cost per shipped feature decreases by 40% within 60 days due to provider switching and context reuse"
+      ],
+      "pain_points": [
+        {
+          "rank": 1,
+          "pain": "Context amnesia — every new AI session starts from zero; the founder must re-explain the product, the codebase, the decisions made, and the constraints every single time, consuming 1–2 hours per day of pure overhead",
+          "severity": "Critical — directly kills the compounding value that makes AI tools worthwhile for a solo operator"
+        },
+        {
+          "rank": 2,
+          "pain": "Tool fragmentation — using ChatGPT for planning, Cursor for code, Notion AI for docs, Zapier for automation, and manually connecting the outputs; each tool has no awareness of the others",
+          "severity": "High — constant context-switching is the #1 source of cognitive load and lost momentum"
+        },
+        {
+          "rank": 3,
+          "pain": "Single point of failure — the founder is the only person who understands the full system; agents help generate output but cannot autonomously handle novel situations, meaning the founder is always on-call",
+          "severity": "Medium-High — unsustainable as the product grows; the founder cannot take a vacation without the product stalling"
+        }
+      ]
+    },
+    {
+      "id": "P3",
+      "name": "David Okafor",
+      "title": "Director of AI Platform Engineering",
+      "archetype": "Enterprise AI Transformation Architect",
+      "tagline": "I need to give 200 teams a controlled on-ramp to agentic AI without letting any one team blow up the whole company.",
+      "representative_roles": [
+        "Director of AI/ML Platform Engineering",
+        "Principal Architect — Intelligent Automation",
+        "Head of Developer Experience",
+        "VP Engineering — Platform (large enterprise)"
+      ],
+      "representative_solutions": [
+        "finmarkets",
+        "healthcare_it",
+        "enterprise_platform",
+        "logistics"
+      ],
+      "context": {
+        "company_size": "1,000–100,000+ employees",
+        "industry": "Financial services, enterprise SaaS, logistics, retail, healthcare IT",
+        "team_size": "Platform team of 5–20 serving 50–500 internal developer teams",
+        "compliance_burden": ["SOC 2 Type II", "ISO 27001", "GDPR", "HIPAA (healthcare)", "PCI-DSS (finance)"],
+        "ai_maturity": "Strategic evaluator — has run 3–5 AI pilots; now tasked with platformising the winners and decommissioning shadow-IT LLM experiments across business units"
+      },
+      "functional_job": {
+        "statement": "When centralising AI agent capabilities across dozens of product teams, I want a platform that provides consistent governance, cost visibility, and solution isolation so that individual teams can move fast without creating compliance or security liability at the company level.",
+        "sub_jobs": [
+          "Provide each business unit a fully isolated agent environment (data, audit log, vector store) from a single platform deployment",
+          "Enforce LLM provider policy centrally (approved models, spend caps) while giving teams flexibility on prompts and tasks",
+          "Expose agent capabilities as an internal developer platform with self-service onboarding — wizard to working environment in under 1 day",
+          "Aggregate cost and usage metrics across all tenants for FinOps visibility",
+          "Integrate with existing identity (SSO/OIDC), ticketing (Jira), and secrets management (Vault)"
+        ],
+        "outcome_metric": "Reduce time-to-first-agent-in-production per new team from 6 weeks to under 3 days; full cost allocation across business units by Q3"
+      },
+      "emotional_job": {
+        "statement": "I want to feel like the platform I am building is ahead of the business's appetite — not constantly reacting to teams that have already made a mess — and that when the inevitable security review comes, I can answer every question.",
+        "core_fear": "A business unit deploys an LLM agent that exfiltrates customer PII, triggers a SOC 2 finding, or hallucinates financial data in a client-facing report — and it traces back to my platform",
+        "desired_feeling": "Confident — the guardrails are architectural, not dependent on individual team compliance",
+        "tension": "Under pressure from CTO to move fast and enable teams; under simultaneous pressure from CISO and Legal to ensure control and auditability"
+      },
+      "social_job": {
+        "statement": "I want to be seen by the CTO as the architect who enabled the company's AI transformation, and by the CISO as the person who made sure it did not become a liability.",
+        "peer_signal": "Other platform architects at competing companies are presenting at re:Invent and KubeCon about their internal AI platforms; this persona wants to be on that stage",
+        "internal_narrative": "'Our AI platform serves 200 teams; every agent action is audited; we have had zero security incidents'",
+        "external_narrative": "Publishes case study or conference talk on SAGE-based internal AI developer platform, establishing thought leadership in enterprise AI governance"
+      },
+      "hiring_criteria": {
+        "trigger_events": [
+          "CISO or Legal issued a moratorium on new LLM tool adoption pending a governance framework",
+          "FinOps team flagged uncontrolled AI API spend across business units with no cost allocation",
+          "CTO mandated 'platformise AI' as a Q1 OKR; platform team has 90 days to deliver",
+          "SOC 2 audit found that no audit trail exists for AI-assisted decisions in customer-facing systems",
+          "Three or more business units have built incompatible in-house agent frameworks; consolidation is required"
+        ],
+        "switch_threshold": "Will evaluate SAGE when: (1) shadow AI proliferation reaches 5+ independent business unit deployments, OR (2) first compliance finding attributable to uncontrolled AI usage is issued",
+        "must_have_before_hiring": [
+          "Multi-tenant isolation is architectural — solution A's data cannot reach solution B's agents under any conditions",
+          "SAGE_SOLUTIONS_DIR pattern allows private solutions without modifying the framework repo",
+          "LLM provider switching at runtime without redeployment for model policy enforcement",
+          "REST API is the only public interface — no direct database access from business units",
+          "Horizontal scaling path exists — queue-based, stateless API layer"
+        ]
+      },
+      "firing_criteria": {
+        "dealbreakers": [
+          "Tenant data isolation is logical-only (same DB table with tenant_id filter) rather than physical (.sage/ per solution with separate SQLite and ChromaDB)",
+          "Framework requires production access to framework source repo to add a new solution",
+          "No cost metering or LLM call budgets per tenant or agent",
+          "Cannot integrate with corporate SSO/OIDC for the approval workflow",
+          "Vendor requires SaaS model — enterprise security policy mandates on-premise or private cloud deployment",
+          "Single point of failure on LLM provider — must support provider redundancy and failover"
+        ],
+        "tolerance_level": "Very low tolerance for security and isolation gaps; moderate tolerance for UI polish and developer ergonomics gaps if API layer is solid"
+      },
+      "current_solutions_displaced": [
+        {
+          "tool": "ChatGPT Enterprise",
+          "use_case": "Company-wide LLM access with SSO and data isolation",
+          "why_insufficient": "No agentic execution, no domain-specific runners, no per-team solution isolation, no customisable approval gates, no MCP tool integration"
+        },
+        {
+          "tool": "Microsoft Azure AI Studio / OpenAI on Azure",
+          "use_case": "Managed LLM APIs with enterprise security",
+          "why_insufficient": "Requires significant custom engineering for agent orchestration, multi-tenant isolation, and HITL gates; no prebuilt domain runners; high implementation overhead"
+        },
+        {
+          "tool": "Backstage (Spotify IDP)",
+          "use_case": "Internal developer portal for service discovery and scaffolding",
+          "why_insufficient": "Not AI-native — no agent reasoning, no LLM integration, no proposal-and-approve workflow; only a catalog and template system"
+        },
+        {
+          "tool": "LangSmith / LangChain Hub",
+          "use_case": "LLM observability and prompt management",
+          "why_insufficient": "Observability only — no agent orchestration, no HITL gates, no domain-specific runners, no multi-tenant solution isolation"
+        },
+        {
+          "tool": "In-house Python scripts per team",
+          "use_case": "Custom per-team LLM wrappers and automation",
+          "why_insufficient": "No governance, no audit trail, inconsistent quality, incompatible across teams, no compounding memory — the definition of shadow AI"
+        }
+      ],
+      "quantitative_sizing": {
+        "tam": {
+          "description": "Global senior architects and directors responsible for internal AI/ML platform build-out at enterprises with 1,000+ employees",
+          "headcount_estimate": 180000,
+          "arpu_annual_usd": 24000,
+          "tam_usd": 4320000000,
+          "source": "Gartner 2025 AI Infrastructure Spending Forecast; LinkedIn Talent Insights — 'AI Platform Architect' title grew 310% YoY 2023–2025"
+        },
+        "sam": {
+          "description": "Platform architects at enterprises with active internal AI developer platform initiative and approved vendor evaluation budget",
+          "headcount_estimate": 36000,
+          "sam_usd": 864000000,
+          "rationale": "Gartner estimates 20% of enterprises with 1,000+ employees initiated internal AI platform RFPs in 2025; of those, 100% have a named architect owner"
+        },
+        "som_3yr": {
+          "description": "Reachable via enterprise open-source adoption (SAGE deployed internally then formalised), direct outreach, and partner channel (SIs, GSIs) — 1.5% SAM capture",
+          "headcount_estimate": 540,
+          "som_usd": 12960000,
+          "growth_driver": "Enterprise AI platformisation wave driven by SOC 2 and ISO 27001 audit requirements for LLM governance; SAGE's audit-first architecture is a direct response"
+        },
+        "willingness_to_pay_monthly_usd": {
+          "low": 1000,
+          "mid": 3000,
+          "high": 8000,
+          "rationale": "Enterprise contracts priced per number of active solutions/tenants; benchmarked against Datadog ($2,500/mo for equivalent observability scope) and GitHub Enterprise ($21/user/mo for 500 developers = $10,500/mo)"
+        },
+        "conversion_likelihood_score": 5,
+        "rice": {
+          "reach_users_per_quarter": 540,
+          "impact_1_to_3": 3,
+          "confidence_pct": 60,
+          "effort_person_weeks": 12,
+          "rice_score": 8100,
+          "note": "Lower RICE due to small reachable cohort and high sales cycle effort; but highest ACV per deal — enterprise contract value 5–10x Persona 1. Long-term strategic moat."
+        }
+      },
+      "success_metrics": [
+        "Number of internal teams onboarded to SAGE platform per quarter — target: 10 teams per quarter by end of year 1",
+        "Shadow AI incidents eliminated — reduction in security and compliance findings attributable to uncontrolled LLM usage from baseline to zero within 6 months",
+        "Time-to-first-agent-in-production per new team reduced from 6 weeks to under 3 days (measured from onboarding wizard initiation to first approved proposal)",
+        "LLM spend visibility — 100% of AI API costs attributed to specific business unit and solution by end of Q3",
+        "Platform NPS from internal developer teams above 40 within 12 months of launch (measured via quarterly internal survey)"
+      ],
+      "pain_points": [
+        {
+          "rank": 1,
+          "pain": "Shadow AI proliferation — individual business units have deployed 5–15 incompatible LLM integrations with no audit trail, no governance, no isolation, and no visibility to the platform team; the CISO is aware and demanding action within 90 days",
+          "severity": "Critical — direct compliance and security liability; a single incident could result in regulatory action or customer data breach"
+        },
+        {
+          "rank": 2,
+          "pain": "No enterprise-grade agentic AI platform exists off the shelf — every available option (Azure AI Studio, LangSmith, Vertex AI) requires 6–12 months of custom engineering to add multi-tenant isolation, HITL gates, domain runners, and cost metering",
+          "severity": "High — forces the platform team to build from scratch, consuming headcount that could be delivering product value"
+        },
+        {
+          "rank": 3,
+          "pain": "CTO versus CISO tension is unresolvable without architecture — CTO demands AI-enabled teams by Q1; CISO demands audit trail and isolation before any AI tool is approved; without a platform that satisfies both, the platform architect is caught in the middle indefinitely",
+          "severity": "High — political and organisational, not just technical; blocking the platform team's ability to make decisions and move forward"
+        }
+      ]
+    }
+  ],
+  "cross_persona_analysis": {
+    "shared_functional_jobs": [
+      "Compound agent knowledge over time (vector memory) — all 3 personas need context that does not reset",
+      "Human approval gate for high-stakes actions — all 3 personas need control, for different reasons (compliance, quality, governance)",
+      "Multi-LLM provider flexibility — cost, policy, and capability reasons differ but the requirement is the same across all three"
+    ],
+    "divergent_needs": {
+      "approval_gate_philosophy": {
+        "P1_regulated": "Mandatory for all agent proposals — compliance requirement, non-negotiable",
+        "P2_indie": "Optional and configurable — interrupts for routine tasks are a dealbreaker",
+        "P3_enterprise": "Mandatory for cross-team and customer-facing actions; optional for internal dev tasks"
+      },
+      "deployment_model": {
+        "P1_regulated": "On-premise or private cloud; data residency in regulatory jurisdiction",
+        "P2_indie": "Local or personal cloud; zero infrastructure overhead",
+        "P3_enterprise": "Private cloud with SSO, network policies, and FinOps integration"
+      },
+      "primary_value_metric": {
+        "P1_regulated": "Audit coverage percentage and compliance documentation velocity",
+        "P2_indie": "Features shipped per week and context-switching time saved",
+        "P3_enterprise": "Number of teams onboarded per quarter and shadow-AI incidents eliminated"
+      }
+    },
+    "persona_priority_for_sage_roadmap": {
+      "immediate_focus": "P2 (Indie Founder) — highest RICE at 159,375; self-serve acquisition; open-source flywheel already in motion",
+      "strategic_moat": "P1 (Regulated Lead) — highest willingness-to-pay; strongest differentiation via audit trail and HITL gate; defensible against generic LLM tools",
+      "enterprise_upside": "P3 (Enterprise Architect) — lowest near-term RICE but highest ACV per deal; multi-tenant isolation already architecturally present; unlocks a fundamentally different revenue tier"
+    }
+  }
+}

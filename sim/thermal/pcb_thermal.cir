@@ -1,0 +1,111 @@
+* =============================================================================
+* PCB Thermal Simulation — Wearable Fall-Detection Sensor
+* Method: RC thermal network (Cauer model)
+*   Voltage → Temperature [°C above ambient]
+*   Current → Power [W]
+*
+* Thermal resistance values (estimated for 30mm × 30mm 2-layer PCB):
+*   θ_jc (junction to case):   15 °C/W  (nRF5340 SiP, WLCSP package)
+*   θ_cs (case to PCB):         5 °C/W  (thermal compound / solder)
+*   θ_sa (PCB to ambient):     30 °C/W  (natural convection, 30×30mm PCB)
+*   θ_jc_PA (LTE-M PA j→c):   20 °C/W  (SIM7080G LQFP)
+*   θ_cs_PA (case to PCB):      5 °C/W
+*
+* Power sources:
+*   nRF5340 MCU:  40mW average (8mA × 5V... actually 3.3V domain: 8mA × 3.3V = 26mW)
+*   LTE-M PA:    571mW peak, 11.4mW average (2% duty cycle)
+*   IMU LSM6DSO: 0.55mA × 1.8V = 1mW
+*   LiPo I²R:    (6.1mA)² × 0.15Ω = 5.6µW (negligible)
+*
+* Ambient: 25°C (T_amb = 25V in SPICE thermal analogy)
+*
+* Requirement: PCB temperature ≤ 45°C (ΔT ≤ 20°C)
+* =============================================================================
+
+.title PCB Thermal Network — Wearable Fall Detector
+
+* ---------------------------------------------------------------------------
+* Thermal resistance network (nRF5340 node)
+* ---------------------------------------------------------------------------
+
+* MCU junction → case
+Rjc_mcu   TJMCU   TCMCU   15
+* MCU case → PCB node
+Rcs_mcu   TCMCU   TPCB    5
+* Thermal capacitance at junction (Si die: ~0.5 mm², Cth ≈ 0.1 mJ/K)
+Cth_mcu   TJMCU   TAMB    0.1m
+
+* ---------------------------------------------------------------------------
+* LTE-M PA thermal node (SIM7080G)
+* ---------------------------------------------------------------------------
+Rjc_pa    TJPA    TCPA    20
+Rcs_pa    TCPA    TPCB    5
+Cth_pa    TJPA    TAMB    0.05m   ; smaller package
+
+* ---------------------------------------------------------------------------
+* PCB node → ambient (convection)
+* ---------------------------------------------------------------------------
+Rsa_pcb   TPCB    TAMB    30
+Cth_pcb   TPCB    TAMB    500m    ; PCB thermal mass (FR4 30×30×1.6mm: Cth≈0.5J/K)
+
+* IMU — low power, model as direct PCB contributor
+Rimu_pcb  TIMU    TPCB    10
+Cth_imu   TIMU    TAMB    10m
+
+* ---------------------------------------------------------------------------
+* Ambient reference: 25°C = 25V in thermal analogy
+* ---------------------------------------------------------------------------
+Vamb   TAMB   0   DC=25
+
+* ---------------------------------------------------------------------------
+* Power sources (current sources in thermal analogy)
+* ---------------------------------------------------------------------------
+
+* nRF5340: 26mW average (core + peripherals)
+Pmcu   TJMCU   TAMB   DC=26m
+
+* LTE-M PA: pulse during TX (571mW peak, 2% duty cycle = 11.4mW avg)
+* Simulate with PULSE to show both peak junction temp and average
+Ppa_pulse  TJPA  TAMB  PULSE(0 571m 0 1m 1m 18m 1000m)
+
+* IMU: 1mW continuous
+Pimu   TIMU   TAMB   DC=1m
+
+* ---------------------------------------------------------------------------
+* Measurements
+* ---------------------------------------------------------------------------
+* Peak temperatures (°C, since TAMB=25V → all temperatures in °C absolute)
+.meas TRAN Tj_mcu_max   MAX V(TJMCU)
+.meas TRAN Tj_pa_max    MAX V(TJPA)
+.meas TRAN Tpcb_max     MAX V(TPCB)
+.meas TRAN Tpcb_avg     AVG V(TPCB)   FROM=10 TO=30
+
+* Delta-T calculations
+.meas TRAN dT_mcu  PARAM 'Tj_mcu_max - 25'
+.meas TRAN dT_pa   PARAM 'Tj_pa_max  - 25'
+.meas TRAN dT_pcb  PARAM 'Tpcb_max   - 25'
+
+* Requirement check: Tpcb ≤ 45°C → dT ≤ 20°C
+.meas TRAN margin_pcb  PARAM '45 - Tpcb_max'   ; must be > 0 (PASS)
+
+* ---------------------------------------------------------------------------
+* Simulation: 60 seconds (thermal transient to steady-state)
+* PCB thermal time constant ≈ Rsa × Cpcb = 30 × 0.5 = 15s → 60s = 4τ
+* Step: 100ms (PA pulse = 20ms, need 10ms resolution minimum)
+* ---------------------------------------------------------------------------
+.tran 100m 60 0 100m UIC
+
+.probe V(TJMCU) V(TCMCU) V(TJPA) V(TCPA) V(TPCB) V(TIMU) V(TAMB)
+
+* ---------------------------------------------------------------------------
+* Expected steady-state analysis (analytical):
+*   P_mcu  = 26mW  → ΔT_pcb contribution = 26m × 30 = 0.78°C
+*   P_pa   = 11.4mW avg → ΔT_pcb = 11.4m × 30 = 0.34°C
+*   P_imu  = 1mW   → ΔT_pcb = 1m × (10+30) = 0.04°C
+*   P_total_avg = 38.4mW → ΔT_pcb = 38.4m × 30 = 1.15°C
+*   T_pcb_avg = 25 + 1.15 = 26.15°C << 45°C  ✓
+*   T_pa_peak = 25 + 571m×(20+5+30) = 25 + 31.4 = 56.4°C (junction only, 20ms pulse)
+*   T_pa_avg  = 25 + 11.4m×55 = 25 + 0.63 = 25.63°C (average)
+* ---------------------------------------------------------------------------
+
+.end

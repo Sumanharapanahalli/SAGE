@@ -1,0 +1,7 @@
+workspace("MeditationApp.xcworkspace")
+scheme("MeditationApp")
+configuration("Release")
+export_method("app-store")
+output_directory("./build")
+include_bitcode(false)
+clean(true)

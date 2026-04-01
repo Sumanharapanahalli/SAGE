@@ -1,0 +1,24 @@
+# LSTM Multi-Step Time Series Forecasting
+# Python >= 3.10
+
+# Deep learning
+torch==2.3.1
+torchvision==0.18.1
+
+# Time series / statistics
+statsmodels==0.14.2
+pmdarima==2.0.4          # auto_arima for ARIMA order selection
+
+# Numerical & data
+numpy==1.26.4
+pandas==2.2.2
+scikit-learn==1.4.2
+
+# Experiment tracking
+mlflow==2.13.2
+
+# Plotting
+matplotlib==3.9.0
+
+# Config
+pyyaml==6.0.1

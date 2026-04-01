@@ -1,0 +1,78 @@
+name: TestFlight Distribution
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'ios/**'
+      - 'fastlane/**'
+
+jobs:
+  upload-testflight:
+    name: Build & Upload to TestFlight
+    runs-on: macos-14
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app
+
+      - name: Cache SPM packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ios/.build
+            ~/Library/Developer/Xcode/DerivedData/**/SourcePackages/checkouts
+          key: ${{ runner.os }}-spm-${{ hashFiles('ios/**/Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-
+
+      - name: Install Ruby dependencies
+        run: |
+          cd ios
+          bundle install
+
+      - name: Set build number from git commit count
+        run: |
+          BUILD_NUMBER=$(git rev-list --count HEAD)
+          echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_ENV
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_NUMBER" ios/MeditationApp/Info.plist
+
+      - name: Set up match keychain
+        env:
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security set-keychain-settings -t 7200 -l ~/Library/Keychains/build.keychain
+
+      - name: Run Fastlane beta lane
+        env:
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+          BUILD_NUMBER: ${{ env.BUILD_NUMBER }}
+        run: |
+          cd ios
+          bundle exec fastlane beta
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: MeditationApp-${{ env.BUILD_NUMBER }}.ipa
+          path: build/*.ipa
+          retention-days: 14
+
+      - name: Clean up keychain
+        if: always()
+        run: security delete-keychain build.keychain

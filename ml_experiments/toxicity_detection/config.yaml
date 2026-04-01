@@ -1,0 +1,66 @@
+model:
+  pretrained_name: "unitary/toxic-bert"
+  num_labels: 2
+  max_length: 128
+  dropout: 0.1
+
+training:
+  seed: 42
+  epochs: 3
+  batch_size: 32
+  eval_batch_size: 64
+  learning_rate: 2.0e-5
+  weight_decay: 0.01
+  warmup_ratio: 0.1
+  gradient_accumulation_steps: 1
+  fp16: true
+  early_stopping_patience: 2
+  metric_for_best_model: "eval_f1"
+  greater_is_better: true
+
+data:
+  dataset_name: "jigsaw_toxicity_pred"          # HuggingFace dataset id (or local path)
+  text_column: "comment_text"
+  label_column: "toxic"
+  test_size: 0.15
+  val_size: 0.15
+  stratify: true
+
+paths:
+  output_dir: "artifacts/toxicity_model"
+  mlflow_tracking_uri: "mlruns"
+  model_card_path: "model_card.yaml"
+  bias_report_path: "artifacts/bias_report.json"
+
+inference:
+  sla_ms: 100                                   # per-sample latency SLA (milliseconds)
+  warmup_runs: 5
+  benchmark_runs: 100
+
+bias:
+  identity_columns:
+    - male
+    - female
+    - transgender
+    - other_gender
+    - heterosexual
+    - homosexual_gay_or_lesbian
+    - bisexual
+    - other_sexual_orientation
+    - christian
+    - jewish
+    - muslim
+    - hindu
+    - buddhist
+    - atheist
+    - other_religion
+    - black
+    - white
+    - asian
+    - latino
+    - other_race_or_ethnicity
+    - physical_disability
+    - intellectual_or_learning_disability
+    - psychiatric_or_mental_illness
+    - other_disability
+  fairness_threshold: 0.05                      # max allowed gap vs overall metric

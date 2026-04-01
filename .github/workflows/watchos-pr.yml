@@ -1,0 +1,60 @@
+name: watchOS PR Build Validation
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'ios/**'
+      - '.github/workflows/watchos-pr.yml'
+
+jobs:
+  build-watchos:
+    name: Build watchOS Extension
+    runs-on: macos-14
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app
+
+      - name: Cache SPM packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ios/.build
+            ~/Library/Developer/Xcode/DerivedData/**/SourcePackages/checkouts
+          key: ${{ runner.os }}-spm-watchos-${{ hashFiles('ios/**/Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-watchos-
+            ${{ runner.os }}-spm-
+
+      - name: Cache DerivedData
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: ${{ runner.os }}-derived-watchos-${{ hashFiles('ios/**/*.xcodeproj/project.pbxproj') }}
+          restore-keys: |
+            ${{ runner.os }}-derived-watchos-
+            ${{ runner.os }}-derived-data-
+
+      - name: Build watchOS extension
+        run: |
+          xcodebuild \
+            -workspace ios/MeditationApp.xcworkspace \
+            -scheme MeditationAppWatch \
+            -destination 'platform=watchOS Simulator,name=Apple Watch Series 9 (45mm),OS=latest' \
+            -derivedDataPath ~/Library/Developer/Xcode/DerivedData \
+            -configuration Debug \
+            build \
+            | xcpretty
+
+      - name: Upload build logs
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: watchos-build-logs
+          path: ~/Library/Developer/Xcode/DerivedData/**/Logs/Build
+          retention-days: 3

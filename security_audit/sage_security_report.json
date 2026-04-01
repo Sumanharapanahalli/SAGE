@@ -1,0 +1,290 @@
+{
+  "report_metadata": {
+    "title": "SAGE Framework \u2014 Security Review Report",
+    "generated_at": "2026-03-28T00:39:36.023165+00:00",
+    "analyst_role": "analyst",
+    "scope": [
+      "src/",
+      "config/config.yaml",
+      "requirements.txt"
+    ],
+    "standards": [
+      "OWASP Top 10 2021",
+      "HIPAA Security Rule",
+      "IEC 62443",
+      "STRIDE"
+    ],
+    "tool_version": "1.0.0"
+  },
+  "executive_summary": {
+    "total_findings": 10,
+    "severity_breakdown": {
+      "CRITICAL": 1,
+      "HIGH": 5,
+      "MEDIUM": 3,
+      "INFO": 1
+    },
+    "overall_risk": "CRITICAL",
+    "phi_impacting_findings": 4,
+    "acceptance_criteria_passed": false
+  },
+  "acceptance_criteria": [
+    {
+      "name": "Threat model covers STRIDE categories",
+      "passed": false,
+      "detail": "STRIDE categories found in findings: ['Elevation of Privilege', 'Information Disclosure', 'Repudiation', 'Spoofing', 'Tampering']"
+    },
+    {
+      "name": "No critical/high vulnerabilities",
+      "passed": false,
+      "detail": "FAILED \u2014 6 critical/high findings: CORS-001, AUTH-001, PII-001, HDR-001, ENC-001, PHI-001"
+    },
+    {
+      "name": "SBOM generated",
+      "passed": true,
+      "detail": "SBOM generated at security_audit/sbom.json"
+    },
+    {
+      "name": "PHI encryption at rest and in transit",
+      "passed": false,
+      "detail": "FAILED \u2014 ENC-001 (SQLite not encrypted) and/or PHI-001 (raw PHI in logs) present"
+    },
+    {
+      "name": "Access audit logging enabled",
+      "passed": true,
+      "detail": "PASSED \u2014 audit logging verified"
+    }
+  ],
+  "findings": [
+    {
+      "id": "CORS-001",
+      "title": "Wildcard CORS policy allows any origin",
+      "severity": "CRITICAL",
+      "category": "OWASP A05",
+      "stride_category": "Spoofing",
+      "cwe": "CWE-942",
+      "file_path": "src/interface/api.py",
+      "line_number": 55,
+      "evidence": "allow_origins=[\"*\"],",
+      "recommendation": "Replace allow_origins=['*'] with an explicit allowlist of trusted origins (e.g. ['https://app.example.com']). Load from SAGE_ALLOWED_ORIGINS env var for environment parity.",
+      "phi_impact": false,
+      "compliance_references": [
+        "OWASP A05:2021",
+        "HIPAA \u00a7164.312(e)(1)"
+      ]
+    },
+    {
+      "id": "AUTH-001",
+      "title": "Authentication disabled by default (auth.enabled: false)",
+      "severity": "HIGH",
+      "category": "OWASP A07",
+      "stride_category": "Spoofing",
+      "cwe": "CWE-306",
+      "file_path": "config/config.yaml",
+      "line_number": 175,
+      "evidence": "enabled: false",
+      "recommendation": "Set auth.enabled: true in production. Configure OIDC issuer_url, client_id, and client_secret. Add SAGE_AUTH_ENABLED=true to the deployment environment.",
+      "phi_impact": true,
+      "compliance_references": [
+        "HIPAA \u00a7164.312(d)",
+        "OWASP A07:2021"
+      ]
+    },
+    {
+      "id": "PII-001",
+      "title": "PII/PHI detection disabled (pii.enabled: false)",
+      "severity": "HIGH",
+      "category": "HIPAA",
+      "stride_category": "Information Disclosure",
+      "cwe": "CWE-359",
+      "file_path": "config/config.yaml",
+      "line_number": 115,
+      "evidence": "enabled: false            # set true to activate scrubbing",
+      "recommendation": "Set pii.enabled: true and install Presidio (pip install presidio-analyzer presidio-anonymizer). Consider setting fail_on_detection: true for HIPAA workloads to reject prompts containing raw PHI.",
+      "phi_impact": true,
+      "compliance_references": [
+        "HIPAA \u00a7164.312(a)(2)(iv)",
+        "GDPR Art. 25"
+      ]
+    },
+    {
+      "id": "HDR-001",
+      "title": "Missing HTTP security headers: Strict-Transport-Security, X-Content-Type-Options, X-Frame-Options, Content-Security-Policy",
+      "severity": "HIGH",
+      "category": "OWASP A05",
+      "stride_category": "Tampering",
+      "cwe": "CWE-693",
+      "file_path": "src/interface/api.py",
+      "line_number": null,
+      "evidence": "Headers not found in api.py middleware chain",
+      "recommendation": "Add a SecurityHeadersMiddleware that sets: Strict-Transport-Security: max-age=63072000; includeSubDomains, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Content-Security-Policy: default-src 'self'.",
+      "phi_impact": false,
+      "compliance_references": [
+        "OWASP A05:2021",
+        "HIPAA \u00a7164.312(e)(1)"
+      ]
+    },
+    {
+      "id": "SBOM-001",
+      "title": "Unpinned dependency versions (27 packages)",
+      "severity": "MEDIUM",
+      "category": "Supply Chain",
+      "stride_category": "Tampering",
+      "cwe": "CWE-1104",
+      "file_path": "requirements.txt",
+      "line_number": 2,
+      "evidence": "Unpinned: pyyaml, pydantic, langfuse, chromadb, langchain, langchain-community, langchain-chroma, langchain-huggingface...",
+      "recommendation": "Pin all versions: run `pip freeze > requirements-lock.txt` and use it in CI. Add `pip-audit` to the CI pipeline to detect known CVEs. Consider using `pip-compile` (pip-tools) to manage transitive deps.",
+      "phi_impact": false,
+      "compliance_references": [
+        "OWASP A06:2021",
+        "SLSA Level 2"
+      ]
+    },
+    {
+      "id": "CRYPT-001",
+      "title": "API keys hashed with SHA-256 but no salt (rainbow table risk)",
+      "severity": "MEDIUM",
+      "category": "OWASP A02",
+      "stride_category": "Spoofing",
+      "cwe": "CWE-916",
+      "file_path": "src/core/api_keys.py",
+      "line_number": null,
+      "evidence": "SHA-256 used without HMAC or salt in api_keys.py",
+      "recommendation": "Use HMAC-SHA256 with a secret key (hmac.new(SECRET.encode(), key.encode(), hashlib.sha256)) or bcrypt/argon2 for key storage. Add `secrets.token_bytes(32)` salt per key.",
+      "phi_impact": false,
+      "compliance_references": [
+        "OWASP A02:2021",
+        "NIST SP 800-132"
+      ]
+    },
+    {
+      "id": "INJECT-001",
+      "title": "Subprocess calls pass unsanitized environment to external CLI tools",
+      "severity": "MEDIUM",
+      "category": "OWASP A03",
+      "stride_category": "Elevation of Privilege",
+      "cwe": "CWE-78",
+      "file_path": "src/core/llm_gateway.py",
+      "line_number": null,
+      "evidence": "subprocess.run(..., env=...) in llm_gateway.py",
+      "recommendation": "Build the env dict from an allowlist of known-safe variables. Never pass os.environ directly. Validate CLI paths against an allowlist before execution.",
+      "phi_impact": false,
+      "compliance_references": [
+        "OWASP A03:2021",
+        "CWE-78"
+      ]
+    },
+    {
+      "id": "ENC-001",
+      "title": "Audit log SQLite database not encrypted at application layer",
+      "severity": "HIGH",
+      "category": "HIPAA",
+      "stride_category": "Information Disclosure",
+      "cwe": "CWE-311",
+      "file_path": "src/memory/audit_logger.py",
+      "line_number": null,
+      "evidence": "sqlite3 used without SQLCipher pragma key or field-level encryption",
+      "recommendation": "Use SQLCipher (pip install sqlcipher3) and set PRAGMA key='...' on connection open. Alternatively, encrypt the .sage/ directory with OS-level LUKS/BitLocker AND add a documented verification step to the deployment checklist. For PHI fields in audit records, apply Fernet field-level encryption.",
+      "phi_impact": true,
+      "compliance_references": [
+        "HIPAA \u00a7164.312(a)(2)(iv)",
+        "HIPAA \u00a7164.312(e)(2)(ii)"
+      ]
+    },
+    {
+      "id": "PHI-001",
+      "title": "Audit log stores raw input_context / chat content \u2014 may contain PHI",
+      "severity": "HIGH",
+      "category": "HIPAA",
+      "stride_category": "Information Disclosure",
+      "cwe": "CWE-359",
+      "file_path": "src/memory/audit_logger.py",
+      "line_number": null,
+      "evidence": "Fields 'input_context' and 'content' written to audit_log.db without redaction",
+      "recommendation": "Enable pii.enabled: true before writing to audit log. Run PII filter on input_context before persistence. For HIPAA: apply field-level encryption to content columns containing free text.",
+      "phi_impact": true,
+      "compliance_references": [
+        "HIPAA \u00a7164.312(a)(2)(iv)",
+        "HIPAA \u00a7164.308(a)(1)(ii)(D)"
+      ]
+    },
+    {
+      "id": "AUDIT-002",
+      "title": "Access audit logging is implemented (AuditLogger present, API wired)",
+      "severity": "INFO",
+      "category": "HIPAA",
+      "stride_category": "Repudiation",
+      "cwe": "",
+      "file_path": "src/memory/audit_logger.py",
+      "line_number": null,
+      "evidence": "AuditLogger class and audit calls detected in audit_logger.py and api.py",
+      "recommendation": "Verify 100% endpoint coverage with an automated coverage check.",
+      "phi_impact": false,
+      "compliance_references": [
+        "HIPAA \u00a7164.312(b)"
+      ]
+    }
+  ],
+  "recommendations_priority": {
+    "immediate": [
+      "CORS-001"
+    ],
+    "short_term": [
+      "AUTH-001",
+      "PII-001",
+      "HDR-001",
+      "ENC-001",
+      "PHI-001"
+    ],
+    "planned": [
+      "SBOM-001",
+      "CRYPT-001",
+      "INJECT-001"
+    ]
+  },
+  "pentest_plan": {
+    "phase_1_recon": [
+      "Enumerate all FastAPI endpoints via /openapi.json",
+      "Map authentication requirements per endpoint",
+      "Identify unauthenticated endpoints when auth.enabled: false"
+    ],
+    "phase_2_authentication": [
+      "Test OIDC token validation with expired/malformed JWTs",
+      "Test API key bypass with invalid prefix formats",
+      "Fuzz the 'Approving as' field for RBAC bypass",
+      "Test anonymous fallback privilege escalation"
+    ],
+    "phase_3_injection": [
+      "Fuzz all string inputs for SQL injection (parameterized, low risk)",
+      "Test YAML injection via /config/yaml/{file} endpoint",
+      "Test path traversal in file_name parameter (allowlist in place)",
+      "Test prompt injection via task.description \u2192 LLM CLI",
+      "Test environment variable injection via generic-cli provider"
+    ],
+    "phase_4_authorization": [
+      "Test RBAC bypass: submit yaml_edit without admin role",
+      "Test cross-tenant data access via X-SAGE-Tenant header manipulation",
+      "Verify proposal isolation: one tenant cannot approve another's proposals"
+    ],
+    "phase_5_data_exposure": [
+      "Inspect audit_log.db for plaintext PHI in input_context",
+      "Test for sensitive data leakage in API error messages",
+      "Check /gym/history and /gym/analytics for unredacted training data",
+      "Verify CORS: send requests from disallowed origins"
+    ],
+    "phase_6_dos": [
+      "Test rate limiting persistence across server restart",
+      "Flood /analyze and /build/start endpoints beyond rate limit",
+      "Test localhost/127.0.0.1 rate-limit bypass"
+    ],
+    "tools_recommended": [
+      "OWASP ZAP (passive + active scan)",
+      "Burp Suite Community (manual endpoint testing)",
+      "sqlmap (SQL injection \u2014 expect clean results due to parameterization)",
+      "pip-audit (dependency CVE scan)",
+      "Semgrep (static analysis rules: p/owasp-top-ten, p/python)",
+      "Bandit (Python static security linter)"
+    ]
+  }
+}

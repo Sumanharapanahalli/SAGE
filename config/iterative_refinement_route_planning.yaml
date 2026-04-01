@@ -1,0 +1,252 @@
+# ==============================================================
+# SAGE[ai] - Iterative Refinement Route Planning Configuration
+# Pattern: Iterative Refinement (generate -> critique -> refine -> check)
+# Domain:  Route planning algorithm
+#
+# Environment-specific values use ${ENV_VAR:-default} substitution.
+# Override any value via environment variable at startup.
+# Validated on load against iterative_refinement_route_planning_schema.json.
+# ==============================================================
+
+# --- LLM Component ---
+llm:
+  provider: "${REACT_LLM_PROVIDER:-claude-code}"
+  model:    "${REACT_LLM_MODEL:-claude-sonnet-4-6}"
+
+  # Generator uses moderate temperature for path diversity;
+  # critic/verifier use low temperature for determinism.
+  temperature:     0.2
+  max_tokens:      4096
+  timeout_seconds: 120
+
+  retry:
+    max_attempts:         3
+    backoff_base_seconds: 2
+    retryable_errors:
+      - "rate_limit"
+      - "timeout"
+      - "service_unavailable"
+
+# --- Iterative Refinement Loop ---
+refinement:
+  # Maximum full generate→critique→refine→check cycles before forced stop.
+  max_rounds:              "${IR_MAX_ROUNDS:-5}"
+
+  # Accept the route when the critic scores it at or above this value (0-100).
+  quality_threshold:       "${IR_QUALITY_THRESHOLD:-80}"
+
+  # Abort early if consecutive rounds improve the score by less than this delta.
+  # Prevents wasted cycles when the agent is stuck at a local optimum.
+  min_improvement_per_round: "${IR_MIN_IMPROVEMENT:-3}"
+
+  # Per-role temperature overrides applied on top of the shared llm block.
+  role_temperatures:
+    generator: 0.3    # Diverse initial paths
+    critic:    0.05   # Consistent, strict scoring
+    refiner:   0.2    # Creative but focused edits
+    verifier:  0.0    # Deterministic final check
+
+  # Scoring rubric dimensions (weights must sum to 1.0).
+  # The critic outputs a score for each dimension; weighted mean = overall score.
+  rubric:
+    route_validity:       0.35   # Valid graph path, no broken edges
+    cost_optimality:      0.30   # Close to optimal cost for the chosen algorithm
+    constraint_compliance: 0.20  # Respects max_hops / max_distance_km
+    narrative_quality:    0.15   # Readable turn-by-turn explanation
+
+  # How to inject the previous round's critique into the refiner's context.
+  # full: append raw critique text
+  # structured: inject as key=value critique_fields
+  critique_injection_mode: "${IR_CRITIQUE_MODE:-structured}"
+
+  # Emit intermediate round results to the audit log even before acceptance.
+  emit_intermediate_results: true
+
+# --- Route Planning Domain Parameters ---
+route_planning:
+  algorithm:    "${ROUTE_ALGORITHM:-astar}"
+  graph_source: "${ROUTE_GRAPH_SOURCE:-inline}"
+  graph_file:   "${ROUTE_GRAPH_FILE:-}"
+
+  # Cost function weights (must sum to 1.0).
+  cost_weights:
+    distance: "${ROUTE_COST_DISTANCE:-0.5}"
+    time:     "${ROUTE_COST_TIME:-0.3}"
+    risk:     "${ROUTE_COST_RISK:-0.2}"
+
+  constraints:
+    max_hops:          "${ROUTE_MAX_HOPS:-20}"
+    max_distance_km:   "${ROUTE_MAX_DISTANCE_KM:-500}"
+    avoid_node_types:  []
+    avoid_edge_labels: []
+
+  heuristic:
+    # straight_line | manhattan | haversine
+    function: "${ROUTE_HEURISTIC:-haversine}"
+    weight:   1.0
+
+  output:
+    include_total_cost:         true
+    include_intermediate_nodes: true
+    include_cost_breakdown:     true
+    include_refinement_history: "${ROUTE_OUTPUT_HISTORY:-false}"
+    narrative:                  "${ROUTE_OUTPUT_NARRATIVE:-true}"
+
+# --- Tool Registry ---
+tool_registry:
+  scan_dirs:
+    - "${SAGE_SOLUTIONS_DIR:-solutions}/starter/mcp_servers"
+    - "${ROUTE_TOOLS_DIR:-tools/route_planning}"
+
+  enabled:
+    - "get_graph"
+    - "get_node"
+    - "get_neighbours"
+    - "get_edge_cost"
+    - "haversine_distance"
+    - "validate_route"
+    - "render_route_svg"
+
+  # Destructive or privileged operations never exposed to this agent.
+  disabled:
+    - "delete_solution"
+    - "drop_database"
+    - "exec_arbitrary_shell"
+    - "write_graph"
+
+  sandbox:
+    enabled:         true
+    timeout_seconds: 30
+    allow_network:   false
+
+  schema_validation:
+    enabled: true
+    strict:  true
+
+# --- System Prompt Templates (one per refinement role) ---
+system_prompts:
+  generator:
+    variables:
+      agent_role:   "${REACT_AGENT_ROLE:-route_planner}"
+      goal:         "${ROUTE_GOAL:-Find the optimal route between start and destination}"
+      algorithm:    "${ROUTE_ALGORITHM:-astar}"
+      graph_source: "${ROUTE_GRAPH_SOURCE:-inline}"
+    max_chars: 6000
+    inline: |
+      You are a route-planning GENERATOR agent in an Iterative Refinement loop.
+      Goal: {goal}  |  Algorithm: {algorithm}  |  Graph: {graph_source}
+
+      TOOLS available:
+        get_graph()                     -- load the full graph
+        get_node(node_id)               -- node metadata
+        get_neighbours(node_id)         -- adjacent nodes + edge labels
+        get_edge_cost(src, dst, weights)-- weighted hop cost
+        haversine_distance(n1, n2)      -- straight-line km distance
+
+      Produce a DRAFT ROUTE:
+        THOUGHT:  Reason about the graph structure and algorithm choice.
+        ACTION:   Call tools to explore the graph.
+        OBSERVATION: Record verbatim tool output.
+        ... (repeat until path is found)
+        DRAFT ROUTE: JSON with keys: node_path (list), total_cost (float),
+                     cost_breakdown (object), rationale (string).
+
+      Rules:
+      - Never fabricate edge costs.
+      - Respect max_hops and max_distance_km.
+      - Output must be valid JSON in the DRAFT ROUTE block.
+
+  critic:
+    variables:
+      rubric_validity:    "0.35"
+      rubric_optimality:  "0.30"
+      rubric_compliance:  "0.20"
+      rubric_narrative:   "0.15"
+    max_chars: 4000
+    inline: |
+      You are a route-planning CRITIC agent in an Iterative Refinement loop.
+      Evaluate the DRAFT ROUTE against this rubric (weights sum to 1.0):
+        route_validity      {rubric_validity}   -- valid connected path, no broken edges
+        cost_optimality     {rubric_optimality} -- near-optimal cost for the algorithm
+        constraint_compliance {rubric_compliance} -- respects max_hops / max_distance_km
+        narrative_quality   {rubric_narrative}  -- readable turn-by-turn narrative
+
+      Output EXACTLY:
+        CRITIQUE SCORE: <integer 0-100>
+        DIMENSION SCORES:
+          route_validity: <0-100>
+          cost_optimality: <0-100>
+          constraint_compliance: <0-100>
+          narrative_quality: <0-100>
+        ISSUES:
+          - <concise issue 1>
+          - <concise issue 2 if any>
+        SUGGESTIONS:
+          - <actionable suggestion 1>
+          - <actionable suggestion 2 if any>
+
+      Rules:
+      - Be precise -- scores must be integers.
+      - Cite specific node IDs or cost values when flagging issues.
+      - Do not suggest changes that violate hard constraints.
+
+  refiner:
+    variables:
+      goal:      "${ROUTE_GOAL:-Find the optimal route between start and destination}"
+      algorithm: "${ROUTE_ALGORITHM:-astar}"
+    max_chars: 6000
+    inline: |
+      You are a route-planning REFINER agent in an Iterative Refinement loop.
+      Goal: {goal}  |  Algorithm: {algorithm}
+
+      You receive a DRAFT ROUTE and its CRITIQUE.
+      Produce an IMPROVED ROUTE addressing all ISSUES and SUGGESTIONS.
+
+      TOOLS available (same set as generator):
+        get_node, get_neighbours, get_edge_cost, haversine_distance, validate_route
+
+      Steps:
+        THOUGHT:  Identify which issues are highest priority.
+        ACTION:   Call tools to explore alternative paths.
+        OBSERVATION: Record tool output verbatim.
+        ... (repeat as needed)
+        REFINED ROUTE: JSON with keys: node_path, total_cost,
+                       cost_breakdown, rationale, changes_made (list of strings).
+
+      Rules:
+      - Address every ISSUE from the critique.
+      - Do not regress on already-passing rubric dimensions.
+      - Call validate_route before emitting REFINED ROUTE.
+
+  verifier:
+    variables:
+      quality_threshold: "${IR_QUALITY_THRESHOLD:-80}"
+    max_chars: 3000
+    inline: |
+      You are a route-planning VERIFIER agent.
+      Acceptance threshold: {quality_threshold} / 100.
+
+      Given the REFINED ROUTE and the latest CRITIQUE SCORE, output:
+        VERDICT: accept | reject
+        REASON:  One sentence explaining the decision.
+        SCORE:   <latest critique score integer>
+
+      Rules:
+      - Accept if and only if SCORE >= {quality_threshold}.
+      - If reject, specify the single most critical remaining issue.
+      - Never accept a route that fails validate_route.
+
+# --- Audit ---
+audit:
+  enabled:            true
+  log_raw_llm_output: false
+
+# --- HITL Gate ---
+hitl:
+  # Route proposals are non-destructive reads; HITL off by default.
+  # Override to true in regulated or safety-critical deployments.
+  enabled: "${REACT_HITL_ENABLED:-false}"
+  always_require_approval:
+    - "write_graph"
+    - "yaml_edit"
+    - "knowledge_delete"

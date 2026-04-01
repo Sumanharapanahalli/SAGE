@@ -1,0 +1,220 @@
+# ==============================================================
+# SAGE[ai] - Multi-Agent Sequential Pipeline Stage Manifest
+# Domain: Route Planning Algorithm
+# Format: TOML -- human-editable stage registry
+#
+# This file is the authoritative list of pipeline stages and their
+# execution order. It is read by the pipeline loader BEFORE the
+# full YAML config is applied. Changes here take effect on next
+# server start or hot-reload (POST /config/reload).
+#
+# Validation rules:
+#   - stage ids must be unique
+#   - order values must be a contiguous sequence starting at 1
+#   - runner must name a registered BaseRunner
+#   - input_fields listed here must match output_fields of the
+#     preceding stage (enforced at load time)
+# ==============================================================
+
+[pipeline]
+name        = "route_planning_pipeline"
+version     = "1.0.0"
+description = "Multi-agent sequential pipeline for LLM-based route planning"
+author      = "SAGE Framework"
+created     = "2026-03-28"
+
+  [pipeline.execution]
+  # Execution model for stages: only "sequential" is valid for this pipeline.
+  # Parallel execution would require a DAG config (not this file).
+  mode            = "sequential"
+  fail_fast       = true
+  max_retries     = 2
+  timeout_seconds = 600
+
+  [pipeline.state]
+  # How pipeline_state is passed between stages.
+  # "memory":    in-process Python dict (fast, no persistence)
+  # "json_file": serialised to /tmp/sage_pipeline_state_{run_id}.json
+  # "audit_log": written to .sage/audit_log.db (persistent, queryable)
+  backend         = "memory"
+  persist_on_fail = true
+
+# ==============================================================
+# Stage definitions -- ordered list of agent stages
+# ==============================================================
+
+[[stages]]
+id          = "planner"
+order       = 1
+name        = "Route Planner"
+description = "Decompose routing goal and prepare graph context for downstream agents"
+runner      = "openstrategy"     # Route planning is a strategic decomposition task
+agent_role  = "route_planner"
+enabled     = true
+
+  [stages.tools]
+  allowed = ["get_graph", "get_node", "get_neighbours", "haversine_distance"]
+
+  [stages.llm_overrides]
+  temperature = 0.15
+
+  [stages.output]
+  # Fields this stage MUST include in its FINAL ANSWER JSON
+  required_fields = ["start_node", "end_node", "algorithm", "rationale"]
+
+  [stages.sla]
+  max_wall_seconds = 90
+  warn_at_seconds  = 60
+
+# --------------------------------------------------------------
+
+[[stages]]
+id          = "solver"
+order       = 2
+name        = "Route Solver"
+description = "Execute path-finding algorithm step by step using graph tools"
+runner      = "openswe"          # Algorithm execution is a coding/logic task
+agent_role  = "route_solver"
+enabled     = true
+
+  [stages.input]
+  # Fields consumed from pipeline_state (produced by planner)
+  from_state = ["start_node", "end_node", "algorithm"]
+
+  [stages.tools]
+  allowed = ["get_node", "get_neighbours", "get_edge_cost", "haversine_distance"]
+
+  [stages.llm_overrides]
+  temperature = 0.05
+
+  [stages.output]
+  required_fields = ["node_path", "total_cost", "cost_breakdown"]
+
+  [stages.sla]
+  max_wall_seconds = 180
+  warn_at_seconds  = 120
+
+# --------------------------------------------------------------
+
+[[stages]]
+id          = "validator"
+order       = 3
+name        = "Route Validator"
+description = "Verify route connectivity, constraints, and cost accuracy"
+runner      = "openswe"
+agent_role  = "route_validator"
+enabled     = true
+
+  [stages.input]
+  from_state = ["node_path", "total_cost", "cost_breakdown"]
+
+  [stages.tools]
+  allowed = ["get_node", "get_edge_cost", "validate_route"]
+
+  [stages.retry]
+  enabled     = true
+  max_retries = 2
+  retry_stage = "solver"     # Loop back to solver on validation failure
+
+  [stages.llm_overrides]
+  temperature = 0.0
+
+  [stages.output]
+  required_fields = ["verdict", "findings", "verified_cost"]
+  # Pipeline aborts (or retries) if verdict != "pass" and retries exhausted
+  gate_field  = "verdict"
+  gate_value  = "pass"
+
+  [stages.sla]
+  max_wall_seconds = 60
+  warn_at_seconds  = 45
+
+# --------------------------------------------------------------
+
+[[stages]]
+id          = "narrator"
+order       = 4
+name        = "Route Narrator"
+description = "Translate validated route into human-readable turn-by-turn summary"
+runner      = "opendoc"          # Natural language generation is a doc task
+agent_role  = "route_narrator"
+enabled     = true
+# condition: stage is skipped unless verdict from validator == "pass"
+condition   = "verdict == 'pass'"
+
+  [stages.input]
+  from_state = ["node_path", "verified_cost", "findings"]
+
+  [stages.tools]
+  allowed = ["get_node", "render_route_svg"]
+
+  [stages.llm_overrides]
+  temperature = 0.3
+  max_tokens  = 2048
+
+  [stages.output]
+  required_fields = ["summary", "steps", "svg_url"]
+
+  [stages.sla]
+  max_wall_seconds = 60
+  warn_at_seconds  = 45
+
+# ==============================================================
+# Algorithm Registry
+# Maps algorithm names to their properties for validation
+# ==============================================================
+
+[algorithms.dijkstra]
+description     = "Uniform-cost search, optimal for non-negative edge weights"
+weighted        = true
+admissible      = true
+complete        = true
+time_complexity = "O((V + E) log V)"
+
+[algorithms.astar]
+description        = "Best-first search with admissible heuristic, optimal path"
+weighted           = true
+admissible         = true
+complete           = true
+requires_heuristic = true
+time_complexity    = "O(E)"
+
+[algorithms.bfs]
+description     = "Breadth-first search, optimal for unweighted graphs"
+weighted        = false
+admissible      = true
+complete        = true
+time_complexity = "O(V + E)"
+
+[algorithms.dfs]
+description     = "Depth-first search, not guaranteed optimal"
+weighted        = false
+admissible      = false
+complete        = false
+time_complexity = "O(V + E)"
+
+[algorithms.bellman_ford]
+description     = "Handles negative edge weights, detects negative cycles"
+weighted        = true
+admissible      = true
+complete        = true
+time_complexity = "O(V * E)"
+
+# ==============================================================
+# Heuristic Registry (A* only)
+# ==============================================================
+
+[heuristics.haversine]
+description = "Great-circle distance for geographic coordinates (lat/lon)"
+admissible  = true
+use_when    = "geographic graphs with lat/lon node coordinates"
+
+[heuristics.manhattan]
+description = "L1 distance, for grid-based graphs"
+admissible  = true
+use_when    = "city-block or grid graphs"
+
+[heuristics.straight_line]
+description = "Euclidean distance in 2D coordinate space"
+admissible  = true
+use_when    = "planar graphs with 2D coordinates"

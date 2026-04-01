@@ -1,0 +1,331 @@
+# .github/workflows/pr_checks.yml
+# ─────────────────────────────────────────────────────────────────────────────
+# SAGE Framework — PR Gate
+#
+# Triggered on every pull-request targeting main (or release/**).
+# Four jobs run in parallel after a shared cache warm-up:
+#   lint        – ruff check + ruff format (fast, <60 s)
+#   typecheck   – mypy strict on src/ (2-3 min with cache)
+#   unit-tests  – pytest -m unit (no external deps, 2-4 min)
+#   security    – Bandit SAST + pip-audit SCA + Trivy image scan
+#
+# Combined wall-clock target: < 10 minutes.
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: PR Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+      - "release/**"
+  # Also allow manual trigger for debugging
+  workflow_dispatch:
+
+# Cancel superseded runs on the same PR branch to save minutes
+concurrency:
+  group: pr-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.11"
+  # Sentinel — disables actual LLM calls inside tests
+  SAGE_TEST_MODE: "1"
+  # Suppress ChromaDB telemetry in CI
+  ANONYMIZED_TELEMETRY: "False"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Job: warm-up  (shared pip cache across all parallel jobs)
+# ─────────────────────────────────────────────────────────────────────────────
+jobs:
+  cache-deps:
+    name: Cache Dependencies
+    runs-on: ubuntu-22.04
+    outputs:
+      cache-hit: ${{ steps.pip-cache.outputs.cache-hit }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Cache pip packages
+        id: pip-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ env.PYTHON_VERSION }}-${{ hashFiles('requirements*.txt') }}
+          restore-keys: |
+            pip-${{ env.PYTHON_VERSION }}-
+
+      - name: Pre-populate cache (install if miss)
+        if: steps.pip-cache.outputs.cache-hit != 'true'
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install \
+            ruff mypy bandit pip-audit \
+            pytest pytest-cov pytest-asyncio \
+            httpx anyio
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Job: lint  (ruff check + ruff format)
+# ─────────────────────────────────────────────────────────────────────────────
+  lint:
+    name: Lint (ruff)
+    runs-on: ubuntu-22.04
+    needs: cache-deps
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Restore pip cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ env.PYTHON_VERSION }}-${{ hashFiles('requirements*.txt') }}
+          restore-keys: pip-${{ env.PYTHON_VERSION }}-
+
+      - name: Install lint tools
+        run: pip install ruff
+
+      - name: ruff check (lint)
+        run: ruff check . --output-format=github
+
+      - name: ruff format (style)
+        run: ruff format --check .
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Job: typecheck  (mypy strict on src/)
+# ─────────────────────────────────────────────────────────────────────────────
+  typecheck:
+    name: Type Check (mypy)
+    runs-on: ubuntu-22.04
+    needs: cache-deps
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Restore pip cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ env.PYTHON_VERSION }}-${{ hashFiles('requirements*.txt') }}
+          restore-keys: pip-${{ env.PYTHON_VERSION }}-
+
+      - name: Install dependencies + mypy
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install mypy types-PyYAML types-requests
+
+      - name: mypy type check
+        run: |
+          mypy src/ \
+            --ignore-missing-imports \
+            --no-strict-optional \
+            --warn-unused-ignores \
+            --show-error-codes \
+            2>&1 | tee mypy_output.txt
+        continue-on-error: false
+
+      - name: Upload mypy results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mypy-results
+          path: mypy_output.txt
+          retention-days: 7
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Job: unit-tests  (pytest -m unit, no external services)
+# ─────────────────────────────────────────────────────────────────────────────
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-22.04
+    needs: cache-deps
+    env:
+      SAGE_TEST_MODE: "1"
+      ANONYMIZED_TELEMETRY: "False"
+      # Dummy DB URL — unit tests must not reach a real DB
+      DATABASE_URL: "sqlite:///./test_sage.db"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Restore pip cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ env.PYTHON_VERSION }}-${{ hashFiles('requirements*.txt') }}
+          restore-keys: pip-${{ env.PYTHON_VERSION }}-
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov pytest-asyncio httpx anyio
+
+      - name: Run unit tests
+        run: |
+          pytest tests/ \
+            -m "unit" \
+            -v \
+            --tb=short \
+            --junitxml=test-results/unit-results.xml \
+            --cov=src \
+            --cov-report=xml:coverage/unit-coverage.xml \
+            --cov-report=term-missing \
+            -p no:cacheprovider \
+            --timeout=120
+
+      - name: Publish test results
+        if: always()
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: test-results/unit-results.xml
+          check_name: Unit Test Results
+          comment_mode: always
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-coverage
+          path: coverage/unit-coverage.xml
+          retention-days: 7
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Job: security-scan  (Bandit SAST + pip-audit SCA)
+# ─────────────────────────────────────────────────────────────────────────────
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-22.04
+    needs: cache-deps
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Restore pip cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ env.PYTHON_VERSION }}-${{ hashFiles('requirements*.txt') }}
+          restore-keys: pip-${{ env.PYTHON_VERSION }}-
+
+      - name: Install security tools
+        run: pip install bandit pip-audit
+
+      - name: Bandit SAST scan
+        run: |
+          bandit \
+            -r src/ \
+            -f json \
+            -o bandit-results.json \
+            --severity-level medium \
+            --confidence-level medium \
+            -x .venv,tests,__pycache__ \
+            || true   # surface findings but don't fail immediately
+
+      - name: Bandit SAST scan (strict — fail on HIGH)
+        run: |
+          bandit \
+            -r src/ \
+            --severity-level high \
+            --confidence-level high \
+            -x .venv,tests,__pycache__
+
+      - name: pip-audit SCA
+        run: |
+          pip-audit \
+            --requirement requirements.txt \
+            --format json \
+            --output pip-audit-results.json \
+            --skip-editable \
+            || true
+
+          # Fail on critical CVEs with known fixes
+          pip-audit \
+            --requirement requirements.txt \
+            --fix --dry-run \
+            --skip-editable
+
+      - name: Trivy filesystem scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: "fs"
+          scan-ref: "."
+          format: "sarif"
+          output: "trivy-fs-results.sarif"
+          severity: "CRITICAL,HIGH"
+          exit-code: "1"
+          ignore-unfixed: true
+          skip-dirs: ".venv,node_modules,web/node_modules"
+
+      - name: Upload Trivy SARIF to GitHub Security tab
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-fs-results.sarif
+          category: trivy-filesystem
+
+      - name: Upload security artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-results
+          path: |
+            bandit-results.json
+            pip-audit-results.json
+          retention-days: 30
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Final gate — all checks must pass
+# ─────────────────────────────────────────────────────────────────────────────
+  pr-gate:
+    name: PR Gate (all checks passed)
+    runs-on: ubuntu-22.04
+    needs:
+      - lint
+      - typecheck
+      - unit-tests
+      - security-scan
+    if: always()
+    steps:
+      - name: Verify all checks passed
+        run: |
+          LINT="${{ needs.lint.result }}"
+          TYPECHECK="${{ needs.typecheck.result }}"
+          UNIT="${{ needs.unit-tests.result }}"
+          SECURITY="${{ needs.security-scan.result }}"
+
+          echo "lint:       ${LINT}"
+          echo "typecheck:  ${TYPECHECK}"
+          echo "unit-tests: ${UNIT}"
+          echo "security:   ${SECURITY}"
+
+          for RESULT in "${LINT}" "${TYPECHECK}" "${UNIT}" "${SECURITY}"; do
+            if [[ "${RESULT}" != "success" ]]; then
+              echo "ERROR: one or more checks did not succeed."
+              exit 1
+            fi
+          done
+
+          echo "All PR checks passed."

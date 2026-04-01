@@ -1,0 +1,114 @@
+* =============================================================================
+* Battery Life Simulation — Active/Sleep Duty Cycle
+* Requirement: ≥72h at 5% GPS active, 2% LTE-M active duty cycle
+*
+* Duty cycle profile (1-second period, repeating):
+*   GPS active + MCU:  5% × 1s = 50ms  @ 33mA  (GPS 25mA + MCU 8mA)
+*   LTE-M TX + MCU:    2% × 1s = 20ms  @ 208mA (PA 200mA + MCU 8mA)
+*   MCU processing:    3% × 1s = 30ms  @ 8mA   (no RF)
+*   Sleep:            90% × 1s = 900ms @ 50µA
+*
+* Average current:
+*   I_avg = (33×0.05 + 208×0.02 + 8×0.03 + 0.05×0.90)
+*         = (1.65 + 4.16 + 0.24 + 0.045) = 6.095 mA
+*
+* Battery life = 500mAh / 6.095mA = 82.0h  ✓ (≥72h PASS)
+*
+* Simulation strategy:
+*   Simulate 20 duty-cycle periods (20s) to validate waveform shape.
+*   Extrapolate to full battery life via MEAS.
+*   Time-acceleration: run 20s sim → measure avg current → compute life.
+* =============================================================================
+
+.title Wearable Fall-Detector Battery Life — Duty Cycle Validation
+
+* ---------------------------------------------------------------------------
+* LiPo Subcircuit (identical to lipo_chargedischarge.cir)
+* ---------------------------------------------------------------------------
+.subckt LIPO_500MAH P N SOC
+Cq    QNODE  0      1800 IC=0
+BOCV  OCVNODE 0     V=TABLE(1-V(QNODE)/1800, \
+  0.00,3.00, 0.10,3.30, 0.20,3.50, 0.30,3.60, \
+  0.50,3.70, 0.70,3.75, 0.80,3.80, 0.90,4.00, 1.00,4.20)
+R0    OCVNODE  R0N   0.15
+R1    R0N      RC1   0.05
+C1    RC1      0     1
+R2    R0N      RC2   0.02
+C2    RC2      0     500
+Vterm P R0N 0
+BSOC  SOC 0  V=(1 - V(QNODE)/1800)
+Fq    QNODE  0  Vterm  1
+.ends LIPO_500MAH
+
+* ---------------------------------------------------------------------------
+* Battery instance
+* ---------------------------------------------------------------------------
+Xbat  VBAT  0  SOC  LIPO_500MAH
+
+* ---------------------------------------------------------------------------
+* Duty-cycle load model (PWL repeated over 20 cycles)
+* Phase assignments within each 1s period:
+*   t=0.000: sleep      → 50µA
+*   t=0.000: GPS start  → 33mA  (0–50ms)
+*   t=0.050: GPS stop   → sleep
+*   t=0.100: LTE-M start→ 208mA (100–120ms, 10ms guard from GPS)
+*   t=0.120: LTE-M stop → sleep
+*   t=0.200: MCU wake   → 8mA   (200–230ms, post-Tx processing)
+*   t=0.230: MCU sleep  → 50µA
+*   ... pattern repeats each 1s
+*
+* PWL source: PULSE-based piecewise for each phase
+* ---------------------------------------------------------------------------
+
+* GPS phase: PULSE 0 1 TD=0 TR=100u TF=100u PW=50m PER=1
+BGPS  GPSNODE  0  V=  \
+  (50m < MOD(time,1) & MOD(time,1) < 100m) ? 1 : 0
+
+* LTE-M phase
+BLTEM LTEMNODE 0  V=  \
+  (100m < MOD(time,1) & MOD(time,1) < 120m) ? 1 : 0
+
+* MCU processing phase (also active during GPS and LTE-M windows)
+BMCU  MCUNODE  0  V=  \
+  (MOD(time,1) < 100m | (200m < MOD(time,1) & MOD(time,1) < 230m)) ? 1 : 0
+
+* Current loads controlled by phase voltages
+* GPS: 25mA when GPSNODE=1
+BGPS_I  VBAT  0  I= V(GPSNODE)*25m
+
+* LTE-M PA: 200mA when LTEMNODE=1
+BLTEM_I VBAT  0  I= V(LTEMNODE)*200m
+
+* MCU: 8mA when active, 50µA always (sleep quiescent)
+BMCU_I  VBAT  0  I= V(MCUNODE)*8m + 50u
+
+* ---------------------------------------------------------------------------
+* Measurement: average load current over 10 complete cycles (10s–20s)
+* ---------------------------------------------------------------------------
+.meas TRAN I_avg_mA  AVG I(VBAT_SENSE) FROM=10 TO=20
+.meas TRAN V_avg     AVG V(VBAT)       FROM=10 TO=20
+.meas TRAN V_min     MIN V(VBAT)       FROM=0  TO=20
+.meas TRAN V_max     MAX V(VBAT)       FROM=0  TO=20
+
+* Derived battery life [hours]
+.meas TRAN life_hours PARAM '500/(I_avg_mA*1000)'
+
+* Verify LTE-M peak current ≤ 500mA (1C discharge limit for 500mAh)
+.meas TRAN I_ltem_peak MAX I(BLTEM_I)
+
+* Sense resistor for current measurement (1mΩ, negligible voltage drop)
+Rsense VBAT VBAT_SENSE 1m
+Vsense VBAT_SENSE VBAT_LOAD 0
+* Reconnect load side
+BLOAD VBAT_LOAD 0 I=0  ; placeholder — actual load drawn by phase sources above
+
+* ---------------------------------------------------------------------------
+* Simulation: 20 seconds (20 full duty cycles)
+* Step: 100µs (fine enough to resolve 50ms GPS window)
+* ---------------------------------------------------------------------------
+.tran 100u 20 0 100u UIC
+
+.probe V(VBAT) V(SOC) V(GPSNODE) V(LTEMNODE) V(MCUNODE)
+.probe I(BGPS_I) I(BLTEM_I) I(BMCU_I)
+
+.end

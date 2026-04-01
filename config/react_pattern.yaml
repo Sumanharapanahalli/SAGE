@@ -1,0 +1,134 @@
+# ==============================================================
+# SAGE[ai] - ReAct Pattern Configuration
+# Covers: LLM, tool registry, system prompt, ReAct loop
+# Environment-specific values use ${ENV_VAR:-default} substitution.
+# Override any value via environment variable at startup.
+# ==============================================================
+
+# --- LLM Component ---
+llm:
+  # Provider selection — inherits from config.yaml if not overridden here.
+  # Valid values: gemini | claude-code | ollama | local | generic-cli | claude
+  provider: "${REACT_LLM_PROVIDER:-claude-code}"
+  model: "${REACT_LLM_MODEL:-claude-sonnet-4-6}"
+
+  # Generation parameters
+  temperature: 0.1          # Low = deterministic reasoning traces
+  max_tokens: 4096          # Must fit full Thought+Action+Observation chain
+  timeout_seconds: 120      # Per-call wall-clock limit
+
+  # Retry policy for transient LLM failures
+  retry:
+    max_attempts: 3
+    backoff_base_seconds: 2   # Exponential: 2, 4, 8 ...
+    retryable_errors:
+      - "rate_limit"
+      - "timeout"
+      - "service_unavailable"
+
+# --- Tool Registry Component ---
+tool_registry:
+  # Absolute or relative-to-project-root paths scanned for tool YAML descriptors.
+  # Each YAML file must declare: name, description, input_schema, endpoint.
+  scan_dirs:
+    - "${SAGE_SOLUTIONS_DIR:-solutions}/starter/mcp_servers"
+    - "${REACT_TOOLS_DIR:-tools}"
+
+  # Tools explicitly enabled for ReAct agents.
+  # "*" means all discovered tools. List names to restrict.
+  enabled: "*"
+
+  # Tools that are NEVER exposed to the agent regardless of discovery.
+  # Protect destructive or privileged operations by default.
+  disabled:
+    - "delete_solution"
+    - "drop_database"
+    - "exec_arbitrary_shell"
+
+  # Execution sandbox for tool calls
+  sandbox:
+    enabled: true             # Wrap every tool call in the 3-tier cascade
+    timeout_seconds: 30       # Per-tool-call limit (independent of LLM timeout)
+    allow_network: false      # Set true only for tools that need external I/O
+
+  # Schema validation — reject malformed tool inputs before calling the tool
+  schema_validation:
+    enabled: true
+    strict: true              # Fail on extra fields; safe default
+
+# --- System Prompt Component ---
+system_prompt:
+  # Mode: "file" loads from a YAML/txt file; "inline" uses the text block below.
+  mode: "${REACT_PROMPT_MODE:-file}"
+
+  # Path used when mode = "file" (relative to project root or absolute)
+  file: "${REACT_PROMPT_FILE:-config/react_system_prompt.yaml}"
+
+  # Inline prompt used when mode = "inline" or file is missing.
+  # Parameterized with {agent_role} and {domain} at runtime.
+  inline: |
+    You are a {agent_role} agent operating within the SAGE framework.
+    Domain context: {domain}.
+
+    Reason step-by-step using the ReAct pattern:
+      THOUGHT:     What do I know? What should I do next and why?
+      ACTION:      Which tool to call and with what exact arguments.
+      OBSERVATION: What the tool returned (verbatim, never paraphrased).
+      ... (repeat until you have enough information)
+      FINAL ANSWER: Concise, verifiable response based only on observations.
+
+    Rules:
+    - Never fabricate tool outputs.
+    - Stop reasoning as soon as you can produce a verifiable answer.
+    - Cite the observation that supports each claim in your final answer.
+    - If a tool fails twice, escalate rather than guessing.
+
+  # Variables injected into both file and inline prompts at render time.
+  # Override per-solution via project.yaml system_prompt_vars block.
+  variables:
+    agent_role: "${REACT_AGENT_ROLE:-general}"
+    domain: "${REACT_DOMAIN:-general purpose}"
+
+  # Maximum prompt size guard (characters) — prevents context overflow.
+  max_chars: 8000
+
+# --- ReAct Loop Component ---
+react_loop:
+  # Maximum Thought→Action→Observation iterations before forced termination.
+  # Guards against infinite reasoning loops.
+  max_iterations: 10
+
+  # Stop the loop early if the agent emits a FINAL ANSWER token.
+  early_stop_on_final_answer: true
+
+  # Parsing — how to extract structured steps from raw LLM output.
+  parsing:
+    thought_prefix: "THOUGHT:"
+    action_prefix: "ACTION:"
+    observation_prefix: "OBSERVATION:"
+    final_answer_prefix: "FINAL ANSWER:"
+    # When true, raise a parse error if a step is missing its prefix.
+    # Set false for lenient extraction (best-effort).
+    strict: true
+
+  # Observation truncation — keeps context window manageable.
+  observation:
+    max_chars: 2000           # Truncate long tool outputs to this length
+    truncation_marker: "... [truncated]"
+
+  # Audit — every iteration is written to the SAGE audit log.
+  audit:
+    enabled: true
+    log_raw_llm_output: false  # Set true for debugging (verbose — avoid in prod)
+
+  # Human-in-the-loop gate
+  # When enabled, the loop pauses after producing a plan and waits for approval
+  # before executing any tool with side_effects: true in its descriptor.
+  hitl:
+    enabled: "${REACT_HITL_ENABLED:-true}"
+    # Actions that ALWAYS require human approval regardless of the above flag.
+    always_require_approval:
+      - "code_diff"
+      - "yaml_edit"
+      - "knowledge_delete"
+      - "agent_hire"

@@ -1,0 +1,378 @@
+# =============================================================================
+# tests/api_test_data_schema.yaml — SAGE API Test Dataset Schema Documentation
+# =============================================================================
+# Covers all tables seeded by tests/seed_api_test_data.py.
+# Idempotency: every table uses INSERT OR IGNORE keyed on the stable ``id``
+#   PRIMARY KEY column.
+# Validation: every field with a constraint is mirrored in _validate_record()
+#   inside seed_api_test_data.py.
+# =============================================================================
+
+schema_version: "1.0.0"
+database: sqlite3
+source_schema: src/memory/audit_logger.py  # AuditLogger._initialize_db()
+seeder_module: tests.seed_api_test_data
+
+tables:
+
+  # ---------------------------------------------------------------------------
+  - name: compliance_audit_log
+    description: >
+      Immutable audit trail of all SAGE agent actions: analysis, proposals,
+      approvals, rejections, and access events.
+      ISO 13485 traceability requirement — rows are never updated or deleted in
+      production. Test rows are identified by actor LIKE 'test_%'.
+    idempotency_key: id             # PRIMARY KEY; INSERT OR IGNORE
+    seed_rows: 10
+    test_coverage:
+      full_lifecycle_approved: 1   # trace-lifecycle-001: ANALYSIS → PROPOSAL → APPROVAL
+      full_lifecycle_rejected: 1   # trace-lifecycle-002: ANALYSIS → PROPOSAL → REJECTION
+      standalone_analysis: 1       # trace-standalone-003: ANALYSIS only
+      access_event: 1              # trace-access-004: ACCESS
+      error_event: 1               # trace-error-005: ANALYSIS/ERROR
+      anonymous_approval: 1        # trace-anon-006: approver_provider=anonymous
+    columns:
+      - name: id
+        type: TEXT
+        nullable: false
+        primary_key: true
+        validation: required
+        seed_convention: >
+          Fixed UUIDs in format 00000000-NNNN-4000-8000-000000000NNN.
+          N encodes the trace group and event sequence.
+      - name: timestamp
+        type: DATETIME
+        nullable: true
+        default: CURRENT_TIMESTAMP
+        notes: ISO 8601 string. Fixed to "2026-03-28T10:00:00+00:00" in seeds.
+      - name: trace_id
+        type: TEXT
+        nullable: true
+        notes: >
+          Correlation ID linking proposal → approval → execution events.
+          Seed convention: "trace-<name>-NNN" prefix identifies test groups.
+      - name: event_type
+        type: TEXT
+        nullable: true
+        check: "event_type IN ('ACCESS','ANALYSIS','PROPOSAL','APPROVAL','REJECTION','EXECUTION')"
+        validation: enum
+        allowed_values: [ACCESS, ANALYSIS, PROPOSAL, APPROVAL, REJECTION, EXECUTION]
+      - name: status
+        type: TEXT
+        nullable: true
+        default: OK
+        check: "status IN ('OK','DENIED','ERROR')"
+        validation: enum
+        allowed_values: [OK, DENIED, ERROR]
+      - name: actor
+        type: TEXT
+        nullable: false
+        validation: required
+        seed_convention: >
+          "test_" prefix identifies test rows for teardown.
+          Values: "test_AI_Agent", "test_Human_Engineer".
+      - name: action_type
+        type: TEXT
+        nullable: false
+        validation: required
+        check: "action_type IN ('ANALYSIS','PROPOSAL','APPROVAL','REJECTION','ACCESS','EXECUTION')"
+        validation_rule: enum
+        allowed_values: [ANALYSIS, PROPOSAL, APPROVAL, REJECTION, ACCESS, EXECUTION]
+      - name: input_context
+        type: TEXT
+        nullable: true
+        notes: The prompt, log line, or request that triggered the event.
+      - name: output_content
+        type: TEXT
+        nullable: true
+        notes: The AI's response or system result. May be JSON or plain text.
+      - name: metadata
+        type: JSON
+        nullable: true
+        validation: json_valid
+        notes: >
+          JSON blob. All seed rows include {"test_marker": true} so downstream
+          consumers can filter test data without relying on actor naming alone.
+      - name: verification_signature
+        type: TEXT
+        nullable: true
+        notes: Placeholder for future digital signature. Not used in seeds.
+      - name: approved_by
+        type: TEXT
+        nullable: true
+        notes: Username of the human approver. Null for AI-only events.
+      - name: approver_role
+        type: TEXT
+        nullable: true
+        notes: RBAC role of the approver (e.g. firmware_engineer).
+      - name: approver_email
+        type: TEXT
+        nullable: true
+        notes: Email address of the approver.
+      - name: approver_provider
+        type: TEXT
+        nullable: true
+        notes: Authentication provider — "oidc" | "api_key" | "anonymous".
+
+  # ---------------------------------------------------------------------------
+  - name: chat_messages
+    description: >
+      Chat history for the SAGE AI assistant (user and assistant turns).
+      Scoped per user_id + session_id + solution.
+      Test rows are identified by user_id LIKE 'test_%'.
+    idempotency_key: id             # PRIMARY KEY; INSERT OR IGNORE
+    seed_rows: 8
+    test_coverage:
+      sessions: 2                  # test_session_001 (alice/medtech_team) and test_session_002 (bob/starter)
+      user_turns: 4
+      assistant_turns: 4
+    columns:
+      - name: id
+        type: TEXT
+        nullable: false
+        primary_key: true
+        validation: required
+        seed_convention: >
+          Fixed UUIDs in format cc000000-NNNN-4000-8000-000000000NNN.
+          N encodes session group and message sequence.
+      - name: user_id
+        type: TEXT
+        nullable: false
+        validation: required
+        seed_convention: "test_" prefix identifies test rows for teardown.
+      - name: session_id
+        type: TEXT
+        nullable: false
+        validation: required
+        seed_convention: "test_session_NNN" pattern.
+      - name: solution
+        type: TEXT
+        nullable: false
+        validation: required
+        notes: Active SAGE solution name at time of message.
+      - name: role
+        type: TEXT
+        nullable: false
+        check: "role IN ('user', 'assistant')"
+        validation: enum
+        allowed_values: [user, assistant]
+      - name: content
+        type: TEXT
+        nullable: false
+        validation: required
+      - name: page_context
+        type: TEXT
+        nullable: true
+        notes: Frontend page the user was on (e.g. "analyst", "approvals").
+      - name: created_at
+        type: TEXT
+        nullable: false
+        validation: required
+        notes: ISO 8601 UTC timestamp string.
+      - name: message_type
+        type: TEXT
+        nullable: true
+        default: user
+        check: "message_type IN ('user', 'assistant', 'system')"
+        validation: enum
+        allowed_values: [user, assistant, system]
+      - name: metadata
+        type: TEXT
+        nullable: true
+        notes: >
+          JSON string. Seed rows include {"test_marker": true}.
+          Assistant turns also carry {"trace_id": "..."} where applicable.
+
+  # ---------------------------------------------------------------------------
+  - name: proposals
+    description: >
+      Pending and decided SAGE agent proposals awaiting (or having received)
+      human approval.  Every AI-initiated write/execute action creates a row
+      here before anything executes.  Rows move through:
+        pending → approved | rejected | expired
+      Test rows are identified by proposed_by LIKE 'test_%'.
+    idempotency_key: trace_id      # PRIMARY KEY; INSERT OR IGNORE
+    seed_rows: 5
+    test_coverage:
+      pending_yaml_edit: 1         # STATEFUL risk — standard yaml_edit proposal
+      pending_code_diff: 1         # EXTERNAL risk — code_diff requiring named approver
+      approved: 1                  # decided_by + decided_at populated
+      rejected: 1                  # decided_by + feedback populated; status=rejected
+      expired: 1                   # expires_at in the past; status=expired
+    columns:
+      - name: trace_id
+        type: TEXT
+        nullable: false
+        primary_key: true
+        validation: required
+        seed_convention: >
+          "test-proposal-NNN" prefix identifies test rows for teardown.
+      - name: created_at
+        type: TEXT
+        nullable: false
+        validation: required
+        notes: ISO 8601 UTC timestamp string. Fixed to seed timestamp.
+      - name: action_type
+        type: TEXT
+        nullable: false
+        validation: required
+        check: "action_type IN ('yaml_edit','code_diff','implementation_plan','knowledge_add','knowledge_delete','agent_hire')"
+        validation_rule: enum
+        allowed_values: [yaml_edit, code_diff, implementation_plan, knowledge_add, knowledge_delete, agent_hire]
+      - name: risk_class
+        type: TEXT
+        nullable: false
+        validation: required
+        check: "risk_class IN ('INFORMATIONAL','EPHEMERAL','STATEFUL','EXTERNAL','DESTRUCTIVE')"
+        validation_rule: enum
+        allowed_values: [INFORMATIONAL, EPHEMERAL, STATEFUL, EXTERNAL, DESTRUCTIVE]
+      - name: reversible
+        type: INTEGER
+        nullable: false
+        notes: 1 = reversible, 0 = irreversible.
+      - name: proposed_by
+        type: TEXT
+        nullable: false
+        validation: required
+        seed_convention: "test_" prefix identifies test rows for teardown.
+      - name: description
+        type: TEXT
+        nullable: false
+        validation: required
+      - name: payload
+        type: TEXT
+        nullable: false
+        validation: json_valid
+        notes: JSON blob with action-specific parameters.
+      - name: status
+        type: TEXT
+        nullable: false
+        default: pending
+        check: "status IN ('pending','approved','rejected','expired')"
+        validation: enum
+        allowed_values: [pending, approved, rejected, expired]
+      - name: decided_by
+        type: TEXT
+        nullable: true
+        notes: Username of the human who approved or rejected.
+      - name: decided_at
+        type: TEXT
+        nullable: true
+        notes: ISO 8601 UTC timestamp of the decision.
+      - name: feedback
+        type: TEXT
+        nullable: true
+        notes: Approval note or rejection reason provided by the reviewer.
+      - name: expires_at
+        type: TEXT
+        nullable: true
+        notes: ISO 8601 expiry time. NULL = never expires (DESTRUCTIVE class).
+      - name: required_role
+        type: TEXT
+        nullable: true
+        notes: RBAC role that must approve (e.g. "firmware_engineer"). NULL = any approver.
+      - name: approved_by
+        type: TEXT
+        nullable: true
+        default: ""
+        notes: Named-approval identity — username of the approver.
+      - name: approver_role
+        type: TEXT
+        nullable: true
+        default: ""
+        notes: RBAC role of the named approver.
+      - name: approver_email
+        type: TEXT
+        nullable: true
+        default: ""
+        notes: Email address of the named approver.
+
+# =============================================================================
+# Teardown identifiers — how seed_api_test_data.teardown_all() finds test rows
+# =============================================================================
+teardown_patterns:
+  compliance_audit_log: "actor LIKE 'test_%'"
+  chat_messages:        "user_id LIKE 'test_%'"
+  proposals:            "proposed_by LIKE 'test_%'"
+
+# =============================================================================
+# Trace groups seeded — full lifecycle coverage
+# =============================================================================
+trace_groups:
+  trace-lifecycle-001:
+    description: Full approved proposal lifecycle
+    events: [ANALYSIS, PROPOSAL, APPROVAL]
+    approver: alice_test
+    provider: oidc
+
+  trace-lifecycle-002:
+    description: Rejected proposal lifecycle
+    events: [ANALYSIS, PROPOSAL, REJECTION]
+    approver: bob_test
+    provider: api_key
+
+  trace-standalone-003:
+    description: Analysis with no follow-up proposal (CRITICAL severity)
+    events: [ANALYSIS]
+
+  trace-access-004:
+    description: Access audit event for GET /audit
+    events: [ACCESS]
+
+  trace-error-005:
+    description: LLM gateway timeout error event
+    events: [ANALYSIS]
+    status: ERROR
+
+  trace-anon-006:
+    description: Approval with anonymous (unauthenticated) approver
+    events: [APPROVAL]
+    provider: anonymous
+
+# =============================================================================
+# Proposal groups seeded
+# =============================================================================
+proposal_groups:
+  test-proposal-001:
+    description: Pending yaml_edit — STATEFUL risk, reversible
+    action_type: yaml_edit
+    risk_class: STATEFUL
+    status: pending
+
+  test-proposal-002:
+    description: Pending code_diff — EXTERNAL risk, required_role=firmware_engineer
+    action_type: code_diff
+    risk_class: EXTERNAL
+    status: pending
+
+  test-proposal-003:
+    description: Approved implementation_plan — decided by carol_test
+    action_type: implementation_plan
+    risk_class: STATEFUL
+    status: approved
+    decided_by: carol_test
+
+  test-proposal-004:
+    description: Rejected knowledge_add — feedback provided by dave_test
+    action_type: knowledge_add
+    risk_class: EPHEMERAL
+    status: rejected
+    decided_by: dave_test
+
+  test-proposal-005:
+    description: Expired agent_hire — EXTERNAL risk, expires_at in the past
+    action_type: agent_hire
+    risk_class: EXTERNAL
+    status: expired
+
+# =============================================================================
+# Validation severity matrix
+# =============================================================================
+validation_severity:
+  critical:
+    - required fields missing (id, actor, action_type, user_id, session_id, trace_id, etc.)
+  error:
+    - enum value not in allowed list (action_type, event_type, status, role, risk_class)
+    - metadata/payload field is not valid JSON
+  warning:
+    - (none defined for this schema)

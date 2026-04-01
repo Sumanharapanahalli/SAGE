@@ -1,0 +1,214 @@
+# ==============================================================
+# SAGE[ai] - Iterative Refinement Cycle Manifest
+# Domain:  Route Planning Algorithm
+# Pattern: Iterative Refinement (generate -> critique -> refine -> check)
+# Format:  TOML — human-editable cycle registry
+#
+# This file registers each role in the refinement cycle, its
+# ordering, runner, and acceptance gate. It is read by the
+# refinement engine BEFORE the full YAML config is applied.
+# Changes take effect on next server start or
+# POST /config/reload.
+#
+# Validation rules:
+#   - role ids must be unique
+#   - order values must be a contiguous sequence starting at 1
+#   - runner must name a registered BaseRunner
+#   - output_fields of each phase must match input_fields of
+#     the next (enforced at load time)
+# ==============================================================
+
+[cycle]
+name        = "iterative_refinement_route_planning"
+version     = "1.0.0"
+pattern     = "iterative_refinement"
+description = "LLM-based route planning via generate -> critique -> refine -> check loop"
+author      = "SAGE Framework"
+created     = "2026-03-28"
+
+  [cycle.execution]
+  # Maximum full cycles (generator+critic+refiner+verifier = 1 cycle).
+  max_rounds            = 5
+  # Abort early if score improves by less than this delta between rounds.
+  min_improvement_delta = 3
+  # Score threshold (0-100) at which the verifier accepts the route.
+  quality_threshold     = 80
+  # Wall-clock timeout for the entire cycle set.
+  timeout_seconds       = 900
+  fail_fast             = true
+
+  [cycle.state]
+  # "memory"    : in-process dict (fast, no persistence)
+  # "json_file" : serialised to /tmp/sage_ir_state_{run_id}.json
+  # "audit_log" : written to .sage/audit_log.db (persistent, queryable)
+  backend         = "memory"
+  persist_on_fail = true
+
+# ==============================================================
+# Phase definitions — executed in order each refinement cycle
+# ==============================================================
+
+[[phases]]
+id          = "generator"
+order       = 1
+name        = "Route Generator"
+description = "Produce an initial draft route using the configured algorithm and tools"
+runner      = "openstrategy"
+agent_role  = "route_planner"
+enabled     = true
+
+  [phases.tools]
+  allowed = ["get_graph", "get_node", "get_neighbours", "get_edge_cost", "haversine_distance"]
+
+  [phases.llm_overrides]
+  temperature = 0.3    # Higher: diverse path exploration on first draft
+
+  [phases.output]
+  # Fields this phase MUST include in its output JSON.
+  required_fields = ["node_path", "total_cost", "cost_breakdown", "rationale"]
+
+  [phases.sla]
+  max_wall_seconds = 120
+  warn_at_seconds  = 90
+
+# --------------------------------------------------------------
+
+[[phases]]
+id          = "critic"
+order       = 2
+name        = "Route Critic"
+description = "Score the draft route against the rubric and list actionable issues"
+runner      = "openswe"
+agent_role  = "route_critic"
+enabled     = true
+
+  [phases.input]
+  # Fields consumed from cycle state (produced by generator or refiner)
+  from_state = ["node_path", "total_cost", "cost_breakdown"]
+
+  [phases.tools]
+  # Critic only reads — no mutation tools.
+  allowed = ["get_node", "get_edge_cost", "haversine_distance", "validate_route"]
+
+  [phases.llm_overrides]
+  temperature = 0.05   # Near-deterministic scoring
+
+  [phases.output]
+  required_fields = ["score", "dimension_scores", "issues", "suggestions"]
+  # Cycle terminates (accept) when score >= quality_threshold.
+  # Cycle terminates (fail) when max_rounds reached without acceptance.
+  score_field = "score"
+
+  [phases.sla]
+  max_wall_seconds = 60
+  warn_at_seconds  = 45
+
+# --------------------------------------------------------------
+
+[[phases]]
+id          = "refiner"
+order       = 3
+name        = "Route Refiner"
+description = "Improve the route by addressing critic issues and suggestions"
+runner      = "openswe"
+agent_role  = "route_refiner"
+enabled     = true
+# Skipped on the final accepted round (verifier accepts before refiner runs again)
+condition   = "score < quality_threshold"
+
+  [phases.input]
+  from_state = ["node_path", "total_cost", "issues", "suggestions"]
+
+  [phases.tools]
+  allowed = ["get_node", "get_neighbours", "get_edge_cost", "haversine_distance", "validate_route"]
+
+  [phases.llm_overrides]
+  temperature = 0.2
+
+  [phases.output]
+  required_fields = ["node_path", "total_cost", "cost_breakdown", "rationale", "changes_made"]
+
+  [phases.sla]
+  max_wall_seconds = 150
+  warn_at_seconds  = 120
+
+# --------------------------------------------------------------
+
+[[phases]]
+id          = "verifier"
+order       = 4
+name        = "Route Verifier"
+description = "Accept or reject the latest route; if accept, pipeline terminates; if reject, next cycle begins"
+runner      = "openswe"
+agent_role  = "route_verifier"
+enabled     = true
+
+  [phases.input]
+  from_state = ["node_path", "total_cost", "score"]
+
+  [phases.tools]
+  allowed = ["validate_route"]
+
+  [phases.llm_overrides]
+  temperature = 0.0    # Fully deterministic
+
+  [phases.output]
+  required_fields = ["verdict", "reason", "score"]
+  # "accept" terminates the cycle set; "reject" starts the next cycle.
+  gate_field  = "verdict"
+  gate_accept = "accept"
+  gate_reject = "reject"
+
+  [phases.sla]
+  max_wall_seconds = 30
+  warn_at_seconds  = 20
+
+# ==============================================================
+# Algorithm Registry
+# ==============================================================
+
+[algorithms.dijkstra]
+description     = "Uniform-cost search, optimal for non-negative edge weights"
+weighted        = true
+admissible      = true
+complete        = true
+time_complexity = "O((V + E) log V)"
+
+[algorithms.astar]
+description        = "Best-first search with admissible heuristic, optimal path"
+weighted           = true
+admissible         = true
+complete           = true
+requires_heuristic = true
+time_complexity    = "O(E)"
+
+[algorithms.bfs]
+description     = "Breadth-first search, optimal for unweighted graphs"
+weighted        = false
+admissible      = true
+complete        = true
+time_complexity = "O(V + E)"
+
+[algorithms.dfs]
+description     = "Depth-first search, not guaranteed optimal"
+weighted        = false
+admissible      = false
+complete        = false
+time_complexity = "O(V + E)"
+
+[algorithms.bellman_ford]
+description     = "Handles negative edge weights, detects negative cycles"
+weighted        = true
+admissible      = true
+complete        = true
+time_complexity = "O(V * E)"
+
+# ==============================================================
+# Rubric Weights — must sum to 1.0
+# ==============================================================
+
+[rubric]
+route_validity        = 0.35
+cost_optimality       = 0.30
+constraint_compliance = 0.20
+narrative_quality     = 0.15

@@ -1,0 +1,13 @@
+git_url(ENV["MATCH_GIT_URL"])
+
+storage_mode("git")
+
+type("appstore")
+
+app_identifier(ENV["APP_IDENTIFIER"])
+username(ENV["APPLE_ID"])
+
+readonly(false)
+
+keychain_name("build.keychain")
+keychain_password(ENV["KEYCHAIN_PASSWORD"])

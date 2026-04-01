@@ -1,0 +1,385 @@
+# ============================================================
+# SAGE Framework — Security Standards Mapping
+# ============================================================
+# Purpose: Cross-reference all STRIDE threats and scanner findings
+#          against applicable compliance standards.
+# Scope:   SAGE Framework core + payment gateway + PHI/regulated solutions
+# Version: 1.0.0
+# Date:    2026-03-28
+# ============================================================
+
+metadata:
+  title:    "SAGE Framework Security Standards Mapping"
+  version:  "1.0.0"
+  date:     "2026-03-28"
+  scope:    "SAGE Framework + Payment Gateway + HIPAA-regulated solutions"
+  standards_in_scope:
+    - id: STRIDE
+      full_name: "STRIDE Threat Model (Microsoft SDL)"
+      version: "2024"
+      applicable: true
+    - id: OWASP_TOP10
+      full_name: "OWASP Top 10 2021"
+      version: "2021"
+      applicable: true
+    - id: OWASP_API
+      full_name: "OWASP API Security Top 10"
+      version: "2023"
+      applicable: true
+    - id: HIPAA
+      full_name: "HIPAA Security Rule (45 CFR §164.300–164.318)"
+      version: "2013 + 2024 amendments"
+      applicable: true
+      note: "Required for any SAGE solution handling ePHI (medtech, iot_medical)"
+    - id: PCI_DSS
+      full_name: "PCI DSS v4.0 (SAQ-D Service Provider)"
+      version: "4.0"
+      applicable: true
+      note: "Required for SAGE payment gateway integration"
+    - id: NIST_800_53
+      full_name: "NIST SP 800-53 Rev 5"
+      version: "Rev 5"
+      applicable: true
+    - id: NIST_800_115
+      full_name: "NIST SP 800-115 Technical Guide to Information Security Testing"
+      version: "2008"
+      applicable: true
+      note: "Governs penetration testing methodology (pentest_plan.yaml)"
+    - id: IEC_62443
+      full_name: "IEC 62443-3-3 Industrial Automation and Control Systems Security"
+      version: "2013"
+      applicable: true
+      note: "Required for railways, iot_medical, automotive solutions"
+    - id: GDPR
+      full_name: "EU General Data Protection Regulation"
+      version: "2018"
+      applicable: true
+      note: "Applies to PII in European deployments"
+    - id: SLSA
+      full_name: "Supply chain Levels for Software Artifacts"
+      version: "v1.0"
+      applicable: true
+      note: "Governs dependency pinning and build integrity (SBOM-001)"
+
+# ============================================================
+# Finding → Standard Clause Mapping
+# ============================================================
+finding_standard_map:
+
+  - finding_id: CORS-001
+    title: "Wildcard CORS policy allows any origin"
+    severity: CRITICAL
+    stride_category: Spoofing
+    mappings:
+      - standard: OWASP_TOP10
+        clause: "A05:2021 — Security Misconfiguration"
+        requirement: "Restrict cross-origin resource sharing to trusted origins only"
+      - standard: HIPAA
+        clause: "§164.312(e)(1) — Transmission Security"
+        requirement: "Guard against unauthorized access to ePHI during transmission"
+      - standard: PCI_DSS
+        clause: "Req 6.4.1 — Public-facing web apps protected against known attacks"
+        requirement: "CORS wildcard enables cross-payment request forgery (CPRF)"
+      - standard: NIST_800_53
+        clause: "SC-8 — Transmission Confidentiality and Integrity"
+      - standard: OWASP_API
+        clause: "API5:2023 — Broken Function Level Authorization"
+
+  - finding_id: AUTH-001
+    title: "Authentication disabled by default"
+    severity: HIGH
+    stride_category: Spoofing
+    mappings:
+      - standard: HIPAA
+        clause: "§164.312(d) — Person or Entity Authentication"
+        requirement: "Implement procedures to verify identity of persons seeking ePHI access"
+      - standard: PCI_DSS
+        clause: "Req 8.2.1 — User IDs and authentication credentials managed"
+        requirement: "Auth must be enforced; disable in production is a critical PCI failure"
+      - standard: OWASP_TOP10
+        clause: "A07:2021 — Identification and Authentication Failures"
+      - standard: OWASP_API
+        clause: "API2:2023 — Broken Authentication"
+      - standard: NIST_800_53
+        clause: "IA-2 — Identification and Authentication (Organizational Users)"
+      - standard: IEC_62443
+        clause: "SR 1.1 — Human User Identification and Authentication"
+
+  - finding_id: PII-001
+    title: "PII/PHI detection disabled"
+    severity: HIGH
+    stride_category: Information Disclosure
+    mappings:
+      - standard: HIPAA
+        clause: "§164.312(a)(2)(iv) — Encryption and Decryption"
+        requirement: "Implement mechanism to encrypt/decrypt ePHI"
+      - standard: GDPR
+        clause: "Art. 25 — Data Protection by Design and by Default"
+        requirement: "PII filtering must be on by default, not opt-in"
+      - standard: PCI_DSS
+        clause: "Req 3.2.1 — SAD not retained post-authorization"
+        requirement: "CVV/PAN patterns must be in blocked filter set"
+      - standard: OWASP_TOP10
+        clause: "A02:2021 — Cryptographic Failures"
+      - standard: NIST_800_53
+        clause: "SI-12 — Information Management and Retention"
+        requirement: "Apply PII filter before data enters audit log or LLM prompt"
+
+  - finding_id: HDR-001
+    title: "Missing HTTP security headers"
+    severity: HIGH
+    stride_category: Tampering
+    mappings:
+      - standard: OWASP_TOP10
+        clause: "A05:2021 — Security Misconfiguration"
+      - standard: HIPAA
+        clause: "§164.312(e)(1) — Transmission Security"
+      - standard: PCI_DSS
+        clause: "Req 6.4.1 — Protect public-facing web applications"
+        requirement: "HSTS, X-Frame-Options, CSP required for CDE-accessible interfaces"
+      - standard: NIST_800_53
+        clause: "SI-10 — Information Input Validation"
+
+  - finding_id: ENC-001
+    title: "Audit log SQLite not encrypted at application layer"
+    severity: HIGH
+    stride_category: Information Disclosure
+    mappings:
+      - standard: HIPAA
+        clause: "§164.312(a)(2)(iv) — Encryption and Decryption"
+        requirement: "ePHI at rest must be encrypted"
+      - standard: HIPAA
+        clause: "§164.312(e)(2)(ii) — Encryption"
+        requirement: "Implement encryption mechanism for ePHI in transit and at rest"
+      - standard: PCI_DSS
+        clause: "Req 3.4.1 — PAN rendered unreadable anywhere stored"
+        requirement: "AES-256 or strong cryptography required for all CHD storage"
+      - standard: PCI_DSS
+        clause: "Req 3.5.1 — PAN secured with strong cryptography"
+      - standard: NIST_800_53
+        clause: "SC-28 — Protection of Information at Rest"
+      - standard: IEC_62443
+        clause: "SR 4.1 — Information Confidentiality"
+
+  - finding_id: PHI-001
+    title: "Audit log stores raw input_context — may contain PHI"
+    severity: HIGH
+    stride_category: Information Disclosure
+    mappings:
+      - standard: HIPAA
+        clause: "§164.312(a)(2)(iv) — Encryption and Decryption"
+      - standard: HIPAA
+        clause: "§164.308(a)(1)(ii)(D) — Information System Activity Review"
+        requirement: "Regular review of audit logs must not expose ePHI to unauthorized reviewers"
+      - standard: GDPR
+        clause: "Art. 5(1)(f) — Integrity and Confidentiality"
+      - standard: NIST_800_53
+        clause: "AU-3 — Content of Audit Records"
+        requirement: "Audit records must not inadvertently capture sensitive cleartext"
+
+  - finding_id: SBOM-001
+    title: "Unpinned dependency versions"
+    severity: MEDIUM
+    stride_category: Tampering
+    mappings:
+      - standard: OWASP_TOP10
+        clause: "A06:2021 — Vulnerable and Outdated Components"
+      - standard: PCI_DSS
+        clause: "Req 6.3.3 — All software components protected from known vulnerabilities"
+      - standard: SLSA
+        clause: "Level 2 — Hosted source, version-controlled, pinned dependencies"
+      - standard: NIST_800_53
+        clause: "SA-15 — Development Process, Standards, and Tools"
+
+  - finding_id: CRYPT-001
+    title: "API keys hashed with SHA-256 without salt"
+    severity: MEDIUM
+    stride_category: Spoofing
+    mappings:
+      - standard: OWASP_TOP10
+        clause: "A02:2021 — Cryptographic Failures"
+      - standard: NIST_800_53
+        clause: "IA-5 — Authenticator Management"
+        requirement: "Salted hash required for credential storage"
+      - standard: PCI_DSS
+        clause: "Req 8.3.6 — Password/passphrase complexity and strength"
+
+  - finding_id: INJECT-001
+    title: "Subprocess passes unsanitized env to external CLI"
+    severity: MEDIUM
+    stride_category: Elevation of Privilege
+    mappings:
+      - standard: OWASP_TOP10
+        clause: "A03:2021 — Injection"
+      - standard: NIST_800_53
+        clause: "SI-10 — Information Input Validation"
+      - standard: IEC_62443
+        clause: "SR 3.5 — Input Validation"
+      - standard: OWASP_API
+        clause: "API8:2023 — Security Misconfiguration"
+
+  - finding_id: PAN-001
+    title: "PAN stored unencrypted in audit_log.db"
+    severity: CRITICAL
+    stride_category: Information Disclosure
+    mappings:
+      - standard: PCI_DSS
+        clause: "Req 3.3.1 — SAD not retained after authorization"
+        pci_blocking: true
+      - standard: PCI_DSS
+        clause: "Req 3.4.1 — PAN rendered unreadable anywhere stored"
+        pci_blocking: true
+      - standard: PCI_DSS
+        clause: "Req 3.5.1 — PAN secured with strong cryptography"
+        pci_blocking: true
+      - standard: NIST_800_53
+        clause: "SC-28 — Protection of Information at Rest"
+
+  - finding_id: TOKEN-001
+    title: "No PAN tokenization — raw PAN accepted at API layer"
+    severity: CRITICAL
+    stride_category: Information Disclosure
+    mappings:
+      - standard: PCI_DSS
+        clause: "Req 3.5.1 — PAN secured; tokenization is primary method"
+        pci_blocking: true
+      - standard: PCI_DSS
+        clause: "Req 4.2.1 — PAN not transmitted unprotected"
+      - standard: OWASP_API
+        clause: "API3:2023 — Broken Object Property Level Authorization"
+
+# ============================================================
+# STRIDE → NIST 800-53 Control Families
+# ============================================================
+stride_nist_mapping:
+  Spoofing:
+    controls: [IA-2, IA-3, IA-5, IA-8, AC-14]
+    description: "Identity assurance and authenticator management"
+  Tampering:
+    controls: [SI-10, SI-7, AU-9, CM-3, SC-8]
+    description: "Input validation, integrity checking, change management"
+  Repudiation:
+    controls: [AU-2, AU-3, AU-9, AU-12]
+    description: "Audit event generation and log protection"
+  Information_Disclosure:
+    controls: [AC-3, AC-4, SC-8, SC-28, RA-5, SI-12]
+    description: "Access control, encryption in transit, encryption at rest"
+  Denial_of_Service:
+    controls: [SC-5, SC-6, CP-2, IR-4]
+    description: "DoS protection, resource availability, incident response"
+  Elevation_of_Privilege:
+    controls: [AC-2, AC-5, AC-6, IA-11, CM-11]
+    description: "Least privilege, separation of duties, privileged account management"
+
+# ============================================================
+# STRIDE → IEC 62443-3-3 Security Requirements (SR)
+# ============================================================
+stride_iec62443_mapping:
+  Spoofing:           [SR-1.1, SR-1.2, SR-1.3, SR-1.5]
+  Tampering:          [SR-3.1, SR-3.2, SR-3.3, SR-3.5]
+  Repudiation:        [SR-2.8, SR-2.9, SR-2.10]
+  Information_Disclosure: [SR-4.1, SR-4.2, SR-4.3]
+  Denial_of_Service:  [SR-7.1, SR-7.2]
+  Elevation_of_Privilege: [SR-2.1, SR-2.2, SR-2.3]
+
+# ============================================================
+# HIPAA Security Rule — Full Clause Coverage
+# ============================================================
+hipaa_clause_coverage:
+  - clause: "§164.308(a)(1)(ii)(D)"
+    title: "Information System Activity Review"
+    finding_refs: [PHI-001]
+    status: FAIL
+  - clause: "§164.312(a)(1)"
+    title: "Access Control — Unique User Identification"
+    finding_refs: [AUTH-001, T-I-02, T-E-01]
+    status: REQUIRES_CONFIGURATION
+  - clause: "§164.312(a)(2)(iv)"
+    title: "Encryption and Decryption"
+    finding_refs: [PII-001, ENC-001, PHI-001, T-I-01, T-I-03]
+    status: FAIL
+  - clause: "§164.312(b)"
+    title: "Audit Controls"
+    finding_refs: [T-R-01]
+    status: PASS_CONDITIONAL
+  - clause: "§164.312(d)"
+    title: "Person or Entity Authentication"
+    finding_refs: [AUTH-001, T-S-04]
+    status: FAIL
+  - clause: "§164.312(e)(1)"
+    title: "Transmission Security"
+    finding_refs: [CORS-001, HDR-001, T-I-04, T-S-03, T-T-03]
+    status: REQUIRES_CONFIGURATION
+  - clause: "§164.312(e)(2)(ii)"
+    title: "Encryption"
+    finding_refs: [ENC-001]
+    status: FAIL
+
+# ============================================================
+# PCI DSS v4.0 — SAQ-D Clause Coverage Summary
+# ============================================================
+pci_dss_clause_coverage:
+  - req: "Req-1"
+    title: "Install and Maintain Network Security Controls"
+    status: PARTIAL
+    blocking: false
+  - req: "Req-2"
+    title: "Apply Secure Configurations"
+    status: PARTIAL
+    blocking: false
+  - req: "Req-3"
+    title: "Protect Stored Account Data"
+    status: FAIL
+    blocking: true
+    finding_refs: [PAN-001, TOKEN-001, ENC-001]
+  - req: "Req-4"
+    title: "Protect Cardholder Data in Transmission"
+    status: PARTIAL
+    blocking: false
+    finding_refs: [HDR-001, CORS-001]
+  - req: "Req-6"
+    title: "Develop and Maintain Secure Systems and Software"
+    status: PARTIAL
+    blocking: true
+    finding_refs: [HDR-001, CORS-001, INJECT-001, SBOM-001]
+  - req: "Req-7"
+    title: "Restrict Access to Cardholder Data"
+    status: FAIL
+    blocking: true
+    finding_refs: [AUTH-001]
+  - req: "Req-8"
+    title: "Identify Users and Authenticate Access"
+    status: PARTIAL
+    blocking: false
+    finding_refs: [AUTH-001, CRYPT-001]
+  - req: "Req-10"
+    title: "Log and Monitor All Access"
+    status: PARTIAL
+    blocking: false
+  - req: "Req-11"
+    title: "Test Security Regularly"
+    status: PARTIAL
+    blocking: false
+    note: "pentest_plan.yaml defined; external annual pentest not yet completed"
+  - req: "Req-12"
+    title: "Support Information Security with Organizational Policies"
+    status: PARTIAL
+    blocking: false
+
+# ============================================================
+# Open Findings Summary (for CI gate)
+# ============================================================
+open_findings_ci_gate:
+  fail_conditions:
+    - "Any finding with severity: CRITICAL"
+    - "Any finding with pci_blocking: true"
+    - "PHI protection controls (pii.enabled, encryption.at_rest) not configured"
+  current_status: FAIL
+  critical_count: 3    # CORS-001, PAN-001, TOKEN-001
+  high_count: 6        # AUTH-001, PII-001, HDR-001, ENC-001, PHI-001 + T-D-03 shutdown
+  pci_blocking_count: 5
+  ci_gate_result: BLOCK
+  ci_gate_message: >
+    Security gate BLOCKED. 3 CRITICAL and 6 HIGH findings must be resolved before
+    any production or internet-facing deployment. PCI DSS compliance is NON-COMPLIANT
+    (5 blocking issues). See security_audit/final_analysis_report.json for full remediation roadmap.

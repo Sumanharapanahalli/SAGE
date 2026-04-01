@@ -1,0 +1,524 @@
+{
+  "report_metadata": {
+    "title": "SAGE Framework — Consolidated Security Review & Threat Model Report",
+    "generated_at": "2026-03-28T00:00:00+00:00",
+    "analyst_role": "analyst",
+    "version": "1.0.0",
+    "scope": [
+      "src/interface/api.py",
+      "src/core/auth.py",
+      "src/core/api_keys.py",
+      "src/core/llm_gateway.py",
+      "src/core/pii_filter.py",
+      "src/core/rbac.py",
+      "src/memory/audit_logger.py",
+      "config/config.yaml",
+      "requirements.txt"
+    ],
+    "artifacts": {
+      "stride_threat_model":   "security_audit/threat_model.yaml (v1.1.0, 16 threats, 6 STRIDE categories)",
+      "payment_threat_model":  "security_audit/payment_gateway/payment_threat_model.yaml (v1.0.0, 16 threats)",
+      "pentest_plan":          "security_audit/pentest_plan.yaml (v1.0.0, 17 test cases, OWASP API Top 10)",
+      "sbom_framework":        "security_audit/sbom.json (CycloneDX v1.5, serialNumber urn:uuid:25f548f3)",
+      "sbom_payment":          "security_audit/payment_gateway/payment_sbom.json",
+      "pci_dss_saq":           "security_audit/payment_gateway/pci_dss_saq.json (SAQ-D v4.0, NON-COMPLIANT)",
+      "security_scan_results": "security_audit/sage_security_report.json",
+      "standards_mapping":     "security_audit/standards_mapping.yaml",
+      "review_runner":         "security_audit/security_review_final.py"
+    },
+    "standards": [
+      "STRIDE (Microsoft SDL)",
+      "OWASP Top 10 2021",
+      "OWASP API Security Top 10 2023",
+      "HIPAA Security Rule (45 CFR §164.300–164.318)",
+      "PCI DSS v4.0 (SAQ-D Service Provider)",
+      "NIST SP 800-53 Rev 5",
+      "NIST SP 800-115",
+      "IEC 62443-3-3",
+      "GDPR Art. 25",
+      "SLSA v1.0 Level 2"
+    ]
+  },
+
+  "executive_summary": {
+    "overall_risk": "CRITICAL",
+    "total_findings": 11,
+    "severity_breakdown": {
+      "CRITICAL": 3,
+      "HIGH": 6,
+      "MEDIUM": 3,
+      "INFO": 1
+    },
+    "phi_impacting_findings": 5,
+    "pci_blocking_findings": 5,
+    "acceptance_criteria_passed": false,
+    "deployment_gate": "BLOCKED — must not deploy to internet-facing or multi-user environment until CRITICAL and HIGH findings are resolved",
+    "acceptance_criteria_summary": {
+      "AC-1 STRIDE coverage":              "PASS",
+      "AC-2 No critical/high vulns":       "REQUIRES_REMEDIATION",
+      "AC-3 SBOM generated":               "PASS",
+      "AC-4 PHI encryption at rest/transit": "REQUIRES_CONFIGURATION",
+      "AC-5 Access audit logging":         "PASS_CONDITIONAL",
+      "AC-6 PCI DSS SAQ":                  "NON_COMPLIANT",
+      "AC-7 Encryption at rest/transit":   "REQUIRES_CONFIGURATION"
+    }
+  },
+
+  "acceptance_criteria": [
+    {
+      "id": "AC-1",
+      "description": "Threat model covers STRIDE categories",
+      "status": "PASS",
+      "detail": "All 6 STRIDE categories covered across threat_model.yaml (v1.1.0) and payment_threat_model.yaml. Spoofing: T-S-01..T-S-04 (JWT forgery, API key leak, wildcard CORS, auth disabled). Tampering: T-T-01..T-T-03 (audit log mutation, proposal mutation, missing sec headers). Repudiation: T-R-01 (missing actor on approval). Information Disclosure: T-I-01..T-I-06 (PHI to LLM, cross-tenant, unencrypted at rest, no HTTPS, PII disabled, hardcoded project ID). Denial of Service: T-D-01..T-D-03 (queue flood, retry loop, unauthenticated /shutdown). Elevation of Privilege: T-E-01..T-E-02 (RBAC bypass, prompt injection). Payment gateway adds 16 additional threats (T-PG-S-01..T-PG-E-02).",
+      "blockers": []
+    },
+    {
+      "id": "AC-2",
+      "description": "No critical/high vulnerabilities",
+      "status": "REQUIRES_REMEDIATION",
+      "detail": "FAILED — 9 critical/high findings open: CORS-001, AUTH-001, PII-001, HDR-001, ENC-001, PHI-001, PAN-001, TOKEN-001, T-D-03 (unauthenticated /shutdown). All must be resolved before deployment gate clears.",
+      "blockers": [
+        "CORS-001 [CRITICAL]: Wildcard CORS must be restricted to SAGE_ALLOWED_ORIGINS before any browser-accessible deployment",
+        "PAN-001 [CRITICAL]: PAN stored unencrypted in audit_log.db — PCI DSS Req 3.4.1 BLOCKING",
+        "TOKEN-001 [CRITICAL]: No PAN tokenization — SAGE API must never receive raw PAN — PCI DSS Req 3.5.1 BLOCKING",
+        "AUTH-001 [HIGH]: auth.enabled: false by default — must enforce ON in production",
+        "PII-001 [HIGH]: pii.enabled: false — PHI flows unredacted to external LLM providers (Gemini, Claude Code)",
+        "HDR-001 [HIGH]: Missing HSTS, X-Frame-Options, CSP, X-Content-Type-Options",
+        "ENC-001 [HIGH]: SQLite audit_log.db not encrypted at application layer",
+        "PHI-001 [HIGH]: Raw input_context written to audit_log.db without PII redaction",
+        "T-D-03 [CRITICAL residual]: POST /shutdown has no auth — any HTTP client can terminate SAGE"
+      ]
+    },
+    {
+      "id": "AC-3",
+      "description": "SBOM generated",
+      "status": "PASS",
+      "detail": "SBOM present at security_audit/sbom.json (CycloneDX v1.5, serialNumber urn:uuid:25f548f3-be69-48e9-950d-c7b282c1e163). Payment SBOM at security_audit/payment_gateway/payment_sbom.json. WARNING: 18+ unpinned dependencies (SBOM-001) limit SBOM accuracy — pin requirements.txt for reliable CVE tracking.",
+      "blockers": []
+    },
+    {
+      "id": "AC-4",
+      "description": "PHI encryption at rest and in transit",
+      "status": "REQUIRES_CONFIGURATION",
+      "detail": "AT REST: ENC-001 — SQLCipher not configured; OS-level LUKS not confirmed in deployment checklist. PHI-001 — raw PHI fields written to audit_log.db. config.yaml encryption.at_rest not enabled. IN TRANSIT: TLS at reverse proxy only; HTTPSRedirectMiddleware absent in api.py for direct deployments. HDR-001 — HSTS header missing. TLS minimum version not enforced at application layer. ACTIONS REQUIRED: (1) Enable encryption.at_rest: true in config.yaml; (2) Configure SQLCipher PRAGMA key or Fernet AES-256 field encryption on input_context/content columns; (3) Add HTTPSRedirectMiddleware to api.py; (4) Add HSTS via SecurityHeadersMiddleware; (5) Enable pii.enabled: true before audit log writes.",
+      "blockers": []
+    },
+    {
+      "id": "AC-5",
+      "description": "Access audit logging enabled",
+      "status": "PASS_CONDITIONAL",
+      "detail": "AuditLogger class present (src/memory/audit_logger.py) with INSERT-only schema (T-T-01 mitigated). actor field logged on APPROVED/REJECTED events (T-R-01 mitigated). trace_id links proposal → approval → execution. CONDITION: Requires auth.enabled: true for named-approver attribution (AUTH-001 must be resolved). GAPS: No PAYMENT_CHARGE, PAYMENT_REFUND, PAYMENT_AUTH_FAILURE event types. No automated 12-month audit log retention/archival (PCI DSS Req-10.7.1). Recommend: Export audit_log.db to S3 WORM bucket nightly; add payment event types to AuditEventType enum.",
+      "blockers": []
+    },
+    {
+      "id": "AC-6",
+      "description": "PCI DSS SAQ completed",
+      "status": "NON_COMPLIANT",
+      "detail": "SAQ-D completed at security_audit/payment_gateway/pci_dss_saq.json (PCI DSS v4.0). Overall status: NON-COMPLIANT. 24 controls assessed: 4 PASS, 12 PARTIAL, 5 FAIL, 3 NOT_ASSESSED. 5 PCI-blocking issues prevent cardholder data processing. QSA review required before formal attestation.",
+      "blockers": [
+        "PAN-001/TOKEN-001 [Req 3.2.1, 3.3.1, 3.4.1, 3.5.1]: Tokenize PAN at ingress; encrypt CHD columns; confirm CVV delete-after-auth",
+        "ENC-001 [Req 3.4.1]: Implement Fernet AES-256 field encryption; enable encryption.at_rest: true",
+        "CORS-001 [Req 6.4.1]: Replace wildcard CORS with SAGE_PAYMENT_ALLOWED_ORIGINS",
+        "AUTH-001 [Req 7.2.1]: Add Depends(require_permission(Permission.PAYMENT_WRITE)) to /payment/* routes",
+        "MFA-001 [Req 8.4.2]: Require amr=mfa JWT claim for payment charge operations"
+      ]
+    },
+    {
+      "id": "AC-7",
+      "description": "Encryption at rest and in transit",
+      "status": "REQUIRES_CONFIGURATION",
+      "detail": "Mirrors AC-4 findings. AT REST: config.yaml encryption.at_rest not enabled. SQLite audit_log.db, proposal_store.db unencrypted at app layer. ChromaDB chroma_db/ no field-level CHD encryption. IN TRANSIT: Reverse proxy TLS documented but HTTPSRedirectMiddleware absent. HSTS not emitted. TLS version minimum not enforced in application. REQUIRED: (1) encryption.at_rest: true; (2) SQLCipher or Fernet per-column encryption; (3) HTTPSRedirectMiddleware; (4) HSTS max-age=63072000; includeSubDomains; preload; (5) Document TLS certificate inventory and rotation schedule.",
+      "blockers": []
+    }
+  ],
+
+  "stride_coverage": {
+    "Spoofing": {
+      "status": "COVERED",
+      "threats": ["T-S-01", "T-S-02", "T-S-03", "T-S-04", "T-PG-S-01", "T-PG-S-02", "T-PG-S-03"],
+      "open_findings": ["CORS-001", "AUTH-001", "CRYPT-001"],
+      "nist_controls": ["IA-2", "IA-3", "IA-5", "IA-8", "AC-14"]
+    },
+    "Tampering": {
+      "status": "COVERED",
+      "threats": ["T-T-01", "T-T-02", "T-T-03", "T-PG-T-01", "T-PG-T-02", "T-PG-T-03"],
+      "open_findings": ["HDR-001", "SBOM-001", "INJECT-001"],
+      "nist_controls": ["SI-10", "SI-7", "AU-9", "CM-3", "SC-8"]
+    },
+    "Repudiation": {
+      "status": "COVERED",
+      "threats": ["T-R-01", "T-PG-R-01"],
+      "open_findings": [],
+      "note": "AuditLogger INSERT-only schema implemented; actor field logged. Conditional on AUTH-001 fix.",
+      "nist_controls": ["AU-2", "AU-3", "AU-9", "AU-12"]
+    },
+    "Information Disclosure": {
+      "status": "COVERED",
+      "threats": ["T-I-01", "T-I-02", "T-I-03", "T-I-04", "T-I-05", "T-I-06", "T-PG-I-01", "T-PG-I-02", "T-PG-I-03", "T-PG-I-04"],
+      "open_findings": ["PII-001", "ENC-001", "PHI-001", "PAN-001", "TOKEN-001"],
+      "nist_controls": ["AC-3", "AC-4", "SC-8", "SC-28", "RA-5", "SI-12"]
+    },
+    "Denial of Service": {
+      "status": "COVERED",
+      "threats": ["T-D-01", "T-D-02", "T-D-03", "T-PG-D-01"],
+      "open_findings": ["T-D-03 (/shutdown unauthenticated — critical residual risk)"],
+      "nist_controls": ["SC-5", "SC-6", "CP-2", "IR-4"]
+    },
+    "Elevation of Privilege": {
+      "status": "COVERED",
+      "threats": ["T-E-01", "T-E-02", "T-PG-E-01", "T-PG-E-02"],
+      "open_findings": ["AUTH-001 (missing payment RBAC)", "INJECT-001"],
+      "nist_controls": ["AC-2", "AC-5", "AC-6", "IA-11", "CM-11"]
+    }
+  },
+
+  "findings": [
+    {
+      "id": "CORS-001",
+      "title": "Wildcard CORS policy allows any origin",
+      "severity": "CRITICAL",
+      "stride_category": "Spoofing",
+      "cwe": "CWE-942",
+      "file_path": "src/interface/api.py",
+      "line_number": 55,
+      "evidence": "allow_origins=[\"*\"]",
+      "recommendation": "Replace allow_origins=['*'] with SAGE_ALLOWED_ORIGINS env var allowlist. Add SameSite=Strict on session cookies.",
+      "phi_impact": false,
+      "remediation_priority": "immediate",
+      "compliance_references": ["OWASP A05:2021", "HIPAA §164.312(e)(1)", "PCI DSS Req-6.4.1"]
+    },
+    {
+      "id": "PAN-001",
+      "title": "PAN stored unencrypted in audit_log.db (PCI DSS Req 3.4.1 BLOCKING)",
+      "severity": "CRITICAL",
+      "stride_category": "Information Disclosure",
+      "cwe": "CWE-312",
+      "file_path": "src/memory/audit_logger.py",
+      "line_number": null,
+      "evidence": "Full payment payloads in input_context without PAN masking or encryption",
+      "recommendation": "Tokenize PAN at API ingress. Enable pii.enabled: true with PAN regex patterns. Encrypt CHD columns with Fernet AES-256.",
+      "phi_impact": true,
+      "remediation_priority": "immediate",
+      "compliance_references": ["PCI DSS Req-3.3.1", "PCI DSS Req-3.4.1", "PCI DSS Req-3.5.1"]
+    },
+    {
+      "id": "TOKEN-001",
+      "title": "No PAN tokenization — raw PAN accepted at API layer (PCI DSS Req 3.5.1 BLOCKING)",
+      "severity": "CRITICAL",
+      "stride_category": "Information Disclosure",
+      "cwe": "CWE-312",
+      "file_path": "src/interface/api.py",
+      "line_number": null,
+      "evidence": "No token vault integration or PAN-to-token conversion in payment path",
+      "recommendation": "Integrate PCI-certified token vault (Stripe Elements, Braintree hosted fields). SAGE API must never receive raw PAN.",
+      "phi_impact": false,
+      "remediation_priority": "immediate",
+      "compliance_references": ["PCI DSS Req-3.5.1", "PCI DSS Req-4.2.1"]
+    },
+    {
+      "id": "AUTH-001",
+      "title": "Authentication disabled by default (auth.enabled: false)",
+      "severity": "HIGH",
+      "stride_category": "Spoofing",
+      "cwe": "CWE-306",
+      "file_path": "config/config.yaml",
+      "line_number": 175,
+      "evidence": "enabled: false",
+      "recommendation": "Set auth.enabled: true in production. Configure OIDC issuer_url, client_id, client_secret. Block high-privilege approvals when auth is off.",
+      "phi_impact": true,
+      "remediation_priority": "short_term",
+      "compliance_references": ["HIPAA §164.312(d)", "OWASP A07:2021", "PCI DSS Req-8.2.1"]
+    },
+    {
+      "id": "PII-001",
+      "title": "PII/PHI detection disabled (pii.enabled: false)",
+      "severity": "HIGH",
+      "stride_category": "Information Disclosure",
+      "cwe": "CWE-359",
+      "file_path": "config/config.yaml",
+      "line_number": 115,
+      "evidence": "enabled: false  # set true to activate scrubbing",
+      "recommendation": "Set pii.enabled: true; install presidio-analyzer + presidio-anonymizer. Set fail_on_detection: true for HIPAA workloads.",
+      "phi_impact": true,
+      "remediation_priority": "short_term",
+      "compliance_references": ["HIPAA §164.312(a)(2)(iv)", "GDPR Art. 25", "PCI DSS Req-3.2.1"]
+    },
+    {
+      "id": "HDR-001",
+      "title": "Missing HTTP security headers (HSTS, X-Content-Type-Options, X-Frame-Options, CSP)",
+      "severity": "HIGH",
+      "stride_category": "Tampering",
+      "cwe": "CWE-693",
+      "file_path": "src/interface/api.py",
+      "line_number": null,
+      "evidence": "Headers not found in api.py middleware chain",
+      "recommendation": "Add SecurityHeadersMiddleware: HSTS max-age=63072000; includeSubDomains; preload, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Content-Security-Policy: default-src 'self'.",
+      "phi_impact": false,
+      "remediation_priority": "short_term",
+      "compliance_references": ["OWASP A05:2021", "HIPAA §164.312(e)(1)", "PCI DSS Req-6.4.1"]
+    },
+    {
+      "id": "ENC-001",
+      "title": "Audit log SQLite not encrypted at application layer",
+      "severity": "HIGH",
+      "stride_category": "Information Disclosure",
+      "cwe": "CWE-311",
+      "file_path": "src/memory/audit_logger.py",
+      "line_number": null,
+      "evidence": "sqlite3 used without SQLCipher pragma key or field-level encryption",
+      "recommendation": "Use SQLCipher with PRAGMA key on connection open. Or: OS-level LUKS with Fernet AES-256 field encryption on PHI columns (input_context, content).",
+      "phi_impact": true,
+      "remediation_priority": "short_term",
+      "compliance_references": ["HIPAA §164.312(a)(2)(iv)", "HIPAA §164.312(e)(2)(ii)", "PCI DSS Req-3.4.1", "NIST SC-28"]
+    },
+    {
+      "id": "PHI-001",
+      "title": "Audit log stores raw input_context / chat content — may contain PHI",
+      "severity": "HIGH",
+      "stride_category": "Information Disclosure",
+      "cwe": "CWE-359",
+      "file_path": "src/memory/audit_logger.py",
+      "line_number": null,
+      "evidence": "Fields 'input_context' and 'content' written to audit_log.db without redaction",
+      "recommendation": "Enable pii.enabled: true before writing to audit log. Run PII filter on input_context before persistence. Apply field-level Fernet encryption to free-text content columns.",
+      "phi_impact": true,
+      "remediation_priority": "short_term",
+      "compliance_references": ["HIPAA §164.312(a)(2)(iv)", "HIPAA §164.308(a)(1)(ii)(D)"]
+    },
+    {
+      "id": "SBOM-001",
+      "title": "Unpinned dependency versions (27 packages)",
+      "severity": "MEDIUM",
+      "stride_category": "Tampering",
+      "cwe": "CWE-1104",
+      "file_path": "requirements.txt",
+      "line_number": 2,
+      "evidence": "Unpinned: pyyaml, pydantic, langfuse, chromadb, langchain, langchain-community, ...",
+      "recommendation": "Pin all versions; add pip-audit to CI; use pip-compile for transitive deps.",
+      "phi_impact": false,
+      "remediation_priority": "planned",
+      "compliance_references": ["OWASP A06:2021", "SLSA Level 2", "PCI DSS Req-6.3.3"]
+    },
+    {
+      "id": "CRYPT-001",
+      "title": "API keys hashed with SHA-256 without salt",
+      "severity": "MEDIUM",
+      "stride_category": "Spoofing",
+      "cwe": "CWE-916",
+      "file_path": "src/core/api_keys.py",
+      "line_number": null,
+      "evidence": "SHA-256 used without HMAC or salt in api_keys.py",
+      "recommendation": "Use HMAC-SHA256 with a secret key, or bcrypt/argon2. Add secrets.token_bytes(32) salt per key.",
+      "phi_impact": false,
+      "remediation_priority": "planned",
+      "compliance_references": ["OWASP A02:2021", "NIST SP 800-132", "PCI DSS Req-8.3.6"]
+    },
+    {
+      "id": "INJECT-001",
+      "title": "Subprocess calls pass unsanitized environment to external CLI tools",
+      "severity": "MEDIUM",
+      "stride_category": "Elevation of Privilege",
+      "cwe": "CWE-78",
+      "file_path": "src/core/llm_gateway.py",
+      "line_number": null,
+      "evidence": "subprocess.run(..., env=os.environ) in llm_gateway.py",
+      "recommendation": "Build env dict from allowlist of known-safe variables. Validate CLI paths against an allowlist before execution.",
+      "phi_impact": false,
+      "remediation_priority": "planned",
+      "compliance_references": ["OWASP A03:2021", "CWE-78"]
+    },
+    {
+      "id": "AUDIT-002",
+      "title": "Access audit logging implemented (AuditLogger present, API wired)",
+      "severity": "INFO",
+      "stride_category": "Repudiation",
+      "cwe": "",
+      "file_path": "src/memory/audit_logger.py",
+      "line_number": null,
+      "evidence": "AuditLogger class and audit calls detected in audit_logger.py and api.py",
+      "recommendation": "Verify 100% endpoint coverage with automated coverage check. Add PAYMENT_CHARGE, PAYMENT_REFUND, PAYMENT_AUTH_FAILURE event types.",
+      "phi_impact": false,
+      "remediation_priority": "planned",
+      "compliance_references": ["HIPAA §164.312(b)", "PCI DSS Req-10.2.1"]
+    }
+  ],
+
+  "root_cause_analysis": {
+    "systemic_causes": [
+      {
+        "id": "RCA-01",
+        "title": "Security features are opt-in, not opt-out",
+        "description": "auth.enabled, pii.enabled, and encryption.at_rest all default to false. This is correct for local development but creates a production misconfiguration trap. There is no startup guard that enforces these settings in non-development environments.",
+        "affected_findings": ["AUTH-001", "PII-001", "ENC-001", "PHI-001"],
+        "root_cause": "Development-first defaults with no environment-specific override enforcement",
+        "fix": "Add SAGE_ENV=production startup check that fails fast if auth.enabled=false or pii.enabled=false. Document 'production checklist' in deployment guide."
+      },
+      {
+        "id": "RCA-02",
+        "title": "CORS and security headers not part of the default middleware chain",
+        "description": "api.py CORSMiddleware ships with allow_origins=['*'] and no SecurityHeadersMiddleware. These are first-principles HTTP security hygiene items that should never require explicit configuration.",
+        "affected_findings": ["CORS-001", "HDR-001"],
+        "root_cause": "Default permissive CORS inherited from FastAPI boilerplate; security headers were not part of initial API scaffolding",
+        "fix": "Replace CORSMiddleware default with SAGE_ALLOWED_ORIGINS env var (require explicit set). Add SecurityHeadersMiddleware as a built-in unconditional middleware."
+      },
+      {
+        "id": "RCA-03",
+        "title": "Payment CDE scope not isolated from general SAGE data flows",
+        "description": "Payment payloads flow through the same audit_logger, pii_filter, and LLM gateway as non-payment tasks. PCI DSS requires a scoped cardholder data environment (CDE) with explicit controls.",
+        "affected_findings": ["PAN-001", "TOKEN-001", "PAN-002"],
+        "root_cause": "Payment gateway added to SAGE general framework without CDE isolation design review",
+        "fix": "Define /payment/* routes as CDE boundary. Enforce: (1) Token vault integration at ingress, (2) Payment-specific RBAC, (3) Payment-specific audit events, (4) On-premise LLM only for payment tasks (no external provider for CHD)."
+      }
+    ]
+  },
+
+  "remediation_roadmap": {
+    "immediate_0_7_days": [
+      {
+        "id": "CORS-001",
+        "action": "Replace allow_origins=['*'] with SAGE_ALLOWED_ORIGINS env var allowlist",
+        "owner": "Backend Engineer",
+        "file": "src/interface/api.py",
+        "effort": "1 hour"
+      },
+      {
+        "id": "TOKEN-001",
+        "action": "Integrate PCI-certified token vault; remove raw PAN acceptance from /payment/* routes",
+        "owner": "Payment Engineering Lead",
+        "file": "src/interface/api.py (payment routes)",
+        "effort": "1-2 days"
+      },
+      {
+        "id": "T-D-03",
+        "action": "Add @require_role(Role.ADMIN) to POST /shutdown; or remove endpoint entirely",
+        "owner": "Backend Engineer",
+        "file": "src/interface/api.py:467-493",
+        "effort": "30 minutes"
+      }
+    ],
+    "short_term_8_30_days": [
+      {
+        "id": "AUTH-001",
+        "action": "Set auth.enabled: true production default; add startup enforcement guard",
+        "owner": "DevOps + Backend Engineer",
+        "file": "config/config.yaml + src/core/auth.py",
+        "effort": "0.5 day"
+      },
+      {
+        "id": "PII-001",
+        "action": "Enable pii.enabled: true; install presidio; set fail_on_detection: true for HIPAA",
+        "owner": "Backend Engineer",
+        "file": "config/config.yaml + src/core/pii_filter.py",
+        "effort": "1 day"
+      },
+      {
+        "id": "HDR-001",
+        "action": "Add SecurityHeadersMiddleware (HSTS, X-Frame-Options DENY, CSP, nosniff)",
+        "owner": "Backend Engineer",
+        "file": "src/interface/api.py",
+        "effort": "2 hours"
+      },
+      {
+        "id": "ENC-001 + PHI-001",
+        "action": "SQLCipher PRAGMA key on audit_log.db; Fernet AES-256 field encryption on input_context/content",
+        "owner": "Backend Engineer",
+        "file": "src/memory/audit_logger.py",
+        "effort": "1-2 days"
+      },
+      {
+        "id": "PAN-001",
+        "action": "Enable pii.enabled: true with PAN regex; Fernet encrypt CHD columns; add CVV to blocked patterns",
+        "owner": "Backend Engineer",
+        "file": "src/memory/audit_logger.py + config/config.yaml",
+        "effort": "1 day (combined with ENC-001)"
+      }
+    ],
+    "planned_31_90_days": [
+      {
+        "id": "SBOM-001",
+        "action": "Pin all requirements.txt; add pip-audit to CI; automate SBOM regeneration on merge",
+        "owner": "DevOps",
+        "effort": "0.5 day"
+      },
+      {
+        "id": "CRYPT-001",
+        "action": "Switch API key hashing to HMAC-SHA256 with secret key or bcrypt/argon2",
+        "owner": "Backend Engineer",
+        "file": "src/core/api_keys.py",
+        "effort": "0.5 day"
+      },
+      {
+        "id": "INJECT-001",
+        "action": "Build subprocess env dict from allowlist; validate CLI paths",
+        "owner": "Backend Engineer",
+        "file": "src/core/llm_gateway.py",
+        "effort": "0.5 day"
+      },
+      {
+        "id": "PCI-MFA",
+        "action": "Require amr=mfa JWT claim for payment charge operations > $0",
+        "owner": "Backend Engineer",
+        "file": "src/core/auth.py",
+        "effort": "1 day"
+      },
+      {
+        "id": "PCI-AUDIT-RETENTION",
+        "action": "Export audit_log.db to S3 WORM bucket nightly; enforce 12-month retention",
+        "owner": "DevOps",
+        "effort": "1 day"
+      },
+      {
+        "id": "PENTEST-EXECUTION",
+        "action": "Execute pentest_plan.yaml against patched instance; all 17 test cases must PASS",
+        "owner": "Security Analyst",
+        "effort": "3-5 days"
+      }
+    ]
+  },
+
+  "sbom_summary": {
+    "format": "CycloneDX v1.5",
+    "file": "security_audit/sbom.json",
+    "serial_number": "urn:uuid:25f548f3-be69-48e9-950d-c7b282c1e163",
+    "unpinned_count": 18,
+    "framework_name": "SAGE Framework",
+    "framework_version": "0.0.0-dev",
+    "branch": "feature/domain-runners",
+    "phi_at_rest": "NOT_MET",
+    "phi_in_transit": "PARTIAL",
+    "audit_logging": "PARTIAL",
+    "pii_filter": "DISABLED",
+    "auth_status": "DISABLED",
+    "action_required": "Pin all dependencies before SBOM reflects accurate CVE exposure"
+  },
+
+  "pci_dss_summary": {
+    "saq_type": "SAQ-D (Service Provider)",
+    "version": "4.0",
+    "file": "security_audit/payment_gateway/pci_dss_saq.json",
+    "overall_status": "NON-COMPLIANT",
+    "controls_assessed": 24,
+    "pass": 4,
+    "partial": 12,
+    "fail": 5,
+    "not_assessed": 3,
+    "blocking_issues": 5,
+    "qsa_review_required": true,
+    "remediation_required_before_processing": true,
+    "next_assessment_due": "2026-06-28"
+  },
+
+  "pentest_plan_summary": {
+    "file": "security_audit/pentest_plan.yaml",
+    "version": "1.0.0",
+    "methodology": ["OWASP API Security Top 10 (2023)", "NIST SP 800-115", "PTES"],
+    "total_test_cases": 17,
+    "execution_status": "NOT_STARTED — awaiting remediation of CRITICAL/HIGH findings",
+    "known_failures_before_patching": [
+      "TC-API2-03: /shutdown unauthenticated (T-D-03)",
+      "TC-PHI-01: PHI leakage to external LLM (PII-001)",
+      "TC-PHI-02: Audit log PHI readable at rest (ENC-001)"
+    ],
+    "authorization_status": "PENDING — authorization_memo.pdf not yet issued"
+  }
+}

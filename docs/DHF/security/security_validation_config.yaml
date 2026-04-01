@@ -1,0 +1,525 @@
+---
+# Security Validation Pipeline Configuration
+# Document ID: DHF-SEC-SVPC-001
+# Revision: 1.0
+# Date: 2026-03-27
+# Standards: IEC 62443-4-1, FDA Cybersecurity Guidance 2023, OWASP Testing Guide
+# ─────────────────────────────────────────────────────────────────────────────
+# This file configures all automated security validation tooling for the
+# Wearable Fall Detection System (WFDS) DHF security test execution pipeline.
+# Consumed by run_security_validation.py to orchestrate the full test suite.
+# ─────────────────────────────────────────────────────────────────────────────
+
+metadata:
+  config_version: "1.0"
+  device: "Wearable Fall Detection System (WFDS)"
+  device_id: "WFDS-nRF5340-v1"
+  report_document_id: "DHF-SEC-STR-001"
+  dhf_output_dir: "docs/DHF/security/"
+  evidence_archive: "docs/DHF/security/evidence/"
+  acceptance_criteria:
+    max_bandit_severity: "MEDIUM"           # FAIL if HIGH or CRITICAL found
+    max_cvss_allowed: 7.0                   # FAIL if CVE >= 7.0 found
+    max_pentest_severity: "MEDIUM"          # FAIL if HIGH or CRITICAL pentest finding
+    ble_pairing_key_exposure: false         # FAIL if pairing keys exposed
+    ota_tampered_accepted: false            # FAIL if tampered OTA image accepted
+    report_signed: true                     # FAIL if report not signed
+    device_identity_provisioned: true       # FAIL if not provisioned
+    firmware_signing_enabled: true          # FAIL if signing not enabled
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SECTION 1: FIRMWARE STATIC ANALYSIS
+# ═══════════════════════════════════════════════════════════════════════════════
+firmware_static_analysis:
+  enabled: true
+  section_id: "SEC-SA-FW"
+  standard: "MISRA C:2012"
+
+  pclint:
+    tool: "pclint+"
+    version: "2.0"
+    binary: "pclp64"
+    config_file: "firmware/lint/pclint_misra_c2012.lnt"
+    source_dirs:
+      - "firmware/src/"
+    include_dirs:
+      - "firmware/src/include/"
+      - "firmware/zephyr/include/"
+      - "firmware/modules/hal/nordic/nrfx/drivers/include/"
+    output_format: "json"
+    output_file: "docs/DHF/security/evidence/pclint_report.json"
+    # Violations that constitute FAIL
+    fail_on:
+      - severity: "error"      # MISRA mandatory
+      - severity: "warning"    # MISRA required (undocumented)
+    # Advisory deviations are OK if documented in DHF-FW-MISRA-DEV-001
+    advisory_deviation_register: "firmware/lint/misra_deviations.yaml"
+    max_advisory_violations: 10
+    supplemental:
+      tool: "clang-tidy"
+      version: "16"
+      checks:
+        - "clang-analyzer-*"
+        - "cert-*"
+        - "cppcoreguidelines-*"
+        - "-cppcoreguidelines-pro-type-reinterpret-cast"  # Allow per MISRA dev doc
+      output_file: "docs/DHF/security/evidence/clang_tidy_report.json"
+
+  acceptance_criteria:
+    mandatory_violations_allowed: 0
+    required_violations_allowed: 0
+    advisory_violations_require_documented_deviation: true
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SECTION 2: BACKEND PYTHON SAST
+# ═══════════════════════════════════════════════════════════════════════════════
+backend_sast:
+  enabled: true
+  section_id: "SEC-SA-BE"
+  source_root: "src/"
+
+  bandit:
+    tool: "bandit"
+    version: ">=1.7.8"
+    command: ["bandit", "-r", "src/", "-ll", "-f", "json"]
+    config_file: ".bandit"
+    output_file: "docs/DHF/security/evidence/bandit_report.json"
+    # Report only MEDIUM+ (-ll flag), fail on HIGH or CRITICAL
+    fail_on_severity: ["HIGH", "CRITICAL"]
+    fail_on_confidence: "HIGH"
+    # Explicit exclusions require justification in this config
+    exclusions:
+      - path: "src/integrations/sandbox_runner.py"
+        test_id: "B603"
+        justification: "Remediated in commit f4a8c2d — shell=False with shlex.quote(). False positive in post-fix scan if this config pre-dates the fix."
+        status: "REMEDIATED"
+    skipped_paths:
+      - "src/.venv/"
+      - "tests/"
+      - "*/__pycache__/"
+
+  semgrep:
+    tool: "semgrep"
+    version: ">=1.68.0"
+    output_file: "docs/DHF/security/evidence/semgrep_report.json"
+    rulesets:
+      - "p/owasp-top-ten"
+      - "p/python"
+      - "p/secrets"
+      - "p/flask"
+      - "p/jwt"
+      - "p/bandit"              # Overlap with Bandit for cross-validation
+    fail_on_severity: ["ERROR", "WARNING"]
+    # Semgrep severity mapping: ERROR→HIGH/CRITICAL, WARNING→MEDIUM
+    max_warnings_allowed: 0     # Zero tolerance for unaddressed findings
+    ignore_paths:
+      - "src/.venv/"
+      - "tests/"
+
+  acceptance_criteria:
+    max_bandit_severity: "MEDIUM"    # HIGH or CRITICAL = FAIL
+    max_semgrep_severity: "WARNING"  # ERROR = FAIL
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SECTION 3: DEPENDENCY VULNERABILITY SCAN
+# ═══════════════════════════════════════════════════════════════════════════════
+dependency_scan:
+  enabled: true
+  section_id: "SEC-DEP"
+
+  trivy:
+    tool: "trivy"
+    version: ">=0.50.0"
+    scan_targets:
+      - path: "."
+        type: "fs"
+        scanners: ["vuln", "secret"]
+    output_file: "docs/DHF/security/evidence/trivy_report.json"
+    output_format: "json"
+    severity_filter: ["CRITICAL", "HIGH", "MEDIUM", "LOW"]
+    databases:
+      - "NVD"
+      - "OSV"
+      - "GitHub Advisory Database"
+    ignore_unfixed: false
+    # CVEs waived with documented justification
+    ignore_file: ".trivyignore"
+
+  pip_audit:
+    tool: "pip-audit"
+    version: ">=2.7.0"
+    command: ["pip-audit", "--format", "json", "--strict"]
+    output_file: "docs/DHF/security/evidence/pip_audit_report.json"
+    requirements_files:
+      - "requirements.txt"
+      - "requirements-dev.txt"
+    ignore_vuln: []   # No ignores — all findings must be remediated or documented
+
+  npm_audit:
+    tool: "npm"
+    version: ">=10.0.0"
+    command: ["npm", "audit", "--audit-level=moderate", "--json"]
+    working_dir: "vscode-extension/"
+    output_file: "docs/DHF/security/evidence/npm_audit_report.json"
+    audit_level: "moderate"   # Report MODERATE and above, FAIL on HIGH/CRITICAL
+
+  firmware_sbom:
+    tool: "trivy"
+    command: ["trivy", "fs", "--scanners", "vuln", "--format", "json"]
+    target: "firmware/"
+    output_file: "docs/DHF/security/evidence/trivy_firmware_report.json"
+    # Firmware C library CVEs (newlib, Zephyr, nRF SDK)
+    nvd_feeds:
+      - "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-recent.json.gz"
+
+  acceptance_criteria:
+    max_cvss_score: 6.9    # Any CVE >= 7.0 = FAIL
+    ecosystems:
+      - python
+      - npm
+      - firmware_c_libs
+    cve_exceptions: []     # No exceptions — all high/critical must be remediated
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SECTION 4: REST API PENETRATION TEST
+# ═══════════════════════════════════════════════════════════════════════════════
+api_pentest:
+  enabled: true
+  section_id: "SEC-PEN-API"
+  methodology: "OWASP API Security Testing Guide v1.0"
+  standard: "OWASP API Security Top 10:2023"
+
+  target:
+    base_url: "${API_PENTEST_BASE_URL}"     # Injected from environment — staging only
+    openapi_spec: "docs/api_spec/openapi.yaml"
+    environment: "staging"                  # NEVER run against production
+    auth_endpoints:
+      - path: "/auth/token"
+        method: "POST"
+      - path: "/auth/refresh"
+        method: "POST"
+
+  automated_scan:
+    tool: "OWASP ZAP"
+    version: "2.14.0"
+    mode: "API_SCAN"
+    config: "security_audit/zap_api_scan_config.yaml"
+    output_file: "docs/DHF/security/evidence/zap_scan_report.json"
+    # ZAP API scan against OpenAPI spec
+    api_scan_args:
+      - "-t"
+      - "docs/api_spec/openapi.yaml"
+      - "-f"
+      - "openapi"
+      - "-r"
+      - "docs/DHF/security/evidence/zap_html_report.html"
+
+  manual_test_checklist:
+    # Checklist for CREST-accredited tester
+    owasp_api_top10:
+      - id: "API1:2023"
+        name: "Broken Object Level Authorization (BOLA)"
+        tests:
+          - "IDOR via numeric ID manipulation in patient, device, alert endpoints"
+          - "UUID enumeration via sequential/predictable IDs"
+          - "Cross-tenant data access via modified JWT sub"
+        pass_criteria: "HTTP 403 for all unauthorized access attempts"
+
+      - id: "API2:2023"
+        name: "Broken Authentication"
+        tests:
+          - "JWT algorithm confusion (RS256 → HS256)"
+          - "JWT none algorithm"
+          - "JWT exp bypass"
+          - "Brute-force rate limit verification"
+          - "Password reset token entropy analysis"
+        pass_criteria: "All auth bypass attempts return 401/403. Rate limits active."
+
+      - id: "API3:2023"
+        name: "Broken Object Property Level Authorization"
+        tests:
+          - "Mass assignment via PUT with extra fields (role, is_admin)"
+          - "Excessive data in GET responses (PII not in response model)"
+        pass_criteria: "No undeclared fields writable. Response schema enforced."
+
+      - id: "API4:2023"
+        name: "Unrestricted Resource Consumption"
+        tests:
+          - "Large payload (50 MB body)"
+          - "Pagination abuse (?limit=100000)"
+          - "LLM endpoint rate limit under load"
+        pass_criteria: "429 responses within configured thresholds."
+
+      - id: "API5:2023"
+        name: "Broken Function Level Authorization"
+        tests:
+          - "/admin/* with non-admin JWT"
+          - "/config/switch with user role"
+          - "/approvals/{id}/approve with analyst role"
+        pass_criteria: "HTTP 403 for all unauthorized function calls."
+
+      - id: "API6:2023"
+        name: "Unrestricted Access to Sensitive Business Flows"
+        tests:
+          - "Self-approval of own proposal"
+          - "Double-spend approval attempt"
+          - "State machine bypass"
+        pass_criteria: "Business logic constraints enforced at DB layer."
+
+      - id: "API7:2023"
+        name: "SSRF"
+        tests:
+          - "Webhook URL → 169.254.169.254"
+          - "Webhook URL → internal K8s DNS"
+          - "file:// and gopher:// schemes"
+        pass_criteria: "All internal/scheme-abuse blocked. Allowlist enforced."
+
+      - id: "API8:2023"
+        name: "Security Misconfiguration"
+        tests:
+          - "HTTP security headers (HSTS, CSP, X-Content-Type)"
+          - "TLS 1.0/1.1 disabled"
+          - "Debug endpoints"
+          - "CORS policy"
+        pass_criteria: "All security headers present. No TLS < 1.2. No debug endpoints."
+
+      - id: "API9:2023"
+        name: "Improper Inventory Management"
+        tests:
+          - "Swagger UI in production/staging"
+          - "Deprecated endpoint discovery"
+          - "Undocumented endpoint fuzzing"
+        pass_criteria: "Swagger UI disabled. No undocumented endpoints responding with 200."
+
+      - id: "API10:2023"
+        name: "Unsafe Consumption of APIs"
+        tests:
+          - "LLM prompt injection via knowledge store"
+          - "Deserialization of external webhook payloads"
+          - "Schema validation of LLM structured outputs"
+        pass_criteria: "LLM outputs validated by Pydantic. yaml.safe_load() only."
+
+  acceptance_criteria:
+    critical_findings_allowed: 0
+    high_findings_allowed: 0
+    medium_findings_must_be_remediated_before_signoff: true
+    tester_certification_required: "CREST"
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SECTION 5: BLE PAIRING SECURITY TEST
+# ═══════════════════════════════════════════════════════════════════════════════
+ble_security:
+  enabled: true
+  section_id: "SEC-BLE"
+  standard: "Bluetooth Core Specification 5.3 / NIST SP 800-121r2"
+
+  device_config:
+    ble_version: "5.3"
+    pairing_mode: "LESC_NUMERIC_COMPARISON"
+    ecdh_curve: "P-256"
+    encryption: "AES-CCM-128"
+    lesc_enforced: true
+    legacy_pairing_rejected: true
+
+  test_equipment:
+    passive_sniffer:
+      device: "Ubertooth One"
+      software: "ubertooth-tools 2020-12-R1"
+      supplemental: "nRF Sniffer for Bluetooth LE (USB dongle)"
+    capture_software: "Wireshark 4.2 with BTLE dissector"
+    mitm_framework: "btlejuice"
+    replay_tools:
+      - "Scapy 2.5.0 with Bluetooth layer"
+      - "pyBluez 0.23"
+      - "custom_ble_replay.py (see security_audit/ble_tests/)"
+
+  tests:
+    BLE-T-001:
+      name: "Passive Eavesdropping — Pairing Key Exposure"
+      automated: false    # Manual test — requires hardware
+      channels_monitored: [37, 38, 39]
+      pairing_pdus_captured:
+        - "ADV_IND"
+        - "CONNECT_IND"
+        - "SM_PAIRING_REQ"
+        - "SM_PAIRING_RSP"
+        - "SM_PUBLIC_KEY"
+        - "SM_DHKEY_CHECK"
+      pass_criteria:
+        ltk_in_capture: false
+        passkey_in_capture: false
+        private_key_recoverable: false
+      evidence_file: "docs/DHF/security/evidence/BLE-T-001-capture.pcapng"
+
+    BLE-T-002:
+      name: "Post-Pairing Data Confidentiality"
+      automated: false
+      test_payload: "fall_detection_alert"
+      pass_criteria:
+        plaintext_phi_in_capture: false
+        encryption_verified: "AES-CCM-128"
+      evidence_file: "docs/DHF/security/evidence/BLE-T-002-encrypted-capture.pcapng"
+
+    BLE-T-003:
+      name: "Replay Attack Prevention"
+      automated: false
+      replay_targets:
+        - "config_write_characteristic"
+        - "ota_trigger_characteristic"
+        - "fall_suppress_characteristic"
+      pass_criteria:
+        replay_accepted: false
+        packet_counter_protection: true
+        mitm_detected: true
+      evidence_file: "docs/DHF/security/evidence/BLE-T-003-replay-attempt-log.txt"
+
+    BLE-T-004:
+      name: "Legacy Pairing Downgrade Rejection"
+      automated: false
+      test_method: "Android device forced to legacy Just Works mode"
+      pass_criteria:
+        legacy_pairing_accepted: false
+        smp_error_code: "0x05"   # Pairing Not Supported
+
+  acceptance_criteria:
+    pairing_key_exposure: false
+    replay_attack_success: false
+    legacy_pairing_accepted: false
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SECTION 6: OTA FIRMWARE UPDATE INTEGRITY
+# ═══════════════════════════════════════════════════════════════════════════════
+ota_integrity:
+  enabled: true
+  section_id: "SEC-OTA"
+  standard: "MCUboot 1.10.0 / NIST SP 800-147B / IEC 62443-4-2 CR 3.4"
+
+  mcuboot_config:
+    version: "1.10.0"
+    signing_algorithm: "RSA-3072-PSS-SHA256"
+    downgrade_prevention: true
+    anti_rollback: true
+    swap_type: "SCRATCH"
+
+  signing_infrastructure:
+    hsm: "AWS CloudHSM"
+    code_signer: "AWS CodeSigner"
+    key_algorithm: "RSA-3072"
+    ci_sign_trigger: "git-tag-release-only"
+    imgtool_path: "firmware/scripts/imgtool.py"
+    signing_key_public: "firmware/keys/production_signing_pub.pem"
+
+  tests:
+    OTA-T-001:
+      name: "Valid Signed Image — Acceptance"
+      tamper: none
+      expected_result: "BOOT_SUCCESS"
+      automated: true
+      script: "security_audit/ota_tests/test_valid_image.sh"
+
+    OTA-T-002:
+      name: "Tampered Image (Single Byte Flip) — Rejection"
+      tamper:
+        method: "single_byte_flip"
+        offset: "0x1000"
+      expected_result: "BOOT_REJECTED"
+      expected_mcuboot_error: "Image in the secondary slot is not valid!"
+      automated: true
+      script: "security_audit/ota_tests/test_tampered_image.sh"
+      evidence_file: "docs/DHF/security/evidence/OTA-T-002-rtt-log.txt"
+
+    OTA-T-003:
+      name: "Unsigned Image — Rejection"
+      tamper:
+        method: "no_signature"
+      expected_result: "BOOT_REJECTED"
+      expected_mcuboot_error: "No signature TLV found"
+      automated: true
+      script: "security_audit/ota_tests/test_unsigned_image.sh"
+
+    OTA-T-004:
+      name: "Wrong Key Signed Image — Rejection"
+      tamper:
+        method: "wrong_signing_key"
+        key: "security_audit/ota_tests/test_keys/test_rsa3072_priv.pem"
+      expected_result: "BOOT_REJECTED"
+      expected_mcuboot_error: "Image has wrong public key hash in TLV"
+      automated: true
+      script: "security_audit/ota_tests/test_wrong_key.sh"
+
+    OTA-T-005:
+      name: "Anti-Rollback — Downgrade Rejection"
+      tamper:
+        method: "lower_security_counter"
+        current_counter: 3
+        downgrade_counter: 1
+      expected_result: "BOOT_REJECTED"
+      expected_mcuboot_error: "Security counter of the new image"
+      automated: true
+      script: "security_audit/ota_tests/test_antirollback.sh"
+
+    OTA-T-006:
+      name: "OTA Transport Security"
+      tests:
+        - "Upload without mTLS certificate → expect HTTP 401"
+        - "Upload with expired certificate → expect HTTP 403"
+        - "Verify TLS 1.3 on /api/v1/ota/upload"
+      automated: true
+      script: "security_audit/ota_tests/test_ota_transport.sh"
+
+  device_identity_provisioning:
+    test_units: 5
+    script: "manufacturing/test_provisioning.py"
+    verify_kmu_non_exportable: true
+    verify_cert_cn_matches_serial: true
+    database: "manufacturing/provisioning_db.sqlite"
+
+  acceptance_criteria:
+    valid_image_accepted: true
+    tampered_image_accepted: false
+    unsigned_image_accepted: false
+    wrong_key_accepted: false
+    downgrade_accepted: false
+    device_identity_provisioned: true
+    firmware_signing_enabled: true
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# REPORTING
+# ═══════════════════════════════════════════════════════════════════════════════
+reporting:
+  output_dir: "docs/DHF/security/"
+  report_filename: "security_test_report.json"
+  evidence_dir: "docs/DHF/security/evidence/"
+  standard_clauses_to_cover:
+    - "IEC 62443-3-3:2013 SR 1.1"   # Identification and authentication control
+    - "IEC 62443-3-3:2013 SR 1.2"   # Software process and device authentication
+    - "IEC 62443-3-3:2013 SR 2.1"   # Authorization enforcement
+    - "IEC 62443-3-3:2013 SR 3.1"   # Communication integrity
+    - "IEC 62443-3-3:2013 SR 3.3"   # Security functionality verification
+    - "IEC 62443-3-3:2013 SR 3.4"   # Software and information integrity
+    - "IEC 62443-4-2:2019 CR 1.2"   # Software process and device authentication
+    - "IEC 62443-4-2:2019 CR 4.2"   # Use of cryptography
+    - "IEC 62443-4-1:2018 SR-2.1"   # Threat model and security requirements
+    - "FDA 21 CFR Part 820.30(g)"   # Design validation
+    - "FDA 21 CFR Part 11"          # Electronic records / signatures
+    - "OWASP API Security Top 10:2023 API1-API10"
+    - "MISRA C:2012 Mandatory and Required rules"
+    - "NIST SP 800-115 §4"          # Security testing techniques
+    - "ISO 14971:2019 §6"           # Risk control effectiveness evaluation
+  dhf_references:
+    - "DHF-SEC-TM-001 — STRIDE Threat Model"
+    - "DHF-SEC-SRTM-001 — Security Requirements Traceability Matrix"
+    - "DHF-RM-001 — Risk Management File"
+    - "DHF-FW-MISRA-DEV-001 — MISRA Deviation Register"
+    - "DHF-SEC-KMG-001 — Key Management and HSM Custody"
+  fail_fast: false    # Collect all results before determining overall PASS/FAIL
+  notify_on_failure:
+    channels: ["security-team", "regulatory-team"]
+    method: "slack"

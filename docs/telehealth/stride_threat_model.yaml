@@ -1,0 +1,1147 @@
+---
+# ============================================================
+# STRIDE Threat Model — HIPAA-Compliant Telehealth Platform
+# ============================================================
+# Standard:       ISO/IEC 27001:2022, NIST SP 800-30 r1,
+#                 HIPAA Security Rule (45 CFR §164), HITRUST CSF v11
+# Methodology:    STRIDE (Microsoft), DREAD scoring overlay
+# Classification: Confidential — Internal Security Documentation
+# Version:        1.0.0
+# Date:           2026-03-28
+# Author:         SAGE Safety Engineer (AI-assisted, human-reviewed)
+# ============================================================
+
+metadata:
+  document_id: "TM-TELEHEALTH-001"
+  platform: "HIPAA-Compliant Multi-Tenant Telehealth Platform"
+  version: "1.0.0"
+  date: "2026-03-28"
+  classification: "CONFIDENTIAL"
+  review_cycle: "Annual or after material architecture change"
+  regulatory_basis:
+    - "45 CFR Parts 160, 162, 164 (HIPAA Privacy + Security + Breach Notification)"
+    - "HITECH Act (Pub.L. 111-5, Title XIII)"
+    - "NIST SP 800-30 Rev 1 — Risk Assessment Guide"
+    - "NIST SP 800-53 Rev 5 — Security and Privacy Controls"
+    - "NIST SP 800-66 Rev 2 — HIPAA Security Rule Guide"
+    - "OWASP Top 10 2021"
+    - "OWASP API Security Top 10 2023"
+    - "ISO/IEC 27001:2022 Annex A"
+    - "HITRUST CSF v11"
+    - "CIS Controls v8"
+
+# ============================================================
+# SECTION 1: TRUST BOUNDARIES AND SYSTEM COMPONENTS
+# ============================================================
+trust_boundaries:
+  - id: "TB-01"
+    name: "Public Internet ↔ Platform Edge"
+    description: >
+      Boundary between untrusted public internet (patient browsers, mobile apps,
+      provider workstations) and the platform API Gateway. All PHI-bearing traffic
+      crosses here. Primary ingress point for external threat actors.
+    components_inside: ["API Gateway", "WAF", "DDoS Protection"]
+    components_outside: ["Patient Browser", "Provider App", "Pharmacy Systems", "Payer APIs"]
+    phi_crossing: true
+    tls_required: true
+
+  - id: "TB-02"
+    name: "API Gateway ↔ Microservices"
+    description: >
+      Internal service mesh boundary. JWT tokens validated here. Tenant routing
+      via X-SAGE-Tenant header enforced. mTLS between services.
+    components_inside:
+      - "Video Session Service"
+      - "E-Prescribing Service"
+      - "EHR Integration Service"
+      - "AI Symptom Checker"
+      - "Billing Service"
+      - "Auth Service"
+      - "Audit Logger"
+    phi_crossing: true
+    mtls_required: true
+
+  - id: "TB-03"
+    name: "Application Layer ↔ Data Layer"
+    description: >
+      Database and object storage boundary. Schema-per-tenant PostgreSQL isolation.
+      KMS encryption key per tenant for S3 objects and database columns.
+    components_inside:
+      - "PostgreSQL (schema-per-tenant)"
+      - "S3 PHI Storage (per-tenant prefix)"
+      - "Redis Cache (session tokens)"
+      - "Audit Log SQLite/PostgreSQL"
+    phi_crossing: true
+    encryption_at_rest: "AES-256-GCM, tenant KMS key"
+
+  - id: "TB-04"
+    name: "Platform ↔ Third-Party Integrations"
+    description: >
+      Connections to external systems: Surescripts (e-prescribing), PDMP (state drug
+      monitoring), FDB (drug interaction), EHR systems (FHIR R4), payer claim clearinghouses.
+      Each requires BAA (Business Associate Agreement).
+    external_systems:
+      - name: "Surescripts"
+        baa_required: true
+        phi_shared: ["Patient demographics", "Prescription data", "Medication history"]
+      - name: "State PDMP Networks"
+        baa_required: true
+        phi_shared: ["Patient name", "DOB", "Controlled substance history"]
+      - name: "FDB (First Databank) Drug Interaction API"
+        baa_required: true
+        phi_shared: ["Medication codes (no direct patient ID)"]
+      - name: "EHR Systems (Epic, Cerner, Athena)"
+        baa_required: true
+        phi_shared: ["Full patient record via FHIR R4"]
+      - name: "Payer Clearinghouses (Availity, Change Healthcare)"
+        baa_required: true
+        phi_shared: ["Claim data", "Member IDs", "Diagnosis codes"]
+
+  - id: "TB-05"
+    name: "Platform ↔ WebRTC Media Plane"
+    description: >
+      DTLS-SRTP encrypted audio/video streams for video consultations. Media plane
+      is separate from signaling plane. TURN server relay for NAT traversal.
+    phi_crossing: true
+    encryption: "DTLS-SRTP (RFC 5764)"
+    components: ["WebRTC Signaling (WSS)", "STUN/TURN Servers", "Media Recording Service"]
+
+# ============================================================
+# SECTION 2: PHI ATTACK SURFACES
+# ============================================================
+phi_attack_surfaces:
+  - id: "AS-01"
+    name: "Patient Authentication Endpoint"
+    url_pattern: "/auth/login, /auth/mfa, /auth/oauth2/callback"
+    phi_exposed: ["Email/username", "Session tokens post-auth"]
+    threat_categories: ["Spoofing", "Information Disclosure"]
+    sensitivity: "CRITICAL"
+    notes: "Entry point for patient identity compromise. MFA bypass leads to full PHI access."
+
+  - id: "AS-02"
+    name: "Video Consultation WebRTC Signaling"
+    url_pattern: "wss://platform/video/session/{session_id}/signal"
+    phi_exposed: ["Session metadata", "Participant identity", "Audio/video stream (DTLS-SRTP)"]
+    threat_categories: ["Spoofing", "Information Disclosure", "Tampering", "Denial of Service"]
+    sensitivity: "CRITICAL"
+    notes: "Session hijack allows eavesdropping on clinical consultation."
+
+  - id: "AS-03"
+    name: "E-Prescription API"
+    url_pattern: "/api/v1/prescriptions, /api/v1/prescriptions/{id}"
+    phi_exposed: ["Patient name", "DOB", "Address", "Medication", "Diagnosis code", "DEA number"]
+    threat_categories: ["Tampering", "Repudiation", "Elevation of Privilege"]
+    sensitivity: "CRITICAL"
+    notes: "Tampered prescriptions risk patient harm. Unauthorized access enables drug diversion."
+
+  - id: "AS-04"
+    name: "EHR FHIR Integration Endpoint"
+    url_pattern: "/api/v1/ehr/fhir/r4/{tenant}/Patient, /Observation, /MedicationRequest"
+    phi_exposed: ["Complete patient record", "All 18 HIPAA identifiers"]
+    threat_categories: ["Information Disclosure", "Elevation of Privilege", "Tampering"]
+    sensitivity: "CRITICAL"
+    notes: "FHIR bulk export (/$export) could exfiltrate entire tenant patient population."
+
+  - id: "AS-05"
+    name: "AI Symptom Checker Inference Endpoint"
+    url_pattern: "/api/v1/triage/assess"
+    phi_exposed: ["Symptoms", "Medical history context", "Age/sex", "Chief complaint"]
+    threat_categories: ["Information Disclosure", "Tampering"]
+    sensitivity: "HIGH"
+    notes: "Model inversion attacks could reconstruct PHI from inference patterns."
+
+  - id: "AS-06"
+    name: "Patient Portal — File Upload (Medical Records)"
+    url_pattern: "/api/v1/documents/upload"
+    phi_exposed: ["Medical documents", "Lab results", "Imaging reports"]
+    threat_categories: ["Tampering", "Denial of Service", "Information Disclosure"]
+    sensitivity: "HIGH"
+    notes: "Malicious file upload could compromise document processing pipeline."
+
+  - id: "AS-07"
+    name: "Multi-Tenant Admin API"
+    url_pattern: "/admin/tenants, /admin/tenants/{id}/config"
+    phi_exposed: ["Tenant PHI configuration", "Encryption key references", "Provider rosters"]
+    threat_categories: ["Elevation of Privilege", "Information Disclosure", "Tampering"]
+    sensitivity: "CRITICAL"
+    notes: "Tenant admin compromise enables cross-tenant PHI access if RBAC is bypassed."
+
+  - id: "AS-08"
+    name: "Billing / Claims API"
+    url_pattern: "/api/v1/billing/claims, /api/v1/billing/eligibility"
+    phi_exposed: ["SSN (payer ID)", "Diagnosis codes", "Procedure codes", "Member IDs"]
+    threat_categories: ["Information Disclosure", "Repudiation", "Tampering"]
+    sensitivity: "HIGH"
+    notes: "Claims data enables insurance fraud, identity theft, and re-identification."
+
+  - id: "AS-09"
+    name: "Audit Log Export API"
+    url_pattern: "/api/v1/audit/export, /api/v1/audit/query"
+    phi_exposed: ["Access patterns", "User identities", "PHI access timestamps", "Action types"]
+    threat_categories: ["Information Disclosure", "Repudiation", "Tampering"]
+    sensitivity: "HIGH"
+    notes: "Audit log tampering destroys HIPAA compliance evidence. Unauthorized export leaks access metadata."
+
+  - id: "AS-10"
+    name: "PDMP Query Integration"
+    url_pattern: "External: state PDMP gateway (per-state endpoint)"
+    phi_exposed: ["Patient identity", "Controlled substance history", "Prescriber identity"]
+    threat_categories: ["Information Disclosure", "Spoofing"]
+    sensitivity: "CRITICAL"
+    notes: "PDMP data is among the most sensitive PHI categories — controlled substance history."
+
+  - id: "AS-11"
+    name: "Mobile Application (iOS/Android)"
+    url_pattern: "Native app — local storage, push notifications, biometric auth"
+    phi_exposed: ["Cached appointment data", "Notification payloads", "Biometric tokens"]
+    threat_categories: ["Information Disclosure", "Spoofing", "Tampering"]
+    sensitivity: "HIGH"
+    notes: "Device theft or malware could expose locally cached PHI. Push notifications may contain PHI."
+
+  - id: "AS-12"
+    name: "Provider Scheduling and Calendar API"
+    url_pattern: "/api/v1/schedule, /api/v1/appointments/{id}"
+    phi_exposed: ["Patient name", "Visit reason", "Provider identity", "Appointment times"]
+    threat_categories: ["Information Disclosure", "Tampering", "Repudiation"]
+    sensitivity: "MEDIUM"
+    notes: "Appointment metadata enables patient re-identification and social engineering."
+
+# ============================================================
+# SECTION 3: STRIDE THREAT CATALOG
+# ============================================================
+# Scoring: Severity (1-5), Likelihood (1-5), Detectability (1-5)
+# Risk Priority Number (RPN) = Severity × Likelihood × (6 - Detectability)
+# RPN thresholds: CRITICAL ≥ 60, HIGH 30-59, MEDIUM 15-29, LOW < 15
+# ============================================================
+
+stride_threats:
+
+  # ---- SPOOFING ----
+  - category: "Spoofing"
+    threats:
+      - id: "S-01"
+        title: "Patient Identity Spoofing via Credential Stuffing"
+        attack_surface: "AS-01"
+        description: >
+          Attacker uses breached credential databases (credential stuffing) to authenticate
+          as legitimate patients. Once authenticated, full PHI access is granted including
+          medical records, prescriptions, and appointment history.
+        threat_actor: "Organized cybercriminal, opportunistic attacker"
+        attack_vector: "Network (public internet)"
+        phi_at_risk: ["All 18 HIPAA identifiers for compromised account"]
+        preconditions: ["Patient reuses passwords from other breached services", "MFA not enforced"]
+        impact: "CRITICAL — unauthorized PHI access, potential identity theft, HIPAA breach notification required"
+        severity: 5
+        likelihood: 4
+        detectability: 3
+        rpn: 60
+        risk_level: "CRITICAL"
+        mitre_attack: ["T1110.004 — Credential Stuffing"]
+        controls:
+          - id: "C-S-01a"
+            control: "Enforce MFA for all patient accounts (TOTP, SMS, push)"
+            type: "Preventive"
+            standard_ref: "NIST SP 800-53 IA-2, HIPAA §164.312(d)"
+          - id: "C-S-01b"
+            control: "Rate limiting + CAPTCHA on login endpoint (≤5 attempts/min/IP)"
+            type: "Preventive"
+            standard_ref: "OWASP ASVS v4 V2.2"
+          - id: "C-S-01c"
+            control: "Breached password detection via HaveIBeenPwned API at registration/login"
+            type: "Preventive"
+            standard_ref: "NIST SP 800-63B §5.1.1"
+          - id: "C-S-01d"
+            control: "Anomalous login detection (geo-velocity, device fingerprint) → alert + step-up auth"
+            type: "Detective"
+            standard_ref: "NIST SP 800-53 SI-4, AU-6"
+          - id: "C-S-01e"
+            control: "Account lockout after 10 consecutive failures with exponential backoff"
+            type: "Preventive"
+            standard_ref: "HIPAA §164.312(a)(2)(i)"
+        residual_risk: "LOW after controls (RPN: 10)"
+
+      - id: "S-02"
+        title: "Provider Identity Spoofing for Unauthorized Prescription"
+        attack_surface: "AS-03"
+        description: >
+          Attacker compromises provider credentials (phishing, session hijack) and impersonates
+          a licensed physician to issue fraudulent prescriptions — particularly controlled
+          substances. DEA and state licensing authorities may not detect this in real time.
+        threat_actor: "Drug diverter, insider threat, nation-state (espionage)"
+        attack_vector: "Network, social engineering"
+        phi_at_risk: ["Patient identity", "Prescription records", "DEA registration abuse"]
+        preconditions: ["Provider credentials compromised", "PDMP checks pass (legitimate provider ID used)"]
+        impact: "CRITICAL — patient harm from inappropriate prescribing, DEA regulatory action, HIPAA breach"
+        severity: 5
+        likelihood: 3
+        detectability: 3
+        rpn: 45
+        risk_level: "HIGH"
+        mitre_attack: ["T1078 — Valid Accounts", "T1566 — Phishing"]
+        controls:
+          - id: "C-S-02a"
+            control: "Hardware MFA (FIDO2/WebAuthn) required for all provider prescription actions"
+            type: "Preventive"
+            standard_ref: "DEA 21 CFR §1311.116, NIST SP 800-63B AAL3"
+          - id: "C-S-02b"
+            control: "Session binding — prescription actions require re-authentication after 15 min idle"
+            type: "Preventive"
+            standard_ref: "HIPAA §164.312(a)(2)(iii)"
+          - id: "C-S-02c"
+            control: "Anomaly detection on prescribing patterns (volume, drug class, geography)"
+            type: "Detective"
+            standard_ref: "NIST SP 800-53 SI-4"
+          - id: "C-S-02d"
+            control: "Dual-provider confirmation for Schedule II controlled substance prescriptions"
+            type: "Preventive"
+            standard_ref: "DEA EPCS requirements"
+        residual_risk: "MEDIUM after controls (RPN: 20)"
+
+      - id: "S-03"
+        title: "WebRTC Session Hijacking"
+        attack_surface: "AS-02"
+        description: >
+          Attacker intercepts WebRTC signaling handshake (WS token theft via XSS or man-in-middle)
+          to join an active consultation as a silent participant. Audio/video streams are DTLS-SRTP
+          encrypted but key negotiation happens in signaling channel.
+        threat_actor: "Targeted attacker, insider threat"
+        attack_vector: "Adjacent network (hospital WiFi), application (XSS)"
+        phi_at_risk: ["Verbal medical history", "Video of patient", "Clinical discussion"]
+        preconditions: ["XSS vulnerability in web client OR network-level position"]
+        impact: "HIGH — eavesdropping on clinical consultation, HIPAA breach"
+        severity: 4
+        likelihood: 2
+        detectability: 2
+        rpn: 32
+        risk_level: "HIGH"
+        mitre_attack: ["T1557 — Man-in-the-Middle", "T1185 — Browser Session Hijacking"]
+        controls:
+          - id: "C-S-03a"
+            control: "Short-lived WebRTC session tokens (TTL 60 seconds), single-use"
+            type: "Preventive"
+            standard_ref: "OWASP WSTG-SESS-06"
+          - id: "C-S-03b"
+            control: "Strict CSP headers to prevent XSS token exfiltration"
+            type: "Preventive"
+            standard_ref: "OWASP Top 10 A03:2021"
+          - id: "C-S-03c"
+            control: "Participant count enforcement — alert provider if >2 participants detected"
+            type: "Detective"
+            standard_ref: "NIST SP 800-53 SI-4"
+          - id: "C-S-03d"
+            control: "DTLS-SRTP certificate pinning between endpoints"
+            type: "Preventive"
+            standard_ref: "RFC 5764, RFC 5763"
+        residual_risk: "LOW after controls (RPN: 12)"
+
+      - id: "S-04"
+        title: "Tenant Spoofing via X-SAGE-Tenant Header Manipulation"
+        attack_surface: "AS-07"
+        description: >
+          Attacker modifies the X-SAGE-Tenant header to access another tenant's PHI database
+          schema. If header validation is insufficient, cross-tenant data access becomes possible.
+        threat_actor: "Malicious tenant employee, API attacker"
+        attack_vector: "Network (API calls)"
+        phi_at_risk: ["Entire PHI dataset of target tenant"]
+        preconditions: ["Tenant validation only on header value, not JWT binding"]
+        impact: "CRITICAL — mass PHI breach, multi-tenant isolation failure"
+        severity: 5
+        likelihood: 2
+        detectability: 2
+        rpn: 40
+        risk_level: "HIGH"
+        mitre_attack: ["T1078.004 — Cloud Accounts"]
+        controls:
+          - id: "C-S-04a"
+            control: "Bind tenant ID to JWT claims — header must match signed token claim"
+            type: "Preventive"
+            standard_ref: "OWASP API Security API3:2023"
+          - id: "C-S-04b"
+            control: "Database row-level security (PostgreSQL RLS) as defense-in-depth for tenant isolation"
+            type: "Preventive"
+            standard_ref: "CIS Control 3.3"
+          - id: "C-S-04c"
+            control: "Cross-tenant access attempt alert → immediate incident response"
+            type: "Detective"
+            standard_ref: "HIPAA §164.308(a)(1)(ii)(D)"
+        residual_risk: "LOW after controls (RPN: 8)"
+
+  # ---- TAMPERING ----
+  - category: "Tampering"
+    threats:
+      - id: "T-01"
+        title: "E-Prescription Data Tampering"
+        attack_surface: "AS-03"
+        description: >
+          Attacker with write access to prescription records (compromised provider session,
+          SQL injection, insecure direct object reference) modifies drug name, dosage, quantity,
+          or patient identity on an existing prescription before transmission to pharmacy.
+        threat_actor: "Drug diverter, malicious insider, external attacker"
+        attack_vector: "Application (API), database"
+        phi_at_risk: ["Prescription content", "Patient safety data"]
+        patient_harm_possible: true
+        impact: "CRITICAL — patient harm from wrong medication/dosage, DEA violation, HIPAA breach"
+        severity: 5
+        likelihood: 2
+        detectability: 3
+        rpn: 30
+        risk_level: "HIGH"
+        mitre_attack: ["T1565.001 — Stored Data Manipulation"]
+        controls:
+          - id: "C-T-01a"
+            control: "Cryptographic prescription signing (RSA-4096 or ECDSA P-384) by prescribing provider"
+            type: "Preventive"
+            standard_ref: "DEA EPCS 21 CFR §1311.140"
+          - id: "C-T-01b"
+            control: "Immutable prescription audit trail — append-only log with hash chain"
+            type: "Detective"
+            standard_ref: "HIPAA §164.312(b)"
+          - id: "C-T-01c"
+            control: "Pharmacy-side signature verification before dispensing"
+            type: "Preventive"
+            standard_ref: "DEA EPCS 21 CFR §1311.215"
+          - id: "C-T-01d"
+            control: "Database write access only via stored procedures (no direct table writes from app)"
+            type: "Preventive"
+            standard_ref: "CIS Control 3.3"
+          - id: "C-T-01e"
+            control: "Prescription field-level encryption with provider key binding"
+            type: "Preventive"
+            standard_ref: "HIPAA §164.312(a)(2)(iv)"
+        residual_risk: "LOW after controls (RPN: 10)"
+
+      - id: "T-02"
+        title: "EHR Medical Record Tampering via FHIR API"
+        attack_surface: "AS-04"
+        description: >
+          Authenticated attacker (compromised provider, rogue integration) uses FHIR R4
+          PUT/PATCH operations to modify clinical observations, medication records, or
+          allergy entries. Could mask medical history relevant to prescribing decisions.
+        threat_actor: "Malicious provider, compromised EHR integration, insider"
+        attack_vector: "Application API (FHIR PUT/PATCH)"
+        phi_at_risk: ["Medical history", "Medication records", "Allergy data", "Clinical notes"]
+        patient_harm_possible: true
+        impact: "CRITICAL — clinical decision errors, patient harm, HIPAA breach"
+        severity: 5
+        likelihood: 2
+        detectability: 3
+        rpn: 30
+        risk_level: "HIGH"
+        mitre_attack: ["T1565.001 — Stored Data Manipulation"]
+        controls:
+          - id: "C-T-02a"
+            control: "FHIR resource versioning — every write creates immutable version history"
+            type: "Detective"
+            standard_ref: "HL7 FHIR R4 §3.1.0 (vread, history)"
+          - id: "C-T-02b"
+            control: "Scope-limited OAuth 2.0 SMART on FHIR tokens — write scopes require explicit patient consent"
+            type: "Preventive"
+            standard_ref: "SMART App Launch Framework, HIPAA §164.514(h)"
+          - id: "C-T-02c"
+            control: "Clinical record modification alert to patient and primary care provider"
+            type: "Detective"
+            standard_ref: "HIPAA §164.528 — Accounting of Disclosures"
+          - id: "C-T-02d"
+            control: "FHIR AuditEvent resource for all write operations with provenance"
+            type: "Detective"
+            standard_ref: "HL7 FHIR AuditEvent Resource"
+        residual_risk: "LOW after controls (RPN: 10)"
+
+      - id: "T-03"
+        title: "Audit Log Tampering to Conceal PHI Breach"
+        attack_surface: "AS-09"
+        description: >
+          Attacker with database access (DBA role, SQL injection) deletes or modifies audit
+          log entries to erase evidence of unauthorized PHI access. Destroys HIPAA compliance
+          record and prevents breach detection.
+        threat_actor: "Malicious insider (DBA), advanced persistent threat"
+        attack_vector: "Database direct access"
+        phi_at_risk: ["Audit metadata — access patterns", "Breach evidence"]
+        impact: "HIGH — loss of compliance evidence, inability to detect breach, HIPAA §164.312(b) violation"
+        severity: 4
+        likelihood: 2
+        detectability: 2
+        rpn: 32
+        risk_level: "HIGH"
+        mitre_attack: ["T1070 — Indicator Removal", "T1565.001 — Stored Data Manipulation"]
+        controls:
+          - id: "C-T-03a"
+            control: "Append-only audit log with WORM storage (AWS S3 Object Lock, immutable)"
+            type: "Preventive"
+            standard_ref: "HIPAA §164.312(b), NIST SP 800-53 AU-9"
+          - id: "C-T-03b"
+            control: "Audit log integrity hash chain — each entry references SHA-256 of previous"
+            type: "Preventive"
+            standard_ref: "NIST SP 800-53 AU-10"
+          - id: "C-T-03c"
+            control: "Real-time audit log streaming to immutable external SIEM (no local deletion path)"
+            type: "Preventive"
+            standard_ref: "CIS Control 8.9"
+          - id: "C-T-03d"
+            control: "Separation of duty — no single role has both data access and audit log access"
+            type: "Preventive"
+            standard_ref: "NIST SP 800-53 AC-5"
+        residual_risk: "LOW after controls (RPN: 8)"
+
+      - id: "T-04"
+        title: "AI Symptom Checker Model Input Poisoning"
+        attack_surface: "AS-05"
+        description: >
+          Attacker submits adversarially crafted symptom inputs designed to manipulate the
+          AI triage model into returning dangerously incorrect recommendations (e.g., classifying
+          chest pain as low priority). Could delay emergency care.
+        threat_actor: "Sophisticated external attacker, researcher, disgruntled user"
+        attack_vector: "Application API"
+        phi_at_risk: ["Patient safety — indirect", "Triage decision integrity"]
+        patient_harm_possible: true
+        impact: "HIGH — incorrect triage leading to delayed emergency care, patient harm"
+        severity: 5
+        likelihood: 2
+        detectability: 2
+        rpn: 40
+        risk_level: "HIGH"
+        mitre_attack: ["T1600 — Weaken Encryption (analogous: model adversarial attack)"]
+        controls:
+          - id: "C-T-04a"
+            control: "Input validation and sanitization before model inference (length, character, format)"
+            type: "Preventive"
+            standard_ref: "OWASP ML Security Top 10 ML03"
+          - id: "C-T-04b"
+            control: "Confidence threshold enforcement — low-confidence outputs escalate to human triage"
+            type: "Preventive"
+            standard_ref: "ISO/IEC TR 24028:2020 §8 (AI trustworthiness)"
+          - id: "C-T-04c"
+            control: "Emergency keyword detection — certain terms always trigger urgent pathway regardless of AI score"
+            type: "Preventive"
+            standard_ref: "Clinical safety requirement"
+          - id: "C-T-04d"
+            control: "Model drift monitoring — alert when output distribution shifts beyond 2σ"
+            type: "Detective"
+            standard_ref: "FDA AI/ML SaMD Action Plan"
+        residual_risk: "MEDIUM after controls (RPN: 20)"
+
+  # ---- REPUDIATION ----
+  - category: "Repudiation"
+    threats:
+      - id: "R-01"
+        title: "Provider Denial of Prescription Issuance"
+        attack_surface: "AS-03"
+        description: >
+          Provider claims they did not issue a specific prescription (fraudulent denial for
+          malpractice defense or drug diversion cover-up). Without cryptographic non-repudiation,
+          provider can plausibly deny action.
+        threat_actor: "Provider (internal), legal adversary"
+        attack_vector: "Administrative / legal"
+        phi_at_risk: ["Prescription records", "Patient safety timeline"]
+        impact: "HIGH — inability to prove prescribing chain, malpractice liability, DEA violation investigation"
+        severity: 4
+        likelihood: 2
+        detectability: 1
+        rpn: 40
+        risk_level: "HIGH"
+        controls:
+          - id: "C-R-01a"
+            control: "Cryptographic provider signature on every prescription (PKI-based, non-repudiable)"
+            type: "Preventive"
+            standard_ref: "DEA EPCS 21 CFR §1311.140(a)(3)"
+          - id: "C-R-01b"
+            control: "Timestamped audit trail with provider session ID, IP, device fingerprint per prescription"
+            type: "Detective"
+            standard_ref: "HIPAA §164.312(b)"
+          - id: "C-R-01c"
+            control: "Third-party timestamp authority (RFC 3161) for prescription creation events"
+            type: "Preventive"
+            standard_ref: "NIST SP 800-53 AU-10"
+        residual_risk: "LOW after controls (RPN: 8)"
+
+      - id: "R-02"
+        title: "Patient Denial of Consent for Data Sharing"
+        attack_surface: "AS-04, AS-08"
+        description: >
+          Patient claims they never authorized EHR data sharing or insurance billing claim.
+          If consent records are mutable or unverifiable, platform faces HIPAA liability.
+        threat_actor: "Patient (litigation), regulatory auditor"
+        attack_vector: "Administrative / legal"
+        phi_at_risk: ["Consent records", "Data sharing authorizations"]
+        impact: "MEDIUM — HIPAA civil penalty exposure, patient trust erosion"
+        severity: 3
+        likelihood: 3
+        detectability: 2
+        rpn: 24
+        risk_level: "MEDIUM"
+        controls:
+          - id: "C-R-02a"
+            control: "Immutable consent records with patient digital signature and timestamp"
+            type: "Preventive"
+            standard_ref: "HIPAA §164.508 — Authorization requirements"
+          - id: "C-R-02b"
+            control: "Consent withdrawal audit trail — record when and how consent was withdrawn"
+            type: "Detective"
+            standard_ref: "HIPAA §164.526 — Amendment"
+          - id: "C-R-02c"
+            control: "Patient portal consent history — read-only view of all consents given and withdrawn"
+            type: "Corrective"
+            standard_ref: "HIPAA §164.528 — Accounting of Disclosures"
+        residual_risk: "LOW after controls (RPN: 6)"
+
+      - id: "R-03"
+        title: "Admin Denial of Tenant Configuration Changes"
+        attack_surface: "AS-07"
+        description: >
+          Tenant administrator makes destructive configuration change (disabling encryption,
+          removing access controls) and later denies the action. Could be precursor to
+          insider data exfiltration.
+        threat_actor: "Malicious insider (tenant admin)"
+        attack_vector: "Application (admin API)"
+        phi_at_risk: ["Tenant security posture", "PHI protection controls"]
+        impact: "HIGH — undetected security control degradation, PHI exposure"
+        severity: 4
+        likelihood: 2
+        detectability: 2
+        rpn: 32
+        risk_level: "HIGH"
+        controls:
+          - id: "C-R-03a"
+            control: "All admin actions logged with session ID, MFA verification timestamp, IP"
+            type: "Detective"
+            standard_ref: "HIPAA §164.308(a)(1)(ii)(D)"
+          - id: "C-R-03b"
+            control: "Critical config changes require secondary approval (four-eyes principle)"
+            type: "Preventive"
+            standard_ref: "NIST SP 800-53 AC-5"
+          - id: "C-R-03c"
+            control: "Configuration change notification to CISO and compliance officer via email + SIEM alert"
+            type: "Detective"
+            standard_ref: "ISO 27001 A.12.1.2"
+        residual_risk: "LOW after controls (RPN: 8)"
+
+  # ---- INFORMATION DISCLOSURE ----
+  - category: "Information Disclosure"
+    threats:
+      - id: "I-01"
+        title: "FHIR Bulk Export PHI Mass Exfiltration"
+        attack_surface: "AS-04"
+        description: >
+          Attacker with legitimate API credentials (compromised integration, rogue app)
+          uses FHIR Bulk Data Export ($export operation) to download entire patient population
+          PHI for a tenant in minutes. HL7 FHIR spec supports this for authorized systems.
+        threat_actor: "Compromised integration partner, malicious insider, nation-state"
+        attack_vector: "Application API (FHIR $export)"
+        phi_at_risk: ["All 18 HIPAA identifiers for entire tenant population"]
+        breach_scale: "Mass — potentially thousands to millions of patients"
+        impact: "CRITICAL — mass PHI breach, HIPAA breach notification for all affected individuals"
+        severity: 5
+        likelihood: 3
+        detectability: 3
+        rpn: 45
+        risk_level: "HIGH"
+        mitre_attack: ["T1530 — Data from Cloud Storage", "T1213 — Data from Information Repositories"]
+        controls:
+          - id: "C-I-01a"
+            control: "FHIR $export restricted to system-level OAuth scope — requires explicit tenant admin grant"
+            type: "Preventive"
+            standard_ref: "SMART Backend Services Authorization Guide"
+          - id: "C-I-01b"
+            control: "Rate limiting on bulk export — max 1000 records/min, require human approval for full export"
+            type: "Preventive"
+            standard_ref: "OWASP API Security API4:2023"
+          - id: "C-I-01c"
+            control: "Export anomaly detection — alert on bulk export attempts >100 records outside scheduled windows"
+            type: "Detective"
+            standard_ref: "NIST SP 800-53 SI-4"
+          - id: "C-I-01d"
+            control: "DLP policy — PHI export destinations restricted to approved systems with BAAs"
+            type: "Preventive"
+            standard_ref: "HIPAA §164.314(a) — BAA requirements"
+          - id: "C-I-01e"
+            control: "Encryption of export files at rest and in transit — patient-specific keys"
+            type: "Preventive"
+            standard_ref: "HIPAA §164.312(a)(2)(iv)"
+        residual_risk: "MEDIUM after controls (RPN: 20)"
+
+      - id: "I-02"
+        title: "PHI Exposure via Verbose Error Messages"
+        attack_surface: "AS-01, AS-03, AS-04, AS-05"
+        description: >
+          API error responses include stack traces, SQL query fragments, or PHI field values
+          that expose internal system details and patient data to unauthenticated or
+          low-privilege callers.
+        threat_actor: "Opportunistic attacker, security researcher"
+        attack_vector: "Network (API probing)"
+        phi_at_risk: ["Partial PHI in error context", "System architecture details enabling further attacks"]
+        impact: "MEDIUM — PHI disclosure, attack surface enumeration"
+        severity: 3
+        likelihood: 3
+        detectability: 2
+        rpn: 27
+        risk_level: "MEDIUM"
+        mitre_attack: ["T1592 — Gather Victim Host Information"]
+        controls:
+          - id: "C-I-02a"
+            control: "Generic error responses to external callers — detailed errors only in internal logs"
+            type: "Preventive"
+            standard_ref: "OWASP Top 10 A05:2021"
+          - id: "C-I-02b"
+            control: "Correlation ID in error response — allows log lookup without PHI exposure to client"
+            type: "Preventive"
+            standard_ref: "OWASP ASVS v4 V7.4"
+          - id: "C-I-02c"
+            control: "Automated PHI pattern detection in API responses (regex scan in test pipeline)"
+            type: "Detective"
+            standard_ref: "NIST SP 800-53 RA-5"
+        residual_risk: "LOW after controls (RPN: 9)"
+
+      - id: "I-03"
+        title: "Push Notification PHI Leakage on Locked Screen"
+        attack_surface: "AS-11"
+        description: >
+          Mobile push notifications for appointment reminders or test result availability
+          include PHI (patient name, appointment reason, test result summary) visible on
+          device lock screen to anyone holding the device.
+        threat_actor: "Unauthorized device holder, social engineering"
+        attack_vector: "Physical (device), network (notification infrastructure)"
+        phi_at_risk: ["Patient name", "Appointment reason", "Lab result indicators"]
+        impact: "MEDIUM — incidental PHI disclosure to unauthorized party"
+        severity: 3
+        likelihood: 4
+        detectability: 1
+        rpn: 60
+        risk_level: "CRITICAL"
+        mitre_attack: ["T1430 — Location Tracking (analogous: PHI exposure)"]
+        controls:
+          - id: "C-I-03a"
+            control: "Push notifications contain NO PHI — only 'You have a message in the app'"
+            type: "Preventive"
+            standard_ref: "HIPAA §164.312(c)(1), HHS Guidance on Mobile Devices"
+          - id: "C-I-03b"
+            control: "App requires biometric or PIN re-authentication before displaying notification content"
+            type: "Preventive"
+            standard_ref: "NIST SP 800-124 Rev 2"
+          - id: "C-I-03c"
+            control: "Notification content policy enforced server-side — app cannot opt into PHI notifications"
+            type: "Preventive"
+            standard_ref: "HHS OCR Mobile Device Guidance"
+        residual_risk: "LOW after controls (RPN: 10)"
+
+      - id: "I-04"
+        title: "S3 PHI Bucket Misconfiguration — Public Access"
+        attack_surface: "TB-03 (Data Layer)"
+        description: >
+          Misconfigured S3 bucket ACL or policy inadvertently makes PHI objects publicly
+          readable. Platform uses per-tenant S3 prefixes for medical records, recordings, reports.
+          A single policy misconfiguration exposes all objects in the prefix.
+        threat_actor: "Opportunistic scanner, data broker, nation-state"
+        attack_vector: "Network (cloud API)"
+        phi_at_risk: ["Medical documents", "Consultation recordings", "Lab reports", "All uploaded PHI"]
+        breach_scale: "Potentially all stored PHI for one or more tenants"
+        impact: "CRITICAL — mass PHI breach, mandatory breach notification, OCR investigation"
+        severity: 5
+        likelihood: 2
+        detectability: 2
+        rpn: 40
+        risk_level: "HIGH"
+        mitre_attack: ["T1530 — Data from Cloud Storage"]
+        controls:
+          - id: "C-I-04a"
+            control: "S3 Block Public Access enabled at organization/account level (non-overridable)"
+            type: "Preventive"
+            standard_ref: "AWS HIPAA Whitepaper, CIS AWS Benchmark 2.1.5"
+          - id: "C-I-04b"
+            control: "IaC (Terraform/CDK) enforces private ACL — PR CI gate blocks public bucket configs"
+            type: "Preventive"
+            standard_ref: "CIS Control 4.6"
+          - id: "C-I-04c"
+            control: "AWS Config rule + GuardDuty — alert on public bucket within 60 seconds of creation"
+            type: "Detective"
+            standard_ref: "NIST SP 800-53 CM-7"
+          - id: "C-I-04d"
+            control: "All PHI objects encrypted with tenant KMS key — even if accessible, unreadable without key"
+            type: "Mitigating"
+            standard_ref: "HIPAA §164.312(a)(2)(iv)"
+        residual_risk: "LOW after controls (RPN: 8)"
+
+      - id: "I-05"
+        title: "Insecure Direct Object Reference — Medical Record Access"
+        attack_surface: "AS-04, AS-06"
+        description: >
+          API endpoints use predictable resource IDs (sequential integers or partial UUIDs).
+          Authenticated patient increments record_id parameter to access another patient's
+          medical record without authorization check on record ownership.
+        threat_actor: "Curious patient, malicious user"
+        attack_vector: "Application API (parameter manipulation)"
+        phi_at_risk: ["Other patients' medical records", "PHI of any patient whose ID is guessable"]
+        impact: "HIGH — unauthorized PHI access, HIPAA breach, potential mass disclosure"
+        severity: 4
+        likelihood: 3
+        detectability: 3
+        rpn: 36
+        risk_level: "HIGH"
+        mitre_attack: ["T1087 — Account Discovery (analogous: resource enumeration)"]
+        controls:
+          - id: "C-I-05a"
+            control: "All resource IDs are UUIDs v4 (cryptographically random, non-enumerable)"
+            type: "Preventive"
+            standard_ref: "OWASP API Security API1:2023"
+          - id: "C-I-05b"
+            control: "Authorization check on every resource access: requester must own or have explicit grant"
+            type: "Preventive"
+            standard_ref: "OWASP ASVS v4 V4.2"
+          - id: "C-I-05c"
+            control: "IDOR detection in penetration test suite — automated BOLA test suite in CI"
+            type: "Detective"
+            standard_ref: "OWASP API Security Testing Guide"
+        residual_risk: "LOW after controls (RPN: 12)"
+
+  # ---- DENIAL OF SERVICE ----
+  - category: "Denial of Service"
+    threats:
+      - id: "D-01"
+        title: "DDoS Attack on Video Consultation Infrastructure"
+        attack_surface: "AS-02"
+        description: >
+          Volumetric or application-layer DDoS targeting WebRTC signaling service or
+          TURN servers disrupts active clinical consultations. Patients mid-consultation
+          lose connection. In rural areas, telehealth may be only care access.
+        threat_actor: "Hacktivist, competitor, nation-state, ransomware group"
+        attack_vector: "Network (UDP flood, HTTP flood)"
+        phi_at_risk: ["N/A — availability threat, but care continuity risk"]
+        patient_harm_possible: true
+        impact: "HIGH — disrupted clinical care, potential patient harm in acute situations"
+        severity: 4
+        likelihood: 3
+        detectability: 3
+        rpn: 36
+        risk_level: "HIGH"
+        mitre_attack: ["T1498 — Network Denial of Service", "T1499 — Endpoint Denial of Service"]
+        controls:
+          - id: "C-D-01a"
+            control: "Cloud DDoS protection (AWS Shield Advanced / Cloudflare) with automatic mitigation"
+            type: "Preventive"
+            standard_ref: "NIST SP 800-53 SC-5"
+          - id: "C-D-01b"
+            control: "Geographic rate limiting and IP reputation filtering at edge"
+            type: "Preventive"
+            standard_ref: "CIS Control 9.2"
+          - id: "C-D-01c"
+            control: "TURN server capacity auto-scaling with horizontal scaling policy"
+            type: "Preventive"
+            standard_ref: "NIST SP 800-53 CP-7"
+          - id: "C-D-01d"
+            control: "Consultation resilience — automatic reconnect with session state preservation (max 60s)"
+            type: "Corrective"
+            standard_ref: "SLA requirement: 99.9% consultation completion rate"
+          - id: "C-D-01e"
+            control: "Phone fallback — automatic phone consultation offer if video fails"
+            type: "Corrective"
+            standard_ref: "Business continuity requirement"
+        residual_risk: "LOW after controls (RPN: 12)"
+
+      - id: "D-02"
+        title: "Resource Exhaustion via FHIR Bulk Operations"
+        attack_surface: "AS-04"
+        description: >
+          Authenticated attacker submits large FHIR batch requests ($batch operation with
+          10,000+ resources) or recursive $everything queries that consume all database
+          connection pool and CPU resources, affecting all tenants.
+        threat_actor: "Malicious integration partner, compromised API client"
+        attack_vector: "Application API"
+        phi_at_risk: ["N/A — availability threat"]
+        impact: "HIGH — platform-wide outage, SLA breach, potential patient harm in acute care"
+        severity: 4
+        likelihood: 2
+        detectability: 3
+        rpn: 24
+        risk_level: "MEDIUM"
+        mitre_attack: ["T1499.002 — Service Exhaustion Flood"]
+        controls:
+          - id: "C-D-02a"
+            control: "FHIR batch size limit: max 500 resources per request"
+            type: "Preventive"
+            standard_ref: "OWASP API Security API4:2023"
+          - id: "C-D-02b"
+            control: "Per-tenant API quota enforcement (requests/min, data transfer/day)"
+            type: "Preventive"
+            standard_ref: "NIST SP 800-53 SC-5"
+          - id: "C-D-02c"
+            control: "Async job queue for bulk operations — no synchronous long-running requests"
+            type: "Preventive"
+            standard_ref: "OWASP API Security API6:2023"
+        residual_risk: "LOW after controls (RPN: 8)"
+
+      - id: "D-03"
+        title: "Ransomware Targeting PHI Storage"
+        attack_surface: "TB-03 (Data Layer)"
+        description: >
+          Ransomware (delivered via phishing or supply chain) encrypts or deletes PHI
+          databases and S3 objects. Without backups, patient records are irrecoverable.
+          Attackers may exfiltrate before encrypting (double extortion).
+        threat_actor: "Ransomware group (REvil, LockBit, etc.)"
+        attack_vector: "Endpoint (phishing), supply chain"
+        phi_at_risk: ["Entire platform PHI if unencrypted backups accessible"]
+        impact: "CRITICAL — care disruption, PHI breach (exfiltration), HIPAA notification, financial extortion"
+        severity: 5
+        likelihood: 3
+        detectability: 2
+        rpn: 45
+        risk_level: "HIGH"
+        mitre_attack: ["T1486 — Data Encrypted for Impact", "T1490 — Inhibit System Recovery"]
+        controls:
+          - id: "C-D-03a"
+            control: "Immutable backups (S3 Object Lock, WORM) — ransomware cannot delete/modify"
+            type: "Preventive"
+            standard_ref: "NIST SP 800-53 CP-9, HIPAA §164.308(a)(7)"
+          - id: "C-D-03b"
+            control: "3-2-1 backup strategy: 3 copies, 2 media types, 1 offsite immutable"
+            type: "Preventive"
+            standard_ref: "HIPAA §164.308(a)(7)(ii)(A)"
+          - id: "C-D-03c"
+            control: "Network segmentation — data layer not reachable from application layer except via API"
+            type: "Preventive"
+            standard_ref: "CIS Control 12.2"
+          - id: "C-D-03d"
+            control: "RTO ≤ 4 hours, RPO ≤ 1 hour for PHI data recovery"
+            type: "Corrective"
+            standard_ref: "HIPAA §164.308(a)(7)(ii)(B)"
+          - id: "C-D-03e"
+            control: "Quarterly tabletop exercise for ransomware recovery scenario"
+            type: "Corrective"
+            standard_ref: "NIST SP 800-53 CP-4"
+        residual_risk: "MEDIUM after controls (RPN: 20)"
+
+  # ---- ELEVATION OF PRIVILEGE ----
+  - category: "Elevation of Privilege"
+    threats:
+      - id: "E-01"
+        title: "JWT Algorithm Confusion Attack"
+        attack_surface: "AS-01, AS-07"
+        description: >
+          Attacker exploits JWT library vulnerability (alg:none, RS256→HS256 confusion) to
+          forge valid authentication tokens with elevated privileges (patient→provider,
+          provider→admin, tenant A→tenant B).
+        threat_actor: "Skilled external attacker"
+        attack_vector: "Application (authentication layer)"
+        phi_at_risk: ["All PHI accessible at forged privilege level"]
+        impact: "CRITICAL — complete authentication bypass, unrestricted PHI access"
+        severity: 5
+        likelihood: 2
+        detectability: 2
+        rpn: 40
+        risk_level: "HIGH"
+        mitre_attack: ["T1134 — Access Token Manipulation"]
+        controls:
+          - id: "C-E-01a"
+            control: "Explicitly whitelist JWT algorithms (RS256 only) — reject alg:none and HS256"
+            type: "Preventive"
+            standard_ref: "OWASP JWT Security Cheat Sheet"
+          - id: "C-E-01b"
+            control: "Short JWT TTL (15 min access token, 8h refresh token with rotation)"
+            type: "Preventive"
+            standard_ref: "OWASP ASVS v4 V3.5"
+          - id: "C-E-01c"
+            control: "JWT key rotation every 90 days with overlap period"
+            type: "Preventive"
+            standard_ref: "NIST SP 800-53 IA-5"
+          - id: "C-E-01d"
+            control: "Penetration test for JWT vulnerabilities in annual security assessment"
+            type: "Detective"
+            standard_ref: "HIPAA §164.308(a)(8)"
+        residual_risk: "LOW after controls (RPN: 8)"
+
+      - id: "E-02"
+        title: "RBAC Bypass via Mass Assignment Vulnerability"
+        attack_surface: "AS-07, AS-03"
+        description: >
+          API endpoint that accepts a user update payload does not whitelist allowed fields.
+          Attacker includes 'role': 'admin' or 'tenant_scope': 'all' in JSON body, and
+          the ORM maps it directly to the database record, granting elevated privileges.
+        threat_actor: "Authenticated attacker (any role), bug bounty researcher"
+        attack_vector: "Application API"
+        phi_at_risk: ["All PHI at elevated privilege level"]
+        impact: "CRITICAL — self-privilege escalation to admin, cross-tenant access"
+        severity: 5
+        likelihood: 3
+        detectability: 2
+        rpn: 50
+        risk_level: "CRITICAL"
+        mitre_attack: ["T1068 — Exploitation for Privilege Escalation"]
+        controls:
+          - id: "C-E-02a"
+            control: "Allowlist-based request schema validation (never bind arbitrary JSON to ORM model)"
+            type: "Preventive"
+            standard_ref: "OWASP API Security API6:2023 — Mass Assignment"
+          - id: "C-E-02b"
+            control: "Role changes require separate privileged endpoint with elevated auth"
+            type: "Preventive"
+            standard_ref: "NIST SP 800-53 AC-6"
+          - id: "C-E-02c"
+            control: "SAST rules to detect ORM mass assignment patterns in CI pipeline"
+            type: "Detective"
+            standard_ref: "CIS Control 16.14"
+        residual_risk: "LOW after controls (RPN: 10)"
+
+      - id: "E-03"
+        title: "SQL Injection to Bypass Tenant Isolation"
+        attack_surface: "AS-04, AS-03, AS-08"
+        description: >
+          Unsanitized user input in search/filter parameters injected into SQL queries
+          bypasses schema-per-tenant isolation by accessing postgres system tables or
+          using UNION to read from another tenant's schema.
+        threat_actor: "Skilled attacker, malicious tenant user"
+        attack_vector: "Application API (parameter injection)"
+        phi_at_risk: ["Cross-tenant PHI — potentially all tenants' data"]
+        impact: "CRITICAL — multi-tenant PHI breach, complete isolation failure"
+        severity: 5
+        likelihood: 2
+        detectability: 3
+        rpn: 30
+        risk_level: "HIGH"
+        mitre_attack: ["T1190 — Exploit Public-Facing Application"]
+        controls:
+          - id: "C-E-03a"
+            control: "Parameterized queries / ORM only — no string concatenation in SQL"
+            type: "Preventive"
+            standard_ref: "OWASP Top 10 A03:2021"
+          - id: "C-E-03b"
+            control: "PostgreSQL row-level security as defense-in-depth — app user cannot query other schemas"
+            type: "Preventive"
+            standard_ref: "CIS PostgreSQL Benchmark"
+          - id: "C-E-03c"
+            control: "DAST SQL injection tests in CI pipeline (SQLMap equivalent)"
+            type: "Detective"
+            standard_ref: "NIST SP 800-53 RA-5"
+          - id: "C-E-03d"
+            control: "WAF SQL injection ruleset at API gateway"
+            type: "Preventive"
+            standard_ref: "OWASP ModSecurity Core Rule Set"
+        residual_risk: "LOW after controls (RPN: 10)"
+
+# ============================================================
+# SECTION 4: THIRD-PARTY / SUPPLY CHAIN THREATS
+# ============================================================
+supply_chain_threats:
+  - id: "SC-01"
+    title: "Compromised NPM/PyPI Package in Build Pipeline"
+    description: >
+      Malicious code injected into a dependency (typosquatting, maintainer compromise)
+      exfiltrates environment variables (database credentials, KMS keys, JWT secrets)
+      at build time or runtime.
+    impact: "CRITICAL — credential exfiltration enabling full platform compromise"
+    severity: 5
+    likelihood: 2
+    detectability: 2
+    rpn: 40
+    controls:
+      - "Software Composition Analysis (SCA) in CI — Snyk/OWASP Dependency-Check"
+      - "Pinned dependency versions with lockfiles (package-lock.json, poetry.lock)"
+      - "Runtime secrets via AWS Secrets Manager — not environment variables in code"
+      - "SBOM generation (CycloneDX) for all releases"
+    standard_ref: ["NIST SP 800-161 Rev 1", "SLSA Framework Level 3"]
+
+  - id: "SC-02"
+    title: "Surescripts / Pharmacy Network API Compromise"
+    description: >
+      Third-party e-prescribing network (Surescripts) suffers a breach, exposing prescription
+      data transmitted by the platform. Platform has limited control over third-party security.
+    impact: "HIGH — PHI breach via Business Associate, mandatory breach notification"
+    severity: 4
+    likelihood: 1
+    detectability: 2
+    rpn: 24
+    controls:
+      - "Verify active BAA with Surescripts — annual review"
+      - "TLS certificate pinning for Surescripts API connections"
+      - "Minimum necessary PHI principle — only send required fields"
+      - "Contractual breach notification SLA ≤ 24h in BAA"
+    standard_ref: ["HIPAA §164.314(a)(2)(i)", "HIPAA §164.308(b)(1)"]
+
+# ============================================================
+# SECTION 5: PRIVACY-SPECIFIC THREATS
+# ============================================================
+privacy_threats:
+  - id: "P-01"
+    title: "Re-identification of De-identified Analytics Data"
+    description: >
+      Platform generates de-identified analytics for payer reporting. Attacker or
+      data broker correlates quasi-identifiers (age+zip+diagnosis) to re-identify patients
+      using external datasets (voter rolls, social media).
+    hipaa_rule: "45 CFR §164.514(b) — De-identification standard"
+    impact: "HIGH — HIPAA violation, patient privacy harm, regulatory penalty"
+    severity: 4
+    likelihood: 2
+    detectability: 1
+    rpn: 40
+    controls:
+      - "Expert determination method (not safe harbor alone) for de-identification"
+      - "k-anonymity ≥ 5 enforced algorithmically in analytics pipeline"
+      - "Differential privacy noise injection for aggregate statistics"
+      - "Re-identification risk assessment before each analytics export"
+    standard_ref: ["45 CFR §164.514(b)", "NIST SP 800-188"]
+
+  - id: "P-02"
+    title: "Cross-Tenant Analytics Correlation Leaking Patient Patterns"
+    description: >
+      Platform-level aggregate analytics (not per-tenant) inadvertently reveals patient
+      population patterns for individual small tenants where aggregate = individual.
+    impact: "MEDIUM — indirect PHI disclosure through statistical inference"
+    severity: 3
+    likelihood: 2
+    detectability: 2
+    rpn: 24
+    controls:
+      - "Minimum cohort size of 11 for any published aggregate statistic"
+      - "Suppress statistics where any cell count < 11"
+      - "Tenant-scoped analytics only — no cross-tenant data in standard reports"
+    standard_ref: ["HIPAA §164.514(b)", "CDC Cell Suppression Guidelines"]
+
+# ============================================================
+# SECTION 6: SECURITY CONTROL MATRIX SUMMARY
+# ============================================================
+security_control_summary:
+  authentication_and_access:
+    - "MFA enforced for all users (patients: TOTP/SMS; providers: FIDO2; admins: FIDO2 hardware)"
+    - "JWT RS256 with 15-min TTL, rotating refresh tokens"
+    - "RBAC with least-privilege principle — roles: patient, provider, admin, tenant_admin, platform_admin"
+    - "SMART on FHIR OAuth 2.0 for all EHR integrations"
+    - "Session timeout: 15 min idle, 8h absolute"
+
+  data_protection:
+    - "AES-256-GCM at rest, TLS 1.3 in transit (minimum TLS 1.2)"
+    - "Per-tenant KMS encryption keys (AWS KMS, tenant-controlled)"
+    - "mTLS for all internal service-to-service communication"
+    - "DTLS-SRTP for video/audio streams"
+    - "Field-level encryption for SSN, DEA numbers in database"
+
+  network_security:
+    - "WAF with OWASP Core Rule Set v3.3"
+    - "DDoS protection (Shield Advanced)"
+    - "Private VPC for all internal services — no public IPs on databases"
+    - "Network segmentation: web tier / app tier / data tier with strict SGs"
+    - "Zero-trust network access for administrative operations"
+
+  audit_and_monitoring:
+    - "Append-only audit log for all PHI access (who, what, when, from where)"
+    - "SIEM with PHI access anomaly detection (UEBA)"
+    - "Real-time alerting: failed auth, privilege escalation, bulk export, cross-tenant access"
+    - "HIPAA §164.312(b) technical security audit controls fully implemented"
+    - "6-year audit log retention (HIPAA minimum 6 years)"
+
+  vulnerability_management:
+    - "Annual penetration test by qualified third party"
+    - "Quarterly vulnerability scans (DAST + SAST)"
+    - "SCA in CI pipeline (dependency CVE scanning)"
+    - "Bug bounty program for responsible disclosure"
+    - "Patch SLA: Critical CVE ≤ 24h, High ≤ 7 days, Medium ≤ 30 days"
+
+  incident_response:
+    - "HIPAA Breach Notification Rule compliance: notification ≤ 60 days of discovery"
+    - "Incident response playbook: PHI breach, ransomware, insider threat"
+    - "Tabletop exercise quarterly"
+    - "24/7 SOC with PHI-specific alert tiers"
+    - "Forensics-ready logging (chain of custody, immutable evidence preservation)"
+
+  business_continuity:
+    - "RTO ≤ 4 hours (platform), ≤ 1 hour (video consultation service)"
+    - "RPO ≤ 1 hour"
+    - "Multi-AZ deployment for all critical services"
+    - "Active-active data replication across 2 regions"
+    - "DR test quarterly — full failover simulation"

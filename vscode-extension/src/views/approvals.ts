@@ -29,26 +29,29 @@ export class ApprovalsProvider
     try {
       const proposals = await this.api.getPendingApprovals();
       if (proposals.length === 0) {
-        return [new ApprovalItem("No pending approvals", "", "", "$(check)")];
+        return [new ApprovalItem("No pending approvals", "", "", "check")];
       }
       return proposals.map((p) => {
+        // Backend uses action_type; fall back to proposal_type for compat
+        const proposalType = p.action_type || p.proposal_type || "unknown";
+        const riskClass = p.risk_class || "INFORMATIONAL";
         const item = new ApprovalItem(
-          p.proposal_type,
-          p.risk_class,
+          proposalType,
+          riskClass,
           p.trace_id,
-          riskIcon(p.risk_class)
+          riskIcon(riskClass)
         );
-        item.description = `${p.risk_class} — ${timeAgo(p.created_at)}`;
+        item.description = `${riskClass} — ${timeAgo(p.created_at)}`;
         item.tooltip = new vscode.MarkdownString(
-          `**${p.proposal_type}**\n\n` +
-            `Risk: ${p.risk_class}\n\n` +
+          `**${proposalType}**\n\n` +
+            `Risk: ${riskClass}\n\n` +
             `ID: \`${p.trace_id}\`\n\n` +
             `Created: ${p.created_at}`
         );
         return item;
       });
     } catch {
-      return [new ApprovalItem("Cannot reach backend", "", "", "$(warning)")];
+      return [new ApprovalItem("Cannot reach backend", "", "", "warning")];
     }
   }
 }
@@ -61,9 +64,7 @@ class ApprovalItem extends vscode.TreeItem {
     icon: string
   ) {
     super(label, vscode.TreeItemCollapsibleState.None);
-    this.iconPath = new vscode.ThemeIcon(
-      icon.replace("$(", "").replace(")", "")
-    );
+    this.iconPath = new vscode.ThemeIcon(icon);
     if (traceId) {
       this.contextValue = "approval";
     }
@@ -73,17 +74,17 @@ class ApprovalItem extends vscode.TreeItem {
 function riskIcon(risk: string): string {
   switch (risk?.toUpperCase()) {
     case "DESTRUCTIVE":
-      return "$(flame)";
+      return "flame";
     case "EXTERNAL":
-      return "$(globe)";
+      return "globe";
     case "STATEFUL":
-      return "$(database)";
+      return "database";
     case "EPHEMERAL":
-      return "$(clock)";
+      return "clock";
     case "INFORMATIONAL":
-      return "$(info)";
+      return "info";
     default:
-      return "$(question)";
+      return "question";
   }
 }
 
@@ -92,10 +93,16 @@ function timeAgo(dateStr: string): string {
     const now = Date.now();
     const then = new Date(dateStr).getTime();
     const diffMin = Math.floor((now - then) / 60000);
-    if (diffMin < 1) return "just now";
-    if (diffMin < 60) return `${diffMin}m ago`;
+    if (diffMin < 1) {
+      return "just now";
+    }
+    if (diffMin < 60) {
+      return `${diffMin}m ago`;
+    }
     const diffHr = Math.floor(diffMin / 60);
-    if (diffHr < 24) return `${diffHr}h ago`;
+    if (diffHr < 24) {
+      return `${diffHr}h ago`;
+    }
     return `${Math.floor(diffHr / 24)}d ago`;
   } catch {
     return "";

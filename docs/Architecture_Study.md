@@ -615,21 +615,21 @@ Implementations: SQLiteCheckpointer (default), RedisCheckpointer (future), Postg
 ## 10. Evolution Roadmap
 
 ### Phase 1: Modular Monolith (Now → 1 month)
-- [ ] Split api.py into route modules (R3)
-- [ ] Provider-aware LLM semaphore (R1)
-- [ ] SQLite WAL mode everywhere (R2)
-- [ ] Thread-safe vector store fallback (§5.6)
-- [ ] Exception hierarchy (R5 partial)
+- [x] Split api.py into route modules (R3) — gym.py, research.py extracted
+- [x] Provider-aware LLM semaphore (R1) — `PROVIDER_CONCURRENCY` map, 6 providers
+- [x] SQLite WAL mode everywhere (R2) — `src/core/db.py` with `get_connection()`
+- [x] Thread-safe vector store fallback (§5.6) — `_fallback_lock` on in-memory dict
+- [x] Exception hierarchy (R5 partial) — `src/core/exceptions.py`, 10 typed exceptions
 
 ### Phase 2: Resilience (1 → 3 months)
 - [ ] Circuit breakers on integrations (R4)
 - [ ] Connection pooling (R6)
 - [ ] Bounded in-memory state (R7)
 - [ ] Typed runner contracts (R5)
-- [ ] OpenTelemetry spans (R9)
+- [x] OpenTelemetry spans (R9) — `src/core/tracing.py`, wired into LLM gateway
 
 ### Phase 3: Protocol Standards (3 → 6 months)
-- [ ] CloudEvents envelope (R10)
+- [x] CloudEvents envelope (R10) — `src/modules/cloud_events.py`, v1.0 spec, EventBus integration
 - [ ] Formal Checkpointer interface (R11)
 - [ ] Async-first migration (R8)
 - [ ] A2A (Google Agent-to-Agent) for cross-framework interop

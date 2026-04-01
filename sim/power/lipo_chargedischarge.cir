@@ -1,0 +1,89 @@
+* =============================================================================
+* LiPo Battery Charge/Discharge SPICE Model
+* Device: 3.7V 500mAh LiPo (wearable fall-detection sensor)
+* Model:  2nd-order Thevenin equivalent (OCV + R0 + 2x RC)
+* Sim:    Discharge at constant loads (5mA, 50mA, 200mA) + CC-CV charge
+* Tool:   LTspice XVII / ngspice 38
+* =============================================================================
+
+.title LiPo 500mAh Charge-Discharge Characterisation
+
+* ---------------------------------------------------------------------------
+* Battery Thevenin Subcircuit
+*   VTERM+ VTERM- SOC_OUT
+*   SOC_OUT: 0V=empty(0%) 1V=full(100%)
+* ---------------------------------------------------------------------------
+.subckt LIPO_500MAH P N SOC
+* Integrating capacitor: 1F represents full 500mAh charge (1800C)
+* Voltage on Cq = charge removed [C].  IC=0 means fully charged (0C removed)
+Cq  QNODE 0 1800 IC=0
+
+* OCV(SOC) PWL table from datasheet discharge curves
+* SOC: 0%=3.0V  10%=3.30V  20%=3.50V  30%=3.60V  50%=3.70V
+*      70%=3.75V  80%=3.80V  90%=4.00V  100%=4.20V
+BOCV  OCVNODE 0 V=TABLE(1-V(QNODE)/1800, \
+  0.00,3.00, 0.10,3.30, 0.20,3.50, 0.30,3.60, \
+  0.50,3.70, 0.70,3.75, 0.80,3.80, 0.90,4.00, 1.00,4.20)
+
+* Internal series resistance R0 = 150 mΩ (measured at 1kHz, 25°C)
+R0   OCVNODE  R0NODE   0.15
+
+* 1st RC pair: electrochemical polarisation (fast, τ≈50ms)
+R1   R0NODE   RC1NODE  0.05
+C1   RC1NODE  0        1
+
+* 2nd RC pair: diffusion polarisation (slow, τ≈10s)
+R2   R0NODE   RC2NODE  0.02
+C2   RC2NODE  0        500
+
+* Terminal voltage measurement node
+Vterm P R0NODE 0
+
+* SOC output: 1V=100%  0V=0%
+BSOC  SOC  0  V=(1 - V(QNODE)/1800)
+
+* Charge integrator: I through Vterm charges Cq
+* F-source: current through Vterm → integrates into Cq
+Fq  QNODE  0  Vterm  1
+
+.ends LIPO_500MAH
+
+* ---------------------------------------------------------------------------
+* Top-Level Testbench — Discharge at three load currents
+* ---------------------------------------------------------------------------
+Xbat1  BAT1P  0  SOC1  LIPO_500MAH
+Xbat2  BAT2P  0  SOC2  LIPO_500MAH
+Xbat3  BAT3P  0  SOC3  LIPO_500MAH
+
+* Load: 5 mA (deep sleep average — mostly sleep + occasional MCU)
+Iload1  BAT1P  0  DC  5m
+
+* Load: 50 mA (moderate active — MCU + BLE advertising)
+Iload2  BAT2P  0  DC  50m
+
+* Load: 200 mA (peak LTE-M TX burst — continuous worst-case)
+Iload3  BAT3P  0  DC  200m
+
+* ---------------------------------------------------------------------------
+* Simulation: transient to battery cutoff (3.0V)
+* 5mA    → 500mAh/5mA   = 100h = 360000s
+* 50mA   → 500mAh/50mA  = 10h  = 36000s
+* 200mA  → 500mAh/200mA = 2.5h = 9000s
+* Simulate longest case; shorter loads reach cutoff earlier
+* ---------------------------------------------------------------------------
+.tran 100 360000 0 100 UIC
+
+* Stop conditions (stop each run when Vterm < 3.0V)
+.meas TRAN t_cutoff1 WHEN V(BAT1P)=3.0 CROSS=1
+.meas TRAN t_cutoff2 WHEN V(BAT2P)=3.0 CROSS=1
+.meas TRAN t_cutoff3 WHEN V(BAT3P)=3.0 CROSS=1
+.meas TRAN life_h1   PARAM 't_cutoff1/3600'
+.meas TRAN life_h2   PARAM 't_cutoff2/3600'
+.meas TRAN life_h3   PARAM 't_cutoff3/3600'
+
+* Minimum voltage during 200mA peak (must stay ≥ 3.0V)
+.meas TRAN vmin3 MIN V(BAT3P)
+
+.probe V(BAT1P) V(BAT2P) V(BAT3P) V(SOC1) V(SOC2) V(SOC3)
+
+.end
