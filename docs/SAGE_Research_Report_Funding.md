@@ -1,7 +1,7 @@
 # SAGE: Smart Agentic-Guided Empowerment
 ## Research Report — Funding Proposal
 
-**Author:** Suman Harapanahalli
+**Author:** SAGE Contributors
 **Date:** March 28, 2026
 **Repository:** github.com/Sumanharapanahalli/SAGE (MIT License)
 **Development Period:** March 12 — March 28, 2026 (16 days)

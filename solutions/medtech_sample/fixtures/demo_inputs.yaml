@@ -1,5 +1,5 @@
 # ==============================================================================
-# BlueDrop Medical — Demo Test Fixtures
+# Acme MedTech — Demo Test Fixtures
 # ==============================================================================
 # Paste these into the SAGE interface to test each agent type.
 # All patient data is synthetic and HIPAA-safe (no real PHI).
@@ -43,7 +43,7 @@ firmware_faults:
       -- Last successful upload: 2026-03-17 09:22:44 UTC (40+ hours ago)
       -- AWS IoT Core MQTT: CONNACK timeout after 4 retries
       -- Activating LTE_FAILOVER_TASK...
-      -- LTE modem: SIM present, APN=bluedrop.iot, signal RSSI=-71 dBm
+      -- LTE modem: SIM present, APN=medtech.iot, signal RSSI=-71 dBm
       -- LTE connection established, uploading queued scans...
       -- WARN: scan BD-P0559-2026-03-17-0922 shows hotspot score=0.74 (above threshold 0.60)
       -- This scan has not yet been reviewed by EveryStep clinical staff (upload delayed 40h)
@@ -175,7 +175,7 @@ ml_signals:
     model_version: hotspot-cnn-v2.3.1
     input: |
       [SageMaker] [2026-03-19 03:22:47 UTC] [hotspot-cnn-v2.3.1] ENDPOINT_TIMEOUT
-      -- Endpoint: bluedrop-hotspot-prod
+      -- Endpoint: medtech-hotspot-prod
       -- Instance: ml.m5.large (single instance, no auto-scaling configured)
       -- Invocation timeout: 29 consecutive timeouts (11:00 PM – 3:22 AM UTC)
       -- Root cause: model warm-up latency after instance recycle (ECS container restart at 11:00 PM)
@@ -316,7 +316,7 @@ monitor_events:
 knowledge_documents:
 
   - id: KB-001
-    title: "BlueDrop Hotspot Alert Protocol — Clinical Standard Operating Procedure"
+    title: "Acme MedTech Hotspot Alert Protocol — Clinical Standard Operating Procedure"
     type: "SOP"
     version: "SOP-CLIN-007 v2.1"
     content: |
@@ -376,9 +376,9 @@ knowledge_documents:
       Grade 2: Wound penetrating to tendon or capsule
       Grade 3: Wound penetrating to bone or joint
 
-      BlueDrop target: Detect all DFUs at Grade 0-1 (pre-ulcerative or superficial)
+      Acme MedTech target: Detect all DFUs at Grade 0-1 (pre-ulcerative or superficial)
 
-      Cost comparison (internal BlueDrop data):
+      Cost comparison (internal Acme MedTech data):
         Stage 1 treatment: $8,200 average
         Stage 2: $19,700 (57% more)
         Stage 3: $54,800 (85% more)

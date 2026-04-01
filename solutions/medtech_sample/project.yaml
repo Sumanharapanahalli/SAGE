@@ -1,19 +1,19 @@
 # ==============================================================================
-# SAGE Solution — BlueDrop Medical
+# SAGE Solution — Acme MedTech
 # ==============================================================================
-# BlueDrop Medical (Houston TX + Galway IE) designs the OneStep Foot Scanner
+# Acme MedTech (Houston TX + Galway IE) designs the OneStep Foot Scanner
 # and EveryStep Monitoring Service to prevent diabetic foot ulcers (DFUs).
 # The OneStep is a smart scale capturing daily thermal + HD images of both
-# feet; EveryStep is a cloud RPM platform staffed by BlueDrop clinicians.
+# feet; EveryStep is a cloud RPM platform staffed by Acme MedTech clinicians.
 # $15M+ raised (Atlantic Bridge, Furthr VC, Elkstone). Founded 2015.
 # ==============================================================================
 
-name: "BlueDrop Medical"
+name: "Acme MedTech"
 version: "3.1.0"
 domain: "digital_health"
 description: >
-  AI agent system for BlueDrop Medical's engineering, clinical, and regulatory
-  team. BlueDrop's flagship products are the OneStep Foot Scanner (embedded
+  AI agent system for Acme MedTech's engineering, clinical, and regulatory
+  team. Acme MedTech's flagship products are the OneStep Foot Scanner (embedded
   thermovisual hardware) and the EveryStep Monitoring Platform (cloud RPM).
   The OneStep captures 100+ thermal points and HD images per foot in under
   30 seconds; EveryStep clinical staff monitor trends and escalate to
@@ -118,7 +118,7 @@ integrations:
 
 settings:
   memory:
-    collection_name: "bluedrop_medical_knowledge"
+    collection_name: "medtech_sample_knowledge"
   system:
     max_concurrent_tasks: 2
 

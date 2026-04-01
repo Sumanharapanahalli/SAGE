@@ -1,0 +1,198 @@
+# ==============================================================================
+# Example MedTech Startup — Organisational Chart
+# ==============================================================================
+# Fictional team for a realistic demo environment.
+# All names, emails, and addresses are synthetic placeholders.
+# ==============================================================================
+
+company:
+  name: "Acme MedTech"
+  founded: 2015
+  mission: "Improve patient outcomes through AI-assisted diagnostics"
+  locations:
+    - city: "Austin"
+      state: "TX"
+      country: "USA"
+      role: "Commercial HQ + Clinical Operations"
+    - city: "Dublin"
+      country: "Ireland"
+      role: "R&D + Engineering + Manufacturing"
+
+departments:
+
+  executive:
+    name: "Executive Team"
+    members:
+      - id: exec_ceo
+        name: "Alex Morgan"
+        title: "CEO & Co-Founder"
+        location: "Austin, TX"
+        email: "alex.morgan@example.com"
+        avatar_color: "#1a73e8"
+        reports_to: null
+
+      - id: exec_coo
+        name: "Jamie Quinn"
+        title: "COO & Co-Founder"
+        location: "Dublin, IE"
+        email: "jamie.quinn@example.com"
+        avatar_color: "#0d9488"
+        reports_to: exec_ceo
+        owns: ["Manufacturing", "Regulatory Affairs", "Sourcing", "Distribution"]
+
+      - id: exec_cto
+        name: "Pat Riley"
+        title: "CTO"
+        location: "Dublin, IE"
+        email: "pat.riley@example.com"
+        avatar_color: "#7c3aed"
+        reports_to: exec_ceo
+
+      - id: exec_cco
+        name: "Dana Brooks"
+        title: "CCO (Chief Commercial Officer)"
+        location: "Austin, TX"
+        email: "dana.brooks@example.com"
+        avatar_color: "#b45309"
+        reports_to: exec_ceo
+
+      - id: exec_medical
+        name: "Dr. Sam Patel"
+        title: "Medical Director"
+        location: "Austin, TX"
+        email: "sam.patel@example.com"
+        avatar_color: "#dc2626"
+        reports_to: exec_ceo
+
+  engineering:
+    name: "Engineering (Dublin, IE)"
+    head: exec_cto
+    members:
+      - id: eng_firmware_sr
+        name: "Casey Flynn"
+        title: "Senior Firmware Engineer"
+        location: "Dublin, IE"
+        email: "casey.flynn@example.com"
+        avatar_color: "#6366f1"
+        reports_to: exec_cto
+        focus: ["HAL drivers", "SPI interface", "FreeRTOS task design"]
+
+      - id: eng_firmware
+        name: "Robin Walsh"
+        title: "Firmware Engineer"
+        location: "Dublin, IE"
+        email: "robin.walsh@example.com"
+        avatar_color: "#0891b2"
+        reports_to: eng_firmware_sr
+        focus: ["WiFi/LTE connectivity stack", "MQTT to cloud", "OTA firmware updates"]
+
+      - id: eng_backend
+        name: "Taylor Ryan"
+        title: "Platform Engineer (Backend)"
+        location: "Dublin, IE"
+        email: "taylor.ryan@example.com"
+        avatar_color: "#16a34a"
+        reports_to: exec_cto
+        focus: ["FastAPI REST services", "SQLAlchemy + RDS", "FHIR R4 integration"]
+
+      - id: eng_frontend
+        name: "Jordan Lee"
+        title: "Platform Engineer (Frontend)"
+        location: "Dublin, IE"
+        email: "jordan.lee@example.com"
+        avatar_color: "#c2410c"
+        reports_to: exec_cto
+        focus: ["React 18 + TypeScript dashboard", "real-time telemetry WebSocket", "WCAG 2.1 AA"]
+
+      - id: eng_ml
+        name: "Avery Nair"
+        title: "ML Engineer"
+        location: "Dublin, IE"
+        email: "avery.nair@example.com"
+        avatar_color: "#7e22ce"
+        reports_to: exec_cto
+        focus: ["PyTorch thermal CNN", "ML pipeline", "model validation"]
+
+      - id: eng_devops
+        name: "Morgan Doyle"
+        title: "DevOps / Cloud Engineer"
+        location: "Dublin, IE"
+        email: "morgan.doyle@example.com"
+        avatar_color: "#b45309"
+        reports_to: exec_cto
+        focus: ["Cloud infrastructure", "CI/CD", "HIPAA-compliant deployment"]
+
+  quality_regulatory:
+    name: "Quality & Regulatory (Dublin, IE)"
+    head: exec_coo
+    members:
+      - id: qa_senior
+        name: "Kelly Byrne"
+        title: "Senior Quality Engineer"
+        location: "Dublin, IE"
+        email: "kelly.byrne@example.com"
+        avatar_color: "#0f766e"
+        reports_to: exec_coo
+        focus: ["ISO 13485 QMS", "CAPA management", "internal audit", "DHF maintenance"]
+
+      - id: ra_specialist
+        name: "Conor Brady"
+        title: "Regulatory Affairs Specialist"
+        location: "Dublin, IE"
+        email: "conor.brady@example.com"
+        avatar_color: "#1d4ed8"
+        reports_to: exec_coo
+        focus: ["FDA submissions", "EU MDR technical documentation", "ISO 14971 risk file"]
+
+  clinical:
+    name: "Clinical Operations (Austin, TX)"
+    head: exec_medical
+    members:
+      - id: clinical_manager
+        name: "Carmen Hayes"
+        title: "Clinical Applications Manager"
+        location: "Austin, TX"
+        email: "carmen.hayes@example.com"
+        avatar_color: "#be185d"
+        reports_to: exec_medical
+        focus: ["Alert triage", "prescriber escalation", "clinical staff training"]
+
+      - id: clinical_specialist
+        name: "David Kim"
+        title: "Clinical Applications Specialist"
+        location: "Austin, TX"
+        email: "david.kim@example.com"
+        avatar_color: "#065f46"
+        reports_to: clinical_manager
+        focus: ["patient onboarding", "billing", "provider education"]
+
+      - id: clinical_research
+        name: "Dr. Elena Voss"
+        title: "Clinical Research Associate"
+        location: "Austin, TX"
+        email: "elena.voss@example.com"
+        avatar_color: "#92400e"
+        reports_to: exec_medical
+        focus: ["clinical evidence generation", "guideline alignment", "publication authorship"]
+
+  commercial:
+    name: "Commercial (Austin, TX)"
+    head: exec_cco
+    members:
+      - id: sales_director
+        name: "Marcus Cole"
+        title: "Regional Sales Director (South)"
+        location: "Austin, TX"
+        email: "marcus.cole@example.com"
+        avatar_color: "#374151"
+        reports_to: exec_cco
+        focus: ["clinic partnerships", "practice sales", "reimbursement education"]
+
+      - id: csm
+        name: "Lisa Chen"
+        title: "Customer Success Manager"
+        location: "Austin, TX"
+        email: "lisa.chen@example.com"
+        avatar_color: "#1e40af"
+        reports_to: exec_cco
+        focus: ["clinic onboarding", "device utilisation", "renewal and expansion"]

@@ -217,7 +217,7 @@ Pre-built agent teams with correct roles, system prompts, task types, and compli
 | `iot_medical` | IoT medical device (IEC 62304 Class C) | IEC 62304, ISO 14971, IEC 62443 |
 | `elder_fall_detection` | Elder fall detection IoT | HIPAA, IEC 62304 |
 | `finmarkets` | Financial markets | SOC 2, PCI DSS |
-| `bluedrop_medical` | Medical device startup | IEC 62304, ISO 13485 |
+| `medtech_sample` | Medical device startup | IEC 62304, ISO 13485 |
 | `meditation_app` | Flutter mobile + Node.js | GDPR |
 | `four_in_a_line` | Casual game studio | GDPR, COPPA |
 | + 7 more | Various domains | See `solutions/` directory |

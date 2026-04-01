@@ -2,9 +2,9 @@
 # Dev-mode user roster. Loaded by GET /config/dev-users.
 # Each entry maps to a UserIdentity in the frontend (sub=id, provider='dev').
 users:
-  - id: suman
-    name: Suman H.
-    email: suman@example.com
+  - id: admin_1
+    name: Admin User
+    email: admin@example.com
     role: admin
     avatar_color: '#6366f1'
   - id: dr_chen
@@ -13,8 +13,8 @@ users:
     role: approver
     avatar_color: '#10b981'
   - id: reviewer_2
-    name: Priya S.
-    email: priya@example.com
+    name: Reviewer
+    email: reviewer@example.com
     role: approver
     avatar_color: '#f59e0b'
   - id: viewer_1
@@ -23,24 +23,24 @@ users:
     role: viewer
     avatar_color: '#64748b'
 
-  # BlueDrop Medical personas (for bluedrop_medical solution demo)
-  - id: gavin_corley
-    name: Gavin Corley
-    email: gavin.corley@bluedropmedical.com
+  # MedTech solution demo personas
+  - id: demo_cto
+    name: Pat Riley
+    email: pat.riley@example.com
     role: admin
     avatar_color: '#7c3aed'
-  - id: aoife_brennan
-    name: Aoife Brennan
-    email: aoife.brennan@bluedropmedical.com
+  - id: demo_firmware
+    name: Casey Flynn
+    email: casey.flynn@example.com
     role: approver
     avatar_color: '#6366f1'
-  - id: dr_ron_scott
-    name: Dr. Ron Scott
-    email: ron.scott@bluedropmedical.com
+  - id: demo_medical
+    name: Dr. Sam Patel
+    email: sam.patel@example.com
     role: approver
     avatar_color: '#dc2626'
-  - id: jennifer_hayes
-    name: Jennifer Hayes
-    email: jennifer.hayes@bluedropmedical.com
+  - id: demo_clinical
+    name: Carmen Hayes
+    email: carmen.hayes@example.com
     role: viewer
     avatar_color: '#be185d'

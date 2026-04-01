@@ -48,7 +48,7 @@ behind a "Browse solutions" button (the "+" icon area or a new "..." button).
 │  All Solutions                    [x]   │
 │  ──────────────────────────────────     │
 │  ● iot_medical          IoT Medical     │
-│  ○ bluedrop_medical     BlueDrop Med.   │
+│  ○ medtech_sample     Acme Med.   │
 │  ○ medtech_team         MedTech Team    │
 │  ... (scrollable list)                  │
 │                                         │
@@ -77,7 +77,7 @@ Context is per-user, persisted in SQLite. Streams responses token-by-token.
 
 **Current:** All solution avatars use the same color scheme.
 **Requested:** Each solution avatar uses its `theme.badge_text` color as the avatar background,
-so BlueDrop Medical shows in its navy blue, iot_medical in its own color, etc.
+so Acme MedTech shows in its navy blue, iot_medical in its own color, etc.
 
 ### Files to modify:
 - `web/src/components/layout/Sidebar.tsx` — read project theme when building rail avatars

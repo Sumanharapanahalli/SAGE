@@ -89,8 +89,8 @@ solutions/*/
 !solutions/four_in_a_line/**
 !solutions/medtech_team
 !solutions/medtech_team/**
-!solutions/bluedrop_medical
-!solutions/bluedrop_medical/**
+!solutions/medtech_sample
+!solutions/medtech_sample/**
 
 # Node / Web build artefacts
 web/node_modules/
@@ -120,6 +120,9 @@ revised_plan.py
 run_gym_exercise.py
 test_tictactoe_build.py
 AI_Testing_Documentation_Agents_Proposal.txt
+
+# Claude Code local settings (machine-specific, may contain paths)
+.claude/settings.local.json
 
 # VS Code extension build artifacts
 vscode-extension/node_modules/

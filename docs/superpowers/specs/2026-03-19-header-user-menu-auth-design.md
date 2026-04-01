@@ -88,7 +88,7 @@ Applying a combo writes all six `--sage-sidebar-bg`, `--sage-sidebar-text`, `--s
 ```yaml
 users:
   - id: suman
-    name: Suman H.
+    name: Admin User
     email: suman@example.com
     role: admin
     avatar_color: '#6366f1'
@@ -197,7 +197,7 @@ Panel: `position: fixed`, 300px wide, anchored below avatar button, `z-index: 99
 
 ```
 ┌─────────────────────────────────┐
-│  ◉ Suman H.              Admin  │  initials avatar (avatar_color bg) + role badge
+│  ◉ Admin User              Admin  │  initials avatar (avatar_color bg) + role badge
 │    suman@example.com            │
 │    iot_medical                  │  from useProjectConfig().name
 ├─────────────────────────────────┤

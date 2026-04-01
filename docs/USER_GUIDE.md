@@ -223,7 +223,7 @@ curl -X POST http://localhost:8000/config/switch \
 | `finmarkets` | Financial markets | SOC 2, PCI DSS |
 | `kappture` | Point-of-sale | PCI DSS |
 | `poseengine` | Pose estimation ML | None |
-| `bluedrop_medical` | Medical device | IEC 62304, ISO 13485 |
+| `medtech_sample` | Medical device | IEC 62304, ISO 13485 |
 | `tictac_arena` | Board game | None |
 | `sol_a`, `sol_b` | Multi-solution org examples | None |
 

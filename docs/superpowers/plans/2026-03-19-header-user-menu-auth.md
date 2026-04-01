@@ -47,7 +47,7 @@
 # Each entry maps to a UserIdentity in the frontend (sub=id, provider='dev').
 users:
   - id: suman
-    name: Suman H.
+    name: Admin User
     email: suman@example.com
     role: admin
     avatar_color: '#6366f1'
