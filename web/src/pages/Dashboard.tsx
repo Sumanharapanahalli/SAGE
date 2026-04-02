@@ -335,12 +335,6 @@ export default function Dashboard() {
   })
   const navigate = useNavigate()
 
-  if (healthLoading) return (
-    <div className="flex items-center justify-center h-64 text-gray-400 gap-2">
-      <Loader2 className="animate-spin" size={20} /> Loading…
-    </div>
-  )
-
   const hasProjects = (projectsData?.projects?.length ?? 0) > 0
 
   useEffect(() => {
@@ -348,6 +342,12 @@ export default function Dashboard() {
       localStorage.removeItem('sage_skip_empty_state')
     }
   }, [hasProjects])
+
+  if (healthLoading) return (
+    <div className="flex items-center justify-center h-64 text-gray-400 gap-2">
+      <Loader2 className="animate-spin" size={20} /> Loading…
+    </div>
+  )
 
   const skipped = localStorage.getItem('sage_skip_empty_state') === '1'
   if (!hasProjects && !skipped) return <EmptyState />
