@@ -127,3 +127,10 @@ AI_Testing_Documentation_Agents_Proposal.txt
 # VS Code extension build artifacts
 vscode-extension/node_modules/
 vscode-extension/out/
+
+# Lock files
+vscode-extension/package-lock.json
+
+# pycache anywhere
+**/__pycache__/
+
