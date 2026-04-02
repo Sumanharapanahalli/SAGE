@@ -157,7 +157,7 @@ When an engineer leaves or a consultant finishes, domain knowledge (design decis
 
 ## Persona B — The Solo Founder / Micro-Team CTO
 
-**Name:** Priya Nair
+**Name:** Avery Nair
 **Title:** Solo Technical Founder
 **Archetype:** Solo Founder / Micro-Team CTO
 **Tagline:** *"I am the entire product, engineering, and ops department. I need agents that can be the rest."*

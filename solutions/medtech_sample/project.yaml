@@ -85,27 +85,27 @@ product:
 team:
   leadership:
     - id: chris_murphy
-      name: "Chris Murphy"
+      name: "Alex Morgan"
       title: "CEO & Co-Founder"
       location: "Houston, TX"
       background: "Ex-Medtronic R&D engineer; James Dyson Award winner"
     - id: simon_kiersey
-      name: "Simon Kiersey"
+      name: "Jamie Quinn"
       title: "COO & Co-Founder"
       location: "Galway, IE"
       background: "Ex-Medtronic R&D engineer; owns manufacturing, regulatory, distribution"
     - id: gavin_corley
-      name: "Gavin Corley"
+      name: "Pat Riley"
       title: "CTO"
       location: "Galway, IE"
       background: "13 years medtech; ex-VASGARD, Analog Devices, Valeo; 5 patents; 15 publications"
     - id: dr_ron_scott
-      name: "Dr. Ron Scott"
+      name: "Dr. Sam Patel"
       title: "Medical Director"
       location: "Houston, TX"
       background: "Wound care pioneer; founded first comprehensive wound facility in North Texas (1985)"
     - id: chris_sandroussi
-      name: "Chris Sandroussi"
+      name: "Dana Brooks"
       title: "CCO"
       location: "Houston, TX"
       background: "Ex-KCI/Acelity, 3M Global Medical Solutions"

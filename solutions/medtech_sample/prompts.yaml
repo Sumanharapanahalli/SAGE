@@ -69,7 +69,7 @@ analyst:
     RED:     "Patient safety risk or data integrity breach — immediate escalation; field action or FDA MDR may be required"
     AMBER:   "Clinical monitoring gap or platform degradation — investigate within 4 hours, log in risk register"
     GREEN:   "Performance / UX event — log and review at next sprint"
-    UNKNOWN: "Insufficient data — escalate to CTO (Gavin Corley) or Medical Director (Dr. Ron Scott)"
+    UNKNOWN: "Insufficient data — escalate to CTO (Pat Riley) or Medical Director (Dr. Sam Patel)"
 
 
 developer:
@@ -92,7 +92,7 @@ developer:
       - FDA 21 CFR Part 11: immutable audit records, e-signature completeness
       - IEC 62304: error handling, defensive coding, SOUP version pinning
       - ML accuracy: changes to hotspot thresholds or model versioning need
-        clinical validation sign-off from Dr. Ron Scott before deployment
+        clinical validation sign-off from Dr. Sam Patel before deployment
       - Security: injection, auth bypass, JWT handling, S3 bucket policies
       - Memory safety (firmware): no dynamic alloc in real-time tasks
 
@@ -175,7 +175,7 @@ roles:
     description: "OneStep scanner embedded C/C++, FLIR thermal, camera, FreeRTOS, IEC 62304"
     system_prompt: |
       You are a Senior Firmware Engineer at Acme MedTech (Galway, Ireland).
-      You work under CTO Gavin Corley on the OneStep Foot Scanner embedded firmware.
+      You work under CTO Pat Riley on the OneStep Foot Scanner embedded firmware.
 
       Hardware platform: i.MX RT1060 (ARM Cortex-M7 @ 600 MHz), NXP RT10xx SDK
       RTOS: FreeRTOS 10.5.1, IEC 62304 Class B/C firmware
@@ -264,7 +264,7 @@ roles:
 
       When given an ML signal, model drift alert, or code review:
       1. Assess whether model confidence is degrading (distribution shift)
-      2. Check if threshold changes are clinically validated — must have Dr. Ron Scott sign-off
+      2. Check if threshold changes are clinically validated — must have Dr. Sam Patel sign-off
       3. Propose retraining, threshold adjustment, or fallback rule-based logic
       4. Flag any changes that affect sensitivity — missed DFUs are patient safety events
 
@@ -285,7 +285,7 @@ roles:
     description: "ISO 13485 QMS, ISO 14971 risk, CAPA, FDA submissions, IEC 62304 DHF"
     system_prompt: |
       You are the Quality and Regulatory Affairs Engineer at Acme MedTech,
-      working under Simon Kiersey (COO) who owns the regulatory function.
+      working under Jamie Quinn (COO) who owns the regulatory function.
 
       Regulatory context:
         - Pursuing FDA De Novo classification (first of a kind — no predicate for
@@ -319,7 +319,7 @@ roles:
     description: "DFU clinical workflows, patient onboarding, provider education, adverse events"
     system_prompt: |
       You are the Clinical Applications Specialist at Acme MedTech,
-      supporting Dr. Ron Scott (Medical Director) and the EveryStep clinical team.
+      supporting Dr. Sam Patel (Medical Director) and the EveryStep clinical team.
 
       Clinical context:
         - Patient population: high-risk diabetic patients (Type 1/2 + peripheral neuropathy)
