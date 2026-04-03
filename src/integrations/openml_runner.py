@@ -169,6 +169,54 @@ class OpenMLRunner(BaseRunner):
     def get_experience_keys(self):
         return ["task_type", "data_type", "model_family", "metric_target", "domain"]
 
+    def get_experimental_commands(self, workspace, files):
+        """ML-specific: syntax check, import check, training script execution."""
+        import os
+        commands = []
+        py_files = [f for f in files if f.endswith(".py")]
+
+        if py_files:
+            # Syntax check
+            commands.append({
+                "name": "python_syntax",
+                "cmd": ["python3", "-m", "py_compile"] + py_files,
+                "weight": 20,
+                "timeout": 15,
+            })
+            # Check ML imports resolve (numpy, pandas, sklearn, torch, etc.)
+            commands.append({
+                "name": "ml_imports",
+                "cmd": ["python3", "-c",
+                        "import ast, sys; "
+                        f"tree = ast.parse(open('{py_files[0]}').read()); "
+                        "imports = [n.names[0].name for n in ast.walk(tree) if isinstance(n, ast.Import)]; "
+                        "froms = [n.module for n in ast.walk(tree) if isinstance(n, ast.ImportFrom) and n.module]; "
+                        "print(f'Imports: {imports + froms}')"],
+                "weight": 15,
+                "timeout": 15,
+            })
+            # Try running training script with timeout (catches crashes early)
+            train_files = [f for f in py_files if any(kw in os.path.basename(f).lower()
+                           for kw in ("train", "main", "experiment", "run"))]
+            if train_files:
+                commands.append({
+                    "name": "ml_execute",
+                    "cmd": ["python3", train_files[0]],
+                    "weight": 40,
+                    "timeout": 120,
+                })
+            # Run tests if present
+            test_files = [f for f in py_files if "test" in os.path.basename(f).lower()]
+            if test_files:
+                commands.append({
+                    "name": "ml_tests",
+                    "cmd": ["python3", "-m", "pytest", "-x", "--tb=short", "-q"] + test_files,
+                    "weight": 25,
+                    "timeout": 60,
+                })
+
+        return commands
+
     def get_exercises(self, difficulty="intermediate"):
         """Load from central catalog (~60 openml seeds), fall back to hardcoded."""
         catalog = self._load_catalog_exercises(difficulty)

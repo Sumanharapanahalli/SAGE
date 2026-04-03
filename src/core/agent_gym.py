@@ -245,6 +245,15 @@ class GymDB:
                     CREATE INDEX IF NOT EXISTS idx_sessions_started ON training_sessions(started_at);
                     CREATE INDEX IF NOT EXISTS idx_sessions_status ON training_sessions(status);
                     CREATE INDEX IF NOT EXISTS idx_ratings_role ON skill_ratings(agent_role);
+
+                    CREATE TABLE IF NOT EXISTS refined_criteria (
+                        exercise_id TEXT PRIMARY KEY,
+                        criteria_json TEXT NOT NULL,
+                        rationale TEXT DEFAULT '',
+                        based_on_sessions INTEGER DEFAULT 0,
+                        refinement_count INTEGER DEFAULT 1,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    );
                 """)
                 conn.commit()
             finally:
@@ -346,11 +355,56 @@ class GymDB:
             finally:
                 conn.close()
 
+    def save_refined_criteria(
+        self,
+        exercise_id: str,
+        criteria: list[str],
+        rationale: str = "",
+        based_on_sessions: int = 0,
+    ) -> None:
+        """Store critic-refined acceptance criteria for an exercise."""
+        with self._lock:
+            conn = get_connection(self.db_path, row_factory=None)
+            try:
+                # Increment refinement count if exists
+                existing = conn.execute(
+                    "SELECT refinement_count FROM refined_criteria WHERE exercise_id = ?",
+                    (exercise_id,),
+                ).fetchone()
+                count = (existing[0] + 1) if existing else 1
+
+                conn.execute("""
+                    INSERT OR REPLACE INTO refined_criteria
+                    (exercise_id, criteria_json, rationale, based_on_sessions,
+                     refinement_count, updated_at)
+                    VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                """, (exercise_id, json.dumps(criteria), rationale,
+                      based_on_sessions, count))
+                conn.commit()
+            finally:
+                conn.close()
+
+    def get_refined_criteria(self, exercise_id: str) -> list[str] | None:
+        """Get critic-refined acceptance criteria for an exercise, if available."""
+        with self._lock:
+            conn = get_connection(self.db_path, row_factory=None)
+            try:
+                row = conn.execute(
+                    "SELECT criteria_json FROM refined_criteria WHERE exercise_id = ?",
+                    (exercise_id,),
+                ).fetchone()
+                if row:
+                    return json.loads(row[0])
+                return None
+            finally:
+                conn.close()
+
     def query_sessions(
         self,
         role: str = "",
         skill: str = "",
         status: str = "",
+        exercise_id: str = "",
         limit: int = 50,
         offset: int = 0,
     ) -> list[dict]:
@@ -365,6 +419,9 @@ class GymDB:
         if status:
             conditions.append("status = ?")
             params.append(status)
+        if exercise_id:
+            conditions.append("exercise_id = ?")
+            params.append(exercise_id)
 
         where = " AND ".join(conditions) if conditions else "1=1"
         params.extend([limit, offset])
@@ -676,6 +733,15 @@ class AgentGym:
         if not exercise:
             exercise = self._select_exercise(exercises, role, skill_name)
 
+        # Apply critic-refined acceptance criteria if available
+        refined = self._db.get_refined_criteria(exercise.id)
+        if refined:
+            self.logger.info(
+                "Using refined criteria for %s (%d criteria, was %d)",
+                exercise.id, len(refined), len(exercise.acceptance_criteria),
+            )
+            exercise.acceptance_criteria = refined
+
         session = TrainingSession(
             session_id=session_id,
             agent_role=role,
@@ -701,6 +767,10 @@ class AgentGym:
             import tempfile
             workspace = tempfile.mkdtemp(prefix=f"sage_gym_{role}_")
             result = runner.execute(task=task, workspace=workspace)
+            # Store workspace path so experimental verification can find it
+            if not result.metrics:
+                result.metrics = {}
+            result.metrics["workspace"] = workspace
             session.attempt_result = result.to_dict()
 
             # 3. GRADE — runner grades the attempt
@@ -714,9 +784,12 @@ class AgentGym:
                 "hints": score.improvement_hints,
             }
 
-            # 4. CRITIQUE — N critics review
+            # 4. CRITIQUE — N critics review (including experimental results)
             session.status = "critiquing"
-            session.critic_reviews = self._get_critic_reviews(result, exercise, role)
+            session.critic_reviews = self._get_critic_reviews(
+                result, exercise, role,
+                experimental_grade=session.grade,
+            )
 
             # 4b. PEER REVIEW — optional cross-role critique
             if enable_peer_review:
@@ -739,6 +812,9 @@ class AgentGym:
 
             # 8. Store learnings in vector memory
             self._store_learning(session)
+
+            # 8.5. REFINE — critics evolve acceptance criteria based on experimental results
+            self._refine_acceptance_criteria(exercise, session, score)
 
             # 9. Persist to SQLite
             session.status = "completed"
@@ -981,24 +1057,63 @@ class AgentGym:
     # ── Critic reviews ───────────────────────────────────────────────────
 
     def _get_critic_reviews(
-        self, result, exercise, role: str
+        self, result, exercise, role: str,
+        experimental_grade: dict | None = None,
     ) -> dict[str, dict]:
-        """Get reviews from all available critic providers."""
+        """
+        Get reviews from all available critic providers.
+
+        When experimental_grade is provided, the critic reviews BOTH the agent's
+        code AND the experimental results (compile success, test outcomes,
+        simulation metrics). This makes the feedback loop ground-truthed in
+        real execution, not just LLM-judging-LLM output.
+        """
         reviews = {}
         try:
             from src.agents.critic import critic_agent
             code_output = result.output[:4000] if result.output else "No output"
 
+            # Build experimental context for the critic
+            exp_context = ""
+            if experimental_grade:
+                criteria = experimental_grade.get("criteria", {})
+                feedback = experimental_grade.get("feedback", "")
+                hints = experimental_grade.get("hints", [])
+                exp_passed = [k for k, v in criteria.items() if v is True and k.startswith("exp:")]
+                exp_failed = [k for k, v in criteria.items() if v is False and k.startswith("exp:")]
+
+                exp_context = (
+                    f"\n\n## Experimental Results (Real Execution)\n"
+                    f"Score: {experimental_grade.get('score', 'N/A')}/100\n"
+                    f"Passed: {experimental_grade.get('passed', 'N/A')}\n"
+                )
+                if exp_passed:
+                    exp_context += f"Experimental checks PASSED: {', '.join(exp_passed)}\n"
+                if exp_failed:
+                    exp_context += f"Experimental checks FAILED: {', '.join(exp_failed)}\n"
+                if hints:
+                    exp_context += f"Execution errors:\n" + "\n".join(f"  - {h}" for h in hints[:5]) + "\n"
+                if feedback:
+                    exp_context += f"Grading summary: {feedback}\n"
+                exp_context += (
+                    "\nIMPORTANT: Your critique should focus on WHY the experimental "
+                    "checks failed and WHAT changes would make them pass. "
+                    "The experimental results are ground truth — if the code compiles "
+                    "but tests fail, identify the logical errors. If compilation fails, "
+                    "identify the syntax/type errors."
+                )
+
             review = critic_agent.multi_critic_review(
                 review_type="code",
-                artifact=code_output,
+                artifact=code_output + exp_context,
                 description=(
                     f"Exercise: {exercise.description}\n"
                     f"Role: {role}\n"
                     f"Acceptance criteria: {exercise.acceptance_criteria}"
                 ),
                 context=f"This is a training exercise (difficulty: {exercise.difficulty}). "
-                        f"Grade the agent's output strictly.",
+                        f"Grade the agent's output strictly. "
+                        f"{'Experimental execution results are included — weigh them heavily.' if exp_context else ''}",
             )
 
             if review.get("multi_critic"):
@@ -1207,6 +1322,109 @@ class AgentGym:
             )
         except Exception as exc:
             self.logger.warning("Vector store learning failed (non-fatal): %s", exc)
+
+    def _refine_acceptance_criteria(
+        self, exercise, session: TrainingSession, score
+    ) -> None:
+        """
+        Have critics refine the experiment's acceptance criteria based on
+        what was learned from experimental execution.
+
+        This is the lab evolution loop: each experiment teaches the system
+        what "success" really means. Static seed criteria evolve into
+        battle-tested, grounded acceptance criteria.
+
+        Refined criteria are stored in SQLite and used for future sessions.
+        """
+        try:
+            # Only refine after meaningful attempts (not trivial pass/fail)
+            grade_score = session.grade.get("score", 0)
+            if grade_score <= 0:
+                return
+
+            # Check if we have enough data to refine (at least 2 attempts at this exercise)
+            prior_sessions = self._db.query_sessions(
+                exercise_id=exercise.id, status="completed", limit=10,
+            )
+            if len(prior_sessions) < 2:
+                return  # Need multiple attempts to learn what criteria matter
+
+            from src.core.llm_gateway import llm_gateway
+
+            # Gather experimental evidence from recent sessions
+            exp_evidence = []
+            for s in prior_sessions[:5]:
+                grade = s.get("grade", {})
+                criteria = grade.get("criteria", {})
+                exp_checks = {k: v for k, v in criteria.items() if k.startswith("exp:")}
+                if exp_checks:
+                    exp_evidence.append({
+                        "score": grade.get("score", 0),
+                        "passed": grade.get("passed", False),
+                        "experimental_checks": exp_checks,
+                        "feedback": grade.get("feedback", "")[:200],
+                    })
+
+            if not exp_evidence:
+                return  # No experimental data yet
+
+            current_criteria = exercise.acceptance_criteria
+            prompt = (
+                f"You are a lab director reviewing experiment results to refine acceptance criteria.\n\n"
+                f"## Experiment\n"
+                f"**Title:** {exercise.description[:200]}\n"
+                f"**Domain:** {session.runner_name}\n"
+                f"**Difficulty:** {exercise.difficulty}\n\n"
+                f"## Current Acceptance Criteria\n"
+                + "\n".join(f"- {c}" for c in current_criteria)
+                + f"\n\n## Experimental Evidence ({len(exp_evidence)} attempts)\n"
+                + "\n".join(
+                    f"- Attempt: score={e['score']}, passed={e['passed']}, "
+                    f"checks={e['experimental_checks']}, feedback={e['feedback']}"
+                    for e in exp_evidence
+                )
+                + "\n\n## Task\n"
+                f"Based on the experimental evidence, refine the acceptance criteria.\n"
+                f"- Add criteria that experiments revealed are important but were missing\n"
+                f"- Make vague criteria more specific based on what actually fails\n"
+                f"- Remove criteria that are always trivially met (not discriminating)\n"
+                f"- Keep criteria grounded in measurable, experimentally verifiable outcomes\n\n"
+                f"Return JSON only:\n"
+                f'{{"refined_criteria": ["criterion1", "criterion2", ...], '
+                f'"rationale": "why these changes"}}'
+            )
+
+            response = llm_gateway.generate(
+                prompt,
+                system_prompt="You are a strict lab director. Return valid JSON only.",
+                trace_name="gym.refine_criteria",
+            )
+
+            import json as _json
+            import re as _re
+            cleaned = response.replace("```json", "").replace("```", "").strip()
+            match = _re.search(r'\{[\s\S]*\}', cleaned)
+            if match:
+                parsed = _json.loads(match.group(0))
+                refined = parsed.get("refined_criteria", [])
+                rationale = parsed.get("rationale", "")
+
+                if refined and len(refined) >= 2:
+                    # Store refined criteria in the catalog DB
+                    self._db.save_refined_criteria(
+                        exercise_id=exercise.id,
+                        criteria=refined,
+                        rationale=rationale,
+                        based_on_sessions=len(exp_evidence),
+                    )
+                    self.logger.info(
+                        "Refined criteria for %s: %d → %d criteria. Rationale: %s",
+                        exercise.id, len(current_criteria), len(refined),
+                        rationale[:100],
+                    )
+
+        except Exception as exc:
+            self.logger.debug("Criteria refinement failed (non-fatal): %s", exc)
 
     # ── Helpers ──────────────────────────────────────────────────────────
 

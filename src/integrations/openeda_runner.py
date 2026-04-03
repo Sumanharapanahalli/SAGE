@@ -164,6 +164,44 @@ class OpenEDARunner(BaseRunner):
     def get_experience_keys(self):
         return ["task_type", "board_type", "layer_count", "domain"]
 
+    def get_experimental_commands(self, workspace, files):
+        """EDA-specific: KiCad DRC, ERC, netlist validation, BOM check."""
+        import os
+        commands = []
+        sch_files = [f for f in files if f.endswith((".kicad_sch", ".sch"))]
+        pcb_files = [f for f in files if f.endswith((".kicad_pcb", ".pcb"))]
+        py_files = [f for f in files if f.endswith(".py")]
+
+        # If Python scripts generated (e.g., KiCad scripting), check syntax
+        if py_files:
+            commands.append({
+                "name": "python_syntax",
+                "cmd": ["python3", "-m", "py_compile"] + py_files,
+                "weight": 20,
+                "timeout": 15,
+            })
+
+        # If KiCad files exist, try CLI validation
+        if sch_files:
+            for sf in sch_files[:2]:
+                commands.append({
+                    "name": f"sch_validate_{os.path.basename(sf)}",
+                    "cmd": ["kicad-cli", "sch", "export", "netlist",
+                            "-o", "/dev/null", sf],
+                    "weight": 30,
+                    "timeout": 30,
+                })
+        if pcb_files:
+            for pf in pcb_files[:2]:
+                commands.append({
+                    "name": f"drc_{os.path.basename(pf)}",
+                    "cmd": ["kicad-cli", "pcb", "drc", "--exit-code-violations", pf],
+                    "weight": 40,
+                    "timeout": 60,
+                })
+
+        return commands
+
     def get_exercises(self, difficulty="intermediate"):
         """Load from central catalog (~50 openeda seeds), fall back to hardcoded."""
         catalog = self._load_catalog_exercises(difficulty)

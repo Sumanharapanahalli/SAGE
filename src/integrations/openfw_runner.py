@@ -193,6 +193,52 @@ class OpenFWRunner(BaseRunner):
     def get_experience_keys(self):
         return ["task_type", "mcu_family", "peripheral", "domain", "rtos"]
 
+    def get_experimental_commands(self, workspace, files):
+        """Firmware-specific: C syntax check, cross-compile attempt, static analysis."""
+        import os
+        commands = []
+        c_files = [f for f in files if f.endswith((".c", ".cpp"))]
+        h_files = [f for f in files if f.endswith((".h", ".hpp"))]
+
+        if c_files:
+            # GCC syntax check (host compiler — catches syntax errors even without ARM headers)
+            compiler = "gcc" if any(f.endswith(".c") for f in c_files) else "g++"
+            commands.append({
+                "name": "c_syntax_check",
+                "cmd": [compiler, "-fsyntax-only", "-Wall", "-Wextra",
+                        "-Wno-unknown-pragmas", f"-I{workspace}"] + c_files,
+                "weight": 30,
+                "timeout": 30,
+            })
+            # Try ARM cross-compile if toolchain available
+            commands.append({
+                "name": "arm_cross_compile",
+                "cmd": ["arm-none-eabi-gcc", "-fsyntax-only", "-mcpu=cortex-m4",
+                        "-mthumb", f"-I{workspace}"] + c_files,
+                "weight": 25,
+                "timeout": 30,
+            })
+            # Static analysis with cppcheck if available
+            commands.append({
+                "name": "static_analysis",
+                "cmd": ["cppcheck", "--enable=warning,style", "--error-exitcode=1",
+                        "--quiet"] + c_files,
+                "weight": 20,
+                "timeout": 30,
+            })
+
+        if h_files:
+            # Verify headers are self-contained (include guard check)
+            for hf in h_files[:5]:
+                commands.append({
+                    "name": f"header_check_{os.path.basename(hf)}",
+                    "cmd": ["gcc", "-fsyntax-only", "-x", "c", f"-I{workspace}", hf],
+                    "weight": 5,
+                    "timeout": 10,
+                })
+
+        return commands
+
     # ── Exercises ───────────────────────────────────────────────────────
 
     def get_exercises(self, difficulty="intermediate"):

@@ -141,6 +141,13 @@ adaptive_router = AdaptiveRouter()
 # Each type maps to a specialist agent pattern and carries acceptance criteria.
 # ---------------------------------------------------------------------------
 BUILD_TASK_TYPES = {
+    # --- Architecture & System Design ---
+    "ARCHITECTURE":      "High-level system architecture, component interaction, technology stack selection",
+    "SYSTEM_DESIGN":     "Detailed system design, subsystem boundaries, interface specifications",
+    "REQUIREMENTS":      "Requirements analysis, decomposition, and traceability matrix",
+    "SUBSYSTEM_DESIGN":  "Individual subsystem design, internal architecture, APIs",
+    "INTERFACE_DESIGN":  "Interface definition between components, protocols, data formats",
+    "TECHNOLOGY_SELECTION": "Technology stack evaluation, tool selection, dependency analysis",
     # --- Software ---
     "BACKEND":   "Build backend service, API endpoints, business logic",
     "FRONTEND":  "Build frontend UI components, pages, routing",
@@ -190,6 +197,13 @@ BUILD_TASK_TYPES = {
 # Falls back to OpenSWE/LLM for any type not mapped here.
 # ---------------------------------------------------------------------------
 TASK_TYPE_TO_AGENT = {
+    # Architecture & System Design
+    "ARCHITECTURE":      "system_engineer",
+    "SYSTEM_DESIGN":     "system_engineer",
+    "REQUIREMENTS":      "system_engineer",
+    "SUBSYSTEM_DESIGN":  "system_engineer",
+    "INTERFACE_DESIGN":  "system_engineer",
+    "TECHNOLOGY_SELECTION": "system_engineer",
     # Software
     "BACKEND":  "developer",
     "FRONTEND": "developer",
@@ -239,6 +253,12 @@ TASK_TYPE_TO_AGENT = {
 # Used by _build_agent_context() for organized team presentation to planner.
 # ---------------------------------------------------------------------------
 WORKFORCE_REGISTRY = {
+    "architecture": {
+        "lead": "system_engineer",
+        "members": ["business_analyst", "product_manager"],
+        "capabilities": ["system decomposition", "architecture design", "subsystem breakdown",
+                         "technology selection", "integration planning", "requirements analysis"],
+    },
     "engineering": {
         "lead": "developer",
         "members": ["qa_engineer", "system_tester", "devops_engineer", "localization_engineer",
@@ -337,6 +357,33 @@ ARTIFACT_TYPES = {
 # Used by "Hire an Agent" flow + _build_agent_context()
 # ---------------------------------------------------------------------------
 AGENT_ROLES_REGISTRY: dict[str, dict[str, Any]] = {
+    # ── Architecture Team ──────────────────────────────────────────────
+    "system_engineer": {
+        "title": "System Engineer / Architect",
+        "description": "System decomposition, architecture design, subsystem breakdown",
+        "team": "architecture",
+        "skills": [
+            "System-level requirements analysis and decomposition",
+            "Product architecture design and subsystem identification",
+            "Technology stack selection and integration planning",
+            "Interface definition between subsystems and components",
+            "Risk assessment and mitigation strategy development",
+            "Performance and scalability requirements analysis",
+            "Security architecture and threat modeling",
+            "Compliance and regulatory requirements mapping",
+            "Value stream mapping and lean development principles",
+            "Stakeholder requirements translation to technical specifications",
+        ],
+        "tools": ["requirements_tracer", "architecture_modeler", "risk_analyzer", "compliance_checker"],
+        "mcp_server": "architecture_tools",
+        "mcp_capabilities": [
+            "requirements_decompose", "subsystem_identify", "interface_define",
+            "technology_select", "risk_assess", "compliance_map",
+        ],
+        "hire_when": "Complex multi-subsystem products requiring architectural planning and system-level design",
+        "docker_image": "sage/architecture-toolchain",
+        "docker_packages": ["plantuml", "graphviz", "draw.io-desktop"],
+    },
     # ── Engineering Team ──────────────────────────────────────────────
     "developer": {
         "title": "Software Developer",
@@ -1236,6 +1283,13 @@ DOMAIN_RULES = {
 # Default acceptance criteria injected into each task for the critic
 # (Review and Critique pattern — bounded evaluation, not open-ended)
 DEFAULT_ACCEPTANCE_CRITERIA = {
+    # Architecture & System Design
+    "ARCHITECTURE":      ["System boundaries clearly defined", "Technology stack justified with trade-offs", "Non-functional requirements addressed"],
+    "SYSTEM_DESIGN":     ["Component interfaces well-defined", "Data flow documented", "Scalability considered"],
+    "REQUIREMENTS":      ["Requirements are testable and measurable", "Traceability matrix complete", "Stakeholder acceptance achieved"],
+    "SUBSYSTEM_DESIGN":  ["Internal APIs documented", "Error handling strategy defined", "Performance constraints specified"],
+    "INTERFACE_DESIGN":  ["Protocol specifications complete", "Data schemas validated", "Backward compatibility addressed"],
+    "TECHNOLOGY_SELECTION": ["Technical risks assessed", "Alternative solutions compared", "Migration path defined if needed"],
     # Software
     "BACKEND":  ["Handles errors gracefully", "Has input validation", "Returns structured responses"],
     "FRONTEND": ["Responsive layout", "Error states handled", "Loading states shown"],
@@ -1698,24 +1752,383 @@ class BuildOrchestrator:
 
     def _decompose(self, run: dict) -> list[dict]:
         """
-        Hierarchical Task Decomposition (Google pattern #8).
+        Lean-Inspired Chunked Decomposition (4-phase approach).
 
-        Uses PlannerAgent to decompose the product into a task tree with:
-        - Multi-level breakdown (top-level components → atomic tasks)
-        - Acceptance criteria per task (for bounded critic evaluation)
-        - Agent routing hints (coordinator pattern)
-        - Dependency declarations (for wave parallelism)
+        Replaces monolithic planning with progressive elaboration following lean principles:
 
-        The planner prompt is enriched with awareness of all available
-        agent patterns and existing solution roles.
+        Phase 1: Value Stream Mapping → System engineer identifies major subsystems
+        Phase 2: Pull Assignment → Route subsystems to appropriate team leads
+        Phase 3: Small Batch Planning → Each team creates detailed tasks for their subsystem
+        Phase 4: Integration & Flow → Merge with dependencies, validate coherence
+
+        This eliminates the 300s timeout by:
+        - Small batch sizes (one subsystem at a time)
+        - Pull system (teams only plan what they own)
+        - Short feedback loops (validate each chunk)
+        - Waste elimination (no massive context switching)
+        """
+        try:
+            # Phase 1: Value Stream Mapping - System architecture
+            self.logger.info("Phase 1: Value Stream Mapping - identifying subsystems")
+            subsystems = self._identify_subsystems(run)
+
+            if not subsystems:
+                self.logger.warning("No subsystems identified, falling back to monolithic approach")
+                return self._decompose_monolithic(run)
+
+            self.logger.info("Identified %d subsystems for chunked decomposition", len(subsystems))
+
+            # Phase 2: Pull Assignment - Route to teams
+            self.logger.info("Phase 2: Pull Assignment - routing to team leads")
+            team_assignments = self._assign_to_teams(subsystems)
+
+            # Phase 3: Small Batch Planning - Each team plans their chunk
+            self.logger.info("Phase 3: Small Batch Planning - detailed planning per team")
+            all_tasks = []
+            step_offset = 0
+
+            for team_name, team_subsystems in team_assignments.items():
+                team_tasks = self._plan_team_subsystems(run, team_name, team_subsystems, step_offset)
+                # Adjust step numbers to avoid conflicts
+                for task in team_tasks:
+                    task["step"] = task.get("step", 0) + step_offset
+                all_tasks.extend(team_tasks)
+                step_offset += len(team_tasks)
+
+            # Phase 4: Integration & Flow - Merge and validate dependencies
+            self.logger.info("Phase 4: Integration & Flow - merging %d tasks", len(all_tasks))
+            integrated_plan = self._integrate_team_plans(run, all_tasks, subsystems)
+
+            return integrated_plan
+
+        except Exception as exc:
+            self.logger.error("Chunked decompose failed: %s, falling back to monolithic", exc)
+            return self._decompose_monolithic(run)
+
+    def _identify_subsystems(self, run: dict) -> list[dict]:
+        """
+        Phase 1: Value Stream Mapping
+
+        System engineer breaks the product into major subsystems. This is the
+        architectural planning phase that identifies clear boundaries and interfaces.
+
+        Returns list of subsystems with: {name, description, interfaces, team_hint}
+        """
+        try:
+            from src.agents.universal import universal_agent
+
+            # Keep this call short and focused - just subsystem identification
+            response = universal_agent.execute(
+                task_type="ARCHITECTURE",
+                description=(
+                    f"As a system engineer, analyze this product and identify the major subsystems:\n\n"
+                    f"{run['product_description']}\n\n"
+                    f"LEAN PRINCIPLES:\n"
+                    f"- Identify 3-8 major subsystems (not individual features)\n"
+                    f"- Focus on clear boundaries and interfaces between subsystems\n"
+                    f"- Consider what teams would own each subsystem\n"
+                    f"- Think value streams: user-facing flows vs. infrastructure vs. data\n\n"
+                    f"Return JSON array of subsystems with:\n"
+                    f'{{"name": "string", "description": "string", "interfaces": ["list"], "team_hint": "engineering|hardware|analysis|design|operations"}}'
+                ),
+                agent_role="system_engineer",
+                workspace=run.get("workspace_dir", ""),
+                context="Subsystem identification for chunked decomposition"
+            )
+
+            # Parse the JSON response
+            import json
+            output = response.get("output", "")
+
+            # Try to extract JSON from the response
+            start_idx = output.find('[')
+            end_idx = output.rfind(']') + 1
+            if start_idx >= 0 and end_idx > start_idx:
+                json_str = output[start_idx:end_idx]
+                subsystems = json.loads(json_str)
+
+                # Validate structure
+                valid_subsystems = []
+                for sub in subsystems:
+                    if isinstance(sub, dict) and "name" in sub and "description" in sub:
+                        # Add defaults for missing fields
+                        sub.setdefault("interfaces", [])
+                        sub.setdefault("team_hint", "engineering")
+                        valid_subsystems.append(sub)
+
+                return valid_subsystems
+
+            return []
+
+        except Exception as exc:
+            self.logger.warning("Subsystem identification failed: %s", exc)
+            return []
+
+    def _assign_to_teams(self, subsystems: list[dict]) -> dict[str, list[dict]]:
+        """
+        Phase 2: Pull Assignment
+
+        Route subsystems to appropriate teams based on their nature.
+        Each team will only plan what they're responsible for.
+
+        Returns: {team_name: [subsystem_list]}
+        """
+        assignments = {}
+
+        # Team mapping based on subsystem characteristics
+        team_mapping = {
+            "engineering": ["api", "backend", "frontend", "service", "server", "database", "web", "mobile"],
+            "hardware": ["firmware", "embedded", "pcb", "circuit", "sensor", "device", "driver", "board"],
+            "analysis": ["analytics", "data", "ml", "ai", "model", "intelligence", "learning", "algorithm"],
+            "design": ["ui", "ux", "interface", "user", "experience", "design", "workflow", "usability"],
+            "operations": ["deployment", "monitoring", "logging", "infrastructure", "devops", "security", "compliance"],
+            "compliance": ["regulatory", "safety", "legal", "compliance", "audit", "risk", "standard"],
+        }
+
+        for subsystem in subsystems:
+            name = subsystem.get("name", "").lower()
+            description = subsystem.get("description", "").lower()
+            team_hint = subsystem.get("team_hint", "engineering")
+
+            # Use explicit team hint if provided
+            if team_hint in team_mapping:
+                assigned_team = team_hint
+            else:
+                # Auto-assign based on keywords
+                assigned_team = "engineering"  # default
+                for team, keywords in team_mapping.items():
+                    if any(keyword in name or keyword in description for keyword in keywords):
+                        assigned_team = team
+                        break
+
+            if assigned_team not in assignments:
+                assignments[assigned_team] = []
+            assignments[assigned_team].append(subsystem)
+
+        self.logger.info("Team assignments: %s", {t: len(subs) for t, subs in assignments.items()})
+        return assignments
+
+    def _plan_team_subsystems(self, run: dict, team_name: str, subsystems: list[dict], step_offset: int) -> list[dict]:
+        """
+        Phase 3: Small Batch Planning
+
+        Each team lead creates detailed tasks for their assigned subsystems.
+        This keeps planning focused and within reasonable context limits.
+        """
+        try:
+            from src.agents.universal import universal_agent
+
+            # Get team lead role
+            team_config = WORKFORCE_REGISTRY.get(team_name, {})
+            team_lead = team_config.get("lead", "developer")
+
+            # Build focused context for this team's work
+            subsystem_descriptions = []
+            for subsystem in subsystems:
+                subsystem_descriptions.append(
+                    f"- {subsystem['name']}: {subsystem['description']}"
+                )
+
+            # Keep this focused on just the subsystems this team owns
+            response = universal_agent.execute(
+                task_type="SYSTEM_DESIGN",
+                description=(
+                    f"As the {team_lead} for the {team_name} team, create detailed implementation tasks for these subsystems:\n\n"
+                    f"SUBSYSTEMS ASSIGNED TO YOUR TEAM:\n" + "\n".join(subsystem_descriptions) + "\n\n"
+                    f"CONTEXT: Product is: {run['product_description'][:300]}...\n\n"
+                    f"LEAN PLANNING RULES:\n"
+                    f"- Create 3-10 implementable tasks per subsystem\n"
+                    f"- Each task should be completable in 1-4 hours\n"
+                    f"- Use task types relevant to your team's capabilities\n"
+                    f"- Include acceptance criteria for each task\n"
+                    f"- Specify dependencies between tasks (step numbers)\n\n"
+                    f"AVAILABLE TASK TYPES FOR {team_name.upper()} TEAM:\n"
+                    f"{self._get_team_task_types(team_name)}\n\n"
+                    f"Return JSON array of tasks with:\n"
+                    f'{{"step": int, "task_type": "string", "description": "string", '
+                    f'"acceptance_criteria": ["list"], "depends_on": [step_numbers], "agent_role": "{team_lead}"}}'
+                ),
+                agent_role=team_lead,
+                workspace=run.get("workspace_dir", ""),
+                context=f"Detailed planning for {team_name} subsystems"
+            )
+
+            # Parse team tasks
+            import json
+            output = response.get("output", "")
+
+            start_idx = output.find('[')
+            end_idx = output.rfind(']') + 1
+            if start_idx >= 0 and end_idx > start_idx:
+                json_str = output[start_idx:end_idx]
+                tasks = json.loads(json_str)
+
+                # Validate and enrich tasks
+                valid_tasks = []
+                for i, task in enumerate(tasks):
+                    if isinstance(task, dict):
+                        # Ensure required fields
+                        task.setdefault("step", i + 1)
+                        task.setdefault("task_type", "BACKEND")
+                        task.setdefault("agent_role", team_lead)
+                        task.setdefault("acceptance_criteria", ["Task completed successfully"])
+                        task.setdefault("depends_on", [])
+
+                        # Add subsystem context
+                        task["team"] = team_name
+                        task["subsystems"] = [s["name"] for s in subsystems]
+
+                        valid_tasks.append(task)
+
+                return valid_tasks
+
+            return []
+
+        except Exception as exc:
+            self.logger.warning("Team planning failed for %s: %s", team_name, exc)
+            return []
+
+    def _get_team_task_types(self, team_name: str) -> str:
+        """Get task types relevant to a specific team."""
+        team_types = {
+            "engineering": ["BACKEND", "FRONTEND", "API", "DATABASE", "TESTS", "INFRA", "AGENTIC"],
+            "hardware": ["FIRMWARE", "PCB_DESIGN", "HARDWARE_SIM", "EMBEDDED_TEST", "MECHANICAL"],
+            "analysis": ["DATA", "ML_MODEL", "BUSINESS_ANALYSIS", "FINANCIAL"],
+            "design": ["UX_DESIGN", "PRODUCT_MGMT"],
+            "operations": ["DEVOPS", "OPERATIONS", "DOCS", "TRAINING"],
+            "compliance": ["REGULATORY", "LEGAL", "SAFETY", "COMPLIANCE"],
+            "architecture": ["ARCHITECTURE", "SYSTEM_DESIGN", "REQUIREMENTS", "INTERFACE_DESIGN"],
+        }
+
+        types = team_types.get(team_name, ["BACKEND"])
+        return ", ".join(types)
+
+    def _integrate_team_plans(self, run: dict, all_tasks: list[dict], subsystems: list[dict]) -> list[dict]:
+        """
+        Phase 4: Integration & Flow
+
+        Merge team plans, resolve dependencies, add integration tasks.
+        This ensures coherent end-to-end flow while preserving team ownership.
+        """
+        try:
+            from src.agents.universal import universal_agent
+
+            # First, renumber all tasks sequentially
+            for i, task in enumerate(all_tasks):
+                task["step"] = i + 1
+
+            # Build integration context
+            team_summaries = {}
+            for task in all_tasks:
+                team = task.get("team", "unknown")
+                if team not in team_summaries:
+                    team_summaries[team] = []
+                team_summaries[team].append(f"Step {task['step']}: {task.get('task_type', 'UNKNOWN')} - {task.get('description', '')[:100]}...")
+
+            # Ask system engineer to add integration tasks and fix dependencies
+            integration_prompt = (
+                f"As system engineer, review this multi-team plan and add integration tasks:\n\n"
+                f"PRODUCT: {run['product_description'][:200]}...\n\n"
+                f"SUBSYSTEMS IDENTIFIED:\n"
+            )
+            for subsystem in subsystems:
+                integration_prompt += f"- {subsystem['name']}: {subsystem['description'][:100]}...\n"
+
+            integration_prompt += f"\nTEAM TASKS CREATED:\n"
+            for team, tasks in team_summaries.items():
+                integration_prompt += f"\n{team.upper()} TEAM ({len(tasks)} tasks):\n"
+                for task_summary in tasks[:3]:  # Show first 3 tasks per team
+                    integration_prompt += f"  {task_summary}\n"
+                if len(tasks) > 3:
+                    integration_prompt += f"  ... and {len(tasks) - 3} more tasks\n"
+
+            integration_prompt += (
+                f"\nINTEGRATION REQUIREMENTS:\n"
+                f"1. Add SYSTEM_TEST and INTEGRATION tasks that verify subsystem interfaces work together\n"
+                f"2. Fix dependency chains - tasks that depend on other team's work should reference correct step numbers\n"
+                f"3. Add any missing coordination tasks between teams\n"
+                f"4. Keep the total task count reasonable (current: {len(all_tasks)} tasks)\n\n"
+                f"Return JSON array of ADDITIONAL integration tasks to append:\n"
+                f'{{"step": int, "task_type": "string", "description": "string", '
+                f'"acceptance_criteria": ["list"], "depends_on": [step_numbers], "agent_role": "system_engineer"}}'
+            )
+
+            response = universal_agent.execute(
+                task_type="INTERFACE_DESIGN",
+                description=integration_prompt,
+                agent_role="system_engineer",
+                workspace=run.get("workspace_dir", ""),
+                context="Integration planning across teams"
+            )
+
+            # Parse integration tasks and append them
+            import json
+            output = response.get("output", "")
+
+            integration_tasks = []
+            start_idx = output.find('[')
+            end_idx = output.rfind(']') + 1
+            if start_idx >= 0 and end_idx > start_idx:
+                json_str = output[start_idx:end_idx]
+                additional_tasks = json.loads(json_str)
+
+                for i, task in enumerate(additional_tasks):
+                    if isinstance(task, dict):
+                        task["step"] = len(all_tasks) + i + 1
+                        task.setdefault("task_type", "SYSTEM_TEST")
+                        task.setdefault("agent_role", "system_engineer")
+                        task.setdefault("acceptance_criteria", ["Integration test passes"])
+                        task.setdefault("depends_on", [])
+                        task["team"] = "integration"
+                        integration_tasks.append(task)
+
+            # Combine all tasks
+            final_plan = all_tasks + integration_tasks
+
+            # Apply Lean Engineering Quality Gates
+            domain_hints = self._detect_domain(run["product_description"])
+            quality_gates = self._apply_quality_gates(final_plan, domain_hints)
+            final_plan.extend(quality_gates)
+
+            # Final enrichment with domain-specific criteria
+            matched_domains = self._matched_domains(run["product_description"])
+            for task in final_plan:
+                task_type = task.get("task_type", "")
+
+                # Add default acceptance criteria if missing
+                if not task.get("acceptance_criteria"):
+                    task["acceptance_criteria"] = DEFAULT_ACCEPTANCE_CRITERIA.get(
+                        task_type, ["Meets task description requirements"]
+                    )
+
+                # Add domain-specific criteria
+                for domain in matched_domains:
+                    extras = domain.get("extra_criteria", {}).get(task_type, [])
+                    existing = task.get("acceptance_criteria", [])
+                    for ec in extras:
+                        if ec not in existing:
+                            existing.append(ec)
+                    task["acceptance_criteria"] = existing
+
+            self.logger.info("Integration complete: %d total tasks (%d team + %d integration + %d quality gates)",
+                           len(final_plan), len(all_tasks), len(integration_tasks), len(quality_gates))
+
+            return final_plan
+
+        except Exception as exc:
+            self.logger.warning("Integration failed: %s", exc)
+            # Return team tasks even if integration fails
+            return all_tasks
+
+    def _decompose_monolithic(self, run: dict) -> list[dict]:
+        """
+        Fallback: Original monolithic decomposition approach.
+        Used when chunked decomposition fails or subsystem identification produces no results.
         """
         try:
             from src.agents.planner import planner_agent
 
-            # Build coordinator context: available agents and their capabilities
             agent_context = self._build_agent_context()
-
-            # Detect product domain to guide task type selection
             domain_hints = self._detect_domain(run["product_description"])
 
             plan = planner_agent.create_plan(
@@ -1733,10 +2146,7 @@ class BuildOrchestrator:
                     f"— tasks with no dependencies can run in parallel (wave execution).\n"
                     f"4. AGENT ROUTING: Each task should include 'agent_role' — which specialist "
                     f"agent should handle it.\n"
-                    f"5. DOMAIN-APPROPRIATE TYPES: Use the task types that match the product domain. "
-                    f"A firmware product needs FIRMWARE + EMBEDDED_TEST + SAFETY tasks, not just BACKEND. "
-                    f"A mechanical product needs MECHANICAL + PCB_DESIGN tasks. A pure web app only "
-                    f"needs software types. Match the domain.\n\n"
+                    f"5. DOMAIN-APPROPRIATE TYPES: Use the task types that match the product domain.\n\n"
                     f"## Available Agent Roles\n{agent_context}\n\n"
                     f"## Task Types (use the ones relevant to this product's domain)\n"
                     f"Output format per task: {{step, task_type, description, payload, "
@@ -1745,7 +2155,12 @@ class BuildOrchestrator:
                 override_task_types=BUILD_TASK_TYPES,
             )
 
-            # Enrich tasks with default acceptance criteria if not provided by LLM
+            # Apply Lean Engineering Quality Gates
+            domain_hints = self._detect_domain(run["product_description"])
+            quality_gates = self._apply_quality_gates(plan, domain_hints)
+            plan.extend(quality_gates)
+
+            # Enrich tasks with default acceptance criteria
             matched_domains = self._matched_domains(run["product_description"])
             for task in plan:
                 task_type = task.get("task_type", "")
@@ -1768,8 +2183,123 @@ class BuildOrchestrator:
 
             return plan
         except Exception as exc:
-            self.logger.error("Decompose failed: %s", exc)
+            self.logger.error("Monolithic decompose failed: %s", exc)
             return []
+
+    # ---------------------------------------------------------------------------
+    # Lean Engineering Quality Gates
+    # ---------------------------------------------------------------------------
+
+    def _apply_quality_gates(self, tasks: list[dict], domain_hints: str) -> list[dict]:
+        """
+        Apply lean engineering quality gates to the planned tasks.
+
+        Ensures every build includes proper testing, security, performance,
+        and compliance validations following shift-left principles.
+
+        This addresses the TDD violation and implements missing lean principles:
+        - Automated quality gates at every stage
+        - Shift-left security and performance testing
+        - Contract validation for APIs
+        - Infrastructure as Code validation
+        - Domain-specific compliance gates
+        """
+        quality_tasks = []
+        step_offset = len(tasks) + 1
+
+        # Code Quality Gates (Shift-Left Principle)
+        quality_tasks.extend([
+            {
+                "step": step_offset,
+                "task_type": "QA",
+                "description": "Set up automated code quality gates: linting, complexity analysis, dependency scanning",
+                "acceptance_criteria": [
+                    "Code coverage >= 80% for new code",
+                    "No critical security vulnerabilities in dependencies",
+                    "Cyclomatic complexity <= 10 per function",
+                    "All code passes linting with zero warnings",
+                    "Pre-commit hooks configured for quality checks"
+                ],
+                "depends_on": [],
+                "agent_role": "qa_engineer",
+                "team": "quality",
+                "quality_gate": True
+            },
+            {
+                "step": step_offset + 1,
+                "task_type": "SECURITY",
+                "description": "Implement security scanning and SAST (Static Application Security Testing)",
+                "acceptance_criteria": [
+                    "SAST scan passes with zero critical findings",
+                    "Dependency vulnerability scan shows no high-risk packages",
+                    "Secret scanning configured (no hardcoded credentials)",
+                    "Security headers validation for web components"
+                ],
+                "depends_on": [],
+                "agent_role": "analyst",
+                "team": "security",
+                "quality_gate": True
+            }
+        ])
+
+        # Performance Quality Gates
+        has_api = any("API" in task.get("task_type", "") or "BACKEND" in task.get("task_type", "") for task in tasks)
+        if has_api:
+            quality_tasks.append({
+                "step": step_offset + 2,
+                "task_type": "SYSTEM_TEST",
+                "description": "Performance testing: load testing, stress testing, API response time validation",
+                "acceptance_criteria": [
+                    "API response time <= 200ms for 95% of requests",
+                    "System handles 10x expected load without degradation",
+                    "Memory usage remains stable under sustained load",
+                    "Database query performance optimized (no N+1 queries)"
+                ],
+                "depends_on": [task["step"] for task in tasks if "API" in task.get("task_type", "")],
+                "agent_role": "system_tester",
+                "team": "quality",
+                "quality_gate": True
+            })
+
+        # Contract Testing (API Contracts)
+        if has_api:
+            quality_tasks.append({
+                "step": step_offset + 3,
+                "task_type": "TESTS",
+                "description": "API contract testing: OpenAPI validation, consumer contract tests, backward compatibility",
+                "acceptance_criteria": [
+                    "All API endpoints match OpenAPI specification",
+                    "Consumer contract tests pass for all known clients",
+                    "API versioning strategy implemented",
+                    "Breaking changes detected and documented"
+                ],
+                "depends_on": [task["step"] for task in tasks if "API" in task.get("task_type", "")],
+                "agent_role": "qa_engineer",
+                "team": "quality",
+                "quality_gate": True
+            })
+
+        # Infrastructure Quality Gates (IaC Validation)
+        has_infra = any("INFRA" in task.get("task_type", "") or "DEVOPS" in task.get("task_type", "") for task in tasks)
+        if has_infra:
+            quality_tasks.append({
+                "step": step_offset + 4,
+                "task_type": "INFRA",
+                "description": "Infrastructure validation: IaC scanning, resource limits, security policies",
+                "acceptance_criteria": [
+                    "Terraform/Kubernetes configs pass security validation",
+                    "Resource limits defined for all containers",
+                    "Network policies restrict unnecessary traffic",
+                    "Backup and disaster recovery procedures documented",
+                    "Infrastructure costs estimated and approved"
+                ],
+                "depends_on": [task["step"] for task in tasks if any(t in task.get("task_type", "") for t in ["INFRA", "DEVOPS"])],
+                "agent_role": "devops_engineer",
+                "team": "operations",
+                "quality_gate": True
+            })
+
+        return quality_tasks
 
     def _matched_domains(self, description: str) -> list[dict]:
         """Return list of DOMAIN_RULES entries matching the product description.
@@ -1859,6 +2389,7 @@ class BuildOrchestrator:
         lines.append("")
 
         team_display_names = {
+            "architecture": "Architecture & Systems",
             "engineering": "Engineering",
             "analysis": "Analysis & Data",
             "design": "Design & Product",

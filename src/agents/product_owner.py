@@ -192,7 +192,7 @@ Return JSON with:
 }}"""
 
         try:
-            response = self.llm.generate(prompt, temperature=0.3)
+            response = self.llm.generate(prompt)
 
             # Extract JSON from response
             start_idx = response.find('{')
@@ -252,7 +252,7 @@ Return JSON array with:
 Make questions conversational and specific to their domain. Avoid generic questions."""
 
         try:
-            response = self.llm.generate(prompt, temperature=0.4)
+            response = self.llm.generate(prompt)
 
             start_idx = response.find('[')
             end_idx = response.rfind(']') + 1
@@ -332,7 +332,7 @@ Return JSON with this exact structure:
 Create 8-15 user stories covering the MVP and key features. Prioritize using MoSCoW method."""
 
         try:
-            response = self.llm.generate(prompt, temperature=0.3)
+            response = self.llm.generate(prompt)
 
             start_idx = response.find('{')
             end_idx = response.rfind('}') + 1

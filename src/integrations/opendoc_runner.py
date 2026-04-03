@@ -210,6 +210,53 @@ class OpenDocRunner(BaseRunner):
     def get_experience_keys(self):
         return ["task_type", "document_type", "standard", "audience", "domain"]
 
+    def get_experimental_commands(self, workspace, files):
+        """Doc-specific: markdown lint, link validation, word count, structure check."""
+        import os
+        commands = []
+        md_files = [f for f in files if f.endswith((".md", ".markdown"))]
+        rst_files = [f for f in files if f.endswith(".rst")]
+        tex_files = [f for f in files if f.endswith(".tex")]
+        py_files = [f for f in files if f.endswith(".py")]
+
+        if md_files:
+            # Check markdown structure has required sections
+            for mf in md_files[:3]:
+                commands.append({
+                    "name": f"md_structure_{os.path.basename(mf)}",
+                    "cmd": ["python3", "-c",
+                            f"import re; t=open('{mf}').read(); "
+                            f"h=re.findall(r'^#+\\s', t, re.M); "
+                            f"assert len(h)>=2, f'Only {{len(h)}} headings — need structured doc'; "
+                            f"assert len(t)>200, f'Doc too short ({{len(t)}} chars)'; "
+                            f"print(f'OK: {{len(h)}} headings, {{len(t)}} chars')"],
+                    "weight": 20,
+                    "timeout": 10,
+                })
+
+        if tex_files:
+            for tf in tex_files[:2]:
+                commands.append({
+                    "name": f"latex_check_{os.path.basename(tf)}",
+                    "cmd": ["python3", "-c",
+                            f"t=open('{tf}').read(); "
+                            f"assert '\\\\begin{{document}}' in t, 'Missing \\\\begin{{document}}'; "
+                            f"assert '\\\\end{{document}}' in t, 'Missing \\\\end{{document}}'; "
+                            f"print('LaTeX structure valid')"],
+                    "weight": 25,
+                    "timeout": 10,
+                })
+
+        if py_files:
+            commands.append({
+                "name": "python_syntax",
+                "cmd": ["python3", "-m", "py_compile"] + py_files,
+                "weight": 20,
+                "timeout": 15,
+            })
+
+        return commands
+
     def get_exercises(self, difficulty="intermediate"):
         """Load from central catalog (~50 opendoc seeds), fall back to hardcoded."""
         catalog = self._load_catalog_exercises(difficulty)

@@ -127,6 +127,62 @@ class OpenSWEAdapter(BaseRunner):
     def get_experience_keys(self):
         return ["task_type", "language", "framework", "domain"]
 
+    def get_experimental_commands(self, workspace, files):
+        """Software-specific: compile, lint, test, import check."""
+        import os
+        commands = []
+        py_files = [f for f in files if f.endswith(".py")]
+        js_files = [f for f in files if f.endswith((".js", ".ts"))]
+        go_files = [f for f in files if f.endswith(".go")]
+
+        if py_files:
+            # Syntax check all Python files
+            commands.append({
+                "name": "python_syntax",
+                "cmd": ["python3", "-m", "py_compile"] + py_files,
+                "weight": 20,
+                "timeout": 15,
+            })
+            # Run pytest on test files
+            test_files = [f for f in py_files if "test" in os.path.basename(f).lower()]
+            if test_files:
+                commands.append({
+                    "name": "pytest",
+                    "cmd": ["python3", "-m", "pytest", "-x", "--tb=short", "-q"] + test_files,
+                    "weight": 40,
+                    "timeout": 60,
+                })
+            # Import check non-test files
+            main_files = [f for f in py_files if f not in test_files]
+            for mf in main_files[:3]:
+                commands.append({
+                    "name": f"import_{os.path.basename(mf)}",
+                    "cmd": ["python3", "-c",
+                            f"import ast; ast.parse(open('{mf}').read()); print('AST valid')"],
+                    "weight": 10,
+                    "timeout": 10,
+                })
+
+        if js_files:
+            js_only = [f for f in js_files if f.endswith(".js")]
+            if js_only:
+                commands.append({
+                    "name": "node_syntax",
+                    "cmd": ["node", "--check"] + js_only,
+                    "weight": 25,
+                    "timeout": 15,
+                })
+
+        if go_files:
+            commands.append({
+                "name": "go_vet",
+                "cmd": ["go", "vet", "./..."],
+                "weight": 30,
+                "timeout": 30,
+            })
+
+        return commands
+
     # ── Exercises ───────────────────────────────────────────────────────
 
     def get_exercises(self, difficulty="intermediate"):

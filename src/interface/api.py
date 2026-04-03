@@ -42,6 +42,8 @@ from src.interface.routes.data_transformation import router as _data_transformat
 from src.interface.routes.voice_data import router as _voice_data_router  # noqa: E402
 from src.interface.routes.gym import router as _gym_router  # noqa: E402
 from src.interface.routes.research import router as _research_router  # noqa: E402
+from src.interface.routes.critic import router as _critic_router  # noqa: E402
+from src.interface.routes.product_owner import router as _product_owner_router  # noqa: E402
 
 # Module-level import so tests can patch src.interface.api.reload_org_loader
 try:
@@ -131,6 +133,8 @@ app.include_router(_data_transformation_router)
 app.include_router(_voice_data_router)
 app.include_router(_gym_router)
 app.include_router(_research_router)
+app.include_router(_critic_router)
+app.include_router(_product_owner_router)
 
 
 # ---------------------------------------------------------------------------

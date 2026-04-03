@@ -17,9 +17,19 @@ Critic feedback is stored in vector memory so future plans start better.
 
 import json
 import logging
+import os
+import threading
+import time
+import uuid
 from typing import Dict, Any, Optional
 
 logger = logging.getLogger(__name__)
+
+# Path for persisted critic prompts (editable by founder)
+_CRITIC_PROMPTS_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+    "config", "critic_prompts.json",
+)
 
 
 class CriticAgent:
@@ -29,12 +39,22 @@ class CriticAgent:
     Uses a separate LLM call with a critic-specific system prompt.
     Follows the existing agent pattern: lazy LLM gateway import,
     audit logging, severity parsing.
+
+    Supports:
+      - N LLM providers reviewing in parallel
+      - Optional human expert critic (async, queued for review)
+      - Editable system prompts (founder can tune what critics look for)
     """
 
     def __init__(self):
         self.logger = logging.getLogger("CriticAgent")
         self._llm_gateway = None
         self._audit_logger = None
+        self._custom_prompts: Dict[str, str] = {}
+        self._pending_human_reviews: Dict[str, dict] = {}
+        self._completed_human_reviews: Dict[str, dict] = {}
+        self._human_review_lock = threading.Lock()
+        self._load_custom_prompts()
 
     @property
     def llm(self):
@@ -51,7 +71,169 @@ class CriticAgent:
         return self._audit_logger
 
     # ------------------------------------------------------------------
-    # System prompts
+    # Custom prompt loading (editable by founder)
+    # ------------------------------------------------------------------
+
+    def _load_custom_prompts(self):
+        """Load founder-customized critic prompts from config/critic_prompts.json."""
+        try:
+            if os.path.isfile(_CRITIC_PROMPTS_PATH):
+                with open(_CRITIC_PROMPTS_PATH) as f:
+                    self._custom_prompts = json.load(f)
+                self.logger.info("Loaded custom critic prompts from %s", _CRITIC_PROMPTS_PATH)
+        except Exception as exc:
+            self.logger.debug("No custom critic prompts: %s", exc)
+
+    def _get_prompt(self, key: str) -> str:
+        """Get a system prompt — custom override takes priority over default."""
+        if key in self._custom_prompts:
+            return self._custom_prompts[key]
+        return getattr(self, key, "")
+
+    def get_all_prompts(self) -> Dict[str, str]:
+        """Return all critic prompts (defaults + any custom overrides)."""
+        defaults = {
+            "PLAN_REVIEW_PROMPT": self.PLAN_REVIEW_PROMPT,
+            "CODE_REVIEW_PROMPT": self.CODE_REVIEW_PROMPT,
+            "INTEGRATION_REVIEW_PROMPT": self.INTEGRATION_REVIEW_PROMPT,
+        }
+        # Layer custom overrides on top
+        merged = {**defaults, **self._custom_prompts}
+        return merged
+
+    def update_prompt(self, key: str, prompt: str) -> Dict[str, str]:
+        """
+        Update a critic system prompt. Persists to config/critic_prompts.json.
+
+        Args:
+            key: Prompt name (e.g., "PLAN_REVIEW_PROMPT", "CODE_REVIEW_PROMPT",
+                 or any custom key like "MEDICAL_REVIEW_PROMPT").
+            prompt: The new system prompt text.
+
+        Returns:
+            Updated prompts dict.
+        """
+        self._custom_prompts[key] = prompt
+        # Persist to disk
+        try:
+            os.makedirs(os.path.dirname(_CRITIC_PROMPTS_PATH), exist_ok=True)
+            with open(_CRITIC_PROMPTS_PATH, "w") as f:
+                json.dump(self._custom_prompts, f, indent=2)
+            self.logger.info("Saved custom critic prompt: %s (%d chars)", key, len(prompt))
+        except Exception as exc:
+            self.logger.error("Failed to persist critic prompt: %s", exc)
+
+        self.audit.log_event(
+            actor="Founder",
+            action_type="CRITIC_PROMPT_UPDATE",
+            input_context=key,
+            output_content=prompt[:200],
+            metadata={"prompt_key": key, "length": len(prompt)},
+        )
+        return self.get_all_prompts()
+
+    def delete_prompt(self, key: str) -> Dict[str, str]:
+        """Remove a custom prompt override (reverts to default)."""
+        self._custom_prompts.pop(key, None)
+        try:
+            with open(_CRITIC_PROMPTS_PATH, "w") as f:
+                json.dump(self._custom_prompts, f, indent=2)
+        except Exception:
+            pass
+        return self.get_all_prompts()
+
+    # ------------------------------------------------------------------
+    # Human expert critic
+    # ------------------------------------------------------------------
+
+    def request_human_review(
+        self,
+        review_type: str,
+        artifact: Any,
+        description: str,
+        context: str = "",
+    ) -> Dict[str, Any]:
+        """
+        Queue an artifact for human expert review.
+
+        Returns a review_id that can be used to submit the review later.
+        The human expert sees the same artifact and context as LLM critics.
+        """
+        review_id = str(uuid.uuid4())
+        with self._human_review_lock:
+            self._pending_human_reviews[review_id] = {
+                "review_id": review_id,
+                "review_type": review_type,
+                "artifact": str(artifact)[:10000],
+                "description": description,
+                "context": context,
+                "requested_at": time.time(),
+                "status": "pending",
+            }
+        self.logger.info("Human review requested: %s (%s)", review_id[:8], review_type)
+        return {"review_id": review_id, "status": "pending"}
+
+    def submit_human_review(
+        self,
+        review_id: str,
+        score: int,
+        feedback: str,
+        flaws: list[str] | None = None,
+        suggestions: list[str] | None = None,
+    ) -> Dict[str, Any]:
+        """
+        Submit a human expert review for a pending review request.
+
+        Args:
+            review_id: The ID from request_human_review.
+            score: 0-100 expert assessment.
+            feedback: Free-form expert feedback.
+            flaws: List of identified flaws.
+            suggestions: List of improvement suggestions.
+        """
+        with self._human_review_lock:
+            pending = self._pending_human_reviews.pop(review_id, None)
+            if not pending:
+                return {"error": f"Review '{review_id}' not found or already submitted"}
+
+            review = {
+                "review_id": review_id,
+                "review_type": pending["review_type"],
+                "score": max(0, min(100, score)),
+                "feedback": feedback,
+                "flaws": flaws or [],
+                "suggestions": suggestions or [],
+                "submitted_at": time.time(),
+                "requested_at": pending["requested_at"],
+                "turnaround_s": round(time.time() - pending["requested_at"], 1),
+            }
+            self._completed_human_reviews[review_id] = review
+
+        self.audit.log_event(
+            actor="HumanExpert",
+            action_type="HUMAN_CRITIC_REVIEW",
+            input_context=pending["description"][:300],
+            output_content=json.dumps({"score": score, "flaws": flaws or []}),
+            metadata={"score": score, "review_type": pending["review_type"]},
+        )
+
+        self.logger.info(
+            "Human review submitted: %s score=%d turnaround=%.0fs",
+            review_id[:8], score, review["turnaround_s"],
+        )
+        return review
+
+    def get_pending_human_reviews(self) -> list[dict]:
+        """List all pending human expert reviews."""
+        with self._human_review_lock:
+            return list(self._pending_human_reviews.values())
+
+    def get_human_review(self, review_id: str) -> dict | None:
+        """Get a completed human review by ID."""
+        return self._completed_human_reviews.get(review_id)
+
+    # ------------------------------------------------------------------
+    # System prompts (defaults — overridable via update_prompt)
     # ------------------------------------------------------------------
 
     PLAN_REVIEW_PROMPT = (
@@ -144,7 +326,7 @@ class CriticAgent:
         if context:
             user_prompt += f"\n## Additional Context\n{context}\n"
 
-        result = self._call_llm(user_prompt, self.PLAN_REVIEW_PROMPT, "PLAN_REVIEW")
+        result = self._call_llm(user_prompt, self._get_prompt("PLAN_REVIEW_PROMPT"), "PLAN_REVIEW")
         return result
 
     def review_code(
@@ -170,7 +352,7 @@ class CriticAgent:
         if context:
             user_prompt += f"\n## Additional Context\n{context}\n"
 
-        return self._call_llm(user_prompt, self.CODE_REVIEW_PROMPT, "CODE_REVIEW")
+        return self._call_llm(user_prompt, self._get_prompt("CODE_REVIEW_PROMPT"), "CODE_REVIEW")
 
     def review_integration(
         self,
@@ -196,7 +378,7 @@ class CriticAgent:
             user_prompt += f"\n## Additional Context\n{context}\n"
 
         return self._call_llm(
-            user_prompt, self.INTEGRATION_REVIEW_PROMPT, "INTEGRATION_REVIEW"
+            user_prompt, self._get_prompt("INTEGRATION_REVIEW_PROMPT"), "INTEGRATION_REVIEW"
         )
 
     # ------------------------------------------------------------------
@@ -493,7 +675,19 @@ class CriticAgent:
                 name, review = future.result()
                 reviews[name] = review
 
-        # 4. Aggregate scores (primary gets 1.5x weight)
+        # 3.5 Include completed human expert reviews if available
+        with self._human_review_lock:
+            for rid, hr in self._completed_human_reviews.items():
+                if hr.get("review_type") == review_type:
+                    reviews[f"human_expert_{rid[:8]}"] = {
+                        "score": hr["score"],
+                        "flaws": hr.get("flaws", []),
+                        "suggestions": hr.get("suggestions", []),
+                        "summary": hr.get("feedback", ""),
+                        "source": "human_expert",
+                    }
+
+        # 4. Aggregate scores (primary 1.5x, human_expert 2.0x weight)
         scored = {n: r.get("score", 0) for n, r in reviews.items() if "error" not in r}
         if not scored:
             scored = {"primary": reviews.get("primary", {}).get("score", 0)}
@@ -501,7 +695,12 @@ class CriticAgent:
         weight_sum = 0
         weighted_total = 0
         for name, score in scored.items():
-            w = 1.5 if name == "primary" else 1.0
+            if "human_expert" in name:
+                w = 2.0  # Human expert opinion weighted highest
+            elif name == "primary":
+                w = 1.5
+            else:
+                w = 1.0
             weighted_total += score * w
             weight_sum += w
         final_score = int(weighted_total / max(weight_sum, 1))

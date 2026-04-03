@@ -166,7 +166,7 @@ Return JSON array with:
 
 Generate 15-30 requirements covering all user stories and system qualities."""
 
-            response = self.llm.generate(prompt, temperature=0.2)
+            response = self.llm.generate(prompt)
 
             # Extract and parse requirements
             start_idx = response.find('[')
@@ -300,7 +300,7 @@ Return JSON with:
     ]
 }}"""
 
-            response = self.llm.generate(prompt, temperature=0.3)
+            response = self.llm.generate(prompt)
 
             start_idx = response.find('{')
             end_idx = response.rfind('}') + 1
@@ -397,7 +397,7 @@ Return JSON array:
 
 Identify 10-20 risks covering all major areas."""
 
-            response = self.llm.generate(prompt, temperature=0.2)
+            response = self.llm.generate(prompt)
 
             start_idx = response.find('[')
             end_idx = response.rfind(']') + 1

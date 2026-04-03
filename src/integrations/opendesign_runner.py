@@ -166,6 +166,60 @@ class OpenDesignRunner(BaseRunner):
     def get_experience_keys(self):
         return ["task_type", "platform", "screen_type", "component_type", "domain"]
 
+    def get_experimental_commands(self, workspace, files):
+        """Design-specific: SVG/HTML validation, CSS syntax, accessibility check."""
+        import os
+        commands = []
+        svg_files = [f for f in files if f.endswith(".svg")]
+        html_files = [f for f in files if f.endswith((".html", ".htm"))]
+        css_files = [f for f in files if f.endswith(".css")]
+        json_files = [f for f in files if f.endswith(".json")]
+        py_files = [f for f in files if f.endswith(".py")]
+
+        if svg_files:
+            for sf in svg_files[:3]:
+                commands.append({
+                    "name": f"svg_valid_{os.path.basename(sf)}",
+                    "cmd": ["python3", "-c",
+                            f"import xml.etree.ElementTree as ET; "
+                            f"ET.parse('{sf}'); print('SVG valid XML')"],
+                    "weight": 20,
+                    "timeout": 10,
+                })
+
+        if html_files:
+            for hf in html_files[:3]:
+                commands.append({
+                    "name": f"html_parse_{os.path.basename(hf)}",
+                    "cmd": ["python3", "-c",
+                            f"from html.parser import HTMLParser; "
+                            f"p=HTMLParser(); p.feed(open('{hf}').read()); "
+                            f"print('HTML parsed OK')"],
+                    "weight": 20,
+                    "timeout": 10,
+                })
+
+        if json_files:
+            for jf in json_files[:3]:
+                commands.append({
+                    "name": f"json_valid_{os.path.basename(jf)}",
+                    "cmd": ["python3", "-c",
+                            f"import json; json.load(open('{jf}')); "
+                            f"print('JSON valid')"],
+                    "weight": 15,
+                    "timeout": 10,
+                })
+
+        if py_files:
+            commands.append({
+                "name": "python_syntax",
+                "cmd": ["python3", "-m", "py_compile"] + py_files,
+                "weight": 20,
+                "timeout": 15,
+            })
+
+        return commands
+
     def get_exercises(self, difficulty="intermediate"):
         """Load from central catalog (~45 opendesign seeds), fall back to hardcoded."""
         catalog = self._load_catalog_exercises(difficulty)
