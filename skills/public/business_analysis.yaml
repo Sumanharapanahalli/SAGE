@@ -1,0 +1,155 @@
+name: business_analysis
+version: "1.0.0"
+visibility: public
+runner: opendoc
+description: >
+  Business analysis skills for requirements engineering, process modeling,
+  feasibility studies, and stakeholder management. Sourced from IIBA BABOK
+  and real BA/PM job descriptions across regulated industries.
+
+roles:
+  - business_analyst
+  - financial_analyst
+
+tools:
+  - jira
+  - confluence
+  - miro
+  - whimsical
+  - lucidchart
+  - visio
+  - excel
+  - power-bi
+  - tableau
+  - notion
+  - figma
+
+tags:
+  - business-analysis
+  - requirements
+  - process-modeling
+  - stakeholder-management
+  - feasibility
+
+certifications:
+  - IIBA CBAP (Certified Business Analysis Professional)
+  - PMI-PBA (Professional in Business Analysis)
+  - IREB CPRE (Certified Professional for Requirements Engineering)
+
+skills:
+  requirements_elicitation:
+    description: >
+      Gather, document, and validate business and functional requirements
+      using structured techniques.
+    techniques:
+      - Stakeholder interviews and workshops
+      - User story mapping (persona → journey → story)
+      - Use case modeling (UML use case diagrams)
+      - Process mapping (BPMN, swim-lane diagrams)
+      - Prototyping and wireframe reviews
+      - Document analysis (existing SOPs, regulations)
+      - Observation and job shadowing
+    acceptance_criteria:
+      - Every requirement has a unique ID and testable acceptance criteria
+      - Requirements trace to a business objective or stakeholder need
+      - Ambiguous language eliminated (no "should", "may", "approximately")
+      - Non-functional requirements quantified (latency < 2s, uptime > 99.9%)
+    grading_rubric:
+      completeness: 25
+      testability: 25
+      traceability: 25
+      clarity: 25
+
+  process_modeling:
+    description: >
+      Map current-state and future-state business processes to identify
+      waste, bottlenecks, and automation opportunities.
+    techniques:
+      - BPMN 2.0 process diagrams
+      - Value stream mapping (lean)
+      - Swim-lane / cross-functional flowcharts
+      - State machine diagrams
+      - Data flow diagrams (DFDs)
+    acceptance_criteria:
+      - Process has defined start/end events
+      - All decision points have documented criteria
+      - Exception/error paths documented
+      - Roles and responsibilities assigned per activity
+    grading_rubric:
+      accuracy: 30
+      completeness: 25
+      clarity: 25
+      actionability: 20
+
+  feasibility_analysis:
+    description: >
+      Assess technical, operational, economic, and schedule feasibility
+      of proposed solutions before committing resources.
+    techniques:
+      - Technical feasibility (can we build it with available tech?)
+      - Operational feasibility (will users adopt it?)
+      - Economic feasibility (ROI, payback period, NPV, IRR)
+      - Schedule feasibility (can we deliver in time?)
+      - Legal/regulatory feasibility (compliance constraints)
+    acceptance_criteria:
+      - All four feasibility dimensions assessed
+      - Quantified cost estimates (not just "expensive")
+      - Risk-adjusted ROI calculation
+      - Go/no-go recommendation with rationale
+    grading_rubric:
+      rigor: 30
+      quantification: 30
+      risk_awareness: 20
+      actionability: 20
+
+  stakeholder_management:
+    description: >
+      Identify, classify, and manage stakeholder expectations throughout
+      the project lifecycle.
+    techniques:
+      - Stakeholder identification matrix (RACI)
+      - Power/interest grid
+      - Communication plan
+      - Conflict resolution protocols
+      - Change impact assessment
+    acceptance_criteria:
+      - All stakeholders identified with role, interest, influence
+      - Communication cadence defined per stakeholder group
+      - Escalation path documented
+      - Change management plan for requirement changes
+    grading_rubric:
+      completeness: 30
+      political_awareness: 25
+      communication_plan: 25
+      conflict_handling: 20
+
+  regulatory_requirements:
+    description: >
+      Translate regulatory standards into actionable business and functional
+      requirements for regulated industries.
+    techniques:
+      - Regulatory standard decomposition
+      - Gap analysis (current state vs. required state)
+      - Compliance requirements matrix
+      - Audit readiness checklist
+    acceptance_criteria:
+      - Every regulatory clause mapped to a functional requirement
+      - Traceability from regulation → requirement → implementation → test
+      - Gap analysis with remediation plan
+      - Audit-ready documentation format
+    grading_rubric:
+      accuracy: 30
+      traceability: 30
+      completeness: 20
+      audit_readiness: 20
+
+seniority_delta:
+  junior:
+    focus: "Requirements documentation, basic process mapping, stakeholder interviews"
+    supervision: "Review all requirements with senior BA before sign-off"
+  mid:
+    focus: "Independent requirements elicitation, feasibility analysis, process optimization"
+    supervision: "Peer review on complex requirements; independent on standard work"
+  senior:
+    focus: "Strategic analysis, organizational change management, regulatory translation, mentoring"
+    supervision: "Self-directed; reviews others' work; drives requirements strategy"
