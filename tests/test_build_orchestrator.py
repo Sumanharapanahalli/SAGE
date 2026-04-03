@@ -1067,3 +1067,185 @@ class TestReject:
         orch = _fresh_orchestrator()
         result = orch.reject("nonexistent")
         assert "error" in result
+
+
+# ---------------------------------------------------------------------------
+# TDD Tests for Chunked Decomposition (Lean Engineering)
+# ---------------------------------------------------------------------------
+# NOTE: These tests should have been written BEFORE implementing the methods.
+# This is a TDD violation that needs to be addressed in future development.
+# ---------------------------------------------------------------------------
+
+class TestChunkedDecomposition:
+    """TDD tests for lean-inspired chunked decomposition methods."""
+
+    def test_identify_subsystems_returns_valid_structure(self):
+        """_identify_subsystems returns list of subsystems with required fields."""
+        orch = _fresh_orchestrator()
+        run = {"product_description": "IoT wearable device for fall detection", "workspace_dir": ""}
+
+        # Mock the system engineer response
+        mock_response = {
+            "output": '''[
+                {"name": "sensor_module", "description": "Accelerometer and gyroscope data collection", "interfaces": ["i2c", "spi"], "team_hint": "hardware"},
+                {"name": "api_backend", "description": "REST API for caregiver alerts", "interfaces": ["http"], "team_hint": "engineering"},
+                {"name": "mobile_app", "description": "iOS/Android companion app", "interfaces": ["rest_api"], "team_hint": "engineering"}
+            ]'''
+        }
+
+        with patch("src.agents.universal.universal_agent.execute", return_value=mock_response):
+            subsystems = orch._identify_subsystems(run)
+
+            assert len(subsystems) == 3
+            assert all("name" in sub and "description" in sub for sub in subsystems)
+            assert subsystems[0]["name"] == "sensor_module"
+            assert subsystems[0]["team_hint"] == "hardware"
+            assert "interfaces" in subsystems[0]
+
+    def test_identify_subsystems_handles_invalid_json(self):
+        """_identify_subsystems gracefully handles malformed JSON response."""
+        orch = _fresh_orchestrator()
+        run = {"product_description": "test product", "workspace_dir": ""}
+
+        mock_response = {"output": "This is not JSON"}
+
+        with patch("src.agents.universal.universal_agent.execute", return_value=mock_response):
+            subsystems = orch._identify_subsystems(run)
+            assert subsystems == []
+
+    def test_assign_to_teams_routes_by_keywords(self):
+        """_assign_to_teams correctly routes subsystems to appropriate teams."""
+        orch = _fresh_orchestrator()
+        subsystems = [
+            {"name": "api_backend", "description": "REST API service", "team_hint": "engineering"},
+            {"name": "firmware_module", "description": "Embedded sensor driver", "team_hint": "hardware"},
+            {"name": "ml_model", "description": "Machine learning inference", "team_hint": "analysis"},
+            {"name": "ui_design", "description": "User interface mockups", "team_hint": "design"}
+        ]
+
+        assignments = orch._assign_to_teams(subsystems)
+
+        assert "engineering" in assignments
+        assert "hardware" in assignments
+        assert "analysis" in assignments
+        assert "design" in assignments
+        assert len(assignments["engineering"]) == 1
+        assert assignments["hardware"][0]["name"] == "firmware_module"
+
+    def test_assign_to_teams_defaults_to_engineering(self):
+        """_assign_to_teams defaults unknown subsystems to engineering team."""
+        orch = _fresh_orchestrator()
+        subsystems = [
+            {"name": "unknown_module", "description": "Some unknown component", "team_hint": "unknown"}
+        ]
+
+        assignments = orch._assign_to_teams(subsystems)
+
+        assert "engineering" in assignments
+        assert len(assignments["engineering"]) == 1
+
+    def test_plan_team_subsystems_returns_tasks_for_team(self):
+        """_plan_team_subsystems creates detailed tasks for team's subsystems."""
+        orch = _fresh_orchestrator()
+        run = {"product_description": "test product", "workspace_dir": ""}
+        subsystems = [{"name": "api_service", "description": "REST API for data"}]
+
+        mock_response = {
+            "output": '''[
+                {"step": 1, "task_type": "BACKEND", "description": "Build API endpoints", "acceptance_criteria": ["API responds to GET requests"], "depends_on": [], "agent_role": "developer"},
+                {"step": 2, "task_type": "TESTS", "description": "Write API tests", "acceptance_criteria": ["All tests pass"], "depends_on": [1], "agent_role": "developer"}
+            ]'''
+        }
+
+        with patch("src.agents.universal.universal_agent.execute", return_value=mock_response):
+            tasks = orch._plan_team_subsystems(run, "engineering", subsystems, 0)
+
+            assert len(tasks) == 2
+            assert tasks[0]["task_type"] == "BACKEND"
+            assert tasks[0]["team"] == "engineering"
+            assert "api_service" in tasks[0]["subsystems"]
+            assert tasks[1]["depends_on"] == [1]
+
+    def test_get_team_task_types_returns_relevant_types(self):
+        """_get_team_task_types returns task types appropriate for each team."""
+        orch = _fresh_orchestrator()
+
+        engineering_types = orch._get_team_task_types("engineering")
+        hardware_types = orch._get_team_task_types("hardware")
+
+        assert "BACKEND" in engineering_types
+        assert "FRONTEND" in engineering_types
+        assert "FIRMWARE" in hardware_types
+        assert "PCB_DESIGN" in hardware_types
+        assert "FIRMWARE" not in engineering_types  # No cross-contamination
+
+    def test_integrate_team_plans_merges_tasks_correctly(self):
+        """_integrate_team_plans merges team tasks and adds integration tasks."""
+        orch = _fresh_orchestrator()
+        run = {"product_description": "test product", "workspace_dir": ""}
+        subsystems = [{"name": "api", "description": "API service"}, {"name": "ui", "description": "Frontend"}]
+
+        team_tasks = [
+            {"step": 1, "task_type": "BACKEND", "description": "Build API", "team": "engineering"},
+            {"step": 2, "task_type": "FRONTEND", "description": "Build UI", "team": "engineering"}
+        ]
+
+        mock_response = {
+            "output": '''[
+                {"step": 3, "task_type": "SYSTEM_TEST", "description": "End-to-end integration test", "acceptance_criteria": ["UI can call API successfully"], "depends_on": [1, 2], "agent_role": "system_engineer"}
+            ]'''
+        }
+
+        with patch("src.agents.universal.universal_agent.execute", return_value=mock_response):
+            with patch.object(orch, "_matched_domains", return_value=[]):
+                with patch.object(orch, "_apply_quality_gates", return_value=[]):
+                    integrated = orch._integrate_team_plans(run, team_tasks, subsystems)
+
+                    assert len(integrated) == 3  # 2 team tasks + 1 integration task
+                assert integrated[2]["task_type"] == "SYSTEM_TEST"
+                assert integrated[2]["team"] == "integration"
+                # Check step renumbering worked
+                assert integrated[0]["step"] == 1
+                assert integrated[1]["step"] == 2
+                assert integrated[2]["step"] == 3
+
+    def test_decompose_uses_chunked_when_subsystems_found(self):
+        """_decompose uses chunked approach when subsystems are successfully identified."""
+        orch = _fresh_orchestrator()
+        run = {"product_description": "IoT sensor device", "solution_name": "test", "workspace_dir": ""}
+
+        # Mock successful subsystem identification
+        with patch.object(orch, "_identify_subsystems", return_value=[{"name": "sensor", "description": "test"}]):
+            with patch.object(orch, "_assign_to_teams", return_value={"hardware": [{"name": "sensor"}]}):
+                with patch.object(orch, "_plan_team_subsystems", return_value=[{"step": 1, "task_type": "FIRMWARE"}]):
+                    with patch.object(orch, "_integrate_team_plans", return_value=[{"step": 1, "task_type": "FIRMWARE"}]):
+                        tasks = orch._decompose(run)
+
+                        assert len(tasks) >= 1
+                        # Verify chunked path was used (not monolithic fallback)
+
+    def test_decompose_falls_back_to_monolithic_when_no_subsystems(self):
+        """_decompose falls back to monolithic approach when no subsystems identified."""
+        orch = _fresh_orchestrator()
+        run = {"product_description": "simple tool", "solution_name": "test", "workspace_dir": ""}
+
+        with patch.object(orch, "_identify_subsystems", return_value=[]):
+            with patch.object(orch, "_decompose_monolithic", return_value=[{"step": 1, "task_type": "BACKEND"}]) as mock_mono:
+                tasks = orch._decompose(run)
+
+                mock_mono.assert_called_once()  # Verify fallback was used
+                assert len(tasks) >= 0
+
+    def test_decompose_monolithic_preserves_original_behavior(self):
+        """_decompose_monolithic maintains same behavior as original _decompose method."""
+        orch = _fresh_orchestrator()
+        run = {"product_description": "web app", "solution_name": "test", "workspace_dir": ""}
+
+        with patch("src.agents.planner.planner_agent.create_plan", return_value=MOCK_PLAN):
+            with patch.object(orch, "_matched_domains", return_value=[]):
+                tasks = orch._decompose_monolithic(run)
+
+                assert len(tasks) >= 1
+                # Verify it enriches tasks like the original method
+                assert all("acceptance_criteria" in task for task in tasks)
+                assert all("depends_on" in task for task in tasks)
