@@ -28,11 +28,16 @@ Thread-safe. Audit every action. Return error dicts, never raise.
 """
 
 import logging
+import os
+import re
+import subprocess
+import tempfile
 import time
 import uuid
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum
+from pathlib import Path
 from typing import Any, Optional
 
 
@@ -422,6 +427,307 @@ class BaseRunner(ABC):
             self.logger.debug("LLM grading failed: %s", exc)
             return {"score": 0, "error": str(exc)}
 
+    # ── Experimental verification (real execution) ────────────────────
+
+    def _extract_code_blocks(self, output: str) -> list[dict]:
+        """
+        Extract code blocks from LLM output.
+
+        Returns list of {filename, language, code} dicts.
+        Detects ```lang blocks, filename hints like '# filename: foo.py', and
+        fenced blocks with explicit filenames.
+        """
+        blocks = []
+        # Pattern: ```lang\n...``` optionally preceded by a filename hint
+        pattern = re.compile(
+            r'(?:(?:#|//|--)\s*(?:file(?:name)?|File)\s*:\s*(\S+)\s*\n)?'
+            r'```(\w+)?\s*\n(.*?)```',
+            re.DOTALL,
+        )
+        for match in pattern.finditer(output or ""):
+            fname_hint = match.group(1)
+            lang = match.group(2) or ""
+            code = match.group(3).strip()
+            if not code or len(code) < 10:
+                continue
+
+            # Infer filename from hint, language, or content
+            if fname_hint:
+                filename = fname_hint
+            elif lang in ("python", "py"):
+                filename = "main.py"
+            elif lang in ("javascript", "js"):
+                filename = "index.js"
+            elif lang in ("typescript", "ts"):
+                filename = "index.ts"
+            elif lang in ("c", "cpp", "c++"):
+                filename = "main.c" if lang == "c" else "main.cpp"
+            elif lang in ("rust",):
+                filename = "main.rs"
+            elif lang in ("go",):
+                filename = "main.go"
+            else:
+                filename = f"output.{lang}" if lang else "output.txt"
+
+            # Detect test files by content
+            if any(kw in code for kw in ["def test_", "assert ", "pytest", "unittest"]):
+                if not fname_hint and filename == "main.py":
+                    filename = "test_main.py"
+
+            blocks.append({"filename": filename, "language": lang, "code": code})
+
+        # Deduplicate filenames
+        seen = {}
+        for block in blocks:
+            name = block["filename"]
+            if name in seen:
+                base, ext = os.path.splitext(name)
+                name = f"{base}_{len(seen)}{ext}"
+                block["filename"] = name
+            seen[name] = True
+
+        return blocks
+
+    def _write_code_to_workspace(
+        self, workspace: str, code_blocks: list[dict]
+    ) -> list[str]:
+        """Write extracted code blocks to workspace directory. Returns list of file paths."""
+        written = []
+        for block in code_blocks:
+            fpath = os.path.join(workspace, block["filename"])
+            os.makedirs(os.path.dirname(fpath) or workspace, exist_ok=True)
+            with open(fpath, "w") as f:
+                f.write(block["code"])
+            written.append(fpath)
+        return written
+
+    def _run_command(
+        self, cmd: list[str], cwd: str, timeout: int = 60
+    ) -> dict:
+        """
+        Run a command in the workspace and capture results.
+
+        Returns {returncode, stdout, stderr, timed_out, duration_s}.
+        """
+        try:
+            start = time.monotonic()
+            proc = subprocess.run(
+                cmd,
+                cwd=cwd,
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+                env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
+            )
+            duration = time.monotonic() - start
+            return {
+                "returncode": proc.returncode,
+                "stdout": proc.stdout[:5000],
+                "stderr": proc.stderr[:5000],
+                "timed_out": False,
+                "duration_s": round(duration, 3),
+            }
+        except subprocess.TimeoutExpired:
+            return {
+                "returncode": -1,
+                "stdout": "",
+                "stderr": f"Command timed out after {timeout}s",
+                "timed_out": True,
+                "duration_s": timeout,
+            }
+        except Exception as exc:
+            return {
+                "returncode": -1,
+                "stdout": "",
+                "stderr": str(exc),
+                "timed_out": False,
+                "duration_s": 0,
+            }
+
+    def get_experimental_commands(self, workspace: str, files: list[str]) -> list[dict]:
+        """
+        Return domain-specific commands to experimentally verify generated code.
+
+        Override in subclasses for domain-specific verification.
+        Returns list of {name, cmd, weight, timeout} dicts.
+
+        Default implementation detects language from file extensions and runs
+        appropriate checks (syntax check, lint, test).
+        """
+        commands = []
+        extensions = {os.path.splitext(f)[1] for f in files}
+
+        if ".py" in extensions:
+            # Python: syntax check all .py files
+            py_files = [f for f in files if f.endswith(".py")]
+            commands.append({
+                "name": "python_syntax",
+                "cmd": ["python3", "-m", "py_compile"] + py_files,
+                "weight": 25,
+                "timeout": 30,
+            })
+            # Run tests if test files exist
+            test_files = [f for f in py_files if "test" in os.path.basename(f).lower()]
+            if test_files:
+                commands.append({
+                    "name": "python_tests",
+                    "cmd": ["python3", "-m", "pytest", "-x", "--tb=short", "-q"] + test_files,
+                    "weight": 35,
+                    "timeout": 60,
+                })
+            # Try running main file
+            main_files = [f for f in py_files if f not in test_files]
+            if main_files:
+                commands.append({
+                    "name": "python_import",
+                    "cmd": ["python3", "-c", f"import importlib.util; "
+                            f"spec = importlib.util.spec_from_file_location('m', '{main_files[0]}'); "
+                            f"mod = importlib.util.module_from_spec(spec)"],
+                    "weight": 15,
+                    "timeout": 15,
+                })
+
+        if ".js" in extensions or ".ts" in extensions:
+            js_files = [f for f in files if f.endswith((".js", ".ts"))]
+            commands.append({
+                "name": "node_syntax",
+                "cmd": ["node", "--check"] + [f for f in js_files if f.endswith(".js")],
+                "weight": 25,
+                "timeout": 15,
+            })
+
+        if ".c" in extensions or ".cpp" in extensions:
+            c_files = [f for f in files if f.endswith((".c", ".cpp"))]
+            compiler = "gcc" if ".c" in extensions else "g++"
+            commands.append({
+                "name": "c_compile",
+                "cmd": [compiler, "-fsyntax-only", "-Wall", "-Wextra"] + c_files,
+                "weight": 35,
+                "timeout": 30,
+            })
+
+        if ".go" in extensions:
+            commands.append({
+                "name": "go_build",
+                "cmd": ["go", "build", "./..."],
+                "weight": 35,
+                "timeout": 30,
+            })
+
+        if ".rs" in extensions:
+            commands.append({
+                "name": "rust_check",
+                "cmd": ["rustc", "--edition", "2021", "--crate-type", "lib"]
+                + [f for f in files if f.endswith(".rs")],
+                "weight": 35,
+                "timeout": 30,
+            })
+
+        return commands
+
+    def _experimental_verify(
+        self, result: "RunResult", exercise: "Exercise", workspace: str
+    ) -> dict:
+        """
+        Experimentally verify generated code by actually executing it.
+
+        Steps:
+          1. Extract code blocks from agent output
+          2. Write them to workspace
+          3. Run domain-specific commands (compile, test, lint)
+          4. Score based on real results
+
+        Returns {score (0-100), criteria (dict), hints (list), details (dict)}.
+        """
+        exp_criteria = {}
+        exp_hints = []
+        details = {}
+
+        # Step 1: Extract code blocks
+        code_blocks = self._extract_code_blocks(result.output or "")
+        if not code_blocks:
+            # No code blocks — check if result has files_changed with real paths
+            if result.files_changed:
+                existing = [f for f in result.files_changed if os.path.isfile(f)]
+                if existing:
+                    code_blocks = []  # Use existing files directly
+                    files = existing
+                else:
+                    return {
+                        "score": 0,
+                        "criteria": {"code_extracted": False},
+                        "hints": ["Output must contain code blocks (```lang ... ```) to be experimentally verified"],
+                        "details": {"reason": "no_code_blocks"},
+                    }
+            else:
+                return {
+                    "score": 0,
+                    "criteria": {"code_extracted": False},
+                    "hints": ["Output must contain code blocks (```lang ... ```) to be experimentally verified"],
+                    "details": {"reason": "no_code_blocks"},
+                }
+
+        # Step 2: Write code to workspace (if extracted from output)
+        if code_blocks:
+            files = self._write_code_to_workspace(workspace, code_blocks)
+            exp_criteria["code_extracted"] = True
+            exp_criteria["files_written"] = len(files)
+            details["files"] = [os.path.basename(f) for f in files]
+        else:
+            files = result.files_changed
+
+        # Step 3: Get and run experimental commands
+        commands = self.get_experimental_commands(workspace, files)
+        if not commands:
+            # No commands available for this language — partial credit for having code
+            return {
+                "score": 20,
+                "criteria": {**exp_criteria, "has_code": True, "no_verifier": True},
+                "hints": ["No experimental verifier available for this language"],
+                "details": {**details, "reason": "no_verifier_commands"},
+            }
+
+        total_weight = sum(c["weight"] for c in commands)
+        earned_weight = 0
+        command_results = []
+
+        for cmd_spec in commands:
+            cmd_result = self._run_command(
+                cmd_spec["cmd"], cwd=workspace, timeout=cmd_spec.get("timeout", 60)
+            )
+            passed = cmd_result["returncode"] == 0
+            command_results.append({
+                "name": cmd_spec["name"],
+                "passed": passed,
+                "returncode": cmd_result["returncode"],
+                "duration_s": cmd_result["duration_s"],
+                "stdout_preview": cmd_result["stdout"][:200],
+                "stderr_preview": cmd_result["stderr"][:200],
+            })
+
+            exp_criteria[f"exp:{cmd_spec['name']}"] = passed
+            if passed:
+                earned_weight += cmd_spec["weight"]
+            else:
+                stderr = cmd_result["stderr"][:200]
+                exp_hints.append(
+                    f"{cmd_spec['name']} failed: {stderr}" if stderr
+                    else f"{cmd_spec['name']} failed with exit code {cmd_result['returncode']}"
+                )
+
+        # Score = proportion of weight earned, scaled to 100
+        exp_score = (earned_weight / total_weight * 100) if total_weight > 0 else 0
+        details["command_results"] = command_results
+        details["earned_weight"] = earned_weight
+        details["total_weight"] = total_weight
+
+        return {
+            "score": round(exp_score, 1),
+            "criteria": exp_criteria,
+            "hints": exp_hints,
+            "details": details,
+        }
+
     def _combined_grade(
         self,
         exercise: "Exercise",
@@ -432,46 +738,86 @@ class BaseRunner(ABC):
         domain_context: str = "",
     ) -> "ExerciseScore":
         """
-        Combine structural grading (fast, deterministic) with LLM-as-judge (deep, semantic).
+        Three-way grading: experimental (40%) + LLM-as-judge (30%) + structural (30%).
 
-        Weights: 40% structural + 60% LLM judgment.
-        Falls back to 100% structural if LLM unavailable.
+        Experimental = real code execution (compile, test, run).
+        LLM = semantic quality judgment by another LLM.
+        Structural = pattern matching on output (fast, deterministic fallback).
+
+        Falls back gracefully: if experimental fails, uses structural + LLM.
+        If LLM fails, uses experimental + structural.
         """
+        # Try experimental verification first
+        workspace = result.metrics.get("workspace") or tempfile.mkdtemp(prefix="sage_exp_")
+        exp_result = self._experimental_verify(result, exercise, workspace)
+        has_experimental = exp_result["score"] > 0 or exp_result.get("criteria", {}).get("code_extracted")
+
+        # LLM grading
         llm_result = self._llm_grade(exercise, result, domain_context)
+        has_llm = "error" not in llm_result
 
-        if "error" in llm_result:
-            # LLM unavailable — use structural only
-            final_score = min(structural_score, 100.0)
-            return ExerciseScore(
-                exercise_id=exercise.id,
-                passed=final_score >= 50,
-                score=final_score,
-                criteria_results=structural_criteria,
-                feedback="Graded by structural checks only (LLM unavailable)",
-                improvement_hints=structural_hints,
-            )
+        # Calculate final score based on available signals
+        if has_experimental and has_llm:
+            # Best case: all three signals — experimental 40%, LLM 30%, structural 30%
+            exp_score = exp_result["score"]
+            llm_score = llm_result["score"]
+            final_score = exp_score * 0.4 + llm_score * 0.3 + structural_score * 0.3
+        elif has_experimental and not has_llm:
+            # Experimental + structural only — experimental 60%, structural 40%
+            exp_score = exp_result["score"]
+            final_score = exp_score * 0.6 + structural_score * 0.4
+        elif not has_experimental and has_llm:
+            # LLM + structural only (old behavior) — LLM 60%, structural 40%
+            llm_score = llm_result["score"]
+            final_score = llm_score * 0.6 + structural_score * 0.4
+        else:
+            # Structural only
+            final_score = structural_score
 
-        # Blend: 40% structural + 60% LLM
-        llm_score = llm_result["score"]
-        final_score = min(structural_score * 0.4 + llm_score * 0.6, 100.0)
+        final_score = min(round(final_score, 1), 100.0)
 
-        # Merge criteria
+        # Merge all criteria
         merged_criteria = {**structural_criteria}
-        for k, v in llm_result.get("criteria_results", {}).items():
-            merged_criteria[f"llm:{k}"] = v
+        for k, v in exp_result.get("criteria", {}).items():
+            merged_criteria[k] = v
+        if has_llm:
+            for k, v in llm_result.get("criteria_results", {}).items():
+                merged_criteria[f"llm:{k}"] = v
 
-        # Merge hints
+        # Merge all hints
         merged_hints = list(structural_hints)
-        for h in llm_result.get("improvement_hints", []):
+        for h in exp_result.get("hints", []):
             if h not in merged_hints:
                 merged_hints.append(h)
+        if has_llm:
+            for h in llm_result.get("improvement_hints", []):
+                if h not in merged_hints:
+                    merged_hints.append(h)
+
+        # Build feedback summary
+        feedback_parts = []
+        if has_experimental:
+            exp_details = exp_result.get("details", {})
+            cmd_results = exp_details.get("command_results", [])
+            passed_cmds = sum(1 for c in cmd_results if c["passed"])
+            total_cmds = len(cmd_results)
+            feedback_parts.append(
+                f"Experimental: {passed_cmds}/{total_cmds} checks passed "
+                f"(score: {exp_result['score']:.0f}/100)"
+            )
+        if has_llm:
+            feedback_parts.append(
+                f"LLM judge: {llm_result['score']:.0f}/100 — "
+                f"{llm_result.get('feedback', '')[:200]}"
+            )
+        feedback_parts.append(f"Structural: {structural_score:.0f}/100")
 
         return ExerciseScore(
             exercise_id=exercise.id,
             passed=final_score >= 50,
-            score=round(final_score, 1),
+            score=final_score,
             criteria_results=merged_criteria,
-            feedback=llm_result.get("feedback", ""),
+            feedback=" | ".join(feedback_parts),
             improvement_hints=merged_hints,
         )
 
@@ -591,6 +937,7 @@ def get_role_to_runner_map() -> dict[str, str]:
 SWE_ROLES = [
     "developer", "qa_engineer", "system_tester", "devops_engineer",
     "localization_engineer", "data_engineer", "agentic_engineer",
+    "system_engineer",
 ]
 
 FIRMWARE_ROLES = [

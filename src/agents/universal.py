@@ -160,3 +160,32 @@ confidence: HIGH, MEDIUM, or LOW based on available information
             self.logger.warning("Audit log failed: %s", e)
 
         return result
+
+    def execute(
+        self,
+        task_type: str,
+        description: str,
+        agent_role: str,
+        workspace: str = "",
+        context: str = "",
+        actor: str = "build-orchestrator",
+    ) -> dict:
+        """
+        Execute method compatible with build orchestrator interface.
+
+        Maps build orchestrator parameters to the run method.
+        """
+        # Map parameters to run method
+        task = f"[{task_type}] {description}"
+        full_context = f"Workspace: {workspace}\nContext: {context}" if workspace or context else ""
+
+        return self.run(
+            role_id=agent_role,
+            task=task,
+            context=full_context,
+            actor=actor
+        )
+
+
+# Singleton instance
+universal_agent = UniversalAgent()
