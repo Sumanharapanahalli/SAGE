@@ -451,6 +451,178 @@ STANDARDS_REGISTRY: Dict[str, Dict] = {
             "sponsor_declaration",
         ],
     },
+    # ---- Safety-Critical Industry Standards ----
+    "en_50128": {
+        "id": "en_50128",
+        "name": "EN 50128 — Railway Software (CENELEC)",
+        "region": "international",
+        "category": "railway_safety",
+        "reference": "EN 50128:2011+A1:2020",
+        "requirements": [
+            "Software safety integrity level (SIL 0-4) determination",
+            "Software lifecycle per CENELEC requirements",
+            "Defensive programming techniques for SIL 3/4",
+            "Formal methods for SIL 4 (recommended SIL 3)",
+            "Independent safety assessment",
+            "Configuration management",
+            "Software verification and validation",
+            "Coding standards compliance",
+        ],
+        "required_artifacts": [
+            "software_safety_integrity_level",
+            "software_development_plan",
+            "software_requirements_spec",
+            "software_architecture",
+            "verification_report",
+            "validation_report",
+            "safety_case",
+        ],
+    },
+    "iec_61508": {
+        "id": "iec_61508",
+        "name": "IEC 61508 — Functional Safety of E/E/PE Systems",
+        "region": "international",
+        "category": "functional_safety",
+        "reference": "IEC 61508:2010 (Parts 1-7)",
+        "requirements": [
+            "Safety lifecycle management",
+            "SIL determination (SIL 1-4)",
+            "Hardware safety integrity (random failures)",
+            "Systematic safety integrity (design faults)",
+            "Software safety requirements",
+            "Verification and validation",
+            "Functional safety assessment",
+            "Competence management",
+        ],
+        "required_artifacts": [
+            "safety_plan",
+            "sil_determination",
+            "safety_requirements_spec",
+            "safety_validation_report",
+            "functional_safety_assessment",
+        ],
+    },
+    "iec_61511": {
+        "id": "iec_61511",
+        "name": "IEC 61511 — Process Industry Functional Safety",
+        "region": "international",
+        "category": "process_safety",
+        "reference": "IEC 61511:2016 (Parts 1-3)",
+        "requirements": [
+            "Safety Instrumented System (SIS) lifecycle",
+            "SIL determination via LOPA or risk graph",
+            "Safety Instrumented Function (SIF) design",
+            "Proof test interval definition",
+            "SIS verification and validation",
+            "Management of functional safety",
+            "Competency requirements",
+        ],
+        "required_artifacts": [
+            "safety_requirement_specification",
+            "sil_determination_report",
+            "sif_design_doc",
+            "proof_test_procedures",
+            "safety_validation_report",
+        ],
+    },
+    "do_178c": {
+        "id": "do_178c",
+        "name": "DO-178C — Airborne Software",
+        "region": "international",
+        "category": "avionics_safety",
+        "reference": "RTCA DO-178C / EUROCAE ED-12C",
+        "requirements": [
+            "Design Assurance Level (DAL A-E) assignment",
+            "Software planning (PSAC, SDP, SVP, SCMP, SQAP)",
+            "Software development (requirements, design, code, integration)",
+            "Software verification (reviews, analyses, testing)",
+            "Structural coverage analysis (statement, decision, MC/DC for DAL A)",
+            "Configuration management",
+            "Quality assurance",
+            "Certification liaison",
+        ],
+        "required_artifacts": [
+            "psac",
+            "software_development_plan",
+            "software_verification_plan",
+            "software_requirements",
+            "software_design",
+            "source_code",
+            "verification_results",
+            "configuration_index",
+            "software_accomplishment_summary",
+        ],
+    },
+    "ecss_e_st_40c": {
+        "id": "ecss_e_st_40c",
+        "name": "ECSS-E-ST-40C — Space Software Engineering",
+        "region": "international",
+        "category": "space_safety",
+        "reference": "ECSS-E-ST-40C Rev.1 (2009)",
+        "requirements": [
+            "Software criticality category assignment",
+            "Software engineering lifecycle",
+            "Requirements engineering",
+            "Architectural and detailed design",
+            "Implementation and unit testing",
+            "Integration and validation",
+            "Delivery and acceptance",
+            "Maintenance and disposal",
+        ],
+        "required_artifacts": [
+            "software_requirements_doc",
+            "software_design_doc",
+            "software_validation_spec",
+            "software_user_manual",
+            "software_maintenance_plan",
+        ],
+    },
+    "mil_std_882e": {
+        "id": "mil_std_882e",
+        "name": "MIL-STD-882E — System Safety",
+        "region": "us",
+        "category": "defense_safety",
+        "reference": "MIL-STD-882E (2012)",
+        "requirements": [
+            "System safety program plan",
+            "Preliminary hazard analysis",
+            "Subsystem/system hazard analysis",
+            "Operating and support hazard analysis",
+            "Health hazard assessment",
+            "Safety assessment report",
+            "Mishap risk assessment",
+            "Software safety criticality analysis",
+        ],
+        "required_artifacts": [
+            "system_safety_program_plan",
+            "preliminary_hazard_list",
+            "hazard_analysis",
+            "safety_assessment_report",
+            "hazard_tracking_system",
+        ],
+    },
+    "iso_13849": {
+        "id": "iso_13849",
+        "name": "ISO 13849 — Machinery Safety (Control Systems)",
+        "region": "international",
+        "category": "machinery_safety",
+        "reference": "ISO 13849-1:2023",
+        "requirements": [
+            "Performance Level (PL) determination (a-e)",
+            "Category determination (B, 1, 2, 3, 4)",
+            "Safety function identification",
+            "Validation of safety-related control systems",
+            "Diagnostic coverage assessment",
+            "Common cause failure analysis",
+            "Software requirements for safety-related functions",
+        ],
+        "required_artifacts": [
+            "performance_level_determination",
+            "safety_function_spec",
+            "validation_plan",
+            "validation_report",
+        ],
+    },
 }
 
 # Region mapping for auto-detection
@@ -461,10 +633,23 @@ REGION_TO_STANDARDS = {
     "canada": ["canada_hc"],
     "japan": ["japan_pmda"],
     "australia": ["aus_tga"],
-    "international": ["iec_62304", "iso_14971", "iec_82304", "imdrf_samd"],
+    "international": ["iec_62304", "iso_14971", "iec_82304", "imdrf_samd", "iec_61508"],
 }
 
 AI_ML_STANDARDS = ["fda_aiml", "eu_ai_act"]
+
+# Domain-specific standards auto-added based on product keywords
+DOMAIN_SAFETY_STANDARDS = {
+    "railway": ["en_50128", "iec_61508"],
+    "nuclear": ["iec_61508"],
+    "industrial_safety": ["iec_61511", "iec_61508"],
+    "avionics": ["do_178c"],
+    "space": ["ecss_e_st_40c", "do_178c"],
+    "defense": ["mil_std_882e", "do_178c"],
+    "machinery": ["iso_13849", "iec_61508"],
+    "automotive": [],  # ISO 26262 already in international
+    "marine": ["iec_61508"],
+}
 
 
 class RegulatoryComplianceFramework:
@@ -511,6 +696,45 @@ class RegulatoryComplianceFramework:
         # AI/ML-specific standards
         if product.get("uses_ai_ml", False):
             applicable.update(AI_ML_STANDARDS)
+
+        # Domain-specific safety standards (detected from product keywords or explicit domain)
+        product_domain = product.get("domain") or ""
+        product_desc = " ".join(filter(None, [
+            product.get("intended_use"),
+            product.get("product_name"),
+            product.get("description"),
+        ])).lower()
+
+        for domain, standards in DOMAIN_SAFETY_STANDARDS.items():
+            if domain in product_domain or domain in product_desc:
+                applicable.update(standards)
+
+        # Keyword-based domain detection for safety-critical industries
+        keyword_to_standards = {
+            "locomotive": ["en_50128", "iec_61508"],
+            "railway": ["en_50128", "iec_61508"],
+            "train": ["en_50128", "iec_61508"],
+            "signalling": ["en_50128", "iec_61508"],
+            "nuclear": ["iec_61508"],
+            "reactor": ["iec_61508"],
+            "process safety": ["iec_61511", "iec_61508"],
+            "safety instrumented": ["iec_61511", "iec_61508"],
+            "drone": ["do_178c"],
+            "aircraft": ["do_178c"],
+            "satellite": ["ecss_e_st_40c"],
+            "spacecraft": ["ecss_e_st_40c"],
+            "defense": ["mil_std_882e"],
+            "military": ["mil_std_882e"],
+            "weapon": ["mil_std_882e"],
+            "machinery": ["iso_13849"],
+            "crane": ["iso_13849"],
+            "excavator": ["iso_13849"],
+            "elevator": ["iec_61508"],
+            "lift": ["iec_61508"],
+        }
+        for keyword, standards in keyword_to_standards.items():
+            if keyword in product_desc:
+                applicable.update(standards)
 
         return sorted(applicable)
 
