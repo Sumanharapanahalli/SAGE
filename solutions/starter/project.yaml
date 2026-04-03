@@ -28,6 +28,7 @@ active_modules:
   - live-console
   - onboarding
   - integrations
+  - cds-compliance
 
 # Compliance or quality standards this project must satisfy (optional — leave empty if none)
 compliance_standards: []

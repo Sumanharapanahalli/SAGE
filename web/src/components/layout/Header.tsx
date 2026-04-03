@@ -32,6 +32,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/approvals':      'Approvals',
   '/knowledge':         'Knowledge',
   '/product-backlog':   'Product Backlog',
+  '/cds-compliance':    'CDS Compliance',
   '/guide':             'User Guide',
   '/settings/organization': 'Organization',
 }
@@ -63,6 +64,7 @@ const ROUTE_TO_AREA: Record<string, string> = {
   '/integrations':   'Admin',
   '/settings':               'Admin',
   '/guide':                  'Admin',
+  '/cds-compliance':         'Admin',
   '/settings/organization':  'Admin',
 }
 

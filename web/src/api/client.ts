@@ -257,6 +257,45 @@ export const fetchApprovalRoles = () =>
     '/config/approval-roles'
   )
 
+// ---------------------------------------------------------------------------
+// CDS Compliance
+// ---------------------------------------------------------------------------
+
+export const classifyCDSFunction = (data: {
+  function_description: string; input_types: string[]; output_type: string;
+  intended_user: string; urgency: string; data_sources: { name: string; type: string }[];
+}) => post<Record<string, unknown>>('/cds/classify', data)
+
+export const classifyCDSInputs = (input_types: string[]) =>
+  post<Array<{ input_type: string; data_category: string; criterion_1_impact: string }>>('/cds/classify-inputs', { input_types })
+
+export const validateCDSSources = (sources: { name: string; type: string }[]) =>
+  post<Record<string, unknown>>('/cds/validate-sources', { sources })
+
+export const classifyCDSOutput = (output_type: string) =>
+  post<Record<string, unknown>>('/cds/classify-output', { output_type })
+
+export const generateCDSTransparencyReport = (data: {
+  function_description: string; inputs_used: string[];
+  data_sources: { name: string; type: string }[];
+  algorithm_description: string; known_limitations: string[];
+}) => post<Record<string, unknown>>('/cds/transparency-report', data)
+
+export const generateCDSLabeling = (data: {
+  product_name: string; intended_use: string; intended_users: string[];
+  target_population: string; algorithm_summary: string;
+  data_sources: { name: string; type: string }[];
+  validation_summary: string; known_limitations: string[];
+}) => post<Record<string, unknown>>('/cds/labeling', data)
+
+export const generateCDSCompliancePackage = (data: {
+  product_name: string; function_description: string; input_types: string[];
+  output_type: string; intended_user: string; urgency: string;
+  data_sources: { name: string; type: string }[];
+  algorithm_description: string; known_limitations: string[];
+  target_population: string; validation_summary: string;
+}) => post<Record<string, unknown>>('/cds/compliance-package', data)
+
 // Approve a proposal (analysis or action)
 export const approveProposalFull = (trace_id: string, decided_by = 'human', feedback = '') =>
   post<{ status: string; trace_id: string; action_type?: string; result?: unknown }>(
