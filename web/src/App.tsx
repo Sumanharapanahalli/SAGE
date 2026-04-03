@@ -33,6 +33,7 @@ import Activity from './pages/Activity'
 import Guide from './pages/Guide'
 import BuildConsole from './pages/BuildConsole'
 import Organization from './pages/settings/Organization'
+import ProductBacklog from './pages/ProductBacklog'
 import ThemeProvider from './components/theme/ThemeProvider'
 import { AuthProvider } from './context/AuthContext'
 import { UserPrefsProvider } from './context/UserPrefsContext'
@@ -160,6 +161,7 @@ function AppShell() {
               <Route path="/knowledge"      element={<AuditLog />} />
               <Route path="/guide"          element={<Guide />} />
               <Route path="/build"         element={<BuildConsole />} />
+              <Route path="/product-backlog" element={<ProductBacklog />} />
               <Route path="/settings/organization" element={<Organization />} />
             </Routes>
           </main>

@@ -6,7 +6,7 @@ import {
   Terminal, Wand2, Plug, ListOrdered, ShieldCheck, DollarSign,
   GitBranch, Target, Inbox, Network, Building2,
   CheckSquare, Zap, Database, BookOpen, Shield,
-  ChevronDown, ChevronsUpDown, LayoutGrid, type LucideIcon,
+  ChevronDown, ChevronsUpDown, LayoutGrid, Users, type LucideIcon,
 } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { fetchProjects, fetchHealth, switchProject } from '../../api/client'
@@ -38,11 +38,12 @@ const NAV_AREAS: NavArea[] = [
   {
     id: 'work', label: 'Work', icon: CheckSquare, accent: '#ef4444', tooltip: 'View and act on agent proposals, queued tasks, and live activity',
     items: [
-      { to: '/approvals',    icon: Inbox,           label: 'Approvals',    moduleId: 'approvals',    tooltip: 'Agent proposals waiting for your review before execution' },
-      { to: '/queue',        icon: ListOrdered,     label: 'Task Queue',   moduleId: 'queue',        tooltip: 'Tasks currently queued or running across all agents' },
-      { to: '/',             icon: LayoutDashboard, label: 'Dashboard',    moduleId: 'dashboard',    tooltip: 'System health, recent activity, and integration status' },
-      { to: '/build',        icon: Wand2,           label: 'Build',        moduleId: 'build',        tooltip: 'End-to-end product builder: describe → decompose → build → approve' },
-      { to: '/live-console', icon: Terminal,        label: 'Live Console', moduleId: 'live-console', tooltip: 'Real-time backend log stream' },
+      { to: '/approvals',       icon: Inbox,           label: 'Approvals',       moduleId: 'approvals',       tooltip: 'Agent proposals waiting for your review before execution' },
+      { to: '/queue',           icon: ListOrdered,     label: 'Task Queue',      moduleId: 'queue',           tooltip: 'Tasks currently queued or running across all agents' },
+      { to: '/',                icon: LayoutDashboard, label: 'Dashboard',       moduleId: 'dashboard',       tooltip: 'System health, recent activity, and integration status' },
+      { to: '/product-backlog', icon: Users,          label: 'Product Backlog', moduleId: 'product-backlog', tooltip: 'Transform customer inputs into structured product requirements and user stories' },
+      { to: '/build',           icon: Wand2,           label: 'Build',           moduleId: 'build',           tooltip: 'End-to-end product builder: describe → decompose → build → approve' },
+      { to: '/live-console',    icon: Terminal,        label: 'Live Console',    moduleId: 'live-console',    tooltip: 'Real-time backend log stream' },
     ],
   },
   {

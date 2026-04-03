@@ -900,3 +900,66 @@ export interface BrandingPayload {
 export const patchProjectTheme = (payload: BrandingPayload) =>
   patch<{ status: string; solution: string }>('/config/project/theme', payload)
 
+// Product Owner - Requirements Gathering
+export interface ProductOwnerQuestion {
+  question: string
+  topic: string
+  importance: 'high' | 'medium' | 'low'
+  follow_up_needed?: boolean
+}
+
+export interface ProductOwnerPersona {
+  name: string
+  description: string
+  goals: string[]
+  pain_points: string[]
+  technical_comfort: 'low' | 'medium' | 'high'
+}
+
+export interface ProductOwnerUserStory {
+  id: string
+  title: string
+  description: string
+  persona: string
+  acceptance_criteria: string[]
+  priority: 'Must Have' | 'Should Have' | 'Could Have' | 'Won\'t Have'
+  story_points: number
+  business_value: 'high' | 'medium' | 'low'
+  dependencies: string[]
+}
+
+export interface ProductOwnerBacklog {
+  product_name: string
+  vision: string
+  target_audience: string
+  success_metrics: string[]
+  personas: ProductOwnerPersona[]
+  user_stories: ProductOwnerUserStory[]
+  technical_constraints: string[]
+  business_constraints: string[]
+  created_at: string
+  po_notes: string
+}
+
+export interface RequirementsGatheringRequest {
+  customer_input: string
+  follow_up_qa?: Array<{
+    question: string
+    answer: string
+    topic: string
+  }>
+}
+
+export interface RequirementsGatheringResponse {
+  status: 'needs_clarification' | 'complete' | 'error'
+  questions?: ProductOwnerQuestion[]
+  analysis?: any
+  backlog?: ProductOwnerBacklog
+  error?: string
+  customer_input?: string
+  handoff_ready?: boolean
+}
+
+export const gatherRequirements = (req: RequirementsGatheringRequest) =>
+  post<RequirementsGatheringResponse>('/product-owner/requirements', req)
+
