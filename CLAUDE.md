@@ -35,7 +35,7 @@ make test-all           # Framework + all solution tests
 
 ```
 src/core/               LLM gateway, build orchestrator, agent gym, systems engineering
-src/agents/             Universal, Analyst, Developer, Monitor, Planner, Critic
+src/agents/             Universal, Analyst, Developer, Monitor, Planner, Critic, Product Owner
 src/interface/api.py    FastAPI — the only public interface
 solutions/              Solution configurations (project.yaml, prompts.yaml, tasks.yaml)
 web/src/                React dashboard — reads from API only
@@ -171,10 +171,14 @@ make run PROJECT=my_domain
 3. Add nav entry in `web/src/components/layout/Sidebar.tsx`
 4. Add title mapping in `web/src/components/layout/Header.tsx`
 
+**Example**: Product Backlog Management (`ProductBacklog.tsx`) provides 4-tab workflow for requirements gathering with Product Owner agent integration.
+
 ### New Agent Role
 1. Add to `solutions/<name>/prompts.yaml` (role + system prompt)
 2. Add task type to `solutions/<name>/tasks.yaml` if needed
 3. Wire in `src/agents/universal.py` for routing
+
+**Example**: Product Owner agent converts customer inputs to structured product requirements using 5W1H methodology and MoSCoW prioritization.
 
 ---
 
