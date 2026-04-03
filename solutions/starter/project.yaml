@@ -29,6 +29,7 @@ active_modules:
   - onboarding
   - integrations
   - cds-compliance
+  - regulatory
 
 # Compliance or quality standards this project must satisfy (optional — leave empty if none)
 compliance_standards: []

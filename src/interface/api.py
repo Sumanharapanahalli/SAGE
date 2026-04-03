@@ -45,6 +45,7 @@ from src.interface.routes.research import router as _research_router  # noqa: E4
 from src.interface.routes.critic import router as _critic_router  # noqa: E402
 from src.interface.routes.product_owner import router as _product_owner_router  # noqa: E402
 from src.interface.routes.cds_compliance import router as _cds_compliance_router  # noqa: E402
+from src.interface.routes.regulatory_compliance import router as _regulatory_compliance_router  # noqa: E402
 
 # Module-level import so tests can patch src.interface.api.reload_org_loader
 try:
@@ -137,6 +138,7 @@ app.include_router(_research_router)
 app.include_router(_critic_router)
 app.include_router(_product_owner_router)
 app.include_router(_cds_compliance_router)
+app.include_router(_regulatory_compliance_router)
 
 
 # ---------------------------------------------------------------------------

@@ -82,6 +82,7 @@ const NAV_AREAS: NavArea[] = [
       { to: '/access-control', icon: ShieldCheck, label: 'Access Control', moduleId: 'access-control', tooltip: 'Manage API keys and user role assignments' },
       { to: '/integrations',   icon: Plug,        label: 'Integrations',   moduleId: 'integrations',   tooltip: 'Status and configuration for all connected integrations' },
       { to: '/cds-compliance',        icon: ShieldCheck, label: 'CDS Compliance', moduleId: 'cds-compliance', tooltip: 'FDA Clinical Decision Support compliance — 4-criterion assessment per 2026 guidance' },
+      { to: '/regulatory',            icon: Shield,      label: 'Regulatory',     moduleId: 'regulatory',      tooltip: 'Multi-standard regulatory compliance — FDA, EU MDR, AI Act, IEC 62304, ISO 14971 and more' },
       { to: '/settings',              icon: Settings,    label: 'Settings',       moduleId: 'settings',       tooltip: 'Framework-wide settings and display preferences' },
       { to: '/settings/organization', icon: Building2,   label: 'Organization',   moduleId: 'organization',   tooltip: 'Company mission, vision and values' },
     ],

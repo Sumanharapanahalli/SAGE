@@ -296,6 +296,26 @@ export const generateCDSCompliancePackage = (data: {
   target_population: string; validation_summary: string;
 }) => post<Record<string, unknown>>('/cds/compliance-package', data)
 
+// ---------------------------------------------------------------------------
+// Regulatory Compliance (Multi-Standard)
+// ---------------------------------------------------------------------------
+
+export const fetchRegulatoryStandards = () =>
+  get<Array<Record<string, unknown>>>('/regulatory/standards')
+
+export const assessRegulatoryCompliance = (data: {
+  product: Record<string, unknown>; standard_ids?: string[];
+}) => post<Record<string, unknown>>('/regulatory/assess', data)
+
+export const generateRegulatoryRoadmap = (product: Record<string, unknown>) =>
+  post<Record<string, unknown>>('/regulatory/roadmap', product)
+
+export const generateFullRegulatoryReport = (product: Record<string, unknown>) =>
+  post<Record<string, unknown>>('/regulatory/full-report', product)
+
+export const fetchRegulatoryChecklist = (standardId: string) =>
+  get<Record<string, unknown>>(`/regulatory/checklist/${standardId}`)
+
 // Approve a proposal (analysis or action)
 export const approveProposalFull = (trace_id: string, decided_by = 'human', feedback = '') =>
   post<{ status: string; trace_id: string; action_type?: string; result?: unknown }>(
