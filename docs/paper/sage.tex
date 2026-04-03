@@ -55,7 +55,7 @@
 }
 
 \author{
-    SAGE Contributors \\
+    Suman Shetty H \\
     \texttt{github.com/Sumanharapanahalli/SAGE} \\
     \texttt{MIT License}
 }
@@ -70,9 +70,9 @@
 \begin{abstract}
 We present SAGE (Smart Agentic-Guided Empowerment), an open-source, modular multi-agent orchestration framework designed for regulated industries where auditability, human oversight, and compliance are non-negotiable. Unlike existing frameworks (LangGraph, CrewAI, AutoGen) that treat human approval as optional per-node configuration, SAGE enforces a two-tier governance architecture: framework control operations execute immediately, while all agent proposals require mandatory human-in-the-loop (HITL) approval with immutable audit trails and trace-level accountability.
 
-SAGE introduces several novel contributions: (1)~a YAML-first declarative agent manifest system enabling domain-agnostic configuration without code changes; (2)~a Build Orchestrator implementing eight agentic patterns including EMA-based adaptive routing and N-provider multi-critic review; (3)~an Agent Gym training engine with Glicko-2 skill ratings and spaced repetition; (4)~eleven domain-specific execution runners spanning software, firmware, PCB design, ML, and documentation; (5)~OpenTelemetry distributed tracing and CloudEvents structured messaging for observability; and (6)~zero mandatory API keys enabling fully air-gapped deployment.
+SAGE introduces several novel contributions: (1)~a YAML-first declarative agent manifest system enabling domain-agnostic configuration without code changes; (2)~a Build Orchestrator implementing eight agentic patterns including EMA-based adaptive routing and N-provider multi-critic review; (3)~an Agent Gym training engine with Glicko-2 skill ratings and spaced repetition; (4)~eleven domain-specific execution runners spanning software, firmware, PCB design, ML, and documentation; (5)~a Product Owner agent converting basic customer inputs into structured requirements following proper product management principles; (6)~a comprehensive Systems Engineering framework implementing IEEE 15288 standards with regulatory compliance (IEC 62304, 21 CFR Part 11); (7)~OpenTelemetry distributed tracing and CloudEvents structured messaging for observability; and (8)~zero mandatory API keys enabling fully air-gapped deployment.
 
-The system comprises ${\sim}40{,}000$ lines of production Python, 176 REST API endpoints, 26 React UI pages, and 16 modular skills. Empirical evaluation across 496 Agent Gym training sessions demonstrates measurable skill improvement (average Glicko-2 rating: 1,484), while a 100-solution stress test reveals current scaling limitations (2\% end-to-end success rate) with documented root cause analysis. We report both successes and failures transparently.
+The system comprises ${\sim}42{,}500$ lines of production Python, 190+ REST API endpoints, 26 React UI pages, and 16 modular skills, including comprehensive regulatory compliance capabilities. Empirical evaluation across 496 Agent Gym training sessions demonstrates measurable skill improvement (average Glicko-2 rating: 1,484), while a 100-solution stress test reveals current scaling limitations (2\% end-to-end success rate) with documented root cause analysis. We report both successes and failures transparently.
 
 \medskip
 \noindent\textbf{Keywords:} multi-agent systems, human-in-the-loop, regulated AI, lean development, agent training, governance
@@ -159,47 +159,42 @@ Figure~\ref{fig:architecture} illustrates SAGE's layered architecture.
 \begin{figure}[h]
 \centering
 \begin{tikzpicture}[
-    node distance=0.8cm,
-    box/.style={rectangle, draw, rounded corners, minimum width=3cm, minimum height=0.7cm, fill=#1!15, font=\small},
-    box/.default=blue,
-    arrow/.style={->, thick, >=stealth},
-    darrow/.style={->, thick, >=stealth, dashed}
+    node distance=1.1cm,
+    layer/.style={rectangle, draw=gray!80, rounded corners=5pt, minimum width=5.5cm, minimum height=0.9cm, font=\small\bfseries, fill=#1!12, text=#1!80!black},
+    layer/.default=blue,
+    annot/.style={font=\tiny\ttfamily, text=gray!60, anchor=west},
+    arrow/.style={->, thick, >=stealth, color=gray!60},
+    darrow/.style={->, thick, >=stealth, dashed, color=teal!70}
 ]
-    % Solution Layer
-    \node[box=orange] (sol) {Solutions (YAML)};
-    \node[right=0.3cm of sol, font=\scriptsize\ttfamily, text=gray] {project.yaml, prompts.yaml, tasks.yaml};
+    % Layers — centered stack
+    \node[layer=orange]                   (sol)     {Solutions (YAML)};
+    \node[layer=blue,    below=of sol]    (core)    {Core Engine};
+    \node[layer=green,   below=of core]   (agents)  {Agent Layer};
+    \node[layer=purple,  below=of agents] (runners) {Domain Runners (11)};
+    \node[layer=red,     below=of runners](api)     {FastAPI (190+ endpoints)};
+    \node[layer=yellow,  below=of api]    (ui)      {React Dashboard (26 pages)};
 
-    % Core Layer
-    \node[box=blue, below=of sol] (core) {Core Engine};
-    \node[right=0.3cm of core, font=\scriptsize\ttfamily, text=gray] {LLM Gateway, Queue, Skills};
+    % Right-side annotations
+    \node[annot, right=0.3cm of sol.east]     {project / prompts / tasks .yaml};
+    \node[annot, right=0.3cm of core.east]    {LLM Gateway, Queue, Skills, SysEng};
+    \node[annot, right=0.3cm of agents.east]  {Analyst, Developer, Planner, Critic, PO};
+    \node[annot, right=0.3cm of runners.east] {OpenSWE, OpenFW, OpenEDA \ldots};
 
-    % Agent Layer
-    \node[box=green, below=of core] (agents) {Agent Layer};
-    \node[right=0.3cm of agents, font=\scriptsize\ttfamily, text=gray] {Analyst, Developer, Planner, Critic};
+    % Memory — left side
+    \node[rectangle, draw=teal!70, rounded corners=5pt, minimum width=2cm, minimum height=1.4cm,
+          fill=teal!8, font=\small\bfseries, text=teal!80!black, align=center,
+          left=1.8cm of agents] (memory) {Memory\\[-2pt]{\scriptsize Audit + Vector}};
 
-    % Runner Layer
-    \node[box=purple, below=of agents] (runners) {Domain Runners};
-    \node[right=0.3cm of runners, font=\scriptsize\ttfamily, text=gray] {OpenSWE, OpenFW, OpenEDA, ...};
-
-    % API Layer
-    \node[box=red, below=of runners] (api) {FastAPI (176 endpoints)};
-
-    % Memory
-    \node[box=teal, left=2.5cm of agents] (memory) {\shortstack{Memory\\(Audit + Vector)}};
-
-    % UI
-    \node[box=yellow, below=of api] (ui) {React Dashboard (26 pages)};
-
-    % Arrows — dependency hierarchy (top loads into bottom)
-    \draw[arrow] (sol) -- (core);
-    \draw[arrow] (core) -- (agents);
-    \draw[arrow] (agents) -- (runners);
+    % Downward arrows
+    \draw[arrow] (sol)     -- (core);
+    \draw[arrow] (core)    -- (agents);
+    \draw[arrow] (agents)  -- (runners);
     \draw[arrow] (runners) -- (api);
-    \draw[arrow] (api) -- (ui);
+    \draw[arrow] (api)     -- (ui);
 
-    % Memory feedback loop (dashed)
-    \draw[arrow] (agents) -- (memory);
-    \draw[darrow] (memory) -- (core) node[midway, left, font=\scriptsize] {feedback};
+    % Memory feedback loop
+    \draw[arrow] (agents.west) -- (memory.east);
+    \draw[darrow] (memory.north) |- node[above, pos=0.7, font=\scriptsize\itshape, color=teal!70] {compounding feedback} (core.west);
 
 \end{tikzpicture}
 \caption{SAGE dependency hierarchy. Solutions plug in via YAML only. The API exposes agents and runners to the UI. The dashed arrow represents the compounding feedback loop: human decisions stored in memory enrich future agent context.}
@@ -266,46 +261,74 @@ Figure~\ref{fig:governance} illustrates the two-tier split.
 \begin{figure}[h]
 \centering
 \begin{tikzpicture}[
-    box/.style={rectangle, draw, rounded corners=3pt, minimum width=2.8cm, minimum height=0.7cm, font=\small, fill=#1!15},
+    box/.style={rectangle, draw=gray!70, rounded corners=4pt, minimum width=3cm, minimum height=0.8cm, font=\small, fill=#1!12, text=#1!80!black},
     box/.default=blue,
-    arr/.style={->, thick, >=stealth, color=gray!60},
-    node distance=0.6cm and 1.2cm
+    arr/.style={->, thick, >=stealth, color=gray!50},
+    node distance=1cm and 2cm
 ]
     % Input
-    \node[box=gray] (action) {User / Agent Action};
+    \node[box=gray, minimum width=3.5cm] (action) {\textbf{User / Agent Action}};
 
     % Decision diamond
-    \node[diamond, draw, below=0.8cm of action, aspect=2.5, fill=yellow!10, font=\small, inner sep=1pt] (check) {Agent proposal?};
+    \node[diamond, draw=gray!70, below=1.2cm of action, aspect=2.8, fill=yellow!8, font=\small, inner sep=2pt] (check) {Agent proposal?};
 
     % Two branches
-    \node[box=green, below left=1cm and 1.5cm of check] (immediate) {\shortstack{Immediate\\Execution}};
-    \node[box=red, below right=1cm and 1.5cm of check] (proposal) {\shortstack{Proposal Store\\(pending)}};
+    \node[box=green!60!black, below left=1.4cm and 2cm of check] (immediate) {\textbf{Immediate Exec}};
+    \node[box=red, below right=1.4cm and 2cm of check] (proposal) {\textbf{Proposal Store}};
 
-    % Downstream
-    \node[box=green, below=0.5cm of immediate, font=\scriptsize] (imm_ex) {\shortstack{config\_switch\\llm\_switch\\module\_toggle}};
-    \node[box=orange, below=0.5cm of proposal] (hitl) {Human Review};
-    \node[box=blue, below left=0.7cm and 0cm of hitl] (approve) {Execute};
-    \node[box=violet, below right=0.7cm and 0cm of hitl] (reject) {Reject + Learn};
+    % Downstream — framework ops
+    \node[below=0.3cm of immediate, font=\scriptsize\ttfamily, text=gray, align=center] (imm_list) {config\_switch\\llm\_switch\\module\_toggle};
+
+    % Downstream — HITL path
+    \node[box=orange, below=1.2cm of proposal] (hitl) {\textbf{Human Review}};
+    \node[box=blue, below left=1.2cm and 0.6cm of hitl] (approve) {Execute};
+    \node[box=violet, below right=1.2cm and 0.6cm of hitl] (reject) {Reject + Learn};
 
     % Arrows
     \draw[arr] (action) -- (check);
-    \draw[arr] (check) -| node[above left, font=\scriptsize] {No} (immediate);
-    \draw[arr] (check) -| node[above right, font=\scriptsize] {Yes} (proposal);
-    \draw[arr] (immediate) -- (imm_ex);
+    \draw[arr] (check) -| node[above, pos=0.25, font=\scriptsize] {No (framework control)} (immediate);
+    \draw[arr] (check) -| node[above, pos=0.25, font=\scriptsize] {Yes (agent action)} (proposal);
     \draw[arr] (proposal) -- (hitl);
     \draw[arr] (hitl) -| (approve);
     \draw[arr] (hitl) -| (reject);
 
-    % Audit
-    \node[box=teal, below=1.5cm of hitl, minimum width=5cm] (audit) {Immutable Audit Log (per-solution .sage/audit\_log.db)};
-    \draw[arr, dashed, color=teal] (approve.south) |- (audit);
-    \draw[arr, dashed, color=teal] (reject.south) |- (audit);
-    \draw[arr, dashed, color=teal] (imm_ex.south) |- (audit);
+    % Audit log — full width at bottom
+    \node[box=teal, below=4.8cm of check, minimum width=8cm, minimum height=0.9cm]
+        (audit) {\textbf{Immutable Audit Log} {\scriptsize (.sage/audit\_log.db)}};
+    \draw[arr, dashed, color=teal!60] (approve.south) |- (audit);
+    \draw[arr, dashed, color=teal!60] (reject.south) |- (audit);
+    \draw[arr, dashed, color=teal!60] (immediate.south) |- (audit);
 
 \end{tikzpicture}
 \caption{Two-tier governance flow. Framework control operations execute immediately; agent proposals are held for human review. Both paths write to the immutable audit log.}
 \label{fig:governance}
 \end{figure}
+
+\subsection{Product Owner Agent}
+\label{sec:product-owner}
+
+The Product Owner agent (\texttt{src/agents/product\_owner.py}) addresses the requirements engineering gap where customers provide vague descriptions ("I want a fitness app") and expect developers to infer complete product specifications. Instead of requiring customers to write perfect product requirements documents, the agent conducts structured interviews following proper product management principles.
+
+The agent implements a three-phase workflow: (1)~\textbf{Analysis} --- evaluates customer input completeness across seven dimensions (clarity, user focus, value proposition, scope, success metrics, technical constraints, business context); (2)~\textbf{Clarification} --- generates 3-5 smart questions using the 5W1H method (Who, What, When, Where, Why, How) to fill knowledge gaps; and (3)~\textbf{Backlog Creation} --- synthesizes gathered information into structured product backlogs with user personas, INVEST-compliant user stories, MoSCoW prioritization, and acceptance criteria.
+
+The output format follows industry standards: user stories in "As a [persona], I want [capability] so that [benefit]" format, acceptance criteria with testable conditions, and story point estimates for development planning. This eliminates the common failure mode where development teams guess at product intent from incomplete specifications.
+
+\subsection{Systems Engineering Framework}
+\label{sec:systems-engineering}
+
+The Systems Engineering framework (\texttt{src/core/systems\_engineering.py}) implements IEEE 15288 standards with full regulatory compliance for industries requiring formal systems engineering processes (medical devices, automotive, aerospace). The framework provides five core capabilities:
+
+\textbf{Requirements Traceability:} Four bidirectional matrices ensure complete coverage: User Needs $\rightarrow$ System Requirements $\rightarrow$ Design Architecture $\rightarrow$ Verification Activities $\rightarrow$ Validation Evidence. Each matrix tracks completeness percentages and identifies traceability gaps.
+
+\textbf{V-Model Implementation:} Structured decomposition following the systems engineering V-model with verification at each level. Requirements are classified by type (functional, performance, interface, safety, security, usability, reliability, maintainability, compliance) and allocated to appropriate subsystems.
+
+\textbf{Change Control:} Formal change management per IEC 62304 §6.1 with impact assessment, approval workflows, and complete audit trails. Changes are assessed for regression risk, testing impact, and documentation requirements before execution.
+
+\textbf{Electronic Signatures:} Full 21 CFR Part 11 compliance for regulatory submissions including signature workflows, integrity verification, signer identity validation, and complete audit trails for all signature activities.
+
+\textbf{Regulatory Document Generation:} Automated creation of required regulatory deliverables including Software Requirements Specification (SRS), System Architecture Document (SAD), Verification \& Validation Plan, Risk Management File per ISO 14971, and SOUP (Software of Unknown Provenance) Inventory per IEC 62304 §7.1.
+
+The framework provides automated compliance scoring with readiness levels (Audit Ready: 95\%+ traceability, Submission Ready: 80\%+, Development Ready: 60\%+) and gap analysis for regulatory submissions.
 
 \subsection{Proposal Lifecycle}
 
@@ -335,32 +358,28 @@ Phase 5 (Compound) feeds back into Phase 2 (Contextualize) for subsequent tasks,
 \begin{figure}[h]
 \centering
 \begin{tikzpicture}[
-    phase/.style={rectangle, draw, rounded corners=4pt, minimum width=2.2cm, minimum height=0.8cm, font=\small\bfseries, fill=#1!20, text=#1!80!black},
+    phase/.style={rectangle, draw=gray!70, rounded corners=6pt, minimum width=2.4cm, minimum height=1.1cm, font=\small\bfseries, fill=#1!15, text=#1!80!black, align=center},
     phase/.default=blue,
-    arr/.style={->, thick, >=stealth, color=gray!70},
-    feedback/.style={->, thick, >=stealth, dashed, color=teal!70},
-    node distance=0.6cm and 1.0cm
+    arr/.style={->, very thick, >=stealth, color=gray!50},
+    feedback/.style={->, very thick, >=stealth, dashed, color=teal!60},
+    node distance=0.8cm
 ]
-    \node[phase=orange]  (surface)      {1. Surface};
-    \node[phase=blue, right=of surface] (context)      {2. Contextualize};
-    \node[phase=violet, right=of context] (propose)    {3. Propose};
-    \node[phase=red, right=of propose]   (decide)      {4. Decide};
-    \node[phase=teal, right=of decide]   (compound)    {5. Compound};
+    % Phases in a row with good spacing
+    \node[phase=orange]                     (surface)  {1. Surface\\[-2pt]{\scriptsize webhook/log}};
+    \node[phase=blue,   right=of surface]   (context)  {2. Contextualize\\[-2pt]{\scriptsize vector search}};
+    \node[phase=violet, right=of context]   (propose)  {3. Propose\\[-2pt]{\scriptsize LLM generate}};
+    \node[phase=red,    right=of propose]   (decide)   {4. Decide\\[-2pt]{\scriptsize human HITL}};
+    \node[phase=teal,   right=of decide]    (compound) {5. Compound\\[-2pt]{\scriptsize audit + learn}};
 
-    \draw[arr] (surface) -- (context);
-    \draw[arr] (context) -- (propose);
-    \draw[arr] (propose) -- (decide);
-    \draw[arr] (decide)  -- (compound);
+    % Forward arrows
+    \draw[arr] (surface)  -- (context);
+    \draw[arr] (context)  -- (propose);
+    \draw[arr] (propose)  -- (decide);
+    \draw[arr] (decide)   -- (compound);
 
-    % Feedback loop: Compound → Contextualize
-    \draw[feedback] (compound.south) -- ++(0,-0.6) -| node[below, pos=0.25, font=\scriptsize\itshape, color=teal!70] {vector memory enrichment} (context.south);
+    % Feedback loop: Compound → Contextualize (below, with generous vertical space)
+    \draw[feedback] (compound.south) -- ++(0,-0.9) -| node[below, pos=0.25, font=\scriptsize\itshape, color=teal!60] {vector memory enrichment} (context.south);
 
-    % Annotations
-    \node[below=0.15cm of surface, font=\scriptsize, text=gray] {webhook/log};
-    \node[below=0.15cm of context, font=\scriptsize, text=gray] {vector search};
-    \node[below=0.15cm of propose, font=\scriptsize, text=gray] {LLM generate};
-    \node[below=0.15cm of decide, font=\scriptsize, text=gray] {human HITL};
-    \node[below=0.15cm of compound, font=\scriptsize, text=gray] {audit + learn};
 \end{tikzpicture}
 \caption{The SAGE Lean Loop. Every task follows five phases. The dashed arrow shows the compounding feedback path: human decisions in Phase~4 are indexed in vector memory, enriching the context retrieved in Phase~2 for subsequent tasks. No model retraining is required.}
 \label{fig:lean-loop}
@@ -401,48 +420,52 @@ The 0$\rightarrow$1 greenfield build pipeline proceeds through the states shown 
 \begin{figure}[h]
 \centering
 \begin{tikzpicture}[
-    state/.style={rectangle, draw, rounded corners=3pt, minimum width=1.5cm, minimum height=0.6cm, font=\scriptsize\bfseries, fill=#1!15},
+    state/.style={rectangle, draw=gray!70, rounded corners=4pt, minimum width=2cm, minimum height=0.75cm, font=\scriptsize\bfseries, fill=#1!12, text=#1!80!black},
     state/.default=blue,
-    hitl/.style={state=red, double, double distance=1pt},
-    arr/.style={->, thick, >=stealth, color=gray!60},
-    critic/.style={->, thick, >=stealth, dashed, color=violet!60},
-    node distance=0.3cm and 0.35cm
+    hitl/.style={rectangle, draw=red!60, rounded corners=4pt, double, double distance=1.5pt, minimum width=2cm, minimum height=0.75cm, font=\scriptsize\bfseries, fill=red!10, text=red!80!black},
+    arr/.style={->, thick, >=stealth, color=gray!50},
+    critic/.style={->, thick, >=stealth, dashed, color=violet!50},
+    node distance=0.5cm and 0.6cm
 ]
-    % Row 1
-    \node[state=orange] (desc)     {Description};
-    \node[state=orange, right=of desc] (domain)   {Domain};
-    \node[state=blue, right=of domain] (workforce) {Workforce};
-    \node[state=blue, right=of workforce] (decomp) {Decompose};
-    \node[state=violet, right=of decomp] (critic1)  {Critic};
+    % Row 1 — planning phase
+    \node[state=orange]                      (desc)      {Description};
+    \node[state=orange,  right=of desc]      (domain)    {Domain Detect};
+    \node[state=blue,    right=of domain]    (workforce) {Workforce};
+    \node[state=blue,    right=of workforce] (decomp)    {Decompose};
+    \node[state=violet,  right=of decomp]    (critic1)   {Plan Critic};
 
-    % Row 2
-    \node[hitl, below=0.8cm of critic1] (hitl1)    {HITL Gate};
-    \node[state=green, left=of hitl1] (waves)     {Wave Exec};
-    \node[state=violet, left=of waves] (critic2)   {Code Review};
-    \node[state=blue, left=of critic2] (integrate) {Integration};
-    \node[hitl, left=of integrate] (hitl2)         {HITL Gate};
+    % Row 2 — execution phase (below, right-to-left)
+    \node[hitl, below=1.2cm of critic1]      (hitl1)     {HITL Gate};
+    \node[state=green,   left=of hitl1]      (waves)     {Wave Exec};
+    \node[state=violet,  left=of waves]      (critic2)   {Code Review};
+    \node[state=blue,    left=of critic2]    (integrate) {Integration};
+    \node[hitl,          left=of integrate]  (hitl2)     {HITL Gate};
+
+    % Final
+    \node[state=green!60!black, left=of hitl2] (done) {Complete};
 
     % Row 1 arrows
-    \draw[arr] (desc) -- node[above, font=\tiny, color=gray] {detect} (domain);
-    \draw[arr] (domain) -- node[above, font=\tiny, color=gray] {assemble} (workforce);
-    \draw[arr] (workforce) -- node[above, font=\tiny, color=gray] {LLM} (decomp);
-    \draw[arr] (decomp) -- node[above, font=\tiny, color=gray] {score} (critic1);
+    \draw[arr] (desc)      -- (domain);
+    \draw[arr] (domain)    -- (workforce);
+    \draw[arr] (workforce) -- (decomp);
+    \draw[arr] (decomp)    -- (critic1);
 
     % Transition row 1 → row 2
     \draw[arr] (critic1.south) -- (hitl1.north);
 
     % Row 2 arrows (right to left)
-    \draw[arr] (hitl1) -- node[below, font=\tiny, color=gray] {parallel} (waves);
-    \draw[arr] (waves) -- node[below, font=\tiny, color=gray] {per-task} (critic2);
-    \draw[arr] (critic2) -- node[below, font=\tiny, color=gray] {merge} (integrate);
+    \draw[arr] (hitl1)     -- (waves);
+    \draw[arr] (waves)     -- (critic2);
+    \draw[arr] (critic2)   -- (integrate);
     \draw[arr] (integrate) -- (hitl2);
+    \draw[arr] (hitl2)     -- (done);
 
-    % Final output
-    \node[state=green, left=of hitl2] (done) {Complete};
-    \draw[arr] (hitl2) -- (done);
+    % Iterative refinement loop (above row 1)
+    \draw[critic] (critic1.north) -- ++(0,0.5) -| node[above, pos=0.5, font=\tiny\itshape, color=violet!60] {score $<$ threshold $\rightarrow$ retry} (decomp.north);
 
-    % Iterative refinement loop
-    \draw[critic] (critic1.north) -- ++(0,0.35) -| node[above, pos=0.5, font=\tiny\itshape, color=violet] {score $<$ threshold: retry} (decomp.north);
+    % Phase labels
+    \node[above=0.6cm of desc, font=\scriptsize\itshape, color=gray] {Planning Phase};
+    \node[below=0.3cm of waves, font=\scriptsize\itshape, color=gray] {Execution Phase};
 
 \end{tikzpicture}
 \caption{Build Orchestrator pipeline. Double-bordered nodes are HITL approval gates. The dashed arrow shows iterative refinement when critic score falls below threshold. Wave execution runs independent tasks in parallel.}
@@ -486,35 +509,32 @@ Each training session executes a five-phase loop (Figure~\ref{fig:gym-loop}):
 \begin{figure}[h]
 \centering
 \begin{tikzpicture}[
-    phase/.style={circle, draw, minimum size=1.3cm, font=\scriptsize\bfseries, fill=#1!15, text=#1!80!black, align=center},
+    phase/.style={rectangle, draw=gray!70, rounded corners=6pt, minimum width=2.2cm, minimum height=1.4cm, font=\small\bfseries, fill=#1!12, text=#1!80!black, align=center},
     phase/.default=blue,
-    arr/.style={->, thick, >=stealth, color=gray!70},
-    feedback/.style={->, thick, >=stealth, dashed, color=teal!60},
-    node distance=1.5cm
+    arr/.style={->, very thick, >=stealth, color=gray!50},
+    feedback/.style={->, very thick, >=stealth, dashed, color=teal!60},
+    node distance=0.7cm
 ]
-    \node[phase=orange]  (play)     {1\\PLAY};
-    \node[phase=blue, right=of play]   (grade)    {2\\GRADE};
-    \node[phase=violet, right=of grade] (critique) {3\\CRITIQUE};
-    \node[phase=red, right=of critique]  (reflect)  {4\\REFLECT};
-    \node[phase=teal, right=of reflect]  (compound) {5\\COMPOUND};
+    % Top row: 3 phases
+    \node[phase=orange]                   (play)     {1. PLAY\\[-2pt]{\tiny agent attempts}\\[-2pt]{\tiny exercise}};
+    \node[phase=blue,   right=of play]    (grade)    {2. GRADE\\[-2pt]{\tiny experimental}\\[-2pt]{\tiny verification}};
+    \node[phase=violet, right=of grade]   (critique) {3. CRITIQUE\\[-2pt]{\tiny N critics score}\\[-2pt]{\tiny independently}};
 
-    \draw[arr] (play) -- (grade);
-    \draw[arr] (grade) -- (critique);
-    \draw[arr] (critique) -- (reflect);
-    \draw[arr] (reflect) -- (compound);
+    % Bottom row: 2 phases (centered under the gap)
+    \node[phase=red,  below right=1.2cm and -0.3cm of play]     (reflect)  {4. REFLECT\\[-2pt]{\tiny agent reviews}\\[-2pt]{\tiny vs.\ feedback}};
+    \node[phase=teal, right=of reflect]   (compound) {5. COMPOUND\\[-2pt]{\tiny learnings stored}\\[-2pt]{\tiny + Glicko-2}};
+
+    % Forward arrows
+    \draw[arr] (play)     -- (grade);
+    \draw[arr] (grade)    -- (critique);
+    \draw[arr] (critique.south) |- ([yshift=0.3cm]reflect.north) -- (reflect.north);
+    \draw[arr] (reflect)  -- (compound);
 
     % Feedback loop: Compound → Play
-    \draw[feedback] (compound.south) -- ++(0,-0.7) -| node[below, pos=0.25, font=\scriptsize\itshape, color=teal!60] {vector memory $\rightarrow$ richer context on next attempt} (play.south);
-
-    % Annotations below
-    \node[below=0.05cm of play, font=\tiny, text=gray, align=center] {agent attempts\\ exercise};
-    \node[below=0.05cm of grade, font=\tiny, text=gray, align=center] {runner grades\\ (domain-specific)};
-    \node[below=0.05cm of critique, font=\tiny, text=gray, align=center] {N critics score\\ independently};
-    \node[below=0.05cm of reflect, font=\tiny, text=gray, align=center] {agent reviews\\ vs.\ feedback};
-    \node[below=0.05cm of compound, font=\tiny, text=gray, align=center] {learnings stored\\ + Glicko-2};
+    \draw[feedback] (compound.west) -- ++(0,0) -| node[left, pos=0.7, font=\scriptsize\itshape, color=teal!60, align=right] {vector memory\\enrichment} ([xshift=-0.8cm]play.south) -- (play.south);
 
 \end{tikzpicture}
-\caption{Agent Gym training cycle. Phase~5 stores reflections in vector memory, which enriches Phase~1 context in subsequent attempts. The Glicko-2 rating and spaced repetition schedule are updated at the end of each cycle.}
+\caption{Agent Gym training cycle. Phase~2 now includes experimental verification (real compilation, tests, simulation). Phase~5 stores reflections in vector memory, which enriches Phase~1 context in subsequent attempts. The Glicko-2 rating and spaced repetition schedule are updated at the end of each cycle.}
 \label{fig:gym-loop}
 \end{figure}
 
@@ -569,7 +589,80 @@ Exercise selection follows a three-tier priority system:
 
 \subsection{Exercise Catalog}
 
-The catalog contains 598 seed exercises across 11 domains (OpenSWE, OpenFW, OpenEDA, OpenSim, OpenML, OpenDoc, OpenDesign, OpenStrategy, OpenBrowser, OpenTerminal, AutoResearch), expandable to 50,000+ via LLM-generated variants along 10 axes per domain (platform, scale, constraint, compliance, etc.). The variant generation pipeline exists but has not been validated at scale beyond initial prototyping.
+The catalog contains 661 seed exercises across 11 domains (OpenSWE, OpenFW, OpenEDA, OpenSim, OpenML, OpenDoc, OpenDesign, OpenStrategy, OpenBrowser, OpenTerminal, AutoResearch), expandable to 50,000+ via LLM-generated variants along 10 axes per domain (platform, scale, constraint, compliance, etc.). The variant generation pipeline exists but has not been validated at scale beyond initial prototyping.
+
+\subsection{Gym as Research Lab}
+\label{sec:gym-lab}
+
+A critical limitation of LLM-as-judge grading is that one language model evaluating another's text output provides no ground truth about whether the generated artifact \emph{actually works}. Code that ``looks correct'' to a critic may fail to compile. A circuit design that reads well may fail DRC checks. To address this, we introduce \textbf{experimental verification}: the gym executes generated artifacts in real toolchains and uses the execution results as the primary grading signal.
+
+\subsubsection{Three-Tier Grading}
+
+Grading combines three independent signals:
+
+\begin{enumerate}[noitemsep]
+    \item \textbf{Experimental execution (40\%)} --- the generated code is extracted, written to disk, and executed through domain-specific toolchains. Compilation success, test pass rates, and simulation outputs produce a deterministic score.
+    \item \textbf{LLM critic review (30\%)} --- N independent LLM providers score the output semantically, now with experimental results included as context (e.g., ``pytest failed: 3/7 tests passing, AssertionError on line 42'').
+    \item \textbf{Structural analysis (30\%)} --- fast pattern-based checks for code structure, error handling, and documentation.
+\end{enumerate}
+
+Each domain runner defines experimental verification commands specific to its toolchain:
+
+\begin{table}[h]
+\centering
+\small
+\caption{Per-runner experimental verification commands.}
+\label{tab:exp-verify}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Runner & Verification Commands & Measures \\
+\midrule
+OpenSWE    & \texttt{py\_compile}, \texttt{pytest}, AST import & Syntax, test pass rate \\
+OpenFW     & \texttt{gcc}, \texttt{arm-none-eabi-gcc}, \texttt{cppcheck} & Compilation, static analysis \\
+OpenML     & \texttt{py\_compile}, training execution, \texttt{pytest} & Syntax, convergence, metrics \\
+OpenEDA    & KiCad CLI netlist export, DRC & Schematic validity, rule violations \\
+OpenDoc    & Markdown structure, \LaTeX{} structure & Heading count, section completeness \\
+OpenDesign & SVG/XML parse, HTML parse, JSON validate & Artifact well-formedness \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Critic-Refined Acceptance Criteria}
+
+Static seed exercise criteria are necessary for bootstrapping but insufficient for sustained improvement. After two or more attempts at an exercise, the system invokes an LLM to \emph{refine acceptance criteria} based on accumulated experimental evidence. Criteria that are always trivially met are removed; criteria that experiments reveal as important but missing are added. Refined criteria are persisted in SQLite and used for subsequent sessions, creating a feedback loop where the definition of success evolves alongside agent capability.
+
+\subsubsection{Human Expert Critic}
+
+In addition to LLM critics, the system supports optional \textbf{human expert review}. Domain experts (mechanical engineers, firmware specialists, regulatory consultants) can review the same artifacts and experimental results that LLM critics see. Human reviews are queued asynchronously and, when submitted, are aggregated alongside LLM scores with $2\times$ weight. This reflects the higher reliability of expert judgment for domain-specific quality assessment, particularly in regulated industries where LLM evaluation alone is insufficient.
+
+Furthermore, all LLM critic system prompts are exposed as editable configuration. Founders can view and modify the ``soul'' of each critic --- the instructions that guide plan review, code review, and integration review --- tuning the critic's priorities to match their domain (e.g., emphasizing MISRA-C compliance for automotive firmware, or HIPAA requirements for healthcare software).
+
+\subsubsection{Updated Training Results}
+
+As of the current evaluation, the gym has completed 618 training sessions across 29 unique agent roles, with 661 seed exercises spanning 8 primary domains. Table~\ref{tab:gym-updated} summarizes the updated results.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Updated Agent Gym training statistics (618 sessions).}
+\label{tab:gym-updated}
+\begin{tabular}{@{}lr@{}}
+\toprule
+Metric & Value \\
+\midrule
+Total training sessions      & 618 \\
+Completed successfully       & 551 (89.2\%) \\
+Failed                       & 67 (10.8\%) \\
+Average score                & 44.8 / 100 \\
+Average Glicko-2 rating      & 1,492 \\
+Unique agent roles trained   & 29 \\
+Unique skill--role combinations & 33 \\
+Top rating (developer)       & 1,691.4 ($\pm$342.4) \\
+Exercises in catalog         & 661 seeds \\
+Domain build pipeline        & 13 domains in progress \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 % ============================================================================
 \section{Domain-Aware Runner Architecture}
@@ -596,49 +689,54 @@ class BaseRunner(ABC):
 \begin{figure}[h]
 \centering
 \begin{tikzpicture}[
-    base/.style={rectangle, draw, rounded corners=4pt, minimum width=4cm, minimum height=0.8cm, font=\small\bfseries, fill=blue!15},
-    runner/.style={rectangle, draw, rounded corners=2pt, minimum width=1.6cm, minimum height=0.5cm, font=\tiny\bfseries, fill=#1!12},
+    base/.style={rectangle, draw=blue!50, rounded corners=5pt, minimum width=6cm, minimum height=0.9cm, font=\small\bfseries, fill=blue!10, text=blue!80!black},
+    grp/.style={rectangle, draw=gray!40, rounded corners=4pt, inner sep=5pt, fill=#1!4},
+    grp/.default=green,
+    runner/.style={rectangle, draw=gray!60, rounded corners=3pt, minimum width=1.5cm, minimum height=0.55cm, font=\tiny\bfseries, fill=#1!12, text=#1!80!black},
     runner/.default=green,
-    arr/.style={->, thick, >=stealth, color=gray!50},
-    node distance=0.25cm
+    arr/.style={->, thick, >=stealth, color=gray!40},
+    node distance=0.2cm
 ]
-    % BaseRunner at top
-    \node[base] (base) {BaseRunner (ABC)};
-    \node[below=0.1cm of base, font=\tiny\ttfamily, text=gray] (methods) {execute() · verify() · get\_exercises() · grade\_exercise()};
+    % Orchestrator at top
+    \node[rectangle, draw=orange!50, rounded corners=5pt, fill=orange!10, font=\small\bfseries, text=orange!80!black, minimum width=4cm, minimum height=0.8cm] (orch) {Build Orchestrator};
 
-    % Orchestrator above
-    \node[rectangle, draw, rounded corners=3pt, above=0.6cm of base, fill=orange!15, font=\small] (orch) {Build Orchestrator};
-    \draw[arr] (orch) -- node[right, font=\tiny, color=gray] {get\_runner\_for\_role()} (base);
+    % BaseRunner
+    \node[base, below=0.8cm of orch] (base) {BaseRunner (ABC)};
+    \node[below=0.15cm of base, font=\tiny\ttfamily, text=gray] {execute() \quad verify() \quad get\_exercises() \quad grade\_exercise()};
 
-    % 11 runners in two rows
-    \node[runner=green, below left=1.2cm and 4cm of base] (swe) {OpenSWE};
-    \node[runner=green, right=0.15cm of swe] (fw) {OpenFW};
-    \node[runner=green, right=0.15cm of fw] (eda) {OpenEDA};
-    \node[runner=green, right=0.15cm of eda] (sim) {OpenSim};
-    \node[runner=green, right=0.15cm of sim] (ml) {OpenML};
-    \node[runner=violet, right=0.15cm of ml] (doc) {OpenDoc};
+    \draw[arr] (orch) -- node[right, font=\tiny, color=gray] {\texttt{get\_runner\_for\_role()}} (base);
 
-    \node[runner=violet, below=0.3cm of swe] (design) {OpenDesign};
-    \node[runner=violet, right=0.15cm of design] (strategy) {OpenStrategy};
-    \node[runner=teal, right=0.15cm of strategy] (browser) {OpenBrowser};
-    \node[runner=teal, right=0.15cm of browser] (terminal) {OpenTerminal};
-    \node[runner=teal, right=0.15cm of terminal] (research) {AutoResearch};
+    % Row 1: Engineering (5 runners)
+    \node[runner=green!60!black, below left=1.6cm and 2.8cm of base] (swe) {OpenSWE};
+    \node[runner=green!60!black, right=0.2cm of swe]  (fw)  {OpenFW};
+    \node[runner=green!60!black, right=0.2cm of fw]   (eda) {OpenEDA};
+    \node[runner=green!60!black, right=0.2cm of eda]  (sim) {OpenSim};
+    \node[runner=green!60!black, right=0.2cm of sim]  (ml)  {OpenML};
+
+    % Row 1: Business (3 runners)
+    \node[runner=violet, right=0.5cm of ml]     (doc)      {OpenDoc};
+    \node[runner=violet, right=0.2cm of doc]    (design)   {OpenDesign};
+    \node[runner=violet, right=0.2cm of design] (strategy) {OpenStrat};
+
+    % Row 2: Operations (3 runners, centered below)
+    \node[runner=teal, below=0.8cm of eda]       (browser)  {OpenBrowser};
+    \node[runner=teal, right=0.2cm of browser]   (terminal) {OpenTerminal};
+    \node[runner=teal, right=0.2cm of terminal]  (research) {AutoResearch};
+
+    % Group backgrounds
+    \begin{scope}[on background layer]
+        \node[grp=green, fit=(swe)(ml), label={[font=\tiny\itshape, text=gray]below:Engineering}] {};
+        \node[grp=violet, fit=(doc)(strategy), label={[font=\tiny\itshape, text=gray]below:Business}] {};
+        \node[grp=teal, fit=(browser)(research), label={[font=\tiny\itshape, text=gray]below:Operations}] {};
+    \end{scope}
 
     % Inheritance arrows
-    \foreach \r in {swe,fw,eda,sim,ml,doc} {
+    \foreach \r in {swe,fw,eda,sim,ml,doc,design,strategy,browser,terminal,research} {
         \draw[arr] (base.south) -- (\r.north);
     }
-    \foreach \r in {design,strategy,browser,terminal,research} {
-        \draw[arr] (base.south) -- (\r.north);
-    }
-
-    % Domain labels
-    \node[below=0.1cm of design, font=\tiny, color=gray] {Engineering};
-    \node[below=0.1cm of strategy, font=\tiny, color=gray] {Business};
-    \node[below=0.1cm of terminal, font=\tiny, color=gray] {Operations};
 
 \end{tikzpicture}
-\caption{Runner architecture. All 11 domain runners implement the \texttt{BaseRunner} interface. The Build Orchestrator selects runners via \texttt{get\_runner\_for\_role()}, mapping agent roles to the appropriate domain environment.}
+\caption{Runner architecture. All 11 domain runners implement the \texttt{BaseRunner} interface, grouped by domain family. The Build Orchestrator selects runners via \texttt{get\_runner\_for\_role()}.}
 \label{fig:runners}
 \end{figure}
 
@@ -674,29 +772,29 @@ Agent code execution uses a three-tier isolation cascade (Figure~\ref{fig:sandbo
 \begin{figure}[h]
 \centering
 \begin{tikzpicture}[
-    tier/.style={rectangle, draw, rounded corners=3pt, minimum width=3.5cm, minimum height=0.8cm, font=\small, fill=#1!15},
+    tier/.style={rectangle, draw=gray!60, rounded corners=5pt, minimum width=4.5cm, minimum height=1cm, font=\small\bfseries, fill=#1!12, text=#1!80!black, align=center},
     tier/.default=blue,
-    arr/.style={->, thick, >=stealth, color=gray!60},
-    fail/.style={->, thick, >=stealth, dashed, color=red!50},
-    node distance=0.5cm
+    desc/.style={font=\scriptsize, text=gray!70, align=left, anchor=west},
+    fail/.style={->, very thick, >=stealth, dashed, color=red!40},
+    node distance=0.8cm
 ]
-    \node[tier=green] (t1) {\textbf{Tier 1:} OpenShell (Container)};
-    \node[tier=blue, below=of t1] (t2) {\textbf{Tier 2:} SandboxRunner (Clone)};
-    \node[tier=orange, below=of t2] (t3) {\textbf{Tier 3:} OpenSWE (Direct)};
+    \node[tier=green!60!black] (t1) {Tier 1: OpenShell\\[-2pt]{\scriptsize Container Sandbox}};
+    \node[tier=blue,  below=of t1] (t2) {Tier 2: SandboxRunner\\[-2pt]{\scriptsize Local Clone}};
+    \node[tier=orange, below=of t2] (t3) {Tier 3: OpenSWE\\[-2pt]{\scriptsize Direct Execution}};
 
-    % Labels
-    \node[right=0.3cm of t1, font=\scriptsize, text=gray, align=left] {NVIDIA sandbox, SSH, YAML policies\\Highest isolation — GPU workloads};
-    \node[right=0.3cm of t2, font=\scriptsize, text=gray, align=left] {Local repo clone, branch isolation\\Restricted file ops};
-    \node[right=0.3cm of t3, font=\scriptsize, text=gray, align=left] {External SWE $\rightarrow$ LangGraph $\rightarrow$ LLM\\Lowest isolation — widest compatibility};
+    % Right-side descriptions
+    \node[desc, right=0.6cm of t1.east] {NVIDIA sandbox, SSH, YAML policies, GPU workloads};
+    \node[desc, right=0.6cm of t2.east] {Local repo clone, branch isolation, restricted file ops};
+    \node[desc, right=0.6cm of t3.east] {External SWE $\rightarrow$ LangGraph $\rightarrow$ LLM fallback};
 
     % Fallback arrows
-    \draw[fail] (t1.south west) -- node[left, font=\tiny, color=red!50] {unavailable} (t2.north west);
-    \draw[fail] (t2.south west) -- node[left, font=\tiny, color=red!50] {unavailable} (t3.north west);
+    \draw[fail] ([xshift=-0.3cm]t1.south west) -- node[left, font=\scriptsize, color=red!50] {fallback} ([xshift=-0.3cm]t2.north west);
+    \draw[fail] ([xshift=-0.3cm]t2.south west) -- node[left, font=\scriptsize, color=red!50] {fallback} ([xshift=-0.3cm]t3.north west);
 
-    % Isolation gradient
-    \draw[decorate, decoration={brace, amplitude=6pt, mirror}, thick, color=gray]
-        ([xshift=-0.5cm]t1.north west) -- ([xshift=-0.5cm]t3.south west)
-        node[midway, left=0.3cm, font=\scriptsize, color=gray, rotate=90, anchor=south] {decreasing isolation};
+    % Isolation gradient brace
+    \draw[decorate, decoration={brace, amplitude=8pt, mirror}, very thick, color=gray!40]
+        ([xshift=-1.2cm]t1.north west) -- ([xshift=-1.2cm]t3.south west)
+        node[midway, left=0.5cm, font=\scriptsize\itshape, color=gray!60, rotate=90, anchor=south] {decreasing isolation};
 \end{tikzpicture}
 \caption{Three-tier sandboxed execution cascade. The orchestrator tries the most isolated tier first and falls back on unavailability. Dashed arrows indicate fallback paths.}
 \label{fig:sandbox}
@@ -711,36 +809,42 @@ SAGE implements two communication layers for observability and structured messag
 \begin{figure}[h]
 \centering
 \begin{tikzpicture}[
-    layer/.style={rectangle, draw, rounded corners=3pt, minimum width=5.5cm, minimum height=0.7cm, font=\small, fill=#1!12},
+    layer/.style={rectangle, draw=gray!60, rounded corners=5pt, minimum width=9cm, minimum height=0.85cm, font=\small\bfseries, fill=#1!10, text=#1!80!black},
     layer/.default=blue,
-    comp/.style={rectangle, draw, rounded corners=2pt, minimum height=0.5cm, font=\tiny, fill=white},
-    arr/.style={<->, thick, >=stealth, color=gray!50},
-    node distance=0.4cm
+    comp/.style={rectangle, draw=gray!40, rounded corners=3pt, minimum height=0.45cm, font=\tiny, fill=white, text=gray!70, inner sep=2pt},
+    arr/.style={->, very thick, >=stealth, color=gray!40},
+    node distance=0.5cm
 ]
-    % Layer 1
-    \node[layer=blue] (otel) {\textbf{Layer 1:} OpenTelemetry Distributed Tracing};
-    \node[comp, below=0.15cm of otel, xshift=-1.8cm] (spans) {LLM Spans};
-    \node[comp, right=0.2cm of spans] (ctx) {Context Propagation};
-    \node[comp, right=0.2cm of ctx] (ebus) {EventBus Linkage};
-    \node[comp, right=0.2cm of ebus] (noop) {No-Op Fallback};
+    % Layer 1 (centered, no gateway offset)
+    \node[layer=blue] (otel) {Layer 1: OpenTelemetry Distributed Tracing};
+
+    % LLM Gateway — source (to the left)
+    \node[rectangle, draw=yellow!60!black, dashed, rounded corners=4pt, fill=yellow!6, font=\scriptsize\bfseries, align=center, text=yellow!80!black, minimum height=0.8cm, left=1cm of otel] (gw) {LLM Gateway};
 
     % Layer 2
-    \node[layer=teal, below=0.8cm of otel] (ce) {\textbf{Layer 2:} CloudEvents v1.0 Structured Messaging};
-    \node[comp, below=0.15cm of ce, xshift=-1.5cm] (prop) {proposal\_event};
-    \node[comp, right=0.2cm of prop] (build) {build\_event};
-    \node[comp, right=0.2cm of build] (gym) {gym\_event};
-    \node[comp, right=0.2cm of gym] (llm) {llm\_event};
+    \node[layer=teal, below=1.8cm of otel] (ce) {Layer 2: CloudEvents v1.0 Structured Messaging};
 
     % Consumers
-    \node[layer=orange, below=0.8cm of ce, minimum width=5.5cm] (consumers) {EventBus $\rightarrow$ Audit Log, Vector Store, External Systems};
+    \node[layer=orange, below=1.8cm of ce] (consumers) {EventBus $\rightarrow$ Audit Log, Vector Store, External Systems};
+
+    % Layer 1 components — positioned between layer 1 and layer 2
+    \path (otel.south) -- (ce.north) coordinate[midway] (mid12);
+    \node[comp] at ([xshift=-2.8cm]mid12) (spans) {LLM Spans};
+    \node[comp] at ([xshift=-0.9cm]mid12) (ctx) {Context Prop};
+    \node[comp] at ([xshift=0.9cm]mid12) (ebus) {EventBus Link};
+    \node[comp] at ([xshift=2.8cm]mid12) (noop) {No-Op};
+
+    % Layer 2 components — positioned between layer 2 and consumers
+    \path (ce.south) -- (consumers.north) coordinate[midway] (mid23);
+    \node[comp] at ([xshift=-2.8cm]mid23) (prop) {proposal};
+    \node[comp] at ([xshift=-0.9cm]mid23) (build) {build};
+    \node[comp] at ([xshift=0.9cm]mid23) (gymev) {gym};
+    \node[comp] at ([xshift=2.8cm]mid23) (llmev) {llm};
 
     % Connections
-    \draw[arr] (otel) -- node[right, font=\tiny, color=gray] {spans enrich events} (ce);
-    \draw[->, thick, >=stealth, color=gray!50] (ce) -- (consumers);
-
-    % LLM Gateway callout
-    \node[rectangle, draw, dashed, rounded corners=2pt, left=0.5cm of otel, fill=yellow!8, font=\scriptsize, align=center] (gw) {LLM\\Gateway};
-    \draw[->, thick, >=stealth, color=blue!40] (gw) -- (otel);
+    \draw[arr, color=blue!40] (gw) -- (otel);
+    \draw[arr] (otel) -- (ce);
+    \draw[arr] (ce) -- (consumers);
 
 \end{tikzpicture}
 \caption{Communication layers. Layer~1 provides distributed tracing with graceful no-op degradation. Layer~2 wraps domain events in CloudEvents v1.0 envelopes. Both feed into the EventBus for pub/sub distribution.}

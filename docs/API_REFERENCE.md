@@ -100,6 +100,93 @@ Every `/chat/execute` call writes to `compliance_audit_log` with `actor="human_v
 
 ---
 
+## Product Owner — Requirements Gathering
+
+Convert basic customer inputs into structured product requirements following proper Product Management principles.
+
+| Method | Path | Description |
+|---|---|---|
+| POST | `/product-owner/requirements` | Gather requirements from customer input |
+
+**`POST /product-owner/requirements` body:**
+```json
+{
+  "customer_input": "I want a fitness app",
+  "follow_up_qa": [
+    {
+      "question": "Who will use this app?",
+      "answer": "Fitness enthusiasts and beginners",
+      "topic": "personas"
+    }
+  ]
+}
+```
+
+**Response formats:**
+
+*Needs Clarification:*
+```json
+{
+  "status": "needs_clarification",
+  "questions": [
+    {
+      "question": "Who will use this app?",
+      "topic": "personas",
+      "importance": "high"
+    }
+  ],
+  "customer_input": "I want a fitness app"
+}
+```
+
+*Complete Requirements:*
+```json
+{
+  "status": "complete",
+  "backlog": {
+    "product_name": "FitTracker Pro",
+    "vision": "Help users achieve fitness goals through tracking",
+    "personas": [...],
+    "user_stories": [...],
+    "success_metrics": [...]
+  },
+  "handoff_ready": true
+}
+```
+
+---
+
+## Systems Engineering — IEEE 15288 Compliance
+
+Structured systems engineering framework following IEEE 15288 standards with full regulatory traceability.
+
+| Method | Path | Description |
+|---|---|---|
+| POST | `/systems/requirements/derive` | Derive technical requirements from product backlog |
+| POST | `/systems/architecture/design` | Design system architecture from requirements |
+| POST | `/systems/risks/assess` | Perform comprehensive system risk assessment |
+| POST | `/systems/verification/matrix` | Create requirements verification matrix |
+| POST | `/systems/traceability/matrices` | Generate 4 regulatory traceability matrices |
+| POST | `/systems/documents/regulatory` | Generate all regulatory documents |
+| POST | `/systems/change/initiate` | Initiate formal change control process |
+| POST | `/systems/change/{id}/assess` | Assess change impact on system |
+| POST | `/systems/change/{id}/execute` | Execute approved change with audit trail |
+| GET | `/systems/change/{id}/audit` | Get complete change audit trail |
+| POST | `/systems/signatures/workflow` | Create electronic signature workflow |
+| POST | `/systems/signatures/{id}/apply` | Apply 21 CFR Part 11 compliant signature |
+| GET | `/systems/signatures/{id}/validate` | Validate signature integrity |
+| POST | `/systems/vv/protocol` | Generate comprehensive V&V protocol |
+
+**Key Features:**
+- **Bidirectional Traceability**: 4 matrices ensuring complete coverage
+- **Risk-Based Testing**: Enhanced procedures for safety-critical requirements  
+- **Change Control**: Formal workflow per IEC 62304 §6.1
+- **Electronic Signatures**: Full 21 CFR Part 11 compliance
+- **Regulatory Documents**: Auto-generated SRS, SAD, V&V Plan, Risk Management File
+- **Compliance Scoring**: Automated readiness assessment
+
+---
+
 ## Knowledge Base
 
 | Method | Path | Description |
@@ -702,6 +789,33 @@ Modular YAML-based skill registry with visibility tiers (public/private/disabled
 | GET | `/skills/search` | Search skills by keyword (`?q=embedded`) |
 | POST | `/skills/visibility` | Change skill visibility tier (framework control — immediate) |
 | POST | `/skills/reload` | Hot-reload all skills from disk |
+
+---
+
+## Critic — Prompts & Human Expert Reviews
+
+### Editable Critic Prompts
+
+Founders can view and modify LLM critic system prompts. Custom prompts persist to `config/critic_prompts.json`.
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/critic/prompts` | View all critic prompts (defaults + custom overrides) |
+| PUT | `/critic/prompts` | Update a prompt (`{"key": "PLAN_REVIEW_PROMPT", "prompt": "..."}`) |
+| DELETE | `/critic/prompts/{key}` | Remove custom override (reverts to default) |
+
+Default keys: `PLAN_REVIEW_PROMPT`, `CODE_REVIEW_PROMPT`, `INTEGRATION_REVIEW_PROMPT`.
+
+### Human Expert Reviews
+
+Optional human expert critic alongside LLM critics. Human reviews weighted 2.0x in aggregation.
+
+| Method | Path | Description |
+|---|---|---|
+| POST | `/critic/human/request` | Queue artifact for human expert review (`{review_type, artifact, description}`) |
+| POST | `/critic/human/{id}/submit` | Submit review (`{score: 0-100, feedback, flaws[], suggestions[]}`) |
+| GET | `/critic/human/pending` | List pending human reviews awaiting submission |
+| GET | `/critic/human/{id}` | Get a completed human review |
 
 ---
 

@@ -3,9 +3,11 @@
 > Comprehensive architecture review, limitations analysis, and pattern recommendations.
 > Written for any developer or architect evaluating or extending SAGE.
 
-**Date:** 2026-03-31
+**Date:** 2026-04-03
 **Scope:** Full framework — not just communication, but LLM abstraction, memory, execution, API design, testing, scalability, and extensibility.
-**Codebase snapshot:** 99 Python source files, 39,051 LOC in `src/`, 174 API endpoints, 26 integration runners, 11 domain runners.
+**Codebase snapshot:** 102 Python source files, ~42,500 LOC in `src/`, 190+ API endpoints, 26 integration runners, 11 domain runners.
+
+**Latest additions:** Product Owner agent, Systems Engineering framework (IEEE 15288/IEC 62304), regulatory compliance (21 CFR Part 11).
 
 ---
 
@@ -73,10 +75,15 @@ SAGE is a **hybrid monolith** combining five architecture patterns: Orchestrator
 │  │(Glicko-2)│ │(YAML hot-  │ │(SQLite)     │ │(SQLite)      │ │
 │  │          │ │ reload)    │ │             │ │              │ │
 │  └──────────┘ └────────────┘ └─────────────┘ └──────────────┘ │
+│  ┌──────────┐ ┌────────────────────────────────────────────┐ │
+│  │SystemsEng│ │AutoResearch (Hill-climbing optimization)    │ │
+│  │IEEE15288 │ │                                            │ │
+│  │IEC62304  │ │                                            │ │
+│  └──────────┘ └────────────────────────────────────────────┘ │
 ├────────────────────────────────────────────────────────────────┤
 │  Agent Layer (src/agents/)                                     │
-│  Analyst, Developer, Monitor, Planner, Universal, Critic       │
-│  ─ All share single LLMGateway instance                        │
+│  Analyst, Developer, Monitor, Planner, Universal, Critic,      │
+│  Product Owner ─ All share single LLMGateway instance          │
 ├────────────────────────────────────────────────────────────────┤
 │  Memory Layer (src/memory/)                                    │
 │  ┌──────────────┐ ┌───────────────┐ ┌────────────────────┐    │
@@ -200,6 +207,30 @@ Every `generate()` call, every proposal, every approval/rejection is logged with
 
 ### 4.6 Compounding Intelligence
 The vector store accumulates human corrections, making future agent context richer. This is the Memento principle — behavioral improvement without model retraining. No other framework implements this systematically.
+
+### 4.7 Product Owner Agent — Requirements Engineering
+**File:** `src/agents/product_owner.py`
+Converts basic customer inputs ("I want a fitness app") into structured product backlogs following proper Product Management principles:
+- **5W1H Method**: Who, What, When, Where, Why, How questioning for requirements clarity
+- **User Story Creation**: Proper "As a [persona], I want [capability] so that [benefit]" format
+- **MoSCoW Prioritization**: Must Have, Should Have, Could Have, Won't Have classification
+- **INVEST Criteria**: Independent, Negotiable, Valuable, Estimable, Small, Testable stories
+- **Iterative Refinement**: Structured interview process with clarifying questions
+
+This eliminates the "requirements engineering gap" where customers provide vague descriptions and expect developers to guess the product vision. No comparable capability exists in other agent frameworks.
+
+### 4.8 Systems Engineering Framework — IEEE 15288 Compliance
+**File:** `src/core/systems_engineering.py`
+Full systems engineering lifecycle following IEEE 15288 standards with regulatory compliance built-in:
+- **Requirements Traceability**: 4 bidirectional matrices (User Needs→Requirements→Design→Verification→Validation)
+- **V-Model Implementation**: Structured decomposition with verification at each level
+- **Risk Assessment**: ISO 31000 compliant with mitigation tracking
+- **Change Control**: Formal process per IEC 62304 §6.1 with impact analysis
+- **Electronic Signatures**: 21 CFR Part 11 compliance for regulated industries
+- **Regulatory Documents**: Auto-generated SRS, SAD, V&V Plan, Risk Management File, SOUP Inventory
+- **Compliance Scoring**: Automated readiness assessment for regulatory submissions
+
+This positions SAGE uniquely for regulated industries (medical devices, automotive, aerospace) where formal systems engineering processes are mandatory. No other agent framework provides this level of regulatory compliance.
 
 ---
 
@@ -465,7 +496,8 @@ The missing **session memory tier** causes vector store pollution with intermedi
 1. **Domain-specific execution runners** (11 and growing) — no other framework has firmware cross-compilation, PCB DRC, SPICE simulation, etc.
 2. **3-tier execution cascade** — graceful degradation from container → local → LLM-direct
 3. **Compounding vector memory from human feedback** — the Memento pattern
-4. **Agent Gym with Glicko-2 ratings** — measurable agent skill improvement
+4. **Agent Gym with Glicko-2 ratings** — measurable agent skill improvement via experimental verification (real compile/test/simulate, not LLM-judging-LLM)
+4a. **Gym-as-Lab** — 3-tier grading (experimental 40% + LLM critic 30% + structural 30%), critic-refined acceptance criteria, optional human expert critic (2x weight), editable critic prompts
 5. **Full audit trail for regulated industries** — ISO 13485 / IEC 62304 compatible
 6. **YAML-only domain onboarding** — 3 files to define a complete agent team
 
