@@ -6,7 +6,7 @@ import OnboardingWizard from '../components/onboarding/OnboardingWizard'
 
 // Mock fetch globally
 const mockFetch = vi.fn()
-global.fetch = mockFetch
+;(globalThis as any).fetch = mockFetch
 
 vi.mock('../api/client', () => ({
   fetchProjects: vi.fn().mockResolvedValue({ projects: [], active: '' }),
