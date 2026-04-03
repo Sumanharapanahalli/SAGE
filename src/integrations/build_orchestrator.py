@@ -320,13 +320,35 @@ ARTIFACT_TYPES = {
     "SECURITY":      {"category": "code", "extensions": [".py", ".yaml", ".json"], "validator": "syntax"},
     # Hardware/firmware artifacts
     "FIRMWARE":      {"category": "hardware", "extensions": [".c", ".h", ".cpp", ".ld", ".cmake"], "validator": "syntax",
-                      "mcp_tools": ["kicad", "openocd", "gcc-arm"]},
+                      "mcp_tools": ["platformio-mcp", "esp-mcp", "gcc-arm"],
+                      "mcp_servers": [
+                          {"name": "platformio-mcp", "repo": "jl-codes/platformio-mcp", "install": "npm"},
+                          {"name": "esp-mcp", "repo": "horw/esp-mcp", "install": "pip"},
+                      ]},
     "PCB_DESIGN":    {"category": "hardware", "extensions": [".kicad_pcb", ".kicad_sch", ".gbr", ".drl"], "validator": "gerber",
-                      "mcp_tools": ["kicad", "drc_checker"]},
+                      "mcp_tools": ["kicad-mcp-server", "kicad-mcp"],
+                      "mcp_servers": [
+                          {"name": "KiCAD-MCP-Server", "repo": "mixelpixx/KiCAD-MCP-Server", "install": "npm", "tools": 122},
+                          {"name": "kicad-mcp", "repo": "lamaalrajih/kicad-mcp", "install": "pip"},
+                      ]},
     "EMBEDDED_TEST": {"category": "hardware", "extensions": [".c", ".py", ".robot"], "validator": "syntax",
-                      "mcp_tools": ["openocd", "gdb"]},
+                      "mcp_tools": ["platformio-mcp", "cppcheck-misra"],
+                      "mcp_servers": [
+                          {"name": "platformio-mcp", "repo": "jl-codes/platformio-mcp", "install": "npm"},
+                      ]},
     "MECHANICAL":    {"category": "hardware", "extensions": [".step", ".stl", ".dxf"], "validator": "cad",
-                      "mcp_tools": ["freecad", "openscad"]},
+                      "mcp_tools": ["freecad-mcp", "openscad-mcp", "blender-mcp"],
+                      "mcp_servers": [
+                          {"name": "freecad-mcp", "repo": "neka-nat/freecad-mcp", "install": "pip install freecad-mcp"},
+                          {"name": "openscad-mcp", "repo": "jhacksman/OpenSCAD-MCP-Server", "install": "pip"},
+                          {"name": "blender-mcp", "repo": "ahujasid/blender-mcp", "install": "pip"},
+                      ]},
+    "HARDWARE_SIM":  {"category": "hardware", "extensions": [".spice", ".cir", ".v", ".vhd", ".sv"], "validator": "syntax",
+                      "mcp_tools": ["spicebridge", "ngspice", "matlab-mcp"],
+                      "mcp_servers": [
+                          {"name": "spicebridge", "repo": "clanker-lover/spicebridge", "install": "pip", "tools": 18},
+                          {"name": "matlab-mcp", "repo": "matlab/matlab-mcp-core-server", "install": "go"},
+                      ]},
     # Infrastructure artifacts
     "INFRA":         {"category": "infra", "extensions": [".tf", ".yaml", ".yml", ".Dockerfile"], "validator": "syntax"},
     "DEVOPS":        {"category": "infra", "extensions": [".yaml", ".yml", ".sh", ".Dockerfile"], "validator": "syntax"},
@@ -2867,6 +2889,12 @@ class BuildOrchestrator:
             artifact_hint = f"\n\nExpected output: {category} artifact(s) with extensions: {extensions}"
             if mcp_tools:
                 artifact_hint += f"\nDomain tools available: {', '.join(mcp_tools)}"
+            mcp_servers = artifact_info.get("mcp_servers", [])
+            if mcp_servers:
+                server_hints = "; ".join(
+                    f"{s['name']} ({s['repo']})" for s in mcp_servers
+                )
+                artifact_hint += f"\nOpen-source MCP servers: {server_hints}"
             enriched_task["description"] = enriched_task.get("description", "") + artifact_hint
 
             enriched_task.setdefault("payload", {})
