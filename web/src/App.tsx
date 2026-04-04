@@ -46,6 +46,8 @@ import ThemeProvider from './components/theme/ThemeProvider'
 import { AuthProvider } from './context/AuthContext'
 import { UserPrefsProvider } from './context/UserPrefsContext'
 import { ChatProvider } from './context/ChatContext'
+import { ToastProvider } from './context/ToastContext'
+import ToastContainer from './components/ui/ToastContainer'
 
 // ---------------------------------------------------------------------------
 // Standard SAGE routes — solution-agnostic.
@@ -186,6 +188,7 @@ function AppShell() {
       <TourOverlay />
       <LLMDisconnectedBanner />
       <ChatPanel />
+      <ToastContainer />
     </>
   )
 }
@@ -198,7 +201,9 @@ export default function App() {
           <ThemeProvider>
             <TourProvider>
               <ChatProvider>
-                <AppShell />
+                <ToastProvider>
+                  <AppShell />
+                </ToastProvider>
               </ChatProvider>
             </TourProvider>
           </ThemeProvider>
