@@ -1,9 +1,35 @@
 import { useState, useRef, useEffect, KeyboardEvent } from 'react'
-import { X, Minus, MessageSquare, Send, Trash2, CheckCircle, XCircle } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import {
+  X, Minus, MessageSquare, Send, Trash2, CheckCircle, XCircle,
+  Maximize2, Bot, Search, GitMerge, Activity, Lightbulb, Shield,
+  Users, Cpu, Brain, type LucideIcon,
+} from 'lucide-react'
 import { useChat } from '../../hooks/useChat'
 import { useChatContext } from '../../context/ChatContext'
 
+// ---------------------------------------------------------------------------
+// Role helpers (shared with Chat.tsx)
+// ---------------------------------------------------------------------------
+const ROLE_ICONS: Record<string, LucideIcon> = {
+  analyst: Search, developer: GitMerge, monitor: Activity,
+  planner: Lightbulb, critic: Shield, product_owner: Users,
+  systems_engineer: Cpu, universal: Bot, default: Brain,
+}
+const ROLE_COLORS: Record<string, string> = {
+  analyst: '#60a5fa', developer: '#4ade80', monitor: '#f59e0b',
+  planner: '#a78bfa', critic: '#f87171', product_owner: '#ec4899',
+  systems_engineer: '#06b6d4', universal: '#3b82f6',
+}
+function getRoleIcon(roleId: string): LucideIcon {
+  return ROLE_ICONS[roleId.toLowerCase().replace(/[\s-]/g, '_')] ?? ROLE_ICONS.default
+}
+function getRoleColor(roleId: string): string {
+  return ROLE_COLORS[roleId.toLowerCase().replace(/[\s-]/g, '_')] ?? '#71717a'
+}
+
 export default function ChatPanel() {
+  const navigate = useNavigate()
   const {
     messages, isLoading, sendMessage, clearHistory,
     panelState, closeChat, minimiseChat,
@@ -14,12 +40,10 @@ export default function ChatPanel() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // Focus input when panel opens
   useEffect(() => {
     if (panelState === 'expanded') {
       clearUnread()
@@ -27,7 +51,6 @@ export default function ChatPanel() {
     }
   }, [panelState, clearUnread])
 
-  // Close on Escape
   useEffect(() => {
     const handler = (e: globalThis.KeyboardEvent) => {
       if (e.key === 'Escape' && panelState === 'expanded') closeChat()
@@ -51,28 +74,28 @@ export default function ChatPanel() {
 
   if (panelState === 'closed') return null
 
-  // Minimised state — tab at bottom-centre
+  // Minimised tab
   if (panelState === 'minimised') {
     return (
       <div
         onClick={() => openChat()}
         style={{
           position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
-          height: '44px', width: '200px',
-          backgroundColor: '#0f172a', borderTop: '1px solid #1e293b',
-          borderLeft: '1px solid #1e293b', borderRight: '1px solid #1e293b',
-          display: 'flex', alignItems: 'center', gap: '8px',
+          height: 40, width: 180, borderRadius: '10px 10px 0 0',
+          backgroundColor: '#18181b', borderTop: '1px solid #27272a',
+          borderLeft: '1px solid #27272a', borderRight: '1px solid #27272a',
+          display: 'flex', alignItems: 'center', gap: 8,
           padding: '0 14px', cursor: 'pointer', zIndex: 8000,
-          color: '#94a3b8', fontSize: '12px', fontWeight: 500,
+          color: '#a1a1aa', fontSize: 12, fontWeight: 500,
         }}
       >
-        <MessageSquare size={14} />
+        <MessageSquare size={13} />
         <span style={{ flex: 1 }}>SAGE Chat</span>
         {unreadCount > 0 && (
           <span style={{
             backgroundColor: '#3b82f6', color: '#fff',
-            fontSize: '10px', fontWeight: 700,
-            padding: '1px 6px', minWidth: '18px', textAlign: 'center',
+            fontSize: 10, fontWeight: 700,
+            padding: '1px 6px', borderRadius: 10, minWidth: 18, textAlign: 'center',
           }}>
             {unreadCount}
           </span>
@@ -81,107 +104,106 @@ export default function ChatPanel() {
     )
   }
 
-  // Expanded state
+  // Expanded panel
   return (
-    <div
-      style={{
-        position: 'fixed', bottom: 0,
-        left: '50%', transform: 'translateX(-50%)',
-        width: '520px', height: '380px',
-        backgroundColor: '#0f172a',
-        border: '1px solid #1e293b',
-        borderBottom: 'none',
-        boxShadow: '0 -4px 32px rgba(0,0,0,0.5)',
-        display: 'flex', flexDirection: 'column',
-        zIndex: 8000,
-      }}
-    >
+    <div style={{
+      position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
+      width: 520, height: 420,
+      backgroundColor: '#0f0f11', borderRadius: '16px 16px 0 0',
+      border: '1px solid #27272a', borderBottom: 'none',
+      boxShadow: '0 -8px 40px rgba(0,0,0,0.5)',
+      display: 'flex', flexDirection: 'column',
+      zIndex: 8000,
+    }}>
       {/* Header */}
       <div style={{
-        display: 'flex', alignItems: 'center', gap: '8px',
-        padding: '8px 12px',
-        backgroundColor: 'var(--sage-sidebar-bg, #0f172a)',
-        borderBottom: '1px solid #1e293b',
-        flexShrink: 0,
+        display: 'flex', alignItems: 'center', gap: 8,
+        padding: '10px 16px', borderBottom: '1px solid #1a1a1e', flexShrink: 0,
       }}>
-        <MessageSquare size={13} style={{ color: '#3b82f6' }} />
-        <span style={{ flex: 1, fontSize: '12px', fontWeight: 600, color: '#e2e8f0' }}>
+        <MessageSquare size={14} style={{ color: '#3b82f6' }} />
+        <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: '#e4e4e7' }}>
           SAGE Chat
         </span>
         <button
-          onClick={clearHistory}
-          title="Clear history"
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#475569',
-                   display: 'flex', alignItems: 'center', padding: '2px' }}
+          onClick={() => { closeChat(); navigate('/chat') }}
+          title="Open full chat"
+          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#52525b', display: 'flex', padding: 2 }}
         >
+          <Maximize2 size={13} />
+        </button>
+        <button onClick={clearHistory} title="Clear" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#52525b', display: 'flex', padding: 2 }}>
           <Trash2 size={13} />
         </button>
-        <button
-          onClick={minimiseChat}
-          title="Minimise"
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#475569',
-                   display: 'flex', alignItems: 'center', padding: '2px' }}
-        >
+        <button onClick={minimiseChat} title="Minimise" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#52525b', display: 'flex', padding: 2 }}>
           <Minus size={13} />
         </button>
-        <button
-          onClick={closeChat}
-          title="Close"
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#475569',
-                   display: 'flex', alignItems: 'center', padding: '2px' }}
-        >
+        <button onClick={closeChat} title="Close" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#52525b', display: 'flex', padding: 2 }}>
           <X size={13} />
         </button>
       </div>
 
       {/* Messages */}
       <div style={{
-        flex: 1, overflowY: 'auto', padding: '12px',
-        display: 'flex', flexDirection: 'column', gap: '10px',
-        backgroundColor: '#020617',
+        flex: 1, overflowY: 'auto', padding: 16,
+        display: 'flex', flexDirection: 'column', gap: 12,
       }}>
         {messages.length === 0 && (
-          <div style={{ color: '#334155', fontSize: '12px', textAlign: 'center', marginTop: '40px' }}>
-            Ask me anything about this solution, proposals, or the SAGE framework.
+          <div style={{ color: '#3f3f46', fontSize: 12, textAlign: 'center', marginTop: 40 }}>
+            Ask me anything about this solution or the SAGE framework.
+            <br />
+            <button
+              onClick={() => { closeChat(); navigate('/chat') }}
+              style={{
+                marginTop: 12, fontSize: 12, color: '#3b82f6',
+                background: 'none', border: 'none', cursor: 'pointer',
+                textDecoration: 'underline',
+              }}
+            >
+              Open full chat to pick a role
+            </button>
           </div>
         )}
         {messages.map(msg => {
-          // System message — slim centred muted line
           if ((msg.role as string) === 'system') {
             return (
               <div key={msg.id} style={{
-                textAlign: 'center', fontSize: '11px', color: '#475569',
+                textAlign: 'center', fontSize: 11, color: '#52525b',
                 padding: '2px 8px', fontStyle: 'italic',
               }}>
                 {msg.content}
               </div>
             )
           }
-          // User / assistant bubble — same as before
+          const isUser = msg.role === 'user'
           return (
-            <div
-              key={msg.id}
-              style={{
-                display: 'flex',
-                flexDirection: msg.role === 'user' ? 'row-reverse' : 'row',
-                alignItems: 'flex-start',
-                gap: '8px',
-              }}
-            >
+            <div key={msg.id} style={{
+              display: 'flex', flexDirection: isUser ? 'row-reverse' : 'row',
+              alignItems: 'flex-start', gap: 8,
+            }}>
               <div style={{
-                maxWidth: '80%',
-                padding: '7px 11px',
-                fontSize: '12px', lineHeight: 1.5,
-                backgroundColor: msg.role === 'user' ? '#1d4ed8' : '#1e293b',
-                color: '#e2e8f0',
-                whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+                width: 26, height: 26, borderRadius: 8, flexShrink: 0,
+                background: isUser ? '#27272a' : 'rgba(59,130,246,0.15)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                {isUser ? (
+                  <span style={{ fontSize: 11, fontWeight: 600, color: '#a1a1aa' }}>U</span>
+                ) : (
+                  <Bot size={13} style={{ color: '#3b82f6' }} />
+                )}
+              </div>
+              <div style={{
+                maxWidth: '80%', padding: '8px 12px', borderRadius: 12,
+                fontSize: 13, lineHeight: 1.5,
+                backgroundColor: isUser ? '#1d4ed8' : '#1c1c1e',
+                color: '#e4e4e7', whiteSpace: 'pre-wrap', wordBreak: 'break-word',
               }}>
                 {msg.content}
                 {msg.streaming && (
                   <span style={{
-                    display: 'inline-block', width: '6px', height: '12px',
-                    backgroundColor: '#60a5fa', marginLeft: '2px',
+                    display: 'inline-block', width: 2, height: 14,
+                    backgroundColor: '#3b82f6', marginLeft: 2,
                     animation: 'sage-cursor-blink 1s step-end infinite',
+                    verticalAlign: 'text-bottom',
                   }} />
                 )}
               </div>
@@ -189,11 +211,10 @@ export default function ChatPanel() {
           )
         })}
         {isLoading && messages[messages.length - 1]?.role !== 'assistant' && (
-          <div style={{ display: 'flex', gap: '4px', padding: '8px 0', paddingLeft: '4px' }}>
+          <div style={{ display: 'flex', gap: 4, padding: '8px 0 0 36px' }}>
             {[0, 1, 2].map(i => (
               <div key={i} style={{
-                width: '6px', height: '6px',
-                backgroundColor: '#334155',
+                width: 5, height: 5, borderRadius: '50%', background: '#3f3f46',
                 animation: `sage-dot-bounce 1.2s ease-in-out ${i * 0.2}s infinite`,
               }} />
             ))}
@@ -202,44 +223,42 @@ export default function ChatPanel() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Confirmation card or input */}
+      {/* Action confirmation or input */}
       {pendingAction ? (
         <div style={{
           borderTop: '2px solid #d97706', flexShrink: 0,
-          backgroundColor: '#0f172a', padding: '10px 12px',
+          padding: '12px 16px', background: '#18181b',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
             <span style={{
-              fontSize: '10px', fontWeight: 700, color: '#d97706',
-              backgroundColor: '#1c1003', padding: '2px 6px', letterSpacing: '0.04em',
+              fontSize: 10, fontWeight: 700, color: '#d97706',
+              background: 'rgba(217,119,6,0.1)', padding: '2px 8px', borderRadius: 4,
             }}>
               {pendingAction.action.toUpperCase().replace(/_/g, ' ')}
             </span>
           </div>
-          <p style={{ fontSize: '12px', color: '#cbd5e1', margin: '0 0 10px', lineHeight: 1.5 }}>
+          <p style={{ fontSize: 12, color: '#d4d4d8', margin: '0 0 10px', lineHeight: 1.5 }}>
             {pendingAction.confirmation_prompt}
           </p>
-          <div style={{ display: 'flex', gap: '8px' }}>
+          <div style={{ display: 'flex', gap: 8 }}>
             <button
-              onClick={confirmAction}
-              disabled={isLoading}
+              onClick={confirmAction} disabled={isLoading}
               style={{
-                flex: 1, padding: '6px 0', fontSize: '12px', fontWeight: 600,
-                backgroundColor: '#166534', color: '#bbf7d0', border: 'none',
-                cursor: isLoading ? 'not-allowed' : 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px',
+                flex: 1, padding: '7px 0', fontSize: 12, fontWeight: 600,
+                background: '#166534', color: '#bbf7d0', border: 'none',
+                borderRadius: 8, cursor: isLoading ? 'not-allowed' : 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
               }}
             >
               <CheckCircle size={13} /> Confirm
             </button>
             <button
-              onClick={cancelAction}
-              disabled={isLoading}
+              onClick={cancelAction} disabled={isLoading}
               style={{
-                flex: 1, padding: '6px 0', fontSize: '12px', fontWeight: 600,
-                backgroundColor: '#1e293b', color: '#64748b', border: 'none',
-                cursor: isLoading ? 'not-allowed' : 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px',
+                flex: 1, padding: '7px 0', fontSize: 12, fontWeight: 600,
+                background: '#27272a', color: '#71717a', border: 'none',
+                borderRadius: 8, cursor: isLoading ? 'not-allowed' : 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
               }}
             >
               <XCircle size={13} /> Cancel
@@ -248,9 +267,8 @@ export default function ChatPanel() {
         </div>
       ) : (
         <div style={{
-          display: 'flex', gap: '8px', padding: '10px 12px',
-          borderTop: '1px solid #1e293b', flexShrink: 0,
-          backgroundColor: '#0f172a',
+          display: 'flex', gap: 8, padding: '12px 16px',
+          borderTop: '1px solid #1a1a1e', flexShrink: 0,
         }}>
           <input
             ref={inputRef}
@@ -260,22 +278,22 @@ export default function ChatPanel() {
             placeholder="Type a message..."
             disabled={isLoading}
             style={{
-              flex: 1, background: '#020617', border: '1px solid #1e293b',
-              color: '#e2e8f0', fontSize: '12px', padding: '6px 10px',
-              outline: 'none',
+              flex: 1, background: '#1c1c1e', border: '1px solid #27272a',
+              borderRadius: 10, color: '#e4e4e7', fontSize: 13,
+              padding: '8px 12px', outline: 'none',
             }}
           />
           <button
             onClick={handleSend}
             disabled={isLoading || !input.trim()}
             style={{
-              backgroundColor: '#1d4ed8', border: 'none', color: '#fff',
-              cursor: isLoading || !input.trim() ? 'not-allowed' : 'pointer',
-              opacity: isLoading || !input.trim() ? 0.5 : 1,
-              padding: '6px 10px', display: 'flex', alignItems: 'center',
+              width: 36, height: 36, borderRadius: 10,
+              backgroundColor: input.trim() && !isLoading ? '#3b82f6' : '#27272a',
+              border: 'none', cursor: input.trim() && !isLoading ? 'pointer' : 'default',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}
           >
-            <Send size={13} />
+            <Send size={14} style={{ color: input.trim() && !isLoading ? '#fff' : '#52525b' }} />
           </button>
         </div>
       )}

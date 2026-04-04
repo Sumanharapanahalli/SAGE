@@ -1022,3 +1022,168 @@ export interface RequirementsGatheringResponse {
 export const gatherRequirements = (req: RequirementsGatheringRequest) =>
   post<RequirementsGatheringResponse>('/product-owner/requirements', req)
 
+// ---------------------------------------------------------------------------
+// Agent Gym — training, exercises, ratings
+// ---------------------------------------------------------------------------
+export const fetchGymExercises = (role?: string, difficulty?: string) => {
+  const params = new URLSearchParams()
+  if (role) params.set('role', role)
+  if (difficulty) params.set('difficulty', difficulty)
+  const qs = params.toString()
+  return get<any>(`/gym/exercises${qs ? `?${qs}` : ''}`)
+}
+
+export const fetchGymRatings = () =>
+  get<any>('/gym/ratings')
+
+export const fetchGymCurriculum = (role: string) =>
+  get<any>(`/gym/curriculum/${role}`)
+
+export const fetchGymCatalog = () =>
+  get<any>('/gym/catalog')
+
+export const trainAgent = (body: { role: string; exercise_id?: string; difficulty?: string }) =>
+  post<any>('/gym/train', body)
+
+export const trainAgentBatch = (body: { role: string; count?: number; difficulty?: string }) =>
+  post<any>('/gym/train/batch', body)
+
+export const fetchGymHistory = (role?: string, limit?: number) => {
+  const params = new URLSearchParams()
+  if (role) params.set('role', role)
+  if (limit) params.set('limit', limit.toString())
+  const qs = params.toString()
+  return get<any>(`/gym/history${qs ? `?${qs}` : ''}`)
+}
+
+export const fetchGymLeaderboard = () =>
+  get<any>('/gym/leaderboard')
+
+// ---------------------------------------------------------------------------
+// Safety Analysis — FMEA, FTA, ASIL, SIL, IEC 62304
+// ---------------------------------------------------------------------------
+export const runFMEA = (entries: Array<{
+  component: string; failure_mode: string; effect: string
+  severity: number; occurrence: number; detection: number
+}>) => post<any>('/fmea', { entries })
+
+export const runFTA = (body: { top_event: string; gates: any[] }) =>
+  post<any>('/fta', body)
+
+export const classifyASIL = (severity: string, exposure: string, controllability: string) =>
+  post<any>('/asil', { severity, exposure, controllability })
+
+export const classifySIL = (target_failure_rate: number) =>
+  post<any>('/sil', { target_failure_rate })
+
+export const classifyIEC62304 = (risk_level: string) =>
+  post<any>('/iec62304-class', { risk_level })
+
+// ---------------------------------------------------------------------------
+// Knowledge Base — search, browse, manage
+// ---------------------------------------------------------------------------
+export const fetchKnowledgeEntries = (limit = 50, offset = 0) =>
+  get<any>(`/knowledge/entries?limit=${limit}&offset=${offset}`)
+
+export const searchKnowledge = (query: string, top_k = 10) =>
+  post<any>('/knowledge/search', { query, top_k })
+
+export const deleteKnowledgeEntry = (entry_id: string) =>
+  del<any>(`/knowledge/entry/${entry_id}`)
+
+export const addKnowledge = (content: string, metadata?: Record<string, unknown>) =>
+  post<any>('/knowledge/add', { content, metadata })
+
+// ---------------------------------------------------------------------------
+// Skills & MCP Tools
+// ---------------------------------------------------------------------------
+export const fetchSkills = () =>
+  get<any>('/skills')
+
+export const fetchSkillDetail = (name: string) =>
+  get<any>(`/skills/${name}`)
+
+export const reloadSkills = () =>
+  post<any>('/skills/reload')
+
+export const setSkillVisibility = (name: string, visibility: string) =>
+  post<any>('/skills/visibility', { name, visibility })
+
+export const fetchMCPTools = () =>
+  get<any>('/mcp/tools')
+
+export const invokeMCPTool = (tool: string, args: Record<string, unknown>) =>
+  post<any>('/mcp/invoke', { tool, args })
+
+export const fetchRunners = () =>
+  get<any>('/runners')
+
+// ---------------------------------------------------------------------------
+// Code Execution — autonomous SWE
+// ---------------------------------------------------------------------------
+export const executeCode = (body: { task: string; workspace?: string; language?: string }) =>
+  post<any>('/code/execute', body)
+
+export const planCode = (body: { task: string; context?: string }) =>
+  post<any>('/code/plan', body)
+
+export const fetchCodeStatus = (run_id: string) =>
+  get<any>(`/code/status/${run_id}`)
+
+export const approveCodeExecution = (run_id: string) =>
+  post<any>('/code/approve', { run_id })
+
+// ---------------------------------------------------------------------------
+// Evaluation & Research
+// ---------------------------------------------------------------------------
+export const fetchEvalSuites = () =>
+  get<any>('/eval/suites')
+
+export const runEvalSuite = (suite_id: string) =>
+  post<any>('/eval/run', { suite_id })
+
+export const fetchEvalHistory = () =>
+  get<any>('/eval/history')
+
+// ---------------------------------------------------------------------------
+// HIL — Human-in-the-Loop Testing
+// ---------------------------------------------------------------------------
+export const connectHIL = (session_name?: string) =>
+  post<any>('/hil/connect', { session_name })
+
+export const runHILSuite = (session_id: string) =>
+  post<any>('/hil/run-suite', { session_id })
+
+export const fetchHILStatus = () =>
+  get<any>('/hil/status')
+
+export const fetchHILReport = (session_id: string) =>
+  get<any>(`/hil/report/${session_id}`)
+
+// ---------------------------------------------------------------------------
+// Organization Management
+// ---------------------------------------------------------------------------
+export const addOrgSolution = (name: string, path: string) =>
+  post<any>('/org/solutions', { name, path })
+
+export const removeOrgSolution = (name: string) =>
+  del<any>(`/org/solutions/${name}`)
+
+export const addOrgChannel = (name: string, solutions: string[]) =>
+  post<any>('/org/channels', { name, solutions })
+
+export const removeOrgChannel = (name: string) =>
+  del<any>(`/org/channels/${name}`)
+
+export const addOrgRoute = (task_type: string, source: string, target: string) =>
+  post<any>('/org/routes', { task_type, source, target })
+
+export const removeOrgRoute = (task_type: string, source: string, target: string) =>
+  del<any>(`/org/routes?task_type=${task_type}&source=${source}&target=${target}`)
+
+// ---------------------------------------------------------------------------
+// Natural Language Query
+// ---------------------------------------------------------------------------
+export const sageAsk = (question: string) =>
+  get<any>(`/sage/ask?q=${encodeURIComponent(question)}`)
+

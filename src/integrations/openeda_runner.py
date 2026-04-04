@@ -41,8 +41,11 @@ class OpenEDARunner(BaseRunner):
         try:
             description = task.get("description", "")
             task_type = task.get("task_type", "PCB_DESIGN")
+            payload = task.get("payload", {})
+            project_name = payload.get("project_name", "board")
 
             from src.core.llm_gateway import llm_gateway
+            from src.integrations.output_validator import parse_with_retry
 
             system_prompt = (
                 "You are a senior PCB designer and electronics engineer.\n"
@@ -57,38 +60,115 @@ class OpenEDARunner(BaseRunner):
                 "\"drc_rules\": {\"min_trace_mm\": N, \"min_clearance_mm\": N}}\n"
             )
 
-            response = llm_gateway.generate_for_task(
-                task_type=task_type,
-                prompt=f"Task: {description}\nPayload: {task.get('payload', {})}",
-                system_prompt=system_prompt,
-                trace_name="openeda.generate",
-            )
+            user_prompt = f"Task: {description}\nPayload: {payload}"
+
+            # Use output validator with auto-retry
+            def _generate():
+                return llm_gateway.generate_for_task(
+                    task_type=task_type,
+                    prompt=user_prompt,
+                    system_prompt=system_prompt,
+                    trace_name="openeda.generate",
+                )
+
+            validation = parse_with_retry(_generate, "eda_design")
 
             files_changed = []
-            metrics = {}
-            try:
-                import json
-                start = response.find("{")
-                end = response.rfind("}") + 1
-                if start >= 0 and end > start:
-                    parsed = json.loads(response[start:end])
-                    files_changed = [f["path"] for f in parsed.get("files", [])]
-                    metrics.update({
-                        "components": parsed.get("components", 0),
-                        "layers": parsed.get("layers", 2),
-                        "board_area_mm2": parsed.get("board_area_mm2", 0),
-                    })
-            except Exception:
-                pass
+            metrics = {"mcp_tools_invoked": []}
+
+            if validation["valid"]:
+                parsed = validation["output"]
+                files_changed = [f["path"] for f in parsed.get("files", [])]
+                metrics.update({
+                    "components": parsed.get("components", 0),
+                    "layers": parsed.get("layers", 2),
+                    "board_area_mm2": parsed.get("board_area_mm2", 0),
+                })
+
+                # --- Wire MCP hardware tools ---
+                # 1. Create KiCad project scaffold
+                if workspace:
+                    mcp_results = self._invoke_mcp_tools(
+                        workspace, project_name, parsed, files_changed,
+                    )
+                    metrics["mcp_tools_invoked"] = mcp_results
+            else:
+                # Validation failed — use raw output
+                response = validation.get("output") or ""
+                self.logger.warning(
+                    "Output validation failed after %d attempts: %s",
+                    validation.get("attempts", 0), validation.get("errors", []),
+                )
 
             return self._make_result(
                 run_id=run_id, status="completed", tier="direct",
-                output=response, files_changed=files_changed,
+                output=str(validation.get("output", "")),
+                files_changed=files_changed,
                 metrics=metrics,
             )
         except Exception as exc:
             self.logger.error("OpenEDA execute failed: %s", exc)
             return self._make_error(run_id, str(exc))
+
+    def _invoke_mcp_tools(
+        self, workspace: str, project_name: str,
+        parsed: dict, files_changed: list,
+    ) -> list:
+        """Invoke hardware MCP tools on generated EDA artifacts.
+
+        Creates KiCad project, writes generated files, runs ERC/DRC,
+        and exports Gerbers/BOM when possible.
+        """
+        from src.mcp_servers.hardware_tools import (
+            kicad_create_project, kicad_run_erc, kicad_run_drc,
+            kicad_export_gerbers, kicad_export_bom,
+        )
+        import os
+
+        tool_results = []
+
+        # 1. Create KiCad project scaffold
+        create_result = kicad_create_project(project_name, workspace)
+        tool_results.append({"tool": "kicad_create_project", "result": create_result})
+        project_dir = create_result.get("project_dir", "")
+
+        # 2. Write generated files into the project directory
+        for file_info in parsed.get("files", []):
+            fpath = os.path.join(workspace, file_info["path"])
+            os.makedirs(os.path.dirname(fpath) or workspace, exist_ok=True)
+            with open(fpath, "w") as f:
+                f.write(file_info["content"])
+
+        # 3. Run ERC on schematic files
+        sch_files = [f for f in files_changed if f.endswith((".kicad_sch", ".sch"))]
+        for sch in sch_files[:2]:
+            sch_path = os.path.join(workspace, sch)
+            if os.path.isfile(sch_path):
+                erc_result = kicad_run_erc(sch_path)
+                tool_results.append({"tool": "kicad_run_erc", "file": sch, "result": erc_result})
+
+        # 4. Run DRC on PCB files
+        pcb_files = [f for f in files_changed if f.endswith((".kicad_pcb", ".pcb"))]
+        for pcb in pcb_files[:2]:
+            pcb_path = os.path.join(workspace, pcb)
+            if os.path.isfile(pcb_path):
+                drc_result = kicad_run_drc(pcb_path)
+                tool_results.append({"tool": "kicad_run_drc", "file": pcb, "result": drc_result})
+
+                # 5. Export Gerbers if DRC passes
+                gerber_dir = os.path.join(workspace, "gerbers")
+                gerber_result = kicad_export_gerbers(pcb_path, gerber_dir)
+                tool_results.append({"tool": "kicad_export_gerbers", "result": gerber_result})
+
+        # 6. Export BOM from schematic
+        for sch in sch_files[:1]:
+            sch_path = os.path.join(workspace, sch)
+            if os.path.isfile(sch_path):
+                bom_path = os.path.join(workspace, "bom.csv")
+                bom_result = kicad_export_bom(sch_path, bom_path)
+                tool_results.append({"tool": "kicad_export_bom", "result": bom_result})
+
+        return tool_results
 
     def verify(self, result, task):
         findings = []

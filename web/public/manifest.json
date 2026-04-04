@@ -1,0 +1,19 @@
+{
+  "name": "SAGE — Smart Agentic-Guided Empowerment",
+  "short_name": "SAGE",
+  "description": "Autonomous AI agent framework for lean product development",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0c",
+  "theme_color": "#3b82f6",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["developer", "productivity", "utilities"]
+}

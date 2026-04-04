@@ -45,8 +45,8 @@ class OpenFWRunner(BaseRunner):
             description = task.get("description", "")
             task_type = task.get("task_type", "FIRMWARE")
 
-            # Use LLM to generate firmware code
             from src.core.llm_gateway import llm_gateway
+            from src.integrations.output_validator import parse_with_retry
 
             system_prompt = (
                 "You are a senior embedded firmware engineer.\n"
@@ -61,36 +61,45 @@ class OpenFWRunner(BaseRunner):
                 "\"target_mcu\": \"...\", \"binary_estimate_kb\": N, \"ram_estimate_kb\": N}\n"
             )
 
-            response = llm_gateway.generate_for_task(
-                task_type=task_type,
-                prompt=f"Task: {description}\nPayload: {task.get('payload', {})}",
-                system_prompt=system_prompt,
-                trace_name="openfw.generate",
-            )
+            user_prompt = f"Task: {description}\nPayload: {task.get('payload', {})}"
 
-            # Parse response
+            # Use output validator with auto-retry
+            def _generate():
+                return llm_gateway.generate_for_task(
+                    task_type=task_type,
+                    prompt=user_prompt,
+                    system_prompt=system_prompt,
+                    trace_name="openfw.generate",
+                )
+
+            validation = parse_with_retry(_generate, "firmware")
+
             files_changed = []
-            metrics = {}
-            try:
-                import json
-                # Try to extract JSON from response
-                start = response.find("{")
-                end = response.rfind("}") + 1
-                if start >= 0 and end > start:
-                    parsed = json.loads(response[start:end])
-                    files_changed = [f["path"] for f in parsed.get("files", [])]
-                    metrics["target_mcu"] = parsed.get("target_mcu", "generic")
-                    metrics["binary_estimate_kb"] = parsed.get("binary_estimate_kb", 0)
-                    metrics["ram_estimate_kb"] = parsed.get("ram_estimate_kb", 0)
-            except (json.JSONDecodeError, KeyError):
-                pass
+            metrics = {"mcp_tools_invoked": []}
+
+            if validation["valid"]:
+                parsed = validation["output"]
+                files_changed = [f["path"] for f in parsed.get("files", [])]
+                metrics["target_mcu"] = parsed.get("target_mcu", "generic")
+                metrics["binary_estimate_kb"] = parsed.get("binary_estimate_kb", 0)
+                metrics["ram_estimate_kb"] = parsed.get("ram_estimate_kb", 0)
+
+                # --- Wire MCP hardware tools ---
+                if workspace:
+                    mcp_results = self._invoke_mcp_tools(workspace, parsed)
+                    metrics["mcp_tools_invoked"] = mcp_results
+            else:
+                self.logger.warning(
+                    "Output validation failed after %d attempts: %s",
+                    validation.get("attempts", 0), validation.get("errors", []),
+                )
 
             metrics["task_type"] = task_type
             return self._make_result(
                 run_id=run_id,
                 status="completed",
                 tier="direct",
-                output=response,
+                output=str(validation.get("output", "")),
                 files_changed=files_changed,
                 metrics=metrics,
             )
@@ -98,6 +107,57 @@ class OpenFWRunner(BaseRunner):
         except Exception as exc:
             self.logger.error("OpenFW execute failed: %s", exc)
             return self._make_error(run_id, str(exc))
+
+    def _invoke_mcp_tools(self, workspace: str, parsed: dict) -> list:
+        """Invoke hardware MCP tools on generated firmware artifacts.
+
+        Writes generated files to workspace, runs static analysis (cppcheck),
+        and attempts cross-compilation when tools are available.
+        """
+        from src.mcp_servers.hardware_tools import (
+            firmware_compile, firmware_size, cppcheck_misra,
+        )
+        import os
+
+        tool_results = []
+
+        # 1. Write generated files to workspace
+        for file_info in parsed.get("files", []):
+            fpath = os.path.join(workspace, file_info["path"])
+            os.makedirs(os.path.dirname(fpath) or workspace, exist_ok=True)
+            with open(fpath, "w") as f:
+                f.write(file_info["content"])
+
+        # 2. Run cppcheck MISRA static analysis
+        c_files = [
+            os.path.join(workspace, f["path"])
+            for f in parsed.get("files", [])
+            if f["path"].endswith((".c", ".cpp"))
+        ]
+        if c_files:
+            misra_result = cppcheck_misra(workspace)
+            tool_results.append({"tool": "cppcheck_misra", "result": misra_result})
+
+        # 3. Attempt cross-compilation
+        target_mcu = parsed.get("target_mcu", "cortex-m4")
+        # Map MCU names to GCC target flags
+        target_map = {
+            "stm32f4": "cortex-m4", "stm32f1": "cortex-m3",
+            "stm32f0": "cortex-m0", "stm32f7": "cortex-m7",
+            "nrf52": "cortex-m4", "esp32": "cortex-m4",
+        }
+        gcc_target = target_map.get(target_mcu.lower(), target_mcu)
+        if c_files:
+            compile_result = firmware_compile(workspace, target=gcc_target)
+            tool_results.append({"tool": "firmware_compile", "result": compile_result})
+
+            # 4. Get binary size if compilation succeeded
+            elf_path = os.path.join(workspace, "firmware.elf")
+            if compile_result.get("success") and os.path.isfile(elf_path):
+                size_result = firmware_size(elf_path)
+                tool_results.append({"tool": "firmware_size", "result": size_result})
+
+        return tool_results
 
     # ── Verify ──────────────────────────────────────────────────────────
 

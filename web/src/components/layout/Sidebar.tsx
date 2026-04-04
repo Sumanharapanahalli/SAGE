@@ -7,6 +7,7 @@ import {
   GitBranch, Target, Inbox, Network, Building2,
   CheckSquare, Zap, Database, BookOpen, Shield,
   ChevronDown, ChevronsUpDown, LayoutGrid, Users, type LucideIcon,
+  Dumbbell, ShieldAlert, Wrench, Code2, Brain, MessageSquare,
 } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { fetchProjects, fetchHealth, switchProject } from '../../api/client'
@@ -38,6 +39,7 @@ const NAV_AREAS: NavArea[] = [
   {
     id: 'work', label: 'Work', icon: CheckSquare, accent: '#ef4444', tooltip: 'View and act on agent proposals, queued tasks, and live activity',
     items: [
+      { to: '/chat',            icon: MessageSquare,   label: 'Chat',            moduleId: 'chat',            tooltip: 'Converse with any agent role — Analyst, Developer, Planner, and more' },
       { to: '/approvals',       icon: Inbox,           label: 'Approvals',       moduleId: 'approvals',       tooltip: 'Agent proposals waiting for your review before execution' },
       { to: '/queue',           icon: ListOrdered,     label: 'Task Queue',      moduleId: 'queue',           tooltip: 'Tasks currently queued or running across all agents' },
       { to: '/',                icon: LayoutDashboard, label: 'Dashboard',       moduleId: 'dashboard',       tooltip: 'System health, recent activity, and integration status' },
@@ -56,12 +58,14 @@ const NAV_AREAS: NavArea[] = [
       { to: '/improvements', icon: Lightbulb, label: 'Improvements', moduleId: 'improvements', tooltip: 'Feature request queue and AI-generated implementation plans' },
       { to: '/workflows',    icon: GitBranch, label: 'Workflows',    moduleId: 'workflows',    tooltip: 'LangGraph workflow definitions and execution history' },
       { to: '/goals',        icon: Target,    label: 'Goals',        moduleId: 'improvements', tooltip: 'High-level objectives tracked against in-progress work' },
+      { to: '/gym',          icon: Dumbbell,  label: 'Agent Gym',    moduleId: 'gym',          tooltip: 'Train agents through exercises, track ratings, browse curriculum' },
+      { to: '/code',         icon: Code2,     label: 'Code Runner',  moduleId: 'code',         tooltip: 'Submit autonomous code tasks, view execution, approve changes' },
     ],
   },
   {
     id: 'knowledge', label: 'Knowledge', icon: Database, accent: '#10b981', tooltip: 'Vector knowledge base, shared channels, and compliance records',
     items: [
-      { to: '/knowledge', icon: BookOpen,      label: 'Vector Store', moduleId: 'knowledge', tooltip: "Search and manage entries in this solution's knowledge base" },
+      { to: '/knowledge', icon: Brain,          label: 'Knowledge Base', moduleId: 'knowledge', tooltip: "Search, browse, and manage knowledge base entries" },
       { to: '/activity',  icon: Activity,      label: 'Channels',     moduleId: 'audit',    tooltip: 'Cross-team knowledge channels shared via org configuration' },
       { to: '/audit',     icon: ClipboardList, label: 'Audit Log',    moduleId: 'audit',    tooltip: 'Full compliance audit trail — proposals, approvals, rejections' },
       { to: '/costs',     icon: DollarSign,    label: 'Costs',        moduleId: 'costs',    tooltip: 'LLM token usage and budget controls per solution' },
@@ -81,8 +85,10 @@ const NAV_AREAS: NavArea[] = [
       { to: '/yaml-editor',    icon: FileCode2,   label: 'Config Editor',  moduleId: 'yaml-editor',    tooltip: 'Edit solution YAML files with live validation' },
       { to: '/access-control', icon: ShieldCheck, label: 'Access Control', moduleId: 'access-control', tooltip: 'Manage API keys and user role assignments' },
       { to: '/integrations',   icon: Plug,        label: 'Integrations',   moduleId: 'integrations',   tooltip: 'Status and configuration for all connected integrations' },
+      { to: '/safety',               icon: ShieldAlert, label: 'Safety Analysis', moduleId: 'safety',         tooltip: 'FMEA, Fault Tree Analysis, ASIL/SIL/IEC 62304 classification' },
       { to: '/cds-compliance',        icon: ShieldCheck, label: 'CDS Compliance', moduleId: 'cds-compliance', tooltip: 'FDA Clinical Decision Support compliance — 4-criterion assessment per 2026 guidance' },
       { to: '/regulatory',            icon: Shield,      label: 'Regulatory',     moduleId: 'regulatory',      tooltip: 'Multi-standard regulatory compliance — FDA, EU MDR, AI Act, IEC 62304, ISO 14971 and more' },
+      { to: '/skills',                icon: Wrench,      label: 'Skills & Tools', moduleId: 'skills',          tooltip: 'Manage skill registry, browse MCP tools, configure integrations' },
       { to: '/settings',              icon: Settings,    label: 'Settings',       moduleId: 'settings',       tooltip: 'Framework-wide settings and display preferences' },
       { to: '/settings/organization', icon: Building2,   label: 'Organization',   moduleId: 'organization',   tooltip: 'Company mission, vision and values' },
     ],

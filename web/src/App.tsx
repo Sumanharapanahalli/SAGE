@@ -36,6 +36,12 @@ import Organization from './pages/settings/Organization'
 import ProductBacklog from './pages/ProductBacklog'
 import CDSCompliance from './pages/CDSCompliance'
 import RegulatoryCompliance from './pages/RegulatoryCompliance'
+import AgentGym from './pages/AgentGym'
+import SafetyAnalysis from './pages/SafetyAnalysis'
+import KnowledgeBrowser from './pages/KnowledgeBrowser'
+import SkillsTools from './pages/SkillsTools'
+import CodeExecution from './pages/CodeExecution'
+import Chat from './pages/Chat'
 import ThemeProvider from './components/theme/ThemeProvider'
 import { AuthProvider } from './context/AuthContext'
 import { UserPrefsProvider } from './context/UserPrefsContext'
@@ -131,12 +137,12 @@ function AppShell() {
 
   return (
     <>
-      <div className="flex h-screen overflow-hidden bg-zinc-50">
+      <div className="flex h-screen overflow-hidden" style={{ backgroundColor: '#0a0a0c' }}>
         <Sidebar />
         <SidebarDivider />
         <div className="flex flex-col flex-1 overflow-hidden">
           <Header onOpenPalette={() => setPaletteOpen(true)} />
-          <main className="flex-1 overflow-y-auto p-6">
+          <main className="flex-1 overflow-y-auto p-5 sage-page-enter" style={{ backgroundColor: '#0f0f11' }}>
             <Routes>
               <Route path="/"             element={<Dashboard />} />
               <Route path="/agents"       element={<Agents />} />
@@ -160,12 +166,17 @@ function AppShell() {
               <Route path="/org-graph"      element={<OrgGraph />} />
               <Route path="/issues"         element={<Issues />} />
               <Route path="/activity"       element={<Activity />} />
-              <Route path="/knowledge"      element={<AuditLog />} />
+              <Route path="/knowledge"      element={<KnowledgeBrowser />} />
               <Route path="/guide"          element={<Guide />} />
               <Route path="/build"         element={<BuildConsole />} />
               <Route path="/product-backlog" element={<ProductBacklog />} />
               <Route path="/cds-compliance" element={<CDSCompliance />} />
               <Route path="/regulatory" element={<RegulatoryCompliance />} />
+              <Route path="/gym"            element={<AgentGym />} />
+              <Route path="/safety"         element={<SafetyAnalysis />} />
+              <Route path="/skills"         element={<SkillsTools />} />
+              <Route path="/code"           element={<CodeExecution />} />
+              <Route path="/chat"           element={<Chat />} />
               <Route path="/settings/organization" element={<Organization />} />
             </Routes>
           </main>

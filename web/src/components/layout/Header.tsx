@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
-import { Command, MessageSquare } from 'lucide-react'
+import { Command, MessageSquare, Sparkles, ChevronRight } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { fetchHealth } from '../../api/client'
 import { useProjectConfig } from '../../hooks/useProjectConfig'
@@ -30,16 +30,23 @@ const PAGE_TITLES: Record<string, string> = {
   '/goals':          'Goals',
   '/org':            'Org Chart',
   '/approvals':      'Approvals',
-  '/knowledge':         'Knowledge',
-  '/product-backlog':   'Product Backlog',
-  '/cds-compliance':    'CDS Compliance',
-  '/regulatory':        'Regulatory Compliance',
-  '/guide':             'User Guide',
+  '/knowledge':      'Knowledge Base',
+  '/product-backlog': 'Product Backlog',
+  '/cds-compliance':  'CDS Compliance',
+  '/regulatory':      'Regulatory Compliance',
+  '/guide':           'User Guide',
   '/settings/organization': 'Organization',
+  // New pages
+  '/gym':             'Agent Gym',
+  '/safety':          'Safety Analysis',
+  '/skills':          'Skills & Tools',
+  '/code':            'Code Execution',
+  '/chat':            'Chat',
 }
 
 const ROUTE_TO_AREA: Record<string, string> = {
   '/':                'Work',
+  '/chat':            'Work',
   '/approvals':       'Work',
   '/queue':           'Work',
   '/product-backlog': 'Work',
@@ -52,17 +59,21 @@ const ROUTE_TO_AREA: Record<string, string> = {
   '/improvements':   'Intelligence',
   '/workflows':      'Intelligence',
   '/goals':          'Intelligence',
+  '/gym':            'Intelligence',
+  '/code':           'Intelligence',
   '/audit':          'Knowledge',
   '/costs':          'Knowledge',
   '/activity':       'Knowledge',
   '/knowledge':      'Knowledge',
   '/issues':         'Knowledge',
+  '/safety':         'Compliance',
   '/org-graph':      'Organization',
   '/onboarding':     'Organization',
   '/llm':            'Admin',
   '/yaml-editor':    'Admin',
   '/access-control': 'Admin',
   '/integrations':   'Admin',
+  '/skills':         'Admin',
   '/settings':               'Admin',
   '/guide':                  'Admin',
   '/cds-compliance':         'Admin',
@@ -100,6 +111,8 @@ export default function Header({ onOpenPalette }: HeaderProps) {
   const { data: projectData } = useProjectConfig()
 
   const online = !healthError && !!healthData
+  const provider = (healthData as any)?.llm_provider ?? 'Unknown'
+  const model = (healthData as any)?.llm_model ?? ''
   const uiLabels = (projectData as any)?.ui_labels ?? {}
   const UI_LABEL_ROUTES: Record<string, string> = {
     '/analyst':   uiLabels.analyst_page_title,
@@ -107,53 +120,90 @@ export default function Header({ onOpenPalette }: HeaderProps) {
     '/monitor':   uiLabels.monitor_page_title,
   }
   const title = UI_LABEL_ROUTES[pathname] ?? PAGE_TITLES[pathname] ?? 'SAGE[ai]'
+  const area = ROUTE_TO_AREA[pathname] ?? 'SAGE'
   const projectName = (projectData as any)?.name ?? 'SAGE Framework'
 
   return (
     <header
-      className="h-14 border-b flex items-center px-4 gap-3 shrink-0 relative"
-      style={{ backgroundColor: '#18181b', borderColor: '#27272a' }}
+      className="h-12 border-b flex items-center px-4 gap-2 shrink-0"
+      style={{ backgroundColor: '#111113', borderColor: '#1e1e22' }}
     >
-      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: '11px', color: '#64748b' }}>
-          {projectName} / {ROUTE_TO_AREA[pathname] ?? 'SAGE'}
-        </div>
-        <div style={{ fontSize: '14px', fontWeight: 600, color: '#f1f5f9', marginTop: '1px' }}>
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-1.5 flex-1 min-w-0">
+        <span style={{ fontSize: '12px', color: '#6b7280', fontWeight: 500 }}>
+          {projectName}
+        </span>
+        <ChevronRight size={10} style={{ color: '#3f3f46' }} />
+        <span style={{ fontSize: '12px', color: '#52525b' }}>
+          {area}
+        </span>
+        <ChevronRight size={10} style={{ color: '#3f3f46' }} />
+        <span style={{ fontSize: '13px', fontWeight: 600, color: '#e4e4e7' }}>
           {title}
-        </div>
+        </span>
       </div>
 
+      {/* Model selector badge — Claude-style */}
+      {online && (
+        <div
+          className="flex items-center gap-1.5 px-2.5 py-1 cursor-pointer"
+          style={{
+            background: 'rgba(16, 185, 129, 0.08)',
+            border: '1px solid rgba(16, 185, 129, 0.15)',
+            borderRadius: '8px',
+            fontSize: '11px',
+            color: '#10b981',
+            fontWeight: 500,
+          }}
+          title={`LLM: ${provider}${model ? ` / ${model}` : ''}`}
+        >
+          <Sparkles size={11} />
+          <span>{provider}{model ? ` · ${model}` : ''}</span>
+        </div>
+      )}
+
+      {/* Status dot */}
+      <div className="flex items-center gap-1.5">
+        <span
+          style={{
+            width: 6, height: 6, borderRadius: '50%',
+            backgroundColor: online ? '#22c55e' : '#ef4444',
+            display: 'inline-block',
+            boxShadow: online ? '0 0 6px rgba(34,197,94,0.4)' : '0 0 6px rgba(239,68,68,0.4)',
+          }}
+        />
+      </div>
+
+      {/* Command palette */}
       <button
         onClick={onOpenPalette}
-        className="flex items-center gap-1.5 text-xs px-2.5 py-1 transition-colors shrink-0"
-        style={{ color: '#52525b', border: '1px solid #3f3f46' }}
-        title="Open command palette (Cmd+K)"
+        className="flex items-center gap-1 text-xs px-2 py-1 transition-colors shrink-0"
+        style={{
+          color: '#52525b',
+          border: '1px solid #27272a',
+          borderRadius: '6px',
+          background: 'rgba(255,255,255,0.02)',
+        }}
+        title="Command palette (Cmd+K)"
       >
-        <Command size={11} />
-        <span>K</span>
+        <Command size={10} />
+        <span style={{ fontSize: '10px', fontWeight: 500 }}>K</span>
       </button>
 
+      {/* Chat */}
       <button
         onClick={() => openChat()}
-        title="Open SAGE Chat (Ctrl+J)"
-        className="flex items-center gap-1.5 text-xs px-2.5 py-1 transition-colors shrink-0"
+        title="SAGE Chat (Ctrl+J)"
+        className="flex items-center gap-1 text-xs px-2 py-1 transition-colors shrink-0"
         style={{
           color: panelState !== 'closed' ? '#3b82f6' : '#52525b',
-          border: `1px solid ${panelState !== 'closed' ? '#1d4ed8' : '#3f3f46'}`,
+          border: `1px solid ${panelState !== 'closed' ? '#1d4ed8' : '#27272a'}`,
+          borderRadius: '6px',
+          background: panelState !== 'closed' ? 'rgba(59,130,246,0.08)' : 'rgba(255,255,255,0.02)',
         }}
       >
         <MessageSquare size={11} />
       </button>
-
-      <div className="flex items-center gap-1.5 text-xs shrink-0">
-        <span
-          className="w-1.5 h-1.5"
-          style={{ backgroundColor: online ? '#22c55e' : '#ef4444', display: 'inline-block' }}
-        />
-        <span className="hidden sm:block" style={{ color: '#52525b' }}>
-          {online ? (healthData as any)?.llm_provider ?? 'Online' : 'API Unreachable'}
-        </span>
-      </div>
 
       <UserMenu />
     </header>

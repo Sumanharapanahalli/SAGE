@@ -132,6 +132,68 @@ class AdaptiveRouter:
                 "counts": {k: dict(v) for k, v in self._counts.items()},
             }
 
+    def set_role_descriptions(self, descriptions: dict[str, str]) -> None:
+        """Set role descriptions for capability-match warm-start routing.
+
+        Args:
+            descriptions: Mapping of role name to a text description of its capabilities.
+                          Used for keyword overlap scoring when no observations exist.
+        """
+        with self._lock:
+            self._role_descriptions = dict(descriptions)
+
+    def route_with_context(self, task_type: str, task_description: str = "") -> str:
+        """Route with capability-match warm-start for cold-start scenarios.
+
+        When the router has enough observations (>= MIN_OBSERVATIONS), uses
+        learned scores. Otherwise, falls back to keyword overlap between
+        the task description and role descriptions.
+
+        Args:
+            task_type: The BUILD_TASK_TYPE being routed.
+            task_description: Plain-text description of the task (used for keyword matching).
+
+        Returns:
+            The best agent_role for this task.
+        """
+        # First try learned routing (has priority if enough data)
+        default = TASK_TYPE_TO_AGENT.get(task_type, "developer")
+
+        with self._lock:
+            # Check if we have enough learned observations
+            if task_type in self._scores:
+                type_scores = self._scores[task_type]
+                type_counts = self._counts.get(task_type, {})
+                candidates = {
+                    role: score
+                    for role, score in type_scores.items()
+                    if type_counts.get(role, 0) >= self.MIN_OBSERVATIONS
+                }
+                if candidates:
+                    best = max(candidates, key=candidates.get)
+                    if candidates[best] > candidates.get(default, 0.0):
+                        return best
+
+            # Cold start: try capability-match if descriptions are available
+            descriptions = getattr(self, "_role_descriptions", {})
+            if descriptions and task_description:
+                # Tokenize task description into keywords
+                task_words = set(task_description.lower().split())
+                best_role = default
+                best_overlap = 0
+
+                for role, desc in descriptions.items():
+                    desc_words = set(desc.lower().split())
+                    overlap = len(task_words & desc_words)
+                    if overlap > best_overlap:
+                        best_overlap = overlap
+                        best_role = role
+
+                if best_overlap > 0:
+                    return best_role
+
+        return default
+
 
 # Module-level adaptive router singleton — compounds across builds
 adaptive_router = AdaptiveRouter()
@@ -2648,6 +2710,7 @@ class BuildOrchestrator:
         from src.integrations.openswe_runner import get_openswe_runner
         from src.integrations.openshell_runner import get_openshell_runner
         from src.integrations.sandbox_runner import sandbox_runner as local_sandbox
+        from src.integrations.message_bus import MessageBus
 
         openswe = get_openswe_runner()
         openshell = get_openshell_runner()
@@ -2655,26 +2718,37 @@ class BuildOrchestrator:
         plan = run.get("plan", [])
         failed_steps: set = set()
 
+        # Create a message bus for inter-agent communication within this build
+        message_bus = MessageBus()
+        run["_message_bus"] = message_bus
+
         # Build dependency-aware waves
         waves = self._compute_waves(plan)
 
         for wave_num, wave in enumerate(waves):
-            # Filter out tasks whose dependencies failed
+            # Filter out tasks whose dependencies failed (cascades transitively)
             executable = []
             for task in wave:
                 deps = task.get("depends_on", [])
-                if any(d in failed_steps for d in deps):
+                blocked_by = [d for d in deps if d in failed_steps]
+                if blocked_by:
                     self.logger.warning(
-                        "Skipping task step=%s (dependency failed): %s",
-                        task.get("step"), task.get("task_type"),
+                        "Skipping task step=%s (blocked by failed steps %s): %s",
+                        task.get("step"), blocked_by, task.get("task_type"),
                     )
                     results.append({
                         "task": task,
-                        "result": {"status": "blocked", "reason": "dependency_failed"},
+                        "result": {
+                            "status": "blocked",
+                            "reason": "dependency_failed",
+                            "blocked_by": blocked_by,
+                        },
                         "step": task.get("step", 0),
                         "wave": wave_num,
                         "agent_role": task.get("agent_role", "developer"),
                     })
+                    # Cascade: this blocked task is also a failed step,
+                    # so any downstream tasks depending on it will also be blocked
                     failed_steps.add(task.get("step", 0))
                     continue
                 executable.append(task)
@@ -2689,18 +2763,43 @@ class BuildOrchestrator:
                 ", ".join(t.get("task_type", "?") for t in executable),
             )
 
-            # Inject summarized context from prior waves
+            # Inject summarized context from prior waves + message bus
             prior_context = self._summarize_context(results)
-            if prior_context:
-                run["_prior_wave_context"] = prior_context
+            bus_summary = message_bus.get_summary()
+            if prior_context or bus_summary:
+                run["_prior_wave_context"] = (prior_context or "") + "\n" + (bus_summary or "")
 
             wave_results = []
             for task in executable:
                 # Coordinator pattern: route to specialist agent
                 agent_role = task.get("agent_role", "developer")
+                # Use capability-match warm-start for routing
+                task_description = task.get("description", "")
+                routed_role = adaptive_router.route_with_context(
+                    task.get("task_type", ""), task_description,
+                )
+                if routed_role != agent_role:
+                    self.logger.info(
+                        "Capability-match routing: %s → %s (was %s)",
+                        task.get("task_type"), routed_role, agent_role,
+                    )
+                    agent_role = routed_role
+
                 result = self._route_to_agent(
                     task, agent_role, openswe, run,
                     openshell=openshell, local_sandbox=local_sandbox,
+                )
+
+                # Publish result to message bus for downstream agents
+                message_bus.publish(
+                    agent_role,
+                    task.get("task_type", "unknown"),
+                    {
+                        "step": task.get("step", 0),
+                        "status": result.get("status", "unknown"),
+                        "files_changed": result.get("files_changed", [])[:5],
+                        "summary": str(result.get("output", ""))[:200],
+                    },
                 )
 
                 # Record outcome in adaptive router for future routing decisions
