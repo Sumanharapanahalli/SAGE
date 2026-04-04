@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Shield, CheckCircle, XCircle, AlertTriangle, FileText, Eye, Database, Tag, Package } from 'lucide-react'
 import { toast } from 'sonner'
-import { classifyCDSFunction, classifyCDSInputs, validateCDSSources, generateCDSLabeling, generateCDSCompliancePackage } from '../api/client'
+import { classifyCDSFunction, classifyCDSInputs, validateCDSSources, classifyCDSOutput, generateCDSTransparencyReport, generateCDSLabeling, generateCDSCompliancePackage } from '../api/client'
 
 type Tab = 'overview' | 'inputs' | 'sources' | 'labeling' | 'package'
 

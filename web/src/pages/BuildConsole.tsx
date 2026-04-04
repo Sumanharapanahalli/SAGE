@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
-  startBuild, fetchBuildStatus, approveBuild, fetchBuildRuns,
+  startBuild, fetchBuildStatus, approveBuild, fetchBuildRuns, fetchBuildRoles,
   type BuildStatus, type BuildRunSummary, type BuildCriticScore,
-  type BuildAgentResult,
+  type BuildAgentResult, type AgentRole,
 } from '../api/client'
 import {
   Hammer, Play, CheckCircle2, XCircle, Clock, AlertTriangle,
@@ -781,6 +781,13 @@ export default function BuildConsole() {
     },
   })
 
+  // Available agent roles
+  const rolesQuery = useQuery({
+    queryKey: ['build-roles'],
+    queryFn: fetchBuildRoles,
+    retry: false,
+  })
+
   // List runs
   const runsQuery = useQuery({
     queryKey: ['build-runs'],
@@ -983,6 +990,21 @@ export default function BuildConsole() {
             title="Build failed to start"
             onRetry={() => startMutation.mutate()}
           />
+        )}
+
+        {/* Available Agent Roles */}
+        {rolesQuery.data?.roles && rolesQuery.data.roles.length > 0 && (
+          <div className="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-100">
+            <h4 className="text-xs font-semibold text-gray-600 mb-2">Available Agent Roles ({rolesQuery.data.roles.length})</h4>
+            <div className="flex flex-wrap gap-1.5">
+              {rolesQuery.data.roles.map((r: AgentRole) => (
+                <span key={r.role} className="inline-flex items-center gap-1 text-xs px-2 py-0.5 bg-white border border-gray-200 rounded-full text-gray-600" title={r.description}>
+                  {r.title || r.role}
+                  {r.team && <span className="text-gray-400">· {r.team}</span>}
+                </span>
+              ))}
+            </div>
+          </div>
         )}
       </div>
 

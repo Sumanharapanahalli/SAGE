@@ -5,7 +5,7 @@ import {
   Lightbulb, Cpu, Target, Code2, Shield, Brain, Users,
   Loader2, ChevronDown, Sparkles, type LucideIcon,
 } from 'lucide-react'
-import { fetchAgentRoles, postChat, executeChat } from '../api/client'
+import { fetchAgentRoles, postChat, executeChat, clearChatHistory, sageAsk } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import { useProjectConfig } from '../hooks/useProjectConfig'
 
@@ -189,7 +189,9 @@ export default function Chat() {
       if (activeId === id) setActiveId(next[0]?.id ?? null)
       return next
     })
-  }, [activeId])
+    // Also clear server-side chat history
+    clearChatHistory(userId, solution || 'default').catch(() => {})
+  }, [activeId, userId, solution])
 
   const sendMessage = useCallback(async () => {
     if (!input.trim() || isLoading || !activeConv) return

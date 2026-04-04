@@ -2,11 +2,11 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   Brain, Search, Plus, Trash2, RefreshCw,
-  FileText, ChevronRight, AlertCircle,
+  FileText, ChevronRight, AlertCircle, Download,
 } from 'lucide-react'
 import {
   fetchKnowledgeEntries, searchKnowledge,
-  deleteKnowledgeEntry, addKnowledge,
+  deleteKnowledgeEntry, addKnowledge, triggerKnowledgeSync,
 } from '../api/client'
 
 type Tab = 'browse' | 'search' | 'add'
@@ -31,6 +31,11 @@ export default function KnowledgeBrowser() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteKnowledgeEntry(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['knowledge-entries'] }),
+  })
+
+  const syncMutation = useMutation({
+    mutationFn: (directory?: string) => triggerKnowledgeSync(directory),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['knowledge-entries'] }),
   })
 
@@ -70,12 +75,26 @@ export default function KnowledgeBrowser() {
             Search, browse, and manage vector knowledge base entries
           </p>
         </div>
-        <button
-          onClick={() => queryClient.invalidateQueries({ queryKey: ['knowledge-entries'] })}
-          className="sage-btn sage-btn-secondary"
-        >
-          <RefreshCw size={12} /> Refresh
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => syncMutation.mutate('')}
+            disabled={syncMutation.isPending}
+            className="sage-btn sage-btn-primary"
+          >
+            <Download size={12} /> {syncMutation.isPending ? 'Syncing...' : 'Sync'}
+          </button>
+          <button
+            onClick={() => queryClient.invalidateQueries({ queryKey: ['knowledge-entries'] })}
+            className="sage-btn sage-btn-secondary"
+          >
+            <RefreshCw size={12} /> Refresh
+          </button>
+        </div>
+        {syncMutation.isSuccess && (
+          <div className="text-xs mt-1" style={{ color: '#22c55e' }}>
+            Synced {syncMutation.data?.chunks_imported ?? 0} chunks
+          </div>
+        )}
       </div>
 
       <div className="sage-tabs">

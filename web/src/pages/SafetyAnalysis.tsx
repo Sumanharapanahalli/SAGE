@@ -2,11 +2,11 @@ import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import {
   ShieldAlert, AlertTriangle, GitBranch, Gauge,
-  Plus, Trash2, Play, Info,
+  Plus, Trash2, Play, Info, Network,
 } from 'lucide-react'
-import { runFMEA, classifyASIL, classifySIL, classifyIEC62304 } from '../api/client'
+import { runFMEA, runFTA, classifyASIL, classifySIL, classifyIEC62304 } from '../api/client'
 
-type Tab = 'fmea' | 'asil' | 'sil' | 'iec62304'
+type Tab = 'fmea' | 'fta' | 'asil' | 'sil' | 'iec62304'
 
 interface FMEAEntry {
   component: string; failure_mode: string; effect: string
@@ -38,12 +38,29 @@ export default function SafetyAnalysis() {
   const [silRate, setSilRate] = useState('1e-7')
   const silMutation = useMutation({ mutationFn: () => classifySIL(parseFloat(silRate)) })
 
+  // FTA state
+  const [ftaTopEvent, setFtaTopEvent] = useState('')
+  const [ftaGates, setFtaGates] = useState<Array<{ id: string; type: 'AND' | 'OR'; inputs: string[] }>>([
+    { id: 'G1', type: 'OR', inputs: [''] },
+  ])
+  const ftaMutation = useMutation({ mutationFn: () => runFTA({ top_event: ftaTopEvent, gates: ftaGates }) })
+
+  const addFtaGate = () => setFtaGates(prev => [...prev, { id: `G${prev.length + 1}`, type: 'OR', inputs: [''] }])
+  const removeFtaGate = (i: number) => setFtaGates(prev => prev.filter((_, idx) => idx !== i))
+  const updateFtaGate = (i: number, field: string, value: any) =>
+    setFtaGates(prev => prev.map((g, idx) => idx === i ? { ...g, [field]: value } : g))
+  const addFtaInput = (i: number) =>
+    setFtaGates(prev => prev.map((g, idx) => idx === i ? { ...g, inputs: [...g.inputs, ''] } : g))
+  const updateFtaInput = (gi: number, ii: number, value: string) =>
+    setFtaGates(prev => prev.map((g, idx) => idx === gi ? { ...g, inputs: g.inputs.map((inp, j) => j === ii ? value : inp) } : g))
+
   // IEC 62304 state
   const [iecRisk, setIecRisk] = useState('death_possible')
   const iecMutation = useMutation({ mutationFn: () => classifyIEC62304(iecRisk) })
 
   const tabs: { id: Tab; label: string; icon: typeof AlertTriangle }[] = [
     { id: 'fmea', label: 'FMEA', icon: AlertTriangle },
+    { id: 'fta', label: 'FTA', icon: Network },
     { id: 'asil', label: 'ASIL (ISO 26262)', icon: Gauge },
     { id: 'sil', label: 'SIL (IEC 61508)', icon: ShieldAlert },
     { id: 'iec62304', label: 'IEC 62304', icon: GitBranch },
@@ -143,6 +160,108 @@ export default function SafetyAnalysis() {
               <pre className="text-xs overflow-auto p-3" style={{ background: '#111113', color: '#a1a1aa', borderRadius: 6, maxHeight: 300 }}>
                 {JSON.stringify(fmeaMutation.data, null, 2)}
               </pre>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* FTA Builder */}
+      {tab === 'fta' && (
+        <div>
+          <div className="sage-card mb-4" style={{ background: '#1c1c1e', borderColor: '#2a2a2e' }}>
+            <h2 className="text-sm font-semibold mb-4" style={{ color: '#e4e4e7' }}>
+              <Network size={14} className="inline mr-1.5" style={{ color: '#6366f1' }} />
+              Fault Tree Analysis
+            </h2>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs mb-1" style={{ color: '#71717a' }}>Top Event (Undesired Outcome)</label>
+                <input
+                  value={ftaTopEvent}
+                  onChange={e => setFtaTopEvent(e.target.value)}
+                  placeholder="e.g. System fails to detect hazard"
+                  className="w-full text-sm px-3 py-2"
+                  style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #2a2a2e', borderRadius: 8, outline: 'none' }}
+                />
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs font-medium" style={{ color: '#71717a' }}>Logic Gates</label>
+                  <button onClick={addFtaGate} className="sage-btn sage-btn-secondary" style={{ fontSize: '11px' }}>
+                    <Plus size={11} /> Add Gate
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  {ftaGates.map((gate, gi) => (
+                    <div key={gi} className="p-3" style={{ background: '#111113', borderRadius: 8, border: '1px solid #2a2a2e' }}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <input
+                          value={gate.id}
+                          onChange={e => updateFtaGate(gi, 'id', e.target.value)}
+                          className="text-xs px-2 py-1 w-20"
+                          style={{ background: '#1c1c1e', color: '#e4e4e7', border: '1px solid #2a2a2e', borderRadius: 4 }}
+                          placeholder="Gate ID"
+                        />
+                        <select
+                          value={gate.type}
+                          onChange={e => updateFtaGate(gi, 'type', e.target.value)}
+                          className="text-xs px-2 py-1"
+                          style={{ background: '#1c1c1e', color: '#e4e4e7', border: '1px solid #2a2a2e', borderRadius: 4 }}
+                        >
+                          <option value="OR">OR Gate</option>
+                          <option value="AND">AND Gate</option>
+                        </select>
+                        {ftaGates.length > 1 && (
+                          <button onClick={() => removeFtaGate(gi)} style={{ color: '#71717a', background: 'none', border: 'none', cursor: 'pointer', marginLeft: 'auto' }}>
+                            <Trash2 size={12} />
+                          </button>
+                        )}
+                      </div>
+                      <div className="space-y-1">
+                        {gate.inputs.map((inp, ii) => (
+                          <input
+                            key={ii}
+                            value={inp}
+                            onChange={e => updateFtaInput(gi, ii, e.target.value)}
+                            placeholder={`Input event ${ii + 1}`}
+                            className="w-full text-xs px-2 py-1"
+                            style={{ background: '#1c1c1e', color: '#e4e4e7', border: '1px solid #2a2a2e', borderRadius: 4 }}
+                          />
+                        ))}
+                        <button
+                          onClick={() => addFtaInput(gi)}
+                          className="text-xs"
+                          style={{ color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer' }}
+                        >
+                          + Add input
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <button
+                onClick={() => ftaMutation.mutate()}
+                disabled={ftaMutation.isPending || !ftaTopEvent.trim()}
+                className="sage-btn sage-btn-primary"
+              >
+                <Play size={12} />
+                {ftaMutation.isPending ? 'Analyzing...' : 'Run FTA'}
+              </button>
+            </div>
+          </div>
+
+          {ftaMutation.isSuccess && ftaMutation.data && (
+            <div className="sage-card" style={{ background: '#1c1c1e', borderColor: '#2a2a2e' }}>
+              <h3 className="text-sm font-semibold mb-2" style={{ color: '#e4e4e7' }}>FTA Results</h3>
+              <pre className="text-xs overflow-auto p-3" style={{ background: '#111113', color: '#a1a1aa', borderRadius: 6, maxHeight: 300 }}>
+                {JSON.stringify(ftaMutation.data, null, 2)}
+              </pre>
+            </div>
+          )}
+          {ftaMutation.isError && (
+            <div className="text-xs p-2 mt-2" style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', borderRadius: 6 }}>
+              {(ftaMutation.error as Error).message}
             </div>
           )}
         </div>

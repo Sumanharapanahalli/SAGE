@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { fetchQueueTasks } from '../api/client'
+import { fetchQueueTasks, fetchTaskSubtasks } from '../api/client'
 import type { QueueTask } from '../types/module'
-import { Loader2, ChevronDown, ChevronUp, ListOrdered, Clock, CheckCircle, XCircle, Zap } from 'lucide-react'
+import { Loader2, ChevronDown, ChevronUp, ListOrdered, Clock, CheckCircle, XCircle, Zap, GitBranch } from 'lucide-react'
 
 // ---------------------------------------------------------------------------
 // Task type badge colors (dark theme)
@@ -64,11 +64,21 @@ function FilterPill({ label, active, onClick }: { label: string; active: boolean
 // ---------------------------------------------------------------------------
 function TaskRow({ task }: { task: QueueTask }) {
   const [open, setOpen] = useState(false)
+  const [showSubtasks, setShowSubtasks] = useState(false)
   const isSage = (task.source === 'sage') || (task.feature_scope === 'sage')
   const status = task.status ?? 'pending'
   const hasPayload = task.payload && Object.keys(task.payload).length > 0
   const tstyle = taskTypeStyle(task.task_type)
   const sstyle = STATUS_STYLES[status] ?? STATUS_STYLES.pending
+
+  const { data: subtaskData } = useQuery({
+    queryKey: ['task-subtasks', task.task_id],
+    queryFn: () => fetchTaskSubtasks(task.task_id),
+    enabled: showSubtasks,
+    retry: false,
+  })
+
+  const subtasks: any[] = subtaskData?.subtasks ?? []
 
   return (
     <div className="sage-card" style={{
@@ -100,12 +110,30 @@ function TaskRow({ task }: { task: QueueTask }) {
         <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, padding: '3px 10px', borderRadius: 999, background: sstyle.bg, color: sstyle.color, fontWeight: 500, flexShrink: 0 }}>
           {STATUS_ICONS[status]} {status.replace('_', ' ')}
         </span>
+        <button onClick={() => setShowSubtasks(v => !v)} title="Subtasks" style={{ background: 'none', border: 'none', color: showSubtasks ? '#60a5fa' : '#52525b', cursor: 'pointer' }}>
+          <GitBranch size={14} />
+        </button>
         {hasPayload && (
           <button onClick={() => setOpen(v => !v)} style={{ background: 'none', border: 'none', color: '#52525b', cursor: 'pointer' }}>
             {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </button>
         )}
       </div>
+      {showSubtasks && (
+        <div style={{ borderTop: '1px solid #27272a', padding: '8px 16px 8px 40px', background: '#151517' }}>
+          {subtasks.length > 0 ? subtasks.map((st: any, i: number) => (
+            <div key={i} className="flex items-center gap-2 py-1" style={{ fontSize: 11 }}>
+              <span style={{ color: st.status === 'completed' ? '#4ade80' : st.status === 'failed' ? '#f87171' : '#a1a1aa' }}>
+                {st.status === 'completed' ? <CheckCircle size={10} /> : st.status === 'failed' ? <XCircle size={10} /> : <Clock size={10} />}
+              </span>
+              <span style={{ color: '#a1a1aa' }}>{st.description ?? st.task_type ?? `Subtask ${i + 1}`}</span>
+              <span className="sage-tag" style={{ fontSize: 9 }}>{st.status ?? 'pending'}</span>
+            </div>
+          )) : (
+            <span className="text-xs" style={{ color: '#52525b' }}>No subtasks</span>
+          )}
+        </div>
+      )}
       {open && hasPayload && (
         <pre style={{ borderTop: '1px solid #27272a', padding: '12px 16px', fontSize: 11, fontFamily: 'monospace', color: '#a1a1aa', background: '#111113', margin: 0, maxHeight: 160, overflow: 'auto', whiteSpace: 'pre-wrap' }}>
           {JSON.stringify(task.payload, null, 2)}

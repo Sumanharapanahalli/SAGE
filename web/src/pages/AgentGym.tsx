@@ -6,10 +6,11 @@ import {
 } from 'lucide-react'
 import {
   fetchGymRatings, fetchGymCatalog, fetchGymHistory,
-  fetchGymLeaderboard, trainAgent, trainAgentBatch,
+  fetchGymLeaderboard, fetchGymExercises, fetchGymCurriculum,
+  trainAgent, trainAgentBatch,
 } from '../api/client'
 
-type Tab = 'leaderboard' | 'catalog' | 'train' | 'history'
+type Tab = 'leaderboard' | 'catalog' | 'curriculum' | 'train' | 'history'
 
 export default function AgentGym() {
   const [tab, setTab] = useState<Tab>('leaderboard')
@@ -20,6 +21,19 @@ export default function AgentGym() {
   const { data: ratings } = useQuery({ queryKey: ['gym-ratings'], queryFn: fetchGymRatings, retry: false })
   const { data: catalog } = useQuery({ queryKey: ['gym-catalog'], queryFn: fetchGymCatalog, retry: false })
   const { data: leaderboard } = useQuery({ queryKey: ['gym-leaderboard'], queryFn: fetchGymLeaderboard, retry: false })
+  const { data: exercises } = useQuery({
+    queryKey: ['gym-exercises', selectedRole, difficulty],
+    queryFn: () => fetchGymExercises(selectedRole || undefined, difficulty),
+    retry: false,
+  })
+
+  const { data: curriculum } = useQuery({
+    queryKey: ['gym-curriculum', selectedRole],
+    queryFn: () => fetchGymCurriculum(selectedRole || 'developer'),
+    enabled: !!selectedRole,
+    retry: false,
+  })
+
   const { data: history } = useQuery({
     queryKey: ['gym-history', selectedRole],
     queryFn: () => fetchGymHistory(selectedRole || undefined, 50),
@@ -47,6 +61,7 @@ export default function AgentGym() {
   const tabs: { id: Tab; label: string; icon: typeof Trophy }[] = [
     { id: 'leaderboard', label: 'Leaderboard', icon: Trophy },
     { id: 'catalog', label: 'Exercise Catalog', icon: BookOpen },
+    { id: 'curriculum', label: 'Curriculum', icon: BarChart3 },
     { id: 'train', label: 'Train', icon: Play },
     { id: 'history', label: 'History', icon: Clock },
   ]
@@ -187,6 +202,72 @@ export default function AgentGym() {
             <div className="sage-empty">
               <BookOpen size={32} />
               <p className="text-sm">No exercises found. Check runner configuration.</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Curriculum */}
+      {tab === 'curriculum' && (
+        <div>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="flex-1">
+              <label className="block text-xs mb-1" style={{ color: '#71717a' }}>Select Role for Curriculum</label>
+              <input
+                value={selectedRole}
+                onChange={e => setSelectedRole(e.target.value)}
+                placeholder="e.g. developer, analyst"
+                className="w-full text-sm px-3 py-2"
+                style={{ background: '#1c1c1e', color: '#e4e4e7', border: '1px solid #2a2a2e', borderRadius: 8, outline: 'none' }}
+              />
+            </div>
+          </div>
+          {curriculum ? (
+            <div className="sage-card" style={{ background: '#1c1c1e', borderColor: '#2a2a2e' }}>
+              <h2 className="text-sm font-semibold mb-3" style={{ color: '#e4e4e7' }}>
+                <BarChart3 size={14} className="inline mr-1.5" style={{ color: '#10b981' }} />
+                Curriculum for "{selectedRole}"
+              </h2>
+              {curriculum.phases?.length > 0 ? (
+                <div className="space-y-3">
+                  {curriculum.phases.map((phase: any, i: number) => (
+                    <div key={i} style={{ background: '#111113', borderRadius: 8, padding: 12, border: '1px solid #2a2a2e' }}>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-semibold" style={{ color: '#e4e4e7' }}>
+                          Phase {i + 1}: {phase.name ?? phase.title ?? 'Unnamed'}
+                        </span>
+                        <span className="sage-tag" style={{ background: 'rgba(34,197,94,0.1)', color: '#4ade80', fontSize: 10 }}>
+                          {phase.difficulty ?? phase.level ?? 'all'}
+                        </span>
+                      </div>
+                      <p className="text-xs mb-2" style={{ color: '#a1a1aa' }}>{phase.description ?? ''}</p>
+                      {phase.exercises?.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {phase.exercises.map((ex: any, j: number) => (
+                            <span key={j} className="sage-tag" style={{ fontSize: 10, background: 'rgba(99,102,241,0.1)', color: '#818cf8' }}>
+                              {typeof ex === 'string' ? ex : ex.id ?? ex.name ?? `Ex ${j + 1}`}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <pre className="text-xs overflow-auto p-3" style={{ background: '#111113', color: '#a1a1aa', borderRadius: 6, maxHeight: 300 }}>
+                  {JSON.stringify(curriculum, null, 2)}
+                </pre>
+              )}
+            </div>
+          ) : selectedRole ? (
+            <div className="sage-empty">
+              <BarChart3 size={32} />
+              <p className="text-sm">Loading curriculum for "{selectedRole}"...</p>
+            </div>
+          ) : (
+            <div className="sage-empty">
+              <BarChart3 size={32} />
+              <p className="text-sm">Enter a role name above to view its training curriculum.</p>
             </div>
           )}
         </div>

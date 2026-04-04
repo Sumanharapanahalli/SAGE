@@ -4,9 +4,9 @@ import {
   Code2, Play, CheckCircle2, XCircle, Clock,
   FileCode, GitBranch, Eye, Loader2,
 } from 'lucide-react'
-import { executeCode, planCode, fetchCodeStatus, approveCodeExecution } from '../api/client'
+import { executeCode, planCode, fetchCodeStatus, approveCodeExecution, fetchRepoMap, fetchSandboxStatus } from '../api/client'
 
-type Tab = 'execute' | 'plan' | 'history'
+type Tab = 'execute' | 'plan' | 'repomap' | 'history'
 
 export default function CodeExecution() {
   const [tab, setTab] = useState<Tab>('execute')
@@ -40,9 +40,23 @@ export default function CodeExecution() {
     mutationFn: (run_id: string) => approveCodeExecution(run_id),
   })
 
+  const { data: repoMap } = useQuery({
+    queryKey: ['repo-map'],
+    queryFn: () => fetchRepoMap(50),
+    retry: false,
+    enabled: tab === 'repomap',
+  })
+
+  const { data: sandboxStatus } = useQuery({
+    queryKey: ['sandbox-status'],
+    queryFn: fetchSandboxStatus,
+    retry: false,
+  })
+
   const tabs: { id: Tab; label: string; icon: typeof Code2 }[] = [
     { id: 'execute', label: 'Execute', icon: Play },
     { id: 'plan', label: 'Plan', icon: GitBranch },
+    { id: 'repomap', label: 'Repo Map', icon: FileCode },
     { id: 'history', label: 'Status', icon: Clock },
   ]
 
@@ -193,6 +207,37 @@ export default function CodeExecution() {
               <pre className="text-xs p-3 overflow-auto" style={{ background: '#111113', color: '#a1a1aa', borderRadius: 6, maxHeight: 400 }}>
                 {typeof planMutation.data === 'string' ? planMutation.data : JSON.stringify(planMutation.data, null, 2)}
               </pre>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Repo Map */}
+      {tab === 'repomap' && (
+        <div className="sage-card" style={{ background: '#1c1c1e', borderColor: '#2a2a2e' }}>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold" style={{ color: '#e4e4e7' }}>
+              <FileCode size={14} className="inline mr-1.5" style={{ color: '#a78bfa' }} />
+              Repository Map
+            </h2>
+            {sandboxStatus && (
+              <span className="sage-tag" style={{
+                fontSize: 10,
+                background: sandboxStatus.available ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
+                color: sandboxStatus.available ? '#4ade80' : '#f87171',
+              }}>
+                Sandbox: {sandboxStatus.available ? 'Available' : 'Unavailable'}
+              </span>
+            )}
+          </div>
+          {repoMap?.map ? (
+            <pre className="text-xs overflow-auto p-3" style={{ background: '#111113', color: '#a1a1aa', borderRadius: 6, maxHeight: 500, whiteSpace: 'pre-wrap' }}>
+              {repoMap.map}
+            </pre>
+          ) : (
+            <div className="sage-empty">
+              <FileCode size={32} />
+              <p className="text-sm">No repo map available. Ensure a solution is loaded.</p>
             </div>
           )}
         </div>

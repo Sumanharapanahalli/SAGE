@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { fetchCostSummary, fetchCostDaily } from '../api/client'
+import { useState } from 'react'
+import { useQuery, useMutation } from '@tanstack/react-query'
+import { fetchCostSummary, fetchCostDaily, setCostBudget } from '../api/client'
 import type { CostSummary, DailyCost, CostBySolution } from '../types/module'
+import { DollarSign, TrendingUp, Phone, Calculator, Settings, Check } from 'lucide-react'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -19,25 +20,13 @@ function fmtK(n: number): string {
   return String(n)
 }
 
-function budgetColor(pct: number): string {
-  if (pct >= 100) return 'text-red-600'
-  if (pct >= 80) return 'text-amber-600'
-  return 'text-green-600'
-}
-
-function budgetBarColor(pct: number): string {
-  if (pct >= 100) return 'bg-red-500'
-  if (pct >= 80) return 'bg-amber-400'
-  return 'bg-green-500'
-}
-
 // ---------------------------------------------------------------------------
-// Inline SVG bar chart
+// Inline SVG bar chart (dark theme)
 // ---------------------------------------------------------------------------
 function DailyBarChart({ data }: { data: DailyCost[] }) {
   if (!data || data.length === 0) {
     return (
-      <div className="h-32 flex items-center justify-center text-sm text-gray-400">
+      <div style={{ height: 128, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: '#52525b' }}>
         No data for this period
       </div>
     )
@@ -48,11 +37,11 @@ function DailyBarChart({ data }: { data: DailyCost[] }) {
   const barW = Math.max(4, Math.floor(420 / data.length) - 2)
 
   return (
-    <div className="overflow-x-auto">
+    <div style={{ overflowX: 'auto' }}>
       <svg
         width={Math.max(420, data.length * (barW + 2))}
         height={chartH + 28}
-        className="block"
+        style={{ display: 'block' }}
       >
         {data.map((d, i) => {
           const h = Math.max(2, Math.round((d.cost_usd / maxCost) * chartH))
@@ -60,24 +49,11 @@ function DailyBarChart({ data }: { data: DailyCost[] }) {
           const y = chartH - h
           return (
             <g key={d.date}>
-              <rect
-                x={x}
-                y={y}
-                width={barW}
-                height={h}
-                rx={2}
-                className="fill-blue-500 opacity-80 hover:opacity-100 transition-opacity"
-              >
+              <rect x={x} y={y} width={barW} height={h} rx={2} fill="#3b82f6" opacity={0.8}>
                 <title>{d.date}: {fmt(d.cost_usd)} ({d.calls} calls)</title>
               </rect>
               {data.length <= 14 && (
-                <text
-                  x={x + barW / 2}
-                  y={chartH + 14}
-                  textAnchor="middle"
-                  fontSize="9"
-                  className="fill-gray-400"
-                >
+                <text x={x + barW / 2} y={chartH + 14} textAnchor="middle" fontSize="9" fill="#52525b">
                   {d.date.slice(5)}
                 </text>
               )}
@@ -100,6 +76,8 @@ const PERIODS = [
 
 export default function Costs() {
   const [period, setPeriod] = useState(30)
+  const [budgetAmount, setBudgetAmount] = useState('')
+  const [budgetSolution, setBudgetSolution] = useState('')
 
   const summaryQuery = useQuery({
     queryKey: ['costs-summary', period],
@@ -113,37 +91,58 @@ export default function Costs() {
     refetchInterval: 30_000,
   })
 
+  const budgetMutation = useMutation({
+    mutationFn: () => setCostBudget({
+      monthly_usd: parseFloat(budgetAmount),
+      ...(budgetSolution ? { solution: budgetSolution } : {}),
+    }),
+  })
+
   const summary: CostSummary | undefined = summaryQuery.data
   const dailyData: DailyCost[] = dailyQuery.data?.daily ?? []
 
-  // Project monthly spend (annualise from period)
   const projectedMonthly = summary
     ? (summary.total_cost_usd / period) * 30
     : 0
 
   if (summaryQuery.isError) {
     return (
-      <div className="p-6 text-red-500 text-sm">
+      <div style={{ padding: 24, color: '#ef4444', fontSize: 13 }}>
         Could not reach costs API. Make sure the backend is running.
       </div>
     )
   }
 
+  const STAT_ITEMS = [
+    { label: `Total Spend (${period}d)`, value: fmt(summary?.total_cost_usd ?? 0), color: '#e4e4e7' },
+    { label: 'Est. Monthly', value: fmt(projectedMonthly), color: '#60a5fa' },
+    { label: 'Total Calls', value: fmtK(summary?.total_calls ?? 0), color: '#a78bfa' },
+    { label: 'Avg Cost/Call', value: fmt(summary?.avg_cost_per_call ?? 0), color: '#4ade80' },
+  ]
+
   return (
-    <div className="space-y-6 max-w-4xl">
-      {/* Header + period selector */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-800">Cost Tracker</h2>
-        <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
+    <div className="max-w-5xl mx-auto">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-lg font-semibold" style={{ color: '#e4e4e7', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <DollarSign size={18} style={{ color: '#22c55e' }} />
+            Cost Tracker
+          </h1>
+          <p className="text-xs mt-1" style={{ color: '#71717a' }}>
+            LLM usage costs, budget controls, and token analytics
+          </p>
+        </div>
+        <div className="flex gap-1 p-1" style={{ background: '#1c1c1e', borderRadius: 8 }}>
           {PERIODS.map(p => (
             <button
               key={p.value}
               onClick={() => setPeriod(p.value)}
-              className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
-                period === p.value
-                  ? 'bg-white text-gray-800 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
+              style={{
+                padding: '4px 12px', fontSize: 12, fontWeight: 500, borderRadius: 6, cursor: 'pointer', border: 'none',
+                background: period === p.value ? '#3f3f46' : 'transparent',
+                color: period === p.value ? '#f4f4f5' : '#71717a',
+              }}
             >
               {p.label}
             </button>
@@ -151,52 +150,114 @@ export default function Costs() {
         </div>
       </div>
 
-      {/* Stats bar */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <div className="text-xs text-gray-500 mb-1">Total Spend ({period}d)</div>
-          <div className="text-2xl font-bold text-gray-800 tabular-nums">
-            {summaryQuery.isLoading ? '—' : fmt(summary?.total_cost_usd ?? 0)}
+      {/* Stats */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 20 }}>
+        {STAT_ITEMS.map(s => (
+          <div key={s.label} className="sage-card" style={{ background: '#1c1c1e', borderColor: '#2a2a2e', textAlign: 'center', padding: '16px 8px' }}>
+            <div style={{ fontSize: 22, fontWeight: 700, color: s.color }}>
+              {summaryQuery.isLoading ? '—' : s.value}
+            </div>
+            <div style={{ fontSize: 11, color: '#52525b', marginTop: 2 }}>{s.label}</div>
           </div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <div className="text-xs text-gray-500 mb-1">Est. Monthly</div>
-          <div className="text-2xl font-bold text-gray-800 tabular-nums">
-            {summaryQuery.isLoading ? '—' : fmt(projectedMonthly)}
-          </div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <div className="text-xs text-gray-500 mb-1">Total Calls</div>
-          <div className="text-2xl font-bold text-gray-800 tabular-nums">
-            {summaryQuery.isLoading ? '—' : fmtK(summary?.total_calls ?? 0)}
-          </div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <div className="text-xs text-gray-500 mb-1">Avg Cost / Call</div>
-          <div className="text-2xl font-bold text-gray-800 tabular-nums">
-            {summaryQuery.isLoading ? '—' : fmt(summary?.avg_cost_per_call ?? 0)}
-          </div>
-        </div>
+        ))}
       </div>
 
-      {/* Daily cost chart */}
-      <div className="bg-white rounded-xl border border-gray-200 p-5">
-        <h3 className="text-sm font-semibold text-gray-700 mb-3">Daily Cost ({period}d)</h3>
+      {/* Daily chart */}
+      <div className="sage-card mb-4" style={{ background: '#1c1c1e', borderColor: '#2a2a2e' }}>
+        <h3 className="text-sm font-semibold mb-3" style={{ color: '#e4e4e7' }}>
+          <TrendingUp size={14} className="inline mr-1.5" style={{ color: '#3b82f6' }} />
+          Daily Cost ({period}d)
+        </h3>
         {dailyQuery.isLoading ? (
-          <div className="h-32 flex items-center justify-center text-sm text-gray-400">Loading…</div>
+          <div style={{ height: 128, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: '#52525b' }}>Loading...</div>
         ) : (
           <DailyBarChart data={dailyData} />
         )}
-        <p className="text-xs text-gray-400 mt-2">
-          Hover a bar to see exact cost and call count for that day.
-          Costs are estimated — CLI providers do not expose exact token counts.
+        <p className="text-xs mt-2" style={{ color: '#3f3f46' }}>
+          Hover a bar to see exact cost and call count. Costs are estimated — CLI providers do not expose exact token counts.
         </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        {/* Budget Controls */}
+        <div className="sage-card" style={{ background: '#1c1c1e', borderColor: '#2a2a2e' }}>
+          <h3 className="text-sm font-semibold mb-3" style={{ color: '#e4e4e7' }}>
+            <Settings size={14} className="inline mr-1.5" style={{ color: '#f59e0b' }} />
+            Monthly Budget
+          </h3>
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs mb-1" style={{ color: '#71717a' }}>Budget Amount (USD)</label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={budgetAmount}
+                onChange={e => setBudgetAmount(e.target.value)}
+                placeholder="e.g. 50.00"
+                className="w-full text-sm px-3 py-2"
+                style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #2a2a2e', borderRadius: 8, outline: 'none' }}
+              />
+            </div>
+            <div>
+              <label className="block text-xs mb-1" style={{ color: '#71717a' }}>Solution (optional)</label>
+              <input
+                value={budgetSolution}
+                onChange={e => setBudgetSolution(e.target.value)}
+                placeholder="Leave blank for global budget"
+                className="w-full text-sm px-3 py-2"
+                style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #2a2a2e', borderRadius: 8, outline: 'none' }}
+              />
+            </div>
+            <button
+              onClick={() => budgetMutation.mutate()}
+              disabled={!budgetAmount || budgetMutation.isPending}
+              className="sage-btn sage-btn-primary"
+            >
+              <Calculator size={12} />
+              {budgetMutation.isPending ? 'Saving...' : 'Set Budget'}
+            </button>
+            {budgetMutation.isSuccess && (
+              <div className="flex items-center gap-1 text-xs" style={{ color: '#22c55e' }}>
+                <Check size={12} /> Budget set: ${budgetMutation.data?.monthly_usd}/mo
+              </div>
+            )}
+            {budgetMutation.isError && (
+              <div className="text-xs" style={{ color: '#ef4444' }}>
+                {(budgetMutation.error as Error).message}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Token Totals */}
+        {summary && summary.total_calls > 0 && (
+          <div className="sage-card" style={{ background: '#1c1c1e', borderColor: '#2a2a2e' }}>
+            <h3 className="text-sm font-semibold mb-3" style={{ color: '#e4e4e7' }}>
+              <Phone size={14} className="inline mr-1.5" style={{ color: '#6366f1' }} />
+              Token Usage ({period}d)
+            </h3>
+            <div className="grid grid-cols-2 gap-3">
+              <div style={{ background: '#111113', borderRadius: 8, padding: 12, textAlign: 'center' }}>
+                <div style={{ fontSize: 20, fontWeight: 700, color: '#e4e4e7' }}>{fmtK(summary.total_input_tokens)}</div>
+                <div style={{ fontSize: 11, color: '#52525b', marginTop: 2 }}>Input Tokens</div>
+              </div>
+              <div style={{ background: '#111113', borderRadius: 8, padding: 12, textAlign: 'center' }}>
+                <div style={{ fontSize: 20, fontWeight: 700, color: '#e4e4e7' }}>{fmtK(summary.total_output_tokens)}</div>
+                <div style={{ fontSize: 11, color: '#52525b', marginTop: 2 }}>Output Tokens</div>
+              </div>
+            </div>
+            <p className="text-xs mt-2" style={{ color: '#3f3f46' }}>
+              Token counts estimated at 1 token per 4 characters.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Top solutions by cost */}
       {summary && summary.by_solution.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Top Solutions by Cost</h3>
+        <div className="sage-card mb-4" style={{ background: '#1c1c1e', borderColor: '#2a2a2e' }}>
+          <h3 className="text-sm font-semibold mb-3" style={{ color: '#e4e4e7' }}>Top Solutions by Cost</h3>
           <div className="space-y-3">
             {summary.by_solution.map((s: CostBySolution) => {
               const pct = summary.total_cost_usd > 0
@@ -204,19 +265,12 @@ export default function Costs() {
                 : 0
               return (
                 <div key={s.solution}>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="text-gray-700 font-medium truncate max-w-[200px]">
-                      {s.solution || 'default'}
-                    </span>
-                    <span className="text-gray-500 tabular-nums ml-2">
-                      {fmt(s.cost)} ({s.calls} calls)
-                    </span>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span style={{ color: '#e4e4e7', fontWeight: 500 }}>{s.solution || 'default'}</span>
+                    <span style={{ color: '#71717a' }}>{fmt(s.cost)} ({s.calls} calls)</span>
                   </div>
-                  <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-blue-400 rounded-full"
-                      style={{ width: `${pct}%` }}
-                    />
+                  <div style={{ height: 6, background: '#27272a', borderRadius: 999, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', background: '#3b82f6', borderRadius: 999, width: `${pct}%` }} />
                   </div>
                 </div>
               )
@@ -227,22 +281,22 @@ export default function Costs() {
 
       {/* Model breakdown */}
       {summary && summary.by_model.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Cost by Model</h3>
-          <table className="w-full text-sm">
+        <div className="sage-card mb-4" style={{ background: '#1c1c1e', borderColor: '#2a2a2e' }}>
+          <h3 className="text-sm font-semibold mb-3" style={{ color: '#e4e4e7' }}>Cost by Model</h3>
+          <table className="sage-table">
             <thead>
-              <tr className="text-xs text-gray-500 border-b border-gray-100">
-                <th className="text-left pb-2 font-medium">Model</th>
-                <th className="text-right pb-2 font-medium">Calls</th>
-                <th className="text-right pb-2 font-medium">Cost</th>
+              <tr>
+                <th>Model</th>
+                <th style={{ textAlign: 'right' }}>Calls</th>
+                <th style={{ textAlign: 'right' }}>Cost</th>
               </tr>
             </thead>
             <tbody>
               {summary.by_model.map(m => (
-                <tr key={m.model} className="border-b border-gray-50 last:border-0">
-                  <td className="py-2 text-gray-700 font-mono text-xs">{m.model || 'unknown'}</td>
-                  <td className="py-2 text-right text-gray-500 tabular-nums">{fmtK(m.calls)}</td>
-                  <td className="py-2 text-right text-gray-700 tabular-nums font-medium">{fmt(m.cost)}</td>
+                <tr key={m.model}>
+                  <td style={{ color: '#e4e4e7', fontFamily: 'monospace', fontSize: 11 }}>{m.model || 'unknown'}</td>
+                  <td style={{ textAlign: 'right', color: '#71717a' }}>{fmtK(m.calls)}</td>
+                  <td style={{ textAlign: 'right', color: '#e4e4e7', fontWeight: 500 }}>{fmt(m.cost)}</td>
                 </tr>
               ))}
             </tbody>
@@ -250,40 +304,12 @@ export default function Costs() {
         </div>
       )}
 
-      {/* Token totals */}
-      {summary && summary.total_calls > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Token Usage ({period}d)</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-gray-50 rounded-lg p-3 text-center">
-              <div className="text-xl font-bold text-gray-800 tabular-nums">
-                {fmtK(summary.total_input_tokens)}
-              </div>
-              <div className="text-xs text-gray-500 mt-0.5">Input Tokens</div>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-3 text-center">
-              <div className="text-xl font-bold text-gray-800 tabular-nums">
-                {fmtK(summary.total_output_tokens)}
-              </div>
-              <div className="text-xs text-gray-500 mt-0.5">Output Tokens</div>
-            </div>
-          </div>
-          <p className="text-xs text-gray-400 mt-3">
-            Token counts are estimated at 1 token per 4 characters.
-            API providers with native token reporting will produce exact figures.
-          </p>
-        </div>
-      )}
-
       {/* Zero state */}
       {!summaryQuery.isLoading && summary?.total_calls === 0 && (
-        <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
-          <div className="text-gray-400 text-sm">
-            No LLM calls recorded in the last {period} days.
-          </div>
-          <div className="text-gray-400 text-xs mt-1">
-            Cost tracking activates automatically on the next LLM call.
-          </div>
+        <div className="sage-empty">
+          <DollarSign size={32} />
+          <p className="text-sm">No LLM calls recorded in the last {period} days.</p>
+          <p style={{ fontSize: 12, color: '#52525b' }}>Cost tracking activates automatically on the next LLM call.</p>
         </div>
       )}
     </div>

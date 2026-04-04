@@ -6,6 +6,7 @@ import {
   rejectProposalFull,
   approveBatchProposals,
   undoProposal,
+  fetchApprovalRoles,
 } from '../api/client'
 import type { Proposal } from '../api/client'
 import { Inbox, CheckSquare, X, AlertTriangle, Clock, Check, RefreshCw } from 'lucide-react'
@@ -468,6 +469,12 @@ export default function Approvals() {
     queryKey: ['proposals-pending'],
     queryFn: fetchPendingProposals,
     refetchInterval: 10_000,
+  })
+
+  const { data: approvalRolesData } = useQuery({
+    queryKey: ['approval-roles'],
+    queryFn: fetchApprovalRoles,
+    retry: false,
   })
 
   // Handle post-fetch side effects (replaces deprecated onSuccess)
