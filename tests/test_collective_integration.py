@@ -198,3 +198,109 @@ class TestEndToEndWorkflows:
         assert stats["help_request_count"] == 1
         assert "compliance" in stats["topics"]
         assert "spi" in stats["topics"]
+
+    def test_publish_validate_search_roundtrip(self, collective, sample_learning):
+        """Publish → validate → search: validated learning is findable."""
+        learning_id = collective.publish_learning(sample_learning)
+        collective.validate_learning(learning_id, validated_by="qa_agent")
+        results = collective.search_learnings(query="IEC 62304")
+        assert len(results) >= 1
+        validated = [r for r in results if r.get("validation_count", 0) > 0]
+        assert len(validated) >= 1
+
+    def test_concurrent_help_request_operations(self, collective):
+        """Multiple help requests can be created and managed concurrently."""
+        import concurrent.futures
+
+        def create_and_close(i):
+            req_id = collective.create_help_request({
+                "title": f"Help {i}",
+                "requester_agent": f"agent{i}",
+                "requester_solution": "test",
+                "context": f"Context {i}",
+            })
+            if i % 2 == 0:
+                collective.close_help_request(req_id)
+            return req_id
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
+            futures = [pool.submit(create_and_close, i) for i in range(6)]
+            results = [f.result() for f in concurrent.futures.as_completed(futures)]
+
+        assert len(results) == 6
+        open_reqs = collective.list_help_requests(status="open")
+        closed_reqs = collective.list_help_requests(status="closed")
+        assert len(open_reqs) + len(closed_reqs) == 6
+
+    def test_workflow_and_collective_together(self, collective, sample_learning):
+        """Workflow execution results can be published as collective learnings."""
+        from src.core.workflow_engine import WorkflowEngine
+
+        engine = WorkflowEngine()
+        graph = engine.from_template("code-review")
+        wf_result = engine.execute(graph)
+
+        assert wf_result["status"] == "completed"
+
+        # Publish a learning from the workflow result
+        learning = {
+            **sample_learning,
+            "title": f"Workflow {wf_result['workflow_name']} completed",
+            "content": f"Workflow executed {wf_result['waves_executed']} waves successfully.",
+            "source_task_id": wf_result["workflow_id"],
+        }
+        learning_id = collective.publish_learning(learning)
+        result = collective.get_learning(learning_id)
+        assert result is not None
+        assert wf_result["workflow_id"] in result["source_task_id"]
+
+    def test_extract_and_publish_roundtrip(self, collective):
+        """Extract learning from task result → publish → retrieve."""
+        from src.core.collective_memory import CollectiveMemory
+
+        task_result = {
+            "task_type": "REVIEW_MR",
+            "task_id": "task-review-001",
+            "summary": "Code review found race condition in worker pool",
+            "output": "The worker pool implementation has a race condition where "
+                      "multiple goroutines can read and write the shared counter "
+                      "without synchronization. Fix: use sync.Mutex or atomic operations.",
+        }
+        extracted = CollectiveMemory.extract_learning_from_result(
+            task_result, agent_role="reviewer", solution="backend",
+        )
+        assert extracted is not None
+
+        learning_id = collective.publish_learning(extracted)
+        retrieved = collective.get_learning(learning_id)
+        assert retrieved is not None
+        assert "race condition" in retrieved["content"]
+        assert retrieved["author_agent"] == "reviewer"
+
+    def test_fallback_vector_store_operations(self):
+        """FallbackVectorStore provides basic keyword search."""
+        from src.core.collective_memory import _FallbackVectorStore
+        vs = _FallbackVectorStore()
+        vs.add_entry("UART buffer overflow recovery", {"topic": "uart"})
+        vs.add_entry("SPI clock configuration guide", {"topic": "spi"})
+        vs.add_entry("I2C bus recovery after hang", {"topic": "i2c"})
+
+        results = vs.search("UART buffer")
+        assert len(results) >= 1
+        assert any("UART" in r for r in results)
+
+        # No match
+        results = vs.search("quantum computing")
+        assert len(results) == 0
+
+    def test_fallback_vector_store_bulk_import(self):
+        """FallbackVectorStore.bulk_import adds multiple entries."""
+        from src.core.collective_memory import _FallbackVectorStore
+        vs = _FallbackVectorStore()
+        count = vs.bulk_import([
+            {"text": "Entry 1", "metadata": {}},
+            {"text": "Entry 2", "metadata": {}},
+            {"text": "Entry 3", "metadata": {}},
+        ])
+        assert count == 3
+        assert len(vs._entries) == 3

@@ -221,3 +221,102 @@ class TestSyncAndStats:
         assert "help_request_count" in data
         assert "topics" in data
         assert "contributors" in data
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# ERROR PATHS & CORNER CASES
+# ═══════════════════════════════════════════════════════════════════════
+
+class TestAPIEdgeCases:
+
+    def test_validate_nonexistent_learning_returns_404(self, client):
+        resp = client.post(
+            "/collective/learnings/nonexistent-id/validate",
+            json={"validated_by": "qa"},
+        )
+        assert resp.status_code == 404
+
+    def test_respond_nonexistent_help_request_returns_404(self, client):
+        resp = client.put(
+            "/collective/help-requests/hr-nonexistent/respond",
+            json={"responder_agent": "a", "responder_solution": "s", "content": "x"},
+        )
+        assert resp.status_code == 404
+
+    def test_close_nonexistent_help_request_returns_404(self, client):
+        resp = client.put("/collective/help-requests/hr-nonexistent/close")
+        assert resp.status_code == 404
+
+    def test_claim_nonexistent_help_request_returns_404(self, client):
+        resp = client.put(
+            "/collective/help-requests/hr-nonexistent/claim",
+            json={"agent": "a", "solution": "s"},
+        )
+        assert resp.status_code == 404
+
+    def test_get_learnings_with_tags_filter(self, client):
+        """GET /collective/learnings with tags parameter filters results."""
+        client.post("/collective/learnings", json={
+            "author_agent": "a", "author_solution": "s",
+            "topic": "t", "title": "Tagged", "content": "C",
+            "tags": ["python", "web"],
+        })
+        client.post("/collective/learnings", json={
+            "author_agent": "a", "author_solution": "s",
+            "topic": "t", "title": "Other", "content": "C",
+            "tags": ["rust"],
+        })
+        resp = client.get("/collective/learnings", params={"tags": "python"})
+        data = resp.json()
+        assert resp.status_code == 200
+        for l in data["learnings"]:
+            assert "python" in l.get("tags", [])
+
+    def test_get_help_requests_with_expertise_filter(self, client):
+        """GET /collective/help-requests with expertise parameter."""
+        client.post("/collective/help-requests", json={
+            "title": "I2C help", "requester_agent": "a",
+            "requester_solution": "s", "context": "c",
+            "required_expertise": ["i2c", "stm32"],
+        })
+        client.post("/collective/help-requests", json={
+            "title": "Python help", "requester_agent": "a",
+            "requester_solution": "s", "context": "c",
+            "required_expertise": ["python"],
+        })
+        resp = client.get("/collective/help-requests", params={"expertise": "i2c"})
+        data = resp.json()
+        assert resp.status_code == 200
+        for r in data["requests"]:
+            assert "i2c" in r.get("required_expertise", [])
+
+    def test_post_learning_with_all_optional_fields(self, client):
+        """POST learning with all fields including optionals."""
+        resp = client.post("/collective/learnings", json={
+            "author_agent": "analyst",
+            "author_solution": "medtech",
+            "topic": "compliance",
+            "title": "Full learning",
+            "content": "Complete content",
+            "tags": ["a", "b"],
+            "confidence": 0.9,
+            "source_task_id": "task-xyz",
+        })
+        assert resp.status_code == 201
+        learning_id = resp.json()["id"]
+        resp2 = client.get(f"/collective/learnings/{learning_id}")
+        data = resp2.json()
+        assert data["tags"] == ["a", "b"]
+        assert data["confidence"] == 0.9
+
+    def test_get_help_requests_closed_status(self, client):
+        """GET /collective/help-requests?status=closed returns closed ones."""
+        resp = client.post("/collective/help-requests", json={
+            "title": "Help", "requester_agent": "a",
+            "requester_solution": "s", "context": "c",
+        })
+        req_id = resp.json()["id"]
+        client.put(f"/collective/help-requests/{req_id}/close")
+        resp2 = client.get("/collective/help-requests", params={"status": "closed"})
+        data = resp2.json()
+        assert any(r["id"] == req_id for r in data["requests"])

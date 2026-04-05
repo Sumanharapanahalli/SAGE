@@ -385,3 +385,191 @@ class TestStats:
         stats = collective.get_stats()
         assert stats["contributors"]["medtech"] == 1
         assert stats["contributors"]["automotive"] == 1
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# CORNER CASES & ERROR PATHS
+# ═══════════════════════════════════════════════════════════════════════
+
+class TestCornerCases:
+    """Edge cases, error paths, and concurrent access."""
+
+    def test_validate_nonexistent_learning_raises(self, collective):
+        """validate_learning raises ValueError for missing ID."""
+        with pytest.raises(ValueError, match="not found"):
+            collective.validate_learning("nonexistent-id", validated_by="qa")
+
+    def test_close_nonexistent_help_request_raises(self, collective):
+        """close_help_request raises ValueError for missing ID."""
+        with pytest.raises(ValueError, match="not found"):
+            collective.close_help_request("hr-nonexistent")
+
+    def test_respond_nonexistent_help_request_raises(self, collective):
+        """respond_to_help_request raises ValueError for missing ID."""
+        with pytest.raises(ValueError, match="not found"):
+            collective.respond_to_help_request("hr-nonexistent", {
+                "responder_agent": "a", "responder_solution": "s", "content": "x",
+            })
+
+    def test_claim_nonexistent_help_request_raises(self, collective):
+        """claim_help_request raises ValueError for missing ID."""
+        with pytest.raises(ValueError, match="not found"):
+            collective.claim_help_request("hr-nonexistent", agent="a", solution="s")
+
+    def test_close_already_closed_request_raises(self, collective, sample_help_request):
+        """Closing an already-closed help request raises ValueError."""
+        req_id = collective.create_help_request(sample_help_request)
+        collective.close_help_request(req_id)
+        with pytest.raises(ValueError, match="not found"):
+            collective.close_help_request(req_id)
+
+    def test_list_learnings_pagination(self, collective, sample_learning):
+        """list_learnings respects offset and limit."""
+        for i in range(5):
+            collective.publish_learning({
+                **sample_learning,
+                "title": f"Learning {i}",
+                "topic": f"topic-{i}",
+            })
+        page1 = collective.list_learnings(limit=2, offset=0)
+        page2 = collective.list_learnings(limit=2, offset=2)
+        page3 = collective.list_learnings(limit=2, offset=4)
+        assert len(page1) == 2
+        assert len(page2) == 2
+        assert len(page3) == 1
+        # No overlap between pages
+        ids1 = {l["id"] for l in page1}
+        ids2 = {l["id"] for l in page2}
+        assert ids1.isdisjoint(ids2)
+
+    def test_search_combined_tags_and_solution(self, collective, sample_learning):
+        """search_learnings with both tags and solution filter."""
+        collective.publish_learning(sample_learning)  # medtech, tags: uart,embedded,recovery
+        other = {**sample_learning, "author_solution": "automotive",
+                 "tags": ["uart", "can"], "title": "Auto UART", "topic": "auto-uart"}
+        collective.publish_learning(other)
+        # Filter: tag=uart + solution=medtech → only medtech learning
+        results = collective.search_learnings(query="", tags=["uart"], solution="medtech")
+        assert len(results) == 1
+        assert results[0]["author_solution"] == "medtech"
+
+    def test_extract_learning_uses_analysis_field(self):
+        """extract_learning_from_result falls back to 'analysis' field."""
+        from src.core.collective_memory import CollectiveMemory
+        result = {
+            "task_type": "ANALYZE_LOG",
+            "task_id": "t-001",
+            "analysis": "Detailed analysis of the log output showing a timing issue "
+                        "in the SPI driver when clock frequency exceeds 10MHz.",
+        }
+        learning = CollectiveMemory.extract_learning_from_result(
+            result, agent_role="analyst", solution="embedded",
+        )
+        assert learning is not None
+        assert "timing issue" in learning["content"]
+
+    def test_write_and_commit_without_git(self, tmp_path):
+        """_write_and_commit_learning works when git is unavailable."""
+        from src.core.collective_memory import CollectiveMemory
+        cm = CollectiveMemory(
+            repo_path=str(tmp_path / "nogit"),
+            require_approval=False,
+        )
+        cm._git_available = False  # simulate git unavailable
+        learning = {
+            "id": "test-123",
+            "author_agent": "test",
+            "author_solution": "test",
+            "topic": "general",
+            "title": "No git test",
+            "content": "Works without git commits",
+            "tags": [],
+            "confidence": 0.5,
+            "validation_count": 0,
+            "created_at": "2026-04-05T00:00:00Z",
+            "updated_at": "2026-04-05T00:00:00Z",
+            "source_task_id": "",
+        }
+        result = cm._write_and_commit_learning(learning)
+        assert result["id"] == "test-123"
+        # File should exist on disk even without git
+        retrieved = cm.get_learning("test-123")
+        assert retrieved is not None
+
+    def test_concurrent_publish_safety(self, collective, sample_learning):
+        """Multiple threads publishing simultaneously don't corrupt data."""
+        import concurrent.futures
+        results = []
+
+        def publish(i):
+            l = {**sample_learning, "title": f"Concurrent {i}", "topic": f"topic-{i}"}
+            return collective.publish_learning(l)
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
+            futures = [pool.submit(publish, i) for i in range(8)]
+            for f in concurrent.futures.as_completed(futures):
+                results.append(f.result())
+
+        assert len(results) == 8
+        assert len(set(results)) == 8  # all unique IDs
+        all_learnings = collective.list_learnings(limit=100)
+        assert len(all_learnings) == 8
+
+    def test_multiple_validations_compound_confidence(self, collective, sample_learning):
+        """Multiple validations monotonically increase confidence."""
+        learning_id = collective.publish_learning(sample_learning)
+        confidences = [sample_learning["confidence"]]
+        for i in range(5):
+            result = collective.validate_learning(learning_id, validated_by=f"validator_{i}")
+            confidences.append(result["confidence"])
+        # Each validation should increase confidence
+        for i in range(1, len(confidences)):
+            assert confidences[i] >= confidences[i - 1]
+        # After 5 validations, confidence should be higher than initial
+        assert confidences[-1] > confidences[0]
+        # But never exceed 1.0
+        assert confidences[-1] <= 1.0
+
+    def test_multiple_responses_on_help_request(self, collective, sample_help_request):
+        """Multiple agents can respond to the same help request."""
+        req_id = collective.create_help_request(sample_help_request)
+        collective.claim_help_request(req_id, agent="expert1", solution="sol1")
+        for i in range(3):
+            collective.respond_to_help_request(req_id, {
+                "responder_agent": f"expert{i}",
+                "responder_solution": f"sol{i}",
+                "content": f"Response {i}",
+            })
+        data = collective._read_help_request(req_id)
+        assert len(data["responses"]) == 3
+
+    def test_publish_with_special_chars_in_topic(self, collective, sample_learning):
+        """Topics with special characters in names work correctly."""
+        learning = {**sample_learning, "topic": "c-plus-plus", "title": "C++ patterns"}
+        learning_id = collective.publish_learning(learning)
+        result = collective.get_learning(learning_id)
+        assert result is not None
+        assert result["topic"] == "c-plus-plus"
+
+    def test_empty_content_publish(self, collective):
+        """Publishing with empty content still creates valid entry."""
+        learning_id = collective.publish_learning({
+            "author_agent": "test",
+            "author_solution": "test",
+            "topic": "general",
+            "title": "Empty content test",
+            "content": "",
+        })
+        result = collective.get_learning(learning_id)
+        assert result is not None
+        assert result["content"] == ""
+
+    def test_stats_after_close_shows_both_counts(self, collective, sample_help_request):
+        """Stats counts both open and closed help requests."""
+        req1 = collective.create_help_request(sample_help_request)
+        collective.create_help_request({**sample_help_request, "title": "Second"})
+        collective.close_help_request(req1)
+
+        stats = collective.get_stats()
+        assert stats["help_request_count"] == 1  # open
+        assert stats["help_requests_closed"] == 1  # closed

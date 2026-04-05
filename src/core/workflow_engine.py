@@ -111,17 +111,9 @@ class WorkflowGraph:
 
     def _would_create_cycle(self, source: str, target: str) -> bool:
         """Check if adding source→target would create a cycle."""
-        # If target can reach source, adding this edge creates a cycle
-        visited = set()
-        queue = deque([source])
-        while queue:
-            node = queue.popleft()
-            if node == target:
-                return False  # target hasn't been reached yet, we're checking reachability
-            if node in visited:
-                continue
-            visited.add(node)
-            queue.extend(self._adjacency.get(node, []))
+        # Self-loop is always a cycle
+        if source == target:
+            return True
 
         # Check if target can reach source via existing edges
         visited = set()
@@ -329,7 +321,7 @@ class WorkflowEngine:
                     elif edge and edge.condition == "always":
                         pass  # always execute
 
-                    if pred_id in failed_nodes and (not edge or edge.condition != "on_failure"):
+                    if pred_id in failed_nodes and (not edge or edge.condition == "on_success"):
                         should_block = True
 
                 if should_block:
