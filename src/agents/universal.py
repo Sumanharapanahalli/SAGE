@@ -113,6 +113,19 @@ confidence: HIGH, MEDIUM, or LOW based on available information
         except Exception:
             pass  # long-term memory is optional — never block agent execution
 
+        # ── Collective intelligence injection (non-blocking) ──────────
+        try:
+            from src.core.collective_memory import get_collective_memory
+            cm = get_collective_memory()
+            collective_hits = cm.search_learnings(query=task, limit=3)
+            if collective_hits:
+                coll_block = "\n".join(
+                    f"- [{r['topic']}] {r['content'][:200]}" for r in collective_hits
+                )
+                context = f"Shared learnings from other agents:\n{coll_block}\n\n{context}".strip()
+        except Exception:
+            pass  # collective memory is optional — never block agent execution
+
         trace_id = generate_trace_id()
         self.logger.info("UniversalAgent running role=%s trace=%s", role_id, trace_id)
 

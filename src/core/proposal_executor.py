@@ -391,6 +391,16 @@ async def _revert_code_diff(proposal: Proposal):
         return {"reverted": False, "reason": str(exc)}
 
 
+async def _execute_collective_publish(proposal: Proposal):
+    """Write a learning YAML to the collective repo after HITL approval."""
+    from src.core.collective_memory import get_collective_memory
+    cm = get_collective_memory()
+    learning = proposal.payload["learning"]
+    result = cm._write_and_commit_learning(learning)
+    logger.info("Collective publish executed: id=%s", learning.get("id"))
+    return result
+
+
 async def _execute_agent_hire(proposal: Proposal):
     """Append a new agent role to prompts.yaml and optionally task types to tasks.yaml.
 
@@ -457,6 +467,7 @@ _DISPATCH: dict = {
     "temporal_workflow_start":   _execute_temporal_workflow_start,
     "onboarding_generate":       _execute_onboarding_generate,
     "agent_hire":                _execute_agent_hire,
+    "collective_publish":        _execute_collective_publish,
     "implementation_plan":       _execute_implementation_plan,
     "code_diff":                 _execute_code_diff,
 }

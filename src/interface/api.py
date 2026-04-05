@@ -48,6 +48,7 @@ from src.interface.routes.cds_compliance import router as _cds_compliance_router
 from src.interface.routes.regulatory_compliance import router as _regulatory_compliance_router  # noqa: E402
 from src.interface.routes.functional_safety import router as _functional_safety_router  # noqa: E402
 from src.interface.routes.compliance_engineering import router as _compliance_engineering_router  # noqa: E402
+from src.interface.routes.collective_intelligence import router as _collective_intelligence_router  # noqa: E402
 
 # Module-level import so tests can patch src.interface.api.reload_org_loader
 try:
@@ -143,6 +144,7 @@ app.include_router(_cds_compliance_router)
 app.include_router(_regulatory_compliance_router)
 app.include_router(_functional_safety_router)
 app.include_router(_compliance_engineering_router)
+app.include_router(_collective_intelligence_router)
 
 
 # ---------------------------------------------------------------------------
