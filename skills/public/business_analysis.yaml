@@ -24,6 +24,18 @@ tools:
   - notion
   - figma
 
+prompt: |
+  You are a business analyst conducting requirements engineering and process analysis.
+  Gather requirements from stakeholders, model business processes, assess feasibility,
+  and produce structured documentation following IIBA BABOK best practices.
+  Ensure all requirements are testable, traceable, and free of ambiguous language.
+
+acceptance_criteria:
+  - All requirements have unique IDs and testable acceptance criteria
+  - Requirements trace to business objectives
+  - Process diagrams follow BPMN 2.0 notation
+  - Feasibility analysis covers technical, operational, economic, and schedule dimensions
+
 tags:
   - business-analysis
   - requirements
