@@ -93,13 +93,13 @@ function formatCountdown(secs: number): string {
 function pctColor(pct: number): string {
   if (pct >= 90) return 'bg-red-500'
   if (pct >= 70) return 'bg-amber-400'
-  return 'bg-green-500'
+  return 'bg-orange-500'
 }
 
 function pctTextColor(pct: number): string {
   if (pct >= 90) return 'text-red-600'
   if (pct >= 70) return 'text-amber-600'
-  return 'text-green-600'
+  return 'text-orange-600'
 }
 
 // ---------------------------------------------------------------------------
@@ -166,7 +166,7 @@ export default function LLMSettings() {
       <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold text-gray-700">Active Provider</h3>
-          <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
+          <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-medium">
             {config.project}
           </span>
         </div>
@@ -291,7 +291,7 @@ export default function LLMSettings() {
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold text-gray-700">PII Filter</h3>
           {data.pii_filter?.enabled ? (
-            <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
+            <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-medium">
               Active
             </span>
           ) : (
@@ -571,7 +571,7 @@ export default function LLMSettings() {
             (selectedProvider === 'local' && !localPath) ||
             (selectedProvider === 'claude' && !claudeApiKey && !data?.provider.toLowerCase().includes('claude'))
           }
-          className="w-full bg-gray-900 hover:bg-gray-700 disabled:opacity-40 text-white
+          className="w-full bg-white hover:bg-gray-700 disabled:opacity-40 text-white
                      text-sm font-medium py-2.5 rounded-lg transition-colors"
         >
           {switchMutation.isPending ? 'Proposing switch…'

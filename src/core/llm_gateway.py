@@ -68,8 +68,7 @@ def _load_config():
     # Fallback defaults when config not found (e.g. imported from another project)
     return {
         "llm": {
-            "provider": "gemini",
-            "gemini_model": "gemini-2.5-flash",
+            "provider": "claude-code",
             "timeout": 120,
         }
     }
@@ -784,7 +783,7 @@ class LLMGateway:
         # Initialise optional observability
         _init_langfuse(config)
 
-        backend = llm_cfg.get("provider", "gemini")
+        backend = llm_cfg.get("provider", "claude-code")
         self.logger.info("Selected LLM provider: %s", backend)
 
         if backend == "gemini":
@@ -800,8 +799,8 @@ class LLMGateway:
         elif backend == "generic-cli":
             self.provider = GenericCLIProvider(llm_cfg)
         else:
-            self.logger.error("Unknown provider '%s'. Defaulting to gemini.", backend)
-            self.provider = GeminiCLIProvider(llm_cfg)
+            self.logger.error("Unknown provider '%s'. Defaulting to claude-code.", backend)
+            self.provider = ClaudeCodeCLIProvider(llm_cfg)
 
         # ── Provider-aware inference semaphore ──────────────────────────
         # Replaces the old single threading.Lock with a semaphore whose

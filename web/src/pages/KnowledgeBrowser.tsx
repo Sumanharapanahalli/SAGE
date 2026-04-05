@@ -68,10 +68,10 @@ export default function KnowledgeBrowser() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-lg font-semibold" style={{ color: '#e4e4e7' }}>
-            <Brain size={18} className="inline mr-2" style={{ color: '#10b981' }} />
+            <Brain size={18} className="inline mr-2" style={{ color: '#f97316' }} />
             Knowledge Base
           </h1>
-          <p className="text-xs mt-1" style={{ color: '#71717a' }}>
+          <p className="text-xs mt-1" style={{ color: '#9ca3af' }}>
             Search, browse, and manage vector knowledge base entries
           </p>
         </div>
@@ -108,19 +108,19 @@ export default function KnowledgeBrowser() {
       {/* Browse */}
       {tab === 'browse' && (
         <div className="space-y-2">
-          {isLoading && <p className="text-xs" style={{ color: '#71717a' }}>Loading entries...</p>}
+          {isLoading && <p className="text-xs" style={{ color: '#9ca3af' }}>Loading entries...</p>}
           {isError && (
-            <div className="sage-card flex items-center gap-2" style={{ background: '#1c1c1e', borderColor: '#2a2a2e' }}>
+            <div className="sage-card flex items-center gap-2" style={{ background: '#ffffff', borderColor: '#e5e7eb' }}>
               <AlertCircle size={14} style={{ color: '#f59e0b' }} />
-              <span className="text-xs" style={{ color: '#a1a1aa' }}>
+              <span className="text-xs" style={{ color: '#6b7280' }}>
                 Knowledge base not available. Ensure ChromaDB is running.
               </span>
             </div>
           )}
           {entries?.entries?.length > 0 ? (
             entries.entries.map((entry: any, i: number) => (
-              <div key={entry.id ?? i} className="sage-card flex items-start gap-3" style={{ background: '#1c1c1e', borderColor: '#2a2a2e', padding: '0.75rem 1rem' }}>
-                <FileText size={14} style={{ color: '#52525b', flexShrink: 0, marginTop: 2 }} />
+              <div key={entry.id ?? i} className="sage-card flex items-start gap-3" style={{ background: '#ffffff', borderColor: '#e5e7eb', padding: '0.75rem 1rem' }}>
+                <FileText size={14} style={{ color: '#9ca3af', flexShrink: 0, marginTop: 2 }} />
                 <div className="flex-1 min-w-0">
                   <p className="text-xs truncate" style={{ color: '#e4e4e7' }}>
                     {typeof entry.content === 'string' ? entry.content.slice(0, 200) : JSON.stringify(entry).slice(0, 200)}
@@ -138,7 +138,7 @@ export default function KnowledgeBrowser() {
                 <button
                   onClick={() => entry.id && deleteMutation.mutate(entry.id)}
                   className="shrink-0"
-                  style={{ color: '#71717a', background: 'none', border: 'none', cursor: 'pointer' }}
+                  style={{ color: '#9ca3af', background: 'none', border: 'none', cursor: 'pointer' }}
                   title="Delete entry"
                 >
                   <Trash2 size={12} />
@@ -152,7 +152,7 @@ export default function KnowledgeBrowser() {
             </div>
           )}
           {entries?.total != null && (
-            <p className="text-xs mt-2" style={{ color: '#52525b' }}>
+            <p className="text-xs mt-2" style={{ color: '#9ca3af' }}>
               Showing {entries.entries?.length ?? 0} of {entries.total} entries
             </p>
           )}
@@ -164,14 +164,14 @@ export default function KnowledgeBrowser() {
         <div>
           <div className="flex gap-2 mb-4">
             <div className="flex-1 relative">
-              <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#52525b' }} />
+              <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} />
               <input
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleSearch()}
                 placeholder="Search knowledge base..."
                 className="w-full text-sm pl-8 pr-3 py-2"
-                style={{ background: '#1c1c1e', color: '#e4e4e7', border: '1px solid #2a2a2e', borderRadius: 8, outline: 'none' }}
+                style={{ background: '#ffffff', color: '#e4e4e7', border: '1px solid #e5e7eb', borderRadius: 8, outline: 'none' }}
               />
             </div>
             <button onClick={handleSearch} disabled={!searchQuery.trim() || searchMutation.isPending} className="sage-btn sage-btn-primary">
@@ -182,7 +182,7 @@ export default function KnowledgeBrowser() {
           {searchMutation.isSuccess && searchMutation.data?.results?.length > 0 ? (
             <div className="space-y-2">
               {searchMutation.data.results.map((r: any, i: number) => (
-                <div key={i} className="sage-card" style={{ background: '#1c1c1e', borderColor: '#2a2a2e', padding: '0.75rem 1rem' }}>
+                <div key={i} className="sage-card" style={{ background: '#ffffff', borderColor: '#e5e7eb', padding: '0.75rem 1rem' }}>
                   <div className="flex items-center justify-between mb-1">
                     <span className="sage-tag">{Math.round((r.score ?? r.similarity ?? 0) * 100)}% match</span>
                   </div>
@@ -204,31 +204,31 @@ export default function KnowledgeBrowser() {
       {/* Add Entry */}
       {tab === 'add' && (
         <div className="max-w-lg">
-          <div className="sage-card" style={{ background: '#1c1c1e', borderColor: '#2a2a2e' }}>
+          <div className="sage-card" style={{ background: '#ffffff', borderColor: '#e5e7eb' }}>
             <h2 className="text-sm font-semibold mb-3" style={{ color: '#e4e4e7' }}>
-              <Plus size={14} className="inline mr-1.5" style={{ color: '#10b981' }} />
+              <Plus size={14} className="inline mr-1.5" style={{ color: '#f97316' }} />
               Add Knowledge Entry
             </h2>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs mb-1" style={{ color: '#71717a' }}>Content</label>
+                <label className="block text-xs mb-1" style={{ color: '#9ca3af' }}>Content</label>
                 <textarea
                   value={newContent}
                   onChange={e => setNewContent(e.target.value)}
                   rows={5}
                   placeholder="Enter knowledge content..."
                   className="w-full text-sm px-3 py-2"
-                  style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #2a2a2e', borderRadius: 8, outline: 'none', resize: 'vertical' }}
+                  style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #e5e7eb', borderRadius: 8, outline: 'none', resize: 'vertical' }}
                 />
               </div>
               <div className="flex gap-2">
                 <div className="flex-1">
-                  <label className="block text-xs mb-1" style={{ color: '#71717a' }}>Metadata Key</label>
-                  <input value={newMetaKey} onChange={e => setNewMetaKey(e.target.value)} placeholder="e.g. source" className="w-full text-xs px-2 py-1.5" style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #2a2a2e', borderRadius: 6, outline: 'none' }} />
+                  <label className="block text-xs mb-1" style={{ color: '#9ca3af' }}>Metadata Key</label>
+                  <input value={newMetaKey} onChange={e => setNewMetaKey(e.target.value)} placeholder="e.g. source" className="w-full text-xs px-2 py-1.5" style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #e5e7eb', borderRadius: 6, outline: 'none' }} />
                 </div>
                 <div className="flex-1">
-                  <label className="block text-xs mb-1" style={{ color: '#71717a' }}>Metadata Value</label>
-                  <input value={newMetaVal} onChange={e => setNewMetaVal(e.target.value)} placeholder="e.g. user-feedback" className="w-full text-xs px-2 py-1.5" style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #2a2a2e', borderRadius: 6, outline: 'none' }} />
+                  <label className="block text-xs mb-1" style={{ color: '#9ca3af' }}>Metadata Value</label>
+                  <input value={newMetaVal} onChange={e => setNewMetaVal(e.target.value)} placeholder="e.g. user-feedback" className="w-full text-xs px-2 py-1.5" style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #e5e7eb', borderRadius: 6, outline: 'none' }} />
                 </div>
               </div>
               <button

@@ -41,7 +41,7 @@ export default function AuditLog() {
           <input
             type="text" value={filter} onChange={(e) => setFilter(e.target.value)}
             placeholder="Filter by actor or action type..."
-            className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
           />
           <button onClick={() => exportCsv(data?.entries ?? [])}
             className="flex items-center gap-2 border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm px-3 py-2 rounded-lg transition-colors">

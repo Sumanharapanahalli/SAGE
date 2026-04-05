@@ -19,7 +19,7 @@ interface LogEntry {
 
 const LEVEL_COLOURS: Record<string, string> = {
   DEBUG:    'text-gray-400',
-  INFO:     'text-green-400',
+  INFO:     'text-orange-400',
   WARNING:  'text-yellow-400',
   ERROR:    'text-red-400',
   CRITICAL: 'text-red-600 font-bold',
@@ -95,9 +95,9 @@ export default function LiveConsole() {
         {/* Toolbar */}
         <div className="flex items-center gap-3 flex-wrap">
           <span className={`inline-flex items-center gap-1.5 text-xs font-mono px-2 py-1 rounded ${
-            connected ? 'bg-green-900/40 text-green-400' : 'bg-red-900/40 text-red-400'
+            connected ? 'bg-orange-900/40 text-orange-400' : 'bg-red-900/40 text-red-400'
           }`}>
-            <span className={`w-2 h-2 rounded-full ${connected ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`} />
+            <span className={`w-2 h-2 rounded-full ${connected ? 'bg-orange-400 animate-pulse' : 'bg-red-400'}`} />
             {connected ? 'Connected' : 'Reconnecting…'}
           </span>
 
@@ -106,7 +106,7 @@ export default function LiveConsole() {
             placeholder="Filter logs…"
             value={filter}
             onChange={e => setFilter(e.target.value)}
-            className="flex-1 min-w-[160px] bg-gray-800 border border-gray-600 rounded px-3 py-1 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-blue-500"
+            className="flex-1 min-w-[160px] bg-gray-50 border border-gray-600 rounded px-3 py-1 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-blue-500"
           />
 
           <button
@@ -140,7 +140,7 @@ export default function LiveConsole() {
             </div>
           )}
           {visible.map((entry, i) => (
-            <div key={i} className="flex gap-2 hover:bg-gray-900/50 px-1 rounded">
+            <div key={i} className="flex gap-2 hover:bg-white/50 px-1 rounded">
               <span className="text-gray-600 shrink-0 w-[82px] overflow-hidden">
                 {entry.ts.slice(11, 23)}
               </span>

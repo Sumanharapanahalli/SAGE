@@ -69,7 +69,7 @@ export default function FeatureRequestPanel({ module, onClose }: Props) {
   return (
     <>
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-zinc-900/30 z-40" onClick={onClose} aria-hidden />
+      <div className="fixed inset-0 bg-white/30 z-40" onClick={onClose} aria-hidden />
 
       {/* Panel */}
       <div className="fixed right-0 top-0 h-full w-[460px] bg-white shadow-2xl z-50 flex flex-col">
@@ -93,8 +93,8 @@ export default function FeatureRequestPanel({ module, onClose }: Props) {
         {/* Success state */}
         {submitted ? (
           <div className="flex-1 flex flex-col items-center justify-center p-8 text-center gap-4">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-              <CheckCircle size={32} className="text-green-600" />
+            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center">
+              <CheckCircle size={32} className="text-orange-600" />
             </div>
             <div>
               <div className="font-semibold text-gray-800 mb-1 text-lg">
@@ -108,7 +108,7 @@ export default function FeatureRequestPanel({ module, onClose }: Props) {
             </div>
             <button
               onClick={onClose}
-              className="mt-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-8 py-2.5 rounded-lg transition-colors"
+              className="mt-2 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium px-8 py-2.5 rounded-lg transition-colors"
             >
               Done
             </button>

@@ -121,8 +121,8 @@ function ActivityRow({ event }: { event: AuditEvent }) {
   return (
     <div
       className="flex items-start gap-3 px-4 py-2.5 transition-colors"
-      style={{ borderBottom: '1px solid #27272a' }}
-      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = '#27272a' }}
+      style={{ borderBottom: '1px solid #e5e7eb' }}
+      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = '#e5e7eb' }}
       onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}
     >
       {/* Timeline dot + line */}
@@ -143,15 +143,15 @@ function ActivityRow({ event }: { event: AuditEvent }) {
         <div className="text-sm" style={{ color: '#e4e4e7' }}>{label}</div>
         <div className="flex items-center gap-2 mt-0.5">
           {event.agent && (
-            <span className="text-xs" style={{ color: '#52525b' }}>
+            <span className="text-xs" style={{ color: '#9ca3af' }}>
               {event.agent}
             </span>
           )}
           {event.agent && event.trace_id && (
-            <span style={{ color: '#3f3f46' }}>·</span>
+            <span style={{ color: '#d1d5db' }}>·</span>
           )}
           {event.trace_id && event.trace_id !== event.id && (
-            <span className="text-xs font-mono" style={{ color: '#3f3f46' }}>
+            <span className="text-xs font-mono" style={{ color: '#d1d5db' }}>
               {event.trace_id.slice(0, 10)}
             </span>
           )}
@@ -159,7 +159,7 @@ function ActivityRow({ event }: { event: AuditEvent }) {
       </div>
 
       {/* Time */}
-      <div className="text-xs shrink-0" style={{ color: '#52525b' }}>
+      <div className="text-xs shrink-0" style={{ color: '#9ca3af' }}>
         {timeAgo(event.created_at)}
       </div>
     </div>
@@ -236,7 +236,7 @@ export default function Activity() {
                 onClick={() => setFilter(f.value)}
                 className="text-xs px-2.5 py-1 font-medium transition-colors"
                 style={{
-                  backgroundColor: filter === f.value ? '#3f3f46' : 'transparent',
+                  backgroundColor: filter === f.value ? '#d1d5db' : 'transparent',
                   color:           filter === f.value ? '#f4f4f5' : '#71717a',
                   border:          filter === f.value ? '1px solid #52525b' : '1px solid transparent',
                 }}
@@ -253,14 +253,14 @@ export default function Activity() {
             placeholder="Search by agent or description…"
             className="flex-1 min-w-[200px] text-xs px-2.5 py-1.5"
             style={{
-              backgroundColor: '#27272a',
-              border: '1px solid #3f3f46',
-              color: '#f4f4f5',
+              backgroundColor: '#e5e7eb',
+              border: '1px solid #d1d5db',
+              color: '#374151',
             }}
           />
 
           {/* Live indicator */}
-          <div className="flex items-center gap-1.5 text-xs shrink-0" style={{ color: '#52525b' }}>
+          <div className="flex items-center gap-1.5 text-xs shrink-0" style={{ color: '#9ca3af' }}>
             <Radio size={12} style={{ color: '#4ade80' }} />
             <span>Live</span>
           </div>
@@ -268,19 +268,19 @@ export default function Activity() {
 
         {/* Feed */}
         {isLoading && page === 0 ? (
-          <div className="flex items-center justify-center h-48 gap-2" style={{ color: '#52525b' }}>
+          <div className="flex items-center justify-center h-48 gap-2" style={{ color: '#9ca3af' }}>
             <Loader2 size={16} className="animate-spin" /> Loading activity…
           </div>
         ) : visible.length === 0 ? (
           <div
             className="flex flex-col items-center justify-center h-48 gap-2 text-sm"
-            style={{ color: '#52525b', border: '1px dashed #27272a' }}
+            style={{ color: '#9ca3af', border: '1px dashed #e5e7eb' }}
           >
             <Radio size={20} />
             <span>No activity yet</span>
           </div>
         ) : (
-          <div style={{ border: '1px solid #27272a' }}>
+          <div style={{ border: '1px solid #e5e7eb' }}>
             {visible.map(event => (
               <ActivityRow key={`${event.id}-${event.created_at}`} event={event} />
             ))}
@@ -294,9 +294,9 @@ export default function Activity() {
               onClick={() => setPage(p => p + 1)}
               className="text-xs px-4 py-2 transition-colors"
               style={{
-                backgroundColor: '#27272a',
-                color: '#a1a1aa',
-                border: '1px solid #3f3f46',
+                backgroundColor: '#e5e7eb',
+                color: '#6b7280',
+                border: '1px solid #d1d5db',
               }}
             >
               Load more

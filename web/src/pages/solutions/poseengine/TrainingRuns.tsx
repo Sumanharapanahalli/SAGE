@@ -83,8 +83,8 @@ export default function TrainingRuns() {
           {parsedMetrics['Epoch'] && <MetricCard label="Epoch" value={parsedMetrics['Epoch']} icon={Play} color="text-blue-500" />}
           {parsedMetrics['Loss'] && <MetricCard label="Train Loss" value={parsedMetrics['Loss']} icon={TrendingUp} color="text-red-500" />}
           {parsedMetrics['Val Loss'] && <MetricCard label="Val Loss" value={parsedMetrics['Val Loss']} icon={TrendingUp} color="text-orange-500" />}
-          {parsedMetrics['mAP'] && <MetricCard label="mAP" value={parsedMetrics['mAP']} icon={Target} color="text-green-500" />}
-          {parsedMetrics['Accuracy'] && <MetricCard label="Accuracy" value={parsedMetrics['Accuracy']} icon={Target} color="text-green-500" />}
+          {parsedMetrics['mAP'] && <MetricCard label="mAP" value={parsedMetrics['mAP']} icon={Target} color="text-orange-500" />}
+          {parsedMetrics['Accuracy'] && <MetricCard label="Accuracy" value={parsedMetrics['Accuracy']} icon={Target} color="text-orange-500" />}
           {parsedMetrics['FPS'] && <MetricCard label="FPS" value={parsedMetrics['FPS']} icon={Zap} color="text-purple-500" />}
           {parsedMetrics['OKS'] && <MetricCard label="OKS" value={parsedMetrics['OKS']} icon={Target} color="text-teal-500" />}
           {parsedMetrics['Learning Rate'] && <MetricCard label="LR" value={parsedMetrics['Learning Rate']} icon={TrendingUp} color="text-gray-500" />}
@@ -125,7 +125,7 @@ export default function TrainingRuns() {
                 <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
                   result.severity === 'RED' ? 'bg-red-100 text-red-700' :
                   result.severity === 'AMBER' ? 'bg-amber-100 text-amber-700' :
-                  'bg-green-100 text-green-700'
+                  'bg-orange-100 text-orange-700'
                 }`}>{result.severity}</span>
               </div>
               <div>

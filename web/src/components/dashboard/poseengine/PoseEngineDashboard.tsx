@@ -20,7 +20,7 @@ export default function PoseEngineDashboard() {
   }
 
   const statusColor = (s: string) =>
-    s === 'passed' ? 'bg-green-100 text-green-700' :
+    s === 'passed' ? 'bg-orange-100 text-orange-700' :
     s === 'failed' ? 'bg-red-100 text-red-700' :
     s === 'running' ? 'bg-blue-100 text-blue-700 animate-pulse' :
     'bg-gray-100 text-gray-600'
@@ -46,7 +46,7 @@ export default function PoseEngineDashboard() {
             <div className="text-xs text-gray-500">Val Loss</div>
           </div>
           <div className="bg-purple-50 rounded-lg p-3 text-center">
-            <Target size={14} className="text-green-500 mx-auto mb-1" />
+            <Target size={14} className="text-orange-500 mx-auto mb-1" />
             <div className="text-lg font-bold text-gray-800 tabular-nums">{latestRun.mAP}</div>
             <div className="text-xs text-gray-500">mAP</div>
           </div>

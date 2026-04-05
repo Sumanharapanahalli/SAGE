@@ -4,7 +4,7 @@ import { fetchOpenMRs, type MRItem } from '../../api/client'
 import { ExternalLink } from 'lucide-react'
 
 const PIPELINE_BADGE: Record<string, string> = {
-  success: 'bg-green-100 text-green-700',
+  success: 'bg-orange-100 text-orange-700',
   failed: 'bg-red-100 text-red-700',
   running: 'bg-blue-100 text-blue-700',
   pending: 'bg-amber-100 text-amber-700',
@@ -30,9 +30,9 @@ export default function OpenMRsList() {
       <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Open Merge Requests</h2>
       <div className="flex gap-2 mb-3">
         <input type="number" value={projectId} onChange={(e) => setProjectId(e.target.value)}
-          className="w-28 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Project ID" />
+          className="w-28 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="Project ID" />
         <button onClick={() => refetch()} disabled={!projectId || isFetching}
-          className="bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white text-sm px-3 py-2 rounded-lg transition-colors">
+          className="bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white text-sm px-3 py-2 rounded-lg transition-colors">
           {isFetching ? 'Loading...' : 'Load'}
         </button>
         {data && (

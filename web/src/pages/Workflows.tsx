@@ -23,13 +23,13 @@ async function getMermaid(): Promise<any> {
         startOnLoad: false,
         theme: 'dark',
         themeVariables: {
-          background: '#09090b',
-          primaryColor: '#27272a',
+          background: '#fafafa',
+          primaryColor: '#e5e7eb',
           primaryTextColor: '#f4f4f5',
-          primaryBorderColor: '#3f3f46',
+          primaryBorderColor: '#d1d5db',
           lineColor: '#71717a',
-          secondaryColor: '#18181b',
-          tertiaryColor: '#18181b',
+          secondaryColor: '#ffffff',
+          tertiaryColor: '#ffffff',
         },
         flowchart: { curve: 'linear', useMaxWidth: true },
       })
@@ -86,30 +86,30 @@ function DiagramModal({ wf, onClose }: DiagramModalProps) {
       <div
         className="flex flex-col w-full max-w-5xl mx-4"
         style={{
-          backgroundColor: '#09090b',
-          border: '1px solid #3f3f46',
+          backgroundColor: '#fafafa',
+          border: '1px solid #d1d5db',
           maxHeight: '90vh',
         }}
       >
         {/* Modal header */}
         <div
           className="flex items-center justify-between px-4 py-3 shrink-0"
-          style={{ borderBottom: '1px solid #27272a', backgroundColor: '#18181b' }}
+          style={{ borderBottom: '1px solid #e5e7eb', backgroundColor: '#ffffff' }}
         >
           <div className="flex items-center gap-3">
-            <GitBranch size={16} style={{ color: '#71717a' }} />
+            <GitBranch size={16} style={{ color: '#9ca3af' }} />
             <div>
-              <span className="text-sm font-semibold" style={{ color: '#f4f4f5' }}>
+              <span className="text-sm font-semibold" style={{ color: '#374151' }}>
                 {wf.workflow_name}
               </span>
-              <span className="ml-2 text-xs" style={{ color: '#71717a' }}>
+              <span className="ml-2 text-xs" style={{ color: '#9ca3af' }}>
                 {wf.solution}
               </span>
             </div>
             {wf.node_count > 0 && (
               <span
                 className="text-xs px-2 py-0.5"
-                style={{ backgroundColor: '#27272a', color: '#a1a1aa' }}
+                style={{ backgroundColor: '#e5e7eb', color: '#6b7280' }}
               >
                 {wf.node_count} nodes
               </span>
@@ -120,7 +120,7 @@ function DiagramModal({ wf, onClose }: DiagramModalProps) {
               onClick={handleCopy}
               className="flex items-center gap-1.5 text-xs px-3 py-1.5 transition-colors"
               style={{
-                border: '1px solid #3f3f46',
+                border: '1px solid #d1d5db',
                 color: copied ? '#22c55e' : '#a1a1aa',
               }}
               title="Copy Mermaid source"
@@ -131,7 +131,7 @@ function DiagramModal({ wf, onClose }: DiagramModalProps) {
             <button
               onClick={onClose}
               className="flex items-center justify-center"
-              style={{ color: '#52525b', width: 28, height: 28 }}
+              style={{ color: '#9ca3af', width: 28, height: 28 }}
               title="Close"
             >
               <X size={16} />
@@ -144,13 +144,13 @@ function DiagramModal({ wf, onClose }: DiagramModalProps) {
           {renderError ? (
             <div
               className="p-4 text-sm"
-              style={{ backgroundColor: '#18181b', border: '1px solid #3f3f46', color: '#f87171' }}
+              style={{ backgroundColor: '#ffffff', border: '1px solid #d1d5db', color: '#f87171' }}
             >
               <p className="font-medium mb-2">Render error</p>
-              <pre className="text-xs overflow-auto" style={{ color: '#a1a1aa' }}>{renderError}</pre>
-              <hr style={{ borderColor: '#27272a', margin: '12px 0' }} />
-              <p className="font-medium mb-1" style={{ color: '#a1a1aa' }}>Raw Mermaid source</p>
-              <pre className="text-xs overflow-auto" style={{ color: '#71717a' }}>{wf.mermaid_diagram}</pre>
+              <pre className="text-xs overflow-auto" style={{ color: '#6b7280' }}>{renderError}</pre>
+              <hr style={{ borderColor: '#e5e7eb', margin: '12px 0' }} />
+              <p className="font-medium mb-1" style={{ color: '#6b7280' }}>Raw Mermaid source</p>
+              <pre className="text-xs overflow-auto" style={{ color: '#9ca3af' }}>{wf.mermaid_diagram}</pre>
             </div>
           ) : svg ? (
             <div
@@ -160,7 +160,7 @@ function DiagramModal({ wf, onClose }: DiagramModalProps) {
             />
           ) : (
             <div className="flex items-center justify-center py-16">
-              <div className="text-xs animate-pulse" style={{ color: '#52525b' }}>Rendering…</div>
+              <div className="text-xs animate-pulse" style={{ color: '#9ca3af' }}>Rendering…</div>
             </div>
           )}
         </div>
@@ -169,7 +169,7 @@ function DiagramModal({ wf, onClose }: DiagramModalProps) {
         {wf.description && (
           <div
             className="px-4 py-2 text-xs shrink-0"
-            style={{ borderTop: '1px solid #27272a', color: '#52525b' }}
+            style={{ borderTop: '1px solid #e5e7eb', color: '#9ca3af' }}
           >
             {wf.description}
           </div>
@@ -205,33 +205,33 @@ function WorkflowCard({ wf, onClick }: WorkflowCardProps) {
       onClick={onClick}
       className="flex flex-col text-left w-full transition-colors"
       style={{
-        backgroundColor: '#18181b',
-        border: '1px solid #27272a',
+        backgroundColor: '#ffffff',
+        border: '1px solid #e5e7eb',
       }}
       onMouseEnter={e => {
-        ;(e.currentTarget as HTMLElement).style.borderColor = '#3f3f46'
+        ;(e.currentTarget as HTMLElement).style.borderColor = '#d1d5db'
         ;(e.currentTarget as HTMLElement).style.backgroundColor = '#1c1c1f'
       }}
       onMouseLeave={e => {
-        ;(e.currentTarget as HTMLElement).style.borderColor = '#27272a'
-        ;(e.currentTarget as HTMLElement).style.backgroundColor = '#18181b'
+        ;(e.currentTarget as HTMLElement).style.borderColor = '#e5e7eb'
+        ;(e.currentTarget as HTMLElement).style.backgroundColor = '#ffffff'
       }}
     >
       {/* Card header */}
       <div
         className="flex items-center justify-between px-3 py-2 shrink-0"
-        style={{ borderBottom: '1px solid #27272a' }}
+        style={{ borderBottom: '1px solid #e5e7eb' }}
       >
         <div className="flex items-center gap-2 min-w-0">
-          <GitBranch size={13} style={{ color: '#52525b', flexShrink: 0 }} />
-          <span className="text-xs font-semibold truncate" style={{ color: '#f4f4f5' }}>
+          <GitBranch size={13} style={{ color: '#9ca3af', flexShrink: 0 }} />
+          <span className="text-xs font-semibold truncate" style={{ color: '#374151' }}>
             {wf.workflow_name}
           </span>
         </div>
         {wf.node_count > 0 && (
           <span
             className="text-xs px-1.5 py-0.5 shrink-0 ml-2"
-            style={{ backgroundColor: '#27272a', color: '#71717a', fontSize: '10px' }}
+            style={{ backgroundColor: '#e5e7eb', color: '#9ca3af', fontSize: '10px' }}
           >
             {wf.node_count}
           </span>
@@ -242,7 +242,7 @@ function WorkflowCard({ wf, onClick }: WorkflowCardProps) {
       <div className="px-3 pt-1.5 pb-1">
         <span
           className="text-xs"
-          style={{ color: '#71717a' }}
+          style={{ color: '#9ca3af' }}
         >
           {wf.solution}
         </span>
@@ -253,8 +253,8 @@ function WorkflowCard({ wf, onClick }: WorkflowCardProps) {
         className="flex items-center justify-center overflow-hidden mx-3 mb-3"
         style={{
           height: 120,
-          backgroundColor: '#09090b',
-          border: '1px solid #27272a',
+          backgroundColor: '#fafafa',
+          border: '1px solid #e5e7eb',
         }}
       >
         {previewSvg ? (
@@ -264,7 +264,7 @@ function WorkflowCard({ wf, onClick }: WorkflowCardProps) {
             dangerouslySetInnerHTML={{ __html: previewSvg }}
           />
         ) : (
-          <div className="text-xs animate-pulse" style={{ color: '#3f3f46' }}>
+          <div className="text-xs animate-pulse" style={{ color: '#d1d5db' }}>
             Loading…
           </div>
         )}
@@ -274,7 +274,7 @@ function WorkflowCard({ wf, onClick }: WorkflowCardProps) {
       {wf.description && (
         <p
           className="px-3 pb-3 text-xs line-clamp-2"
-          style={{ color: '#52525b' }}
+          style={{ color: '#9ca3af' }}
         >
           {wf.description}
         </p>
@@ -309,10 +309,10 @@ export default function Workflows() {
       {/* Page header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-sm font-semibold" style={{ color: '#f4f4f5' }}>
+          <h2 className="text-sm font-semibold" style={{ color: '#374151' }}>
             Workflow Diagrams
           </h2>
-          <p className="text-xs mt-0.5" style={{ color: '#52525b' }}>
+          <p className="text-xs mt-0.5" style={{ color: '#9ca3af' }}>
             Auto-generated from LangGraph StateGraph definitions across all solutions
           </p>
         </div>
@@ -321,8 +321,8 @@ export default function Workflows() {
           disabled={isFetching}
           className="flex items-center gap-1.5 text-xs px-3 py-1.5 transition-colors"
           style={{
-            border: '1px solid #3f3f46',
-            color: isFetching ? '#3f3f46' : '#a1a1aa',
+            border: '1px solid #d1d5db',
+            color: isFetching ? '#d1d5db' : '#a1a1aa',
             cursor: isFetching ? 'not-allowed' : 'pointer',
           }}
         >
@@ -333,7 +333,7 @@ export default function Workflows() {
 
       {/* States */}
       {isLoading && (
-        <div className="flex items-center gap-2 py-8 text-xs" style={{ color: '#52525b' }}>
+        <div className="flex items-center gap-2 py-8 text-xs" style={{ color: '#9ca3af' }}>
           <RefreshCw size={12} className="animate-spin" />
           Discovering workflows…
         </div>
@@ -342,12 +342,12 @@ export default function Workflows() {
       {isError && (
         <div
           className="flex items-start gap-2 p-4 text-sm"
-          style={{ backgroundColor: '#18181b', border: '1px solid #3f3f46' }}
+          style={{ backgroundColor: '#ffffff', border: '1px solid #d1d5db' }}
         >
           <AlertCircle size={14} style={{ color: '#f87171', flexShrink: 0, marginTop: 1 }} />
           <div>
             <p className="font-medium" style={{ color: '#f87171' }}>Failed to load workflows</p>
-            <p className="text-xs mt-1" style={{ color: '#71717a' }}>
+            <p className="text-xs mt-1" style={{ color: '#9ca3af' }}>
               {error instanceof Error ? error.message : 'Unknown error'}
             </p>
           </div>
@@ -357,14 +357,14 @@ export default function Workflows() {
       {!isLoading && !isError && workflows.length === 0 && (
         <div
           className="flex flex-col items-center justify-center py-16 text-center"
-          style={{ border: '1px dashed #27272a' }}
+          style={{ border: '1px dashed #e5e7eb' }}
         >
-          <GitBranch size={32} style={{ color: '#27272a', marginBottom: 12 }} />
-          <p className="text-sm font-medium" style={{ color: '#52525b' }}>No workflows found</p>
-          <p className="text-xs mt-1 max-w-xs" style={{ color: '#3f3f46' }}>
+          <GitBranch size={32} style={{ color: '#e5e7eb', marginBottom: 12 }} />
+          <p className="text-sm font-medium" style={{ color: '#9ca3af' }}>No workflows found</p>
+          <p className="text-xs mt-1 max-w-xs" style={{ color: '#d1d5db' }}>
             Add a LangGraph StateGraph to{' '}
-            <code style={{ color: '#52525b' }}>solutions/&lt;name&gt;/workflows/*.py</code>{' '}
-            and expose a compiled <code style={{ color: '#52525b' }}>workflow</code> variable.
+            <code style={{ color: '#9ca3af' }}>solutions/&lt;name&gt;/workflows/*.py</code>{' '}
+            and expose a compiled <code style={{ color: '#9ca3af' }}>workflow</code> variable.
           </p>
         </div>
       )}
@@ -372,7 +372,7 @@ export default function Workflows() {
       {!isLoading && workflows.length > 0 && (
         <>
           {/* Count */}
-          <p className="text-xs" style={{ color: '#3f3f46' }}>
+          <p className="text-xs" style={{ color: '#d1d5db' }}>
             {workflows.length} workflow{workflows.length !== 1 ? 's' : ''} discovered
           </p>
 

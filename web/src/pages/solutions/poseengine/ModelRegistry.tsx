@@ -29,7 +29,7 @@ const PLACEHOLDER_MODELS: ModelEntry[] = [
 const STATUS_CONFIG: Record<string, { icon: typeof CheckCircle2; color: string; bg: string }> = {
   training:  { icon: Loader2,      color: 'text-blue-600',   bg: 'bg-blue-50 border-blue-200' },
   exported:  { icon: Upload,       color: 'text-amber-600',  bg: 'bg-amber-50 border-amber-200' },
-  deployed:  { icon: CheckCircle2, color: 'text-green-600',  bg: 'bg-green-50 border-green-200' },
+  deployed:  { icon: CheckCircle2, color: 'text-orange-600',  bg: 'bg-orange-50 border-orange-200' },
   retired:   { icon: Archive,      color: 'text-gray-500',   bg: 'bg-gray-50 border-gray-200' },
 }
 

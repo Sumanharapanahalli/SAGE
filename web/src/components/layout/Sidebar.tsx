@@ -63,7 +63,7 @@ const NAV_AREAS: NavArea[] = [
     ],
   },
   {
-    id: 'knowledge', label: 'Knowledge', icon: Database, accent: '#10b981', tooltip: 'Vector knowledge base, shared channels, and compliance records',
+    id: 'knowledge', label: 'Knowledge', icon: Database, accent: '#f97316', tooltip: 'Vector knowledge base, shared channels, and compliance records',
     items: [
       { to: '/knowledge', icon: Brain,          label: 'Knowledge Base', moduleId: 'knowledge', tooltip: "Search, browse, and manage knowledge base entries" },
       { to: '/activity',  icon: Activity,      label: 'Channels',     moduleId: 'audit',    tooltip: 'Cross-team knowledge channels shared via org configuration' },
@@ -251,7 +251,7 @@ function SolutionSwitcher({ projectName, solutions, activeId, onSwitch, showRest
         style={{ display: 'flex', width: '100%', alignItems: 'center', gap: '6px',
                  padding: '10px 12px', background: 'none', border: 'none', cursor: 'pointer' }}
       >
-        <span style={{ flex: 1, fontSize: '13px', fontWeight: 600, color: '#f1f5f9',
+        <span style={{ flex: 1, fontSize: '13px', fontWeight: 600, color: '#374151',
                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'left' }}>
           {projectName}
         </span>
@@ -270,7 +270,7 @@ function SolutionSwitcher({ projectName, solutions, activeId, onSwitch, showRest
                 disabled={sol.id === activeId}
                 style={{ display: 'block', width: '100%', textAlign: 'left', padding: '8px 12px',
                          fontSize: '12px', color: sol.id === activeId ? '#f1f5f9' : '#64748b',
-                         backgroundColor: sol.id === activeId ? '#172033' : 'transparent',
+                         backgroundColor: sol.id === activeId ? '#fff7ed' : 'transparent',
                          border: 'none', cursor: sol.id === activeId ? 'default' : 'pointer' }}
               >
                 {sol.name}

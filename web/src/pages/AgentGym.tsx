@@ -77,7 +77,7 @@ export default function AgentGym() {
             <Dumbbell size={18} className="inline mr-2" style={{ color: '#a78bfa' }} />
             Agent Gym
           </h1>
-          <p className="text-xs mt-1" style={{ color: '#71717a' }}>
+          <p className="text-xs mt-1" style={{ color: '#9ca3af' }}>
             Train agents through exercises, track Glicko-2 ratings, browse curriculum
           </p>
         </div>
@@ -105,7 +105,7 @@ export default function AgentGym() {
 
       {/* Leaderboard */}
       {tab === 'leaderboard' && (
-        <div className="sage-card" style={{ background: '#1c1c1e', borderColor: '#2a2a2e' }}>
+        <div className="sage-card" style={{ background: '#ffffff', borderColor: '#e5e7eb' }}>
           <h2 className="text-sm font-semibold mb-3" style={{ color: '#e4e4e7' }}>
             <Trophy size={14} className="inline mr-1.5" style={{ color: '#f59e0b' }} />
             Agent Ratings
@@ -135,7 +135,7 @@ export default function AgentGym() {
                         {Math.round(entry.rating ?? 1500)}
                       </span>
                     </td>
-                    <td style={{ color: '#71717a' }}>{Math.round(entry.rd ?? 350)}</td>
+                    <td style={{ color: '#9ca3af' }}>{Math.round(entry.rd ?? 350)}</td>
                     <td style={{ color: '#22c55e' }}>{entry.wins ?? 0}</td>
                     <td style={{ color: '#ef4444' }}>{entry.losses ?? 0}</td>
                     <td style={{ color: '#e4e4e7' }}>
@@ -161,12 +161,12 @@ export default function AgentGym() {
         <div>
           <div className="flex items-center gap-3 mb-4">
             <div className="flex items-center gap-2">
-              <Filter size={12} style={{ color: '#71717a' }} />
+              <Filter size={12} style={{ color: '#9ca3af' }} />
               <select
                 value={difficulty}
                 onChange={e => setDifficulty(e.target.value)}
                 className="text-xs px-2 py-1"
-                style={{ background: '#1c1c1e', color: '#e4e4e7', border: '1px solid #2a2a2e', borderRadius: 6 }}
+                style={{ background: '#ffffff', color: '#e4e4e7', border: '1px solid #e5e7eb', borderRadius: 6 }}
               >
                 <option value="beginner">Beginner</option>
                 <option value="intermediate">Intermediate</option>
@@ -177,15 +177,15 @@ export default function AgentGym() {
           {catalog?.exercises?.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {(catalog.exercises ?? []).map((ex: any) => (
-                <div key={ex.id} className="sage-card" style={{ background: '#1c1c1e', borderColor: '#2a2a2e' }}>
+                <div key={ex.id} className="sage-card" style={{ background: '#ffffff', borderColor: '#e5e7eb' }}>
                   <div className="flex items-start justify-between mb-2">
                     <div>
-                      <span className="text-xs font-mono" style={{ color: '#71717a' }}>{ex.id}</span>
+                      <span className="text-xs font-mono" style={{ color: '#9ca3af' }}>{ex.id}</span>
                       <h3 className="text-sm font-medium mt-0.5" style={{ color: '#e4e4e7' }}>{ex.role}</h3>
                     </div>
                     <span className="sage-tag">{ex.difficulty}</span>
                   </div>
-                  <p className="text-xs mb-2" style={{ color: '#a1a1aa' }}>{ex.description}</p>
+                  <p className="text-xs mb-2" style={{ color: '#6b7280' }}>{ex.description}</p>
                   {ex.tags?.length > 0 && (
                     <div className="flex flex-wrap gap-1">
                       {ex.tags.map((tag: string) => (
@@ -212,26 +212,26 @@ export default function AgentGym() {
         <div>
           <div className="flex items-center gap-3 mb-4">
             <div className="flex-1">
-              <label className="block text-xs mb-1" style={{ color: '#71717a' }}>Select Role for Curriculum</label>
+              <label className="block text-xs mb-1" style={{ color: '#9ca3af' }}>Select Role for Curriculum</label>
               <input
                 value={selectedRole}
                 onChange={e => setSelectedRole(e.target.value)}
                 placeholder="e.g. developer, analyst"
                 className="w-full text-sm px-3 py-2"
-                style={{ background: '#1c1c1e', color: '#e4e4e7', border: '1px solid #2a2a2e', borderRadius: 8, outline: 'none' }}
+                style={{ background: '#ffffff', color: '#e4e4e7', border: '1px solid #e5e7eb', borderRadius: 8, outline: 'none' }}
               />
             </div>
           </div>
           {curriculum ? (
-            <div className="sage-card" style={{ background: '#1c1c1e', borderColor: '#2a2a2e' }}>
+            <div className="sage-card" style={{ background: '#ffffff', borderColor: '#e5e7eb' }}>
               <h2 className="text-sm font-semibold mb-3" style={{ color: '#e4e4e7' }}>
-                <BarChart3 size={14} className="inline mr-1.5" style={{ color: '#10b981' }} />
+                <BarChart3 size={14} className="inline mr-1.5" style={{ color: '#f97316' }} />
                 Curriculum for "{selectedRole}"
               </h2>
               {curriculum.phases?.length > 0 ? (
                 <div className="space-y-3">
                   {curriculum.phases.map((phase: any, i: number) => (
-                    <div key={i} style={{ background: '#111113', borderRadius: 8, padding: 12, border: '1px solid #2a2a2e' }}>
+                    <div key={i} style={{ background: '#111113', borderRadius: 8, padding: 12, border: '1px solid #e5e7eb' }}>
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-xs font-semibold" style={{ color: '#e4e4e7' }}>
                           Phase {i + 1}: {phase.name ?? phase.title ?? 'Unnamed'}
@@ -240,7 +240,7 @@ export default function AgentGym() {
                           {phase.difficulty ?? phase.level ?? 'all'}
                         </span>
                       </div>
-                      <p className="text-xs mb-2" style={{ color: '#a1a1aa' }}>{phase.description ?? ''}</p>
+                      <p className="text-xs mb-2" style={{ color: '#6b7280' }}>{phase.description ?? ''}</p>
                       {phase.exercises?.length > 0 && (
                         <div className="flex flex-wrap gap-1">
                           {phase.exercises.map((ex: any, j: number) => (
@@ -254,7 +254,7 @@ export default function AgentGym() {
                   ))}
                 </div>
               ) : (
-                <pre className="text-xs overflow-auto p-3" style={{ background: '#111113', color: '#a1a1aa', borderRadius: 6, maxHeight: 300 }}>
+                <pre className="text-xs overflow-auto p-3" style={{ background: '#111113', color: '#6b7280', borderRadius: 6, maxHeight: 300 }}>
                   {JSON.stringify(curriculum, null, 2)}
                 </pre>
               )}
@@ -276,29 +276,29 @@ export default function AgentGym() {
       {/* Train */}
       {tab === 'train' && (
         <div className="max-w-lg">
-          <div className="sage-card" style={{ background: '#1c1c1e', borderColor: '#2a2a2e' }}>
+          <div className="sage-card" style={{ background: '#ffffff', borderColor: '#e5e7eb' }}>
             <h2 className="text-sm font-semibold mb-4" style={{ color: '#e4e4e7' }}>
               <Zap size={14} className="inline mr-1.5" style={{ color: '#f59e0b' }} />
               Train an Agent
             </h2>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs mb-1" style={{ color: '#71717a' }}>Agent Role</label>
+                <label className="block text-xs mb-1" style={{ color: '#9ca3af' }}>Agent Role</label>
                 <input
                   value={selectedRole}
                   onChange={e => setSelectedRole(e.target.value)}
                   placeholder="e.g. developer, analyst, firmware_engineer"
                   className="w-full text-sm px-3 py-2"
-                  style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #2a2a2e', borderRadius: 8, outline: 'none' }}
+                  style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #e5e7eb', borderRadius: 8, outline: 'none' }}
                 />
               </div>
               <div>
-                <label className="block text-xs mb-1" style={{ color: '#71717a' }}>Difficulty</label>
+                <label className="block text-xs mb-1" style={{ color: '#9ca3af' }}>Difficulty</label>
                 <select
                   value={difficulty}
                   onChange={e => setDifficulty(e.target.value)}
                   className="w-full text-sm px-3 py-2"
-                  style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #2a2a2e', borderRadius: 8 }}
+                  style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #e5e7eb', borderRadius: 8 }}
                 >
                   <option value="beginner">Beginner</option>
                   <option value="intermediate">Intermediate</option>
@@ -340,7 +340,7 @@ export default function AgentGym() {
 
       {/* History */}
       {tab === 'history' && (
-        <div className="sage-card" style={{ background: '#1c1c1e', borderColor: '#2a2a2e' }}>
+        <div className="sage-card" style={{ background: '#ffffff', borderColor: '#e5e7eb' }}>
           <h2 className="text-sm font-semibold mb-3" style={{ color: '#e4e4e7' }}>
             <Clock size={14} className="inline mr-1.5" style={{ color: '#6366f1' }} />
             Training History
@@ -359,9 +359,9 @@ export default function AgentGym() {
               <tbody>
                 {(history.sessions ?? []).map((s: any, i: number) => (
                   <tr key={i}>
-                    <td style={{ color: '#71717a', fontSize: '11px' }}>{s.timestamp ?? '—'}</td>
+                    <td style={{ color: '#9ca3af', fontSize: '11px' }}>{s.timestamp ?? '—'}</td>
                     <td style={{ color: '#e4e4e7' }}>{s.role}</td>
-                    <td style={{ color: '#a1a1aa' }}>{s.exercise_id ?? '—'}</td>
+                    <td style={{ color: '#6b7280' }}>{s.exercise_id ?? '—'}</td>
                     <td>
                       <span className="sage-tag">{Math.round(s.score ?? 0)}%</span>
                     </td>

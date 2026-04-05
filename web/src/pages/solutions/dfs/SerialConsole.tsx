@@ -142,14 +142,14 @@ export default function SerialConsole() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Terminal */}
         <div className="lg:col-span-2 space-y-0">
-          <div className="bg-gray-900 rounded-t-xl px-4 py-2 flex items-center gap-2">
-            <Terminal size={14} className="text-green-400" />
+          <div className="bg-white rounded-t-xl px-4 py-2 flex items-center gap-2">
+            <Terminal size={14} className="text-orange-400" />
             <span className="text-xs text-gray-400 font-mono">UART — 115200 baud — placeholder mode</span>
           </div>
           <div className="bg-gray-950 h-80 overflow-y-auto px-4 py-3 font-mono text-sm">
             {log.map((line, i) => (
               <div key={i} className={`leading-relaxed ${
-                line.type === 'cmd' ? 'text-green-400' :
+                line.type === 'cmd' ? 'text-orange-400' :
                 line.type === 'error' ? 'text-red-400' :
                 line.type === 'info' ? 'text-gray-500 italic' :
                 'text-gray-300'
@@ -159,8 +159,8 @@ export default function SerialConsole() {
             ))}
             <div ref={logEndRef} />
           </div>
-          <div className="bg-gray-900 rounded-b-xl px-4 py-2 flex gap-2">
-            <span className="text-green-400 font-mono text-sm">&gt;</span>
+          <div className="bg-white rounded-b-xl px-4 py-2 flex gap-2">
+            <span className="text-orange-400 font-mono text-sm">&gt;</span>
             <input
               type="text"
               value={command}
@@ -173,7 +173,7 @@ export default function SerialConsole() {
             <button
               onClick={() => sendCommand(command)}
               disabled={!command.trim()}
-              className="text-gray-400 hover:text-green-400 disabled:opacity-30 transition-colors"
+              className="text-gray-400 hover:text-orange-400 disabled:opacity-30 transition-colors"
             >
               <Send size={16} />
             </button>
@@ -224,7 +224,7 @@ export default function SerialConsole() {
             <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
               analysisResult.severity === 'RED' ? 'bg-red-100 text-red-700' :
               analysisResult.severity === 'AMBER' ? 'bg-amber-100 text-amber-700' :
-              'bg-green-100 text-green-700'
+              'bg-orange-100 text-orange-700'
             }`}>{analysisResult.severity}</span>
           </div>
           <div>

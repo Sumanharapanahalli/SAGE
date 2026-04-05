@@ -26,7 +26,7 @@ export default function ApprovalButtons({ traceId, onDone }: Props) {
         <button
           disabled={approving}
           onClick={() => approve()}
-          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+          className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
         >
           <CheckCircle size={15} /> {approving ? 'Approving...' : 'Approve'}
         </button>

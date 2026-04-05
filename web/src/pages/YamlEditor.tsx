@@ -248,14 +248,14 @@ Document recurring issues, escalation rules, and domain-specific conventions her
             </span>
           )}
           {savedBanner && (
-            <span className="text-xs text-green-700 bg-green-50 px-2 py-1 rounded-md border border-green-200">
+            <span className="text-xs text-orange-700 bg-orange-50 px-2 py-1 rounded-md border border-orange-200">
               Saved &amp; reloaded
             </span>
           )}
           <button
             onClick={handleSave}
             disabled={!isDirty || isSaving}
-            className="px-4 py-2 bg-gray-900 hover:bg-gray-700 disabled:opacity-40
+            className="px-4 py-2 bg-white hover:bg-gray-700 disabled:opacity-40
                        text-white text-sm font-medium rounded-lg transition-colors"
           >
             {isSaving ? 'Saving…' : 'Save & Reload'}

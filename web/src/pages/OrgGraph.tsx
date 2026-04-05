@@ -95,7 +95,7 @@ function buildGraph(org: OrgData): { nodes: Node[]; edges: Edge[] } {
 // Inline form components
 // ---------------------------------------------------------------------------
 const inputStyle: React.CSSProperties = {
-  background: "#111113", color: "#e4e4e7", border: "1px solid #2a2a2e",
+  background: "#111113", color: "#e4e4e7", border: "1px solid #e5e7eb",
   borderRadius: 6, padding: "6px 10px", fontSize: 12, outline: "none", width: "100%",
 };
 
@@ -238,7 +238,7 @@ export default function OrgGraph() {
       </div>
 
       {isEmpty ? (
-        <div className="sage-empty" style={{ border: "1px dashed #2a2a2e", borderRadius: 12, padding: 48 }}>
+        <div className="sage-empty" style={{ border: "1px dashed #e5e7eb", borderRadius: 12, padding: 48 }}>
           <Network size={32} />
           <p style={{ fontSize: 14 }}>No org.yaml configured</p>
           <p style={{ fontSize: 12, color: "#52525b" }}>
@@ -269,7 +269,7 @@ export default function OrgGraph() {
           {/* Management panels */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginTop: 24 }}>
             {/* Solutions */}
-            <div className="sage-card" style={{ background: "#1c1c1e", borderColor: "#2a2a2e" }}>
+            <div className="sage-card" style={{ background: "#ffffff", borderColor: "#e5e7eb" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                 <h2 style={{ fontSize: 14, fontWeight: 600, color: "#e4e4e7", margin: 0 }}>Solutions</h2>
                 <button onClick={() => setShowAddSolution(true)} className="sage-btn sage-btn-secondary" style={{ padding: "4px 10px", fontSize: 11 }}>
@@ -296,7 +296,7 @@ export default function OrgGraph() {
             </div>
 
             {/* Channels */}
-            <div className="sage-card" style={{ background: "#1c1c1e", borderColor: "#2a2a2e" }}>
+            <div className="sage-card" style={{ background: "#ffffff", borderColor: "#e5e7eb" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                 <h2 style={{ fontSize: 14, fontWeight: 600, color: "#e4e4e7", margin: 0 }}>Knowledge Channels</h2>
                 <button onClick={() => setShowAddChannel(true)} className="sage-btn sage-btn-secondary" style={{ padding: "4px 10px", fontSize: 11 }}>
@@ -325,7 +325,7 @@ export default function OrgGraph() {
           </div>
 
           {/* Routes */}
-          <div className="sage-card" style={{ background: "#1c1c1e", borderColor: "#2a2a2e", marginTop: 16 }}>
+          <div className="sage-card" style={{ background: "#ffffff", borderColor: "#e5e7eb", marginTop: 16 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
               <h2 style={{ fontSize: 14, fontWeight: 600, color: "#e4e4e7", margin: 0 }}>Task Routes</h2>
               <button onClick={() => setShowAddRoute(true)} className="sage-btn sage-btn-secondary" style={{ padding: "4px 10px", fontSize: 11 }}>

@@ -28,7 +28,7 @@ test.describe('App Shell', () => {
     const manifest = await res?.json()
     expect(manifest.name).toContain('SAGE')
     expect(manifest.display).toBe('standalone')
-    expect(manifest.theme_color).toBe('#3b82f6')
+    expect(manifest.theme_color).toBe('#f97316')
   })
 
   test('service worker script is accessible', async ({ page }) => {

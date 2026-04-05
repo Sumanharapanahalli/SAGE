@@ -111,23 +111,23 @@ function uid() {
 function KRRow({ kr }: { kr: KeyResult }) {
   const pct = krProgress(kr)
   return (
-    <div className="flex items-center gap-3 py-2" style={{ borderTop: '1px solid #27272a' }}>
+    <div className="flex items-center gap-3 py-2" style={{ borderTop: '1px solid #e5e7eb' }}>
       <div className="flex-1 min-w-0">
-        <div className="text-xs" style={{ color: '#a1a1aa' }}>{kr.title}</div>
-        <div className="mt-1 h-1 w-full" style={{ backgroundColor: '#27272a' }}>
+        <div className="text-xs" style={{ color: '#6b7280' }}>{kr.title}</div>
+        <div className="mt-1 h-1 w-full" style={{ backgroundColor: '#e5e7eb' }}>
           <div
             className="h-1 transition-all"
             style={{ width: `${pct}%`, backgroundColor: pct >= 80 ? '#22c55e' : pct >= 40 ? '#eab308' : '#ef4444' }}
           />
         </div>
       </div>
-      <div className="text-xs shrink-0 font-mono" style={{ color: '#71717a' }}>
+      <div className="text-xs shrink-0 font-mono" style={{ color: '#9ca3af' }}>
         {kr.current} / {kr.target} {kr.unit}
       </div>
       {kr.linked_task_ids.length > 0 && (
         <span
           className="text-xs px-1.5 py-0.5 shrink-0"
-          style={{ backgroundColor: '#27272a', color: '#71717a' }}
+          style={{ backgroundColor: '#e5e7eb', color: '#9ca3af' }}
         >
           {kr.linked_task_ids.length} tasks
         </span>
@@ -151,13 +151,13 @@ function ObjectiveCard({
   const colors = STATUS_COLORS[obj.status]
 
   return (
-    <div style={{ border: '1px solid #3f3f46', backgroundColor: '#18181b' }}>
+    <div style={{ border: '1px solid #d1d5db', backgroundColor: '#ffffff' }}>
       {/* Header row */}
       <div className="px-4 py-3">
         <div className="flex items-start gap-2">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm font-semibold" style={{ color: '#f4f4f5' }}>{obj.title}</span>
+              <span className="text-sm font-semibold" style={{ color: '#374151' }}>{obj.title}</span>
               <span
                 className="text-xs px-1.5 py-0.5 font-medium shrink-0"
                 style={{ backgroundColor: colors.bg, color: colors.text }}
@@ -166,9 +166,9 @@ function ObjectiveCard({
               </span>
             </div>
             <div className="flex items-center gap-3 mt-0.5">
-              <span className="text-xs" style={{ color: '#52525b' }}>{obj.owner}</span>
-              <span className="text-xs" style={{ color: '#3f3f46' }}>·</span>
-              <span className="text-xs" style={{ color: '#52525b' }}>{obj.key_results.length} key results</span>
+              <span className="text-xs" style={{ color: '#9ca3af' }}>{obj.owner}</span>
+              <span className="text-xs" style={{ color: '#d1d5db' }}>·</span>
+              <span className="text-xs" style={{ color: '#9ca3af' }}>{obj.key_results.length} key results</span>
             </div>
           </div>
           {/* Progress */}
@@ -177,7 +177,7 @@ function ObjectiveCard({
             <button
               onClick={() => onDelete(obj.id)}
               className="p-0.5 transition-colors"
-              style={{ color: '#3f3f46' }}
+              style={{ color: '#d1d5db' }}
               title="Delete objective"
             >
               <X size={12} />
@@ -185,7 +185,7 @@ function ObjectiveCard({
             <button
               onClick={() => setExpanded(e => !e)}
               className="p-0.5"
-              style={{ color: '#52525b' }}
+              style={{ color: '#9ca3af' }}
             >
               {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             </button>
@@ -193,7 +193,7 @@ function ObjectiveCard({
         </div>
 
         {/* Progress bar */}
-        <div className="mt-2 h-1 w-full" style={{ backgroundColor: '#27272a' }}>
+        <div className="mt-2 h-1 w-full" style={{ backgroundColor: '#e5e7eb' }}>
           <div
             className="h-1 transition-all"
             style={{ width: `${pct}%`, backgroundColor: colors.bar }}
@@ -273,20 +273,20 @@ function AddGoalForm({
   }
 
   const inputStyle = {
-    backgroundColor: '#09090b',
-    border: '1px solid #3f3f46',
-    color: '#f4f4f5',
+    backgroundColor: '#fafafa',
+    border: '1px solid #d1d5db',
+    color: '#374151',
     padding: '6px 10px',
     fontSize: '12px',
     outline: 'none',
     width: '100%',
   } as React.CSSProperties
 
-  const labelStyle = { color: '#71717a', fontSize: '11px', marginBottom: '4px', display: 'block' } as React.CSSProperties
+  const labelStyle = { color: '#9ca3af', fontSize: '11px', marginBottom: '4px', display: 'block' } as React.CSSProperties
 
   return (
-    <div style={{ border: '1px solid #3f3f46', backgroundColor: '#18181b', padding: '16px' }}>
-      <div className="text-xs font-semibold mb-3" style={{ color: '#f4f4f5' }}>New Objective</div>
+    <div style={{ border: '1px solid #d1d5db', backgroundColor: '#ffffff', padding: '16px' }}>
+      <div className="text-xs font-semibold mb-3" style={{ color: '#374151' }}>New Objective</div>
 
       <div className="space-y-3">
         <div>
@@ -331,7 +331,7 @@ function AddGoalForm({
             <button
               onClick={addKR}
               className="flex items-center gap-1 text-xs"
-              style={{ color: '#71717a' }}
+              style={{ color: '#9ca3af' }}
             >
               <Plus size={11} /> Add KR
             </button>
@@ -359,7 +359,7 @@ function AddGoalForm({
                   value={kr.unit}
                   onChange={e => updateKR(i, 'unit', e.target.value)}
                 />
-                <button onClick={() => removeKR(i)} style={{ color: '#52525b', flexShrink: 0 }}>
+                <button onClick={() => removeKR(i)} style={{ color: '#9ca3af', flexShrink: 0 }}>
                   <X size={12} />
                 </button>
               </div>
@@ -372,14 +372,14 @@ function AddGoalForm({
         <button
           onClick={handleSave}
           className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5"
-          style={{ backgroundColor: '#3f3f46', color: '#f4f4f5' }}
+          style={{ backgroundColor: '#d1d5db', color: '#374151' }}
         >
           <Check size={12} /> Save Objective
         </button>
         <button
           onClick={onCancel}
           className="text-xs px-3 py-1.5"
-          style={{ color: '#71717a', border: '1px solid #3f3f46' }}
+          style={{ color: '#9ca3af', border: '1px solid #d1d5db' }}
         >
           Cancel
         </button>
@@ -450,8 +450,8 @@ export default function Goals() {
       {/* Page header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Target size={18} style={{ color: '#71717a' }} />
-          <h1 className="text-base font-semibold" style={{ color: '#f4f4f5' }}>Goals</h1>
+          <Target size={18} style={{ color: '#9ca3af' }} />
+          <h1 className="text-base font-semibold" style={{ color: '#374151' }}>Goals</h1>
         </div>
 
         {/* Quarter nav */}
@@ -459,20 +459,20 @@ export default function Goals() {
           <button
             onClick={() => setActiveQuarter(q => prevQuarter(q))}
             className="text-xs px-2 py-1 transition-colors"
-            style={{ color: '#71717a', border: '1px solid #3f3f46' }}
+            style={{ color: '#9ca3af', border: '1px solid #d1d5db' }}
           >
             ‹
           </button>
           <span
             className="text-xs font-semibold px-3 py-1"
-            style={{ color: '#f4f4f5', border: '1px solid #3f3f46', backgroundColor: '#18181b' }}
+            style={{ color: '#374151', border: '1px solid #d1d5db', backgroundColor: '#ffffff' }}
           >
             {displayQuarter(activeQuarter)}
           </span>
           <button
             onClick={() => setActiveQuarter(q => nextQuarter(q))}
             className="text-xs px-2 py-1 transition-colors"
-            style={{ color: '#71717a', border: '1px solid #3f3f46' }}
+            style={{ color: '#9ca3af', border: '1px solid #d1d5db' }}
           >
             ›
           </button>
@@ -480,7 +480,7 @@ export default function Goals() {
           <button
             onClick={() => setAdding(true)}
             className="flex items-center gap-1.5 text-xs font-medium px-3 py-1 ml-2"
-            style={{ backgroundColor: '#3f3f46', color: '#f4f4f5' }}
+            style={{ backgroundColor: '#d1d5db', color: '#374151' }}
             disabled={adding}
           >
             <Plus size={12} /> Add Goal
@@ -492,17 +492,17 @@ export default function Goals() {
       {filtered.length > 0 && (
         <div
           className="flex items-center gap-6 px-4 py-2.5 text-xs"
-          style={{ backgroundColor: '#18181b', border: '1px solid #27272a' }}
+          style={{ backgroundColor: '#ffffff', border: '1px solid #e5e7eb' }}
         >
           {(['on_track', 'at_risk', 'off_track'] as const).map(s => {
             const count = filtered.filter(o => o.status === s).length
             return (
-              <span key={s} style={{ color: count > 0 ? STATUS_COLORS[s].text : '#3f3f46' }}>
+              <span key={s} style={{ color: count > 0 ? STATUS_COLORS[s].text : '#d1d5db' }}>
                 {count} {STATUS_LABELS[s]}
               </span>
             )
           })}
-          <span style={{ color: '#52525b', marginLeft: 'auto' }}>
+          <span style={{ color: '#9ca3af', marginLeft: 'auto' }}>
             Avg {Math.round(filtered.reduce((a, o) => a + objProgress(o), 0) / filtered.length)}% complete
           </span>
         </div>
@@ -521,14 +521,14 @@ export default function Goals() {
       {filtered.length === 0 && !adding ? (
         <div
           className="flex flex-col items-center justify-center py-16 text-center"
-          style={{ border: '1px dashed #3f3f46' }}
+          style={{ border: '1px dashed #d1d5db' }}
         >
-          <Target size={24} style={{ color: '#3f3f46', marginBottom: '8px' }} />
-          <div className="text-sm" style={{ color: '#52525b' }}>No objectives for {displayQuarter(activeQuarter)}</div>
+          <Target size={24} style={{ color: '#d1d5db', marginBottom: '8px' }} />
+          <div className="text-sm" style={{ color: '#9ca3af' }}>No objectives for {displayQuarter(activeQuarter)}</div>
           <button
             onClick={() => setAdding(true)}
             className="mt-3 text-xs px-3 py-1.5"
-            style={{ border: '1px solid #3f3f46', color: '#71717a' }}
+            style={{ border: '1px solid #d1d5db', color: '#9ca3af' }}
           >
             Add first objective
           </button>

@@ -31,7 +31,7 @@ const PLACEHOLDER_DEVICES: Device[] = [
 ]
 
 const STATUS_CONFIG = {
-  online:        { label: 'Online',       icon: CheckCircle2, color: 'text-green-600',  bg: 'bg-green-50 border-green-200' },
+  online:        { label: 'Online',       icon: CheckCircle2, color: 'text-orange-600',  bg: 'bg-orange-50 border-orange-200' },
   offline:       { label: 'Offline',      icon: WifiOff,      color: 'text-gray-500',   bg: 'bg-gray-50 border-gray-200' },
   'needs-update':{ label: 'Needs Update', icon: AlertTriangle,color: 'text-amber-600',  bg: 'bg-amber-50 border-amber-200' },
   error:         { label: 'Error',        icon: AlertTriangle,color: 'text-red-600',    bg: 'bg-red-50 border-red-200' },
@@ -158,7 +158,7 @@ export default function DeviceFleet() {
                   <div className="mt-3 pt-3 border-t border-gray-100 space-y-3">
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                       <div><span className="text-gray-500">MCU:</span> <span className="font-medium">{device.mcu}</span></div>
-                      <div><span className="text-gray-500">Firmware:</span> <span className={`font-medium ${isOutdatedFW ? 'text-amber-600' : 'text-green-600'}`}>{device.firmwareVersion}</span></div>
+                      <div><span className="text-gray-500">Firmware:</span> <span className={`font-medium ${isOutdatedFW ? 'text-amber-600' : 'text-orange-600'}`}>{device.firmwareVersion}</span></div>
                       <div><span className="text-gray-500">Bootloader:</span> <span className={`font-medium ${isOutdatedBL ? 'text-amber-600' : ''}`}>{device.bootloaderVersion}</span></div>
                       <div><span className="text-gray-500">Flash Count:</span> <span className="font-medium">{device.flashCount}</span></div>
                     </div>

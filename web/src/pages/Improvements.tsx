@@ -25,7 +25,7 @@ const STATUS_STYLES: Record<RequestStatus, string> = {
   approved:    'bg-blue-100  text-blue-700   border-blue-200',
   in_planning: 'bg-purple-100 text-purple-700 border-purple-200',
   in_progress: 'bg-cyan-100  text-cyan-700   border-cyan-200',
-  completed:   'bg-green-100 text-green-700  border-green-200',
+  completed:   'bg-orange-100 text-orange-700  border-orange-200',
   rejected:    'bg-red-100   text-red-600    border-red-200',
   github_pr:   'bg-gray-100  text-gray-700   border-gray-300',
 }
@@ -66,7 +66,7 @@ function StepCard({ step, index }: { step: { step?: number; task_type?: string; 
   const taskType = step.task_type ?? 'TASK'
   const TASK_COLORS: Record<string, string> = {
     ANALYZE:   'bg-blue-100 text-blue-700',
-    DEVELOP:   'bg-green-100 text-green-700',
+    DEVELOP:   'bg-orange-100 text-orange-700',
     REVIEW:    'bg-amber-100 text-amber-700',
     PLAN:      'bg-purple-100 text-purple-700',
     MONITOR:   'bg-cyan-100 text-cyan-700',
@@ -258,7 +258,7 @@ function RequestCard({ req }: { req: FeatureRequest }) {
                         {/* Plan header */}
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-semibold text-xs text-gray-800">{planData.description}</span>
-                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${planData.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : planData.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-600'}`}>
+                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${planData.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : planData.status === 'approved' ? 'bg-orange-100 text-orange-700' : 'bg-gray-200 text-gray-600'}`}>
                             {planData.status}
                           </span>
                           <Tooltip content={planData.status === 'pending' ? 'Waiting for your approval. Review the steps below, then click Approve Plan.' : planData.status === 'approved' ? 'This plan has been approved. Tasks are queued for execution.' : 'Plan status'} icon />
@@ -312,7 +312,7 @@ function RequestCard({ req }: { req: FeatureRequest }) {
                         )}
 
                         {planData.status === 'approved' && (
-                          <div className="text-xs text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2 flex items-center gap-1.5">
+                          <div className="text-xs text-orange-700 bg-orange-50 border border-orange-200 rounded-lg px-3 py-2 flex items-center gap-1.5">
                             <CheckCircle size={12} /> Plan approved — implementation tasks are queued. Track progress in the Live Console.
                           </div>
                         )}
@@ -326,7 +326,7 @@ function RequestCard({ req }: { req: FeatureRequest }) {
 
           {/* Success / error banners */}
           {successMsg && (
-            <div className="text-xs text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-1.5">
+            <div className="text-xs text-orange-700 bg-orange-50 border border-orange-200 rounded-lg px-3 py-1.5">
               {successMsg}
             </div>
           )}
@@ -345,7 +345,7 @@ function RequestCard({ req }: { req: FeatureRequest }) {
                     <button
                       disabled={planning}
                       onClick={() => plan()}
-                      className="flex items-center gap-1.5 bg-gray-800 hover:bg-gray-900 disabled:opacity-50 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+                      className="flex items-center gap-1.5 bg-gray-50 hover:bg-white disabled:opacity-50 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
                     >
                       <ExternalLink size={13} />
                       {planning ? 'Opening GitHub…' : 'Open GitHub Issue'}
@@ -450,7 +450,7 @@ function SubmitForm({ onClose, defaultScope }: { onClose: () => void; defaultSco
   const isSage = scope === 'sage'
 
   if (done) return (
-    <div className="flex items-center gap-2 py-4 px-5 text-green-700 bg-green-50 rounded-xl border border-green-200">
+    <div className="flex items-center gap-2 py-4 px-5 text-orange-700 bg-orange-50 rounded-xl border border-orange-200">
       <CheckCircle size={18} />
       {isSage ? 'SAGE idea logged — thank you!' : 'Added to solution backlog!'}
     </div>
@@ -730,7 +730,7 @@ export default function Improvements() {
             { label: 'Total',        value: counts.total,     color: 'text-gray-800' },
             { label: 'Pending',      value: counts.pending,   color: 'text-amber-600' },
             { label: 'In Planning',  value: counts.planning,  color: 'text-purple-600' },
-            { label: 'Completed',    value: counts.completed, color: 'text-green-600' },
+            { label: 'Completed',    value: counts.completed, color: 'text-orange-600' },
           ].map(({ label, value, color }) => (
             <div key={label} className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm text-center">
               <div className={`text-2xl font-bold ${color}`}>{value}</div>

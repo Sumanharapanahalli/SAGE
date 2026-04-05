@@ -33,7 +33,7 @@ function ComboSwatch({ comboKey, active, onClick, onPreview, onPreviewEnd }: {
       title={c.label}
       style={{
         width: 28, height: 28, cursor: 'pointer', padding: 0, border: 'none',
-        outline: active ? `2px solid ${c.accent}` : '2px solid #3f3f46',
+        outline: active ? `2px solid ${c.accent}` : '2px solid #d1d5db',
         outlineOffset: 2, overflow: 'hidden', display: 'inline-flex',
         flexDirection: 'column', background: 'none', flexShrink: 0,
         borderRadius: 4,
@@ -108,7 +108,7 @@ export default function UserMenu() {
   const llmInfo = (healthData as any)?.llm_provider ?? 'unknown'
 
   const roleBadgeColor: Record<string, string> = {
-    admin: '#6366f1', approver: '#10b981', operator: '#f59e0b', viewer: '#64748b',
+    admin: '#6366f1', approver: '#f97316', operator: '#f59e0b', viewer: '#64748b',
   }
 
   const fontFamilyOptions: { value: UserPrefs['fontFamily']; label: string }[] = [
@@ -122,19 +122,19 @@ export default function UserMenu() {
   const comboKeys = Object.keys(COLOR_COMBOS) as UserPrefs['colorCombo'][]
 
   const sel: React.CSSProperties = {
-    background: '#27272a', border: '1px solid #3f3f46', color: '#e4e4e7',
+    background: '#e5e7eb', border: '1px solid #d1d5db', color: '#e4e4e7',
     fontSize: '11px', padding: '3px 6px', cursor: 'pointer', width: '100%',
   }
   const row: React.CSSProperties = {
     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
     marginBottom: '6px', gap: '8px',
   }
-  const lbl: React.CSSProperties = { fontSize: '11px', color: '#71717a', flexShrink: 0, width: '60px' }
-  const div: React.CSSProperties = { borderTop: '1px solid #27272a', margin: '8px 0' }
+  const lbl: React.CSSProperties = { fontSize: '11px', color: '#9ca3af', flexShrink: 0, width: '60px' }
+  const div: React.CSSProperties = { borderTop: '1px solid #e5e7eb', margin: '8px 0' }
   const sec: React.CSSProperties = { padding: '10px 14px' }
   const act: React.CSSProperties = {
     display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 14px',
-    cursor: 'pointer', fontSize: '12px', color: '#a1a1aa',
+    cursor: 'pointer', fontSize: '12px', color: '#6b7280',
   }
 
   return (
@@ -159,7 +159,7 @@ export default function UserMenu() {
           style={{
             position: 'fixed', top: panelPos.top, right: panelPos.right,
             width: 300, zIndex: 9999,
-            background: '#18181b', border: '1px solid #27272a',
+            background: '#ffffff', border: '1px solid #e5e7eb',
             boxShadow: '0 20px 40px rgba(0,0,0,0.6)',
             overflowY: 'auto', maxHeight: 'calc(100vh - 60px)',
           }}
@@ -176,7 +176,7 @@ export default function UserMenu() {
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ fontSize: '13px', fontWeight: 600, color: '#f4f4f5', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <span style={{ fontSize: '13px', fontWeight: 600, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {displayName}
                   </span>
                   <span style={{
@@ -190,12 +190,12 @@ export default function UserMenu() {
                     {displayRole}
                   </span>
                 </div>
-                <div style={{ fontSize: '11px', color: '#52525b', marginTop: '1px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '1px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {displayEmail}
                 </div>
               </div>
             </div>
-            <div style={{ fontSize: '10px', color: '#3f3f46', marginTop: '2px', paddingLeft: '42px' }}>
+            <div style={{ fontSize: '10px', color: '#d1d5db', marginTop: '2px', paddingLeft: '42px' }}>
               {solutionName}
             </div>
           </div>
@@ -206,7 +206,7 @@ export default function UserMenu() {
           {isDevMode && (
             <>
               <div style={sec}>
-                <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#52525b', marginBottom: '6px' }}>
+                <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#9ca3af', marginBottom: '6px' }}>
                   Switch Identity
                 </div>
                 <select style={sel} value={user?.sub ?? ''} onChange={e => switchDevUser(e.target.value)}>
@@ -221,7 +221,7 @@ export default function UserMenu() {
 
           {/* Display settings */}
           <div style={sec}>
-            <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#52525b', marginBottom: '8px' }}>
+            <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#9ca3af', marginBottom: '8px' }}>
               Display
             </div>
             <div style={row}>
@@ -281,7 +281,7 @@ export default function UserMenu() {
                 <option value="Australia/Sydney">Sydney (AEST)</option>
               </select>
             </div>
-            <button onClick={resetPrefs} style={{ fontSize: '10px', color: '#3f3f46', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 0', marginTop: '2px' }}>
+            <button onClick={resetPrefs} style={{ fontSize: '10px', color: '#d1d5db', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 0', marginTop: '2px' }}>
               Reset to defaults
             </button>
           </div>
@@ -292,7 +292,7 @@ export default function UserMenu() {
           <div
             style={act}
             onClick={() => { setShowShortcuts(true); setOpen(false) }}
-            onMouseEnter={e => (e.currentTarget.style.background = '#27272a')}
+            onMouseEnter={e => (e.currentTarget.style.background = '#e5e7eb')}
             onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
           >
             <span style={{ fontSize: '13px' }}>K</span>
@@ -303,10 +303,10 @@ export default function UserMenu() {
           <div
             style={act}
             onClick={() => { navigate('/guide'); setOpen(false) }}
-            onMouseEnter={e => (e.currentTarget.style.background = '#27272a')}
+            onMouseEnter={e => (e.currentTarget.style.background = '#e5e7eb')}
             onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
           >
-            <BookOpen size={13} style={{ color: '#a1a1aa' }} />
+            <BookOpen size={13} style={{ color: '#6b7280' }} />
             <span>User Guide</span>
           </div>
 
@@ -314,10 +314,10 @@ export default function UserMenu() {
           <div
             style={act}
             onClick={() => { openChat('I want to understand the SAGE framework — where do I start?'); setOpen(false) }}
-            onMouseEnter={e => (e.currentTarget.style.background = '#27272a')}
+            onMouseEnter={e => (e.currentTarget.style.background = '#e5e7eb')}
             onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
           >
-            <MessageCircle size={13} style={{ color: '#a1a1aa' }} />
+            <MessageCircle size={13} style={{ color: '#6b7280' }} />
             <span>Help & Ask SAGE</span>
           </div>
 
@@ -325,7 +325,7 @@ export default function UserMenu() {
 
           {/* About */}
           <div style={{ ...sec, paddingTop: '8px', paddingBottom: '8px' }}>
-            <div style={{ fontSize: '10px', color: '#3f3f46' }}>SAGE v2.1 · {llmInfo}</div>
+            <div style={{ fontSize: '10px', color: '#d1d5db' }}>SAGE v2.1 · {llmInfo}</div>
           </div>
 
           <div style={div} />
@@ -334,7 +334,7 @@ export default function UserMenu() {
           <div
             style={act}
             onClick={() => { navigate('/access-control'); setOpen(false) }}
-            onMouseEnter={e => (e.currentTarget.style.background = '#27272a')}
+            onMouseEnter={e => (e.currentTarget.style.background = '#e5e7eb')}
             onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
           >
             <span>Access Control</span>
@@ -344,7 +344,7 @@ export default function UserMenu() {
             <div
               style={{ ...act, color: '#ef4444' }}
               onClick={() => setConfirmStop(true)}
-              onMouseEnter={e => (e.currentTarget.style.background = '#27272a')}
+              onMouseEnter={e => (e.currentTarget.style.background = '#e5e7eb')}
               onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
             >
               <span>Stop SAGE</span>
@@ -359,7 +359,7 @@ export default function UserMenu() {
                 >Yes</button>
                 <button
                   onClick={() => setConfirmStop(false)}
-                  style={{ fontSize: '11px', padding: '4px 12px', background: '#27272a', color: '#a1a1aa', border: '1px solid #3f3f46', cursor: 'pointer' }}
+                  style={{ fontSize: '11px', padding: '4px 12px', background: '#e5e7eb', color: '#6b7280', border: '1px solid #d1d5db', cursor: 'pointer' }}
                 >Cancel</button>
               </div>
             </div>
@@ -371,7 +371,7 @@ export default function UserMenu() {
           <div
             style={{ ...act, paddingBottom: '10px' }}
             onClick={() => { if (devUsers.length > 0) switchDevUser(devUsers[0].id); setOpen(false) }}
-            onMouseEnter={e => (e.currentTarget.style.background = '#27272a')}
+            onMouseEnter={e => (e.currentTarget.style.background = '#e5e7eb')}
             onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
           >
             <span>{isDevMode ? `Switch to ${devUsers[0]?.name ?? 'default'}` : 'Logout'}</span>

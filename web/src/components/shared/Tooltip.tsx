@@ -31,7 +31,7 @@ export function Tooltip({ content, children, icon = false, position = 'top' }: T
       )}
       {visible && (
         <span
-          className={`absolute z-50 w-64 bg-gray-900 text-white text-xs rounded-lg px-3 py-2 shadow-xl pointer-events-none ${posClasses[position]}`}
+          className={`absolute z-50 w-64 bg-white text-white text-xs rounded-lg px-3 py-2 shadow-xl pointer-events-none ${posClasses[position]}`}
         >
           {content}
         </span>

@@ -24,7 +24,7 @@ const priorityColors = {
 }
 
 const businessValueColors = {
-  'high': 'bg-green-100 text-green-800',
+  'high': 'bg-orange-100 text-orange-800',
   'medium': 'bg-yellow-100 text-yellow-800',
   'low': 'bg-gray-100 text-gray-800'
 }
@@ -183,7 +183,7 @@ export default function ProductBacklog() {
           >
             Product Backlog
             {result?.backlog && (
-              <span className="bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-full">
+              <span className="bg-orange-100 text-orange-800 text-xs px-2 py-0.5 rounded-full">
                 {result.backlog.user_stories.length} stories
               </span>
             )}
@@ -344,7 +344,7 @@ export default function ProductBacklog() {
           <div className="bg-white shadow rounded-lg">
             <div className="px-6 py-4 border-b border-gray-200">
               <div className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-green-500" />
+                <CheckCircle className="h-5 w-5 text-orange-500" />
                 <h3 className="text-lg font-medium text-gray-900">{result.backlog.product_name}</h3>
               </div>
               <p className="text-gray-600 mt-1">{result.backlog.vision}</p>
@@ -409,7 +409,7 @@ export default function ProductBacklog() {
                         <ul className="text-sm text-gray-600 space-y-1">
                           {story.acceptance_criteria.map((criteria, index) => (
                             <li key={index} className="flex items-start gap-2">
-                              <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                              <CheckCircle className="h-4 w-4 text-orange-500 mt-0.5 flex-shrink-0" />
                               {criteria}
                             </li>
                           ))}
@@ -495,7 +495,7 @@ export default function ProductBacklog() {
                 <div className="text-sm text-gray-600">User Stories</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">{result.backlog.personas.length}</div>
+                <div className="text-2xl font-bold text-orange-600">{result.backlog.personas.length}</div>
                 <div className="text-sm text-gray-600">User Personas</div>
               </div>
               <div className="text-center">

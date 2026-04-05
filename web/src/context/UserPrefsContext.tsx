@@ -22,7 +22,7 @@ export const COLOR_COMBOS: Record<UserPrefs['colorCombo'], {
   sidebarBg: string; sidebarText: string; contentBg: string
   accent: string; accentHover: string
 }> = {
-  zinc:   { label: 'Zinc',   sidebarBg: '#18181b', sidebarText: '#a1a1aa', contentBg: '#fafafa', accent: '#71717a', accentHover: '#52525b' },
+  zinc:   { label: 'Zinc',   sidebarBg: '#ffffff', sidebarText: '#a1a1aa', contentBg: '#fafafa', accent: '#71717a', accentHover: '#52525b' },
   night:  { label: 'Night',  sidebarBg: '#0f172a', sidebarText: '#94a3b8', contentBg: '#ffffff', accent: '#3b82f6', accentHover: '#2563eb' },
   forest: { label: 'Forest', sidebarBg: '#052e16', sidebarText: '#86efac', contentBg: '#fefce8', accent: '#16a34a', accentHover: '#15803d' },
   ocean:  { label: 'Ocean',  sidebarBg: '#042f2e', sidebarText: '#99f6e4', contentBg: '#f0fdfa', accent: '#0d9488', accentHover: '#0f766e' },

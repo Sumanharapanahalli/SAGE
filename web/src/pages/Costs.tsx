@@ -26,7 +26,7 @@ function fmtK(n: number): string {
 function DailyBarChart({ data }: { data: DailyCost[] }) {
   if (!data || data.length === 0) {
     return (
-      <div style={{ height: 128, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: '#52525b' }}>
+      <div style={{ height: 128, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: '#9ca3af' }}>
         No data for this period
       </div>
     )
@@ -136,18 +136,18 @@ export default function Costs() {
             <DollarSign size={18} style={{ color: '#22c55e' }} />
             Cost Tracker
           </h1>
-          <p className="text-xs mt-1" style={{ color: '#71717a' }}>
+          <p className="text-xs mt-1" style={{ color: '#9ca3af' }}>
             LLM usage costs, budget controls, and token analytics
           </p>
         </div>
-        <div className="flex gap-1 p-1" style={{ background: '#1c1c1e', borderRadius: 8 }}>
+        <div className="flex gap-1 p-1" style={{ background: '#ffffff', borderRadius: 8 }}>
           {PERIODS.map(p => (
             <button
               key={p.value}
               onClick={() => setPeriod(p.value)}
               style={{
                 padding: '4px 12px', fontSize: 12, fontWeight: 500, borderRadius: 6, cursor: 'pointer', border: 'none',
-                background: period === p.value ? '#3f3f46' : 'transparent',
+                background: period === p.value ? '#d1d5db' : 'transparent',
                 color: period === p.value ? '#f4f4f5' : '#71717a',
               }}
             >
@@ -160,41 +160,41 @@ export default function Costs() {
       {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 20 }}>
         {STAT_ITEMS.map(s => (
-          <div key={s.label} className="sage-card" style={{ background: '#1c1c1e', borderColor: '#2a2a2e', textAlign: 'center', padding: '16px 8px' }}>
+          <div key={s.label} className="sage-card" style={{ background: '#ffffff', borderColor: '#e5e7eb', textAlign: 'center', padding: '16px 8px' }}>
             <div style={{ fontSize: 22, fontWeight: 700, color: s.color }}>
               {summaryQuery.isLoading ? '—' : s.value}
             </div>
-            <div style={{ fontSize: 11, color: '#52525b', marginTop: 2 }}>{s.label}</div>
+            <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>{s.label}</div>
           </div>
         ))}
       </div>
 
       {/* Daily chart */}
-      <div className="sage-card mb-4" style={{ background: '#1c1c1e', borderColor: '#2a2a2e' }}>
+      <div className="sage-card mb-4" style={{ background: '#ffffff', borderColor: '#e5e7eb' }}>
         <h3 className="text-sm font-semibold mb-3" style={{ color: '#e4e4e7' }}>
           <TrendingUp size={14} className="inline mr-1.5" style={{ color: '#3b82f6' }} />
           Daily Cost ({period}d)
         </h3>
         {dailyQuery.isLoading ? (
-          <div style={{ height: 128, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: '#52525b' }}>Loading...</div>
+          <div style={{ height: 128, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: '#9ca3af' }}>Loading...</div>
         ) : (
           <DailyBarChart data={dailyData} />
         )}
-        <p className="text-xs mt-2" style={{ color: '#3f3f46' }}>
+        <p className="text-xs mt-2" style={{ color: '#d1d5db' }}>
           Hover a bar to see exact cost and call count. Costs are estimated — CLI providers do not expose exact token counts.
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         {/* Budget Controls */}
-        <div className="sage-card" style={{ background: '#1c1c1e', borderColor: '#2a2a2e' }}>
+        <div className="sage-card" style={{ background: '#ffffff', borderColor: '#e5e7eb' }}>
           <h3 className="text-sm font-semibold mb-3" style={{ color: '#e4e4e7' }}>
             <Settings size={14} className="inline mr-1.5" style={{ color: '#f59e0b' }} />
             Monthly Budget
           </h3>
           <div className="space-y-3">
             <div>
-              <label className="block text-xs mb-1" style={{ color: '#71717a' }}>Budget Amount (USD)</label>
+              <label className="block text-xs mb-1" style={{ color: '#9ca3af' }}>Budget Amount (USD)</label>
               <input
                 type="number"
                 step="0.01"
@@ -203,17 +203,17 @@ export default function Costs() {
                 onChange={e => setBudgetAmount(e.target.value)}
                 placeholder="e.g. 50.00"
                 className="w-full text-sm px-3 py-2"
-                style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #2a2a2e', borderRadius: 8, outline: 'none' }}
+                style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #e5e7eb', borderRadius: 8, outline: 'none' }}
               />
             </div>
             <div>
-              <label className="block text-xs mb-1" style={{ color: '#71717a' }}>Solution (optional)</label>
+              <label className="block text-xs mb-1" style={{ color: '#9ca3af' }}>Solution (optional)</label>
               <input
                 value={budgetSolution}
                 onChange={e => setBudgetSolution(e.target.value)}
                 placeholder="Leave blank for global budget"
                 className="w-full text-sm px-3 py-2"
-                style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #2a2a2e', borderRadius: 8, outline: 'none' }}
+                style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #e5e7eb', borderRadius: 8, outline: 'none' }}
               />
             </div>
             <button
@@ -239,7 +239,7 @@ export default function Costs() {
 
         {/* Token Totals */}
         {summary && summary.total_calls > 0 && (
-          <div className="sage-card" style={{ background: '#1c1c1e', borderColor: '#2a2a2e' }}>
+          <div className="sage-card" style={{ background: '#ffffff', borderColor: '#e5e7eb' }}>
             <h3 className="text-sm font-semibold mb-3" style={{ color: '#e4e4e7' }}>
               <Phone size={14} className="inline mr-1.5" style={{ color: '#6366f1' }} />
               Token Usage ({period}d)
@@ -247,14 +247,14 @@ export default function Costs() {
             <div className="grid grid-cols-2 gap-3">
               <div style={{ background: '#111113', borderRadius: 8, padding: 12, textAlign: 'center' }}>
                 <div style={{ fontSize: 20, fontWeight: 700, color: '#e4e4e7' }}>{fmtK(summary.total_input_tokens)}</div>
-                <div style={{ fontSize: 11, color: '#52525b', marginTop: 2 }}>Input Tokens</div>
+                <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>Input Tokens</div>
               </div>
               <div style={{ background: '#111113', borderRadius: 8, padding: 12, textAlign: 'center' }}>
                 <div style={{ fontSize: 20, fontWeight: 700, color: '#e4e4e7' }}>{fmtK(summary.total_output_tokens)}</div>
-                <div style={{ fontSize: 11, color: '#52525b', marginTop: 2 }}>Output Tokens</div>
+                <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>Output Tokens</div>
               </div>
             </div>
-            <p className="text-xs mt-2" style={{ color: '#3f3f46' }}>
+            <p className="text-xs mt-2" style={{ color: '#d1d5db' }}>
               Token counts estimated at 1 token per 4 characters.
             </p>
           </div>
@@ -263,7 +263,7 @@ export default function Costs() {
 
       {/* Top solutions by cost */}
       {summary && summary.by_solution.length > 0 && (
-        <div className="sage-card mb-4" style={{ background: '#1c1c1e', borderColor: '#2a2a2e' }}>
+        <div className="sage-card mb-4" style={{ background: '#ffffff', borderColor: '#e5e7eb' }}>
           <h3 className="text-sm font-semibold mb-3" style={{ color: '#e4e4e7' }}>Top Solutions by Cost</h3>
           <div className="space-y-3">
             {summary.by_solution.map((s: CostBySolution) => {
@@ -274,9 +274,9 @@ export default function Costs() {
                 <div key={s.solution}>
                   <div className="flex justify-between text-xs mb-1">
                     <span style={{ color: '#e4e4e7', fontWeight: 500 }}>{s.solution || 'default'}</span>
-                    <span style={{ color: '#71717a' }}>{fmt(s.cost)} ({s.calls} calls)</span>
+                    <span style={{ color: '#9ca3af' }}>{fmt(s.cost)} ({s.calls} calls)</span>
                   </div>
-                  <div style={{ height: 6, background: '#27272a', borderRadius: 999, overflow: 'hidden' }}>
+                  <div style={{ height: 6, background: '#e5e7eb', borderRadius: 999, overflow: 'hidden' }}>
                     <div style={{ height: '100%', background: '#3b82f6', borderRadius: 999, width: `${pct}%` }} />
                   </div>
                 </div>
@@ -288,7 +288,7 @@ export default function Costs() {
 
       {/* Model breakdown */}
       {summary && summary.by_model.length > 0 && (
-        <div className="sage-card mb-4" style={{ background: '#1c1c1e', borderColor: '#2a2a2e' }}>
+        <div className="sage-card mb-4" style={{ background: '#ffffff', borderColor: '#e5e7eb' }}>
           <h3 className="text-sm font-semibold mb-3" style={{ color: '#e4e4e7' }}>Cost by Model</h3>
           <table className="sage-table">
             <thead>
@@ -302,7 +302,7 @@ export default function Costs() {
               {summary.by_model.map(m => (
                 <tr key={m.model}>
                   <td style={{ color: '#e4e4e7', fontFamily: 'monospace', fontSize: 11 }}>{m.model || 'unknown'}</td>
-                  <td style={{ textAlign: 'right', color: '#71717a' }}>{fmtK(m.calls)}</td>
+                  <td style={{ textAlign: 'right', color: '#9ca3af' }}>{fmtK(m.calls)}</td>
                   <td style={{ textAlign: 'right', color: '#e4e4e7', fontWeight: 500 }}>{fmt(m.cost)}</td>
                 </tr>
               ))}
@@ -313,7 +313,7 @@ export default function Costs() {
 
       {/* Complexity Routing Stats */}
       {routingQuery.data && routingQuery.data.total_classified > 0 && (
-        <div className="sage-card" style={{ background: '#1c1c1e', borderColor: '#2a2a2e' }}>
+        <div className="sage-card" style={{ background: '#ffffff', borderColor: '#e5e7eb' }}>
           <h2 className="text-sm font-semibold mb-3" style={{ color: '#e4e4e7' }}>
             <TrendingUp size={14} className="inline mr-2" style={{ color: '#a78bfa' }} />
             Complexity Routing
@@ -326,12 +326,12 @@ export default function Costs() {
               return (
                 <div key={level} style={{ padding: '12px 16px', background: '#111113', borderRadius: 8, textAlign: 'center' }}>
                   <div style={{ fontSize: 20, fontWeight: 700, color: colors[level] }}>{fmtK(count)}</div>
-                  <div style={{ fontSize: 11, color: '#71717a', marginTop: 2 }}>{level.toUpperCase()} ({pct}%)</div>
+                  <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>{level.toUpperCase()} ({pct}%)</div>
                 </div>
               )
             })}
           </div>
-          <p style={{ fontSize: 11, color: '#52525b', marginTop: 8 }}>
+          <p style={{ fontSize: 11, color: '#9ca3af', marginTop: 8 }}>
             {routingQuery.data.total_classified} prompts classified across {Object.keys(routingQuery.data.routing_stats).length} complexity tiers
           </p>
         </div>
@@ -342,7 +342,7 @@ export default function Costs() {
         <div className="sage-empty">
           <DollarSign size={32} />
           <p className="text-sm">No LLM calls recorded in the last {period} days.</p>
-          <p style={{ fontSize: 12, color: '#52525b' }}>Cost tracking activates automatically on the next LLM call.</p>
+          <p style={{ fontSize: 12, color: '#9ca3af' }}>Cost tracking activates automatically on the next LLM call.</p>
         </div>
       )}
     </div>

@@ -21,8 +21,8 @@ function TemplateCard({ template, selected, enabledRoles, onSelect, onToggleRole
   return (
     <div
       style={{
-        backgroundColor: selected ? '#27272a' : '#18181b',
-        border: selected ? '1px solid #3f3f46' : '1px solid #27272a',
+        backgroundColor: selected ? '#e5e7eb' : '#ffffff',
+        border: selected ? '1px solid #d1d5db' : '1px solid #e5e7eb',
         borderLeft: selected ? '4px solid #22c55e' : '4px solid transparent',
       }}
     >
@@ -33,10 +33,10 @@ function TemplateCard({ template, selected, enabledRoles, onSelect, onToggleRole
           <div className="flex items-start gap-3">
             <span className="text-2xl leading-none mt-0.5">{template.icon}</span>
             <div>
-              <div className="text-sm font-semibold" style={{ color: '#f4f4f5' }}>
+              <div className="text-sm font-semibold" style={{ color: '#374151' }}>
                 {template.name}
               </div>
-              <div className="text-xs mt-0.5" style={{ color: '#71717a' }}>
+              <div className="text-xs mt-0.5" style={{ color: '#9ca3af' }}>
                 {template.role_count} roles
               </div>
             </div>
@@ -47,7 +47,7 @@ function TemplateCard({ template, selected, enabledRoles, onSelect, onToggleRole
         </div>
 
         {/* Description */}
-        <p className="text-xs leading-relaxed" style={{ color: '#a1a1aa' }}>
+        <p className="text-xs leading-relaxed" style={{ color: '#6b7280' }}>
           {template.description}
         </p>
 
@@ -58,7 +58,7 @@ function TemplateCard({ template, selected, enabledRoles, onSelect, onToggleRole
               <span
                 key={std}
                 className="text-xs px-1.5 py-0.5 font-mono"
-                style={{ backgroundColor: '#09090b', color: '#71717a', border: '1px solid #27272a' }}
+                style={{ backgroundColor: '#fafafa', color: '#9ca3af', border: '1px solid #e5e7eb' }}
               >
                 {std}
               </span>
@@ -74,7 +74,7 @@ function TemplateCard({ template, selected, enabledRoles, onSelect, onToggleRole
             style={
               selected
                 ? { backgroundColor: '#14532d', color: '#22c55e', border: '1px solid #166534' }
-                : { backgroundColor: '#3f3f46', color: '#f4f4f5', border: '1px solid #52525b' }
+                : { backgroundColor: '#d1d5db', color: '#374151', border: '1px solid #52525b' }
             }
           >
             {selected ? 'Selected' : 'Select this team'}
@@ -82,7 +82,7 @@ function TemplateCard({ template, selected, enabledRoles, onSelect, onToggleRole
           <button
             onClick={() => setExpanded(v => !v)}
             className="flex items-center gap-1 text-xs py-1.5 px-2 transition-colors"
-            style={{ backgroundColor: '#27272a', color: '#71717a', border: '1px solid #3f3f46' }}
+            style={{ backgroundColor: '#e5e7eb', color: '#9ca3af', border: '1px solid #d1d5db' }}
           >
             {expanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
             {expanded ? 'Hide roles' : 'View roles'}
@@ -92,10 +92,10 @@ function TemplateCard({ template, selected, enabledRoles, onSelect, onToggleRole
 
       {/* Expanded role list */}
       {expanded && (
-        <div style={{ borderTop: '1px solid #27272a' }}>
+        <div style={{ borderTop: '1px solid #e5e7eb' }}>
           <div
             className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider"
-            style={{ color: '#52525b', backgroundColor: '#09090b' }}
+            style={{ color: '#9ca3af', backgroundColor: '#fafafa' }}
           >
             Roles
           </div>
@@ -105,7 +105,7 @@ function TemplateCard({ template, selected, enabledRoles, onSelect, onToggleRole
               <div
                 key={role.key}
                 className="flex items-start gap-3 px-3 py-2"
-                style={{ borderTop: '1px solid #27272a' }}
+                style={{ borderTop: '1px solid #e5e7eb' }}
               >
                 {selected && (
                   <button
@@ -114,7 +114,7 @@ function TemplateCard({ template, selected, enabledRoles, onSelect, onToggleRole
                     style={
                       isEnabled
                         ? { backgroundColor: '#14532d', border: '1px solid #166534' }
-                        : { backgroundColor: '#27272a', border: '1px solid #3f3f46' }
+                        : { backgroundColor: '#e5e7eb', border: '1px solid #d1d5db' }
                     }
                     title={isEnabled ? 'Click to disable' : 'Click to enable'}
                   >
@@ -125,7 +125,7 @@ function TemplateCard({ template, selected, enabledRoles, onSelect, onToggleRole
                   <div className="text-xs font-medium" style={{ color: '#e4e4e7' }}>
                     {role.name}
                   </div>
-                  <div className="text-xs" style={{ color: '#52525b' }}>
+                  <div className="text-xs" style={{ color: '#9ca3af' }}>
                     {role.description}
                   </div>
                 </div>
@@ -203,7 +203,7 @@ export default function OrgStructureChooser({ preselectedId, onChange }: OrgStru
 
   if (isLoading) {
     return (
-      <div className="py-8 text-center text-sm" style={{ color: '#52525b' }}>
+      <div className="py-8 text-center text-sm" style={{ color: '#9ca3af' }}>
         Loading team templates…
       </div>
     )
@@ -211,7 +211,7 @@ export default function OrgStructureChooser({ preselectedId, onChange }: OrgStru
 
   if (isError || templates.length === 0) {
     return (
-      <div className="py-4 text-sm" style={{ color: '#71717a' }}>
+      <div className="py-4 text-sm" style={{ color: '#9ca3af' }}>
         Could not load team templates. You can still proceed — roles will be generated from your description.
       </div>
     )
@@ -220,10 +220,10 @@ export default function OrgStructureChooser({ preselectedId, onChange }: OrgStru
   return (
     <div className="space-y-3">
       <div>
-        <p className="text-sm font-semibold" style={{ color: '#f4f4f5' }}>
+        <p className="text-sm font-semibold" style={{ color: '#374151' }}>
           Choose your agent team
         </p>
-        <p className="text-xs mt-0.5" style={{ color: '#71717a' }}>
+        <p className="text-xs mt-0.5" style={{ color: '#9ca3af' }}>
           Pick a pre-built structure that matches your domain, or skip to let SAGE generate roles from your description.
         </p>
       </div>

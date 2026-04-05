@@ -89,7 +89,7 @@ export default function ReviewPanel({ result, onAccept, onStartOver }: ReviewPan
               <div style={{ fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>What it can do</div>
               {summary.task_types.length > 0 ? summary.task_types.map(t => (
                 <div key={t.name} style={{ display: 'flex', gap: 8, fontSize: 12, color: 'var(--sage-sidebar-text, #94a3b8)', marginBottom: 4 }}>
-                  <span style={{ color: '#10b981' }}>+</span> {t.name}
+                  <span style={{ color: '#f97316' }}>+</span> {t.name}
                 </div>
               )) : <div style={{ fontSize: 12, color: '#475569' }}>No task types defined yet</div>}
             </div>

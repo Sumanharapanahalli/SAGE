@@ -86,8 +86,8 @@ function ApiKeysTab() {
     <div className="space-y-4">
       {/* New key result banner */}
       {newKeyResult && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4 space-y-2">
-          <p className="text-sm font-semibold text-green-800">
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 space-y-2">
+          <p className="text-sm font-semibold text-orange-800">
             API key "{newKeyResult.name}" created — copy it now. It will not be shown again.
           </p>
           <div className="flex items-center gap-2">
@@ -96,14 +96,14 @@ function ApiKeysTab() {
             </code>
             <button
               onClick={() => navigator.clipboard.writeText(newKeyResult.key)}
-              className="text-xs text-green-700 hover:text-green-900 font-medium px-2 py-1 border border-green-300 rounded"
+              className="text-xs text-orange-700 hover:text-orange-900 font-medium px-2 py-1 border border-green-300 rounded"
             >
               Copy
             </button>
           </div>
           <button
             onClick={() => setNewKeyResult(null)}
-            className="text-xs text-green-600 hover:underline"
+            className="text-xs text-orange-600 hover:underline"
           >
             Dismiss
           </button>
@@ -204,7 +204,7 @@ function ApiKeysTab() {
                     {k.revoked ? (
                       <span className="text-xs text-red-500 font-medium">Revoked</span>
                     ) : (
-                      <span className="text-xs text-green-600 font-medium">Active</span>
+                      <span className="text-xs text-orange-600 font-medium">Active</span>
                     )}
                   </td>
                   <td className="py-2 text-right">

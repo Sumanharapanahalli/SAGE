@@ -82,11 +82,11 @@ export default function ChatPanel() {
         style={{
           position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
           height: 40, width: 180, borderRadius: '10px 10px 0 0',
-          backgroundColor: '#18181b', borderTop: '1px solid #27272a',
-          borderLeft: '1px solid #27272a', borderRight: '1px solid #27272a',
+          backgroundColor: '#ffffff', borderTop: '1px solid #e5e7eb',
+          borderLeft: '1px solid #e5e7eb', borderRight: '1px solid #e5e7eb',
           display: 'flex', alignItems: 'center', gap: 8,
           padding: '0 14px', cursor: 'pointer', zIndex: 8000,
-          color: '#a1a1aa', fontSize: 12, fontWeight: 500,
+          color: '#6b7280', fontSize: 12, fontWeight: 500,
         }}
       >
         <MessageSquare size={13} />
@@ -110,7 +110,7 @@ export default function ChatPanel() {
       position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
       width: 520, height: 420,
       backgroundColor: '#0f0f11', borderRadius: '16px 16px 0 0',
-      border: '1px solid #27272a', borderBottom: 'none',
+      border: '1px solid #e5e7eb', borderBottom: 'none',
       boxShadow: '0 -8px 40px rgba(0,0,0,0.5)',
       display: 'flex', flexDirection: 'column',
       zIndex: 8000,
@@ -127,17 +127,17 @@ export default function ChatPanel() {
         <button
           onClick={() => { closeChat(); navigate('/chat') }}
           title="Open full chat"
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#52525b', display: 'flex', padding: 2 }}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', display: 'flex', padding: 2 }}
         >
           <Maximize2 size={13} />
         </button>
-        <button onClick={clearHistory} title="Clear" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#52525b', display: 'flex', padding: 2 }}>
+        <button onClick={clearHistory} title="Clear" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', display: 'flex', padding: 2 }}>
           <Trash2 size={13} />
         </button>
-        <button onClick={minimiseChat} title="Minimise" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#52525b', display: 'flex', padding: 2 }}>
+        <button onClick={minimiseChat} title="Minimise" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', display: 'flex', padding: 2 }}>
           <Minus size={13} />
         </button>
-        <button onClick={closeChat} title="Close" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#52525b', display: 'flex', padding: 2 }}>
+        <button onClick={closeChat} title="Close" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', display: 'flex', padding: 2 }}>
           <X size={13} />
         </button>
       </div>
@@ -148,7 +148,7 @@ export default function ChatPanel() {
         display: 'flex', flexDirection: 'column', gap: 12,
       }}>
         {messages.length === 0 && (
-          <div style={{ color: '#3f3f46', fontSize: 12, textAlign: 'center', marginTop: 40 }}>
+          <div style={{ color: '#d1d5db', fontSize: 12, textAlign: 'center', marginTop: 40 }}>
             Ask me anything about this solution or the SAGE framework.
             <br />
             <button
@@ -167,7 +167,7 @@ export default function ChatPanel() {
           if ((msg.role as string) === 'system') {
             return (
               <div key={msg.id} style={{
-                textAlign: 'center', fontSize: 11, color: '#52525b',
+                textAlign: 'center', fontSize: 11, color: '#9ca3af',
                 padding: '2px 8px', fontStyle: 'italic',
               }}>
                 {msg.content}
@@ -182,11 +182,11 @@ export default function ChatPanel() {
             }}>
               <div style={{
                 width: 26, height: 26, borderRadius: 8, flexShrink: 0,
-                background: isUser ? '#27272a' : 'rgba(59,130,246,0.15)',
+                background: isUser ? '#e5e7eb' : 'rgba(59,130,246,0.15)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 {isUser ? (
-                  <span style={{ fontSize: 11, fontWeight: 600, color: '#a1a1aa' }}>U</span>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: '#6b7280' }}>U</span>
                 ) : (
                   <Bot size={13} style={{ color: '#3b82f6' }} />
                 )}
@@ -194,7 +194,7 @@ export default function ChatPanel() {
               <div style={{
                 maxWidth: '80%', padding: '8px 12px', borderRadius: 12,
                 fontSize: 13, lineHeight: 1.5,
-                backgroundColor: isUser ? '#1d4ed8' : '#1c1c1e',
+                backgroundColor: isUser ? '#1d4ed8' : '#ffffff',
                 color: '#e4e4e7', whiteSpace: 'pre-wrap', wordBreak: 'break-word',
               }}>
                 {msg.content}
@@ -214,7 +214,7 @@ export default function ChatPanel() {
           <div style={{ display: 'flex', gap: 4, padding: '8px 0 0 36px' }}>
             {[0, 1, 2].map(i => (
               <div key={i} style={{
-                width: 5, height: 5, borderRadius: '50%', background: '#3f3f46',
+                width: 5, height: 5, borderRadius: '50%', background: '#d1d5db',
                 animation: `sage-dot-bounce 1.2s ease-in-out ${i * 0.2}s infinite`,
               }} />
             ))}
@@ -227,7 +227,7 @@ export default function ChatPanel() {
       {pendingAction ? (
         <div style={{
           borderTop: '2px solid #d97706', flexShrink: 0,
-          padding: '12px 16px', background: '#18181b',
+          padding: '12px 16px', background: '#ffffff',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
             <span style={{
@@ -237,7 +237,7 @@ export default function ChatPanel() {
               {pendingAction.action.toUpperCase().replace(/_/g, ' ')}
             </span>
           </div>
-          <p style={{ fontSize: 12, color: '#d4d4d8', margin: '0 0 10px', lineHeight: 1.5 }}>
+          <p style={{ fontSize: 12, color: '#6b7280', margin: '0 0 10px', lineHeight: 1.5 }}>
             {pendingAction.confirmation_prompt}
           </p>
           <div style={{ display: 'flex', gap: 8 }}>
@@ -256,7 +256,7 @@ export default function ChatPanel() {
               onClick={cancelAction} disabled={isLoading}
               style={{
                 flex: 1, padding: '7px 0', fontSize: 12, fontWeight: 600,
-                background: '#27272a', color: '#71717a', border: 'none',
+                background: '#e5e7eb', color: '#9ca3af', border: 'none',
                 borderRadius: 8, cursor: isLoading ? 'not-allowed' : 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
               }}
@@ -278,7 +278,7 @@ export default function ChatPanel() {
             placeholder="Type a message..."
             disabled={isLoading}
             style={{
-              flex: 1, background: '#1c1c1e', border: '1px solid #27272a',
+              flex: 1, background: '#ffffff', border: '1px solid #e5e7eb',
               borderRadius: 10, color: '#e4e4e7', fontSize: 13,
               padding: '8px 12px', outline: 'none',
             }}
@@ -288,7 +288,7 @@ export default function ChatPanel() {
             disabled={isLoading || !input.trim()}
             style={{
               width: 36, height: 36, borderRadius: 10,
-              backgroundColor: input.trim() && !isLoading ? '#3b82f6' : '#27272a',
+              backgroundColor: input.trim() && !isLoading ? '#3b82f6' : '#e5e7eb',
               border: 'none', cursor: input.trim() && !isLoading ? 'pointer' : 'default',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}

@@ -37,13 +37,13 @@ function ProgressBar({ step }: { step: number }) {
           <div style={{
             width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center',
             justifyContent: 'center', fontSize: '12px', fontWeight: 700, flexShrink: 0,
-            backgroundColor: n < step ? '#10b981' : n === step ? '#3b82f6' : '#1e293b',
+            backgroundColor: n < step ? '#f97316' : n === step ? '#3b82f6' : '#1e293b',
             color: n <= step ? '#fff' : '#475569',
           }}>
             {n < step ? <Check size={14} /> : n}
           </div>
           {i < 4 && (
-            <div style={{ flex: 1, height: '2px', backgroundColor: n < step ? '#10b981' : '#1e293b' }} />
+            <div style={{ flex: 1, height: '2px', backgroundColor: n < step ? '#f97316' : '#1e293b' }} />
           )}
         </div>
       ))}
@@ -116,7 +116,7 @@ export default function OnboardingWizard({ onClose, onTourStart, inline = false,
 
         {step === 1 && (
           <div style={{ padding: '0 24px 24px' }}>
-            <h2 style={{ fontSize: '16px', fontWeight: 700, color: '#f1f5f9', marginBottom: '16px' }}>
+            <h2 style={{ fontSize: '16px', fontWeight: 700, color: '#374151', marginBottom: '16px' }}>
               Describe your solution
             </h2>
             <div style={{ marginBottom: '12px' }}>
@@ -129,7 +129,7 @@ export default function OnboardingWizard({ onClose, onTourStart, inline = false,
                 value={form.description}
                 onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                 style={{ width: '100%', background: '#1e293b', border: '1px solid #334155',
-                         borderRadius: '6px', padding: '8px', color: '#f1f5f9', fontSize: '13px',
+                         borderRadius: '6px', padding: '8px', color: '#374151', fontSize: '13px',
                          resize: 'none', boxSizing: 'border-box' }}
               />
             </div>
@@ -143,7 +143,7 @@ export default function OnboardingWizard({ onClose, onTourStart, inline = false,
                 value={form.solution_name}
                 onChange={e => setForm(f => ({ ...f, solution_name: e.target.value }))}
                 style={{ width: '100%', background: '#1e293b', border: '1px solid #334155',
-                         borderRadius: '6px', padding: '8px', color: '#f1f5f9', fontSize: '13px',
+                         borderRadius: '6px', padding: '8px', color: '#374151', fontSize: '13px',
                          boxSizing: 'border-box' }}
               />
             </div>
@@ -155,7 +155,7 @@ export default function OnboardingWizard({ onClose, onTourStart, inline = false,
                 value={form.parent_solution}
                 onChange={e => setForm(f => ({ ...f, parent_solution: e.target.value }))}
                 style={{ width: '100%', background: '#1e293b', border: '1px solid #334155',
-                         borderRadius: '6px', padding: '8px', color: '#f1f5f9', fontSize: '13px' }}
+                         borderRadius: '6px', padding: '8px', color: '#374151', fontSize: '13px' }}
               >
                 <option value="">None</option>
                 {solutions.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -180,7 +180,7 @@ export default function OnboardingWizard({ onClose, onTourStart, inline = false,
 
         {step === 2 && (
           <div style={{ padding: '0 24px 24px' }}>
-            <h2 style={{ fontSize: '16px', fontWeight: 700, color: '#f1f5f9', marginBottom: '16px' }}>
+            <h2 style={{ fontSize: '16px', fontWeight: 700, color: '#374151', marginBottom: '16px' }}>
               Compliance and integrations
             </h2>
             <div style={{ marginBottom: '16px' }}>
@@ -251,7 +251,7 @@ export default function OnboardingWizard({ onClose, onTourStart, inline = false,
 
         {step === 4 && generateResult && (
           <div style={{ padding: '0 24px 24px' }}>
-            <h2 style={{ fontSize: '16px', fontWeight: 700, color: '#f1f5f9', marginBottom: '12px' }}>
+            <h2 style={{ fontSize: '16px', fontWeight: 700, color: '#374151', marginBottom: '12px' }}>
               Review generated YAML
             </h2>
             <div style={{ display: 'flex', gap: '4px', marginBottom: '8px' }}>
@@ -286,11 +286,11 @@ export default function OnboardingWizard({ onClose, onTourStart, inline = false,
 
         {step === 5 && generateResult && (
           <div style={{ padding: '24px' }}>
-            <h2 style={{ fontSize: '16px', fontWeight: 700, color: '#f1f5f9', marginBottom: '12px' }}>
+            <h2 style={{ fontSize: '16px', fontWeight: 700, color: '#374151', marginBottom: '12px' }}>
               Solution ready
             </h2>
             <p style={{ color: '#94a3b8', marginBottom: '8px', fontSize: '13px' }}>
-              Solution <strong style={{ color: '#f1f5f9' }}>{generateResult.solution_name}</strong> created.
+              Solution <strong style={{ color: '#374151' }}>{generateResult.solution_name}</strong> created.
               {generateResult.suggested_routes.length > 0 &&
                 ` Suggested routes: ${generateResult.suggested_routes.join(', ')}.`}
             </p>

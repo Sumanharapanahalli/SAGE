@@ -5,7 +5,7 @@ interface Props { entry: AuditEntry; onClose: () => void }
 
 export default function TraceDetailModal({ entry, onClose }: Props) {
   return (
-    <div className="fixed inset-0 bg-zinc-900/40 flex items-center justify-center z-50 p-4" onClick={onClose}>
+    <div className="fixed inset-0 bg-white/40 flex items-center justify-center z-50 p-4" onClick={onClose}>
       <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
           <div>

@@ -149,11 +149,11 @@ export default function CDSCompliance() {
   const CriterionBadge = ({ label, result }: { label: string; result?: CriterionResult }) => {
     if (!result) return null
     return (
-      <div className={`p-4 rounded-lg border-2 ${result.passes ? 'border-green-300 bg-green-50' : 'border-red-300 bg-red-50'}`}>
+      <div className={`p-4 rounded-lg border-2 ${result.passes ? 'border-green-300 bg-orange-50' : 'border-red-300 bg-red-50'}`}>
         <div className="flex items-center gap-2 mb-2">
-          {result.passes ? <CheckCircle className="w-5 h-5 text-green-600" /> : <XCircle className="w-5 h-5 text-red-600" />}
+          {result.passes ? <CheckCircle className="w-5 h-5 text-orange-600" /> : <XCircle className="w-5 h-5 text-red-600" />}
           <span className="font-semibold text-sm">{label}</span>
-          <span className={`text-xs px-2 py-0.5 rounded-full ${result.passes ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}`}>
+          <span className={`text-xs px-2 py-0.5 rounded-full ${result.passes ? 'bg-orange-200 text-orange-800' : 'bg-red-200 text-red-800'}`}>
             {result.passes ? 'PASS' : 'FAIL'}
           </span>
         </div>
@@ -265,7 +265,7 @@ export default function CDSCompliance() {
             <div className="space-y-4">
               <div className={`p-4 rounded-lg text-center ${
                 classResult.overall_classification === 'non_device_cds'
-                  ? 'bg-green-100 border-2 border-green-400'
+                  ? 'bg-orange-100 border-2 border-orange-400'
                   : classResult.overall_classification === 'enforcement_discretion'
                   ? 'bg-yellow-100 border-2 border-yellow-400'
                   : 'bg-red-100 border-2 border-red-400'
@@ -305,8 +305,8 @@ export default function CDSCompliance() {
                 {inputResults.map((r, i) => (
                   <tr key={i} className="border-b">
                     <td className="py-2 font-mono text-xs">{r.input_type}</td>
-                    <td className="py-2"><span className={`px-2 py-0.5 rounded text-xs ${r.data_category === 'image' || r.data_category === 'signal' || r.data_category === 'pattern' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>{r.data_category}</span></td>
-                    <td className="py-2">{r.criterion_1_impact === 'pass' ? <CheckCircle className="w-4 h-4 text-green-600" /> : <XCircle className="w-4 h-4 text-red-600" />}</td>
+                    <td className="py-2"><span className={`px-2 py-0.5 rounded text-xs ${r.data_category === 'image' || r.data_category === 'signal' || r.data_category === 'pattern' ? 'bg-red-100 text-red-800' : 'bg-orange-100 text-orange-800'}`}>{r.data_category}</span></td>
+                    <td className="py-2">{r.criterion_1_impact === 'pass' ? <CheckCircle className="w-4 h-4 text-orange-600" /> : <XCircle className="w-4 h-4 text-red-600" />}</td>
                   </tr>
                 ))}
               </tbody>
@@ -337,10 +337,10 @@ export default function CDSCompliance() {
             {isLoading ? 'Validating...' : 'Validate Sources'}
           </button>
           {srcValidation && (
-            <div className={`mt-4 p-4 rounded-lg ${(srcValidation as { overall_status: string }).overall_status === 'accepted' ? 'bg-green-50 border border-green-300' : 'bg-red-50 border border-red-300'}`}>
+            <div className={`mt-4 p-4 rounded-lg ${(srcValidation as { overall_status: string }).overall_status === 'accepted' ? 'bg-orange-50 border border-green-300' : 'bg-red-50 border border-red-300'}`}>
               <div className="flex items-center gap-2 mb-2">
                 {(srcValidation as { overall_status: string }).overall_status === 'accepted'
-                  ? <CheckCircle className="w-5 h-5 text-green-600" />
+                  ? <CheckCircle className="w-5 h-5 text-orange-600" />
                   : <AlertTriangle className="w-5 h-5 text-red-600" />}
                 <span className="font-semibold text-sm">
                   {(srcValidation as { overall_status: string }).overall_status === 'accepted' ? 'All Sources Accepted' : 'Flagged Sources Detected'}
@@ -403,14 +403,14 @@ export default function CDSCompliance() {
           <h2 className="text-lg font-semibold mb-4">Full CDS Compliance Package</h2>
           <p className="text-sm text-gray-600 mb-4">Generate a complete FDA CDS compliance package including classification, labeling, transparency report, and bias assessment. Fill in fields on the other tabs first.</p>
           <button data-testid="generate-package-btn" onClick={handleGeneratePackage} disabled={isLoading}
-            className="px-4 py-2 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700 disabled:opacity-50">
+            className="px-4 py-2 bg-orange-600 text-white rounded-md text-sm font-medium hover:bg-orange-700 disabled:opacity-50">
             {isLoading ? 'Generating...' : 'Generate Full Compliance Package'}
           </button>
           {packageResult && (
             <div className="mt-4 space-y-4">
               <div className={`p-3 rounded-lg text-center text-sm font-bold ${
                 (packageResult as { cds_classification: { overall_classification: string } }).cds_classification.overall_classification === 'non_device_cds'
-                  ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  ? 'bg-orange-100 text-orange-800' : 'bg-red-100 text-red-800'
               }`}>
                 Classification: {(packageResult as { cds_classification: { overall_classification: string } }).cds_classification.overall_classification.replace(/_/g, ' ').toUpperCase()}
               </div>

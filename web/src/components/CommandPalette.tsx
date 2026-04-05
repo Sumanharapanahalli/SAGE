@@ -119,8 +119,8 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
     <div className="sage-palette-overlay" onClick={onClose}>
       <div className="sage-palette-box" onClick={e => e.stopPropagation()}>
         {/* Input row */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0 1rem', borderBottom: '1px solid #3f3f46' }}>
-          <Command size={14} style={{ color: '#52525b', flexShrink: 0 }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0 1rem', borderBottom: '1px solid #d1d5db' }}>
+          <Command size={14} style={{ color: '#9ca3af', flexShrink: 0 }} />
           <input
             ref={inputRef}
             className="sage-palette-input"
@@ -134,7 +134,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         {/* Results */}
         <div ref={listRef} style={{ maxHeight: '360px', overflowY: 'auto' }}>
           {filtered.length === 0 && (
-            <div style={{ padding: '1rem', fontSize: '0.8rem', color: '#52525b', textAlign: 'center' }}>
+            <div style={{ padding: '1rem', fontSize: '0.8rem', color: '#9ca3af', textAlign: 'center' }}>
               No results for "{query}"
             </div>
           )}
@@ -151,7 +151,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
               >
                 <Icon size={14} style={{ flexShrink: 0, color: isActive ? '#a1a1aa' : '#52525b' }} />
                 <span style={{ flex: 1 }}>{item.label}</span>
-                <span style={{ fontSize: '0.65rem', color: '#3f3f46', fontWeight: 600, letterSpacing: '0.05em' }}>
+                <span style={{ fontSize: '0.65rem', color: '#d1d5db', fontWeight: 600, letterSpacing: '0.05em' }}>
                   {item.group}
                 </span>
               </div>
@@ -162,11 +162,11 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         {/* Footer hint */}
         <div style={{
           padding: '0.5rem 1rem',
-          borderTop: '1px solid #27272a',
+          borderTop: '1px solid #e5e7eb',
           display: 'flex',
           gap: '1rem',
           fontSize: '0.65rem',
-          color: '#52525b',
+          color: '#9ca3af',
         }}>
           <span>↑↓ navigate</span>
           <span>↵ open</span>

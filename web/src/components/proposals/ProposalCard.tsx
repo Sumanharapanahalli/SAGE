@@ -98,7 +98,7 @@ export default function ProposalCard({ proposal, onApprove, onReject }: Proposal
       </div>
 
       {expanded && diff && (
-        <pre className="mt-3 text-xs bg-gray-900 text-gray-100 rounded p-3 overflow-x-auto max-h-64 overflow-y-auto">
+        <pre className="mt-3 text-xs bg-white text-gray-100 rounded p-3 overflow-x-auto max-h-64 overflow-y-auto">
           {diff}
         </pre>
       )}
@@ -154,7 +154,7 @@ export default function ProposalCard({ proposal, onApprove, onReject }: Proposal
           <button
             onClick={handleApprove}
             disabled={loading || (isDestructive && !note.trim())}
-            className="flex items-center gap-1.5 text-xs px-3 py-1.5 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+            className="flex items-center gap-1.5 text-xs px-3 py-1.5 bg-orange-600 text-white rounded hover:bg-orange-700 disabled:opacity-50"
           >
             <CheckCircle size={13} />
             Approve

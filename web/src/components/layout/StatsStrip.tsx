@@ -27,7 +27,7 @@ export default function StatsStrip() {
   const tiles = [
     { label: 'APPROVALS', count: approvalsCount, color: '#ef4444', route: '/approvals', tooltip: 'Proposals waiting for your sign-off' },
     { label: 'QUEUED',    count: queuedCount,    color: '#f59e0b', route: '/queue',     tooltip: 'Tasks in queue or actively running' },
-    { label: 'AGENTS',    count: agentsCount,    color: '#10b981', route: '/queue',     tooltip: 'Agent tasks currently in progress' },
+    { label: 'AGENTS',    count: agentsCount,    color: '#f97316', route: '/queue',     tooltip: 'Agent tasks currently in progress' },
   ]
 
   return (

@@ -25,28 +25,28 @@ export default function KeyboardShortcutsModal({ onClose }: KeyboardShortcutsMod
     >
       <div
         style={{
-          background: '#18181b', border: '1px solid #27272a',
+          background: '#ffffff', border: '1px solid #e5e7eb',
           padding: '24px', width: '380px', maxHeight: '80vh', overflowY: 'auto',
         }}
         onClick={e => e.stopPropagation()}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          <span style={{ fontSize: '13px', fontWeight: 600, color: '#f4f4f5' }}>Keyboard Shortcuts</span>
+          <span style={{ fontSize: '13px', fontWeight: 600, color: '#374151' }}>Keyboard Shortcuts</span>
           <button
             onClick={onClose}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#71717a', fontSize: '18px', lineHeight: 1 }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', fontSize: '18px', lineHeight: 1 }}
           >x</button>
         </div>
         {groups.map(group => (
           <div key={group} style={{ marginBottom: '16px' }}>
-            <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#52525b', marginBottom: '6px' }}>
+            <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#9ca3af', marginBottom: '6px' }}>
               {group}
             </div>
             {SHORTCUTS.filter(s => s.group === group).map(s => (
               <div key={s.key} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', alignItems: 'center' }}>
-                <span style={{ fontSize: '12px', color: '#a1a1aa' }}>{s.action}</span>
+                <span style={{ fontSize: '12px', color: '#6b7280' }}>{s.action}</span>
                 <kbd style={{
-                  background: '#27272a', border: '1px solid #3f3f46',
+                  background: '#e5e7eb', border: '1px solid #d1d5db',
                   padding: '2px 6px', fontSize: '11px', color: '#e4e4e7',
                   fontFamily: 'monospace',
                 }}>

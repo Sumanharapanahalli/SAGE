@@ -7,83 +7,61 @@
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
-   SAGE CSS Custom Properties — Solution Theming System
+   SAGE CSS Custom Properties — White & Orange Theme (Claude-inspired)
 
-   Each solution can override these in its project.yaml under the `theme:` key.
-   ThemeProvider.tsx reads those values and writes them to document.documentElement
-   at runtime, enabling instant theme switching without page reload.
-
-   Solutions without a `theme:` block get these defaults — the Paperclip-style
-   sharp zinc/slate aesthetic.
+   Clean white backgrounds with warm orange accents. No black anywhere.
    ────────────────────────────────────────────────────────────────────────── */
 
-/* Rounded aesthetic: soft corners throughout the framework */
-
 :root {
-  /* Sidebar — clean white + green HMI */
-  --sage-sidebar-bg:          #ffffff;   /* white background */
-  --sage-sidebar-text:        #4b5563;   /* gray-600 */
-  --sage-sidebar-active-bg:   #ecfdf5;   /* emerald-50 */
-  --sage-sidebar-active-text: #047857;   /* emerald-700 */
-  --sage-sidebar-hover-bg:    #f0fdf4;   /* green-50 */
-  --sage-sidebar-accent:      #10b981;   /* emerald-500 */
+  /* Sidebar — clean white + orange accent */
+  --sage-sidebar-bg:          #ffffff;
+  --sage-sidebar-text:        #6b7280;
+  --sage-sidebar-active-bg:   #fff7ed;   /* orange-50 */
+  --sage-sidebar-active-text: #c2410c;   /* orange-700 */
+  --sage-sidebar-hover-bg:    #fff7ed;   /* orange-50 */
+  --sage-sidebar-accent:      #f97316;   /* orange-500 */
 
-  /* Primary accent — green action buttons */
-  --sage-accent:              #10b981;   /* emerald-500 */
-  --sage-accent-hover:        #059669;   /* emerald-600 */
-  --sage-accent-light:        #ecfdf5;   /* emerald-50 */
+  /* Primary accent — orange */
+  --sage-accent:              #f97316;   /* orange-500 */
+  --sage-accent-hover:        #ea580c;   /* orange-600 */
+  --sage-accent-light:        #fff7ed;   /* orange-50 */
   --sage-accent-text:         #ffffff;
 
   /* Domain badge in header */
-  --sage-badge-bg:            #ecfdf5;   /* emerald-50 */
-  --sage-badge-text:          #047857;   /* emerald-700 */
+  --sage-badge-bg:            #fff7ed;   /* orange-50 */
+  --sage-badge-text:          #c2410c;   /* orange-700 */
 
   /* Company rail */
-  --sage-rail-bg:             #f8fafc;   /* slate-50 */
-  --sage-rail-text:           #6b7280;   /* gray-500 */
-  --sage-rail-active:         #047857;   /* emerald-700 */
+  --sage-rail-bg:             #fafafa;
+  --sage-rail-text:           #6b7280;
+  --sage-rail-active:         #c2410c;   /* orange-700 */
 }
 
 body {
-  @apply bg-zinc-50 text-zinc-900 font-sans;
+  @apply bg-white text-gray-800 font-sans;
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
    User Preference CSS Variables
-   Written at runtime by UserPrefsContext when user changes display settings.
    ────────────────────────────────────────────────────────────────────────── */
 
 :root {
-  --sage-user-accent:     #10b981;   /* emerald-500 */
-  --sage-content-bg:      #fafafa;
+  --sage-user-accent:     #f97316;   /* orange-500 */
+  --sage-content-bg:      #ffffff;
   --sage-font-family:     'Inter', sans-serif;
   --sage-font-size-base:  14px;
   --sage-density:         1rem;
 }
 
-/* Apply font family and size globally */
 body {
   font-family: var(--sage-font-family);
   font-size:   var(--sage-font-size-base);
 }
 
-/* Dark mode — toggled by UserPrefsContext theme pref */
-html.dark body {
-  background-color: #09090b;
-  color: #f4f4f5;
-}
-html.dark .bg-zinc-50 { background-color: #09090b !important; }
-html.dark .bg-white   { background-color: #18181b !important; }
-html.dark .text-zinc-900 { color: #f4f4f5 !important; }
-html.dark .border-zinc-200 { border-color: #27272a !important; }
-html.dark .text-zinc-600 { color: #a1a1aa !important; }
-html.dark .text-zinc-500 { color: #71717a !important; }
-
 /* ──────────────────────────────────────────────────────────────────────────
-   Navigation & Layout — Claude-inspired clean aesthetic
+   Navigation & Layout — Clean white aesthetic with orange accents
    ────────────────────────────────────────────────────────────────────────── */
 
-/* Nav item hover */
 .sage-nav-item {
   transition: background-color 0.12s ease, color 0.12s ease;
   border-radius: 6px;
@@ -93,12 +71,12 @@ html.dark .text-zinc-500 { color: #71717a !important; }
   color: var(--sage-sidebar-active-text);
 }
 
-/* Active nav item: subtle pill + accent left border */
+/* Active nav item: orange accent */
 .sage-nav-item-active {
-  color: #f1f5f9 !important;
+  color: #c2410c !important;
   font-weight: 600;
-  border-left: 2px solid var(--sage-sidebar-accent, #10b981) !important;
-  background-color: rgba(255, 255, 255, 0.06);
+  border-left: 2px solid var(--sage-sidebar-accent, #f97316) !important;
+  background-color: #fff7ed;
   border-radius: 0 6px 6px 0;
 }
 
@@ -108,7 +86,7 @@ html.dark .text-zinc-500 { color: #71717a !important; }
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #52525b;
+  color: #9ca3af;
   padding: 0.75rem 1rem 0.25rem;
 }
 
@@ -123,14 +101,14 @@ html.dark .text-zinc-500 { color: #71717a !important; }
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
-   Command palette — centered modal overlay
+   Command palette — white modal overlay
    ────────────────────────────────────────────────────────────────────────── */
 
 .sage-palette-overlay {
   position: fixed;
   inset: 0;
   z-index: 100;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(107, 114, 128, 0.4);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: flex-start;
@@ -141,10 +119,10 @@ html.dark .text-zinc-500 { color: #71717a !important; }
 .sage-palette-box {
   width: 100%;
   max-width: 580px;
-  background: #1c1c1e;
-  border: 1px solid #333338;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
   border-radius: 12px;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.05);
+  box-shadow: 0 25px 60px rgba(107, 114, 128, 0.25);
   overflow: hidden;
 }
 
@@ -152,15 +130,15 @@ html.dark .text-zinc-500 { color: #71717a !important; }
   width: 100%;
   background: transparent;
   border: none;
-  border-bottom: 1px solid #333338;
-  color: #f4f4f5;
+  border-bottom: 1px solid #e5e7eb;
+  color: #374151;
   font-size: 0.95rem;
   padding: 1rem 1.25rem;
   outline: none;
 }
 
 .sage-palette-input::placeholder {
-  color: #52525b;
+  color: #9ca3af;
 }
 
 .sage-palette-result {
@@ -170,21 +148,20 @@ html.dark .text-zinc-500 { color: #71717a !important; }
   padding: 0.625rem 1.25rem;
   cursor: pointer;
   font-size: 0.875rem;
-  color: #a1a1aa;
+  color: #6b7280;
   transition: background-color 0.08s ease;
 }
 
 .sage-palette-result:hover,
 .sage-palette-result.active {
-  background-color: rgba(255, 255, 255, 0.06);
-  color: #f4f4f5;
+  background-color: #fff7ed;
+  color: #c2410c;
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
-   Shared component styles
+   Shared component styles — white & orange
    ────────────────────────────────────────────────────────────────────────── */
 
-/* Card component — used across pages */
 .sage-card {
   background: #ffffff;
   border: 1px solid #e5e7eb;
@@ -193,14 +170,10 @@ html.dark .text-zinc-500 { color: #71717a !important; }
   transition: box-shadow 0.15s ease;
 }
 .sage-card:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-html.dark .sage-card {
-  background: #1c1c1e;
-  border-color: #2a2a2e;
+  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.08);
 }
 
-/* Button styles — primary action */
+/* Button styles */
 .sage-btn {
   display: inline-flex;
   align-items: center;
@@ -214,23 +187,23 @@ html.dark .sage-card {
   transition: all 0.12s ease;
 }
 .sage-btn-primary {
-  background: var(--sage-accent, #10b981);
+  background: var(--sage-accent, #f97316);
   color: white;
 }
 .sage-btn-primary:hover {
-  background: var(--sage-accent-hover, #059669);
+  background: var(--sage-accent-hover, #ea580c);
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
 }
 .sage-btn-secondary {
   background: transparent;
-  color: #a1a1aa;
-  border: 1px solid #333338;
+  color: #6b7280;
+  border: 1px solid #d1d5db;
 }
 .sage-btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: #f4f4f5;
-  border-color: #52525b;
+  background: #fff7ed;
+  color: #c2410c;
+  border-color: #fdba74;
 }
 
 /* Empty state */
@@ -241,7 +214,7 @@ html.dark .sage-card {
   justify-content: center;
   padding: 3rem 1.5rem;
   text-align: center;
-  color: #71717a;
+  color: #9ca3af;
 }
 .sage-empty svg {
   margin-bottom: 1rem;
@@ -256,8 +229,8 @@ html.dark .sage-card {
   font-size: 0.6875rem;
   font-weight: 500;
   border-radius: 9999px;
-  background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
+  background: rgba(249, 115, 22, 0.1);
+  color: #ea580c;
 }
 
 /* Table styling */
@@ -273,16 +246,14 @@ html.dark .sage-card {
   font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #71717a;
+  color: #9ca3af;
   border-bottom: 1px solid #e5e7eb;
 }
 .sage-table td {
   padding: 0.625rem 0.75rem;
-  border-bottom: 1px solid #f4f4f5;
+  border-bottom: 1px solid #f3f4f6;
   color: #374151;
 }
-html.dark .sage-table th { color: #a1a1aa; border-color: #27272a; }
-html.dark .sage-table td { color: #d4d4d8; border-color: #1c1c1e; }
 
 /* Tab bar */
 .sage-tabs {
@@ -295,19 +266,18 @@ html.dark .sage-table td { color: #d4d4d8; border-color: #1c1c1e; }
   padding: 0.625rem 1rem;
   font-size: 0.8125rem;
   font-weight: 500;
-  color: #71717a;
+  color: #9ca3af;
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
   cursor: pointer;
   transition: all 0.12s ease;
 }
-.sage-tab:hover { color: #f1f5f9; }
+.sage-tab:hover { color: #c2410c; }
 .sage-tab-active {
-  color: var(--sage-accent, #10b981);
-  border-bottom-color: var(--sage-accent, #10b981);
+  color: var(--sage-accent, #f97316);
+  border-bottom-color: var(--sage-accent, #f97316);
 }
-html.dark .sage-tabs { border-color: #27272a; }
 
 @keyframes sage-cursor-blink {
   0%, 100% { opacity: 1; }
@@ -319,8 +289,8 @@ html.dark .sage-tabs { border-color: #27272a; }
   30% { transform: translateY(-4px); }
 }
 
-/* Scrollbar styling */
+/* Scrollbar styling — light */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #52525b; }
+::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #9ca3af; }

@@ -95,9 +95,9 @@ function PhaseStepper({ state }: { state: string }) {
             <div
               className={classNames(
                 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-200',
-                done && 'bg-emerald-100 text-emerald-700',
-                active && 'bg-emerald-50 text-emerald-700 ring-2 ring-emerald-300 shadow-sm',
-                !done && !active && 'bg-zinc-100 text-zinc-400',
+                done && 'bg-orange-100 text-orange-700',
+                active && 'bg-orange-50 text-orange-700 ring-2 ring-orange-300 shadow-sm',
+                !done && !active && 'bg-zinc-100 text-gray-500',
                 isFailed && i === 0 && 'bg-red-100 text-red-700 ring-2 ring-red-300',
               )}
             >
@@ -110,7 +110,7 @@ function PhaseStepper({ state }: { state: string }) {
               )}
               {phase.label}
             </div>
-            {i < PHASES.length - 1 && <ChevronRight size={14} className="text-zinc-300 mx-0.5 flex-shrink-0" />}
+            {i < PHASES.length - 1 && <ChevronRight size={14} className="text-gray-600 mx-0.5 flex-shrink-0" />}
           </div>
         )
       })}
@@ -122,7 +122,7 @@ function PhaseStepper({ state }: { state: string }) {
 // Critic score badge
 // ---------------------------------------------------------------------------
 function CriticBadge({ score }: { score: number }) {
-  const color = score >= 80 ? 'bg-emerald-100 text-emerald-700' :
+  const color = score >= 80 ? 'bg-orange-100 text-orange-700' :
                 score >= 50 ? 'bg-amber-100 text-amber-700' :
                 'bg-red-100 text-red-700'
   return (
@@ -137,7 +137,7 @@ function SeverityDot({ severity }: { severity: string }) {
     severity === 'critical' ? 'bg-red-500' :
     severity === 'major' ? 'bg-orange-500' :
     severity === 'minor' ? 'bg-amber-400' :
-    'bg-emerald-400'
+    'bg-orange-400'
   return <span className={classNames('inline-block w-2 h-2 rounded-full flex-shrink-0', color)} />
 }
 
@@ -168,12 +168,12 @@ function CriticCard({ scores, reports }: {
             {/* Header — clickable */}
             <button
               onClick={() => setExpandedPhase(isExpanded ? null : i)}
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-zinc-50 transition-colors"
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-white transition-colors"
             >
               <span className="font-medium capitalize">{s.phase}</span>
               <CriticBadge score={s.score} />
               {s.passed ? (
-                <span className="flex items-center gap-1 text-emerald-600 text-xs">
+                <span className="flex items-center gap-1 text-orange-600 text-xs">
                   <CheckCircle2 size={12} /> Passed
                 </span>
               ) : (
@@ -182,24 +182,24 @@ function CriticCard({ scores, reports }: {
                 </span>
               )}
               {s.iterations > 1 && (
-                <span className="text-zinc-400 text-xs">
+                <span className="text-gray-500 text-xs">
                   ({s.iterations} revision{s.iterations > 1 ? 's' : ''})
                 </span>
               )}
               {/* Score progression inline */}
               {history.length > 1 && (
-                <span className="ml-auto text-xs text-zinc-400 font-mono">
+                <span className="ml-auto text-xs text-gray-500 font-mono">
                   {history.map((h) => String(h.score ?? 0)).join(' -> ')}
                 </span>
               )}
               <span className="ml-auto">
-                {isExpanded ? <ChevronUp size={14} className="text-zinc-400" /> : <ChevronDown size={14} className="text-zinc-400" />}
+                {isExpanded ? <ChevronUp size={14} className="text-gray-500" /> : <ChevronDown size={14} className="text-gray-500" />}
               </span>
             </button>
 
             {/* Expanded detail */}
             {isExpanded && (
-              <div className="border-t px-3 py-3 space-y-3 bg-zinc-50/50">
+              <div className="border-t px-3 py-3 space-y-3 bg-white/50">
                 {/* Iteration history timeline */}
                 {history.length > 0 && (
                   <div>
@@ -218,14 +218,14 @@ function CriticCard({ scores, reports }: {
                               <ChevronRight
                                 size={12}
                                 className={classNames(
-                                  improved ? 'text-emerald-500' : declined ? 'text-red-500' : 'text-zinc-300',
+                                  improved ? 'text-orange-500' : declined ? 'text-red-500' : 'text-gray-600',
                                 )}
                               />
                             )}
                             <span
                               className={classNames(
                                 'px-2 py-0.5 rounded text-xs font-mono font-medium',
-                                sc >= 80 ? 'bg-emerald-100 text-emerald-700' :
+                                sc >= 80 ? 'bg-orange-100 text-orange-700' :
                                 sc >= 50 ? 'bg-amber-100 text-amber-700' :
                                 'bg-red-100 text-red-700',
                               )}
@@ -291,10 +291,10 @@ function AgentTaskCard({ result, waveLabel }: {
   const isError = result.status === 'error' || result.status === 'failed'
   const isDone = result.status === 'completed'
 
-  const statusIcon = isRunning ? <Spinner size={12} className="text-emerald-500" /> :
-    isDone ? <CheckCircle2 size={12} className="text-emerald-500" /> :
+  const statusIcon = isRunning ? <Spinner size={12} className="text-orange-500" /> :
+    isDone ? <CheckCircle2 size={12} className="text-orange-500" /> :
     isError ? <XCircle size={12} className="text-red-500" /> :
-    <Clock size={12} className="text-zinc-400" />
+    <Clock size={12} className="text-gray-500" />
 
   const criteria = result.acceptance_criteria ?? []
   const files = result.files_changed ?? []
@@ -303,18 +303,18 @@ function AgentTaskCard({ result, waveLabel }: {
     <div className={classNames(
       'border rounded-md overflow-hidden transition-all',
       isError && 'border-red-200 bg-red-50/30',
-      isRunning && 'border-emerald-200 bg-emerald-50/30',
+      isRunning && 'border-orange-200 bg-orange-50/30',
     )}>
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center gap-2 px-3 py-2.5 text-sm hover:bg-zinc-50/50 transition-colors"
+        className="w-full flex items-center gap-2 px-3 py-2.5 text-sm hover:bg-white/50 transition-colors"
       >
         {statusIcon}
         <span className="px-1.5 py-0.5 bg-violet-100 text-violet-700 rounded text-xs font-mono">
           {result.task_type}
         </span>
         {result.agent_role && (
-          <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-600 rounded text-xs">
+          <span className="px-1.5 py-0.5 bg-orange-50 text-orange-600 rounded text-xs">
             @{result.agent_role}
           </span>
         )}
@@ -325,24 +325,24 @@ function AgentTaskCard({ result, waveLabel }: {
         )}
         <span className={classNames(
           'text-xs font-medium',
-          isDone ? 'text-emerald-600' : isError ? 'text-red-600' : isRunning ? 'text-emerald-600' : 'text-zinc-400',
+          isDone ? 'text-orange-600' : isError ? 'text-red-600' : isRunning ? 'text-orange-600' : 'text-gray-500',
         )}>
           {result.status}
         </span>
-        {result.tier && <span className="text-zinc-300 text-[10px]">via {result.tier}</span>}
+        {result.tier && <span className="text-gray-600 text-[10px]">via {result.tier}</span>}
         {/* Progress bar for running tasks */}
         {isRunning && (
           <div className="ml-auto w-16 h-1.5 bg-zinc-200 rounded-full overflow-hidden">
-            <div className="h-full bg-emerald-500 rounded-full animate-pulse" style={{ width: '60%' }} />
+            <div className="h-full bg-orange-500 rounded-full animate-pulse" style={{ width: '60%' }} />
           </div>
         )}
         <span className="ml-auto">
-          {expanded ? <ChevronUp size={12} className="text-zinc-400" /> : <ChevronDown size={12} className="text-zinc-400" />}
+          {expanded ? <ChevronUp size={12} className="text-gray-500" /> : <ChevronDown size={12} className="text-gray-500" />}
         </span>
       </button>
 
       {expanded && (
-        <div className="border-t px-3 py-2.5 space-y-2 bg-zinc-50/50 text-xs">
+        <div className="border-t px-3 py-2.5 space-y-2 bg-white/50 text-xs">
           {/* Description */}
           <p className="text-zinc-600">{result.description}</p>
 
@@ -361,7 +361,7 @@ function AgentTaskCard({ result, waveLabel }: {
                 {criteria.map((c, j) => (
                   <li key={j} className="flex items-start gap-1.5">
                     {isDone ? (
-                      <CheckCircle2 size={11} className="text-emerald-500 mt-0.5 flex-shrink-0" />
+                      <CheckCircle2 size={11} className="text-orange-500 mt-0.5 flex-shrink-0" />
                     ) : (
                       <span className="w-[11px] h-[11px] border border-zinc-300 rounded-sm mt-0.5 flex-shrink-0" />
                     )}
@@ -413,7 +413,7 @@ function AgentExecutionGrid({ results }: {
     <div className="bg-white rounded-lg border p-4 space-y-4">
       <h3 className="text-sm font-semibold text-zinc-700 flex items-center gap-2">
         <Zap size={16} className="text-violet-500" /> Agent Tasks
-        <span className="text-zinc-400 font-normal text-xs">
+        <span className="text-gray-500 font-normal text-xs">
           {results.length} task{results.length !== 1 ? 's' : ''}
           {hasMultipleWaves && ` in ${sortedWaves.length} waves`}
         </span>
@@ -423,11 +423,11 @@ function AgentExecutionGrid({ results }: {
         <div key={wave}>
           {hasMultipleWaves && (
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">
                 Wave {wave + 1}
               </span>
               <div className="flex-1 h-px bg-zinc-100" />
-              <span className="text-[10px] text-zinc-400">
+              <span className="text-[10px] text-gray-500">
                 {tasks.filter(t => t.status === 'completed').length}/{tasks.length} done
               </span>
             </div>
@@ -466,12 +466,12 @@ function ActivityLogPanel({ entries, isLive }: { entries: ActivityLogEntry[]; is
 
   const typeColors: Record<string, string> = {
     thought:        'text-purple-600 bg-purple-50',
-    action:         'text-emerald-600 bg-emerald-50',
-    observation:    'text-emerald-600 bg-emerald-50',
+    action:         'text-orange-600 bg-orange-50',
+    observation:    'text-orange-600 bg-orange-50',
     tool_call:      'text-cyan-600 bg-cyan-50',
     tool_response:  'text-teal-600 bg-teal-50',
     error:          'text-red-600 bg-red-50',
-    info:           'text-zinc-500 bg-zinc-50',
+    info:           'text-zinc-500 bg-white',
   }
 
   return (
@@ -479,31 +479,31 @@ function ActivityLogPanel({ entries, isLive }: { entries: ActivityLogEntry[]; is
       {/* Header */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-zinc-50 transition-colors"
+        className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-white transition-colors"
       >
         <Terminal size={16} className="text-zinc-500" />
         <span className="text-sm font-semibold text-zinc-700">Agent Activity Log</span>
         {isLive && (
-          <span className="flex items-center gap-1 text-[10px] text-emerald-600 font-medium">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="flex items-center gap-1 text-[10px] text-orange-600 font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
             LIVE
           </span>
         )}
-        <span className="text-xs text-zinc-400 ml-auto mr-2">{entries.length} entries</span>
-        {collapsed ? <ChevronDown size={14} className="text-zinc-400" /> : <ChevronUp size={14} className="text-zinc-400" />}
+        <span className="text-xs text-gray-500 ml-auto mr-2">{entries.length} entries</span>
+        {collapsed ? <ChevronDown size={14} className="text-gray-500" /> : <ChevronUp size={14} className="text-gray-500" />}
       </button>
 
       {!collapsed && (
         <>
           {/* Filter bar */}
-          <div className="flex items-center gap-1 px-4 py-1.5 border-t border-b bg-zinc-50/50 overflow-x-auto">
+          <div className="flex items-center gap-1 px-4 py-1.5 border-t border-b bg-white/50 overflow-x-auto">
             {['all', 'thought', 'action', 'tool_call', 'tool_response', 'observation', 'error'].map(f => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
                 className={classNames(
                   'px-2 py-0.5 rounded text-[10px] font-medium whitespace-nowrap transition-colors',
-                  filter === f ? 'bg-emerald-600 text-white' : 'text-zinc-500 hover:bg-emerald-50',
+                  filter === f ? 'bg-orange-600 text-white' : 'text-zinc-500 hover:bg-orange-50',
                 )}
               >
                 {f === 'all' ? 'All' : f.replace('_', ' ')}
@@ -514,18 +514,18 @@ function ActivityLogPanel({ entries, isLive }: { entries: ActivityLogEntry[]; is
           {/* Log entries */}
           <div ref={scrollRef} className="max-h-72 overflow-y-auto font-mono text-[11px] divide-y divide-zinc-100">
             {filtered.length === 0 && (
-              <div className="px-4 py-6 text-center text-zinc-400 text-xs">
+              <div className="px-4 py-6 text-center text-gray-500 text-xs">
                 {entries.length === 0 ? 'Activity will appear here when the build starts...' : 'No entries match the current filter.'}
               </div>
             )}
             {filtered.map(entry => (
-              <div key={entry.id} className="px-4 py-1.5 hover:bg-zinc-50/50 flex items-start gap-2">
-                <span className="text-zinc-300 whitespace-nowrap w-16 flex-shrink-0 pt-0.5 tabular-nums">
+              <div key={entry.id} className="px-4 py-1.5 hover:bg-white/50 flex items-start gap-2">
+                <span className="text-gray-600 whitespace-nowrap w-16 flex-shrink-0 pt-0.5 tabular-nums">
                   {formatTimestamp(entry.timestamp)}
                 </span>
                 <span className={classNames(
                   'px-1.5 py-0.5 rounded text-[10px] font-medium whitespace-nowrap flex-shrink-0',
-                  typeColors[entry.type] ?? 'text-zinc-500 bg-zinc-50',
+                  typeColors[entry.type] ?? 'text-zinc-500 bg-white',
                 )}>
                   {entry.type.replace('_', ' ')}
                 </span>
@@ -534,7 +534,7 @@ function ActivityLogPanel({ entries, isLive }: { entries: ActivityLogEntry[]; is
                 )}
                 <span className="text-zinc-700 break-words min-w-0">{entry.content}</span>
                 {entry.duration_ms !== undefined && (
-                  <span className="text-zinc-300 whitespace-nowrap flex-shrink-0 ml-auto">
+                  <span className="text-gray-600 whitespace-nowrap flex-shrink-0 ml-auto">
                     {formatDuration(entry.duration_ms)}
                   </span>
                 )}
@@ -859,12 +859,12 @@ export default function BuildConsole() {
     <div className="max-w-6xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="p-2 bg-emerald-100 rounded-lg">
-          <Hammer size={20} className="text-emerald-600" />
+        <div className="p-2 bg-orange-100 rounded-lg">
+          <Hammer size={20} className="text-orange-600" />
         </div>
         <div>
           <h1 className="text-xl font-bold text-zinc-800">Build Console</h1>
-          <span className="text-xs text-zinc-400">0 &rarr; 1 &rarr; N Pipeline &mdash; describe a product, get a working codebase</span>
+          <span className="text-xs text-gray-500">0 &rarr; 1 &rarr; N Pipeline &mdash; describe a product, get a working codebase</span>
         </div>
       </div>
 
@@ -877,13 +877,13 @@ export default function BuildConsole() {
 
         {/* Quick-start examples */}
         <div>
-          <p className="text-xs text-zinc-400 mb-1.5">Quick start examples:</p>
+          <p className="text-xs text-gray-500 mb-1.5">Quick start examples:</p>
           <div className="flex flex-wrap gap-1.5">
             {EXAMPLE_PRODUCTS.map(ex => (
               <button
                 key={ex.label}
                 onClick={() => handleQuickStart(ex.description)}
-                className="px-2.5 py-1 rounded-full text-xs border border-zinc-200 text-zinc-600 hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700 transition-colors"
+                className="px-2.5 py-1 rounded-full text-xs border border-zinc-200 text-zinc-600 hover:bg-orange-50 hover:border-orange-200 hover:text-orange-700 transition-colors"
               >
                 {ex.label}
               </button>
@@ -896,7 +896,7 @@ export default function BuildConsole() {
           value={description}
           onChange={e => setDescription(e.target.value)}
           placeholder="Describe what you want to build in plain English. Be specific about tech stack, features, and integrations..."
-          className="w-full h-32 border rounded-md p-3 text-sm resize-none focus:ring-2 focus:ring-emerald-300 focus:outline-none placeholder:text-zinc-300"
+          className="w-full h-32 border rounded-md p-3 text-sm resize-none focus:ring-2 focus:ring-orange-300 focus:outline-none placeholder:text-gray-600"
         />
 
         {/* Config fields row */}
@@ -907,7 +907,7 @@ export default function BuildConsole() {
               value={solutionName}
               onChange={e => setSolutionName(e.target.value)}
               placeholder="my_app (optional)"
-              className="w-full border rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-emerald-300 focus:outline-none"
+              className="w-full border rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-orange-300 focus:outline-none"
             />
           </div>
           <div>
@@ -917,9 +917,9 @@ export default function BuildConsole() {
                 value={repoUrl}
                 onChange={e => setRepoUrl(e.target.value)}
                 placeholder="https://github.com/..."
-                className="w-full border rounded-md px-3 py-1.5 text-sm pr-8 focus:ring-2 focus:ring-emerald-300 focus:outline-none"
+                className="w-full border rounded-md px-3 py-1.5 text-sm pr-8 focus:ring-2 focus:ring-orange-300 focus:outline-none"
               />
-              <ExternalLink size={12} className="absolute right-2.5 top-2.5 text-zinc-300" />
+              <ExternalLink size={12} className="absolute right-2.5 top-2.5 text-gray-600" />
             </div>
           </div>
           <div>
@@ -928,7 +928,7 @@ export default function BuildConsole() {
               value={workspaceDir}
               onChange={e => setWorkspaceDir(e.target.value)}
               placeholder="/path/to/workspace"
-              className="w-full border rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-emerald-300 focus:outline-none"
+              className="w-full border rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-orange-300 focus:outline-none"
             />
           </div>
           <div>
@@ -936,7 +936,7 @@ export default function BuildConsole() {
             <select
               value={hitlLevel}
               onChange={e => setHitlLevel(e.target.value as 'minimal' | 'standard' | 'strict')}
-              className="w-full border rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-emerald-300 focus:outline-none"
+              className="w-full border rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-orange-300 focus:outline-none"
               title="HITL approval granularity"
             >
               <option value="minimal">Minimal (2 gates)</option>
@@ -953,7 +953,7 @@ export default function BuildConsole() {
               <span>Critic Threshold</span>
               <span className={classNames(
                 'text-xs font-semibold tabular-nums',
-                criticThreshold >= 80 ? 'text-emerald-600' :
+                criticThreshold >= 80 ? 'text-orange-600' :
                 criticThreshold >= 50 ? 'text-amber-600' : 'text-red-600',
               )}>
                 {criticThreshold}/100
@@ -965,9 +965,9 @@ export default function BuildConsole() {
               max={100}
               value={criticThreshold}
               onChange={e => setCriticThreshold(Number(e.target.value))}
-              className="w-full h-1.5 bg-zinc-200 rounded-full appearance-none cursor-pointer accent-emerald-600"
+              className="w-full h-1.5 bg-zinc-200 rounded-full appearance-none cursor-pointer accent-orange-600"
             />
-            <div className="flex justify-between text-[10px] text-zinc-300 mt-0.5">
+            <div className="flex justify-between text-[10px] text-gray-600 mt-0.5">
               <span>Permissive</span>
               <span>Strict</span>
             </div>
@@ -976,7 +976,7 @@ export default function BuildConsole() {
           <button
             onClick={() => startMutation.mutate()}
             disabled={!description.trim() || startMutation.isPending}
-            className="flex items-center gap-2 bg-emerald-600 text-white px-5 py-2 rounded-md text-sm font-medium hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+            className="flex items-center gap-2 bg-orange-600 text-white px-5 py-2 rounded-md text-sm font-medium hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
           >
             {startMutation.isPending ? <Spinner size={14} /> : <Play size={14} />}
             {startMutation.isPending ? 'Starting...' : 'Start Build'}
@@ -1043,16 +1043,16 @@ export default function BuildConsole() {
             <span className="font-semibold text-zinc-700">{status.solution_name}</span>
             <span className={classNames(
               'px-2 py-0.5 rounded text-xs font-medium',
-              status.state === 'completed' ? 'bg-emerald-100 text-emerald-700' :
+              status.state === 'completed' ? 'bg-orange-100 text-orange-700' :
               status.state === 'failed' ? 'bg-red-100 text-red-700' :
-              'bg-emerald-100 text-emerald-700',
+              'bg-orange-100 text-orange-700',
             )}>
               {isActive && <Spinner size={10} className="inline mr-1" />}
               {status.state_description || status.state}
             </span>
-            <span className="text-zinc-400 text-xs">{status.task_count} task(s)</span>
+            <span className="text-gray-500 text-xs">{status.task_count} task(s)</span>
             {status.hitl_level && (
-              <span className="text-xs text-zinc-400 ml-auto">
+              <span className="text-xs text-gray-500 ml-auto">
                 HITL: <span className="font-medium text-zinc-500">{status.hitl_level}</span>
               </span>
             )}
@@ -1099,7 +1099,7 @@ export default function BuildConsole() {
                 <button
                   onClick={() => approveMutation.mutate({ runId: status.run_id, approved: true })}
                   disabled={approveMutation.isPending}
-                  className="flex items-center gap-1.5 bg-emerald-600 text-white px-4 py-1.5 rounded-md text-sm font-medium hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+                  className="flex items-center gap-1.5 bg-orange-600 text-white px-4 py-1.5 rounded-md text-sm font-medium hover:bg-orange-700 disabled:opacity-50 transition-colors"
                 >
                   {approveMutation.isPending ? <Spinner size={14} /> : <ThumbsUp size={14} />}
                   Approve
@@ -1130,7 +1130,7 @@ export default function BuildConsole() {
 
       {/* Loading state when waiting for first status */}
       {activeRunId && !status && statusQuery.isFetching && (
-        <div className="flex items-center justify-center gap-3 py-12 text-zinc-400">
+        <div className="flex items-center justify-center gap-3 py-12 text-gray-500">
           <Spinner size={20} />
           <span className="text-sm">Loading build status...</span>
         </div>
@@ -1141,13 +1141,13 @@ export default function BuildConsole() {
         <div className="bg-white rounded-lg border p-4">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-semibold text-zinc-700 flex items-center gap-2">
-              <Clock size={14} className="text-zinc-400" />
+              <Clock size={14} className="text-gray-500" />
               Build History
-              <span className="text-xs font-normal text-zinc-400">{runsQuery.data.runs.length} runs</span>
+              <span className="text-xs font-normal text-gray-500">{runsQuery.data.runs.length} runs</span>
             </h3>
             <button
               onClick={() => queryClient.invalidateQueries({ queryKey: ['build-runs'] })}
-              className="text-zinc-400 hover:text-zinc-600 transition-colors"
+              className="text-gray-500 hover:text-zinc-600 transition-colors"
               title="Refresh"
             >
               <RefreshCw size={14} />
@@ -1162,28 +1162,28 @@ export default function BuildConsole() {
                   setActivityLog([])
                 }}
                 className={classNames(
-                  'w-full text-left flex items-center gap-3 px-3 py-2 rounded-md text-sm hover:bg-zinc-50 transition-colors',
-                  activeRunId === run.run_id && 'bg-emerald-50 border border-emerald-200',
+                  'w-full text-left flex items-center gap-3 px-3 py-2 rounded-md text-sm hover:bg-white transition-colors',
+                  activeRunId === run.run_id && 'bg-orange-50 border border-orange-200',
                 )}
               >
                 {run.state === 'completed' ? (
-                  <CheckCircle2 size={14} className="text-emerald-500" />
+                  <CheckCircle2 size={14} className="text-orange-500" />
                 ) : run.state === 'failed' ? (
                   <XCircle size={14} className="text-red-500" />
                 ) : (
-                  <Spinner size={14} className="text-emerald-500" />
+                  <Spinner size={14} className="text-orange-500" />
                 )}
                 <span className="font-medium text-zinc-700">{run.solution_name}</span>
                 <span className={classNames(
                   'px-1.5 py-0.5 rounded text-xs',
-                  run.state === 'completed' ? 'bg-emerald-100 text-emerald-700' :
+                  run.state === 'completed' ? 'bg-orange-100 text-orange-700' :
                   run.state === 'failed' ? 'bg-red-100 text-red-700' :
-                  'bg-emerald-100 text-emerald-600',
+                  'bg-orange-100 text-orange-600',
                 )}>
                   {run.state}
                 </span>
-                <span className="text-zinc-400 text-xs ml-auto">{run.task_count} tasks</span>
-                <span className="text-zinc-300 text-xs">
+                <span className="text-gray-500 text-xs ml-auto">{run.task_count} tasks</span>
+                <span className="text-gray-600 text-xs">
                   {formatTimestamp(run.created_at)}
                 </span>
               </button>
@@ -1206,9 +1206,9 @@ function PlanPanel({ plan }: {
   return (
     <div className="bg-white rounded-lg border p-4">
       <h3 className="text-sm font-semibold text-zinc-700 mb-3 flex items-center gap-2">
-        <Target size={14} className="text-emerald-500" />
+        <Target size={14} className="text-orange-500" />
         Implementation Plan
-        <span className="text-xs font-normal text-zinc-400">{plan.length} steps</span>
+        <span className="text-xs font-normal text-gray-500">{plan.length} steps</span>
       </h3>
       <div className="space-y-1.5">
         {plan.map((task, i) => {
@@ -1217,9 +1217,9 @@ function PlanPanel({ plan }: {
             <div key={i} className="border rounded-md overflow-hidden">
               <button
                 onClick={() => setExpandedTask(isExpanded ? null : i)}
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-zinc-50 transition-colors"
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-white transition-colors"
               >
-                <span className="text-zinc-400 w-5 text-right text-xs tabular-nums">{task.step}.</span>
+                <span className="text-gray-500 w-5 text-right text-xs tabular-nums">{task.step}.</span>
                 <span className="px-1.5 py-0.5 bg-zinc-100 rounded text-xs font-mono">
                   {task.task_type}
                 </span>
@@ -1230,17 +1230,17 @@ function PlanPanel({ plan }: {
                 )}
                 <span className="text-zinc-600 text-left truncate">{task.description}</span>
                 {task.depends_on && task.depends_on.length > 0 && (
-                  <span className="text-zinc-300 text-[10px] whitespace-nowrap flex-shrink-0">
+                  <span className="text-gray-600 text-[10px] whitespace-nowrap flex-shrink-0">
                     deps: [{task.depends_on.join(', ')}]
                   </span>
                 )}
                 <span className="ml-auto flex-shrink-0">
-                  {isExpanded ? <ChevronUp size={12} className="text-zinc-400" /> : <ChevronDown size={12} className="text-zinc-400" />}
+                  {isExpanded ? <ChevronUp size={12} className="text-gray-500" /> : <ChevronDown size={12} className="text-gray-500" />}
                 </span>
               </button>
 
               {isExpanded && (
-                <div className="border-t px-3 py-2.5 bg-zinc-50/50 space-y-2">
+                <div className="border-t px-3 py-2.5 bg-white/50 space-y-2">
                   <p className="text-xs text-zinc-600">{task.description}</p>
 
                   {/* Acceptance criteria */}
@@ -1260,7 +1260,7 @@ function PlanPanel({ plan }: {
 
                   {/* Dependencies */}
                   {task.depends_on && task.depends_on.length > 0 && (
-                    <p className="text-[11px] text-zinc-400">
+                    <p className="text-[11px] text-gray-500">
                       Depends on steps: {task.depends_on.join(', ')}
                     </p>
                   )}
@@ -1288,26 +1288,26 @@ function IntegrationPanel({ result }: { result: Record<string, unknown> }) {
     <div className="bg-white rounded-lg border overflow-hidden">
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center gap-2 px-4 py-3 hover:bg-zinc-50 transition-colors"
+        className="w-full flex items-center gap-2 px-4 py-3 hover:bg-white transition-colors"
       >
-        <Activity size={16} className="text-emerald-500" />
+        <Activity size={16} className="text-orange-500" />
         <span className="text-sm font-semibold text-zinc-700">Integration Results</span>
-        <span className="text-xs text-zinc-400">
+        <span className="text-xs text-gray-500">
           {completedTasks ?? 0}/{totalTasks ?? 0} tasks
         </span>
-        <span className="text-xs text-zinc-400">
+        <span className="text-xs text-gray-500">
           {filesChanged.length} files
         </span>
         {errors.length > 0 && (
           <span className="text-xs text-red-500">{errors.length} errors</span>
         )}
         <span className="ml-auto">
-          {expanded ? <ChevronUp size={14} className="text-zinc-400" /> : <ChevronDown size={14} className="text-zinc-400" />}
+          {expanded ? <ChevronUp size={14} className="text-gray-500" /> : <ChevronDown size={14} className="text-gray-500" />}
         </span>
       </button>
 
       {expanded && (
-        <div className="border-t px-4 py-3 space-y-3 bg-zinc-50/50">
+        <div className="border-t px-4 py-3 space-y-3 bg-white/50">
           {/* Progress bar */}
           {totalTasks != null && totalTasks > 0 && (
             <div>
@@ -1317,7 +1317,7 @@ function IntegrationPanel({ result }: { result: Record<string, unknown> }) {
               </div>
               <div className="w-full h-2 bg-zinc-200 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                  className="h-full bg-orange-500 rounded-full transition-all duration-500"
                   style={{ width: `${((completedTasks ?? 0) / totalTasks) * 100}%` }}
                 />
               </div>

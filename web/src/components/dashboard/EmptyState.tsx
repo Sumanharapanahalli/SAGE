@@ -66,7 +66,7 @@ export default function EmptyState() {
               Set up organization
             </button>
           )}
-          {hasMission && <span style={{ fontSize: 12, color: '#10b981' }}>Done</span>}
+          {hasMission && <span style={{ fontSize: 12, color: '#f97316' }}>Done</span>}
         </div>
       </div>
 

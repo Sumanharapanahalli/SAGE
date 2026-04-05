@@ -133,11 +133,11 @@ export default function Header({ onOpenPalette }: HeaderProps) {
         <span style={{ fontSize: '12px', color: '#6b7280', fontWeight: 500 }}>
           {projectName}
         </span>
-        <ChevronRight size={10} style={{ color: '#3f3f46' }} />
-        <span style={{ fontSize: '12px', color: '#52525b' }}>
+        <ChevronRight size={10} style={{ color: '#d1d5db' }} />
+        <span style={{ fontSize: '12px', color: '#9ca3af' }}>
           {area}
         </span>
-        <ChevronRight size={10} style={{ color: '#3f3f46' }} />
+        <ChevronRight size={10} style={{ color: '#d1d5db' }} />
         <span style={{ fontSize: '13px', fontWeight: 600, color: '#e4e4e7' }}>
           {title}
         </span>
@@ -152,7 +152,7 @@ export default function Header({ onOpenPalette }: HeaderProps) {
             border: '1px solid rgba(16, 185, 129, 0.15)',
             borderRadius: '8px',
             fontSize: '11px',
-            color: '#10b981',
+            color: '#f97316',
             fontWeight: 500,
           }}
           title={`LLM: ${provider}${model ? ` / ${model}` : ''}`}
@@ -179,8 +179,8 @@ export default function Header({ onOpenPalette }: HeaderProps) {
         onClick={onOpenPalette}
         className="flex items-center gap-1 text-xs px-2 py-1 transition-colors shrink-0"
         style={{
-          color: '#52525b',
-          border: '1px solid #27272a',
+          color: '#9ca3af',
+          border: '1px solid #e5e7eb',
           borderRadius: '6px',
           background: 'rgba(255,255,255,0.02)',
         }}
@@ -197,7 +197,7 @@ export default function Header({ onOpenPalette }: HeaderProps) {
         className="flex items-center gap-1 text-xs px-2 py-1 transition-colors shrink-0"
         style={{
           color: panelState !== 'closed' ? '#3b82f6' : '#52525b',
-          border: `1px solid ${panelState !== 'closed' ? '#1d4ed8' : '#27272a'}`,
+          border: `1px solid ${panelState !== 'closed' ? '#1d4ed8' : '#e5e7eb'}`,
           borderRadius: '6px',
           background: panelState !== 'closed' ? 'rgba(59,130,246,0.08)' : 'rgba(255,255,255,0.02)',
         }}

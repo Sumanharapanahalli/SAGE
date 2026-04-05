@@ -82,7 +82,7 @@ export default function RegulatoryCompliance() {
   }
 
   const scoreColor = (score: number) =>
-    score >= 80 ? 'text-green-600 bg-green-50' : score >= 50 ? 'text-yellow-600 bg-yellow-50' : 'text-red-600 bg-red-50'
+    score >= 80 ? 'text-orange-600 bg-orange-50' : score >= 50 ? 'text-yellow-600 bg-yellow-50' : 'text-red-600 bg-red-50'
 
   const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
     { id: 'dashboard', label: 'Standards', icon: Globe },
@@ -123,7 +123,7 @@ export default function RegulatoryCompliance() {
               us: 'bg-blue-100 text-blue-800',
               eu: 'bg-indigo-100 text-indigo-800',
               uk: 'bg-red-100 text-red-800',
-              international: 'bg-green-100 text-green-800',
+              international: 'bg-orange-100 text-orange-800',
               canada: 'bg-red-100 text-red-700',
               japan: 'bg-pink-100 text-pink-800',
               australia: 'bg-yellow-100 text-yellow-800',
@@ -221,7 +221,7 @@ export default function RegulatoryCompliance() {
                     <summary className="p-4 cursor-pointer flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         {(assessment.compliance_score as number) >= 80
-                          ? <CheckCircle className="w-5 h-5 text-green-500" />
+                          ? <CheckCircle className="w-5 h-5 text-orange-500" />
                           : (assessment.compliance_score as number) >= 50
                           ? <AlertTriangle className="w-5 h-5 text-yellow-500" />
                           : <XCircle className="w-5 h-5 text-red-500" />}

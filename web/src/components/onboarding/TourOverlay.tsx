@@ -57,7 +57,7 @@ export default function TourOverlay() {
         <div style={{ fontSize: '11px', color: '#475569', marginBottom: '6px' }}>
           {tourState.currentStop + 1} of {totalStops}
         </div>
-        <div style={{ fontSize: '14px', fontWeight: 600, color: '#f1f5f9', marginBottom: '8px' }}>
+        <div style={{ fontSize: '14px', fontWeight: 600, color: '#374151', marginBottom: '8px' }}>
           {stop.heading}
         </div>
         <div style={{ fontSize: '12px', color: '#94a3b8', lineHeight: 1.5, marginBottom: '16px' }}>

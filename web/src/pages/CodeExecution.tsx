@@ -67,7 +67,7 @@ export default function CodeExecution() {
           <Code2 size={18} className="inline mr-2" style={{ color: '#3b82f6' }} />
           Code Execution
         </h1>
-        <p className="text-xs mt-1" style={{ color: '#71717a' }}>
+        <p className="text-xs mt-1" style={{ color: '#9ca3af' }}>
           Submit autonomous code tasks, plan changes, track execution status
         </p>
       </div>
@@ -83,41 +83,41 @@ export default function CodeExecution() {
       {/* Execute */}
       {tab === 'execute' && (
         <div className="space-y-4">
-          <div className="sage-card" style={{ background: '#1c1c1e', borderColor: '#2a2a2e' }}>
+          <div className="sage-card" style={{ background: '#ffffff', borderColor: '#e5e7eb' }}>
             <h2 className="text-sm font-semibold mb-3" style={{ color: '#e4e4e7' }}>
-              <Play size={14} className="inline mr-1.5" style={{ color: '#10b981' }} />
+              <Play size={14} className="inline mr-1.5" style={{ color: '#f97316' }} />
               Submit Code Task
             </h2>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs mb-1" style={{ color: '#71717a' }}>Task Description</label>
+                <label className="block text-xs mb-1" style={{ color: '#9ca3af' }}>Task Description</label>
                 <textarea
                   value={task}
                   onChange={e => setTask(e.target.value)}
                   rows={4}
                   placeholder="Describe the code task... e.g., 'Add input validation to the user registration endpoint'"
                   className="w-full text-sm px-3 py-2"
-                  style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #2a2a2e', borderRadius: 8, outline: 'none', resize: 'vertical' }}
+                  style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #e5e7eb', borderRadius: 8, outline: 'none', resize: 'vertical' }}
                 />
               </div>
               <div className="flex gap-3">
                 <div className="flex-1">
-                  <label className="block text-xs mb-1" style={{ color: '#71717a' }}>Workspace (optional)</label>
+                  <label className="block text-xs mb-1" style={{ color: '#9ca3af' }}>Workspace (optional)</label>
                   <input
                     value={workspace}
                     onChange={e => setWorkspace(e.target.value)}
                     placeholder="/path/to/project"
                     className="w-full text-sm px-3 py-2"
-                    style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #2a2a2e', borderRadius: 8, outline: 'none' }}
+                    style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #e5e7eb', borderRadius: 8, outline: 'none' }}
                   />
                 </div>
                 <div style={{ width: 140 }}>
-                  <label className="block text-xs mb-1" style={{ color: '#71717a' }}>Language</label>
+                  <label className="block text-xs mb-1" style={{ color: '#9ca3af' }}>Language</label>
                   <select
                     value={language}
                     onChange={e => setLanguage(e.target.value)}
                     className="w-full text-sm px-3 py-2"
-                    style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #2a2a2e', borderRadius: 8 }}
+                    style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #e5e7eb', borderRadius: 8 }}
                   >
                     <option value="python">Python</option>
                     <option value="typescript">TypeScript</option>
@@ -141,7 +141,7 @@ export default function CodeExecution() {
 
           {/* Execution result */}
           {executeMutation.isSuccess && executeMutation.data && (
-            <div className="sage-card" style={{ background: '#1c1c1e', borderColor: '#2a2a2e' }}>
+            <div className="sage-card" style={{ background: '#ffffff', borderColor: '#e5e7eb' }}>
               <div className="flex items-center gap-2 mb-2">
                 <CheckCircle2 size={14} style={{ color: '#22c55e' }} />
                 <span className="text-sm font-medium" style={{ color: '#e4e4e7' }}>Task Submitted</span>
@@ -149,7 +149,7 @@ export default function CodeExecution() {
                   <span className="sage-tag" style={{ fontSize: '10px' }}>ID: {executeMutation.data.run_id}</span>
                 )}
               </div>
-              <pre className="text-xs p-3 overflow-auto" style={{ background: '#111113', color: '#a1a1aa', borderRadius: 6, maxHeight: 300 }}>
+              <pre className="text-xs p-3 overflow-auto" style={{ background: '#111113', color: '#6b7280', borderRadius: 6, maxHeight: 300 }}>
                 {JSON.stringify(executeMutation.data, null, 2)}
               </pre>
             </div>
@@ -164,32 +164,32 @@ export default function CodeExecution() {
 
       {/* Plan */}
       {tab === 'plan' && (
-        <div className="sage-card" style={{ background: '#1c1c1e', borderColor: '#2a2a2e' }}>
+        <div className="sage-card" style={{ background: '#ffffff', borderColor: '#e5e7eb' }}>
           <h2 className="text-sm font-semibold mb-3" style={{ color: '#e4e4e7' }}>
             <GitBranch size={14} className="inline mr-1.5" style={{ color: '#a78bfa' }} />
             Plan Code Changes
           </h2>
           <div className="space-y-3">
             <div>
-              <label className="block text-xs mb-1" style={{ color: '#71717a' }}>Task</label>
+              <label className="block text-xs mb-1" style={{ color: '#9ca3af' }}>Task</label>
               <textarea
                 value={planTask}
                 onChange={e => setPlanTask(e.target.value)}
                 rows={3}
                 placeholder="Describe what you want to accomplish..."
                 className="w-full text-sm px-3 py-2"
-                style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #2a2a2e', borderRadius: 8, outline: 'none', resize: 'vertical' }}
+                style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #e5e7eb', borderRadius: 8, outline: 'none', resize: 'vertical' }}
               />
             </div>
             <div>
-              <label className="block text-xs mb-1" style={{ color: '#71717a' }}>Context (optional)</label>
+              <label className="block text-xs mb-1" style={{ color: '#9ca3af' }}>Context (optional)</label>
               <textarea
                 value={planContext}
                 onChange={e => setPlanContext(e.target.value)}
                 rows={2}
                 placeholder="Additional context, constraints, or relevant code..."
                 className="w-full text-sm px-3 py-2"
-                style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #2a2a2e', borderRadius: 8, outline: 'none', resize: 'vertical' }}
+                style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #e5e7eb', borderRadius: 8, outline: 'none', resize: 'vertical' }}
               />
             </div>
             <button
@@ -203,8 +203,8 @@ export default function CodeExecution() {
 
           {planMutation.isSuccess && planMutation.data && (
             <div className="mt-4">
-              <h3 className="text-xs font-semibold mb-2" style={{ color: '#71717a' }}>Generated Plan</h3>
-              <pre className="text-xs p-3 overflow-auto" style={{ background: '#111113', color: '#a1a1aa', borderRadius: 6, maxHeight: 400 }}>
+              <h3 className="text-xs font-semibold mb-2" style={{ color: '#9ca3af' }}>Generated Plan</h3>
+              <pre className="text-xs p-3 overflow-auto" style={{ background: '#111113', color: '#6b7280', borderRadius: 6, maxHeight: 400 }}>
                 {typeof planMutation.data === 'string' ? planMutation.data : JSON.stringify(planMutation.data, null, 2)}
               </pre>
             </div>
@@ -214,7 +214,7 @@ export default function CodeExecution() {
 
       {/* Repo Map */}
       {tab === 'repomap' && (
-        <div className="sage-card" style={{ background: '#1c1c1e', borderColor: '#2a2a2e' }}>
+        <div className="sage-card" style={{ background: '#ffffff', borderColor: '#e5e7eb' }}>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold" style={{ color: '#e4e4e7' }}>
               <FileCode size={14} className="inline mr-1.5" style={{ color: '#a78bfa' }} />
@@ -231,7 +231,7 @@ export default function CodeExecution() {
             )}
           </div>
           {repoMap?.map ? (
-            <pre className="text-xs overflow-auto p-3" style={{ background: '#111113', color: '#a1a1aa', borderRadius: 6, maxHeight: 500, whiteSpace: 'pre-wrap' }}>
+            <pre className="text-xs overflow-auto p-3" style={{ background: '#111113', color: '#6b7280', borderRadius: 6, maxHeight: 500, whiteSpace: 'pre-wrap' }}>
               {repoMap.map}
             </pre>
           ) : (
@@ -246,7 +246,7 @@ export default function CodeExecution() {
       {/* Status tracking */}
       {tab === 'history' && (
         <div className="space-y-4">
-          <div className="sage-card" style={{ background: '#1c1c1e', borderColor: '#2a2a2e' }}>
+          <div className="sage-card" style={{ background: '#ffffff', borderColor: '#e5e7eb' }}>
             <h2 className="text-sm font-semibold mb-3" style={{ color: '#e4e4e7' }}>
               <Eye size={14} className="inline mr-1.5" style={{ color: '#3b82f6' }} />
               Track Execution
@@ -257,13 +257,13 @@ export default function CodeExecution() {
                 onChange={e => setTrackingId(e.target.value)}
                 placeholder="Enter run ID..."
                 className="flex-1 text-sm px-3 py-2"
-                style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #2a2a2e', borderRadius: 8, outline: 'none' }}
+                style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #e5e7eb', borderRadius: 8, outline: 'none' }}
               />
             </div>
           </div>
 
           {statusData && (
-            <div className="sage-card" style={{ background: '#1c1c1e', borderColor: '#2a2a2e' }}>
+            <div className="sage-card" style={{ background: '#ffffff', borderColor: '#e5e7eb' }}>
               <div className="flex items-center gap-2 mb-3">
                 {statusData.status === 'completed' ? (
                   <CheckCircle2 size={14} style={{ color: '#22c55e' }} />
@@ -287,7 +287,7 @@ export default function CodeExecution() {
                 </button>
               )}
 
-              <pre className="text-xs p-3 overflow-auto" style={{ background: '#111113', color: '#a1a1aa', borderRadius: 6, maxHeight: 300 }}>
+              <pre className="text-xs p-3 overflow-auto" style={{ background: '#111113', color: '#6b7280', borderRadius: 6, maxHeight: 300 }}>
                 {JSON.stringify(statusData, null, 2)}
               </pre>
             </div>

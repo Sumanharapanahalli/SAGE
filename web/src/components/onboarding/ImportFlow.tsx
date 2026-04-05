@@ -86,7 +86,7 @@ export default function ImportFlow({ llmConnected }: ImportFlowProps) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '20px 0' }}>
           {['Reading README files', 'Reading docs / specs', 'Reading source files', 'Generating solution YAML...'].map((label, i) => (
             <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: i < 3 ? 'var(--sage-sidebar-text, #94a3b8)' : 'var(--sage-sidebar-active-text, #f1f5f9)' }}>
-              <span style={{ width: 16, textAlign: 'center', color: i < 3 ? '#10b981' : '#6366f1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ width: 16, textAlign: 'center', color: i < 3 ? '#f97316' : '#6366f1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {i < 3 ? '\u2713' : (scanError ? '\u2715' : <span style={spinnerStyle} />)}
               </span>
               {label}

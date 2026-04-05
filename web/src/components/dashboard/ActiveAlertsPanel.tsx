@@ -5,7 +5,7 @@ interface Props { entries: AuditEntry[] }
 const SEVERITY_STYLES: Record<string, string> = {
   RED: 'bg-red-100 text-red-700 border-red-200',
   AMBER: 'bg-amber-100 text-amber-700 border-amber-200',
-  GREEN: 'bg-green-100 text-green-700 border-green-200',
+  GREEN: 'bg-orange-100 text-orange-700 border-orange-200',
 }
 
 function getSeverity(entry: AuditEntry): string {

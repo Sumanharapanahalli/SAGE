@@ -67,7 +67,7 @@ function ProposalCard({ p, approverIdentity }: { p: Proposal; approverIdentity: 
   const hasPayload = p.payload && Object.keys(p.payload).length > 0
 
   return (
-    <div className="bg-gray-900 border border-gray-700 rounded-lg overflow-hidden">
+    <div className="bg-white border border-gray-700 rounded-lg overflow-hidden">
       {/* Main row */}
       <div className="p-3">
         <div className="flex items-start gap-2 flex-wrap">
@@ -118,7 +118,7 @@ function ProposalCard({ p, approverIdentity }: { p: Proposal; approverIdentity: 
                 <p className="text-xs text-gray-300 leading-relaxed">{cd.summary}</p>
               )}
               <div className="flex items-center gap-2">
-                <span className={`text-[10px] font-mono px-2 py-0.5 rounded ${cd.tests_passed ? 'bg-green-900/60 text-green-300' : 'bg-red-900/60 text-red-300'}`}>
+                <span className={`text-[10px] font-mono px-2 py-0.5 rounded ${cd.tests_passed ? 'bg-orange-900/60 text-green-300' : 'bg-red-900/60 text-red-300'}`}>
                   Tests: {cd.tests_passed ? 'PASS' : 'FAIL'}
                 </span>
                 {cd.written_files && cd.written_files.length > 0 && (
@@ -142,7 +142,7 @@ function ProposalCard({ p, approverIdentity }: { p: Proposal; approverIdentity: 
             </div>
             )
           })() : (
-            <pre className="mt-2 bg-gray-800 rounded p-2 text-[10px] text-gray-400 overflow-x-auto max-h-40">
+            <pre className="mt-2 bg-gray-50 rounded p-2 text-[10px] text-gray-400 overflow-x-auto max-h-40">
               {JSON.stringify(p.payload, null, 2)}
             </pre>
           )
@@ -159,7 +159,7 @@ function ProposalCard({ p, approverIdentity }: { p: Proposal; approverIdentity: 
         {rejecting ? (
           <div className="mt-2 flex gap-2">
             <input
-              className="flex-1 bg-gray-800 border border-gray-600 rounded px-2 py-1 text-xs text-gray-200 placeholder-gray-500"
+              className="flex-1 bg-gray-50 border border-gray-600 rounded px-2 py-1 text-xs text-gray-200 placeholder-gray-500"
               placeholder="Reason for rejection (optional)…"
               value={rejectNote}
               onChange={e => setRejectNote(e.target.value)}
@@ -181,7 +181,7 @@ function ProposalCard({ p, approverIdentity }: { p: Proposal; approverIdentity: 
             <button
               onClick={() => approveMut.mutate()}
               disabled={approveMut.isPending}
-              className="text-xs px-3 py-1.5 rounded bg-green-700 hover:bg-green-600 disabled:opacity-50 text-white flex items-center gap-1"
+              className="text-xs px-3 py-1.5 rounded bg-orange-700 hover:bg-orange-600 disabled:opacity-50 text-white flex items-center gap-1"
             >
               {approveMut.isPending
                 ? <><Loader2 size={11} className="animate-spin" /> Approving…</>
@@ -238,7 +238,7 @@ function PendingApprovalsPanel() {
   })
 
   return (
-    <div className="bg-gray-800 border border-gray-700 rounded-xl p-4 lg:col-span-3">
+    <div className="bg-gray-50 border border-gray-700 rounded-xl p-4 lg:col-span-3">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold text-gray-200 flex items-center gap-2">
           <Clock size={14} className="text-yellow-400" />
@@ -257,7 +257,7 @@ function PendingApprovalsPanel() {
       {/* Approving-as identity input */}
       <div className="mb-3">
         <input
-          className="w-full bg-gray-900 border border-gray-600 rounded px-2 py-1.5 text-xs text-gray-200 placeholder-gray-500"
+          className="w-full bg-white border border-gray-600 rounded px-2 py-1.5 text-xs text-gray-200 placeholder-gray-500"
           placeholder="Approving as… (e.g. suman, admin)"
           value={approverIdentity}
           onChange={e => setApproverIdentity(e.target.value)}
@@ -272,7 +272,7 @@ function PendingApprovalsPanel() {
 
       {!isLoading && proposals.length === 0 && (
         <div className="text-xs text-gray-500 py-3 flex items-center gap-2">
-          <CheckCircle2 size={14} className="text-green-500" />
+          <CheckCircle2 size={14} className="text-orange-500" />
           All clear — no proposals awaiting review.
         </div>
       )}
@@ -295,7 +295,7 @@ function PendingApprovalsPanel() {
                   <button
                     onClick={() => batchMut.mutate(groupIds)}
                     disabled={batchMut.isPending}
-                    className="text-[10px] px-2 py-1 rounded bg-green-800 hover:bg-green-700 disabled:opacity-50 text-green-200 flex items-center gap-1"
+                    className="text-[10px] px-2 py-1 rounded bg-orange-800 hover:bg-orange-700 disabled:opacity-50 text-orange-200 flex items-center gap-1"
                   >
                     {batchMut.isPending
                       ? <><Loader2 size={9} className="animate-spin" /> Approving…</>

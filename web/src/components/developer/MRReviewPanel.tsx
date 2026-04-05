@@ -20,23 +20,23 @@ export default function MRReviewPanel() {
         <div>
           <label className="text-xs text-gray-500 mb-1 block">Project ID</label>
           <input type="number" value={projectId} onChange={(e) => setProjectId(e.target.value)}
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="7" />
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="7" />
         </div>
         <div>
           <label className="text-xs text-gray-500 mb-1 block">MR IID</label>
           <input type="number" value={mrIid} onChange={(e) => setMrIid(e.target.value)}
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="15" />
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="15" />
         </div>
       </div>
       {isError && <p className="text-sm text-red-500 mb-2">{String((error as Error)?.message)}</p>}
       <button disabled={isPending || !projectId || !mrIid} onClick={() => mutate()}
-        className="flex items-center gap-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white text-sm font-medium px-4 py-2 rounded-lg mb-4 transition-colors">
+        className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white text-sm font-medium px-4 py-2 rounded-lg mb-4 transition-colors">
         {isPending ? 'Reviewing (ReAct loop running)...' : 'Review MR'}
       </button>
       {result && (
         <div className="border border-gray-200 rounded-lg p-4 space-y-3">
           <div className="flex items-center gap-2">
-            {result.approved ? <CheckCircle className="text-green-500" size={18} /> : <XCircle className="text-red-400" size={18} />}
+            {result.approved ? <CheckCircle className="text-orange-500" size={18} /> : <XCircle className="text-red-400" size={18} />}
             <span className="font-semibold text-sm">{result.approved ? 'Approved' : 'Changes Required'}</span>
             <span className="text-xs text-gray-400 ml-auto font-mono">{result.trace_id?.slice(0, 8)}</span>
           </div>

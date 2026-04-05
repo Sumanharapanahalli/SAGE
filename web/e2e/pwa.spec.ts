@@ -10,7 +10,7 @@ test.describe('PWA Configuration', () => {
     expect(manifest.short_name).toBe('SAGE')
     expect(manifest.display).toBe('standalone')
     expect(manifest.background_color).toBe('#0a0a0c')
-    expect(manifest.theme_color).toBe('#3b82f6')
+    expect(manifest.theme_color).toBe('#f97316')
     expect(manifest.start_url).toBe('/')
     expect(manifest.icons).toBeDefined()
     expect(manifest.icons.length).toBeGreaterThan(0)
@@ -20,7 +20,7 @@ test.describe('PWA Configuration', () => {
     await page.goto('/')
     // Theme color meta tag
     const themeColor = page.locator('meta[name="theme-color"]')
-    await expect(themeColor).toHaveAttribute('content', '#3b82f6')
+    await expect(themeColor).toHaveAttribute('content', '#f97316')
 
     // Apple meta tags
     const appleCapable = page.locator('meta[name="apple-mobile-web-app-capable"]')

@@ -24,7 +24,7 @@ const RISK_STYLES: Record<Proposal['risk_class'], { dot: string; badge: string; 
   EXTERNAL:      { dot: '#f97316', badge: 'bg-orange-900 text-orange-300', border: '#f97316' },
   STATEFUL:      { dot: '#eab308', badge: 'bg-yellow-900 text-yellow-300', border: '#eab308' },
   EPHEMERAL:     { dot: '#3b82f6', badge: 'bg-blue-900 text-blue-300',   border: '#3b82f6' },
-  INFORMATIONAL: { dot: '#71717a', badge: 'bg-zinc-800 text-zinc-400',   border: '#71717a' },
+  INFORMATIONAL: { dot: '#71717a', badge: 'bg-gray-50 text-gray-500',   border: '#71717a' },
 }
 
 // ---------------------------------------------------------------------------
@@ -125,11 +125,11 @@ function ProposalRow({
       onClick={onClick}
       className="w-full text-left px-3 py-3 flex items-start gap-2.5 relative transition-colors"
       style={{
-        backgroundColor: selected ? '#3f3f46' : 'transparent',
+        backgroundColor: selected ? '#d1d5db' : 'transparent',
         borderLeft: selected ? `3px solid ${style.border}` : '3px solid transparent',
-        borderBottom: '1px solid #27272a',
+        borderBottom: '1px solid #e5e7eb',
       }}
-      onMouseEnter={e => { if (!selected) (e.currentTarget as HTMLElement).style.backgroundColor = '#27272a' }}
+      onMouseEnter={e => { if (!selected) (e.currentTarget as HTMLElement).style.backgroundColor = '#e5e7eb' }}
       onMouseLeave={e => { if (!selected) (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}
     >
       {/* Unread dot */}
@@ -166,15 +166,15 @@ function ProposalRow({
           </span>
           <span
             className="text-xs font-medium truncate"
-            style={{ color: '#f4f4f5' }}
+            style={{ color: '#374151' }}
           >
             {formatActionType(proposal.action_type)}
           </span>
         </div>
-        <p className="text-xs truncate" style={{ color: '#a1a1aa' }}>
+        <p className="text-xs truncate" style={{ color: '#6b7280' }}>
           {proposal.description}
         </p>
-        <div className="flex items-center gap-1 mt-1" style={{ color: '#52525b' }}>
+        <div className="flex items-center gap-1 mt-1" style={{ color: '#9ca3af' }}>
           <Clock size={10} />
           <span className="text-[10px]">{relativeTime(proposal.created_at)}</span>
         </div>
@@ -218,10 +218,10 @@ function DetailPanel({
     return (
       <div
         className="flex-1 flex flex-col items-center justify-center"
-        style={{ backgroundColor: '#18181b' }}
+        style={{ backgroundColor: '#ffffff' }}
       >
-        <Inbox size={40} style={{ color: '#3f3f46' }} />
-        <p className="mt-3 text-sm font-medium" style={{ color: '#52525b' }}>
+        <Inbox size={40} style={{ color: '#d1d5db' }} />
+        <p className="mt-3 text-sm font-medium" style={{ color: '#9ca3af' }}>
           Select a proposal to review
         </p>
       </div>
@@ -256,12 +256,12 @@ function DetailPanel({
   return (
     <div
       className="flex-1 flex flex-col overflow-hidden"
-      style={{ backgroundColor: '#18181b' }}
+      style={{ backgroundColor: '#ffffff' }}
     >
       {/* Detail header */}
       <div
         className="px-6 py-4 shrink-0"
-        style={{ borderBottom: '1px solid #27272a' }}
+        style={{ borderBottom: '1px solid #e5e7eb' }}
       >
         <div className="flex items-start gap-3">
           <div className="flex-1 min-w-0">
@@ -275,21 +275,21 @@ function DetailPanel({
                 </span>
               )}
               {proposal.expires_at && (
-                <span className="text-xs font-mono" style={{ color: '#71717a' }}>
+                <span className="text-xs font-mono" style={{ color: '#9ca3af' }}>
                   expires in {formatCountdown(proposal.expires_at)}
                 </span>
               )}
             </div>
-            <h2 className="text-base font-semibold" style={{ color: '#f4f4f5' }}>
+            <h2 className="text-base font-semibold" style={{ color: '#374151' }}>
               {formatActionType(proposal.action_type)}
             </h2>
-            <p className="text-sm mt-0.5" style={{ color: '#a1a1aa' }}>
+            <p className="text-sm mt-0.5" style={{ color: '#6b7280' }}>
               {proposal.description}
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-3 mt-2 text-xs" style={{ color: '#52525b' }}>
-          <span>Proposed by <span style={{ color: '#71717a' }}>{proposal.proposed_by}</span></span>
+        <div className="flex items-center gap-3 mt-2 text-xs" style={{ color: '#9ca3af' }}>
+          <span>Proposed by <span style={{ color: '#9ca3af' }}>{proposal.proposed_by}</span></span>
           <span>·</span>
           <span>{relativeTime(proposal.created_at)}</span>
           <span>·</span>
@@ -314,15 +314,15 @@ function DetailPanel({
 
         {/* Payload block */}
         <div className="mb-4">
-          <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#52525b' }}>
+          <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#9ca3af' }}>
             Payload
           </p>
           {proposal.action_type === 'code_diff' && proposal.payload?.diff ? (
             <div
               className="text-xs overflow-auto p-4 font-mono leading-relaxed"
               style={{
-                backgroundColor: '#09090b',
-                border: '1px solid #27272a',
+                backgroundColor: '#fafafa',
+                border: '1px solid #e5e7eb',
                 maxHeight: '320px',
               }}
             >
@@ -353,9 +353,9 @@ function DetailPanel({
             <pre
               className="text-xs overflow-auto p-4 font-mono leading-relaxed"
               style={{
-                backgroundColor: '#09090b',
-                color: '#a1a1aa',
-                border: '1px solid #27272a',
+                backgroundColor: '#fafafa',
+                color: '#6b7280',
+                border: '1px solid #e5e7eb',
                 maxHeight: '320px',
                 whiteSpace: 'pre-wrap',
                 wordBreak: 'break-all',
@@ -370,18 +370,18 @@ function DetailPanel({
       {/* Action area */}
       <div
         className="px-6 py-4 shrink-0 space-y-3"
-        style={{ borderTop: '1px solid #27272a', backgroundColor: '#09090b' }}
+        style={{ borderTop: '1px solid #e5e7eb', backgroundColor: '#fafafa' }}
       >
         {/* Approving as */}
         <div className="flex items-center gap-2">
-          <span className="text-xs shrink-0" style={{ color: '#52525b' }}>Approving as</span>
+          <span className="text-xs shrink-0" style={{ color: '#9ca3af' }}>Approving as</span>
           <input
             type="text"
             value={approver}
             onChange={e => setApprover(e.target.value)}
             placeholder="your name"
             className="flex-1 text-xs px-2 py-1 bg-transparent border-b outline-none"
-            style={{ borderColor: '#3f3f46', color: '#f4f4f5' }}
+            style={{ borderColor: '#d1d5db', color: '#374151' }}
           />
         </div>
 
@@ -393,9 +393,9 @@ function DetailPanel({
           placeholder="Optional context or feedback…"
           className="w-full text-xs px-3 py-2 resize-none outline-none"
           style={{
-            backgroundColor: '#18181b',
-            border: '1px solid #3f3f46',
-            color: '#f4f4f5',
+            backgroundColor: '#ffffff',
+            border: '1px solid #d1d5db',
+            color: '#374151',
           }}
         />
 
@@ -588,20 +588,20 @@ export default function Approvals() {
   return (
     <div
       className="flex h-full overflow-hidden"
-      style={{ backgroundColor: '#09090b', margin: '-24px' }}
+      style={{ backgroundColor: '#fafafa', margin: '-24px' }}
     >
       {/* Left panel — inbox list */}
       <div
         className="flex flex-col shrink-0 overflow-hidden"
-        style={{ width: '320px', backgroundColor: '#18181b', borderRight: '1px solid #27272a' }}
+        style={{ width: '320px', backgroundColor: '#ffffff', borderRight: '1px solid #e5e7eb' }}
       >
         {/* Panel header */}
         <div
           className="px-4 py-3 shrink-0 flex items-center gap-2"
-          style={{ borderBottom: '1px solid #27272a' }}
+          style={{ borderBottom: '1px solid #e5e7eb' }}
         >
-          <Inbox size={15} style={{ color: '#71717a' }} />
-          <span className="text-sm font-semibold flex-1" style={{ color: '#f4f4f5' }}>
+          <Inbox size={15} style={{ color: '#9ca3af' }} />
+          <span className="text-sm font-semibold flex-1" style={{ color: '#374151' }}>
             Pending Approvals
           </span>
           {pendingCount > 0 && (
@@ -618,7 +618,7 @@ export default function Approvals() {
         {showCheckboxes && (
           <div
             className="px-3 py-2 flex items-center gap-2 shrink-0"
-            style={{ borderBottom: '1px solid #27272a', backgroundColor: '#09090b' }}
+            style={{ borderBottom: '1px solid #e5e7eb', backgroundColor: '#fafafa' }}
           >
             <input
               type="checkbox"
@@ -629,7 +629,7 @@ export default function Approvals() {
               }}
               style={{ accentColor: '#f4f4f5' }}
             />
-            <span className="text-xs flex-1" style={{ color: '#71717a' }}>
+            <span className="text-xs flex-1" style={{ color: '#9ca3af' }}>
               {checkedIds.size > 0 ? `${checkedIds.size} selected` : 'Select all'}
             </span>
             {checkedIds.size > 0 && allLowRisk && (
@@ -644,7 +644,7 @@ export default function Approvals() {
               </button>
             )}
             {checkedIds.size > 0 && !allLowRisk && (
-              <span className="text-[10px]" style={{ color: '#52525b' }}>
+              <span className="text-[10px]" style={{ color: '#9ca3af' }}>
                 High-risk selected
               </span>
             )}
@@ -654,18 +654,18 @@ export default function Approvals() {
         {/* List */}
         <div className="flex-1 overflow-y-auto">
           {isLoading && (
-            <div className="flex items-center justify-center h-32 gap-2" style={{ color: '#52525b' }}>
+            <div className="flex items-center justify-center h-32 gap-2" style={{ color: '#9ca3af' }}>
               <RefreshCw size={14} className="animate-spin" />
               <span className="text-xs">Loading…</span>
             </div>
           )}
           {!isLoading && sorted.length === 0 && (
             <div className="flex flex-col items-center justify-center h-48 px-6 text-center">
-              <CheckSquare size={32} style={{ color: '#3f3f46' }} />
-              <p className="mt-3 text-sm font-medium" style={{ color: '#52525b' }}>
+              <CheckSquare size={32} style={{ color: '#d1d5db' }} />
+              <p className="mt-3 text-sm font-medium" style={{ color: '#9ca3af' }}>
                 No pending approvals
               </p>
-              <p className="mt-1 text-xs" style={{ color: '#3f3f46' }}>
+              <p className="mt-1 text-xs" style={{ color: '#d1d5db' }}>
                 Your agents are waiting for new tasks
               </p>
             </div>
@@ -691,10 +691,10 @@ export default function Approvals() {
         {/* Last updated */}
         <div
           className="px-3 py-2 flex items-center gap-1.5 shrink-0"
-          style={{ borderTop: '1px solid #27272a' }}
+          style={{ borderTop: '1px solid #e5e7eb' }}
         >
-          <RefreshCw size={10} style={{ color: '#3f3f46' }} />
-          <span className="text-[10px]" style={{ color: '#3f3f46' }}>
+          <RefreshCw size={10} style={{ color: '#d1d5db' }} />
+          <span className="text-[10px]" style={{ color: '#d1d5db' }}>
             Updated {secondsAgo}s ago
           </span>
         </div>

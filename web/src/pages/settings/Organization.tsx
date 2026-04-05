@@ -138,7 +138,7 @@ export default function Organization() {
         >
           {mutation.isPending ? 'Saving...' : 'Save Organization'}
         </button>
-        {saved && <span style={{ fontSize: 12, color: '#10b981' }}>Saved</span>}
+        {saved && <span style={{ fontSize: 12, color: '#f97316' }}>Saved</span>}
         {mutation.isError && <span style={{ fontSize: 12, color: '#ef4444' }}>Save failed — try again</span>}
       </div>
 

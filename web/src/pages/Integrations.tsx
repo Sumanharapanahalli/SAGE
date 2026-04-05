@@ -56,7 +56,7 @@ function ConnectModal({ onClose }: { onClose: () => void }) {
 
   if (result) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/50 p-4">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/50 p-4">
         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 text-center space-y-4">
           <div className="text-4xl">🔗</div>
           <h3 className="text-lg font-semibold text-gray-800">Connection URL Ready</h3>
@@ -87,7 +87,7 @@ function ConnectModal({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/50 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <div className="flex items-center gap-2">
@@ -274,7 +274,7 @@ export default function Integrations() {
               return (
                 <div
                   key={app.connected_account_id}
-                  className="flex items-center gap-2 p-3 rounded-lg border border-green-200 bg-green-50"
+                  className="flex items-center gap-2 p-3 rounded-lg border border-orange-200 bg-orange-50"
                 >
                   <span className="text-lg">{meta?.icon ?? '🔌'}</span>
                   <div className="min-w-0">
@@ -282,8 +282,8 @@ export default function Integrations() {
                       {meta?.label ?? app.app}
                     </div>
                     <div className="flex items-center gap-1 mt-0.5">
-                      <CheckCircle2 size={10} className="text-green-500" />
-                      <span className="text-[10px] text-green-600">{app.status}</span>
+                      <CheckCircle2 size={10} className="text-orange-500" />
+                      <span className="text-[10px] text-orange-600">{app.status}</span>
                     </div>
                   </div>
                 </div>

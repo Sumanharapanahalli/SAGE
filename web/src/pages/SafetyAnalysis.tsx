@@ -73,7 +73,7 @@ export default function SafetyAnalysis() {
           <ShieldAlert size={18} className="inline mr-2" style={{ color: '#ef4444' }} />
           Safety Analysis
         </h1>
-        <p className="text-xs mt-1" style={{ color: '#71717a' }}>
+        <p className="text-xs mt-1" style={{ color: '#9ca3af' }}>
           FMEA builder, ASIL/SIL classification, IEC 62304 software safety class
         </p>
       </div>
@@ -89,7 +89,7 @@ export default function SafetyAnalysis() {
       {/* FMEA Builder */}
       {tab === 'fmea' && (
         <div>
-          <div className="sage-card mb-4" style={{ background: '#1c1c1e', borderColor: '#2a2a2e' }}>
+          <div className="sage-card mb-4" style={{ background: '#ffffff', borderColor: '#e5e7eb' }}>
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-semibold" style={{ color: '#e4e4e7' }}>
                 Failure Mode & Effects Analysis
@@ -118,16 +118,16 @@ export default function SafetyAnalysis() {
                     const rpnColor = rpn >= 200 ? '#ef4444' : rpn >= 100 ? '#f59e0b' : '#22c55e'
                     return (
                       <tr key={i}>
-                        <td><input value={e.component} onChange={ev => updateEntry(i, 'component', ev.target.value)} className="w-full text-xs px-1.5 py-1" style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #2a2a2e', borderRadius: 4 }} /></td>
-                        <td><input value={e.failure_mode} onChange={ev => updateEntry(i, 'failure_mode', ev.target.value)} className="w-full text-xs px-1.5 py-1" style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #2a2a2e', borderRadius: 4 }} /></td>
-                        <td><input value={e.effect} onChange={ev => updateEntry(i, 'effect', ev.target.value)} className="w-full text-xs px-1.5 py-1" style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #2a2a2e', borderRadius: 4 }} /></td>
-                        <td><input type="number" min={1} max={10} value={e.severity} onChange={ev => updateEntry(i, 'severity', +ev.target.value)} className="w-full text-xs px-1 py-1 text-center" style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #2a2a2e', borderRadius: 4 }} /></td>
-                        <td><input type="number" min={1} max={10} value={e.occurrence} onChange={ev => updateEntry(i, 'occurrence', +ev.target.value)} className="w-full text-xs px-1 py-1 text-center" style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #2a2a2e', borderRadius: 4 }} /></td>
-                        <td><input type="number" min={1} max={10} value={e.detection} onChange={ev => updateEntry(i, 'detection', +ev.target.value)} className="w-full text-xs px-1 py-1 text-center" style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #2a2a2e', borderRadius: 4 }} /></td>
+                        <td><input value={e.component} onChange={ev => updateEntry(i, 'component', ev.target.value)} className="w-full text-xs px-1.5 py-1" style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #e5e7eb', borderRadius: 4 }} /></td>
+                        <td><input value={e.failure_mode} onChange={ev => updateEntry(i, 'failure_mode', ev.target.value)} className="w-full text-xs px-1.5 py-1" style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #e5e7eb', borderRadius: 4 }} /></td>
+                        <td><input value={e.effect} onChange={ev => updateEntry(i, 'effect', ev.target.value)} className="w-full text-xs px-1.5 py-1" style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #e5e7eb', borderRadius: 4 }} /></td>
+                        <td><input type="number" min={1} max={10} value={e.severity} onChange={ev => updateEntry(i, 'severity', +ev.target.value)} className="w-full text-xs px-1 py-1 text-center" style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #e5e7eb', borderRadius: 4 }} /></td>
+                        <td><input type="number" min={1} max={10} value={e.occurrence} onChange={ev => updateEntry(i, 'occurrence', +ev.target.value)} className="w-full text-xs px-1 py-1 text-center" style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #e5e7eb', borderRadius: 4 }} /></td>
+                        <td><input type="number" min={1} max={10} value={e.detection} onChange={ev => updateEntry(i, 'detection', +ev.target.value)} className="w-full text-xs px-1 py-1 text-center" style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #e5e7eb', borderRadius: 4 }} /></td>
                         <td style={{ color: rpnColor, fontWeight: 600, textAlign: 'center', fontSize: '12px' }}>{rpn}</td>
                         <td>
                           {entries.length > 1 && (
-                            <button onClick={() => removeEntry(i)} style={{ color: '#71717a', background: 'none', border: 'none', cursor: 'pointer' }}>
+                            <button onClick={() => removeEntry(i)} style={{ color: '#9ca3af', background: 'none', border: 'none', cursor: 'pointer' }}>
                               <Trash2 size={12} />
                             </button>
                           )}
@@ -147,7 +147,7 @@ export default function SafetyAnalysis() {
                 <Play size={12} />
                 {fmeaMutation.isPending ? 'Analyzing...' : 'Run FMEA'}
               </button>
-              <span className="text-xs" style={{ color: '#71717a' }}>
+              <span className="text-xs" style={{ color: '#9ca3af' }}>
                 {entries.length} entries, max RPN: {Math.max(...entries.map(e => e.severity * e.occurrence * e.detection))}
               </span>
             </div>
@@ -155,9 +155,9 @@ export default function SafetyAnalysis() {
 
           {/* FMEA Result */}
           {fmeaMutation.isSuccess && fmeaMutation.data && (
-            <div className="sage-card" style={{ background: '#1c1c1e', borderColor: '#2a2a2e' }}>
+            <div className="sage-card" style={{ background: '#ffffff', borderColor: '#e5e7eb' }}>
               <h3 className="text-sm font-semibold mb-2" style={{ color: '#e4e4e7' }}>FMEA Results</h3>
-              <pre className="text-xs overflow-auto p-3" style={{ background: '#111113', color: '#a1a1aa', borderRadius: 6, maxHeight: 300 }}>
+              <pre className="text-xs overflow-auto p-3" style={{ background: '#111113', color: '#6b7280', borderRadius: 6, maxHeight: 300 }}>
                 {JSON.stringify(fmeaMutation.data, null, 2)}
               </pre>
             </div>
@@ -168,51 +168,51 @@ export default function SafetyAnalysis() {
       {/* FTA Builder */}
       {tab === 'fta' && (
         <div>
-          <div className="sage-card mb-4" style={{ background: '#1c1c1e', borderColor: '#2a2a2e' }}>
+          <div className="sage-card mb-4" style={{ background: '#ffffff', borderColor: '#e5e7eb' }}>
             <h2 className="text-sm font-semibold mb-4" style={{ color: '#e4e4e7' }}>
               <Network size={14} className="inline mr-1.5" style={{ color: '#6366f1' }} />
               Fault Tree Analysis
             </h2>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs mb-1" style={{ color: '#71717a' }}>Top Event (Undesired Outcome)</label>
+                <label className="block text-xs mb-1" style={{ color: '#9ca3af' }}>Top Event (Undesired Outcome)</label>
                 <input
                   value={ftaTopEvent}
                   onChange={e => setFtaTopEvent(e.target.value)}
                   placeholder="e.g. System fails to detect hazard"
                   className="w-full text-sm px-3 py-2"
-                  style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #2a2a2e', borderRadius: 8, outline: 'none' }}
+                  style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #e5e7eb', borderRadius: 8, outline: 'none' }}
                 />
               </div>
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-xs font-medium" style={{ color: '#71717a' }}>Logic Gates</label>
+                  <label className="text-xs font-medium" style={{ color: '#9ca3af' }}>Logic Gates</label>
                   <button onClick={addFtaGate} className="sage-btn sage-btn-secondary" style={{ fontSize: '11px' }}>
                     <Plus size={11} /> Add Gate
                   </button>
                 </div>
                 <div className="space-y-3">
                   {ftaGates.map((gate, gi) => (
-                    <div key={gi} className="p-3" style={{ background: '#111113', borderRadius: 8, border: '1px solid #2a2a2e' }}>
+                    <div key={gi} className="p-3" style={{ background: '#111113', borderRadius: 8, border: '1px solid #e5e7eb' }}>
                       <div className="flex items-center gap-2 mb-2">
                         <input
                           value={gate.id}
                           onChange={e => updateFtaGate(gi, 'id', e.target.value)}
                           className="text-xs px-2 py-1 w-20"
-                          style={{ background: '#1c1c1e', color: '#e4e4e7', border: '1px solid #2a2a2e', borderRadius: 4 }}
+                          style={{ background: '#ffffff', color: '#e4e4e7', border: '1px solid #e5e7eb', borderRadius: 4 }}
                           placeholder="Gate ID"
                         />
                         <select
                           value={gate.type}
                           onChange={e => updateFtaGate(gi, 'type', e.target.value)}
                           className="text-xs px-2 py-1"
-                          style={{ background: '#1c1c1e', color: '#e4e4e7', border: '1px solid #2a2a2e', borderRadius: 4 }}
+                          style={{ background: '#ffffff', color: '#e4e4e7', border: '1px solid #e5e7eb', borderRadius: 4 }}
                         >
                           <option value="OR">OR Gate</option>
                           <option value="AND">AND Gate</option>
                         </select>
                         {ftaGates.length > 1 && (
-                          <button onClick={() => removeFtaGate(gi)} style={{ color: '#71717a', background: 'none', border: 'none', cursor: 'pointer', marginLeft: 'auto' }}>
+                          <button onClick={() => removeFtaGate(gi)} style={{ color: '#9ca3af', background: 'none', border: 'none', cursor: 'pointer', marginLeft: 'auto' }}>
                             <Trash2 size={12} />
                           </button>
                         )}
@@ -225,7 +225,7 @@ export default function SafetyAnalysis() {
                             onChange={e => updateFtaInput(gi, ii, e.target.value)}
                             placeholder={`Input event ${ii + 1}`}
                             className="w-full text-xs px-2 py-1"
-                            style={{ background: '#1c1c1e', color: '#e4e4e7', border: '1px solid #2a2a2e', borderRadius: 4 }}
+                            style={{ background: '#ffffff', color: '#e4e4e7', border: '1px solid #e5e7eb', borderRadius: 4 }}
                           />
                         ))}
                         <button
@@ -252,9 +252,9 @@ export default function SafetyAnalysis() {
           </div>
 
           {ftaMutation.isSuccess && ftaMutation.data && (
-            <div className="sage-card" style={{ background: '#1c1c1e', borderColor: '#2a2a2e' }}>
+            <div className="sage-card" style={{ background: '#ffffff', borderColor: '#e5e7eb' }}>
               <h3 className="text-sm font-semibold mb-2" style={{ color: '#e4e4e7' }}>FTA Results</h3>
-              <pre className="text-xs overflow-auto p-3" style={{ background: '#111113', color: '#a1a1aa', borderRadius: 6, maxHeight: 300 }}>
+              <pre className="text-xs overflow-auto p-3" style={{ background: '#111113', color: '#6b7280', borderRadius: 6, maxHeight: 300 }}>
                 {JSON.stringify(ftaMutation.data, null, 2)}
               </pre>
             </div>
@@ -270,14 +270,14 @@ export default function SafetyAnalysis() {
       {/* ASIL Classification */}
       {tab === 'asil' && (
         <div className="max-w-lg">
-          <div className="sage-card" style={{ background: '#1c1c1e', borderColor: '#2a2a2e' }}>
+          <div className="sage-card" style={{ background: '#ffffff', borderColor: '#e5e7eb' }}>
             <h2 className="text-sm font-semibold mb-4" style={{ color: '#e4e4e7' }}>
               ASIL Classification (ISO 26262)
             </h2>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs mb-1" style={{ color: '#71717a' }}>Severity (S0-S3)</label>
-                <select value={asilS} onChange={e => setAsilS(e.target.value)} className="w-full text-sm px-3 py-2" style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #2a2a2e', borderRadius: 8 }}>
+                <label className="block text-xs mb-1" style={{ color: '#9ca3af' }}>Severity (S0-S3)</label>
+                <select value={asilS} onChange={e => setAsilS(e.target.value)} className="w-full text-sm px-3 py-2" style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #e5e7eb', borderRadius: 8 }}>
                   <option value="S0">S0 — No injuries</option>
                   <option value="S1">S1 — Light/moderate injuries</option>
                   <option value="S2">S2 — Severe/life-threatening injuries</option>
@@ -285,8 +285,8 @@ export default function SafetyAnalysis() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs mb-1" style={{ color: '#71717a' }}>Exposure (E1-E4)</label>
-                <select value={asilE} onChange={e => setAsilE(e.target.value)} className="w-full text-sm px-3 py-2" style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #2a2a2e', borderRadius: 8 }}>
+                <label className="block text-xs mb-1" style={{ color: '#9ca3af' }}>Exposure (E1-E4)</label>
+                <select value={asilE} onChange={e => setAsilE(e.target.value)} className="w-full text-sm px-3 py-2" style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #e5e7eb', borderRadius: 8 }}>
                   <option value="E1">E1 — Very low probability</option>
                   <option value="E2">E2 — Low probability</option>
                   <option value="E3">E3 — Medium probability</option>
@@ -294,8 +294,8 @@ export default function SafetyAnalysis() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs mb-1" style={{ color: '#71717a' }}>Controllability (C1-C3)</label>
-                <select value={asilC} onChange={e => setAsilC(e.target.value)} className="w-full text-sm px-3 py-2" style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #2a2a2e', borderRadius: 8 }}>
+                <label className="block text-xs mb-1" style={{ color: '#9ca3af' }}>Controllability (C1-C3)</label>
+                <select value={asilC} onChange={e => setAsilC(e.target.value)} className="w-full text-sm px-3 py-2" style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #e5e7eb', borderRadius: 8 }}>
                   <option value="C1">C1 — Simply controllable</option>
                   <option value="C2">C2 — Normally controllable</option>
                   <option value="C3">C3 — Difficult to control</option>
@@ -311,7 +311,7 @@ export default function SafetyAnalysis() {
                   <span className="text-2xl font-bold" style={{ color: asilMutation.data.asil_level === 'D' ? '#ef4444' : asilMutation.data.asil_level === 'C' ? '#f59e0b' : '#22c55e' }}>
                     ASIL {asilMutation.data.asil_level ?? asilMutation.data.classification}
                   </span>
-                  <p className="text-xs mt-1" style={{ color: '#a1a1aa' }}>{asilMutation.data.description ?? ''}</p>
+                  <p className="text-xs mt-1" style={{ color: '#6b7280' }}>{asilMutation.data.description ?? ''}</p>
                 </div>
               </div>
             )}
@@ -322,14 +322,14 @@ export default function SafetyAnalysis() {
       {/* SIL Classification */}
       {tab === 'sil' && (
         <div className="max-w-lg">
-          <div className="sage-card" style={{ background: '#1c1c1e', borderColor: '#2a2a2e' }}>
+          <div className="sage-card" style={{ background: '#ffffff', borderColor: '#e5e7eb' }}>
             <h2 className="text-sm font-semibold mb-4" style={{ color: '#e4e4e7' }}>
               SIL Classification (IEC 61508)
             </h2>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs mb-1" style={{ color: '#71717a' }}>Target Failure Rate (per hour)</label>
-                <select value={silRate} onChange={e => setSilRate(e.target.value)} className="w-full text-sm px-3 py-2" style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #2a2a2e', borderRadius: 8 }}>
+                <label className="block text-xs mb-1" style={{ color: '#9ca3af' }}>Target Failure Rate (per hour)</label>
+                <select value={silRate} onChange={e => setSilRate(e.target.value)} className="w-full text-sm px-3 py-2" style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #e5e7eb', borderRadius: 8 }}>
                   <option value="1e-5">10^-5 (SIL 1)</option>
                   <option value="1e-6">10^-6 (SIL 2)</option>
                   <option value="1e-7">10^-7 (SIL 3)</option>
@@ -346,7 +346,7 @@ export default function SafetyAnalysis() {
                   <span className="text-2xl font-bold" style={{ color: '#a78bfa' }}>
                     SIL {silMutation.data.sil_level ?? silMutation.data.classification}
                   </span>
-                  <p className="text-xs mt-1" style={{ color: '#a1a1aa' }}>{silMutation.data.description ?? ''}</p>
+                  <p className="text-xs mt-1" style={{ color: '#6b7280' }}>{silMutation.data.description ?? ''}</p>
                 </div>
               </div>
             )}
@@ -357,14 +357,14 @@ export default function SafetyAnalysis() {
       {/* IEC 62304 */}
       {tab === 'iec62304' && (
         <div className="max-w-lg">
-          <div className="sage-card" style={{ background: '#1c1c1e', borderColor: '#2a2a2e' }}>
+          <div className="sage-card" style={{ background: '#ffffff', borderColor: '#e5e7eb' }}>
             <h2 className="text-sm font-semibold mb-4" style={{ color: '#e4e4e7' }}>
               IEC 62304 Software Safety Classification
             </h2>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs mb-1" style={{ color: '#71717a' }}>Risk Level</label>
-                <select value={iecRisk} onChange={e => setIecRisk(e.target.value)} className="w-full text-sm px-3 py-2" style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #2a2a2e', borderRadius: 8 }}>
+                <label className="block text-xs mb-1" style={{ color: '#9ca3af' }}>Risk Level</label>
+                <select value={iecRisk} onChange={e => setIecRisk(e.target.value)} className="w-full text-sm px-3 py-2" style={{ background: '#111113', color: '#e4e4e7', border: '1px solid #e5e7eb', borderRadius: 8 }}>
                   <option value="no_injury">No injury possible (Class A)</option>
                   <option value="injury_possible">Non-serious injury possible (Class B)</option>
                   <option value="serious_injury_possible">Serious injury possible (Class C)</option>
@@ -381,11 +381,11 @@ export default function SafetyAnalysis() {
                   <span className="text-2xl font-bold" style={{ color: iecMutation.data.safety_class === 'C' ? '#ef4444' : iecMutation.data.safety_class === 'B' ? '#f59e0b' : '#22c55e' }}>
                     Class {iecMutation.data.safety_class}
                   </span>
-                  <p className="text-xs mt-1" style={{ color: '#a1a1aa' }}>{iecMutation.data.description ?? ''}</p>
+                  <p className="text-xs mt-1" style={{ color: '#6b7280' }}>{iecMutation.data.description ?? ''}</p>
                   {iecMutation.data.requirements?.length > 0 && (
                     <div className="mt-3 text-left">
-                      <p className="text-xs font-semibold mb-1" style={{ color: '#71717a' }}>Requirements:</p>
-                      <ul className="text-xs space-y-0.5" style={{ color: '#a1a1aa' }}>
+                      <p className="text-xs font-semibold mb-1" style={{ color: '#9ca3af' }}>Requirements:</p>
+                      <ul className="text-xs space-y-0.5" style={{ color: '#6b7280' }}>
                         {iecMutation.data.requirements.map((r: string, i: number) => (
                           <li key={i}>- {r}</li>
                         ))}

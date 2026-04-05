@@ -14,20 +14,20 @@ const TASK_TYPE_COLORS: Record<string, { bg: string; color: string }> = {
   REVIEW:      { bg: 'rgba(234,179,8,0.1)',  color: '#facc15' },
   REVIEW_MR:   { bg: 'rgba(234,179,8,0.1)',  color: '#facc15' },
   TEST:        { bg: 'rgba(20,184,166,0.1)', color: '#2dd4bf' },
-  DOCUMENT:    { bg: 'rgba(113,113,122,0.1)', color: '#a1a1aa' },
+  DOCUMENT:    { bg: 'rgba(113,113,122,0.1)', color: '#6b7280' },
   PLAN:        { bg: 'rgba(139,92,246,0.1)', color: '#a78bfa' },
   PLAN_TASK:   { bg: 'rgba(139,92,246,0.1)', color: '#a78bfa' },
 }
 
 function taskTypeStyle(taskType: string) {
-  return TASK_TYPE_COLORS[taskType.toUpperCase()] ?? { bg: 'rgba(113,113,122,0.1)', color: '#a1a1aa' }
+  return TASK_TYPE_COLORS[taskType.toUpperCase()] ?? { bg: 'rgba(113,113,122,0.1)', color: '#6b7280' }
 }
 
 // ---------------------------------------------------------------------------
 // Status styling
 // ---------------------------------------------------------------------------
 const STATUS_STYLES: Record<string, { bg: string; color: string }> = {
-  pending:     { bg: 'rgba(113,113,122,0.15)', color: '#a1a1aa' },
+  pending:     { bg: 'rgba(113,113,122,0.15)', color: '#6b7280' },
   in_progress: { bg: 'rgba(59,130,246,0.15)',  color: '#60a5fa' },
   completed:   { bg: 'rgba(34,197,94,0.15)',   color: '#4ade80' },
   failed:      { bg: 'rgba(239,68,68,0.15)',   color: '#f87171' },
@@ -49,9 +49,9 @@ function FilterPill({ label, active, onClick }: { label: string; active: boolean
       onClick={onClick}
       style={{
         padding: '4px 12px', borderRadius: 999, fontSize: 11, fontWeight: 500, cursor: 'pointer',
-        background: active ? '#3f3f46' : 'transparent',
+        background: active ? '#d1d5db' : 'transparent',
         color: active ? '#f4f4f5' : '#71717a',
-        border: active ? 'none' : '1px solid #27272a',
+        border: active ? 'none' : '1px solid #e5e7eb',
       }}
     >
       {label}
@@ -82,7 +82,7 @@ function TaskRow({ task }: { task: QueueTask }) {
 
   return (
     <div className="sage-card" style={{
-      background: '#1c1c1e', borderColor: '#2a2a2e', padding: 0, overflow: 'hidden',
+      background: '#ffffff', borderColor: '#e5e7eb', padding: 0, overflow: 'hidden',
       borderLeft: `3px solid ${isSage ? '#a78bfa' : '#f97316'}`,
     }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '12px 16px' }}>
@@ -97,9 +97,9 @@ function TaskRow({ task }: { task: QueueTask }) {
             {task.feature_title || `${task.task_id.slice(0, 8)}…`}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
-            <span style={{ fontSize: 11, color: '#52525b', fontFamily: 'monospace' }}>{task.task_id.slice(0, 8)}</span>
-            <span style={{ fontSize: 11, color: '#3f3f46' }}>·</span>
-            <span style={{ fontSize: 11, color: '#52525b' }}>{new Date(task.created_at).toLocaleString()}</span>
+            <span style={{ fontSize: 11, color: '#9ca3af', fontFamily: 'monospace' }}>{task.task_id.slice(0, 8)}</span>
+            <span style={{ fontSize: 11, color: '#d1d5db' }}>·</span>
+            <span style={{ fontSize: 11, color: '#9ca3af' }}>{new Date(task.created_at).toLocaleString()}</span>
           </div>
           {task.error && (
             <div style={{ marginTop: 4, fontSize: 11, color: '#f87171', background: 'rgba(239,68,68,0.1)', padding: '4px 8px', borderRadius: 4 }}>
@@ -114,28 +114,28 @@ function TaskRow({ task }: { task: QueueTask }) {
           <GitBranch size={14} />
         </button>
         {hasPayload && (
-          <button onClick={() => setOpen(v => !v)} style={{ background: 'none', border: 'none', color: '#52525b', cursor: 'pointer' }}>
+          <button onClick={() => setOpen(v => !v)} style={{ background: 'none', border: 'none', color: '#9ca3af', cursor: 'pointer' }}>
             {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </button>
         )}
       </div>
       {showSubtasks && (
-        <div style={{ borderTop: '1px solid #27272a', padding: '8px 16px 8px 40px', background: '#151517' }}>
+        <div style={{ borderTop: '1px solid #e5e7eb', padding: '8px 16px 8px 40px', background: '#151517' }}>
           {subtasks.length > 0 ? subtasks.map((st: any, i: number) => (
             <div key={i} className="flex items-center gap-2 py-1" style={{ fontSize: 11 }}>
               <span style={{ color: st.status === 'completed' ? '#4ade80' : st.status === 'failed' ? '#f87171' : '#a1a1aa' }}>
                 {st.status === 'completed' ? <CheckCircle size={10} /> : st.status === 'failed' ? <XCircle size={10} /> : <Clock size={10} />}
               </span>
-              <span style={{ color: '#a1a1aa' }}>{st.description ?? st.task_type ?? `Subtask ${i + 1}`}</span>
+              <span style={{ color: '#6b7280' }}>{st.description ?? st.task_type ?? `Subtask ${i + 1}`}</span>
               <span className="sage-tag" style={{ fontSize: 9 }}>{st.status ?? 'pending'}</span>
             </div>
           )) : (
-            <span className="text-xs" style={{ color: '#52525b' }}>No subtasks</span>
+            <span className="text-xs" style={{ color: '#9ca3af' }}>No subtasks</span>
           )}
         </div>
       )}
       {open && hasPayload && (
-        <pre style={{ borderTop: '1px solid #27272a', padding: '12px 16px', fontSize: 11, fontFamily: 'monospace', color: '#a1a1aa', background: '#111113', margin: 0, maxHeight: 160, overflow: 'auto', whiteSpace: 'pre-wrap' }}>
+        <pre style={{ borderTop: '1px solid #e5e7eb', padding: '12px 16px', fontSize: 11, fontFamily: 'monospace', color: '#6b7280', background: '#111113', margin: 0, maxHeight: 160, overflow: 'auto', whiteSpace: 'pre-wrap' }}>
           {JSON.stringify(task.payload, null, 2)}
         </pre>
       )}
@@ -181,7 +181,7 @@ export default function Queue() {
 
   const STAT_ITEMS = [
     { label: 'Total',       value: stats.total,       color: '#e4e4e7' },
-    { label: 'Pending',     value: stats.pending,     color: '#a1a1aa' },
+    { label: 'Pending',     value: stats.pending,     color: '#6b7280' },
     { label: 'In Progress', value: stats.in_progress, color: '#60a5fa' },
     { label: 'Completed',   value: stats.completed,   color: '#4ade80' },
     { label: 'Failed',      value: stats.failed,      color: '#f87171' },
@@ -194,7 +194,7 @@ export default function Queue() {
           <ListOrdered size={18} style={{ color: '#3b82f6' }} />
           Task Queue
         </h1>
-        <p className="text-xs mt-1" style={{ color: '#71717a' }}>
+        <p className="text-xs mt-1" style={{ color: '#9ca3af' }}>
           Queued tasks from approved plans. Auto-refreshes every 5s.
         </p>
       </div>
@@ -202,9 +202,9 @@ export default function Queue() {
       {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12, marginBottom: 20 }}>
         {STAT_ITEMS.map(s => (
-          <div key={s.label} className="sage-card" style={{ background: '#1c1c1e', borderColor: '#2a2a2e', textAlign: 'center', padding: '16px 8px' }}>
+          <div key={s.label} className="sage-card" style={{ background: '#ffffff', borderColor: '#e5e7eb', textAlign: 'center', padding: '16px 8px' }}>
             <div style={{ fontSize: 24, fontWeight: 700, color: s.color }}>{s.value}</div>
-            <div style={{ fontSize: 11, color: '#52525b', marginTop: 2 }}>{s.label}</div>
+            <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>{s.label}</div>
           </div>
         ))}
       </div>
@@ -212,13 +212,13 @@ export default function Queue() {
       {/* Filters */}
       <div style={{ display: 'flex', gap: 16, marginBottom: 16, alignItems: 'center' }}>
         <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-          <span style={{ fontSize: 10, color: '#52525b', fontWeight: 600, textTransform: 'uppercase', marginRight: 4 }}>Status</span>
+          <span style={{ fontSize: 10, color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', marginRight: 4 }}>Status</span>
           {(['all', 'pending', 'in_progress', 'completed', 'failed'] as StatusFilter[]).map(f => (
             <FilterPill key={f} label={f === 'all' ? 'All' : f.replace('_', ' ')} active={statusFilter === f} onClick={() => setStatusFilter(f)} />
           ))}
         </div>
         <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-          <span style={{ fontSize: 10, color: '#52525b', fontWeight: 600, textTransform: 'uppercase', marginRight: 4 }}>Source</span>
+          <span style={{ fontSize: 10, color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', marginRight: 4 }}>Source</span>
           {(['all', 'sage', 'solution'] as SourceFilter[]).map(f => (
             <FilterPill key={f} label={f === 'all' ? 'All' : f === 'sage' ? 'SAGE' : 'Solution'} active={sourceFilter === f} onClick={() => setSourceFilter(f)} />
           ))}
@@ -227,14 +227,14 @@ export default function Queue() {
 
       {/* Task list */}
       {isLoading ? (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 192, color: '#71717a', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 192, color: '#9ca3af', gap: 8 }}>
           <Loader2 className="animate-spin" size={18} /> Loading…
         </div>
       ) : allTasks.length === 0 ? (
         <div className="sage-empty">
           <ListOrdered size={32} />
           <p className="text-sm">No tasks found</p>
-          <p style={{ fontSize: 12, color: '#52525b' }}>
+          <p style={{ fontSize: 12, color: '#9ca3af' }}>
             Tasks appear here when approved plans are executed.
             {(statusFilter !== 'all' || sourceFilter !== 'all') && ' Try removing your filters.'}
           </p>

@@ -14,7 +14,7 @@ export default function MonitorStatusPanel({ data }: Props) {
     <div className="space-y-4">
       {/* Overall status */}
       <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm flex items-center gap-3">
-        <span className={`w-3 h-3 rounded-full ${data.running ? 'bg-green-500 animate-pulse' : 'bg-gray-300'}`} />
+        <span className={`w-3 h-3 rounded-full ${data.running ? 'bg-orange-500 animate-pulse' : 'bg-gray-300'}`} />
         <div>
           <div className="text-sm font-semibold text-gray-800">
             Monitor {data.running ? 'Running' : 'Idle'}
@@ -36,7 +36,7 @@ export default function MonitorStatusPanel({ data }: Props) {
             const active = data.active_threads.includes(source)
             return (
               <div key={key} className="flex items-center gap-3 p-3 border border-gray-100 rounded-lg">
-                <span className={`w-2.5 h-2.5 rounded-full ${active ? 'bg-green-500 animate-pulse' : configured ? 'bg-yellow-400' : 'bg-gray-300'}`} />
+                <span className={`w-2.5 h-2.5 rounded-full ${active ? 'bg-orange-500 animate-pulse' : configured ? 'bg-yellow-400' : 'bg-gray-300'}`} />
                 <div className="flex-1">
                   <div className="text-sm font-medium text-gray-800">{label}</div>
                   <div className="text-xs text-gray-400">
@@ -44,7 +44,7 @@ export default function MonitorStatusPanel({ data }: Props) {
                   </div>
                 </div>
                 <span className={`text-xs px-2 py-0.5 rounded font-medium ${
-                  active ? 'bg-green-100 text-green-700' :
+                  active ? 'bg-orange-100 text-orange-700' :
                   configured ? 'bg-yellow-50 text-yellow-700' :
                   'bg-gray-100 text-gray-500'
                 }`}>

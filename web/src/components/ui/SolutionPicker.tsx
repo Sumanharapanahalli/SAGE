@@ -36,8 +36,8 @@ export default function SolutionPicker({ solutions, activeId, pinnedIds, onPin, 
           transform: 'translate(-50%, -50%)',
           width: '400px',
           maxHeight: '500px',
-          background: '#18181b',
-          border: '1px solid #27272a',
+          background: '#ffffff',
+          border: '1px solid #e5e7eb',
           borderRadius: '8px',
           boxShadow: '0 20px 40px rgba(0,0,0,0.6)',
           zIndex: 9999,
@@ -50,10 +50,10 @@ export default function SolutionPicker({ solutions, activeId, pinnedIds, onPin, 
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '14px 16px 12px',
-          borderBottom: '1px solid #27272a',
+          borderBottom: '1px solid #e5e7eb',
           flexShrink: 0,
         }}>
-          <span style={{ fontSize: '13px', fontWeight: 600, color: '#f1f5f9' }}>All Solutions</span>
+          <span style={{ fontSize: '13px', fontWeight: 600, color: '#374151' }}>All Solutions</span>
           <button
             onClick={onClose}
             style={{
@@ -78,7 +78,7 @@ export default function SolutionPicker({ solutions, activeId, pinnedIds, onPin, 
             let rowBg = 'transparent'
             if (isActive) rowBg = '#0f172a'
             if (isSelected && !isActive) rowBg = '#1e293b'
-            if (isHovered && !isSelected && !isActive) rowBg = '#27272a'
+            if (isHovered && !isSelected && !isActive) rowBg = '#e5e7eb'
 
             return (
               <div
@@ -125,7 +125,7 @@ export default function SolutionPicker({ solutions, activeId, pinnedIds, onPin, 
         <div style={{
           display: 'flex', gap: '8px', justifyContent: 'flex-end',
           padding: '12px 16px',
-          borderTop: '1px solid #27272a',
+          borderTop: '1px solid #e5e7eb',
           flexShrink: 0,
         }}>
           <button
