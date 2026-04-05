@@ -42,6 +42,7 @@ import KnowledgeBrowser from './pages/KnowledgeBrowser'
 import SkillsTools from './pages/SkillsTools'
 import CodeExecution from './pages/CodeExecution'
 import Chat from './pages/Chat'
+import Preflight from './pages/Preflight'
 import ErrorBoundary from './components/ErrorBoundary'
 import OfflineBanner from './components/OfflineBanner'
 import ThemeProvider from './components/theme/ThemeProvider'
@@ -182,6 +183,7 @@ function AppShell() {
               <Route path="/code"           element={<CodeExecution />} />
               <Route path="/chat"           element={<Chat />} />
               <Route path="/settings/organization" element={<Organization />} />
+              <Route path="/preflight"    element={<Preflight />} />
             </Routes>
           </main>
         </div>

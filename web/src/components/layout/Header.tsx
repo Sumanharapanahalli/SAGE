@@ -16,6 +16,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/monitor':        'Monitor',
   '/improvements':   'Improvements',
   '/llm':            'LLM Settings',
+  '/preflight':      'Preflight Check',
   '/settings':       'Settings',
   '/yaml-editor':    'Config Editor',
   '/build':          'Build Console',

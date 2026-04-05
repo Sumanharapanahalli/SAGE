@@ -227,8 +227,15 @@ export default function Queue() {
 
       {/* Task list */}
       {isLoading ? (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 192, color: '#9ca3af', gap: 8 }}>
-          <Loader2 className="animate-spin" size={18} /> Loading…
+        <div style={{ padding: '1rem' }}>
+          {[1,2,3,4].map(i => (
+            <div key={i} style={{
+              height: '3rem', borderRadius: '0.5rem', marginBottom: '0.5rem',
+              background: 'linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%)',
+              backgroundSize: '200% 100%', animation: 'skeleton-shimmer 1.5s ease-in-out infinite',
+            }} />
+          ))}
+          <style>{`@keyframes skeleton-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
         </div>
       ) : allTasks.length === 0 ? (
         <div className="sage-empty">

@@ -344,8 +344,15 @@ export default function Dashboard() {
   }, [hasProjects])
 
   if (healthLoading) return (
-    <div className="flex items-center justify-center h-64 text-gray-400 gap-2">
-      <Loader2 className="animate-spin" size={20} /> Loading…
+    <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      {[1,2,3].map(i => (
+        <div key={i} style={{
+          height: '5rem', borderRadius: '0.75rem', border: '1px solid #e5e7eb',
+          background: 'linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%)',
+          backgroundSize: '200% 100%', animation: 'skeleton-shimmer 1.5s ease-in-out infinite',
+        }} />
+      ))}
+      <style>{`@keyframes skeleton-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
     </div>
   )
 

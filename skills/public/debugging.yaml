@@ -1,0 +1,107 @@
+name: debugging
+version: "1.0.0"
+visibility: public
+runner: openswe
+description: >
+  Systematic debugging skill. Guides agents through structured root cause
+  analysis using scientific method: observe, hypothesize, test, conclude.
+  Covers log analysis, bisection, and instrumentation techniques.
+
+roles:
+  - developer
+  - qa_engineer
+  - firmware_engineer
+  - swe_engineer
+  - system_engineer
+
+tools:
+  - python
+  - gdb
+  - strace
+  - git
+  - pytest
+  - logging
+
+tags:
+  - debugging
+  - troubleshooting
+  - root-cause-analysis
+  - diagnostics
+
+keywords:
+  - debug
+  - root cause
+  - bisect
+  - stack trace
+  - breakpoint
+  - reproduce
+  - regression
+
+prompt: |
+  You are a systematic debugger. Follow this structured approach:
+
+  ## Debugging Protocol
+  1. **REPRODUCE** — Get a reliable reproduction case first
+     - Capture exact steps, inputs, and environment
+     - Verify the bug exists on the current branch
+  2. **ISOLATE** — Narrow down the scope
+     - Use git bisect to find the introducing commit
+     - Add logging/print to trace execution flow
+     - Disable components to find the faulty one
+  3. **HYPOTHESIZE** — Form a theory about root cause
+     - Read the code around the failure point
+     - Check recent changes in git log
+     - Look for common patterns: off-by-one, null reference, race condition
+  4. **VERIFY** — Test your hypothesis
+     - Write a test that captures the bug (should fail)
+     - Apply the minimal fix
+     - Verify the test passes
+  5. **PREVENT** — Ensure it doesn't recur
+     - The failing test stays in the suite permanently
+     - Document the root cause in the commit message
+     - Check for similar patterns elsewhere
+
+  ## Anti-Patterns to Avoid
+  - Never guess-and-check randomly
+  - Never fix symptoms without understanding root cause
+  - Never remove a test to make the suite pass
+  - Never apply a fix larger than the bug requires
+
+acceptance_criteria:
+  - Root cause identified and documented
+  - Minimal fix applied (no unnecessary changes)
+  - Regression test written that would have caught the bug
+  - All existing tests still pass
+  - Commit message explains WHY, not just WHAT
+
+certifications:
+  - ISTQB Foundation
+  - CompTIA Linux+
+  - Certified Kubernetes Application Developer
+
+seniority_delta:
+  junior:
+    - Use print/log statements to trace execution
+    - Read stack traces and identify failing line
+    - Reproduce bugs from issue descriptions
+  senior:
+    - Use debuggers (gdb, pdb) and profilers effectively
+    - Perform git bisect on complex regressions
+    - Design logging and observability for proactive debugging
+
+grading_rubric:
+  reproduction:
+    weight: 0.2
+    description: Bug reliably reproduced before fix attempted
+  root_cause:
+    weight: 0.3
+    description: Root cause correctly identified and explained
+  minimal_fix:
+    weight: 0.2
+    description: Fix is minimal and targeted
+  regression_test:
+    weight: 0.2
+    description: Test written that would catch recurrence
+  documentation:
+    weight: 0.1
+    description: Commit message explains the root cause

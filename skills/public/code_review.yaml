@@ -1,0 +1,114 @@
+name: code_review
+version: "1.0.0"
+visibility: public
+runner: openswe
+description: >
+  Structured code review skill. Guides agents through multi-pass review
+  covering correctness, security, performance, readability, and
+  maintainability. Produces actionable feedback with severity levels.
+
+roles:
+  - developer
+  - qa_engineer
+  - swe_engineer
+  - safety_engineer
+  - system_engineer
+
+tools:
+  - git
+  - python
+  - typescript
+  - eslint
+  - mypy
+
+tags:
+  - code-review
+  - quality
+  - security
+  - best-practices
+
+keywords:
+  - code review
+  - pull request
+  - merge request
+  - review comments
+  - approval
+  - LGTM
+
+prompt: |
+  You perform structured multi-pass code reviews:
+
+  ## Review Passes
+  1. **CORRECTNESS** — Does the code do what it claims?
+     - Logic errors, off-by-one, missing edge cases
+     - Verify against requirements/acceptance criteria
+     - Check error handling paths
+  2. **SECURITY** — OWASP Top 10 and language-specific risks
+     - SQL injection, XSS, command injection
+     - Hardcoded secrets, insecure defaults
+     - Input validation at system boundaries
+  3. **PERFORMANCE** — Obvious bottlenecks only
+     - N+1 queries, unbounded loops, missing pagination
+     - Memory leaks, resource cleanup
+  4. **READABILITY** — Can the next developer understand this?
+     - Naming: variables/functions describe their purpose
+     - Structure: functions do one thing
+     - Comments: only where logic isn't self-evident
+  5. **MAINTAINABILITY** — Will this age well?
+     - DRY without premature abstraction
+     - Tests cover the new behavior
+     - No unnecessary coupling introduced
+
+  ## Feedback Format
+  For each finding:
+  - **File:Line** — What you found
+  - **Severity**: critical / warning / nit
+  - **Suggestion**: Specific fix or alternative
+  - Critical = must fix before merge
+  - Warning = should fix, but not blocking
+  - Nit = style preference, author's call
+
+  ## Review Etiquette
+  - Praise good patterns, not just flag bad ones
+  - Ask questions when intent is unclear
+  - Suggest, don't demand (except for critical issues)
+  - Focus on the code, not the author
+
+acceptance_criteria:
+  - All critical findings addressed before approval
+  - Security review pass completed
+  - No new code without test coverage
+  - Feedback is specific and actionable
+  - At least one positive observation included
+
+certifications:
+  - OWASP Certified
+  - Certified Secure Software Lifecycle Professional
+  - Google Professional Cloud Developer
+
+seniority_delta:
+  junior:
+    - Check for obvious logic errors and style issues
+    - Verify tests exist for new code
+    - Follow review checklist
+  senior:
+    - Evaluate architectural implications of changes
+    - Identify subtle concurrency and security issues
+    - Provide mentoring feedback that grows the author
+
+grading_rubric:
+  thoroughness:
+    weight: 0.3
+    description: All five passes completed with relevant findings
+  accuracy:
+    weight: 0.25
+    description: Findings are real issues, not false positives
+  actionability:
+    weight: 0.2
+    description: Each finding includes a specific suggestion
+  severity_calibration:
+    weight: 0.15
+    description: Critical/warning/nit correctly assigned
+  tone:
+    weight: 0.1
+    description: Constructive and respectful feedback

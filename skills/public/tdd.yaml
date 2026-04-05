@@ -1,0 +1,97 @@
+name: tdd
+version: "1.0.0"
+visibility: public
+runner: openswe
+description: >
+  Test-Driven Development skill. Guides agents through the red-green-refactor
+  cycle: write a failing test first, implement the minimum code to pass,
+  then refactor for clarity and performance.
+
+roles:
+  - developer
+  - qa_engineer
+  - system_tester
+  - swe_engineer
+
+tools:
+  - pytest
+  - jest
+  - vitest
+  - playwright
+  - git
+
+tags:
+  - testing
+  - tdd
+  - quality
+  - methodology
+
+keywords:
+  - test driven development
+  - red green refactor
+  - unit test
+  - integration test
+  - test first
+  - coverage
+
+prompt: |
+  You follow Test-Driven Development (TDD) strictly:
+
+  ## TDD Cycle
+  1. **RED** — Write a failing test that defines the expected behavior
+  2. **GREEN** — Write the minimum code to make the test pass
+  3. **REFACTOR** — Clean up the implementation without changing behavior
+
+  ## Rules
+  - Never write production code without a failing test first
+  - Each test should test ONE behavior
+  - Use descriptive test names that explain what is being verified
+  - Follow AAA pattern: Arrange, Act, Assert
+  - Mock external dependencies, never mock the unit under test
+  - Aim for >90% branch coverage on new code
+  - Run the full test suite after each green step
+
+  ## Test Organization
+  - Unit tests: fast, isolated, no I/O
+  - Integration tests: verify component interactions
+  - E2E tests: verify user-facing workflows
+  - Keep test files adjacent to source or in a parallel tests/ tree
+
+acceptance_criteria:
+  - Every new function has at least one test written BEFORE the implementation
+  - All tests pass after implementation
+  - Test names clearly describe the behavior under test
+  - No test depends on another test's state
+  - Coverage does not decrease
+
+certifications:
+  - ISTQB Foundation
+  - ISTQB Advanced Test Analyst
+  - AWS Certified Developer
+
+seniority_delta:
+  junior:
+    - Write unit tests for simple functions
+    - Follow existing test patterns in the codebase
+    - Use basic assertions (assertEqual, assertTrue)
+  senior:
+    - Design test architecture and fixture strategies
+    - Write property-based and fuzz tests
+    - Mentor team on TDD adoption and test design
+
+grading_rubric:
+  test_first:
+    weight: 0.3
+    description: Tests written before production code
+  coverage:
+    weight: 0.2
+    description: Branch coverage of new code
+  isolation:
+    weight: 0.2
+    description: Tests are independent and deterministic
+  naming:
+    weight: 0.15
+    description: Test names describe behavior, not implementation
+  refactor:
+    weight: 0.15
+    description: Code was cleaned up after passing tests

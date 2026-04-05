@@ -89,6 +89,7 @@ const NAV_AREAS: NavArea[] = [
       { to: '/cds-compliance',        icon: ShieldCheck, label: 'CDS Compliance', moduleId: 'cds-compliance', tooltip: 'FDA Clinical Decision Support compliance — 4-criterion assessment per 2026 guidance' },
       { to: '/regulatory',            icon: Shield,      label: 'Regulatory',     moduleId: 'regulatory',      tooltip: 'Multi-standard regulatory compliance — FDA, EU MDR, AI Act, IEC 62304, ISO 14971 and more' },
       { to: '/skills',                icon: Wrench,      label: 'Skills & Tools', moduleId: 'skills',          tooltip: 'Manage skill registry, browse MCP tools, configure integrations' },
+      { to: '/preflight',             icon: Activity,    label: 'Preflight',      moduleId: 'preflight',      tooltip: 'System preflight check — verify backend, LLM, and knowledge store' },
       { to: '/settings',              icon: Settings,    label: 'Settings',       moduleId: 'settings',       tooltip: 'Framework-wide settings and display preferences' },
       { to: '/settings/organization', icon: Building2,   label: 'Organization',   moduleId: 'organization',   tooltip: 'Company mission, vision and values' },
     ],

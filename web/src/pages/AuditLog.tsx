@@ -49,8 +49,15 @@ export default function AuditLog() {
           </button>
         </div>
         {isLoading ? (
-          <div className="flex items-center justify-center h-48 text-gray-400 gap-2">
-            <Loader2 className="animate-spin" size={18} /> Loading audit log...
+          <div style={{ padding: '1rem' }}>
+            {[1,2,3,4,5].map(i => (
+              <div key={i} style={{
+                height: '2.5rem', borderRadius: '0.375rem', marginBottom: '0.5rem',
+                background: 'linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%)',
+                backgroundSize: '200% 100%', animation: 'skeleton-shimmer 1.5s ease-in-out infinite',
+              }} />
+            ))}
+            <style>{`@keyframes skeleton-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
           </div>
         ) : (
           <AuditLogTable

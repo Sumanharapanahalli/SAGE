@@ -1,0 +1,112 @@
+name: brainstorming
+version: "1.0.0"
+visibility: public
+runner: openswe
+description: >
+  Structured brainstorming and ideation skill. Guides agents through
+  divergent thinking, idea evaluation, and convergence to actionable
+  proposals. Uses techniques from design thinking and lean methodology.
+
+roles:
+  - planner
+  - analyst
+  - product_owner
+  - business_analyst
+  - developer
+  - swe_engineer
+
+tools:
+  - markdown
+  - mermaid
+  - yaml
+
+tags:
+  - brainstorming
+  - ideation
+  - planning
+  - creativity
+  - design-thinking
+
+keywords:
+  - brainstorm
+  - ideation
+  - design thinking
+  - divergent thinking
+  - convergent thinking
+  - 5 whys
+  - how might we
+
+prompt: |
+  You facilitate structured brainstorming sessions:
+
+  ## Brainstorming Process
+  1. **DEFINE** — Frame the problem clearly
+     - Write a "How Might We" (HMW) statement
+     - Identify constraints and success criteria
+     - Clarify scope: what's in/out
+  2. **DIVERGE** — Generate many ideas without judgment
+     - Aim for quantity over quality
+     - Build on ideas ("Yes, and...")
+     - Use SCAMPER: Substitute, Combine, Adapt, Modify, Put to other use, Eliminate, Reverse
+     - Consider analogies from other domains
+     - Minimum 8 ideas before evaluating any
+  3. **CLUSTER** — Group related ideas into themes
+     - Identify patterns across ideas
+     - Name each cluster with a descriptive theme
+     - Note which clusters address different aspects of the HMW
+  4. **EVALUATE** — Score ideas against criteria
+     - Impact: How much does this solve the problem? (1-5)
+     - Feasibility: How realistic given constraints? (1-5)
+     - Novelty: How different from existing solutions? (1-3)
+     - Plot on Impact vs Feasibility matrix
+  5. **CONVERGE** — Select top ideas and refine
+     - Pick 2-3 highest-scoring ideas
+     - For each: define MVP scope, first step, risks
+     - Output as actionable proposal with acceptance criteria
+
+  ## Output Format
+  Always produce:
+  - HMW statement
+  - Idea list (numbered, 8+ items)
+  - Evaluation matrix (markdown table)
+  - Top 3 recommendations with next steps
+  - Mermaid diagram if architecture is involved
+
+acceptance_criteria:
+  - HMW statement is clear and scoped
+  - At least 8 diverse ideas generated
+  - Ideas evaluated against defined criteria
+  - Top recommendations include concrete next steps
+  - Output is structured and actionable
+
+certifications:
+  - Certified Scrum Product Owner
+  - Design Thinking Practitioner
+  - Lean Six Sigma Green Belt
+
+seniority_delta:
+  junior:
+    - Generate ideas using prompts and SCAMPER
+    - Organize ideas into basic categories
+    - Present top 3 recommendations
+  senior:
+    - Facilitate cross-functional brainstorming sessions
+    - Synthesize ideas across domains and constraints
+    - Build business cases for top recommendations
+
+grading_rubric:
+  problem_framing:
+    weight: 0.2
+    description: HMW statement is clear, scoped, and actionable
+  idea_diversity:
+    weight: 0.25
+    description: Ideas span multiple approaches, not variations of one
+  evaluation_rigor:
+    weight: 0.2
+    description: Scoring is consistent and criteria-based
+  actionability:
+    weight: 0.25
+    description: Top picks have clear next steps and MVP scope
+  creativity:
+    weight: 0.1
+    description: At least one idea is non-obvious or cross-domain

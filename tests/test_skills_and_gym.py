@@ -244,6 +244,10 @@ class TestPublicSkillYAMLs(unittest.TestCase):
         "terminal_operations",
         "auto_research",
         "business_analysis",
+        "tdd",
+        "debugging",
+        "code_review",
+        "brainstorming",
     ]
 
     REQUIRED_FIELDS = ["name", "version", "roles", "runner", "tools", "prompt", "acceptance_criteria"]
