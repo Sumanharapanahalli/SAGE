@@ -325,7 +325,7 @@ export default function UserMenu() {
 
           {/* About */}
           <div style={{ ...sec, paddingTop: '8px', paddingBottom: '8px' }}>
-            <div style={{ fontSize: '10px', color: '#d1d5db' }}>SAGE v2.1 · {llmInfo}</div>
+            <div style={{ fontSize: '10px', color: '#9ca3af' }}>SAGE v0.1.0-alpha by Shetty · {llmInfo}</div>
           </div>
 
           <div style={div} />

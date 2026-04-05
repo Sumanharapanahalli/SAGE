@@ -19,7 +19,7 @@ import OnboardingWizard from '../onboarding/OnboardingWizard'
 import SolutionPicker from '../ui/SolutionPicker'
 
 // ---------------------------------------------------------------------------
-const SAGE_VERSION = 'v2.1'
+const SAGE_VERSION = 'v0.1.0-alpha'
 
 function initials(id: string): string {
   const words = id.split(/[_\s-]+/).filter(Boolean)
@@ -405,7 +405,7 @@ export default function Sidebar() {
           })}
         </nav>
         <div style={{ padding: '8px 12px', borderTop: '1px solid #e5e7eb', color: '#334155', fontSize: '11px' }}>
-          SAGE Framework {SAGE_VERSION}
+          SAGE {SAGE_VERSION} by Shetty
         </div>
       </div>
       {wizardOpen && (
