@@ -34,7 +34,7 @@ make test-all           # Framework + all solution tests
 ## Project Structure (Essential)
 
 ```
-src/core/               LLM gateway, build orchestrator, agent gym, systems engineering
+src/core/               LLM gateway, build orchestrator, agent gym, orchestrator intelligence (9 modules)
 src/agents/             Universal, Analyst, Developer, Monitor, Planner, Critic, Product Owner
 src/interface/api.py    FastAPI — the only public interface
 solutions/              Solution configurations (project.yaml, prompts.yaml, tasks.yaml)
@@ -56,6 +56,7 @@ web/src/                React dashboard — reads from API only
 ### 🔧 Feature Documentation  
 - **[Agent Gym](.claude/docs/features/agent-gym.md)** — Self-play training, Glicko-2 ratings, exercise catalog
 - **[Regulatory Compliance](.claude/docs/features/regulatory-compliance.md)** — IEC 62304, 21 CFR Part 11, traceability matrices
+- **[Orchestrator Intelligence](.claude/docs/features/orchestrator-intelligence.md)** — 9 SOTA modules: reflection, beam search, consensus, event bus, budget, tools, spawner, backtrack, memory planner
 
 ---
 

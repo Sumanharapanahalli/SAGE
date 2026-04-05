@@ -51,6 +51,38 @@ Agent code execution uses a three-tier isolation cascade. The orchestrator tries
 | **2. SandboxRunner** | `sandbox_runner.py` | Local repo clone, branch isolation, restricted file ops | Container unavailable, local execution acceptable |
 | **3. OpenSWE** | `openswe_runner.py` | 3-tier internal cascade: external SWE agent → LangGraph workflow → LLM direct | Autonomous coding tasks (explore → implement → test → PR) |
 
+## Orchestrator Intelligence — 9 SOTA Modules
+
+The orchestrator layer (`src/core/`) implements state-of-the-art agentic patterns that enhance agent reasoning, coordination, and self-improvement.
+
+| Module | File | Pattern | Purpose |
+|---|---|---|---|
+| **Event Bus** | `event_bus.py` | Pub/Sub + SSE | In-process event streaming with Server-Sent Events for real-time UI |
+| **Budget Manager** | `budget_manager.py` | Token/Cost Tracking | Per-scope token and cost limits with warnings and hard stops |
+| **Reflection Engine** | `reflection_engine.py` | Reflexion/LATS | Bounded self-correction: generator → critic → re-generate (max N iterations) |
+| **Plan Selector** | `plan_selector.py` | Beam Search / Tree of Thought | Generate N candidate plans, score with critic, select best |
+| **Consensus Engine** | `consensus_engine.py` | Multi-Agent Voting | Majority/weighted/unanimous voting with disagreement escalation to human |
+| **Tool Executor** | `tool_executor.py` | ReAct | Agents call tools (file_read, git_diff, search_code, shell_run) during execution |
+| **Agent Spawner** | `agent_spawner.py` | Recursive Composition | Dynamic agent creation with depth/concurrency limits and budget checks |
+| **Backtrack Planner** | `backtrack_planner.py` | HTN Re-planning | Re-plans affected subtree when tasks fail repeatedly |
+| **Memory Planner** | `memory_planner.py` | RAG-in-the-Loop | Augments planning context with collective memory and past successful plans |
+
+All modules follow consistent patterns: lazy singleton via `get_<module>()`, thread-safe operations, `get_stats()` for monitoring, and event emission via the Event Bus. API routes are in `src/interface/routes/orchestrator.py` (30+ endpoints). Web UI is an 8-tab dashboard at `/orchestrator`.
+
+### Cross-Module Integration
+
+```
+Task arrives → Memory Planner augments context (RAG)
+            → Plan Selector generates N plans (beam search)
+            → Reflection Engine refines best plan (self-correction)
+            → Consensus Engine votes on controversial decisions
+            → Tool Executor runs ReAct tool calls
+            → Agent Spawner creates sub-agents as needed
+            → Budget Manager tracks all token usage
+            → Backtrack Planner re-plans on repeated failure
+            → Event Bus streams everything to UI via SSE
+```
+
 ## Memory and Knowledge Architecture
 
 **The vector store is the institutional memory.**
