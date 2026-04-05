@@ -41,6 +41,9 @@ jobs:
   integration-tests:
     name: Integration Tests (testcontainers)
     runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      checks: write
     # Docker daemon is required for testcontainers
     steps:
       - uses: actions/checkout@v4
