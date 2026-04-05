@@ -1265,3 +1265,57 @@ export const configureConnector = (type: string, config: Record<string, unknown>
 export const syncConnector = (type: string, config: Record<string, unknown>) =>
   post<Record<string, unknown>>(`/connectors/${type}/sync`, { config })
 
+// ---------------------------------------------------------------------------
+// Orchestrator Enhancements
+// ---------------------------------------------------------------------------
+export const fetchOrchestratorStats = () =>
+  get<Record<string, unknown>>('/orchestrator/stats')
+
+export const fetchEventHistory = (eventType = '', limit = 50) =>
+  get<{ events: unknown[]; count: number }>(`/orchestrator/events/history?event_type=${eventType}&limit=${limit}`)
+
+export const fetchBudgetOverview = () =>
+  get<{ stats: Record<string, unknown>; top_consumers: unknown[] }>('/orchestrator/budget')
+
+export const checkBudget = (scope: string) =>
+  get<Record<string, unknown>>(`/orchestrator/budget/${scope}`)
+
+export const setBudget = (data: Record<string, unknown>) =>
+  post<Record<string, unknown>>('/orchestrator/budget', data)
+
+export const fetchReflectionStats = () =>
+  get<Record<string, unknown>>('/orchestrator/reflection/stats')
+
+export const fetchReflectionRecent = (limit = 20) =>
+  get<{ results: unknown[] }>(`/orchestrator/reflection/recent?limit=${limit}`)
+
+export const fetchPlanSelectorStats = () =>
+  get<Record<string, unknown>>('/orchestrator/plans/stats')
+
+export const fetchSpawnerStats = () =>
+  get<Record<string, unknown>>('/orchestrator/spawns/stats')
+
+export const fetchSpawns = (limit = 50) =>
+  get<{ spawns: unknown[] }>(`/orchestrator/spawns?limit=${limit}`)
+
+export const fetchToolsList = () =>
+  get<{ tools: unknown[] }>('/orchestrator/tools')
+
+export const fetchToolStats = () =>
+  get<Record<string, unknown>>('/orchestrator/tools/stats')
+
+export const fetchToolHistory = (limit = 50) =>
+  get<{ history: unknown[] }>(`/orchestrator/tools/history?limit=${limit}`)
+
+export const fetchBacktrackStats = () =>
+  get<Record<string, unknown>>('/orchestrator/backtrack/stats')
+
+export const fetchBacktrackRecords = (limit = 20) =>
+  get<{ records: unknown[] }>(`/orchestrator/backtrack/records?limit=${limit}`)
+
+export const fetchConsensusStats = () =>
+  get<Record<string, unknown>>('/orchestrator/consensus/stats')
+
+export const fetchConsensusResults = (limit = 20) =>
+  get<{ results: unknown[] }>(`/orchestrator/consensus/results?limit=${limit}`)
+
