@@ -2,7 +2,7 @@
 
 All endpoints are served at `http://localhost:8000`. Every response is JSON.
 
-**Total endpoints: 227+** across 30+ categories.
+**Total endpoints: 250+** across 30+ categories.
 
 ---
 

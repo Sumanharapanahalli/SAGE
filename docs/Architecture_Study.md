@@ -5,7 +5,7 @@
 
 **Date:** 2026-04-03
 **Scope:** Full framework — not just communication, but LLM abstraction, memory, execution, API design, testing, scalability, and extensibility.
-**Codebase snapshot:** 120+ Python source files, ~72,000 LOC (48,700 Python + 23,000 TypeScript), 227+ API endpoints, 39 UI pages, 11 domain runners.
+**Codebase snapshot:** 120+ Python source files, ~100K LOC (77K Python + 23K TypeScript), 250+ API endpoints, 34 UI pages, 11 domain runners.
 
 **Latest additions:** Product Owner agent, Systems Engineering framework (IEEE 15288/IEC 62304), regulatory compliance (21 CFR Part 11), Connector Framework (GitHub/filesystem), complexity-based model routing, BFTS tree search, persistent chat/goals stores.
 

@@ -38,16 +38,25 @@
 | **CDS Classification** (FDA) | **PARTIAL** | 4-criterion classification per FDA Jan 2026 guidance. Deterministic but context may vary. |
 | **Systems Engineering** | **PARTIAL** | LLM-based requirements derivation and architecture design. No traceability validation. |
 
-### Not Yet Implemented (Gaps)
+### Recently Implemented (Compliance Engineering Modules)
+
+| Capability | Status | Details |
+|---|---|---|
+| **Document Generation** (Markdown) | **IMPLEMENTED** | SRS, Risk Management, RTM, V&V Plan, SOUP Inventory. Generates structured Markdown from live data via `/compliance/documents/generate`. |
+| **Cryptographic Audit Integrity** (21 CFR Part 11) | **IMPLEMENTED** | HMAC-SHA256 hash chain on audit log entries. Tamper detection via `/compliance/audit/integrity/verify`. |
+| **Bidirectional Traceability Matrix** | **IMPLEMENTED** | Requirement-to-design-to-test linking with coverage analysis and gap detection via `/compliance/traceability/*`. |
+| **Change Control Workflow** | **IMPLEMENTED** | Version-tracked change requests: DRAFT -> SUBMITTED -> IMPACT_ASSESSED -> APPROVED -> IMPLEMENTED -> VERIFIED -> CLOSED via `/compliance/change-control/*`. |
+| **Multi-Standard Compliance Verifier** | **IMPLEMENTED** | Automated verification against IEC 62304, ISO 26262, DO-178C, EN 50128, 21 CFR Part 11 via `/compliance/verify`. |
+
+### Not Yet Implemented (Remaining Gaps)
 
 | Capability | Status | Impact |
 |---|---|---|
-| **Document Generation** (PDF/Word) | NOT IMPLEMENTED | Teams must manually create submission documents from SAGE JSON output. |
-| **Electronic Signatures** (21 CFR Part 11) | NOT IMPLEMENTED | Audit log is timestamped but not cryptographically signed. |
-| **Automated Traceability** | NOT IMPLEMENTED | No requirement-to-test linking. RTM must be maintained manually. |
-| **Change Control Integration** | NOT IMPLEMENTED | No version-controlled change impact assessment workflow. |
-| **IQ/OQ/PQ Validation** | NOT IMPLEMENTED | `make test-compliance` exists but validation test directory is empty. |
+| **PDF/Word Export** | NOT IMPLEMENTED | Document generation produces Markdown. PDF conversion requires external tooling (pandoc). |
+| **Electronic Signatures** | NOT IMPLEMENTED | HMAC integrity verified but no e-signature workflow (OIDC/PKI). |
+| **IQ/OQ/PQ Validation** | PARTIAL | Validation framework exists but test protocols need domain-specific content. |
 | **Post-Market Surveillance** | NOT IMPLEMENTED | No adverse event tracking or PMCF/PMPF plan generation. |
+| **MC/DC Structural Coverage** | NOT IMPLEMENTED | Required for DO-178C DAL A. No integration with coverage tools. |
 
 ---
 
@@ -64,13 +73,14 @@
 | Software Unit Implementation (IEC 62304 §5.5) | Agent code generation | No traceability to design |
 | Software Integration Testing (IEC 62304 §5.6) | pytest framework | No test plan linked to requirements |
 | Software System Testing (IEC 62304 §5.7) | Playwright E2E tests | No formal V&V protocol |
-| Software Maintenance (IEC 62304 §6) | Audit log + proposals | No change control workflow |
-| SOUP Management (IEC 62304 §8.1.2) | Template in `SOUP_INVENTORY.md` | No automated dependency scanning |
-| Risk Management (ISO 14971) | FMEA + FTA computation | No mitigation tracking |
-| Electronic Records (21 CFR Part 11) | Audit log (not signed) | No cryptographic integrity |
-| Design Controls (21 CFR 820.30) | Proposal store + audit | No formal review stages |
+| Software Maintenance (IEC 62304 §6) | **Change control workflow** | Full CR lifecycle implemented |
+| SOUP Management (IEC 62304 §8.1.2) | **SOUP inventory generator** | Automated from dependency list |
+| Risk Management (ISO 14971) | FMEA + FTA + **risk doc generation** | Mitigation tracking via change control |
+| Electronic Records (21 CFR Part 11) | **HMAC hash chain + audit log** | Cryptographic integrity verified |
+| Design Controls (21 CFR 820.30) | **Change control + traceability** | Full CR workflow with impact assessment |
+| Requirements Traceability (§5.1.1) | **Bidirectional RTM** | Forward + backward links with coverage report |
 
-**Overall IEC 62304 Coverage: ~40%** — Computation and templates are strong. Process automation and traceability are missing.
+**Overall IEC 62304 Coverage: ~70%** — Computation, traceability, change control, and document generation implemented. PDF export and e-signatures remain.
 
 ### Automotive (ISO 26262)
 
@@ -84,7 +94,7 @@
 | Software Safety Requirements | IEC 62304 Class via ASIL | No ISO 26262 Part 6 specifics |
 | TARA (Cybersecurity) | Not covered | ISO/SAE 21434 not implemented |
 
-**Overall ISO 26262 Coverage: ~25%** — ASIL classification is excellent. Full lifecycle not covered.
+**Overall ISO 26262 Coverage: ~45%** — ASIL classification, change management, traceability, and compliance verification implemented.
 
 ### Avionics (DO-178C)
 
@@ -97,7 +107,7 @@
 | Configuration Management | Git-based | No formal CM plan |
 | Quality Assurance | Not covered | No DER/ODA workflow |
 
-**Overall DO-178C Coverage: ~15%** — Standards registry only. No lifecycle process support.
+**Overall DO-178C Coverage: ~30%** — Standards registry, compliance verification, traceability, and change control. MC/DC coverage analysis not yet integrated.
 
 ### Railway (EN 50128 / IEC 61508)
 
@@ -109,7 +119,7 @@
 | Software Design | Not covered | Manual process |
 | Validation & Verification | pytest framework | No SIL-appropriate V&V |
 
-**Overall EN 50128 Coverage: ~20%** — SIL classification is correct. No formal methods or SIL-specific V&V.
+**Overall EN 50128 Coverage: ~35%** — SIL classification, traceability, compliance verification, and change control. No formal methods or SIL-specific V&V.
 
 ### Clinical Decision Support (FDA CDS Guidance)
 

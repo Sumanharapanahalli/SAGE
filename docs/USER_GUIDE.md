@@ -304,7 +304,7 @@ Open `http://localhost:5173`. The sidebar is organised into five areas: **Work**
 
 **Cmd+K** — press anywhere to open the command palette and jump to any page instantly.
 
-### All 39 UI Pages
+### All 34 UI Pages
 
 | Area | Page | Route | Purpose |
 |---|---|---|---|

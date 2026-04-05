@@ -288,7 +288,7 @@ Pre-built agent teams with correct roles, system prompts, task types, and compli
 
 SAGE follows an **open-core** approach:
 
-- **Framework (this repo):** Fully open source under MIT. All 227+ API endpoints, 39 UI pages, 19 solution templates, and the complete agent architecture are public, auditable, and forkable.
+- **Framework (this repo):** Fully open source under MIT. All 250+ API endpoints, 34 UI pages, 19 solution templates, and the complete agent architecture are public, auditable, and forkable.
 - **Your solutions (private):** Mount via `SAGE_SOLUTIONS_DIR` from a separate private repository. Your proprietary YAML configs, domain knowledge, and `.sage/` runtime data never touch the public repo.
 - **Community contributions welcome:** File issues, submit PRs, propose new solution templates, or build MCP tool servers. See `CONTRIBUTING.md` for guidelines.
 - **Transparent by design:** Every agent decision, every approval, every rejection is logged in an immutable audit trail. The codebase itself is public for security review and regulatory confidence.
@@ -304,10 +304,10 @@ SAGE follows an **open-core** approach:
 - **Build Orchestrator** — end-to-end product builder with 13+ domain detection, 19+ agents, 5 teams, Q-learning adaptive router, anti-drift checkpoints
 
 ### SAGE 10 Framework Features
-- **227+ API endpoints** across 28+ categories
-- **39 UI pages** in 5-area sidebar (Work, Intelligence, Knowledge, Organization, Admin)
+- **250+ API endpoints** across 28+ categories
+- **34 UI pages** in 5-area sidebar (Work, Intelligence, Knowledge, Organization, Admin)
 - **19 bundled solutions** covering medical, automotive, avionics, IoT, fintech, and more
-- **115+ test files** (97 Python + 11 frontend unit + 7 e2e spec files) with 93 browser E2E tests
+- **115+ test files** (97 Python + 11 frontend unit + 7 e2e spec files) with 96 browser E2E tests
 - **Agent budgets** — Monthly call ceilings per role with hard/soft cutoff
 - **Undo** — Revert approved code diffs with one click
 - **Live agents panel** — Real-time active-agent visibility

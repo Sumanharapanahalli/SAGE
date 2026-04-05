@@ -3,40 +3,42 @@
 ## Supported Versions
 
 | Version | Supported |
-|---------|-----------|
-| 2.x     | Yes       |
-| 1.x     | Security fixes only |
-| < 1.0   | No        |
+|---|---|
+| Latest `main` | Yes |
+| Older releases | Best effort |
 
 ## Reporting a Vulnerability
 
 **Do not open a public GitHub issue for security vulnerabilities.**
 
-Instead, please email: **sage-security@proton.me**
+Instead, please report security issues by emailing the maintainers directly or using GitHub's private vulnerability reporting feature:
 
-Include:
-- Description of the vulnerability
-- Steps to reproduce
-- Potential impact
-- Suggested fix (if any)
+1. Go to the repository's **Security** tab
+2. Click **Report a vulnerability**
+3. Provide a description of the issue, steps to reproduce, and potential impact
 
-## Response Timeline
+You should receive a response within 48 hours. We will work with you to understand the issue and coordinate a fix before any public disclosure.
 
-| Stage | Timeline |
-|-------|----------|
-| Acknowledgment | Within 48 hours |
-| Initial assessment | Within 5 business days |
-| Fix development | Within 30 days for critical, 90 days for others |
-| Public disclosure | After fix is released |
+## Security Considerations
 
-## PII Handling
+SAGE is used in regulated industries (medical devices, automotive, avionics). Security is treated as a P0 concern:
 
-SAGE processes data through LLM providers. The framework:
-- Does **not** store raw API keys in logs or audit trails
-- Supports PII detection via Presidio (configurable in `config.yaml`)
-- Isolates solution data in per-solution `.sage/` directories
-- Never transmits solution data to the SAGE framework repository
+- **Audit log integrity**: HMAC hash chain protects against log tampering (21 CFR Part 11)
+- **No secrets in code**: All API keys and credentials must be provided via environment variables
+- **HITL approval gate**: Agent proposals require human approval before execution
+- **Data isolation**: Each solution gets its own `.sage/` directory; data never mixes between solutions
+- **Dependency scanning**: Users should run `pip audit` and `npm audit` regularly
 
 ## Scope
 
-This policy covers the SAGE framework (`src/`, `web/`, `config/`). For vulnerabilities in specific solution configurations, contact the solution maintainer directly.
+The following are in scope for security reports:
+- Authentication/authorization bypass
+- SQL injection, XSS, CSRF, or command injection
+- Sensitive data exposure (API keys, credentials, PII)
+- Audit log tampering or bypass
+- Approval gate bypass (agent executing without human approval)
+
+The following are out of scope:
+- Denial of service (SAGE is designed for local/private deployment)
+- Issues in third-party dependencies (report upstream, but let us know)
+- Social engineering attacks

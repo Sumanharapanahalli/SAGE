@@ -55,6 +55,7 @@ const ALL_ROUTES = [
   '/org-graph', '/onboarding',
   '/llm', '/yaml-editor', '/access-control', '/integrations',
   '/safety', '/cds-compliance', '/regulatory', '/skills', '/settings',
+  '/issues', '/guide', '/settings/organization',
 ]
 
 for (const route of ALL_ROUTES) {
