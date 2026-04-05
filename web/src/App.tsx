@@ -44,6 +44,7 @@ import CodeExecution from './pages/CodeExecution'
 import Chat from './pages/Chat'
 import Preflight from './pages/Preflight'
 import Orchestrator from './pages/Orchestrator'
+import Constitution from './pages/Constitution'
 import ErrorBoundary from './components/ErrorBoundary'
 import OfflineBanner from './components/OfflineBanner'
 import ThemeProvider from './components/theme/ThemeProvider'
@@ -186,6 +187,7 @@ function AppShell() {
               <Route path="/settings/organization" element={<Organization />} />
               <Route path="/preflight"    element={<Preflight />} />
               <Route path="/orchestrator" element={<Orchestrator />} />
+              <Route path="/constitution" element={<Constitution />} />
             </Routes>
           </main>
         </div>

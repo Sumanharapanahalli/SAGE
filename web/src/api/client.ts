@@ -1319,3 +1319,54 @@ export const fetchConsensusStats = () =>
 export const fetchConsensusResults = (limit = 20) =>
   get<{ results: unknown[] }>(`/orchestrator/consensus/results?limit=${limit}`)
 
+// ---------------------------------------------------------------------------
+// Constitution
+// ---------------------------------------------------------------------------
+export const fetchConstitution = () =>
+  get<Record<string, unknown>>('/constitution')
+
+export const fetchConstitutionStats = () =>
+  get<Record<string, unknown>>('/constitution/stats')
+
+export const fetchConstitutionPreamble = () =>
+  get<{ preamble: string }>('/constitution/preamble')
+
+export const fetchConstitutionHistory = () =>
+  get<{ history: unknown[] }>('/constitution/history')
+
+export const validateConstitution = () =>
+  get<{ valid: boolean; errors: string[] }>('/constitution/validate')
+
+export const fetchPrinciples = () =>
+  get<{ principles: unknown[] }>('/constitution/principles')
+
+export const addPrinciple = (data: { id: string; text: string; weight: number }) =>
+  post<{ status: string; id: string }>('/constitution/principles', data)
+
+export const updatePrinciple = (id: string, data: { text?: string; weight?: number }) =>
+  put<{ status: string }>(`/constitution/principles/${id}`, data)
+
+export const deletePrinciple = (id: string) =>
+  del<{ status: string }>(`/constitution/principles/${id}`)
+
+export const fetchConstraints = () =>
+  get<{ constraints: string[] }>('/constitution/constraints')
+
+export const addConstraint = (constraint: string) =>
+  post<{ status: string }>('/constitution/constraints', { constraint })
+
+export const updateVoice = (data: { tone?: string; avoid?: string[] }) =>
+  put<{ status: string }>('/constitution/voice', data)
+
+export const updateDecisions = (data: Record<string, unknown>) =>
+  put<{ status: string }>('/constitution/decisions', data)
+
+export const checkConstitutionAction = (action: string) =>
+  post<{ allowed: boolean; violations: string[] }>('/constitution/check-action', { action })
+
+export const saveConstitution = (changedBy = 'web-ui') =>
+  post<{ status: string; version: number }>('/constitution/save', { changed_by: changedBy })
+
+export const reloadConstitution = () =>
+  post<{ status: string; version: number }>('/constitution/reload')
+

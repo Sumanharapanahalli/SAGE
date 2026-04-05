@@ -90,6 +90,7 @@ const NAV_AREAS: NavArea[] = [
       { to: '/regulatory',            icon: Shield,      label: 'Regulatory',     moduleId: 'regulatory',      tooltip: 'Multi-standard regulatory compliance — FDA, EU MDR, AI Act, IEC 62304, ISO 14971 and more' },
       { to: '/skills',                icon: Wrench,      label: 'Skills & Tools', moduleId: 'skills',          tooltip: 'Manage skill registry, browse MCP tools, configure integrations' },
       { to: '/orchestrator',           icon: Brain,       label: 'Orchestrator',   moduleId: 'orchestrator',   tooltip: 'SOTA orchestration: reflection, consensus, beam search, budget controls, live events' },
+      { to: '/constitution',           icon: BookOpen,    label: 'Constitution',   moduleId: 'constitution',   tooltip: 'Solution blue book — principles, constraints, voice, decision rules' },
       { to: '/preflight',             icon: Activity,    label: 'Preflight',      moduleId: 'preflight',      tooltip: 'System preflight check — verify backend, LLM, and knowledge store' },
       { to: '/settings',              icon: Settings,    label: 'Settings',       moduleId: 'settings',       tooltip: 'Framework-wide settings and display preferences' },
       { to: '/settings/organization', icon: Building2,   label: 'Organization',   moduleId: 'organization',   tooltip: 'Company mission, vision and values' },

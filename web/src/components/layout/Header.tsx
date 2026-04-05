@@ -44,6 +44,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/skills':          'Skills & Tools',
   '/code':            'Code Execution',
   '/chat':            'Chat',
+  '/constitution':    'Constitution',
 }
 
 const ROUTE_TO_AREA: Record<string, string> = {
@@ -76,6 +77,7 @@ const ROUTE_TO_AREA: Record<string, string> = {
   '/access-control': 'Admin',
   '/integrations':   'Admin',
   '/skills':         'Admin',
+  '/constitution':            'Admin',
   '/settings':               'Admin',
   '/guide':                  'Admin',
   '/cds-compliance':         'Admin',

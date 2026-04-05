@@ -85,6 +85,14 @@ class UniversalAgent:
         except Exception:
             pass  # never block agent execution
 
+        # ── Constitution injection (non-blocking) ─────────────────────────
+        try:
+            from src.core.constitution import get_constitution
+            _constitution = get_constitution()
+            system_prompt = _constitution.inject_into_prompt(system_prompt)
+        except Exception:
+            pass  # constitution is optional — never block agent execution
+
         # ── Build prompt ───────────────────────────────────────────────────
         context_block = f"\n\nAdditional context:\n{context}" if context.strip() else ""
         prompt = f"""Task: {task}{context_block}
