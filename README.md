@@ -273,6 +273,45 @@ make test-compliance   # IQ/OQ/PQ validation protocol
 
 ---
 
+## Desktop Application (Tauri)
+
+SAGE ships with a native desktop wrapper built on [Tauri v2](https://tauri.app/), providing a standalone application for Windows, macOS, and Linux without requiring a browser.
+
+### Prerequisites
+
+- [Rust](https://rustup.rs/) (1.77.2+)
+- Platform-specific dependencies: see [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/)
+
+### Development
+
+```bash
+cd web
+npm run tauri:dev      # Launch desktop app with hot reload (backend must be running)
+```
+
+### Production Build
+
+```bash
+cd web
+npm run tauri:build    # Build platform-specific installer
+```
+
+Outputs:
+- **Windows:** `.msi` installer + `.exe` in `web/src-tauri/target/release/bundle/msi/`
+- **macOS:** `.dmg` in `web/src-tauri/target/release/bundle/dmg/`
+- **Linux:** `.deb` / `.AppImage` in `web/src-tauri/target/release/bundle/`
+
+The desktop app connects to `http://localhost:8000` for the backend — start the backend separately with `make run` or `./start.sh`.
+
+### Features
+
+- System tray icon for background operation
+- Native window with 1280x820 default size (resizable, min 900x600)
+- CSP security headers for content isolation
+- Logging via `tauri-plugin-log` (debug builds)
+
+---
+
 ## Documentation
 
 | Document | Description |
@@ -283,6 +322,7 @@ make test-compliance   # IQ/OQ/PQ validation protocol
 | [docs/USER_GUIDE.md](docs/USER_GUIDE.md) | End-user operational guide |
 | [docs/SETUP.md](docs/SETUP.md) | Detailed installation and integration setup |
 | [docs/MCP_SERVERS.md](docs/MCP_SERVERS.md) | MCP server reference |
+| [docs/REGULATORY_COMPLIANCE_GUIDE.md](docs/REGULATORY_COMPLIANCE_GUIDE.md) | Per-domain regulatory coverage, gaps, and compliance roadmap |
 
 ---
 

@@ -381,3 +381,39 @@ Check which modules are in `active_modules` in your `project.yaml`. If `develope
 python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
 # The model is cached and works offline after this
 ```
+
+---
+
+## Desktop Application (Tauri)
+
+SAGE includes a native desktop wrapper built on Tauri v2 for Windows, macOS, and Linux.
+
+### Prerequisites
+
+| Requirement | Version | Notes |
+|---|---|---|
+| Rust | 1.77.2+ | Install via [rustup.rs](https://rustup.rs/) |
+| Platform deps | — | See [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/) |
+
+On **Windows**: Visual Studio C++ Build Tools + WebView2 (pre-installed on Windows 10/11).
+On **Linux**: `sudo apt install libwebkit2gtk-4.1-dev build-essential libssl-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev`.
+On **macOS**: Xcode Command Line Tools (`xcode-select --install`).
+
+### Build
+
+```bash
+cd web
+npm install                # Install JS + Tauri CLI deps
+npm run tauri:dev          # Development mode with hot reload
+npm run tauri:build        # Production build → platform installer
+```
+
+### Output Locations
+
+| Platform | Format | Path |
+|---|---|---|
+| Windows | `.msi` + `.exe` | `web/src-tauri/target/release/bundle/msi/` |
+| macOS | `.dmg` | `web/src-tauri/target/release/bundle/dmg/` |
+| Linux | `.deb` / `.AppImage` | `web/src-tauri/target/release/bundle/deb/` |
+
+The desktop app wraps the web UI and connects to the backend at `http://localhost:8000`. Start the backend separately via `make run PROJECT=starter` or `./start.sh`.

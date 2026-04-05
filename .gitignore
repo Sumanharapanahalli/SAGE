@@ -91,6 +91,8 @@ solutions/*/
 !solutions/medtech_team/**
 !solutions/medtech_sample
 !solutions/medtech_sample/**
+!solutions/medtech
+!solutions/medtech/**
 
 # Node / Web build artefacts
 web/node_modules/

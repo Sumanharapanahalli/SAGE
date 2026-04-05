@@ -28,6 +28,7 @@ This guide covers everything needed to install, configure, run, and operate the 
 18. [Complexity-Based Model Routing](#18-complexity-based-model-routing)
 19. [Agent Gym & BFTS Tree Search](#19-agent-gym--bfts-tree-search)
 20. [Safety Analysis](#20-safety-analysis)
+21. [Desktop Application (Tauri)](#21-desktop-application-tauri)
 
 ---
 
@@ -1009,4 +1010,39 @@ curl -X POST http://localhost:8000/safety/asil \
 curl -X POST http://localhost:8000/safety/sil \
   -d '{"probability_dangerous_failure_per_hour": 1e-7}'
 ```
+
+---
+
+## 21. Desktop Application (Tauri)
+
+SAGE ships with a native desktop wrapper built on Tauri v2, providing a standalone application for Windows, macOS, and Linux.
+
+### 21.1 Quick Start
+
+```bash
+cd web
+npm run tauri:dev      # Development mode with hot reload
+npm run tauri:build    # Build production installer
 ```
+
+### 21.2 Prerequisites
+
+- **Rust 1.77.2+** — install via [rustup.rs](https://rustup.rs/)
+- **Platform dependencies** — see [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/)
+
+### 21.3 Features
+
+- System tray icon for background operation
+- Native window (1280x820, resizable, min 900x600)
+- CSP security headers
+- Connects to backend at `http://localhost:8000`
+
+### 21.4 Production Build Output
+
+| Platform | Format | Location |
+|---|---|---|
+| Windows | `.msi` + `.exe` | `web/src-tauri/target/release/bundle/msi/` |
+| macOS | `.dmg` | `web/src-tauri/target/release/bundle/dmg/` |
+| Linux | `.deb` / `.AppImage` | `web/src-tauri/target/release/bundle/deb/` |
+
+Start the backend separately: `make run PROJECT=starter` or `./start.sh`.

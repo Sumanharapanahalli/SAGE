@@ -119,6 +119,7 @@ Any job role becomes an AI agent. The founder hires, configures, and routes work
 | **BFTS Tree Search** | Best-first tree search for Agent Gym solution exploration |
 | **Functional Safety** | FTA, FMEA, ASIL, SIL classification via dedicated safety endpoints |
 | **CDS Compliance** | Common Data Standard regulatory compliance tracking |
+| **Desktop App (Tauri)** | Native Windows/macOS/Linux desktop wrapper with tray icon |
 
 ---
 
