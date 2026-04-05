@@ -57,6 +57,8 @@ web/src/                React dashboard — reads from API only
 - **[Agent Gym](.claude/docs/features/agent-gym.md)** — Self-play training, Glicko-2 ratings, exercise catalog
 - **[Regulatory Compliance](.claude/docs/features/regulatory-compliance.md)** — IEC 62304, 21 CFR Part 11, traceability matrices
 - **[Orchestrator Intelligence](.claude/docs/features/orchestrator-intelligence.md)** — 9 SOTA modules: reflection, beam search, consensus, event bus, budget, tools, spawner, backtrack, memory planner
+- **[Constitution](.claude/docs/features/constitution.md)** — Per-solution blue book: principles, constraints, voice, decision rules, version history
+- **[Collective Intelligence](.claude/docs/features/collective-intelligence.md)** — Git-backed multi-agent knowledge sharing: learnings, help requests, semantic search
 
 ---
 

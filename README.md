@@ -114,6 +114,9 @@ Or generate from a plain-language description in 30 seconds — see [GETTING_STA
 - Wave scheduling — independent tasks run in parallel, dependent tasks sequence automatically
 - Compounding memory — every correction improves future proposals without model retraining
 - **Build Orchestrator** — end-to-end product construction from plain-language description (0→1→N pipeline), with Critic Agent review, configurable HITL gates, domain-aware build detection (13 industries), 32 task types, 19 agent roles in 5 workforce teams, adaptive Q-learning router, and anti-drift checkpoints
+- **Orchestrator Intelligence** — 9 SOTA modules: Reflection Engine (bounded self-correction), Plan Selector (beam search), Consensus Engine (multi-agent voting), Event Bus (SSE streaming), Budget Manager (token/cost limits), Tool Executor (ReAct tool calling), Agent Spawner (recursive composition), Backtrack Planner (HTN re-planning), Memory Planner (RAG-in-the-loop)
+- **Collective Intelligence** — Git-backed multi-agent knowledge sharing: agents publish learnings, request help, and search across solutions via semantic search + vector store
+- **Solution Constitution** — Per-solution "blue book" defining agent principles (weighted, non-negotiable), hard constraints, voice/tone, decision rules (auto-approve, escalation keywords), with version history and live editing UI
 
 **Multi-Solution**
 - Switch domains with one click; all agent prompts, task types, and UI labels adapt
