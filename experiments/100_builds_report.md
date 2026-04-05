@@ -1,7 +1,7 @@
 # SAGE Framework — 100-Solution Build Experiment Results
 ## Full Pipeline: Product Owner → Systems Engineer → Build Orchestrator
 
-**Date:** 2026-04-04  
+**Date:** 2026-04-05  
 **Solutions:** 100  
 **Domains:** 10  
 **Pipeline:** PO Requirements → SE Architecture → Domain Detection → Agent Assignment → Task Decomposition → Safety Analysis → HITL Gates
@@ -69,19 +69,19 @@
 **Agents Activated (8):** analyst, developer, devops_engineer, embedded_tester, firmware_engineer, hardware_sim_engineer, qa_engineer, system_engineer
 
 **Task Types (13):**
-- Step 1: `FIRMWARE` → `firmware_engineer` — Criteria: AUTOSAR compliance checked; MISRA C violations zero
-- Step 2: `API` → `developer`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `COMPLIANCE` → `analyst`
-- Step 6: `EMBEDDED_TEST` → `embedded_tester`
-- Step 7: `ARCHITECTURE` → `system_engineer`
-- Step 8: `BACKEND` → `developer`
-- Step 9: `SAFETY` → `analyst` — Criteria: ASIL level determined for each function; Fault tree analysis complete
-- Step 10: `FRONTEND` → `developer`
-- Step 11: `QA` → `qa_engineer`
-- Step 12: `DATABASE` → `developer`
-- Step 13: `HARDWARE_SIM` → `hardware_sim_engineer`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `SAFETY` → `analyst` — Criteria: ASIL level determined for each function; Fault tree analysis complete
+- Step 3: `FRONTEND` → `developer`
+- Step 4: `COMPLIANCE` → `analyst`
+- Step 5: `API` → `developer`
+- Step 6: `ARCHITECTURE` → `system_engineer`
+- Step 7: `TESTS` → `developer`
+- Step 8: `EMBEDDED_TEST` → `embedded_tester`
+- Step 9: `HARDWARE_SIM` → `hardware_sim_engineer`
+- Step 10: `BACKEND` → `developer`
+- Step 11: `DATABASE` → `developer`
+- Step 12: `DEVOPS` → `devops_engineer`
+- Step 13: `FIRMWARE` → `firmware_engineer` — Criteria: AUTOSAR compliance checked; MISRA C violations zero
 
 **Safety Analysis:**
 - FMEA: 4 failure modes analyzed, max RPN=128
@@ -115,19 +115,19 @@
 **Agents Activated (8):** analyst, developer, devops_engineer, embedded_tester, firmware_engineer, hardware_sim_engineer, qa_engineer, system_engineer
 
 **Task Types (13):**
-- Step 1: `FIRMWARE` → `firmware_engineer` — Criteria: AUTOSAR compliance checked; MISRA C violations zero
-- Step 2: `API` → `developer`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `COMPLIANCE` → `analyst`
-- Step 6: `EMBEDDED_TEST` → `embedded_tester`
-- Step 7: `ARCHITECTURE` → `system_engineer`
-- Step 8: `BACKEND` → `developer`
-- Step 9: `SAFETY` → `analyst` — Criteria: ASIL level determined for each function; Fault tree analysis complete
-- Step 10: `FRONTEND` → `developer`
-- Step 11: `QA` → `qa_engineer`
-- Step 12: `DATABASE` → `developer`
-- Step 13: `HARDWARE_SIM` → `hardware_sim_engineer`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `SAFETY` → `analyst` — Criteria: ASIL level determined for each function; Fault tree analysis complete
+- Step 3: `FRONTEND` → `developer`
+- Step 4: `COMPLIANCE` → `analyst`
+- Step 5: `API` → `developer`
+- Step 6: `ARCHITECTURE` → `system_engineer`
+- Step 7: `TESTS` → `developer`
+- Step 8: `EMBEDDED_TEST` → `embedded_tester`
+- Step 9: `HARDWARE_SIM` → `hardware_sim_engineer`
+- Step 10: `BACKEND` → `developer`
+- Step 11: `DATABASE` → `developer`
+- Step 12: `DEVOPS` → `devops_engineer`
+- Step 13: `FIRMWARE` → `firmware_engineer` — Criteria: AUTOSAR compliance checked; MISRA C violations zero
 
 **Safety Analysis:**
 - FMEA: 4 failure modes analyzed, max RPN=96
@@ -161,19 +161,19 @@
 **Agents Activated (8):** analyst, developer, devops_engineer, embedded_tester, firmware_engineer, hardware_sim_engineer, qa_engineer, system_engineer
 
 **Task Types (13):**
-- Step 1: `FIRMWARE` → `firmware_engineer` — Criteria: AUTOSAR compliance checked; MISRA C violations zero
-- Step 2: `API` → `developer`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `COMPLIANCE` → `analyst`
-- Step 6: `EMBEDDED_TEST` → `embedded_tester`
-- Step 7: `ARCHITECTURE` → `system_engineer`
-- Step 8: `BACKEND` → `developer`
-- Step 9: `SAFETY` → `analyst` — Criteria: ASIL level determined for each function; Fault tree analysis complete
-- Step 10: `FRONTEND` → `developer`
-- Step 11: `QA` → `qa_engineer`
-- Step 12: `DATABASE` → `developer`
-- Step 13: `HARDWARE_SIM` → `hardware_sim_engineer`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `SAFETY` → `analyst` — Criteria: ASIL level determined for each function; Fault tree analysis complete
+- Step 3: `FRONTEND` → `developer`
+- Step 4: `COMPLIANCE` → `analyst`
+- Step 5: `API` → `developer`
+- Step 6: `ARCHITECTURE` → `system_engineer`
+- Step 7: `TESTS` → `developer`
+- Step 8: `EMBEDDED_TEST` → `embedded_tester`
+- Step 9: `HARDWARE_SIM` → `hardware_sim_engineer`
+- Step 10: `BACKEND` → `developer`
+- Step 11: `DATABASE` → `developer`
+- Step 12: `DEVOPS` → `devops_engineer`
+- Step 13: `FIRMWARE` → `firmware_engineer` — Criteria: AUTOSAR compliance checked; MISRA C violations zero
 
 **Safety Analysis:**
 - FMEA: 3 failure modes analyzed, max RPN=48
@@ -207,19 +207,19 @@
 **Agents Activated (8):** analyst, developer, devops_engineer, embedded_tester, firmware_engineer, hardware_sim_engineer, qa_engineer, system_engineer
 
 **Task Types (13):**
-- Step 1: `FIRMWARE` → `firmware_engineer` — Criteria: AUTOSAR compliance checked; MISRA C violations zero
-- Step 2: `API` → `developer`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `COMPLIANCE` → `analyst`
-- Step 6: `EMBEDDED_TEST` → `embedded_tester`
-- Step 7: `ARCHITECTURE` → `system_engineer`
-- Step 8: `BACKEND` → `developer`
-- Step 9: `SAFETY` → `analyst` — Criteria: ASIL level determined for each function; Fault tree analysis complete
-- Step 10: `FRONTEND` → `developer`
-- Step 11: `QA` → `qa_engineer`
-- Step 12: `DATABASE` → `developer`
-- Step 13: `HARDWARE_SIM` → `hardware_sim_engineer`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `SAFETY` → `analyst` — Criteria: ASIL level determined for each function; Fault tree analysis complete
+- Step 3: `FRONTEND` → `developer`
+- Step 4: `COMPLIANCE` → `analyst`
+- Step 5: `API` → `developer`
+- Step 6: `ARCHITECTURE` → `system_engineer`
+- Step 7: `TESTS` → `developer`
+- Step 8: `EMBEDDED_TEST` → `embedded_tester`
+- Step 9: `HARDWARE_SIM` → `hardware_sim_engineer`
+- Step 10: `BACKEND` → `developer`
+- Step 11: `DATABASE` → `developer`
+- Step 12: `DEVOPS` → `devops_engineer`
+- Step 13: `FIRMWARE` → `firmware_engineer` — Criteria: AUTOSAR compliance checked; MISRA C violations zero
 
 **Safety Analysis:**
 - FMEA: 3 failure modes analyzed, max RPN=96
@@ -253,19 +253,19 @@
 **Agents Activated (8):** analyst, developer, devops_engineer, embedded_tester, firmware_engineer, hardware_sim_engineer, qa_engineer, system_engineer
 
 **Task Types (13):**
-- Step 1: `FIRMWARE` → `firmware_engineer` — Criteria: AUTOSAR compliance checked; MISRA C violations zero
-- Step 2: `API` → `developer`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `COMPLIANCE` → `analyst`
-- Step 6: `EMBEDDED_TEST` → `embedded_tester`
-- Step 7: `ARCHITECTURE` → `system_engineer`
-- Step 8: `BACKEND` → `developer`
-- Step 9: `SAFETY` → `analyst` — Criteria: ASIL level determined for each function; Fault tree analysis complete
-- Step 10: `FRONTEND` → `developer`
-- Step 11: `QA` → `qa_engineer`
-- Step 12: `DATABASE` → `developer`
-- Step 13: `HARDWARE_SIM` → `hardware_sim_engineer`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `SAFETY` → `analyst` — Criteria: ASIL level determined for each function; Fault tree analysis complete
+- Step 3: `FRONTEND` → `developer`
+- Step 4: `COMPLIANCE` → `analyst`
+- Step 5: `API` → `developer`
+- Step 6: `ARCHITECTURE` → `system_engineer`
+- Step 7: `TESTS` → `developer`
+- Step 8: `EMBEDDED_TEST` → `embedded_tester`
+- Step 9: `HARDWARE_SIM` → `hardware_sim_engineer`
+- Step 10: `BACKEND` → `developer`
+- Step 11: `DATABASE` → `developer`
+- Step 12: `DEVOPS` → `devops_engineer`
+- Step 13: `FIRMWARE` → `firmware_engineer` — Criteria: AUTOSAR compliance checked; MISRA C violations zero
 
 **Safety Analysis:**
 - FMEA: 3 failure modes analyzed, max RPN=64
@@ -300,19 +300,19 @@
 **Agents Activated (8):** analyst, developer, devops_engineer, embedded_tester, firmware_engineer, hardware_sim_engineer, qa_engineer, system_engineer
 
 **Task Types (13):**
-- Step 1: `FIRMWARE` → `firmware_engineer` — Criteria: AUTOSAR compliance checked; MISRA C violations zero
-- Step 2: `API` → `developer`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `COMPLIANCE` → `analyst`
-- Step 6: `EMBEDDED_TEST` → `embedded_tester`
-- Step 7: `ARCHITECTURE` → `system_engineer`
-- Step 8: `BACKEND` → `developer`
-- Step 9: `SAFETY` → `analyst` — Criteria: ASIL level determined for each function; Fault tree analysis complete
-- Step 10: `FRONTEND` → `developer`
-- Step 11: `QA` → `qa_engineer`
-- Step 12: `DATABASE` → `developer`
-- Step 13: `HARDWARE_SIM` → `hardware_sim_engineer`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `SAFETY` → `analyst` — Criteria: ASIL level determined for each function; Fault tree analysis complete
+- Step 3: `FRONTEND` → `developer`
+- Step 4: `COMPLIANCE` → `analyst`
+- Step 5: `API` → `developer`
+- Step 6: `ARCHITECTURE` → `system_engineer`
+- Step 7: `TESTS` → `developer`
+- Step 8: `EMBEDDED_TEST` → `embedded_tester`
+- Step 9: `HARDWARE_SIM` → `hardware_sim_engineer`
+- Step 10: `BACKEND` → `developer`
+- Step 11: `DATABASE` → `developer`
+- Step 12: `DEVOPS` → `devops_engineer`
+- Step 13: `FIRMWARE` → `firmware_engineer` — Criteria: AUTOSAR compliance checked; MISRA C violations zero
 
 **Safety Analysis:**
 - FMEA: 3 failure modes analyzed, max RPN=64
@@ -346,19 +346,19 @@
 **Agents Activated (8):** analyst, developer, devops_engineer, embedded_tester, firmware_engineer, hardware_sim_engineer, qa_engineer, system_engineer
 
 **Task Types (13):**
-- Step 1: `FIRMWARE` → `firmware_engineer` — Criteria: AUTOSAR compliance checked; MISRA C violations zero
-- Step 2: `API` → `developer`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `COMPLIANCE` → `analyst`
-- Step 6: `EMBEDDED_TEST` → `embedded_tester`
-- Step 7: `ARCHITECTURE` → `system_engineer`
-- Step 8: `BACKEND` → `developer`
-- Step 9: `SAFETY` → `analyst` — Criteria: ASIL level determined for each function; Fault tree analysis complete
-- Step 10: `FRONTEND` → `developer`
-- Step 11: `QA` → `qa_engineer`
-- Step 12: `DATABASE` → `developer`
-- Step 13: `HARDWARE_SIM` → `hardware_sim_engineer`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `SAFETY` → `analyst` — Criteria: ASIL level determined for each function; Fault tree analysis complete
+- Step 3: `FRONTEND` → `developer`
+- Step 4: `COMPLIANCE` → `analyst`
+- Step 5: `API` → `developer`
+- Step 6: `ARCHITECTURE` → `system_engineer`
+- Step 7: `TESTS` → `developer`
+- Step 8: `EMBEDDED_TEST` → `embedded_tester`
+- Step 9: `HARDWARE_SIM` → `hardware_sim_engineer`
+- Step 10: `BACKEND` → `developer`
+- Step 11: `DATABASE` → `developer`
+- Step 12: `DEVOPS` → `devops_engineer`
+- Step 13: `FIRMWARE` → `firmware_engineer` — Criteria: AUTOSAR compliance checked; MISRA C violations zero
 
 **Safety Analysis:**
 - FMEA: 3 failure modes analyzed, max RPN=64
@@ -393,19 +393,19 @@
 **Agents Activated (8):** analyst, developer, devops_engineer, embedded_tester, firmware_engineer, hardware_sim_engineer, qa_engineer, system_engineer
 
 **Task Types (13):**
-- Step 1: `FIRMWARE` → `firmware_engineer` — Criteria: AUTOSAR compliance checked; MISRA C violations zero
-- Step 2: `API` → `developer`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `COMPLIANCE` → `analyst`
-- Step 6: `EMBEDDED_TEST` → `embedded_tester`
-- Step 7: `ARCHITECTURE` → `system_engineer`
-- Step 8: `BACKEND` → `developer`
-- Step 9: `SAFETY` → `analyst` — Criteria: ASIL level determined for each function; Fault tree analysis complete
-- Step 10: `FRONTEND` → `developer`
-- Step 11: `QA` → `qa_engineer`
-- Step 12: `DATABASE` → `developer`
-- Step 13: `HARDWARE_SIM` → `hardware_sim_engineer`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `SAFETY` → `analyst` — Criteria: ASIL level determined for each function; Fault tree analysis complete
+- Step 3: `FRONTEND` → `developer`
+- Step 4: `COMPLIANCE` → `analyst`
+- Step 5: `API` → `developer`
+- Step 6: `ARCHITECTURE` → `system_engineer`
+- Step 7: `TESTS` → `developer`
+- Step 8: `EMBEDDED_TEST` → `embedded_tester`
+- Step 9: `HARDWARE_SIM` → `hardware_sim_engineer`
+- Step 10: `BACKEND` → `developer`
+- Step 11: `DATABASE` → `developer`
+- Step 12: `DEVOPS` → `devops_engineer`
+- Step 13: `FIRMWARE` → `firmware_engineer` — Criteria: AUTOSAR compliance checked; MISRA C violations zero
 
 **Safety Analysis:**
 - FMEA: 3 failure modes analyzed, max RPN=72
@@ -439,19 +439,19 @@
 **Agents Activated (8):** analyst, developer, devops_engineer, embedded_tester, firmware_engineer, hardware_sim_engineer, qa_engineer, system_engineer
 
 **Task Types (13):**
-- Step 1: `FIRMWARE` → `firmware_engineer` — Criteria: AUTOSAR compliance checked; MISRA C violations zero
-- Step 2: `API` → `developer`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `COMPLIANCE` → `analyst`
-- Step 6: `EMBEDDED_TEST` → `embedded_tester`
-- Step 7: `ARCHITECTURE` → `system_engineer`
-- Step 8: `BACKEND` → `developer`
-- Step 9: `SAFETY` → `analyst` — Criteria: ASIL level determined for each function; Fault tree analysis complete
-- Step 10: `FRONTEND` → `developer`
-- Step 11: `QA` → `qa_engineer`
-- Step 12: `DATABASE` → `developer`
-- Step 13: `HARDWARE_SIM` → `hardware_sim_engineer`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `SAFETY` → `analyst` — Criteria: ASIL level determined for each function; Fault tree analysis complete
+- Step 3: `FRONTEND` → `developer`
+- Step 4: `COMPLIANCE` → `analyst`
+- Step 5: `API` → `developer`
+- Step 6: `ARCHITECTURE` → `system_engineer`
+- Step 7: `TESTS` → `developer`
+- Step 8: `EMBEDDED_TEST` → `embedded_tester`
+- Step 9: `HARDWARE_SIM` → `hardware_sim_engineer`
+- Step 10: `BACKEND` → `developer`
+- Step 11: `DATABASE` → `developer`
+- Step 12: `DEVOPS` → `devops_engineer`
+- Step 13: `FIRMWARE` → `firmware_engineer` — Criteria: AUTOSAR compliance checked; MISRA C violations zero
 
 **Safety Analysis:**
 - FMEA: 3 failure modes analyzed, max RPN=64
@@ -485,19 +485,19 @@
 **Agents Activated (8):** analyst, developer, devops_engineer, embedded_tester, firmware_engineer, hardware_sim_engineer, qa_engineer, system_engineer
 
 **Task Types (13):**
-- Step 1: `FIRMWARE` → `firmware_engineer` — Criteria: AUTOSAR compliance checked; MISRA C violations zero
-- Step 2: `API` → `developer`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `COMPLIANCE` → `analyst`
-- Step 6: `EMBEDDED_TEST` → `embedded_tester`
-- Step 7: `ARCHITECTURE` → `system_engineer`
-- Step 8: `BACKEND` → `developer`
-- Step 9: `SAFETY` → `analyst` — Criteria: ASIL level determined for each function; Fault tree analysis complete
-- Step 10: `FRONTEND` → `developer`
-- Step 11: `QA` → `qa_engineer`
-- Step 12: `DATABASE` → `developer`
-- Step 13: `HARDWARE_SIM` → `hardware_sim_engineer`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `SAFETY` → `analyst` — Criteria: ASIL level determined for each function; Fault tree analysis complete
+- Step 3: `FRONTEND` → `developer`
+- Step 4: `COMPLIANCE` → `analyst`
+- Step 5: `API` → `developer`
+- Step 6: `ARCHITECTURE` → `system_engineer`
+- Step 7: `TESTS` → `developer`
+- Step 8: `EMBEDDED_TEST` → `embedded_tester`
+- Step 9: `HARDWARE_SIM` → `hardware_sim_engineer`
+- Step 10: `BACKEND` → `developer`
+- Step 11: `DATABASE` → `developer`
+- Step 12: `DEVOPS` → `devops_engineer`
+- Step 13: `FIRMWARE` → `firmware_engineer` — Criteria: AUTOSAR compliance checked; MISRA C violations zero
 
 **Safety Analysis:**
 - FMEA: 3 failure modes analyzed, max RPN=64
@@ -548,19 +548,19 @@
 **Agents Activated (9):** developer, devops_engineer, localization_engineer, marketing_strategist, product_manager, qa_engineer, system_engineer, technical_writer, ux_designer
 
 **Task Types (13):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
-- Step 4: `UX_DESIGN` → `ux_designer` — Criteria: App store screenshot mockups prepared; Onboarding flow under 3 steps
-- Step 5: `LOCALIZATION` → `localization_engineer` — Criteria: Top 5 target locales identified; Store listing translated
-- Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `TRAINING` → `technical_writer`
-- Step 8: `BACKEND` → `developer`
-- Step 9: `PRODUCT_MGMT` → `product_manager`
-- Step 10: `MARKET_RESEARCH` → `marketing_strategist`
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `QA` → `qa_engineer`
-- Step 13: `DATABASE` → `developer`
+- Step 1: `TRAINING` → `technical_writer`
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `MARKET_RESEARCH` → `marketing_strategist`
+- Step 4: `LOCALIZATION` → `localization_engineer` — Criteria: Top 5 target locales identified; Store listing translated
+- Step 5: `UX_DESIGN` → `ux_designer` — Criteria: App store screenshot mockups prepared; Onboarding flow under 3 steps
+- Step 6: `FRONTEND` → `developer`
+- Step 7: `API` → `developer`
+- Step 8: `ARCHITECTURE` → `system_engineer`
+- Step 9: `TESTS` → `developer`
+- Step 10: `PRODUCT_MGMT` → `product_manager`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
 
 ---
 
@@ -590,19 +590,19 @@
 **Agents Activated (9):** developer, devops_engineer, localization_engineer, marketing_strategist, product_manager, qa_engineer, system_engineer, technical_writer, ux_designer
 
 **Task Types (13):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
-- Step 4: `UX_DESIGN` → `ux_designer` — Criteria: App store screenshot mockups prepared; Onboarding flow under 3 steps
-- Step 5: `LOCALIZATION` → `localization_engineer` — Criteria: Top 5 target locales identified; Store listing translated
-- Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `TRAINING` → `technical_writer`
-- Step 8: `BACKEND` → `developer`
-- Step 9: `PRODUCT_MGMT` → `product_manager`
-- Step 10: `MARKET_RESEARCH` → `marketing_strategist`
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `QA` → `qa_engineer`
-- Step 13: `DATABASE` → `developer`
+- Step 1: `TRAINING` → `technical_writer`
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `MARKET_RESEARCH` → `marketing_strategist`
+- Step 4: `LOCALIZATION` → `localization_engineer` — Criteria: Top 5 target locales identified; Store listing translated
+- Step 5: `UX_DESIGN` → `ux_designer` — Criteria: App store screenshot mockups prepared; Onboarding flow under 3 steps
+- Step 6: `FRONTEND` → `developer`
+- Step 7: `API` → `developer`
+- Step 8: `ARCHITECTURE` → `system_engineer`
+- Step 9: `TESTS` → `developer`
+- Step 10: `PRODUCT_MGMT` → `product_manager`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
 
 ---
 
@@ -633,19 +633,19 @@
 **Agents Activated (9):** developer, devops_engineer, localization_engineer, marketing_strategist, product_manager, qa_engineer, system_engineer, technical_writer, ux_designer
 
 **Task Types (13):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
-- Step 4: `UX_DESIGN` → `ux_designer` — Criteria: App store screenshot mockups prepared; Onboarding flow under 3 steps
-- Step 5: `LOCALIZATION` → `localization_engineer` — Criteria: Top 5 target locales identified; Store listing translated
-- Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `TRAINING` → `technical_writer`
-- Step 8: `BACKEND` → `developer`
-- Step 9: `PRODUCT_MGMT` → `product_manager`
-- Step 10: `MARKET_RESEARCH` → `marketing_strategist`
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `QA` → `qa_engineer`
-- Step 13: `DATABASE` → `developer`
+- Step 1: `TRAINING` → `technical_writer`
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `MARKET_RESEARCH` → `marketing_strategist`
+- Step 4: `LOCALIZATION` → `localization_engineer` — Criteria: Top 5 target locales identified; Store listing translated
+- Step 5: `UX_DESIGN` → `ux_designer` — Criteria: App store screenshot mockups prepared; Onboarding flow under 3 steps
+- Step 6: `FRONTEND` → `developer`
+- Step 7: `API` → `developer`
+- Step 8: `ARCHITECTURE` → `system_engineer`
+- Step 9: `TESTS` → `developer`
+- Step 10: `PRODUCT_MGMT` → `product_manager`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
 
 ---
 
@@ -675,19 +675,19 @@
 **Agents Activated (9):** developer, devops_engineer, localization_engineer, marketing_strategist, product_manager, qa_engineer, system_engineer, technical_writer, ux_designer
 
 **Task Types (13):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
-- Step 4: `UX_DESIGN` → `ux_designer` — Criteria: App store screenshot mockups prepared; Onboarding flow under 3 steps
-- Step 5: `LOCALIZATION` → `localization_engineer` — Criteria: Top 5 target locales identified; Store listing translated
-- Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `TRAINING` → `technical_writer`
-- Step 8: `BACKEND` → `developer`
-- Step 9: `PRODUCT_MGMT` → `product_manager`
-- Step 10: `MARKET_RESEARCH` → `marketing_strategist`
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `QA` → `qa_engineer`
-- Step 13: `DATABASE` → `developer`
+- Step 1: `TRAINING` → `technical_writer`
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `MARKET_RESEARCH` → `marketing_strategist`
+- Step 4: `LOCALIZATION` → `localization_engineer` — Criteria: Top 5 target locales identified; Store listing translated
+- Step 5: `UX_DESIGN` → `ux_designer` — Criteria: App store screenshot mockups prepared; Onboarding flow under 3 steps
+- Step 6: `FRONTEND` → `developer`
+- Step 7: `API` → `developer`
+- Step 8: `ARCHITECTURE` → `system_engineer`
+- Step 9: `TESTS` → `developer`
+- Step 10: `PRODUCT_MGMT` → `product_manager`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
 
 ---
 
@@ -717,19 +717,19 @@
 **Agents Activated (9):** developer, devops_engineer, localization_engineer, marketing_strategist, product_manager, qa_engineer, system_engineer, technical_writer, ux_designer
 
 **Task Types (13):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
-- Step 4: `UX_DESIGN` → `ux_designer` — Criteria: App store screenshot mockups prepared; Onboarding flow under 3 steps
-- Step 5: `LOCALIZATION` → `localization_engineer` — Criteria: Top 5 target locales identified; Store listing translated
-- Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `TRAINING` → `technical_writer`
-- Step 8: `BACKEND` → `developer`
-- Step 9: `PRODUCT_MGMT` → `product_manager`
-- Step 10: `MARKET_RESEARCH` → `marketing_strategist`
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `QA` → `qa_engineer`
-- Step 13: `DATABASE` → `developer`
+- Step 1: `TRAINING` → `technical_writer`
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `MARKET_RESEARCH` → `marketing_strategist`
+- Step 4: `LOCALIZATION` → `localization_engineer` — Criteria: Top 5 target locales identified; Store listing translated
+- Step 5: `UX_DESIGN` → `ux_designer` — Criteria: App store screenshot mockups prepared; Onboarding flow under 3 steps
+- Step 6: `FRONTEND` → `developer`
+- Step 7: `API` → `developer`
+- Step 8: `ARCHITECTURE` → `system_engineer`
+- Step 9: `TESTS` → `developer`
+- Step 10: `PRODUCT_MGMT` → `product_manager`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
 
 ---
 
@@ -760,19 +760,19 @@
 **Agents Activated (9):** developer, devops_engineer, localization_engineer, marketing_strategist, product_manager, qa_engineer, system_engineer, technical_writer, ux_designer
 
 **Task Types (13):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
-- Step 4: `UX_DESIGN` → `ux_designer` — Criteria: App store screenshot mockups prepared; Onboarding flow under 3 steps
-- Step 5: `LOCALIZATION` → `localization_engineer` — Criteria: Top 5 target locales identified; Store listing translated
-- Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `TRAINING` → `technical_writer`
-- Step 8: `BACKEND` → `developer`
-- Step 9: `PRODUCT_MGMT` → `product_manager`
-- Step 10: `MARKET_RESEARCH` → `marketing_strategist`
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `QA` → `qa_engineer`
-- Step 13: `DATABASE` → `developer`
+- Step 1: `TRAINING` → `technical_writer`
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `MARKET_RESEARCH` → `marketing_strategist`
+- Step 4: `LOCALIZATION` → `localization_engineer` — Criteria: Top 5 target locales identified; Store listing translated
+- Step 5: `UX_DESIGN` → `ux_designer` — Criteria: App store screenshot mockups prepared; Onboarding flow under 3 steps
+- Step 6: `FRONTEND` → `developer`
+- Step 7: `API` → `developer`
+- Step 8: `ARCHITECTURE` → `system_engineer`
+- Step 9: `TESTS` → `developer`
+- Step 10: `PRODUCT_MGMT` → `product_manager`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
 
 ---
 
@@ -802,19 +802,19 @@
 **Agents Activated (9):** developer, devops_engineer, localization_engineer, marketing_strategist, product_manager, qa_engineer, system_engineer, technical_writer, ux_designer
 
 **Task Types (13):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
-- Step 4: `UX_DESIGN` → `ux_designer` — Criteria: App store screenshot mockups prepared; Onboarding flow under 3 steps
-- Step 5: `LOCALIZATION` → `localization_engineer` — Criteria: Top 5 target locales identified; Store listing translated
-- Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `TRAINING` → `technical_writer`
-- Step 8: `BACKEND` → `developer`
-- Step 9: `PRODUCT_MGMT` → `product_manager`
-- Step 10: `MARKET_RESEARCH` → `marketing_strategist`
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `QA` → `qa_engineer`
-- Step 13: `DATABASE` → `developer`
+- Step 1: `TRAINING` → `technical_writer`
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `MARKET_RESEARCH` → `marketing_strategist`
+- Step 4: `LOCALIZATION` → `localization_engineer` — Criteria: Top 5 target locales identified; Store listing translated
+- Step 5: `UX_DESIGN` → `ux_designer` — Criteria: App store screenshot mockups prepared; Onboarding flow under 3 steps
+- Step 6: `FRONTEND` → `developer`
+- Step 7: `API` → `developer`
+- Step 8: `ARCHITECTURE` → `system_engineer`
+- Step 9: `TESTS` → `developer`
+- Step 10: `PRODUCT_MGMT` → `product_manager`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
 
 ---
 
@@ -844,19 +844,19 @@
 **Agents Activated (9):** developer, devops_engineer, localization_engineer, marketing_strategist, product_manager, qa_engineer, system_engineer, technical_writer, ux_designer
 
 **Task Types (13):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
-- Step 4: `UX_DESIGN` → `ux_designer` — Criteria: App store screenshot mockups prepared; Onboarding flow under 3 steps
-- Step 5: `LOCALIZATION` → `localization_engineer` — Criteria: Top 5 target locales identified; Store listing translated
-- Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `TRAINING` → `technical_writer`
-- Step 8: `BACKEND` → `developer`
-- Step 9: `PRODUCT_MGMT` → `product_manager`
-- Step 10: `MARKET_RESEARCH` → `marketing_strategist`
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `QA` → `qa_engineer`
-- Step 13: `DATABASE` → `developer`
+- Step 1: `TRAINING` → `technical_writer`
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `MARKET_RESEARCH` → `marketing_strategist`
+- Step 4: `LOCALIZATION` → `localization_engineer` — Criteria: Top 5 target locales identified; Store listing translated
+- Step 5: `UX_DESIGN` → `ux_designer` — Criteria: App store screenshot mockups prepared; Onboarding flow under 3 steps
+- Step 6: `FRONTEND` → `developer`
+- Step 7: `API` → `developer`
+- Step 8: `ARCHITECTURE` → `system_engineer`
+- Step 9: `TESTS` → `developer`
+- Step 10: `PRODUCT_MGMT` → `product_manager`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
 
 ---
 
@@ -886,19 +886,19 @@
 **Agents Activated (9):** developer, devops_engineer, localization_engineer, marketing_strategist, product_manager, qa_engineer, system_engineer, technical_writer, ux_designer
 
 **Task Types (13):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
-- Step 4: `UX_DESIGN` → `ux_designer` — Criteria: App store screenshot mockups prepared; Onboarding flow under 3 steps
-- Step 5: `LOCALIZATION` → `localization_engineer` — Criteria: Top 5 target locales identified; Store listing translated
-- Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `TRAINING` → `technical_writer`
-- Step 8: `BACKEND` → `developer`
-- Step 9: `PRODUCT_MGMT` → `product_manager`
-- Step 10: `MARKET_RESEARCH` → `marketing_strategist`
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `QA` → `qa_engineer`
-- Step 13: `DATABASE` → `developer`
+- Step 1: `TRAINING` → `technical_writer`
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `MARKET_RESEARCH` → `marketing_strategist`
+- Step 4: `LOCALIZATION` → `localization_engineer` — Criteria: Top 5 target locales identified; Store listing translated
+- Step 5: `UX_DESIGN` → `ux_designer` — Criteria: App store screenshot mockups prepared; Onboarding flow under 3 steps
+- Step 6: `FRONTEND` → `developer`
+- Step 7: `API` → `developer`
+- Step 8: `ARCHITECTURE` → `system_engineer`
+- Step 9: `TESTS` → `developer`
+- Step 10: `PRODUCT_MGMT` → `product_manager`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
 
 ---
 
@@ -928,19 +928,19 @@
 **Agents Activated (9):** developer, devops_engineer, localization_engineer, marketing_strategist, product_manager, qa_engineer, system_engineer, technical_writer, ux_designer
 
 **Task Types (13):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
-- Step 4: `UX_DESIGN` → `ux_designer` — Criteria: App store screenshot mockups prepared; Onboarding flow under 3 steps
-- Step 5: `LOCALIZATION` → `localization_engineer` — Criteria: Top 5 target locales identified; Store listing translated
-- Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `TRAINING` → `technical_writer`
-- Step 8: `BACKEND` → `developer`
-- Step 9: `PRODUCT_MGMT` → `product_manager`
-- Step 10: `MARKET_RESEARCH` → `marketing_strategist`
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `QA` → `qa_engineer`
-- Step 13: `DATABASE` → `developer`
+- Step 1: `TRAINING` → `technical_writer`
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `MARKET_RESEARCH` → `marketing_strategist`
+- Step 4: `LOCALIZATION` → `localization_engineer` — Criteria: Top 5 target locales identified; Store listing translated
+- Step 5: `UX_DESIGN` → `ux_designer` — Criteria: App store screenshot mockups prepared; Onboarding flow under 3 steps
+- Step 6: `FRONTEND` → `developer`
+- Step 7: `API` → `developer`
+- Step 8: `ARCHITECTURE` → `system_engineer`
+- Step 9: `TESTS` → `developer`
+- Step 10: `PRODUCT_MGMT` → `product_manager`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
 
 ---
 
@@ -987,20 +987,20 @@
 **Agents Activated (10):** analyst, developer, devops_engineer, financial_analyst, legal_advisor, marketing_strategist, operations_manager, qa_engineer, system_engineer, ux_designer
 
 **Task Types (14):**
-- Step 1: `API` → `developer`
-- Step 2: `FINANCIAL` → `financial_analyst`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `UX_DESIGN` → `ux_designer`
-- Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `BACKEND` → `developer`
-- Step 8: `OPERATIONS` → `operations_manager`
-- Step 9: `MARKET_RESEARCH` → `marketing_strategist`
-- Step 10: `FRONTEND` → `developer`
-- Step 11: `SECURITY` → `analyst` — Criteria: Payment flow PCI compliant; Fraud detection rules defined
-- Step 12: `LEGAL` → `legal_advisor` — Criteria: Return/refund policy drafted; Consumer protection compliance checked
-- Step 13: `QA` → `qa_engineer`
-- Step 14: `DATABASE` → `developer`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `SECURITY` → `analyst` — Criteria: Payment flow PCI compliant; Fraud detection rules defined
+- Step 3: `MARKET_RESEARCH` → `marketing_strategist`
+- Step 4: `OPERATIONS` → `operations_manager`
+- Step 5: `LEGAL` → `legal_advisor` — Criteria: Return/refund policy drafted; Consumer protection compliance checked
+- Step 6: `UX_DESIGN` → `ux_designer`
+- Step 7: `FRONTEND` → `developer`
+- Step 8: `API` → `developer`
+- Step 9: `ARCHITECTURE` → `system_engineer`
+- Step 10: `TESTS` → `developer`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
+- Step 14: `FINANCIAL` → `financial_analyst`
 
 ---
 
@@ -1031,20 +1031,20 @@
 **Agents Activated (10):** analyst, developer, devops_engineer, financial_analyst, legal_advisor, marketing_strategist, operations_manager, qa_engineer, system_engineer, ux_designer
 
 **Task Types (14):**
-- Step 1: `API` → `developer`
-- Step 2: `FINANCIAL` → `financial_analyst`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `UX_DESIGN` → `ux_designer`
-- Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `BACKEND` → `developer`
-- Step 8: `OPERATIONS` → `operations_manager`
-- Step 9: `MARKET_RESEARCH` → `marketing_strategist`
-- Step 10: `FRONTEND` → `developer`
-- Step 11: `SECURITY` → `analyst` — Criteria: Payment flow PCI compliant; Fraud detection rules defined
-- Step 12: `LEGAL` → `legal_advisor` — Criteria: Return/refund policy drafted; Consumer protection compliance checked
-- Step 13: `QA` → `qa_engineer`
-- Step 14: `DATABASE` → `developer`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `SECURITY` → `analyst` — Criteria: Payment flow PCI compliant; Fraud detection rules defined
+- Step 3: `MARKET_RESEARCH` → `marketing_strategist`
+- Step 4: `OPERATIONS` → `operations_manager`
+- Step 5: `LEGAL` → `legal_advisor` — Criteria: Return/refund policy drafted; Consumer protection compliance checked
+- Step 6: `UX_DESIGN` → `ux_designer`
+- Step 7: `FRONTEND` → `developer`
+- Step 8: `API` → `developer`
+- Step 9: `ARCHITECTURE` → `system_engineer`
+- Step 10: `TESTS` → `developer`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
+- Step 14: `FINANCIAL` → `financial_analyst`
 
 ---
 
@@ -1074,20 +1074,20 @@
 **Agents Activated (10):** analyst, developer, devops_engineer, financial_analyst, legal_advisor, marketing_strategist, operations_manager, qa_engineer, system_engineer, ux_designer
 
 **Task Types (14):**
-- Step 1: `API` → `developer`
-- Step 2: `FINANCIAL` → `financial_analyst`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `UX_DESIGN` → `ux_designer`
-- Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `BACKEND` → `developer`
-- Step 8: `OPERATIONS` → `operations_manager`
-- Step 9: `MARKET_RESEARCH` → `marketing_strategist`
-- Step 10: `FRONTEND` → `developer`
-- Step 11: `SECURITY` → `analyst` — Criteria: Payment flow PCI compliant; Fraud detection rules defined
-- Step 12: `LEGAL` → `legal_advisor` — Criteria: Return/refund policy drafted; Consumer protection compliance checked
-- Step 13: `QA` → `qa_engineer`
-- Step 14: `DATABASE` → `developer`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `SECURITY` → `analyst` — Criteria: Payment flow PCI compliant; Fraud detection rules defined
+- Step 3: `MARKET_RESEARCH` → `marketing_strategist`
+- Step 4: `OPERATIONS` → `operations_manager`
+- Step 5: `LEGAL` → `legal_advisor` — Criteria: Return/refund policy drafted; Consumer protection compliance checked
+- Step 6: `UX_DESIGN` → `ux_designer`
+- Step 7: `FRONTEND` → `developer`
+- Step 8: `API` → `developer`
+- Step 9: `ARCHITECTURE` → `system_engineer`
+- Step 10: `TESTS` → `developer`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
+- Step 14: `FINANCIAL` → `financial_analyst`
 
 ---
 
@@ -1117,20 +1117,20 @@
 **Agents Activated (10):** analyst, developer, devops_engineer, financial_analyst, legal_advisor, marketing_strategist, operations_manager, qa_engineer, system_engineer, ux_designer
 
 **Task Types (14):**
-- Step 1: `API` → `developer`
-- Step 2: `FINANCIAL` → `financial_analyst`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `UX_DESIGN` → `ux_designer`
-- Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `BACKEND` → `developer`
-- Step 8: `OPERATIONS` → `operations_manager`
-- Step 9: `MARKET_RESEARCH` → `marketing_strategist`
-- Step 10: `FRONTEND` → `developer`
-- Step 11: `SECURITY` → `analyst` — Criteria: Payment flow PCI compliant; Fraud detection rules defined
-- Step 12: `LEGAL` → `legal_advisor` — Criteria: Return/refund policy drafted; Consumer protection compliance checked
-- Step 13: `QA` → `qa_engineer`
-- Step 14: `DATABASE` → `developer`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `SECURITY` → `analyst` — Criteria: Payment flow PCI compliant; Fraud detection rules defined
+- Step 3: `MARKET_RESEARCH` → `marketing_strategist`
+- Step 4: `OPERATIONS` → `operations_manager`
+- Step 5: `LEGAL` → `legal_advisor` — Criteria: Return/refund policy drafted; Consumer protection compliance checked
+- Step 6: `UX_DESIGN` → `ux_designer`
+- Step 7: `FRONTEND` → `developer`
+- Step 8: `API` → `developer`
+- Step 9: `ARCHITECTURE` → `system_engineer`
+- Step 10: `TESTS` → `developer`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
+- Step 14: `FINANCIAL` → `financial_analyst`
 
 ---
 
@@ -1160,20 +1160,20 @@
 **Agents Activated (10):** analyst, developer, devops_engineer, financial_analyst, legal_advisor, marketing_strategist, operations_manager, qa_engineer, system_engineer, ux_designer
 
 **Task Types (14):**
-- Step 1: `API` → `developer`
-- Step 2: `FINANCIAL` → `financial_analyst`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `UX_DESIGN` → `ux_designer`
-- Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `BACKEND` → `developer`
-- Step 8: `OPERATIONS` → `operations_manager`
-- Step 9: `MARKET_RESEARCH` → `marketing_strategist`
-- Step 10: `FRONTEND` → `developer`
-- Step 11: `SECURITY` → `analyst` — Criteria: Payment flow PCI compliant; Fraud detection rules defined
-- Step 12: `LEGAL` → `legal_advisor` — Criteria: Return/refund policy drafted; Consumer protection compliance checked
-- Step 13: `QA` → `qa_engineer`
-- Step 14: `DATABASE` → `developer`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `SECURITY` → `analyst` — Criteria: Payment flow PCI compliant; Fraud detection rules defined
+- Step 3: `MARKET_RESEARCH` → `marketing_strategist`
+- Step 4: `OPERATIONS` → `operations_manager`
+- Step 5: `LEGAL` → `legal_advisor` — Criteria: Return/refund policy drafted; Consumer protection compliance checked
+- Step 6: `UX_DESIGN` → `ux_designer`
+- Step 7: `FRONTEND` → `developer`
+- Step 8: `API` → `developer`
+- Step 9: `ARCHITECTURE` → `system_engineer`
+- Step 10: `TESTS` → `developer`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
+- Step 14: `FINANCIAL` → `financial_analyst`
 
 ---
 
@@ -1203,20 +1203,20 @@
 **Agents Activated (10):** analyst, developer, devops_engineer, financial_analyst, legal_advisor, marketing_strategist, operations_manager, qa_engineer, system_engineer, ux_designer
 
 **Task Types (14):**
-- Step 1: `API` → `developer`
-- Step 2: `FINANCIAL` → `financial_analyst`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `UX_DESIGN` → `ux_designer`
-- Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `BACKEND` → `developer`
-- Step 8: `OPERATIONS` → `operations_manager`
-- Step 9: `MARKET_RESEARCH` → `marketing_strategist`
-- Step 10: `FRONTEND` → `developer`
-- Step 11: `SECURITY` → `analyst` — Criteria: Payment flow PCI compliant; Fraud detection rules defined
-- Step 12: `LEGAL` → `legal_advisor` — Criteria: Return/refund policy drafted; Consumer protection compliance checked
-- Step 13: `QA` → `qa_engineer`
-- Step 14: `DATABASE` → `developer`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `SECURITY` → `analyst` — Criteria: Payment flow PCI compliant; Fraud detection rules defined
+- Step 3: `MARKET_RESEARCH` → `marketing_strategist`
+- Step 4: `OPERATIONS` → `operations_manager`
+- Step 5: `LEGAL` → `legal_advisor` — Criteria: Return/refund policy drafted; Consumer protection compliance checked
+- Step 6: `UX_DESIGN` → `ux_designer`
+- Step 7: `FRONTEND` → `developer`
+- Step 8: `API` → `developer`
+- Step 9: `ARCHITECTURE` → `system_engineer`
+- Step 10: `TESTS` → `developer`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
+- Step 14: `FINANCIAL` → `financial_analyst`
 
 ---
 
@@ -1246,20 +1246,20 @@
 **Agents Activated (10):** analyst, developer, devops_engineer, financial_analyst, legal_advisor, marketing_strategist, operations_manager, qa_engineer, system_engineer, ux_designer
 
 **Task Types (14):**
-- Step 1: `API` → `developer`
-- Step 2: `FINANCIAL` → `financial_analyst`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `UX_DESIGN` → `ux_designer`
-- Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `BACKEND` → `developer`
-- Step 8: `OPERATIONS` → `operations_manager`
-- Step 9: `MARKET_RESEARCH` → `marketing_strategist`
-- Step 10: `FRONTEND` → `developer`
-- Step 11: `SECURITY` → `analyst` — Criteria: Payment flow PCI compliant; Fraud detection rules defined
-- Step 12: `LEGAL` → `legal_advisor` — Criteria: Return/refund policy drafted; Consumer protection compliance checked
-- Step 13: `QA` → `qa_engineer`
-- Step 14: `DATABASE` → `developer`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `SECURITY` → `analyst` — Criteria: Payment flow PCI compliant; Fraud detection rules defined
+- Step 3: `MARKET_RESEARCH` → `marketing_strategist`
+- Step 4: `OPERATIONS` → `operations_manager`
+- Step 5: `LEGAL` → `legal_advisor` — Criteria: Return/refund policy drafted; Consumer protection compliance checked
+- Step 6: `UX_DESIGN` → `ux_designer`
+- Step 7: `FRONTEND` → `developer`
+- Step 8: `API` → `developer`
+- Step 9: `ARCHITECTURE` → `system_engineer`
+- Step 10: `TESTS` → `developer`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
+- Step 14: `FINANCIAL` → `financial_analyst`
 
 ---
 
@@ -1289,20 +1289,20 @@
 **Agents Activated (10):** analyst, developer, devops_engineer, financial_analyst, legal_advisor, marketing_strategist, operations_manager, qa_engineer, system_engineer, ux_designer
 
 **Task Types (14):**
-- Step 1: `API` → `developer`
-- Step 2: `FINANCIAL` → `financial_analyst`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `UX_DESIGN` → `ux_designer`
-- Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `BACKEND` → `developer`
-- Step 8: `OPERATIONS` → `operations_manager`
-- Step 9: `MARKET_RESEARCH` → `marketing_strategist`
-- Step 10: `FRONTEND` → `developer`
-- Step 11: `SECURITY` → `analyst` — Criteria: Payment flow PCI compliant; Fraud detection rules defined
-- Step 12: `LEGAL` → `legal_advisor` — Criteria: Return/refund policy drafted; Consumer protection compliance checked
-- Step 13: `QA` → `qa_engineer`
-- Step 14: `DATABASE` → `developer`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `SECURITY` → `analyst` — Criteria: Payment flow PCI compliant; Fraud detection rules defined
+- Step 3: `MARKET_RESEARCH` → `marketing_strategist`
+- Step 4: `OPERATIONS` → `operations_manager`
+- Step 5: `LEGAL` → `legal_advisor` — Criteria: Return/refund policy drafted; Consumer protection compliance checked
+- Step 6: `UX_DESIGN` → `ux_designer`
+- Step 7: `FRONTEND` → `developer`
+- Step 8: `API` → `developer`
+- Step 9: `ARCHITECTURE` → `system_engineer`
+- Step 10: `TESTS` → `developer`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
+- Step 14: `FINANCIAL` → `financial_analyst`
 
 ---
 
@@ -1332,20 +1332,20 @@
 **Agents Activated (10):** analyst, developer, devops_engineer, financial_analyst, legal_advisor, marketing_strategist, operations_manager, qa_engineer, system_engineer, ux_designer
 
 **Task Types (14):**
-- Step 1: `API` → `developer`
-- Step 2: `FINANCIAL` → `financial_analyst`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `UX_DESIGN` → `ux_designer`
-- Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `BACKEND` → `developer`
-- Step 8: `OPERATIONS` → `operations_manager`
-- Step 9: `MARKET_RESEARCH` → `marketing_strategist`
-- Step 10: `FRONTEND` → `developer`
-- Step 11: `SECURITY` → `analyst` — Criteria: Payment flow PCI compliant; Fraud detection rules defined
-- Step 12: `LEGAL` → `legal_advisor` — Criteria: Return/refund policy drafted; Consumer protection compliance checked
-- Step 13: `QA` → `qa_engineer`
-- Step 14: `DATABASE` → `developer`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `SECURITY` → `analyst` — Criteria: Payment flow PCI compliant; Fraud detection rules defined
+- Step 3: `MARKET_RESEARCH` → `marketing_strategist`
+- Step 4: `OPERATIONS` → `operations_manager`
+- Step 5: `LEGAL` → `legal_advisor` — Criteria: Return/refund policy drafted; Consumer protection compliance checked
+- Step 6: `UX_DESIGN` → `ux_designer`
+- Step 7: `FRONTEND` → `developer`
+- Step 8: `API` → `developer`
+- Step 9: `ARCHITECTURE` → `system_engineer`
+- Step 10: `TESTS` → `developer`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
+- Step 14: `FINANCIAL` → `financial_analyst`
 
 ---
 
@@ -1376,20 +1376,20 @@
 **Agents Activated (10):** analyst, developer, devops_engineer, financial_analyst, legal_advisor, marketing_strategist, operations_manager, qa_engineer, system_engineer, ux_designer
 
 **Task Types (14):**
-- Step 1: `API` → `developer`
-- Step 2: `FINANCIAL` → `financial_analyst`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `UX_DESIGN` → `ux_designer`
-- Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `BACKEND` → `developer`
-- Step 8: `OPERATIONS` → `operations_manager`
-- Step 9: `MARKET_RESEARCH` → `marketing_strategist`
-- Step 10: `FRONTEND` → `developer`
-- Step 11: `SECURITY` → `analyst` — Criteria: Payment flow PCI compliant; Fraud detection rules defined
-- Step 12: `LEGAL` → `legal_advisor` — Criteria: Return/refund policy drafted; Consumer protection compliance checked
-- Step 13: `QA` → `qa_engineer`
-- Step 14: `DATABASE` → `developer`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `SECURITY` → `analyst` — Criteria: Payment flow PCI compliant; Fraud detection rules defined
+- Step 3: `MARKET_RESEARCH` → `marketing_strategist`
+- Step 4: `OPERATIONS` → `operations_manager`
+- Step 5: `LEGAL` → `legal_advisor` — Criteria: Return/refund policy drafted; Consumer protection compliance checked
+- Step 6: `UX_DESIGN` → `ux_designer`
+- Step 7: `FRONTEND` → `developer`
+- Step 8: `API` → `developer`
+- Step 9: `ARCHITECTURE` → `system_engineer`
+- Step 10: `TESTS` → `developer`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
+- Step 14: `FINANCIAL` → `financial_analyst`
 
 ---
 
@@ -1437,19 +1437,19 @@
 **Agents Activated (9):** business_analyst, developer, devops_engineer, localization_engineer, product_manager, qa_engineer, system_engineer, technical_writer, ux_designer
 
 **Task Types (13):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
-- Step 4: `UX_DESIGN` → `ux_designer` — Criteria: Accessibility for learners with disabilities; Mobile-responsive for student devices
-- Step 5: `BUSINESS_ANALYSIS` → `business_analyst`
-- Step 6: `LOCALIZATION` → `localization_engineer`
-- Step 7: `ARCHITECTURE` → `system_engineer`
-- Step 8: `TRAINING` → `technical_writer`
-- Step 9: `BACKEND` → `developer`
+- Step 1: `TRAINING` → `technical_writer`
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `BUSINESS_ANALYSIS` → `business_analyst`
+- Step 4: `LOCALIZATION` → `localization_engineer`
+- Step 5: `UX_DESIGN` → `ux_designer` — Criteria: Accessibility for learners with disabilities; Mobile-responsive for student devices
+- Step 6: `FRONTEND` → `developer`
+- Step 7: `API` → `developer`
+- Step 8: `ARCHITECTURE` → `system_engineer`
+- Step 9: `TESTS` → `developer`
 - Step 10: `PRODUCT_MGMT` → `product_manager`
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `QA` → `qa_engineer`
-- Step 13: `DATABASE` → `developer`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
 
 ---
 
@@ -1480,19 +1480,19 @@
 **Agents Activated (9):** business_analyst, developer, devops_engineer, localization_engineer, product_manager, qa_engineer, system_engineer, technical_writer, ux_designer
 
 **Task Types (13):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
-- Step 4: `UX_DESIGN` → `ux_designer` — Criteria: Accessibility for learners with disabilities; Mobile-responsive for student devices
-- Step 5: `BUSINESS_ANALYSIS` → `business_analyst`
-- Step 6: `LOCALIZATION` → `localization_engineer`
-- Step 7: `ARCHITECTURE` → `system_engineer`
-- Step 8: `TRAINING` → `technical_writer`
-- Step 9: `BACKEND` → `developer`
+- Step 1: `TRAINING` → `technical_writer`
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `BUSINESS_ANALYSIS` → `business_analyst`
+- Step 4: `LOCALIZATION` → `localization_engineer`
+- Step 5: `UX_DESIGN` → `ux_designer` — Criteria: Accessibility for learners with disabilities; Mobile-responsive for student devices
+- Step 6: `FRONTEND` → `developer`
+- Step 7: `API` → `developer`
+- Step 8: `ARCHITECTURE` → `system_engineer`
+- Step 9: `TESTS` → `developer`
 - Step 10: `PRODUCT_MGMT` → `product_manager`
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `QA` → `qa_engineer`
-- Step 13: `DATABASE` → `developer`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
 
 ---
 
@@ -1522,19 +1522,19 @@
 **Agents Activated (9):** business_analyst, developer, devops_engineer, localization_engineer, product_manager, qa_engineer, system_engineer, technical_writer, ux_designer
 
 **Task Types (13):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
-- Step 4: `UX_DESIGN` → `ux_designer` — Criteria: Accessibility for learners with disabilities; Mobile-responsive for student devices
-- Step 5: `BUSINESS_ANALYSIS` → `business_analyst`
-- Step 6: `LOCALIZATION` → `localization_engineer`
-- Step 7: `ARCHITECTURE` → `system_engineer`
-- Step 8: `TRAINING` → `technical_writer`
-- Step 9: `BACKEND` → `developer`
+- Step 1: `TRAINING` → `technical_writer`
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `BUSINESS_ANALYSIS` → `business_analyst`
+- Step 4: `LOCALIZATION` → `localization_engineer`
+- Step 5: `UX_DESIGN` → `ux_designer` — Criteria: Accessibility for learners with disabilities; Mobile-responsive for student devices
+- Step 6: `FRONTEND` → `developer`
+- Step 7: `API` → `developer`
+- Step 8: `ARCHITECTURE` → `system_engineer`
+- Step 9: `TESTS` → `developer`
 - Step 10: `PRODUCT_MGMT` → `product_manager`
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `QA` → `qa_engineer`
-- Step 13: `DATABASE` → `developer`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
 
 ---
 
@@ -1564,19 +1564,19 @@
 **Agents Activated (9):** business_analyst, developer, devops_engineer, localization_engineer, product_manager, qa_engineer, system_engineer, technical_writer, ux_designer
 
 **Task Types (13):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
-- Step 4: `UX_DESIGN` → `ux_designer` — Criteria: Accessibility for learners with disabilities; Mobile-responsive for student devices
-- Step 5: `BUSINESS_ANALYSIS` → `business_analyst`
-- Step 6: `LOCALIZATION` → `localization_engineer`
-- Step 7: `ARCHITECTURE` → `system_engineer`
-- Step 8: `TRAINING` → `technical_writer`
-- Step 9: `BACKEND` → `developer`
+- Step 1: `TRAINING` → `technical_writer`
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `BUSINESS_ANALYSIS` → `business_analyst`
+- Step 4: `LOCALIZATION` → `localization_engineer`
+- Step 5: `UX_DESIGN` → `ux_designer` — Criteria: Accessibility for learners with disabilities; Mobile-responsive for student devices
+- Step 6: `FRONTEND` → `developer`
+- Step 7: `API` → `developer`
+- Step 8: `ARCHITECTURE` → `system_engineer`
+- Step 9: `TESTS` → `developer`
 - Step 10: `PRODUCT_MGMT` → `product_manager`
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `QA` → `qa_engineer`
-- Step 13: `DATABASE` → `developer`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
 
 ---
 
@@ -1606,19 +1606,19 @@
 **Agents Activated (9):** business_analyst, developer, devops_engineer, localization_engineer, product_manager, qa_engineer, system_engineer, technical_writer, ux_designer
 
 **Task Types (13):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
-- Step 4: `UX_DESIGN` → `ux_designer` — Criteria: Accessibility for learners with disabilities; Mobile-responsive for student devices
-- Step 5: `BUSINESS_ANALYSIS` → `business_analyst`
-- Step 6: `LOCALIZATION` → `localization_engineer`
-- Step 7: `ARCHITECTURE` → `system_engineer`
-- Step 8: `TRAINING` → `technical_writer`
-- Step 9: `BACKEND` → `developer`
+- Step 1: `TRAINING` → `technical_writer`
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `BUSINESS_ANALYSIS` → `business_analyst`
+- Step 4: `LOCALIZATION` → `localization_engineer`
+- Step 5: `UX_DESIGN` → `ux_designer` — Criteria: Accessibility for learners with disabilities; Mobile-responsive for student devices
+- Step 6: `FRONTEND` → `developer`
+- Step 7: `API` → `developer`
+- Step 8: `ARCHITECTURE` → `system_engineer`
+- Step 9: `TESTS` → `developer`
 - Step 10: `PRODUCT_MGMT` → `product_manager`
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `QA` → `qa_engineer`
-- Step 13: `DATABASE` → `developer`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
 
 ---
 
@@ -1648,19 +1648,19 @@
 **Agents Activated (9):** business_analyst, developer, devops_engineer, localization_engineer, product_manager, qa_engineer, system_engineer, technical_writer, ux_designer
 
 **Task Types (13):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
-- Step 4: `UX_DESIGN` → `ux_designer` — Criteria: Accessibility for learners with disabilities; Mobile-responsive for student devices
-- Step 5: `BUSINESS_ANALYSIS` → `business_analyst`
-- Step 6: `LOCALIZATION` → `localization_engineer`
-- Step 7: `ARCHITECTURE` → `system_engineer`
-- Step 8: `TRAINING` → `technical_writer`
-- Step 9: `BACKEND` → `developer`
+- Step 1: `TRAINING` → `technical_writer`
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `BUSINESS_ANALYSIS` → `business_analyst`
+- Step 4: `LOCALIZATION` → `localization_engineer`
+- Step 5: `UX_DESIGN` → `ux_designer` — Criteria: Accessibility for learners with disabilities; Mobile-responsive for student devices
+- Step 6: `FRONTEND` → `developer`
+- Step 7: `API` → `developer`
+- Step 8: `ARCHITECTURE` → `system_engineer`
+- Step 9: `TESTS` → `developer`
 - Step 10: `PRODUCT_MGMT` → `product_manager`
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `QA` → `qa_engineer`
-- Step 13: `DATABASE` → `developer`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
 
 ---
 
@@ -1690,19 +1690,19 @@
 **Agents Activated (9):** business_analyst, developer, devops_engineer, localization_engineer, product_manager, qa_engineer, system_engineer, technical_writer, ux_designer
 
 **Task Types (13):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
-- Step 4: `UX_DESIGN` → `ux_designer` — Criteria: Accessibility for learners with disabilities; Mobile-responsive for student devices
-- Step 5: `BUSINESS_ANALYSIS` → `business_analyst`
-- Step 6: `LOCALIZATION` → `localization_engineer`
-- Step 7: `ARCHITECTURE` → `system_engineer`
-- Step 8: `TRAINING` → `technical_writer`
-- Step 9: `BACKEND` → `developer`
+- Step 1: `TRAINING` → `technical_writer`
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `BUSINESS_ANALYSIS` → `business_analyst`
+- Step 4: `LOCALIZATION` → `localization_engineer`
+- Step 5: `UX_DESIGN` → `ux_designer` — Criteria: Accessibility for learners with disabilities; Mobile-responsive for student devices
+- Step 6: `FRONTEND` → `developer`
+- Step 7: `API` → `developer`
+- Step 8: `ARCHITECTURE` → `system_engineer`
+- Step 9: `TESTS` → `developer`
 - Step 10: `PRODUCT_MGMT` → `product_manager`
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `QA` → `qa_engineer`
-- Step 13: `DATABASE` → `developer`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
 
 ---
 
@@ -1733,19 +1733,19 @@
 **Agents Activated (9):** business_analyst, developer, devops_engineer, localization_engineer, product_manager, qa_engineer, system_engineer, technical_writer, ux_designer
 
 **Task Types (13):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
-- Step 4: `UX_DESIGN` → `ux_designer` — Criteria: Accessibility for learners with disabilities; Mobile-responsive for student devices
-- Step 5: `BUSINESS_ANALYSIS` → `business_analyst`
-- Step 6: `LOCALIZATION` → `localization_engineer`
-- Step 7: `ARCHITECTURE` → `system_engineer`
-- Step 8: `TRAINING` → `technical_writer`
-- Step 9: `BACKEND` → `developer`
+- Step 1: `TRAINING` → `technical_writer`
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `BUSINESS_ANALYSIS` → `business_analyst`
+- Step 4: `LOCALIZATION` → `localization_engineer`
+- Step 5: `UX_DESIGN` → `ux_designer` — Criteria: Accessibility for learners with disabilities; Mobile-responsive for student devices
+- Step 6: `FRONTEND` → `developer`
+- Step 7: `API` → `developer`
+- Step 8: `ARCHITECTURE` → `system_engineer`
+- Step 9: `TESTS` → `developer`
 - Step 10: `PRODUCT_MGMT` → `product_manager`
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `QA` → `qa_engineer`
-- Step 13: `DATABASE` → `developer`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
 
 ---
 
@@ -1775,19 +1775,19 @@
 **Agents Activated (9):** business_analyst, developer, devops_engineer, localization_engineer, product_manager, qa_engineer, system_engineer, technical_writer, ux_designer
 
 **Task Types (13):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
-- Step 4: `UX_DESIGN` → `ux_designer` — Criteria: Accessibility for learners with disabilities; Mobile-responsive for student devices
-- Step 5: `BUSINESS_ANALYSIS` → `business_analyst`
-- Step 6: `LOCALIZATION` → `localization_engineer`
-- Step 7: `ARCHITECTURE` → `system_engineer`
-- Step 8: `TRAINING` → `technical_writer`
-- Step 9: `BACKEND` → `developer`
+- Step 1: `TRAINING` → `technical_writer`
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `BUSINESS_ANALYSIS` → `business_analyst`
+- Step 4: `LOCALIZATION` → `localization_engineer`
+- Step 5: `UX_DESIGN` → `ux_designer` — Criteria: Accessibility for learners with disabilities; Mobile-responsive for student devices
+- Step 6: `FRONTEND` → `developer`
+- Step 7: `API` → `developer`
+- Step 8: `ARCHITECTURE` → `system_engineer`
+- Step 9: `TESTS` → `developer`
 - Step 10: `PRODUCT_MGMT` → `product_manager`
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `QA` → `qa_engineer`
-- Step 13: `DATABASE` → `developer`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
 
 ---
 
@@ -1817,19 +1817,19 @@
 **Agents Activated (9):** business_analyst, developer, devops_engineer, localization_engineer, product_manager, qa_engineer, system_engineer, technical_writer, ux_designer
 
 **Task Types (13):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
-- Step 4: `UX_DESIGN` → `ux_designer` — Criteria: Accessibility for learners with disabilities; Mobile-responsive for student devices
-- Step 5: `BUSINESS_ANALYSIS` → `business_analyst`
-- Step 6: `LOCALIZATION` → `localization_engineer`
-- Step 7: `ARCHITECTURE` → `system_engineer`
-- Step 8: `TRAINING` → `technical_writer`
-- Step 9: `BACKEND` → `developer`
+- Step 1: `TRAINING` → `technical_writer`
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `BUSINESS_ANALYSIS` → `business_analyst`
+- Step 4: `LOCALIZATION` → `localization_engineer`
+- Step 5: `UX_DESIGN` → `ux_designer` — Criteria: Accessibility for learners with disabilities; Mobile-responsive for student devices
+- Step 6: `FRONTEND` → `developer`
+- Step 7: `API` → `developer`
+- Step 8: `ARCHITECTURE` → `system_engineer`
+- Step 9: `TESTS` → `developer`
 - Step 10: `PRODUCT_MGMT` → `product_manager`
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `QA` → `qa_engineer`
-- Step 13: `DATABASE` → `developer`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
 
 ---
 
@@ -1877,20 +1877,20 @@
 **Agents Activated (10):** business_analyst, developer, devops_engineer, legal_advisor, operations_manager, product_manager, qa_engineer, system_engineer, system_tester, technical_writer
 
 **Task Types (14):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
+- Step 1: `TRAINING` → `technical_writer` — Criteria: Admin guide separate from end-user guide; Role-based training paths defined
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `OPERATIONS` → `operations_manager`
 - Step 4: `BUSINESS_ANALYSIS` → `business_analyst` — Criteria: Integration points with existing systems mapped; Migration plan drafted
-- Step 5: `SYSTEM_TEST` → `system_tester` — Criteria: Load test simulates expected concurrent users; Failover scenario tested
-- Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `TRAINING` → `technical_writer` — Criteria: Admin guide separate from end-user guide; Role-based training paths defined
-- Step 8: `BACKEND` → `developer`
-- Step 9: `PRODUCT_MGMT` → `product_manager`
-- Step 10: `OPERATIONS` → `operations_manager`
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `LEGAL` → `legal_advisor`
-- Step 13: `QA` → `qa_engineer`
-- Step 14: `DATABASE` → `developer`
+- Step 5: `LEGAL` → `legal_advisor`
+- Step 6: `FRONTEND` → `developer`
+- Step 7: `API` → `developer`
+- Step 8: `ARCHITECTURE` → `system_engineer`
+- Step 9: `TESTS` → `developer`
+- Step 10: `PRODUCT_MGMT` → `product_manager`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
+- Step 14: `SYSTEM_TEST` → `system_tester` — Criteria: Load test simulates expected concurrent users; Failover scenario tested
 
 ---
 
@@ -1921,20 +1921,20 @@
 **Agents Activated (10):** business_analyst, developer, devops_engineer, legal_advisor, operations_manager, product_manager, qa_engineer, system_engineer, system_tester, technical_writer
 
 **Task Types (14):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
+- Step 1: `TRAINING` → `technical_writer` — Criteria: Admin guide separate from end-user guide; Role-based training paths defined
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `OPERATIONS` → `operations_manager`
 - Step 4: `BUSINESS_ANALYSIS` → `business_analyst` — Criteria: Integration points with existing systems mapped; Migration plan drafted
-- Step 5: `SYSTEM_TEST` → `system_tester` — Criteria: Load test simulates expected concurrent users; Failover scenario tested
-- Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `TRAINING` → `technical_writer` — Criteria: Admin guide separate from end-user guide; Role-based training paths defined
-- Step 8: `BACKEND` → `developer`
-- Step 9: `PRODUCT_MGMT` → `product_manager`
-- Step 10: `OPERATIONS` → `operations_manager`
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `LEGAL` → `legal_advisor`
-- Step 13: `QA` → `qa_engineer`
-- Step 14: `DATABASE` → `developer`
+- Step 5: `LEGAL` → `legal_advisor`
+- Step 6: `FRONTEND` → `developer`
+- Step 7: `API` → `developer`
+- Step 8: `ARCHITECTURE` → `system_engineer`
+- Step 9: `TESTS` → `developer`
+- Step 10: `PRODUCT_MGMT` → `product_manager`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
+- Step 14: `SYSTEM_TEST` → `system_tester` — Criteria: Load test simulates expected concurrent users; Failover scenario tested
 
 ---
 
@@ -1965,20 +1965,20 @@
 **Agents Activated (10):** business_analyst, developer, devops_engineer, legal_advisor, operations_manager, product_manager, qa_engineer, system_engineer, system_tester, technical_writer
 
 **Task Types (14):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
+- Step 1: `TRAINING` → `technical_writer` — Criteria: Admin guide separate from end-user guide; Role-based training paths defined
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `OPERATIONS` → `operations_manager`
 - Step 4: `BUSINESS_ANALYSIS` → `business_analyst` — Criteria: Integration points with existing systems mapped; Migration plan drafted
-- Step 5: `SYSTEM_TEST` → `system_tester` — Criteria: Load test simulates expected concurrent users; Failover scenario tested
-- Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `TRAINING` → `technical_writer` — Criteria: Admin guide separate from end-user guide; Role-based training paths defined
-- Step 8: `BACKEND` → `developer`
-- Step 9: `PRODUCT_MGMT` → `product_manager`
-- Step 10: `OPERATIONS` → `operations_manager`
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `LEGAL` → `legal_advisor`
-- Step 13: `QA` → `qa_engineer`
-- Step 14: `DATABASE` → `developer`
+- Step 5: `LEGAL` → `legal_advisor`
+- Step 6: `FRONTEND` → `developer`
+- Step 7: `API` → `developer`
+- Step 8: `ARCHITECTURE` → `system_engineer`
+- Step 9: `TESTS` → `developer`
+- Step 10: `PRODUCT_MGMT` → `product_manager`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
+- Step 14: `SYSTEM_TEST` → `system_tester` — Criteria: Load test simulates expected concurrent users; Failover scenario tested
 
 ---
 
@@ -2009,20 +2009,20 @@
 **Agents Activated (10):** business_analyst, developer, devops_engineer, legal_advisor, operations_manager, product_manager, qa_engineer, system_engineer, system_tester, technical_writer
 
 **Task Types (14):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
+- Step 1: `TRAINING` → `technical_writer` — Criteria: Admin guide separate from end-user guide; Role-based training paths defined
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `OPERATIONS` → `operations_manager`
 - Step 4: `BUSINESS_ANALYSIS` → `business_analyst` — Criteria: Integration points with existing systems mapped; Migration plan drafted
-- Step 5: `SYSTEM_TEST` → `system_tester` — Criteria: Load test simulates expected concurrent users; Failover scenario tested
-- Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `TRAINING` → `technical_writer` — Criteria: Admin guide separate from end-user guide; Role-based training paths defined
-- Step 8: `BACKEND` → `developer`
-- Step 9: `PRODUCT_MGMT` → `product_manager`
-- Step 10: `OPERATIONS` → `operations_manager`
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `LEGAL` → `legal_advisor`
-- Step 13: `QA` → `qa_engineer`
-- Step 14: `DATABASE` → `developer`
+- Step 5: `LEGAL` → `legal_advisor`
+- Step 6: `FRONTEND` → `developer`
+- Step 7: `API` → `developer`
+- Step 8: `ARCHITECTURE` → `system_engineer`
+- Step 9: `TESTS` → `developer`
+- Step 10: `PRODUCT_MGMT` → `product_manager`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
+- Step 14: `SYSTEM_TEST` → `system_tester` — Criteria: Load test simulates expected concurrent users; Failover scenario tested
 
 ---
 
@@ -2053,20 +2053,20 @@
 **Agents Activated (10):** business_analyst, developer, devops_engineer, legal_advisor, operations_manager, product_manager, qa_engineer, system_engineer, system_tester, technical_writer
 
 **Task Types (14):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
+- Step 1: `TRAINING` → `technical_writer` — Criteria: Admin guide separate from end-user guide; Role-based training paths defined
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `OPERATIONS` → `operations_manager`
 - Step 4: `BUSINESS_ANALYSIS` → `business_analyst` — Criteria: Integration points with existing systems mapped; Migration plan drafted
-- Step 5: `SYSTEM_TEST` → `system_tester` — Criteria: Load test simulates expected concurrent users; Failover scenario tested
-- Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `TRAINING` → `technical_writer` — Criteria: Admin guide separate from end-user guide; Role-based training paths defined
-- Step 8: `BACKEND` → `developer`
-- Step 9: `PRODUCT_MGMT` → `product_manager`
-- Step 10: `OPERATIONS` → `operations_manager`
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `LEGAL` → `legal_advisor`
-- Step 13: `QA` → `qa_engineer`
-- Step 14: `DATABASE` → `developer`
+- Step 5: `LEGAL` → `legal_advisor`
+- Step 6: `FRONTEND` → `developer`
+- Step 7: `API` → `developer`
+- Step 8: `ARCHITECTURE` → `system_engineer`
+- Step 9: `TESTS` → `developer`
+- Step 10: `PRODUCT_MGMT` → `product_manager`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
+- Step 14: `SYSTEM_TEST` → `system_tester` — Criteria: Load test simulates expected concurrent users; Failover scenario tested
 
 ---
 
@@ -2097,20 +2097,20 @@
 **Agents Activated (10):** business_analyst, developer, devops_engineer, legal_advisor, operations_manager, product_manager, qa_engineer, system_engineer, system_tester, technical_writer
 
 **Task Types (14):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
+- Step 1: `TRAINING` → `technical_writer` — Criteria: Admin guide separate from end-user guide; Role-based training paths defined
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `OPERATIONS` → `operations_manager`
 - Step 4: `BUSINESS_ANALYSIS` → `business_analyst` — Criteria: Integration points with existing systems mapped; Migration plan drafted
-- Step 5: `SYSTEM_TEST` → `system_tester` — Criteria: Load test simulates expected concurrent users; Failover scenario tested
-- Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `TRAINING` → `technical_writer` — Criteria: Admin guide separate from end-user guide; Role-based training paths defined
-- Step 8: `BACKEND` → `developer`
-- Step 9: `PRODUCT_MGMT` → `product_manager`
-- Step 10: `OPERATIONS` → `operations_manager`
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `LEGAL` → `legal_advisor`
-- Step 13: `QA` → `qa_engineer`
-- Step 14: `DATABASE` → `developer`
+- Step 5: `LEGAL` → `legal_advisor`
+- Step 6: `FRONTEND` → `developer`
+- Step 7: `API` → `developer`
+- Step 8: `ARCHITECTURE` → `system_engineer`
+- Step 9: `TESTS` → `developer`
+- Step 10: `PRODUCT_MGMT` → `product_manager`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
+- Step 14: `SYSTEM_TEST` → `system_tester` — Criteria: Load test simulates expected concurrent users; Failover scenario tested
 
 ---
 
@@ -2141,20 +2141,20 @@
 **Agents Activated (10):** business_analyst, developer, devops_engineer, legal_advisor, operations_manager, product_manager, qa_engineer, system_engineer, system_tester, technical_writer
 
 **Task Types (14):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
+- Step 1: `TRAINING` → `technical_writer` — Criteria: Admin guide separate from end-user guide; Role-based training paths defined
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `OPERATIONS` → `operations_manager`
 - Step 4: `BUSINESS_ANALYSIS` → `business_analyst` — Criteria: Integration points with existing systems mapped; Migration plan drafted
-- Step 5: `SYSTEM_TEST` → `system_tester` — Criteria: Load test simulates expected concurrent users; Failover scenario tested
-- Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `TRAINING` → `technical_writer` — Criteria: Admin guide separate from end-user guide; Role-based training paths defined
-- Step 8: `BACKEND` → `developer`
-- Step 9: `PRODUCT_MGMT` → `product_manager`
-- Step 10: `OPERATIONS` → `operations_manager`
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `LEGAL` → `legal_advisor`
-- Step 13: `QA` → `qa_engineer`
-- Step 14: `DATABASE` → `developer`
+- Step 5: `LEGAL` → `legal_advisor`
+- Step 6: `FRONTEND` → `developer`
+- Step 7: `API` → `developer`
+- Step 8: `ARCHITECTURE` → `system_engineer`
+- Step 9: `TESTS` → `developer`
+- Step 10: `PRODUCT_MGMT` → `product_manager`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
+- Step 14: `SYSTEM_TEST` → `system_tester` — Criteria: Load test simulates expected concurrent users; Failover scenario tested
 
 ---
 
@@ -2185,20 +2185,20 @@
 **Agents Activated (10):** business_analyst, developer, devops_engineer, legal_advisor, operations_manager, product_manager, qa_engineer, system_engineer, system_tester, technical_writer
 
 **Task Types (14):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
+- Step 1: `TRAINING` → `technical_writer` — Criteria: Admin guide separate from end-user guide; Role-based training paths defined
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `OPERATIONS` → `operations_manager`
 - Step 4: `BUSINESS_ANALYSIS` → `business_analyst` — Criteria: Integration points with existing systems mapped; Migration plan drafted
-- Step 5: `SYSTEM_TEST` → `system_tester` — Criteria: Load test simulates expected concurrent users; Failover scenario tested
-- Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `TRAINING` → `technical_writer` — Criteria: Admin guide separate from end-user guide; Role-based training paths defined
-- Step 8: `BACKEND` → `developer`
-- Step 9: `PRODUCT_MGMT` → `product_manager`
-- Step 10: `OPERATIONS` → `operations_manager`
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `LEGAL` → `legal_advisor`
-- Step 13: `QA` → `qa_engineer`
-- Step 14: `DATABASE` → `developer`
+- Step 5: `LEGAL` → `legal_advisor`
+- Step 6: `FRONTEND` → `developer`
+- Step 7: `API` → `developer`
+- Step 8: `ARCHITECTURE` → `system_engineer`
+- Step 9: `TESTS` → `developer`
+- Step 10: `PRODUCT_MGMT` → `product_manager`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
+- Step 14: `SYSTEM_TEST` → `system_tester` — Criteria: Load test simulates expected concurrent users; Failover scenario tested
 
 ---
 
@@ -2229,20 +2229,20 @@
 **Agents Activated (10):** business_analyst, developer, devops_engineer, legal_advisor, operations_manager, product_manager, qa_engineer, system_engineer, system_tester, technical_writer
 
 **Task Types (14):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
+- Step 1: `TRAINING` → `technical_writer` — Criteria: Admin guide separate from end-user guide; Role-based training paths defined
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `OPERATIONS` → `operations_manager`
 - Step 4: `BUSINESS_ANALYSIS` → `business_analyst` — Criteria: Integration points with existing systems mapped; Migration plan drafted
-- Step 5: `SYSTEM_TEST` → `system_tester` — Criteria: Load test simulates expected concurrent users; Failover scenario tested
-- Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `TRAINING` → `technical_writer` — Criteria: Admin guide separate from end-user guide; Role-based training paths defined
-- Step 8: `BACKEND` → `developer`
-- Step 9: `PRODUCT_MGMT` → `product_manager`
-- Step 10: `OPERATIONS` → `operations_manager`
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `LEGAL` → `legal_advisor`
-- Step 13: `QA` → `qa_engineer`
-- Step 14: `DATABASE` → `developer`
+- Step 5: `LEGAL` → `legal_advisor`
+- Step 6: `FRONTEND` → `developer`
+- Step 7: `API` → `developer`
+- Step 8: `ARCHITECTURE` → `system_engineer`
+- Step 9: `TESTS` → `developer`
+- Step 10: `PRODUCT_MGMT` → `product_manager`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
+- Step 14: `SYSTEM_TEST` → `system_tester` — Criteria: Load test simulates expected concurrent users; Failover scenario tested
 
 ---
 
@@ -2273,20 +2273,20 @@
 **Agents Activated (10):** business_analyst, developer, devops_engineer, legal_advisor, operations_manager, product_manager, qa_engineer, system_engineer, system_tester, technical_writer
 
 **Task Types (14):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
+- Step 1: `TRAINING` → `technical_writer` — Criteria: Admin guide separate from end-user guide; Role-based training paths defined
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `OPERATIONS` → `operations_manager`
 - Step 4: `BUSINESS_ANALYSIS` → `business_analyst` — Criteria: Integration points with existing systems mapped; Migration plan drafted
-- Step 5: `SYSTEM_TEST` → `system_tester` — Criteria: Load test simulates expected concurrent users; Failover scenario tested
-- Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `TRAINING` → `technical_writer` — Criteria: Admin guide separate from end-user guide; Role-based training paths defined
-- Step 8: `BACKEND` → `developer`
-- Step 9: `PRODUCT_MGMT` → `product_manager`
-- Step 10: `OPERATIONS` → `operations_manager`
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `LEGAL` → `legal_advisor`
-- Step 13: `QA` → `qa_engineer`
-- Step 14: `DATABASE` → `developer`
+- Step 5: `LEGAL` → `legal_advisor`
+- Step 6: `FRONTEND` → `developer`
+- Step 7: `API` → `developer`
+- Step 8: `ARCHITECTURE` → `system_engineer`
+- Step 9: `TESTS` → `developer`
+- Step 10: `PRODUCT_MGMT` → `product_manager`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
+- Step 14: `SYSTEM_TEST` → `system_tester` — Criteria: Load test simulates expected concurrent users; Failover scenario tested
 
 ---
 
@@ -2334,16 +2334,16 @@
 **Agents Activated (5):** analyst, developer, devops_engineer, qa_engineer, system_engineer
 
 **Task Types (10):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
-- Step 4: `COMPLIANCE` → `analyst`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `FRONTEND` → `developer`
+- Step 3: `COMPLIANCE` → `analyst`
+- Step 4: `API` → `developer`
 - Step 5: `ARCHITECTURE` → `system_engineer`
-- Step 6: `BACKEND` → `developer`
-- Step 7: `FRONTEND` → `developer`
-- Step 8: `SECURITY` → `analyst` — Criteria: PCI DSS SAQ completed; Encryption at rest and in transit
-- Step 9: `QA` → `qa_engineer`
-- Step 10: `DATABASE` → `developer` — Criteria: Transaction isolation level documented; Audit trail on all writes
+- Step 6: `TESTS` → `developer`
+- Step 7: `BACKEND` → `developer`
+- Step 8: `DATABASE` → `developer` — Criteria: Transaction isolation level documented; Audit trail on all writes
+- Step 9: `DEVOPS` → `devops_engineer`
+- Step 10: `SECURITY` → `analyst` — Criteria: PCI DSS SAQ completed; Encryption at rest and in transit
 
 ---
 
@@ -2374,16 +2374,16 @@
 **Agents Activated (5):** analyst, developer, devops_engineer, qa_engineer, system_engineer
 
 **Task Types (10):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
-- Step 4: `COMPLIANCE` → `analyst`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `FRONTEND` → `developer`
+- Step 3: `COMPLIANCE` → `analyst`
+- Step 4: `API` → `developer`
 - Step 5: `ARCHITECTURE` → `system_engineer`
-- Step 6: `BACKEND` → `developer`
-- Step 7: `FRONTEND` → `developer`
-- Step 8: `SECURITY` → `analyst` — Criteria: PCI DSS SAQ completed; Encryption at rest and in transit
-- Step 9: `QA` → `qa_engineer`
-- Step 10: `DATABASE` → `developer` — Criteria: Transaction isolation level documented; Audit trail on all writes
+- Step 6: `TESTS` → `developer`
+- Step 7: `BACKEND` → `developer`
+- Step 8: `DATABASE` → `developer` — Criteria: Transaction isolation level documented; Audit trail on all writes
+- Step 9: `DEVOPS` → `devops_engineer`
+- Step 10: `SECURITY` → `analyst` — Criteria: PCI DSS SAQ completed; Encryption at rest and in transit
 
 ---
 
@@ -2413,16 +2413,16 @@
 **Agents Activated (5):** analyst, developer, devops_engineer, qa_engineer, system_engineer
 
 **Task Types (10):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
-- Step 4: `COMPLIANCE` → `analyst`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `FRONTEND` → `developer`
+- Step 3: `COMPLIANCE` → `analyst`
+- Step 4: `API` → `developer`
 - Step 5: `ARCHITECTURE` → `system_engineer`
-- Step 6: `BACKEND` → `developer`
-- Step 7: `FRONTEND` → `developer`
-- Step 8: `SECURITY` → `analyst` — Criteria: PCI DSS SAQ completed; Encryption at rest and in transit
-- Step 9: `QA` → `qa_engineer`
-- Step 10: `DATABASE` → `developer` — Criteria: Transaction isolation level documented; Audit trail on all writes
+- Step 6: `TESTS` → `developer`
+- Step 7: `BACKEND` → `developer`
+- Step 8: `DATABASE` → `developer` — Criteria: Transaction isolation level documented; Audit trail on all writes
+- Step 9: `DEVOPS` → `devops_engineer`
+- Step 10: `SECURITY` → `analyst` — Criteria: PCI DSS SAQ completed; Encryption at rest and in transit
 
 ---
 
@@ -2452,16 +2452,16 @@
 **Agents Activated (5):** analyst, developer, devops_engineer, qa_engineer, system_engineer
 
 **Task Types (10):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
-- Step 4: `COMPLIANCE` → `analyst`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `FRONTEND` → `developer`
+- Step 3: `COMPLIANCE` → `analyst`
+- Step 4: `API` → `developer`
 - Step 5: `ARCHITECTURE` → `system_engineer`
-- Step 6: `BACKEND` → `developer`
-- Step 7: `FRONTEND` → `developer`
-- Step 8: `SECURITY` → `analyst` — Criteria: PCI DSS SAQ completed; Encryption at rest and in transit
-- Step 9: `QA` → `qa_engineer`
-- Step 10: `DATABASE` → `developer` — Criteria: Transaction isolation level documented; Audit trail on all writes
+- Step 6: `TESTS` → `developer`
+- Step 7: `BACKEND` → `developer`
+- Step 8: `DATABASE` → `developer` — Criteria: Transaction isolation level documented; Audit trail on all writes
+- Step 9: `DEVOPS` → `devops_engineer`
+- Step 10: `SECURITY` → `analyst` — Criteria: PCI DSS SAQ completed; Encryption at rest and in transit
 
 ---
 
@@ -2491,16 +2491,16 @@
 **Agents Activated (5):** analyst, developer, devops_engineer, qa_engineer, system_engineer
 
 **Task Types (10):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
-- Step 4: `COMPLIANCE` → `analyst`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `FRONTEND` → `developer`
+- Step 3: `COMPLIANCE` → `analyst`
+- Step 4: `API` → `developer`
 - Step 5: `ARCHITECTURE` → `system_engineer`
-- Step 6: `BACKEND` → `developer`
-- Step 7: `FRONTEND` → `developer`
-- Step 8: `SECURITY` → `analyst` — Criteria: PCI DSS SAQ completed; Encryption at rest and in transit
-- Step 9: `QA` → `qa_engineer`
-- Step 10: `DATABASE` → `developer` — Criteria: Transaction isolation level documented; Audit trail on all writes
+- Step 6: `TESTS` → `developer`
+- Step 7: `BACKEND` → `developer`
+- Step 8: `DATABASE` → `developer` — Criteria: Transaction isolation level documented; Audit trail on all writes
+- Step 9: `DEVOPS` → `devops_engineer`
+- Step 10: `SECURITY` → `analyst` — Criteria: PCI DSS SAQ completed; Encryption at rest and in transit
 
 ---
 
@@ -2530,16 +2530,16 @@
 **Agents Activated (5):** analyst, developer, devops_engineer, qa_engineer, system_engineer
 
 **Task Types (10):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
-- Step 4: `COMPLIANCE` → `analyst`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `FRONTEND` → `developer`
+- Step 3: `COMPLIANCE` → `analyst`
+- Step 4: `API` → `developer`
 - Step 5: `ARCHITECTURE` → `system_engineer`
-- Step 6: `BACKEND` → `developer`
-- Step 7: `FRONTEND` → `developer`
-- Step 8: `SECURITY` → `analyst` — Criteria: PCI DSS SAQ completed; Encryption at rest and in transit
-- Step 9: `QA` → `qa_engineer`
-- Step 10: `DATABASE` → `developer` — Criteria: Transaction isolation level documented; Audit trail on all writes
+- Step 6: `TESTS` → `developer`
+- Step 7: `BACKEND` → `developer`
+- Step 8: `DATABASE` → `developer` — Criteria: Transaction isolation level documented; Audit trail on all writes
+- Step 9: `DEVOPS` → `devops_engineer`
+- Step 10: `SECURITY` → `analyst` — Criteria: PCI DSS SAQ completed; Encryption at rest and in transit
 
 ---
 
@@ -2569,16 +2569,16 @@
 **Agents Activated (5):** analyst, developer, devops_engineer, qa_engineer, system_engineer
 
 **Task Types (10):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
-- Step 4: `COMPLIANCE` → `analyst`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `FRONTEND` → `developer`
+- Step 3: `COMPLIANCE` → `analyst`
+- Step 4: `API` → `developer`
 - Step 5: `ARCHITECTURE` → `system_engineer`
-- Step 6: `BACKEND` → `developer`
-- Step 7: `FRONTEND` → `developer`
-- Step 8: `SECURITY` → `analyst` — Criteria: PCI DSS SAQ completed; Encryption at rest and in transit
-- Step 9: `QA` → `qa_engineer`
-- Step 10: `DATABASE` → `developer` — Criteria: Transaction isolation level documented; Audit trail on all writes
+- Step 6: `TESTS` → `developer`
+- Step 7: `BACKEND` → `developer`
+- Step 8: `DATABASE` → `developer` — Criteria: Transaction isolation level documented; Audit trail on all writes
+- Step 9: `DEVOPS` → `devops_engineer`
+- Step 10: `SECURITY` → `analyst` — Criteria: PCI DSS SAQ completed; Encryption at rest and in transit
 
 ---
 
@@ -2609,16 +2609,16 @@
 **Agents Activated (5):** analyst, developer, devops_engineer, qa_engineer, system_engineer
 
 **Task Types (10):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
-- Step 4: `COMPLIANCE` → `analyst`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `FRONTEND` → `developer`
+- Step 3: `COMPLIANCE` → `analyst`
+- Step 4: `API` → `developer`
 - Step 5: `ARCHITECTURE` → `system_engineer`
-- Step 6: `BACKEND` → `developer`
-- Step 7: `FRONTEND` → `developer`
-- Step 8: `SECURITY` → `analyst` — Criteria: PCI DSS SAQ completed; Encryption at rest and in transit
-- Step 9: `QA` → `qa_engineer`
-- Step 10: `DATABASE` → `developer` — Criteria: Transaction isolation level documented; Audit trail on all writes
+- Step 6: `TESTS` → `developer`
+- Step 7: `BACKEND` → `developer`
+- Step 8: `DATABASE` → `developer` — Criteria: Transaction isolation level documented; Audit trail on all writes
+- Step 9: `DEVOPS` → `devops_engineer`
+- Step 10: `SECURITY` → `analyst` — Criteria: PCI DSS SAQ completed; Encryption at rest and in transit
 
 ---
 
@@ -2649,16 +2649,16 @@
 **Agents Activated (5):** analyst, developer, devops_engineer, qa_engineer, system_engineer
 
 **Task Types (10):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
-- Step 4: `COMPLIANCE` → `analyst`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `FRONTEND` → `developer`
+- Step 3: `COMPLIANCE` → `analyst`
+- Step 4: `API` → `developer`
 - Step 5: `ARCHITECTURE` → `system_engineer`
-- Step 6: `BACKEND` → `developer`
-- Step 7: `FRONTEND` → `developer`
-- Step 8: `SECURITY` → `analyst` — Criteria: PCI DSS SAQ completed; Encryption at rest and in transit
-- Step 9: `QA` → `qa_engineer`
-- Step 10: `DATABASE` → `developer` — Criteria: Transaction isolation level documented; Audit trail on all writes
+- Step 6: `TESTS` → `developer`
+- Step 7: `BACKEND` → `developer`
+- Step 8: `DATABASE` → `developer` — Criteria: Transaction isolation level documented; Audit trail on all writes
+- Step 9: `DEVOPS` → `devops_engineer`
+- Step 10: `SECURITY` → `analyst` — Criteria: PCI DSS SAQ completed; Encryption at rest and in transit
 
 ---
 
@@ -2688,16 +2688,16 @@
 **Agents Activated (5):** analyst, developer, devops_engineer, qa_engineer, system_engineer
 
 **Task Types (10):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
-- Step 4: `COMPLIANCE` → `analyst`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `FRONTEND` → `developer`
+- Step 3: `COMPLIANCE` → `analyst`
+- Step 4: `API` → `developer`
 - Step 5: `ARCHITECTURE` → `system_engineer`
-- Step 6: `BACKEND` → `developer`
-- Step 7: `FRONTEND` → `developer`
-- Step 8: `SECURITY` → `analyst` — Criteria: PCI DSS SAQ completed; Encryption at rest and in transit
-- Step 9: `QA` → `qa_engineer`
-- Step 10: `DATABASE` → `developer` — Criteria: Transaction isolation level documented; Audit trail on all writes
+- Step 6: `TESTS` → `developer`
+- Step 7: `BACKEND` → `developer`
+- Step 8: `DATABASE` → `developer` — Criteria: Transaction isolation level documented; Audit trail on all writes
+- Step 9: `DEVOPS` → `devops_engineer`
+- Step 10: `SECURITY` → `analyst` — Criteria: PCI DSS SAQ completed; Encryption at rest and in transit
 
 ---
 
@@ -2744,18 +2744,18 @@
 **Agents Activated (7):** analyst, developer, devops_engineer, embedded_tester, firmware_engineer, qa_engineer, system_engineer
 
 **Task Types (12):**
-- Step 1: `FIRMWARE` → `firmware_engineer` — Criteria: OTA update mechanism implemented; Watchdog timer configured
-- Step 2: `API` → `developer`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `EMBEDDED_TEST` → `embedded_tester`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `CONFIG` → `developer`
+- Step 3: `FRONTEND` → `developer`
+- Step 4: `EMBEDDED_TEST` → `embedded_tester`
+- Step 5: `API` → `developer`
 - Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `BACKEND` → `developer`
-- Step 8: `FRONTEND` → `developer`
-- Step 9: `SECURITY` → `analyst` — Criteria: Device identity provisioned; Firmware signing enabled
-- Step 10: `QA` → `qa_engineer`
-- Step 11: `CONFIG` → `developer`
-- Step 12: `DATABASE` → `developer`
+- Step 7: `TESTS` → `developer`
+- Step 8: `BACKEND` → `developer`
+- Step 9: `DATABASE` → `developer`
+- Step 10: `DEVOPS` → `devops_engineer`
+- Step 11: `FIRMWARE` → `firmware_engineer` — Criteria: OTA update mechanism implemented; Watchdog timer configured
+- Step 12: `SECURITY` → `analyst` — Criteria: Device identity provisioned; Firmware signing enabled
 
 **Safety Analysis:**
 - FMEA: 3 failure modes analyzed, max RPN=72
@@ -2790,18 +2790,18 @@
 **Agents Activated (7):** analyst, developer, devops_engineer, embedded_tester, firmware_engineer, qa_engineer, system_engineer
 
 **Task Types (12):**
-- Step 1: `FIRMWARE` → `firmware_engineer` — Criteria: OTA update mechanism implemented; Watchdog timer configured
-- Step 2: `API` → `developer`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `EMBEDDED_TEST` → `embedded_tester`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `CONFIG` → `developer`
+- Step 3: `FRONTEND` → `developer`
+- Step 4: `EMBEDDED_TEST` → `embedded_tester`
+- Step 5: `API` → `developer`
 - Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `BACKEND` → `developer`
-- Step 8: `FRONTEND` → `developer`
-- Step 9: `SECURITY` → `analyst` — Criteria: Device identity provisioned; Firmware signing enabled
-- Step 10: `QA` → `qa_engineer`
-- Step 11: `CONFIG` → `developer`
-- Step 12: `DATABASE` → `developer`
+- Step 7: `TESTS` → `developer`
+- Step 8: `BACKEND` → `developer`
+- Step 9: `DATABASE` → `developer`
+- Step 10: `DEVOPS` → `devops_engineer`
+- Step 11: `FIRMWARE` → `firmware_engineer` — Criteria: OTA update mechanism implemented; Watchdog timer configured
+- Step 12: `SECURITY` → `analyst` — Criteria: Device identity provisioned; Firmware signing enabled
 
 **Safety Analysis:**
 - FMEA: 3 failure modes analyzed, max RPN=100
@@ -2835,18 +2835,18 @@
 **Agents Activated (7):** analyst, developer, devops_engineer, embedded_tester, firmware_engineer, qa_engineer, system_engineer
 
 **Task Types (12):**
-- Step 1: `FIRMWARE` → `firmware_engineer` — Criteria: OTA update mechanism implemented; Watchdog timer configured
-- Step 2: `API` → `developer`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `EMBEDDED_TEST` → `embedded_tester`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `CONFIG` → `developer`
+- Step 3: `FRONTEND` → `developer`
+- Step 4: `EMBEDDED_TEST` → `embedded_tester`
+- Step 5: `API` → `developer`
 - Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `BACKEND` → `developer`
-- Step 8: `FRONTEND` → `developer`
-- Step 9: `SECURITY` → `analyst` — Criteria: Device identity provisioned; Firmware signing enabled
-- Step 10: `QA` → `qa_engineer`
-- Step 11: `CONFIG` → `developer`
-- Step 12: `DATABASE` → `developer`
+- Step 7: `TESTS` → `developer`
+- Step 8: `BACKEND` → `developer`
+- Step 9: `DATABASE` → `developer`
+- Step 10: `DEVOPS` → `devops_engineer`
+- Step 11: `FIRMWARE` → `firmware_engineer` — Criteria: OTA update mechanism implemented; Watchdog timer configured
+- Step 12: `SECURITY` → `analyst` — Criteria: Device identity provisioned; Firmware signing enabled
 
 **Safety Analysis:**
 - FMEA: 3 failure modes analyzed, max RPN=100
@@ -2881,18 +2881,18 @@
 **Agents Activated (7):** analyst, developer, devops_engineer, embedded_tester, firmware_engineer, qa_engineer, system_engineer
 
 **Task Types (12):**
-- Step 1: `FIRMWARE` → `firmware_engineer` — Criteria: OTA update mechanism implemented; Watchdog timer configured
-- Step 2: `API` → `developer`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `EMBEDDED_TEST` → `embedded_tester`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `CONFIG` → `developer`
+- Step 3: `FRONTEND` → `developer`
+- Step 4: `EMBEDDED_TEST` → `embedded_tester`
+- Step 5: `API` → `developer`
 - Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `BACKEND` → `developer`
-- Step 8: `FRONTEND` → `developer`
-- Step 9: `SECURITY` → `analyst` — Criteria: Device identity provisioned; Firmware signing enabled
-- Step 10: `QA` → `qa_engineer`
-- Step 11: `CONFIG` → `developer`
-- Step 12: `DATABASE` → `developer`
+- Step 7: `TESTS` → `developer`
+- Step 8: `BACKEND` → `developer`
+- Step 9: `DATABASE` → `developer`
+- Step 10: `DEVOPS` → `devops_engineer`
+- Step 11: `FIRMWARE` → `firmware_engineer` — Criteria: OTA update mechanism implemented; Watchdog timer configured
+- Step 12: `SECURITY` → `analyst` — Criteria: Device identity provisioned; Firmware signing enabled
 
 **Safety Analysis:**
 - FMEA: 3 failure modes analyzed, max RPN=120
@@ -2926,18 +2926,18 @@
 **Agents Activated (7):** analyst, developer, devops_engineer, embedded_tester, firmware_engineer, qa_engineer, system_engineer
 
 **Task Types (12):**
-- Step 1: `FIRMWARE` → `firmware_engineer` — Criteria: OTA update mechanism implemented; Watchdog timer configured
-- Step 2: `API` → `developer`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `EMBEDDED_TEST` → `embedded_tester`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `CONFIG` → `developer`
+- Step 3: `FRONTEND` → `developer`
+- Step 4: `EMBEDDED_TEST` → `embedded_tester`
+- Step 5: `API` → `developer`
 - Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `BACKEND` → `developer`
-- Step 8: `FRONTEND` → `developer`
-- Step 9: `SECURITY` → `analyst` — Criteria: Device identity provisioned; Firmware signing enabled
-- Step 10: `QA` → `qa_engineer`
-- Step 11: `CONFIG` → `developer`
-- Step 12: `DATABASE` → `developer`
+- Step 7: `TESTS` → `developer`
+- Step 8: `BACKEND` → `developer`
+- Step 9: `DATABASE` → `developer`
+- Step 10: `DEVOPS` → `devops_engineer`
+- Step 11: `FIRMWARE` → `firmware_engineer` — Criteria: OTA update mechanism implemented; Watchdog timer configured
+- Step 12: `SECURITY` → `analyst` — Criteria: Device identity provisioned; Firmware signing enabled
 
 **Safety Analysis:**
 - FMEA: 3 failure modes analyzed, max RPN=120
@@ -2972,18 +2972,18 @@
 **Agents Activated (7):** analyst, developer, devops_engineer, embedded_tester, firmware_engineer, qa_engineer, system_engineer
 
 **Task Types (12):**
-- Step 1: `FIRMWARE` → `firmware_engineer` — Criteria: OTA update mechanism implemented; Watchdog timer configured
-- Step 2: `API` → `developer`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `EMBEDDED_TEST` → `embedded_tester`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `CONFIG` → `developer`
+- Step 3: `FRONTEND` → `developer`
+- Step 4: `EMBEDDED_TEST` → `embedded_tester`
+- Step 5: `API` → `developer`
 - Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `BACKEND` → `developer`
-- Step 8: `FRONTEND` → `developer`
-- Step 9: `SECURITY` → `analyst` — Criteria: Device identity provisioned; Firmware signing enabled
-- Step 10: `QA` → `qa_engineer`
-- Step 11: `CONFIG` → `developer`
-- Step 12: `DATABASE` → `developer`
+- Step 7: `TESTS` → `developer`
+- Step 8: `BACKEND` → `developer`
+- Step 9: `DATABASE` → `developer`
+- Step 10: `DEVOPS` → `devops_engineer`
+- Step 11: `FIRMWARE` → `firmware_engineer` — Criteria: OTA update mechanism implemented; Watchdog timer configured
+- Step 12: `SECURITY` → `analyst` — Criteria: Device identity provisioned; Firmware signing enabled
 
 **Safety Analysis:**
 - FMEA: 3 failure modes analyzed, max RPN=120
@@ -3018,18 +3018,18 @@
 **Agents Activated (7):** analyst, developer, devops_engineer, embedded_tester, firmware_engineer, qa_engineer, system_engineer
 
 **Task Types (12):**
-- Step 1: `FIRMWARE` → `firmware_engineer` — Criteria: OTA update mechanism implemented; Watchdog timer configured
-- Step 2: `API` → `developer`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `EMBEDDED_TEST` → `embedded_tester`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `CONFIG` → `developer`
+- Step 3: `FRONTEND` → `developer`
+- Step 4: `EMBEDDED_TEST` → `embedded_tester`
+- Step 5: `API` → `developer`
 - Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `BACKEND` → `developer`
-- Step 8: `FRONTEND` → `developer`
-- Step 9: `SECURITY` → `analyst` — Criteria: Device identity provisioned; Firmware signing enabled
-- Step 10: `QA` → `qa_engineer`
-- Step 11: `CONFIG` → `developer`
-- Step 12: `DATABASE` → `developer`
+- Step 7: `TESTS` → `developer`
+- Step 8: `BACKEND` → `developer`
+- Step 9: `DATABASE` → `developer`
+- Step 10: `DEVOPS` → `devops_engineer`
+- Step 11: `FIRMWARE` → `firmware_engineer` — Criteria: OTA update mechanism implemented; Watchdog timer configured
+- Step 12: `SECURITY` → `analyst` — Criteria: Device identity provisioned; Firmware signing enabled
 
 **Safety Analysis:**
 - FMEA: 3 failure modes analyzed, max RPN=120
@@ -3063,18 +3063,18 @@
 **Agents Activated (7):** analyst, developer, devops_engineer, embedded_tester, firmware_engineer, qa_engineer, system_engineer
 
 **Task Types (12):**
-- Step 1: `FIRMWARE` → `firmware_engineer` — Criteria: OTA update mechanism implemented; Watchdog timer configured
-- Step 2: `API` → `developer`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `EMBEDDED_TEST` → `embedded_tester`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `CONFIG` → `developer`
+- Step 3: `FRONTEND` → `developer`
+- Step 4: `EMBEDDED_TEST` → `embedded_tester`
+- Step 5: `API` → `developer`
 - Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `BACKEND` → `developer`
-- Step 8: `FRONTEND` → `developer`
-- Step 9: `SECURITY` → `analyst` — Criteria: Device identity provisioned; Firmware signing enabled
-- Step 10: `QA` → `qa_engineer`
-- Step 11: `CONFIG` → `developer`
-- Step 12: `DATABASE` → `developer`
+- Step 7: `TESTS` → `developer`
+- Step 8: `BACKEND` → `developer`
+- Step 9: `DATABASE` → `developer`
+- Step 10: `DEVOPS` → `devops_engineer`
+- Step 11: `FIRMWARE` → `firmware_engineer` — Criteria: OTA update mechanism implemented; Watchdog timer configured
+- Step 12: `SECURITY` → `analyst` — Criteria: Device identity provisioned; Firmware signing enabled
 
 **Safety Analysis:**
 - FMEA: 3 failure modes analyzed, max RPN=108
@@ -3109,18 +3109,18 @@
 **Agents Activated (7):** analyst, developer, devops_engineer, embedded_tester, firmware_engineer, qa_engineer, system_engineer
 
 **Task Types (12):**
-- Step 1: `FIRMWARE` → `firmware_engineer` — Criteria: OTA update mechanism implemented; Watchdog timer configured
-- Step 2: `API` → `developer`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `EMBEDDED_TEST` → `embedded_tester`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `CONFIG` → `developer`
+- Step 3: `FRONTEND` → `developer`
+- Step 4: `EMBEDDED_TEST` → `embedded_tester`
+- Step 5: `API` → `developer`
 - Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `BACKEND` → `developer`
-- Step 8: `FRONTEND` → `developer`
-- Step 9: `SECURITY` → `analyst` — Criteria: Device identity provisioned; Firmware signing enabled
-- Step 10: `QA` → `qa_engineer`
-- Step 11: `CONFIG` → `developer`
-- Step 12: `DATABASE` → `developer`
+- Step 7: `TESTS` → `developer`
+- Step 8: `BACKEND` → `developer`
+- Step 9: `DATABASE` → `developer`
+- Step 10: `DEVOPS` → `devops_engineer`
+- Step 11: `FIRMWARE` → `firmware_engineer` — Criteria: OTA update mechanism implemented; Watchdog timer configured
+- Step 12: `SECURITY` → `analyst` — Criteria: Device identity provisioned; Firmware signing enabled
 
 **Safety Analysis:**
 - FMEA: 3 failure modes analyzed, max RPN=120
@@ -3155,18 +3155,18 @@
 **Agents Activated (7):** analyst, developer, devops_engineer, embedded_tester, firmware_engineer, qa_engineer, system_engineer
 
 **Task Types (12):**
-- Step 1: `FIRMWARE` → `firmware_engineer` — Criteria: OTA update mechanism implemented; Watchdog timer configured
-- Step 2: `API` → `developer`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `EMBEDDED_TEST` → `embedded_tester`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `CONFIG` → `developer`
+- Step 3: `FRONTEND` → `developer`
+- Step 4: `EMBEDDED_TEST` → `embedded_tester`
+- Step 5: `API` → `developer`
 - Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `BACKEND` → `developer`
-- Step 8: `FRONTEND` → `developer`
-- Step 9: `SECURITY` → `analyst` — Criteria: Device identity provisioned; Firmware signing enabled
-- Step 10: `QA` → `qa_engineer`
-- Step 11: `CONFIG` → `developer`
-- Step 12: `DATABASE` → `developer`
+- Step 7: `TESTS` → `developer`
+- Step 8: `BACKEND` → `developer`
+- Step 9: `DATABASE` → `developer`
+- Step 10: `DEVOPS` → `devops_engineer`
+- Step 11: `FIRMWARE` → `firmware_engineer` — Criteria: OTA update mechanism implemented; Watchdog timer configured
+- Step 12: `SECURITY` → `analyst` — Criteria: Device identity provisioned; Firmware signing enabled
 
 **Safety Analysis:**
 - FMEA: 3 failure modes analyzed, max RPN=120
@@ -3217,19 +3217,19 @@
 **Agents Activated (7):** analyst, developer, devops_engineer, embedded_tester, firmware_engineer, qa_engineer, system_engineer
 
 **Task Types (13):**
-- Step 1: `FIRMWARE` → `firmware_engineer` — Criteria: IEC 62304 software class documented; SOUP components listed
-- Step 2: `API` → `developer`
-- Step 3: `DOCS` → `developer`
-- Step 4: `TESTS` → `developer`
-- Step 5: `DEVOPS` → `devops_engineer`
-- Step 6: `COMPLIANCE` → `analyst` — Criteria: DHF (Design History File) structure created; V&V protocol drafted
-- Step 7: `EMBEDDED_TEST` → `embedded_tester`
-- Step 8: `ARCHITECTURE` → `system_engineer`
-- Step 9: `BACKEND` → `developer`
-- Step 10: `SAFETY` → `analyst` — Criteria: ISO 14971 risk management file complete; Residual risk acceptable
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `QA` → `qa_engineer`
-- Step 13: `DATABASE` → `developer`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `DOCS` → `developer`
+- Step 3: `SAFETY` → `analyst` — Criteria: ISO 14971 risk management file complete; Residual risk acceptable
+- Step 4: `FRONTEND` → `developer`
+- Step 5: `COMPLIANCE` → `analyst` — Criteria: DHF (Design History File) structure created; V&V protocol drafted
+- Step 6: `API` → `developer`
+- Step 7: `ARCHITECTURE` → `system_engineer`
+- Step 8: `TESTS` → `developer`
+- Step 9: `EMBEDDED_TEST` → `embedded_tester`
+- Step 10: `BACKEND` → `developer`
+- Step 11: `DATABASE` → `developer`
+- Step 12: `DEVOPS` → `devops_engineer`
+- Step 13: `FIRMWARE` → `firmware_engineer` — Criteria: IEC 62304 software class documented; SOUP components listed
 
 **Safety Analysis:**
 - FMEA: 4 failure modes analyzed, max RPN=160
@@ -3265,19 +3265,19 @@
 **Agents Activated (7):** analyst, developer, devops_engineer, embedded_tester, firmware_engineer, qa_engineer, system_engineer
 
 **Task Types (13):**
-- Step 1: `FIRMWARE` → `firmware_engineer` — Criteria: IEC 62304 software class documented; SOUP components listed
-- Step 2: `API` → `developer`
-- Step 3: `DOCS` → `developer`
-- Step 4: `TESTS` → `developer`
-- Step 5: `DEVOPS` → `devops_engineer`
-- Step 6: `COMPLIANCE` → `analyst` — Criteria: DHF (Design History File) structure created; V&V protocol drafted
-- Step 7: `EMBEDDED_TEST` → `embedded_tester`
-- Step 8: `ARCHITECTURE` → `system_engineer`
-- Step 9: `BACKEND` → `developer`
-- Step 10: `SAFETY` → `analyst` — Criteria: ISO 14971 risk management file complete; Residual risk acceptable
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `QA` → `qa_engineer`
-- Step 13: `DATABASE` → `developer`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `DOCS` → `developer`
+- Step 3: `SAFETY` → `analyst` — Criteria: ISO 14971 risk management file complete; Residual risk acceptable
+- Step 4: `FRONTEND` → `developer`
+- Step 5: `COMPLIANCE` → `analyst` — Criteria: DHF (Design History File) structure created; V&V protocol drafted
+- Step 6: `API` → `developer`
+- Step 7: `ARCHITECTURE` → `system_engineer`
+- Step 8: `TESTS` → `developer`
+- Step 9: `EMBEDDED_TEST` → `embedded_tester`
+- Step 10: `BACKEND` → `developer`
+- Step 11: `DATABASE` → `developer`
+- Step 12: `DEVOPS` → `devops_engineer`
+- Step 13: `FIRMWARE` → `firmware_engineer` — Criteria: IEC 62304 software class documented; SOUP components listed
 
 **Safety Analysis:**
 - FMEA: 4 failure modes analyzed, max RPN=90
@@ -3312,21 +3312,21 @@
 **Agents Activated (10):** analyst, developer, devops_engineer, legal_advisor, operations_manager, qa_engineer, regulatory_specialist, system_engineer, system_tester, technical_writer
 
 **Task Types (15):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
-- Step 4: `COMPLIANCE` → `analyst`
-- Step 5: `SYSTEM_TEST` → `system_tester`
-- Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `TRAINING` → `technical_writer`
-- Step 8: `BACKEND` → `developer`
-- Step 9: `SECURITY` → `analyst` — Criteria: PHI encryption at rest and in transit; Access audit logging enabled
-- Step 10: `OPERATIONS` → `operations_manager`
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `REGULATORY` → `regulatory_specialist` — Criteria: HIPAA risk assessment complete; BAA template prepared
-- Step 13: `LEGAL` → `legal_advisor`
-- Step 14: `QA` → `qa_engineer`
-- Step 15: `DATABASE` → `developer`
+- Step 1: `TRAINING` → `technical_writer`
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `OPERATIONS` → `operations_manager`
+- Step 4: `LEGAL` → `legal_advisor`
+- Step 5: `REGULATORY` → `regulatory_specialist` — Criteria: HIPAA risk assessment complete; BAA template prepared
+- Step 6: `FRONTEND` → `developer`
+- Step 7: `COMPLIANCE` → `analyst`
+- Step 8: `API` → `developer`
+- Step 9: `ARCHITECTURE` → `system_engineer`
+- Step 10: `TESTS` → `developer`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
+- Step 14: `SYSTEM_TEST` → `system_tester`
+- Step 15: `SECURITY` → `analyst` — Criteria: PHI encryption at rest and in transit; Access audit logging enabled
 
 **Safety Analysis:**
 - FMEA: 3 failure modes analyzed, max RPN=80
@@ -3361,19 +3361,19 @@
 **Agents Activated (7):** analyst, developer, devops_engineer, embedded_tester, firmware_engineer, qa_engineer, system_engineer
 
 **Task Types (13):**
-- Step 1: `FIRMWARE` → `firmware_engineer` — Criteria: IEC 62304 software class documented; SOUP components listed
-- Step 2: `API` → `developer`
-- Step 3: `DOCS` → `developer`
-- Step 4: `TESTS` → `developer`
-- Step 5: `DEVOPS` → `devops_engineer`
-- Step 6: `COMPLIANCE` → `analyst` — Criteria: DHF (Design History File) structure created; V&V protocol drafted
-- Step 7: `EMBEDDED_TEST` → `embedded_tester`
-- Step 8: `ARCHITECTURE` → `system_engineer`
-- Step 9: `BACKEND` → `developer`
-- Step 10: `SAFETY` → `analyst` — Criteria: ISO 14971 risk management file complete; Residual risk acceptable
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `QA` → `qa_engineer`
-- Step 13: `DATABASE` → `developer`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `DOCS` → `developer`
+- Step 3: `SAFETY` → `analyst` — Criteria: ISO 14971 risk management file complete; Residual risk acceptable
+- Step 4: `FRONTEND` → `developer`
+- Step 5: `COMPLIANCE` → `analyst` — Criteria: DHF (Design History File) structure created; V&V protocol drafted
+- Step 6: `API` → `developer`
+- Step 7: `ARCHITECTURE` → `system_engineer`
+- Step 8: `TESTS` → `developer`
+- Step 9: `EMBEDDED_TEST` → `embedded_tester`
+- Step 10: `BACKEND` → `developer`
+- Step 11: `DATABASE` → `developer`
+- Step 12: `DEVOPS` → `devops_engineer`
+- Step 13: `FIRMWARE` → `firmware_engineer` — Criteria: IEC 62304 software class documented; SOUP components listed
 
 **Safety Analysis:**
 - FMEA: 4 failure modes analyzed, max RPN=81
@@ -3409,19 +3409,19 @@
 **Agents Activated (7):** analyst, developer, devops_engineer, embedded_tester, firmware_engineer, qa_engineer, system_engineer
 
 **Task Types (13):**
-- Step 1: `FIRMWARE` → `firmware_engineer` — Criteria: IEC 62304 software class documented; SOUP components listed
-- Step 2: `API` → `developer`
-- Step 3: `DOCS` → `developer`
-- Step 4: `TESTS` → `developer`
-- Step 5: `DEVOPS` → `devops_engineer`
-- Step 6: `COMPLIANCE` → `analyst` — Criteria: DHF (Design History File) structure created; V&V protocol drafted
-- Step 7: `EMBEDDED_TEST` → `embedded_tester`
-- Step 8: `ARCHITECTURE` → `system_engineer`
-- Step 9: `BACKEND` → `developer`
-- Step 10: `SAFETY` → `analyst` — Criteria: ISO 14971 risk management file complete; Residual risk acceptable
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `QA` → `qa_engineer`
-- Step 13: `DATABASE` → `developer`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `DOCS` → `developer`
+- Step 3: `SAFETY` → `analyst` — Criteria: ISO 14971 risk management file complete; Residual risk acceptable
+- Step 4: `FRONTEND` → `developer`
+- Step 5: `COMPLIANCE` → `analyst` — Criteria: DHF (Design History File) structure created; V&V protocol drafted
+- Step 6: `API` → `developer`
+- Step 7: `ARCHITECTURE` → `system_engineer`
+- Step 8: `TESTS` → `developer`
+- Step 9: `EMBEDDED_TEST` → `embedded_tester`
+- Step 10: `BACKEND` → `developer`
+- Step 11: `DATABASE` → `developer`
+- Step 12: `DEVOPS` → `devops_engineer`
+- Step 13: `FIRMWARE` → `firmware_engineer` — Criteria: IEC 62304 software class documented; SOUP components listed
 
 **Safety Analysis:**
 - FMEA: 3 failure modes analyzed, max RPN=108
@@ -3456,21 +3456,21 @@
 **Agents Activated (10):** analyst, developer, devops_engineer, legal_advisor, operations_manager, qa_engineer, regulatory_specialist, system_engineer, system_tester, technical_writer
 
 **Task Types (15):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
-- Step 4: `COMPLIANCE` → `analyst`
-- Step 5: `SYSTEM_TEST` → `system_tester`
-- Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `TRAINING` → `technical_writer`
-- Step 8: `BACKEND` → `developer`
-- Step 9: `SECURITY` → `analyst` — Criteria: PHI encryption at rest and in transit; Access audit logging enabled
-- Step 10: `OPERATIONS` → `operations_manager`
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `REGULATORY` → `regulatory_specialist` — Criteria: HIPAA risk assessment complete; BAA template prepared
-- Step 13: `LEGAL` → `legal_advisor`
-- Step 14: `QA` → `qa_engineer`
-- Step 15: `DATABASE` → `developer`
+- Step 1: `TRAINING` → `technical_writer`
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `OPERATIONS` → `operations_manager`
+- Step 4: `LEGAL` → `legal_advisor`
+- Step 5: `REGULATORY` → `regulatory_specialist` — Criteria: HIPAA risk assessment complete; BAA template prepared
+- Step 6: `FRONTEND` → `developer`
+- Step 7: `COMPLIANCE` → `analyst`
+- Step 8: `API` → `developer`
+- Step 9: `ARCHITECTURE` → `system_engineer`
+- Step 10: `TESTS` → `developer`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
+- Step 14: `SYSTEM_TEST` → `system_tester`
+- Step 15: `SECURITY` → `analyst` — Criteria: PHI encryption at rest and in transit; Access audit logging enabled
 
 **Safety Analysis:**
 - FMEA: 3 failure modes analyzed, max RPN=108
@@ -3506,19 +3506,19 @@
 **Agents Activated (7):** analyst, developer, devops_engineer, embedded_tester, firmware_engineer, qa_engineer, system_engineer
 
 **Task Types (13):**
-- Step 1: `FIRMWARE` → `firmware_engineer` — Criteria: IEC 62304 software class documented; SOUP components listed
-- Step 2: `API` → `developer`
-- Step 3: `DOCS` → `developer`
-- Step 4: `TESTS` → `developer`
-- Step 5: `DEVOPS` → `devops_engineer`
-- Step 6: `COMPLIANCE` → `analyst` — Criteria: DHF (Design History File) structure created; V&V protocol drafted
-- Step 7: `EMBEDDED_TEST` → `embedded_tester`
-- Step 8: `ARCHITECTURE` → `system_engineer`
-- Step 9: `BACKEND` → `developer`
-- Step 10: `SAFETY` → `analyst` — Criteria: ISO 14971 risk management file complete; Residual risk acceptable
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `QA` → `qa_engineer`
-- Step 13: `DATABASE` → `developer`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `DOCS` → `developer`
+- Step 3: `SAFETY` → `analyst` — Criteria: ISO 14971 risk management file complete; Residual risk acceptable
+- Step 4: `FRONTEND` → `developer`
+- Step 5: `COMPLIANCE` → `analyst` — Criteria: DHF (Design History File) structure created; V&V protocol drafted
+- Step 6: `API` → `developer`
+- Step 7: `ARCHITECTURE` → `system_engineer`
+- Step 8: `TESTS` → `developer`
+- Step 9: `EMBEDDED_TEST` → `embedded_tester`
+- Step 10: `BACKEND` → `developer`
+- Step 11: `DATABASE` → `developer`
+- Step 12: `DEVOPS` → `devops_engineer`
+- Step 13: `FIRMWARE` → `firmware_engineer` — Criteria: IEC 62304 software class documented; SOUP components listed
 
 **Safety Analysis:**
 - FMEA: 3 failure modes analyzed, max RPN=108
@@ -3553,19 +3553,19 @@
 **Agents Activated (7):** analyst, developer, devops_engineer, embedded_tester, firmware_engineer, qa_engineer, system_engineer
 
 **Task Types (13):**
-- Step 1: `FIRMWARE` → `firmware_engineer` — Criteria: IEC 62304 software class documented; SOUP components listed
-- Step 2: `API` → `developer`
-- Step 3: `DOCS` → `developer`
-- Step 4: `TESTS` → `developer`
-- Step 5: `DEVOPS` → `devops_engineer`
-- Step 6: `COMPLIANCE` → `analyst` — Criteria: DHF (Design History File) structure created; V&V protocol drafted
-- Step 7: `EMBEDDED_TEST` → `embedded_tester`
-- Step 8: `ARCHITECTURE` → `system_engineer`
-- Step 9: `BACKEND` → `developer`
-- Step 10: `SAFETY` → `analyst` — Criteria: ISO 14971 risk management file complete; Residual risk acceptable
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `QA` → `qa_engineer`
-- Step 13: `DATABASE` → `developer`
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `DOCS` → `developer`
+- Step 3: `SAFETY` → `analyst` — Criteria: ISO 14971 risk management file complete; Residual risk acceptable
+- Step 4: `FRONTEND` → `developer`
+- Step 5: `COMPLIANCE` → `analyst` — Criteria: DHF (Design History File) structure created; V&V protocol drafted
+- Step 6: `API` → `developer`
+- Step 7: `ARCHITECTURE` → `system_engineer`
+- Step 8: `TESTS` → `developer`
+- Step 9: `EMBEDDED_TEST` → `embedded_tester`
+- Step 10: `BACKEND` → `developer`
+- Step 11: `DATABASE` → `developer`
+- Step 12: `DEVOPS` → `devops_engineer`
+- Step 13: `FIRMWARE` → `firmware_engineer` — Criteria: IEC 62304 software class documented; SOUP components listed
 
 **Safety Analysis:**
 - FMEA: 3 failure modes analyzed, max RPN=120
@@ -3600,21 +3600,21 @@
 **Agents Activated (10):** analyst, developer, devops_engineer, legal_advisor, operations_manager, qa_engineer, regulatory_specialist, system_engineer, system_tester, technical_writer
 
 **Task Types (15):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
-- Step 4: `COMPLIANCE` → `analyst`
-- Step 5: `SYSTEM_TEST` → `system_tester`
-- Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `TRAINING` → `technical_writer`
-- Step 8: `BACKEND` → `developer`
-- Step 9: `SECURITY` → `analyst` — Criteria: PHI encryption at rest and in transit; Access audit logging enabled
-- Step 10: `OPERATIONS` → `operations_manager`
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `REGULATORY` → `regulatory_specialist` — Criteria: HIPAA risk assessment complete; BAA template prepared
-- Step 13: `LEGAL` → `legal_advisor`
-- Step 14: `QA` → `qa_engineer`
-- Step 15: `DATABASE` → `developer`
+- Step 1: `TRAINING` → `technical_writer`
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `OPERATIONS` → `operations_manager`
+- Step 4: `LEGAL` → `legal_advisor`
+- Step 5: `REGULATORY` → `regulatory_specialist` — Criteria: HIPAA risk assessment complete; BAA template prepared
+- Step 6: `FRONTEND` → `developer`
+- Step 7: `COMPLIANCE` → `analyst`
+- Step 8: `API` → `developer`
+- Step 9: `ARCHITECTURE` → `system_engineer`
+- Step 10: `TESTS` → `developer`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
+- Step 14: `SYSTEM_TEST` → `system_tester`
+- Step 15: `SECURITY` → `analyst` — Criteria: PHI encryption at rest and in transit; Access audit logging enabled
 
 **Safety Analysis:**
 - FMEA: 3 failure modes analyzed, max RPN=108
@@ -3649,21 +3649,21 @@
 **Agents Activated (10):** analyst, developer, devops_engineer, legal_advisor, operations_manager, qa_engineer, regulatory_specialist, system_engineer, system_tester, technical_writer
 
 **Task Types (15):**
-- Step 1: `API` → `developer`
-- Step 2: `TESTS` → `developer`
-- Step 3: `DEVOPS` → `devops_engineer`
-- Step 4: `COMPLIANCE` → `analyst`
-- Step 5: `SYSTEM_TEST` → `system_tester`
-- Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `TRAINING` → `technical_writer`
-- Step 8: `BACKEND` → `developer`
-- Step 9: `SECURITY` → `analyst` — Criteria: PHI encryption at rest and in transit; Access audit logging enabled
-- Step 10: `OPERATIONS` → `operations_manager`
-- Step 11: `FRONTEND` → `developer`
-- Step 12: `REGULATORY` → `regulatory_specialist` — Criteria: HIPAA risk assessment complete; BAA template prepared
-- Step 13: `LEGAL` → `legal_advisor`
-- Step 14: `QA` → `qa_engineer`
-- Step 15: `DATABASE` → `developer`
+- Step 1: `TRAINING` → `technical_writer`
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `OPERATIONS` → `operations_manager`
+- Step 4: `LEGAL` → `legal_advisor`
+- Step 5: `REGULATORY` → `regulatory_specialist` — Criteria: HIPAA risk assessment complete; BAA template prepared
+- Step 6: `FRONTEND` → `developer`
+- Step 7: `COMPLIANCE` → `analyst`
+- Step 8: `API` → `developer`
+- Step 9: `ARCHITECTURE` → `system_engineer`
+- Step 10: `TESTS` → `developer`
+- Step 11: `BACKEND` → `developer`
+- Step 12: `DATABASE` → `developer`
+- Step 13: `DEVOPS` → `devops_engineer`
+- Step 14: `SYSTEM_TEST` → `system_tester`
+- Step 15: `SECURITY` → `analyst` — Criteria: PHI encryption at rest and in transit; Access audit logging enabled
 
 **Safety Analysis:**
 - FMEA: 3 failure modes analyzed, max RPN=108
@@ -3717,16 +3717,16 @@
 
 **Task Types (11):**
 - Step 1: `ML_MODEL` → `data_scientist` — Criteria: Bias evaluation performed; Model card generated
-- Step 2: `API` → `developer`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `INFRA` → `developer`
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `INFRA` → `developer`
+- Step 4: `FRONTEND` → `developer`
+- Step 5: `API` → `developer`
 - Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `BACKEND` → `developer`
-- Step 8: `FRONTEND` → `developer`
-- Step 9: `DATA` → `data_scientist`
-- Step 10: `QA` → `qa_engineer`
-- Step 11: `DATABASE` → `developer`
+- Step 7: `TESTS` → `developer`
+- Step 8: `BACKEND` → `developer`
+- Step 9: `DATABASE` → `developer`
+- Step 10: `DATA` → `data_scientist`
+- Step 11: `DEVOPS` → `devops_engineer`
 
 ---
 
@@ -3757,16 +3757,16 @@
 
 **Task Types (11):**
 - Step 1: `ML_MODEL` → `data_scientist` — Criteria: Bias evaluation performed; Model card generated
-- Step 2: `API` → `developer`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `INFRA` → `developer`
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `INFRA` → `developer`
+- Step 4: `FRONTEND` → `developer`
+- Step 5: `API` → `developer`
 - Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `BACKEND` → `developer`
-- Step 8: `FRONTEND` → `developer`
-- Step 9: `DATA` → `data_scientist`
-- Step 10: `QA` → `qa_engineer`
-- Step 11: `DATABASE` → `developer`
+- Step 7: `TESTS` → `developer`
+- Step 8: `BACKEND` → `developer`
+- Step 9: `DATABASE` → `developer`
+- Step 10: `DATA` → `data_scientist`
+- Step 11: `DEVOPS` → `devops_engineer`
 
 ---
 
@@ -3797,16 +3797,16 @@
 
 **Task Types (11):**
 - Step 1: `ML_MODEL` → `data_scientist` — Criteria: Bias evaluation performed; Model card generated
-- Step 2: `API` → `developer`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `INFRA` → `developer`
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `INFRA` → `developer`
+- Step 4: `FRONTEND` → `developer`
+- Step 5: `API` → `developer`
 - Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `BACKEND` → `developer`
-- Step 8: `FRONTEND` → `developer`
-- Step 9: `DATA` → `data_scientist`
-- Step 10: `QA` → `qa_engineer`
-- Step 11: `DATABASE` → `developer`
+- Step 7: `TESTS` → `developer`
+- Step 8: `BACKEND` → `developer`
+- Step 9: `DATABASE` → `developer`
+- Step 10: `DATA` → `data_scientist`
+- Step 11: `DEVOPS` → `devops_engineer`
 
 ---
 
@@ -3837,16 +3837,16 @@
 
 **Task Types (11):**
 - Step 1: `ML_MODEL` → `data_scientist` — Criteria: Bias evaluation performed; Model card generated
-- Step 2: `API` → `developer`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `INFRA` → `developer`
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `INFRA` → `developer`
+- Step 4: `FRONTEND` → `developer`
+- Step 5: `API` → `developer`
 - Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `BACKEND` → `developer`
-- Step 8: `FRONTEND` → `developer`
-- Step 9: `DATA` → `data_scientist`
-- Step 10: `QA` → `qa_engineer`
-- Step 11: `DATABASE` → `developer`
+- Step 7: `TESTS` → `developer`
+- Step 8: `BACKEND` → `developer`
+- Step 9: `DATABASE` → `developer`
+- Step 10: `DATA` → `data_scientist`
+- Step 11: `DEVOPS` → `devops_engineer`
 
 ---
 
@@ -3878,16 +3878,16 @@
 
 **Task Types (11):**
 - Step 1: `ML_MODEL` → `data_scientist` — Criteria: Bias evaluation performed; Model card generated
-- Step 2: `API` → `developer`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `INFRA` → `developer`
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `INFRA` → `developer`
+- Step 4: `FRONTEND` → `developer`
+- Step 5: `API` → `developer`
 - Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `BACKEND` → `developer`
-- Step 8: `FRONTEND` → `developer`
-- Step 9: `DATA` → `data_scientist`
-- Step 10: `QA` → `qa_engineer`
-- Step 11: `DATABASE` → `developer`
+- Step 7: `TESTS` → `developer`
+- Step 8: `BACKEND` → `developer`
+- Step 9: `DATABASE` → `developer`
+- Step 10: `DATA` → `data_scientist`
+- Step 11: `DEVOPS` → `devops_engineer`
 
 ---
 
@@ -3918,16 +3918,16 @@
 
 **Task Types (11):**
 - Step 1: `ML_MODEL` → `data_scientist` — Criteria: Bias evaluation performed; Model card generated
-- Step 2: `API` → `developer`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `INFRA` → `developer`
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `INFRA` → `developer`
+- Step 4: `FRONTEND` → `developer`
+- Step 5: `API` → `developer`
 - Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `BACKEND` → `developer`
-- Step 8: `FRONTEND` → `developer`
-- Step 9: `DATA` → `data_scientist`
-- Step 10: `QA` → `qa_engineer`
-- Step 11: `DATABASE` → `developer`
+- Step 7: `TESTS` → `developer`
+- Step 8: `BACKEND` → `developer`
+- Step 9: `DATABASE` → `developer`
+- Step 10: `DATA` → `data_scientist`
+- Step 11: `DEVOPS` → `devops_engineer`
 
 ---
 
@@ -3958,16 +3958,16 @@
 
 **Task Types (11):**
 - Step 1: `ML_MODEL` → `data_scientist` — Criteria: Bias evaluation performed; Model card generated
-- Step 2: `API` → `developer`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `INFRA` → `developer`
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `INFRA` → `developer`
+- Step 4: `FRONTEND` → `developer`
+- Step 5: `API` → `developer`
 - Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `BACKEND` → `developer`
-- Step 8: `FRONTEND` → `developer`
-- Step 9: `DATA` → `data_scientist`
-- Step 10: `QA` → `qa_engineer`
-- Step 11: `DATABASE` → `developer`
+- Step 7: `TESTS` → `developer`
+- Step 8: `BACKEND` → `developer`
+- Step 9: `DATABASE` → `developer`
+- Step 10: `DATA` → `data_scientist`
+- Step 11: `DEVOPS` → `devops_engineer`
 
 ---
 
@@ -3998,16 +3998,16 @@
 
 **Task Types (11):**
 - Step 1: `ML_MODEL` → `data_scientist` — Criteria: Bias evaluation performed; Model card generated
-- Step 2: `API` → `developer`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `INFRA` → `developer`
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `INFRA` → `developer`
+- Step 4: `FRONTEND` → `developer`
+- Step 5: `API` → `developer`
 - Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `BACKEND` → `developer`
-- Step 8: `FRONTEND` → `developer`
-- Step 9: `DATA` → `data_scientist`
-- Step 10: `QA` → `qa_engineer`
-- Step 11: `DATABASE` → `developer`
+- Step 7: `TESTS` → `developer`
+- Step 8: `BACKEND` → `developer`
+- Step 9: `DATABASE` → `developer`
+- Step 10: `DATA` → `data_scientist`
+- Step 11: `DEVOPS` → `devops_engineer`
 
 ---
 
@@ -4039,16 +4039,16 @@
 
 **Task Types (11):**
 - Step 1: `ML_MODEL` → `data_scientist` — Criteria: Bias evaluation performed; Model card generated
-- Step 2: `API` → `developer`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `INFRA` → `developer`
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `INFRA` → `developer`
+- Step 4: `FRONTEND` → `developer`
+- Step 5: `API` → `developer`
 - Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `BACKEND` → `developer`
-- Step 8: `FRONTEND` → `developer`
-- Step 9: `DATA` → `data_scientist`
-- Step 10: `QA` → `qa_engineer`
-- Step 11: `DATABASE` → `developer`
+- Step 7: `TESTS` → `developer`
+- Step 8: `BACKEND` → `developer`
+- Step 9: `DATABASE` → `developer`
+- Step 10: `DATA` → `data_scientist`
+- Step 11: `DEVOPS` → `devops_engineer`
 
 ---
 
@@ -4079,16 +4079,16 @@
 
 **Task Types (11):**
 - Step 1: `ML_MODEL` → `data_scientist` — Criteria: Bias evaluation performed; Model card generated
-- Step 2: `API` → `developer`
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `INFRA` → `developer`
+- Step 2: `QA` → `qa_engineer`
+- Step 3: `INFRA` → `developer`
+- Step 4: `FRONTEND` → `developer`
+- Step 5: `API` → `developer`
 - Step 6: `ARCHITECTURE` → `system_engineer`
-- Step 7: `BACKEND` → `developer`
-- Step 8: `FRONTEND` → `developer`
-- Step 9: `DATA` → `data_scientist`
-- Step 10: `QA` → `qa_engineer`
-- Step 11: `DATABASE` → `developer`
+- Step 7: `TESTS` → `developer`
+- Step 8: `BACKEND` → `developer`
+- Step 9: `DATABASE` → `developer`
+- Step 10: `DATA` → `data_scientist`
+- Step 11: `DEVOPS` → `devops_engineer`
 
 ---
 
@@ -4135,21 +4135,21 @@
 **Agents Activated (11):** business_analyst, developer, devops_engineer, financial_analyst, legal_advisor, marketing_strategist, operations_manager, product_manager, qa_engineer, system_engineer, ux_designer
 
 **Task Types (15):**
-- Step 1: `API` → `developer`
-- Step 2: `FINANCIAL` → `financial_analyst` — Criteria: MRR/ARR projections modeled; CAC and LTV estimated
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `BUSINESS_ANALYSIS` → `business_analyst` — Criteria: Pricing tiers defined; Churn risk factors identified
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `MARKET_RESEARCH` → `marketing_strategist`
+- Step 3: `OPERATIONS` → `operations_manager`
+- Step 4: `BUSINESS_ANALYSIS` → `business_analyst` — Criteria: Pricing tiers defined; Churn risk factors identified
+- Step 5: `LEGAL` → `legal_advisor` — Criteria: Subscription terms cover cancellation and refunds; Data processing agreement drafted
 - Step 6: `UX_DESIGN` → `ux_designer`
-- Step 7: `ARCHITECTURE` → `system_engineer`
-- Step 8: `PRODUCT_MGMT` → `product_manager`
-- Step 9: `BACKEND` → `developer`
-- Step 10: `OPERATIONS` → `operations_manager`
-- Step 11: `MARKET_RESEARCH` → `marketing_strategist`
-- Step 12: `FRONTEND` → `developer`
-- Step 13: `LEGAL` → `legal_advisor` — Criteria: Subscription terms cover cancellation and refunds; Data processing agreement drafted
-- Step 14: `QA` → `qa_engineer`
-- Step 15: `DATABASE` → `developer`
+- Step 7: `FRONTEND` → `developer`
+- Step 8: `API` → `developer`
+- Step 9: `ARCHITECTURE` → `system_engineer`
+- Step 10: `TESTS` → `developer`
+- Step 11: `PRODUCT_MGMT` → `product_manager`
+- Step 12: `BACKEND` → `developer`
+- Step 13: `DATABASE` → `developer`
+- Step 14: `DEVOPS` → `devops_engineer`
+- Step 15: `FINANCIAL` → `financial_analyst` — Criteria: MRR/ARR projections modeled; CAC and LTV estimated
 
 ---
 
@@ -4180,21 +4180,21 @@
 **Agents Activated (11):** business_analyst, developer, devops_engineer, financial_analyst, legal_advisor, marketing_strategist, operations_manager, product_manager, qa_engineer, system_engineer, ux_designer
 
 **Task Types (15):**
-- Step 1: `API` → `developer`
-- Step 2: `FINANCIAL` → `financial_analyst` — Criteria: MRR/ARR projections modeled; CAC and LTV estimated
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `BUSINESS_ANALYSIS` → `business_analyst` — Criteria: Pricing tiers defined; Churn risk factors identified
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `MARKET_RESEARCH` → `marketing_strategist`
+- Step 3: `OPERATIONS` → `operations_manager`
+- Step 4: `BUSINESS_ANALYSIS` → `business_analyst` — Criteria: Pricing tiers defined; Churn risk factors identified
+- Step 5: `LEGAL` → `legal_advisor` — Criteria: Subscription terms cover cancellation and refunds; Data processing agreement drafted
 - Step 6: `UX_DESIGN` → `ux_designer`
-- Step 7: `ARCHITECTURE` → `system_engineer`
-- Step 8: `PRODUCT_MGMT` → `product_manager`
-- Step 9: `BACKEND` → `developer`
-- Step 10: `OPERATIONS` → `operations_manager`
-- Step 11: `MARKET_RESEARCH` → `marketing_strategist`
-- Step 12: `FRONTEND` → `developer`
-- Step 13: `LEGAL` → `legal_advisor` — Criteria: Subscription terms cover cancellation and refunds; Data processing agreement drafted
-- Step 14: `QA` → `qa_engineer`
-- Step 15: `DATABASE` → `developer`
+- Step 7: `FRONTEND` → `developer`
+- Step 8: `API` → `developer`
+- Step 9: `ARCHITECTURE` → `system_engineer`
+- Step 10: `TESTS` → `developer`
+- Step 11: `PRODUCT_MGMT` → `product_manager`
+- Step 12: `BACKEND` → `developer`
+- Step 13: `DATABASE` → `developer`
+- Step 14: `DEVOPS` → `devops_engineer`
+- Step 15: `FINANCIAL` → `financial_analyst` — Criteria: MRR/ARR projections modeled; CAC and LTV estimated
 
 ---
 
@@ -4224,21 +4224,21 @@
 **Agents Activated (11):** business_analyst, developer, devops_engineer, financial_analyst, legal_advisor, marketing_strategist, operations_manager, product_manager, qa_engineer, system_engineer, ux_designer
 
 **Task Types (15):**
-- Step 1: `API` → `developer`
-- Step 2: `FINANCIAL` → `financial_analyst` — Criteria: MRR/ARR projections modeled; CAC and LTV estimated
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `BUSINESS_ANALYSIS` → `business_analyst` — Criteria: Pricing tiers defined; Churn risk factors identified
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `MARKET_RESEARCH` → `marketing_strategist`
+- Step 3: `OPERATIONS` → `operations_manager`
+- Step 4: `BUSINESS_ANALYSIS` → `business_analyst` — Criteria: Pricing tiers defined; Churn risk factors identified
+- Step 5: `LEGAL` → `legal_advisor` — Criteria: Subscription terms cover cancellation and refunds; Data processing agreement drafted
 - Step 6: `UX_DESIGN` → `ux_designer`
-- Step 7: `ARCHITECTURE` → `system_engineer`
-- Step 8: `PRODUCT_MGMT` → `product_manager`
-- Step 9: `BACKEND` → `developer`
-- Step 10: `OPERATIONS` → `operations_manager`
-- Step 11: `MARKET_RESEARCH` → `marketing_strategist`
-- Step 12: `FRONTEND` → `developer`
-- Step 13: `LEGAL` → `legal_advisor` — Criteria: Subscription terms cover cancellation and refunds; Data processing agreement drafted
-- Step 14: `QA` → `qa_engineer`
-- Step 15: `DATABASE` → `developer`
+- Step 7: `FRONTEND` → `developer`
+- Step 8: `API` → `developer`
+- Step 9: `ARCHITECTURE` → `system_engineer`
+- Step 10: `TESTS` → `developer`
+- Step 11: `PRODUCT_MGMT` → `product_manager`
+- Step 12: `BACKEND` → `developer`
+- Step 13: `DATABASE` → `developer`
+- Step 14: `DEVOPS` → `devops_engineer`
+- Step 15: `FINANCIAL` → `financial_analyst` — Criteria: MRR/ARR projections modeled; CAC and LTV estimated
 
 ---
 
@@ -4269,21 +4269,21 @@
 **Agents Activated (11):** business_analyst, developer, devops_engineer, financial_analyst, legal_advisor, marketing_strategist, operations_manager, product_manager, qa_engineer, system_engineer, ux_designer
 
 **Task Types (15):**
-- Step 1: `API` → `developer`
-- Step 2: `FINANCIAL` → `financial_analyst` — Criteria: MRR/ARR projections modeled; CAC and LTV estimated
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `BUSINESS_ANALYSIS` → `business_analyst` — Criteria: Pricing tiers defined; Churn risk factors identified
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `MARKET_RESEARCH` → `marketing_strategist`
+- Step 3: `OPERATIONS` → `operations_manager`
+- Step 4: `BUSINESS_ANALYSIS` → `business_analyst` — Criteria: Pricing tiers defined; Churn risk factors identified
+- Step 5: `LEGAL` → `legal_advisor` — Criteria: Subscription terms cover cancellation and refunds; Data processing agreement drafted
 - Step 6: `UX_DESIGN` → `ux_designer`
-- Step 7: `ARCHITECTURE` → `system_engineer`
-- Step 8: `PRODUCT_MGMT` → `product_manager`
-- Step 9: `BACKEND` → `developer`
-- Step 10: `OPERATIONS` → `operations_manager`
-- Step 11: `MARKET_RESEARCH` → `marketing_strategist`
-- Step 12: `FRONTEND` → `developer`
-- Step 13: `LEGAL` → `legal_advisor` — Criteria: Subscription terms cover cancellation and refunds; Data processing agreement drafted
-- Step 14: `QA` → `qa_engineer`
-- Step 15: `DATABASE` → `developer`
+- Step 7: `FRONTEND` → `developer`
+- Step 8: `API` → `developer`
+- Step 9: `ARCHITECTURE` → `system_engineer`
+- Step 10: `TESTS` → `developer`
+- Step 11: `PRODUCT_MGMT` → `product_manager`
+- Step 12: `BACKEND` → `developer`
+- Step 13: `DATABASE` → `developer`
+- Step 14: `DEVOPS` → `devops_engineer`
+- Step 15: `FINANCIAL` → `financial_analyst` — Criteria: MRR/ARR projections modeled; CAC and LTV estimated
 
 ---
 
@@ -4313,21 +4313,21 @@
 **Agents Activated (11):** business_analyst, developer, devops_engineer, financial_analyst, legal_advisor, marketing_strategist, operations_manager, product_manager, qa_engineer, system_engineer, ux_designer
 
 **Task Types (15):**
-- Step 1: `API` → `developer`
-- Step 2: `FINANCIAL` → `financial_analyst` — Criteria: MRR/ARR projections modeled; CAC and LTV estimated
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `BUSINESS_ANALYSIS` → `business_analyst` — Criteria: Pricing tiers defined; Churn risk factors identified
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `MARKET_RESEARCH` → `marketing_strategist`
+- Step 3: `OPERATIONS` → `operations_manager`
+- Step 4: `BUSINESS_ANALYSIS` → `business_analyst` — Criteria: Pricing tiers defined; Churn risk factors identified
+- Step 5: `LEGAL` → `legal_advisor` — Criteria: Subscription terms cover cancellation and refunds; Data processing agreement drafted
 - Step 6: `UX_DESIGN` → `ux_designer`
-- Step 7: `ARCHITECTURE` → `system_engineer`
-- Step 8: `PRODUCT_MGMT` → `product_manager`
-- Step 9: `BACKEND` → `developer`
-- Step 10: `OPERATIONS` → `operations_manager`
-- Step 11: `MARKET_RESEARCH` → `marketing_strategist`
-- Step 12: `FRONTEND` → `developer`
-- Step 13: `LEGAL` → `legal_advisor` — Criteria: Subscription terms cover cancellation and refunds; Data processing agreement drafted
-- Step 14: `QA` → `qa_engineer`
-- Step 15: `DATABASE` → `developer`
+- Step 7: `FRONTEND` → `developer`
+- Step 8: `API` → `developer`
+- Step 9: `ARCHITECTURE` → `system_engineer`
+- Step 10: `TESTS` → `developer`
+- Step 11: `PRODUCT_MGMT` → `product_manager`
+- Step 12: `BACKEND` → `developer`
+- Step 13: `DATABASE` → `developer`
+- Step 14: `DEVOPS` → `devops_engineer`
+- Step 15: `FINANCIAL` → `financial_analyst` — Criteria: MRR/ARR projections modeled; CAC and LTV estimated
 
 ---
 
@@ -4358,21 +4358,21 @@
 **Agents Activated (11):** business_analyst, developer, devops_engineer, financial_analyst, legal_advisor, marketing_strategist, operations_manager, product_manager, qa_engineer, system_engineer, ux_designer
 
 **Task Types (15):**
-- Step 1: `API` → `developer`
-- Step 2: `FINANCIAL` → `financial_analyst` — Criteria: MRR/ARR projections modeled; CAC and LTV estimated
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `BUSINESS_ANALYSIS` → `business_analyst` — Criteria: Pricing tiers defined; Churn risk factors identified
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `MARKET_RESEARCH` → `marketing_strategist`
+- Step 3: `OPERATIONS` → `operations_manager`
+- Step 4: `BUSINESS_ANALYSIS` → `business_analyst` — Criteria: Pricing tiers defined; Churn risk factors identified
+- Step 5: `LEGAL` → `legal_advisor` — Criteria: Subscription terms cover cancellation and refunds; Data processing agreement drafted
 - Step 6: `UX_DESIGN` → `ux_designer`
-- Step 7: `ARCHITECTURE` → `system_engineer`
-- Step 8: `PRODUCT_MGMT` → `product_manager`
-- Step 9: `BACKEND` → `developer`
-- Step 10: `OPERATIONS` → `operations_manager`
-- Step 11: `MARKET_RESEARCH` → `marketing_strategist`
-- Step 12: `FRONTEND` → `developer`
-- Step 13: `LEGAL` → `legal_advisor` — Criteria: Subscription terms cover cancellation and refunds; Data processing agreement drafted
-- Step 14: `QA` → `qa_engineer`
-- Step 15: `DATABASE` → `developer`
+- Step 7: `FRONTEND` → `developer`
+- Step 8: `API` → `developer`
+- Step 9: `ARCHITECTURE` → `system_engineer`
+- Step 10: `TESTS` → `developer`
+- Step 11: `PRODUCT_MGMT` → `product_manager`
+- Step 12: `BACKEND` → `developer`
+- Step 13: `DATABASE` → `developer`
+- Step 14: `DEVOPS` → `devops_engineer`
+- Step 15: `FINANCIAL` → `financial_analyst` — Criteria: MRR/ARR projections modeled; CAC and LTV estimated
 
 ---
 
@@ -4402,21 +4402,21 @@
 **Agents Activated (11):** business_analyst, developer, devops_engineer, financial_analyst, legal_advisor, marketing_strategist, operations_manager, product_manager, qa_engineer, system_engineer, ux_designer
 
 **Task Types (15):**
-- Step 1: `API` → `developer`
-- Step 2: `FINANCIAL` → `financial_analyst` — Criteria: MRR/ARR projections modeled; CAC and LTV estimated
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `BUSINESS_ANALYSIS` → `business_analyst` — Criteria: Pricing tiers defined; Churn risk factors identified
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `MARKET_RESEARCH` → `marketing_strategist`
+- Step 3: `OPERATIONS` → `operations_manager`
+- Step 4: `BUSINESS_ANALYSIS` → `business_analyst` — Criteria: Pricing tiers defined; Churn risk factors identified
+- Step 5: `LEGAL` → `legal_advisor` — Criteria: Subscription terms cover cancellation and refunds; Data processing agreement drafted
 - Step 6: `UX_DESIGN` → `ux_designer`
-- Step 7: `ARCHITECTURE` → `system_engineer`
-- Step 8: `PRODUCT_MGMT` → `product_manager`
-- Step 9: `BACKEND` → `developer`
-- Step 10: `OPERATIONS` → `operations_manager`
-- Step 11: `MARKET_RESEARCH` → `marketing_strategist`
-- Step 12: `FRONTEND` → `developer`
-- Step 13: `LEGAL` → `legal_advisor` — Criteria: Subscription terms cover cancellation and refunds; Data processing agreement drafted
-- Step 14: `QA` → `qa_engineer`
-- Step 15: `DATABASE` → `developer`
+- Step 7: `FRONTEND` → `developer`
+- Step 8: `API` → `developer`
+- Step 9: `ARCHITECTURE` → `system_engineer`
+- Step 10: `TESTS` → `developer`
+- Step 11: `PRODUCT_MGMT` → `product_manager`
+- Step 12: `BACKEND` → `developer`
+- Step 13: `DATABASE` → `developer`
+- Step 14: `DEVOPS` → `devops_engineer`
+- Step 15: `FINANCIAL` → `financial_analyst` — Criteria: MRR/ARR projections modeled; CAC and LTV estimated
 
 ---
 
@@ -4446,21 +4446,21 @@
 **Agents Activated (11):** business_analyst, developer, devops_engineer, financial_analyst, legal_advisor, marketing_strategist, operations_manager, product_manager, qa_engineer, system_engineer, ux_designer
 
 **Task Types (15):**
-- Step 1: `API` → `developer`
-- Step 2: `FINANCIAL` → `financial_analyst` — Criteria: MRR/ARR projections modeled; CAC and LTV estimated
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `BUSINESS_ANALYSIS` → `business_analyst` — Criteria: Pricing tiers defined; Churn risk factors identified
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `MARKET_RESEARCH` → `marketing_strategist`
+- Step 3: `OPERATIONS` → `operations_manager`
+- Step 4: `BUSINESS_ANALYSIS` → `business_analyst` — Criteria: Pricing tiers defined; Churn risk factors identified
+- Step 5: `LEGAL` → `legal_advisor` — Criteria: Subscription terms cover cancellation and refunds; Data processing agreement drafted
 - Step 6: `UX_DESIGN` → `ux_designer`
-- Step 7: `ARCHITECTURE` → `system_engineer`
-- Step 8: `PRODUCT_MGMT` → `product_manager`
-- Step 9: `BACKEND` → `developer`
-- Step 10: `OPERATIONS` → `operations_manager`
-- Step 11: `MARKET_RESEARCH` → `marketing_strategist`
-- Step 12: `FRONTEND` → `developer`
-- Step 13: `LEGAL` → `legal_advisor` — Criteria: Subscription terms cover cancellation and refunds; Data processing agreement drafted
-- Step 14: `QA` → `qa_engineer`
-- Step 15: `DATABASE` → `developer`
+- Step 7: `FRONTEND` → `developer`
+- Step 8: `API` → `developer`
+- Step 9: `ARCHITECTURE` → `system_engineer`
+- Step 10: `TESTS` → `developer`
+- Step 11: `PRODUCT_MGMT` → `product_manager`
+- Step 12: `BACKEND` → `developer`
+- Step 13: `DATABASE` → `developer`
+- Step 14: `DEVOPS` → `devops_engineer`
+- Step 15: `FINANCIAL` → `financial_analyst` — Criteria: MRR/ARR projections modeled; CAC and LTV estimated
 
 ---
 
@@ -4490,21 +4490,21 @@
 **Agents Activated (11):** business_analyst, developer, devops_engineer, financial_analyst, legal_advisor, marketing_strategist, operations_manager, product_manager, qa_engineer, system_engineer, ux_designer
 
 **Task Types (15):**
-- Step 1: `API` → `developer`
-- Step 2: `FINANCIAL` → `financial_analyst` — Criteria: MRR/ARR projections modeled; CAC and LTV estimated
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `BUSINESS_ANALYSIS` → `business_analyst` — Criteria: Pricing tiers defined; Churn risk factors identified
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `MARKET_RESEARCH` → `marketing_strategist`
+- Step 3: `OPERATIONS` → `operations_manager`
+- Step 4: `BUSINESS_ANALYSIS` → `business_analyst` — Criteria: Pricing tiers defined; Churn risk factors identified
+- Step 5: `LEGAL` → `legal_advisor` — Criteria: Subscription terms cover cancellation and refunds; Data processing agreement drafted
 - Step 6: `UX_DESIGN` → `ux_designer`
-- Step 7: `ARCHITECTURE` → `system_engineer`
-- Step 8: `PRODUCT_MGMT` → `product_manager`
-- Step 9: `BACKEND` → `developer`
-- Step 10: `OPERATIONS` → `operations_manager`
-- Step 11: `MARKET_RESEARCH` → `marketing_strategist`
-- Step 12: `FRONTEND` → `developer`
-- Step 13: `LEGAL` → `legal_advisor` — Criteria: Subscription terms cover cancellation and refunds; Data processing agreement drafted
-- Step 14: `QA` → `qa_engineer`
-- Step 15: `DATABASE` → `developer`
+- Step 7: `FRONTEND` → `developer`
+- Step 8: `API` → `developer`
+- Step 9: `ARCHITECTURE` → `system_engineer`
+- Step 10: `TESTS` → `developer`
+- Step 11: `PRODUCT_MGMT` → `product_manager`
+- Step 12: `BACKEND` → `developer`
+- Step 13: `DATABASE` → `developer`
+- Step 14: `DEVOPS` → `devops_engineer`
+- Step 15: `FINANCIAL` → `financial_analyst` — Criteria: MRR/ARR projections modeled; CAC and LTV estimated
 
 ---
 
@@ -4535,21 +4535,21 @@
 **Agents Activated (11):** business_analyst, developer, devops_engineer, financial_analyst, legal_advisor, marketing_strategist, operations_manager, product_manager, qa_engineer, system_engineer, ux_designer
 
 **Task Types (15):**
-- Step 1: `API` → `developer`
-- Step 2: `FINANCIAL` → `financial_analyst` — Criteria: MRR/ARR projections modeled; CAC and LTV estimated
-- Step 3: `TESTS` → `developer`
-- Step 4: `DEVOPS` → `devops_engineer`
-- Step 5: `BUSINESS_ANALYSIS` → `business_analyst` — Criteria: Pricing tiers defined; Churn risk factors identified
+- Step 1: `QA` → `qa_engineer`
+- Step 2: `MARKET_RESEARCH` → `marketing_strategist`
+- Step 3: `OPERATIONS` → `operations_manager`
+- Step 4: `BUSINESS_ANALYSIS` → `business_analyst` — Criteria: Pricing tiers defined; Churn risk factors identified
+- Step 5: `LEGAL` → `legal_advisor` — Criteria: Subscription terms cover cancellation and refunds; Data processing agreement drafted
 - Step 6: `UX_DESIGN` → `ux_designer`
-- Step 7: `ARCHITECTURE` → `system_engineer`
-- Step 8: `PRODUCT_MGMT` → `product_manager`
-- Step 9: `BACKEND` → `developer`
-- Step 10: `OPERATIONS` → `operations_manager`
-- Step 11: `MARKET_RESEARCH` → `marketing_strategist`
-- Step 12: `FRONTEND` → `developer`
-- Step 13: `LEGAL` → `legal_advisor` — Criteria: Subscription terms cover cancellation and refunds; Data processing agreement drafted
-- Step 14: `QA` → `qa_engineer`
-- Step 15: `DATABASE` → `developer`
+- Step 7: `FRONTEND` → `developer`
+- Step 8: `API` → `developer`
+- Step 9: `ARCHITECTURE` → `system_engineer`
+- Step 10: `TESTS` → `developer`
+- Step 11: `PRODUCT_MGMT` → `product_manager`
+- Step 12: `BACKEND` → `developer`
+- Step 13: `DATABASE` → `developer`
+- Step 14: `DEVOPS` → `devops_engineer`
+- Step 15: `FINANCIAL` → `financial_analyst` — Criteria: MRR/ARR projections modeled; CAC and LTV estimated
 
 ---
 

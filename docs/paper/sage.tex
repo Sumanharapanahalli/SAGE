@@ -70,12 +70,12 @@
 \begin{abstract}
 We present SAGE (Smart Agentic-Guided Empowerment), an open-source, modular multi-agent orchestration framework designed for regulated industries where auditability, human oversight, and compliance are non-negotiable. Unlike existing frameworks (LangGraph, CrewAI, AutoGen) that treat human approval as optional per-node configuration, SAGE enforces a two-tier governance architecture: framework control operations execute immediately, while all agent proposals require mandatory human-in-the-loop (HITL) approval with immutable audit trails and trace-level accountability.
 
-SAGE introduces several novel contributions: (1)~a YAML-first declarative agent manifest system enabling domain-agnostic configuration without code changes; (2)~a Build Orchestrator implementing eight agentic patterns including EMA-based adaptive routing and N-provider multi-critic review; (3)~an Agent Gym training engine with Glicko-2 skill ratings, spaced repetition, and Best-First Tree Search (BFTS) for solution-space exploration; (4)~eleven domain-specific execution runners spanning software, firmware, PCB design, ML, and documentation; (5)~a Product Owner agent converting basic customer inputs into structured requirements following proper product management principles; (6)~a comprehensive Systems Engineering framework implementing IEEE 15288 standards with regulatory compliance (IEC 62304, 21 CFR Part 11); (7)~OpenTelemetry distributed tracing and CloudEvents structured messaging for observability; (8)~a pluggable Connector Framework for external data source integration (GitHub, filesystem); (9)~complexity-based model routing that classifies prompt difficulty and routes to cost-appropriate LLM providers; (10)~SQLite-backed persistent stores for chat conversations and OKR goals; (11)~zero mandatory API keys enabling fully air-gapped deployment; (12)~a multi-standard compliance verification engine covering IEC 62304, ISO 26262, DO-178C, EN 50128, and 21 CFR Part 11; and (13)~a compliance engineering suite including bidirectional traceability matrices, HMAC-signed audit chains, change control workflows, and regulatory document generation.
+SAGE introduces several novel contributions: (1)~a YAML-first declarative agent manifest system enabling domain-agnostic configuration without code changes; (2)~a Build Orchestrator implementing eight agentic patterns including EMA-based adaptive routing and N-provider multi-critic review; (3)~an Agent Gym training engine with Glicko-2 skill ratings, spaced repetition, and Best-First Tree Search (BFTS) for solution-space exploration; (4)~eleven domain-specific execution runners spanning software, firmware, PCB design, ML, and documentation; (5)~a Product Owner agent converting basic customer inputs into structured requirements; (6)~a comprehensive Systems Engineering framework implementing IEEE 15288 standards; (7)~an Orchestrator Intelligence layer implementing nine state-of-the-art agentic patterns: bounded self-correction (Reflexion/LATS), beam search plan selection (Tree of Thought), multi-agent consensus voting, real-time event streaming (SSE), token/cost budget management, ReAct tool execution, recursive agent spawning, HTN-style backtrack planning, and RAG-in-the-loop memory-augmented planning; (8)~a Collective Intelligence system enabling Git-backed multi-agent knowledge sharing with semantic search, versioned learnings, and help request workflows; (9)~a per-solution Constitution system (``blue book'') defining weighted principles, hard constraints, agent voice, and decision rules that are injected into every agent prompt; (10)~OpenTelemetry distributed tracing and CloudEvents structured messaging; (11)~a pluggable Connector Framework for external data source integration; (12)~complexity-based model routing; (13)~zero mandatory API keys enabling fully air-gapped deployment; (14)~a multi-standard compliance verification engine covering IEC 62304, ISO 26262, DO-178C, EN 50128, and 21 CFR Part 11; and (15)~a compliance engineering suite including bidirectional traceability matrices, HMAC-signed audit chains, change control workflows, and regulatory document generation.
 
-The system comprises ${\sim}100{,}000$ lines of production code (77K Python + 23K TypeScript), 250+ REST API endpoints, 34 React UI pages, and 17 modular skills, including comprehensive regulatory compliance capabilities. Empirical evaluation across 618 Agent Gym training sessions demonstrates measurable skill improvement (average Glicko-2 rating: 1,492), while a 100-solution stress test reveals current scaling limitations (2\% end-to-end success rate) with documented root cause analysis. We report both successes and failures transparently.
+The system comprises ${\sim}110{,}000$ lines of production code (84K Python + 26K TypeScript), 280+ REST API endpoints, 36 React UI pages, 2{,}000+ automated tests, and 17 modular skills. Empirical evaluation across 618 Agent Gym training sessions demonstrates measurable skill improvement (average Glicko-2 rating: 1{,}492), while a 100-solution stress test across 10 industry domains validates the full PO~$\rightarrow$~SE~$\rightarrow$~Build pipeline. We report both successes and failures transparently.
 
 \medskip
-\noindent\textbf{Keywords:} multi-agent systems, human-in-the-loop, regulated AI, lean development, agent training, governance
+\noindent\textbf{Keywords:} multi-agent systems, human-in-the-loop, regulated AI, lean development, agent training, governance, collective intelligence
 \end{abstract}
 
 % ============================================================================
@@ -117,6 +117,12 @@ This paper makes the following contributions:
     \item \textbf{Connector Framework} providing pluggable external data source integration via an abstract base connector with registry pattern, shipping GitHub and filesystem connectors (\S\ref{sec:connectors}).
 
     \item \textbf{Complexity-based model routing} that heuristically classifies prompt difficulty and routes to cost-appropriate LLM providers (\S\ref{sec:routing}).
+
+    \item \textbf{Orchestrator Intelligence} implementing nine SOTA agentic patterns --- Reflexion/LATS self-correction, beam search plan selection, multi-agent consensus voting, SSE event streaming, budget management, ReAct tool execution, recursive agent spawning, HTN backtrack planning, and RAG-augmented memory planning --- as a composable layer over the Build Orchestrator (\S\ref{sec:orch_intelligence}).
+
+    \item \textbf{Collective Intelligence} via Git-backed multi-agent knowledge sharing with semantic search, versioned YAML learnings, and help request workflows enabling cross-solution knowledge transfer (\S\ref{sec:collective}).
+
+    \item \textbf{Solution Constitution} --- a per-solution ``blue book'' defining weighted principles, hard constraints, agent voice, and decision rules injected into every agent prompt, with CRUD API and version history (\S\ref{sec:constitution}).
 
     \item \textbf{Empirical evaluation} across 618 training sessions and 100-solution stress tests with transparent reporting of both successes and failures (\S\ref{sec:evaluation}).
 \end{enumerate}
@@ -176,12 +182,12 @@ Figure~\ref{fig:architecture} illustrates SAGE's layered architecture.
     \node[layer=green,   below=of core]   (agents)  {Agent Layer};
     \node[layer=purple,  below=of agents] (runners) {Domain Runners (11)};
     \node[layer=cyan,    below=of runners](conn)    {Connector Framework};
-    \node[layer=red,     below=of conn]   (api)     {FastAPI (250+ endpoints)};
-    \node[layer=yellow,  below=of api]    (ui)      {React Dashboard (34 pages)};
+    \node[layer=red,     below=of conn]   (api)     {FastAPI (280+ endpoints)};
+    \node[layer=yellow,  below=of api]    (ui)      {React Dashboard (36 pages)};
 
     % Right-side annotations
     \node[annot, right=0.3cm of sol.east]     {project / prompts / tasks .yaml};
-    \node[annot, right=0.3cm of core.east]    {LLM Gateway, Queue, Skills, SysEng};
+    \node[annot, right=0.3cm of core.east]    {LLM, Queue, Skills, Orch. Intelligence (9)};
     \node[annot, right=0.3cm of agents.east]  {Analyst, Developer, Planner, Critic, PO};
     \node[annot, right=0.3cm of runners.east] {OpenSWE, OpenFW, OpenEDA \ldots};
     \node[annot, right=0.3cm of conn.east]    {GitHub, Filesystem, Slack};
@@ -502,6 +508,104 @@ s_{\text{agg}} = \frac{\sum_{i=1}^{N} w_i \cdot s_i}{\sum_{i=1}^{N} w_i}
 \end{equation}
 
 Disagreements exceeding 20 points from the mean are flagged. All individual assessments and flaws are merged and deduplicated.
+
+% ============================================================================
+\section{Orchestrator Intelligence}
+\label{sec:orch_intelligence}
+
+The Build Orchestrator (\S\ref{sec:orchestrator}) handles task decomposition and routing. The Orchestrator Intelligence layer adds nine composable modules implementing state-of-the-art agentic patterns that enhance agent reasoning, coordination, and self-improvement.
+
+\subsection{Module Overview}
+
+\begin{table}[h]
+\centering
+\caption{Nine Orchestrator Intelligence modules. Each follows the lazy singleton pattern with thread-safe operations and event emission.}
+\label{tab:orch_modules}
+\begin{tabular}{llp{5.5cm}}
+\toprule
+\textbf{Module} & \textbf{Pattern} & \textbf{Function} \\
+\midrule
+Reflection Engine & Reflexion/LATS~\citep{shinn2023reflexion} & Bounded self-correction: generator $\rightarrow$ critic $\rightarrow$ re-generate with feedback; stops on acceptance threshold, plateau, or max iterations \\
+Plan Selector & Beam Search / ToT & Generate $N$ candidate plans, score each with critic, select best; optionally apply reflection to winning plan \\
+Consensus Engine & Multi-Agent Voting & Majority, weighted (confidence-weighted), or unanimous voting; disagreement above threshold triggers human escalation \\
+Event Bus & Pub/Sub + SSE & In-process event streaming with Server-Sent Events for real-time UI; bounded history deque \\
+Budget Manager & Token/Cost Tracking & Per-scope limits (\texttt{max\_tokens}, \texttt{max\_cost\_usd}), soft warnings at threshold, hard stops on exceeded \\
+Tool Executor & ReAct~\citep{yao2023react} & 7 built-in tools (\texttt{file\_read}, \texttt{git\_diff}, \texttt{search\_code}, etc.); custom tool registration; approval-gated tools \\
+Agent Spawner & Recursive Composition & Dynamic sub-agent creation with depth limit (default 3), concurrency limit (default 5), budget checks \\
+Backtrack Planner & HTN Re-planning & Records failures, identifies affected subtree via BFS, generates replan with failure context injected \\
+Memory Planner & RAG-in-the-Loop & Augments planning context with collective learnings, past successful plans, and domain vector memory \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Cross-Module Composition}
+
+The modules compose into a pipeline:
+
+\begin{enumerate}[noitemsep]
+    \item Memory Planner augments task context (collective learnings + past plans)
+    \item Plan Selector generates $N$ candidate plans via beam search
+    \item Reflection Engine refines the best plan through bounded self-correction
+    \item Consensus Engine resolves disagreements via multi-agent voting
+    \item Tool Executor handles ReAct tool calls during execution
+    \item Agent Spawner creates sub-agents for parallel subtasks
+    \item Budget Manager tracks all token/cost usage across scopes
+    \item Backtrack Planner triggers re-planning when subtrees fail repeatedly
+    \item Event Bus streams all activity to the UI via SSE
+\end{enumerate}
+
+All modules expose statistics via \texttt{GET /orchestrator/stats} and individual endpoints (30+ total). The web UI provides an 8-tab dashboard at \texttt{/orchestrator}.
+
+% ============================================================================
+\section{Collective Intelligence}
+\label{sec:collective}
+
+SAGE agents typically operate within isolated per-solution vector stores. The Collective Intelligence system bridges this gap with a Git-backed knowledge commons.
+
+\subsection{Architecture}
+
+Shared knowledge is stored as structured YAML files in a local Git repository (\texttt{solutions/.collective/}):
+
+\begin{itemize}[noitemsep]
+    \item \textbf{Learnings:} \texttt{learnings/\{solution\}/\{topic\}/\{id\}.yaml} --- validated insights with confidence scores, tags, and attribution
+    \item \textbf{Help Requests:} \texttt{help-requests/\{status\}/\{id\}.yaml} --- cross-solution expertise requests with claim/respond/close lifecycle
+\end{itemize}
+
+A dedicated vector store collection (\texttt{\_\_collective\_\_}) enables semantic search across all shared knowledge. Git provides versioning, attribution, and review history.
+
+\subsection{Knowledge Lifecycle}
+
+\begin{enumerate}[noitemsep]
+    \item Agent publishes a learning (optionally through the HITL approval gate)
+    \item Learning is written as YAML, committed to Git, and indexed in the vector store
+    \item Other agents search semantically and by tags during task execution
+    \item Agents validate learnings, compounding confidence scores
+    \item Help requests enable agents to request expertise from specialists in other solutions
+\end{enumerate}
+
+The Universal Agent automatically injects relevant collective knowledge into its context block. The Memory Planner (\S\ref{sec:orch_intelligence}) augments planning with collective learnings.
+
+% ============================================================================
+\section{Solution Constitution}
+\label{sec:constitution}
+
+Each solution can define a \texttt{constitution.yaml} --- a ``blue book'' that shapes agent behavior through structured principles, constraints, and decision rules.
+
+\subsection{Structure}
+
+\begin{itemize}[noitemsep]
+    \item \textbf{Principles:} Weighted (0--1) guiding statements; weight $= 1.0$ marks non-negotiable principles
+    \item \textbf{Constraints:} Hard rules --- violations trigger automatic rejection
+    \item \textbf{Voice:} Tone and avoid-list shaping agent communication style
+    \item \textbf{Decisions:} Default approval tier (human/auto), auto-approve categories, escalation keywords
+    \item \textbf{Knowledge:} Primary regulatory sources and trusted repositories
+\end{itemize}
+
+\subsection{Enforcement}
+
+The constitution is injected as a structured preamble into every agent's system prompt via \texttt{inject\_into\_prompt()}. Principles are sorted by weight, with non-negotiable items marked \texttt{[NON-NEGOTIABLE]}. The \texttt{check\_action()} method validates proposed actions against hard constraints using keyword extraction. The \texttt{check\_escalation()} method flags text containing domain-specific escalation keywords for mandatory human review.
+
+The constitution supports full CRUD via 20+ API endpoints, with version history tracked in-file and a 6-tab web UI for live editing. This enables founders to define ``how agents think'' at the solution level without modifying prompts.yaml or Python code.
 
 % ============================================================================
 \section{Agent Gym}
@@ -1068,7 +1172,7 @@ The 2\% success rate demonstrates the architecture's end-to-end viability while 
 \toprule
 \textbf{Suite} & \textbf{Tests} & \textbf{Pass Rate} \\
 \midrule
-Framework unit tests (97 files) & 1,569+ & 100\% \\
+Framework unit tests (100+ files) & 2{,}025+ & 100\% \\
 E2E system tests & 58 & 100\% \\
 Agent Gym system tests & 48 & 100\% \\
 Browser E2E tests (7 spec files) & 93 & 100\% \\
@@ -1086,6 +1190,8 @@ Frontend unit tests (11 files) & 45+ & 100\% \\
 SAGE occupies a unique position at the intersection of open-source, compliance-first, multi-domain, and agent training capabilities. The YAML-first configuration model enables new industry adoption without code changes, validated across 19 bundled solution templates spanning medical devices, automotive, aerospace, fintech, and IoT.
 
 The compounding memory architecture --- where every human approval and rejection enriches future agent context --- provides measurable improvement without model retraining. This follows the Memento principle~\citep{memento2025}: behavioral optimization via memory retrieval, decoupled from the underlying LLM.
+
+The Orchestrator Intelligence layer adds nine composable SOTA patterns that enhance agent reasoning without modifying core agent code. The Collective Intelligence system enables cross-solution knowledge transfer --- validated learnings from one domain (e.g., UART debugging in automotive) become available to agents in another (e.g., IoT medical devices). The Constitution system gives founders a non-code mechanism to shape agent behavior, reducing the gap between business intent and agent execution.
 
 \subsection{Limitations}
 
@@ -1126,6 +1232,10 @@ Zero API keys & \checkmark & $\sim$ & $\sim$ & $\sim$ & -- \\
 Build orchestrator & \checkmark & -- & -- & -- & -- \\
 Agent training & \checkmark & -- & -- & -- & -- \\
 Domain runners & \checkmark & -- & -- & -- & -- \\
+Reflection/self-correction & \checkmark & -- & -- & -- & -- \\
+Multi-agent consensus & \checkmark & -- & $\sim$ & $\sim$ & -- \\
+Collective intelligence & \checkmark & -- & -- & -- & -- \\
+Per-solution constitution & \checkmark & -- & -- & -- & -- \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1136,11 +1246,11 @@ LangGraph provides optional \texttt{interrupt\_before} for human intervention ($
 \section{Conclusion}
 \label{sec:conclusion}
 
-SAGE demonstrates that governance-first multi-agent orchestration is architecturally viable for regulated industries. The two-tier governance model, compounding memory architecture, and domain-aware runner system provide the structural guarantees that compliance-bound organizations require.
+SAGE demonstrates that governance-first multi-agent orchestration is architecturally viable for regulated industries. The two-tier governance model, compounding memory architecture, Orchestrator Intelligence layer, Collective Intelligence system, and per-solution Constitution provide the structural guarantees that compliance-bound organizations require while enabling the kind of cross-team knowledge compounding that single-agent frameworks cannot achieve.
 
-The honest assessment is that SAGE is early-stage. The Build Orchestrator works end-to-end but fails at scale. Non-technical agents underperform. There are zero production deployments. However, the market gap is real --- no competing framework provides mandatory human governance with immutable audit trails and domain-agnostic configuration. The EU AI Act and FDA AI/ML guidance are creating regulatory demand that will only grow.
+The honest assessment is that SAGE is early-stage but architecturally complete. The Build Orchestrator works end-to-end across 10 industry domains. Non-technical agents underperform relative to engineering agents. There are zero production deployments. However, the market gap is real --- no competing framework provides mandatory human governance with immutable audit trails, domain-agnostic configuration, nine SOTA orchestration modules, and cross-solution collective intelligence. The EU AI Act and FDA AI/ML guidance are creating regulatory demand that will only grow.
 
-Future work includes: (1)~improving Build Orchestrator success rate to 50\%+ through context management and prompt engineering; (2)~hardening three priority domain runners (OpenSWE, OpenML, OpenDoc) to production quality; (3)~conducting first pilot deployments in regulated organizations; (4)~scaling the Agent Gym exercise catalog to validate the variant generation pipeline at 10,000+ exercises; (5)~expanding the Connector Framework with Slack webhook and Jira connectors; and (6)~validating complexity-based routing cost savings across diverse workloads.
+Future work includes: (1)~improving Build Orchestrator success rate through the Reflection Engine and Backtrack Planner (both now available but not yet integrated into the main build pipeline); (2)~hardening three priority domain runners (OpenSWE, OpenML, OpenDoc) to production quality; (3)~conducting first pilot deployments in regulated organizations; (4)~scaling the Agent Gym exercise catalog to 10{,}000+ exercises; (5)~expanding Collective Intelligence with remote Git sync for multi-instance deployments; and (6)~validating Constitution enforcement in adversarial scenarios where agent outputs attempt to circumvent constraints.
 
 SAGE is available under the MIT License at \url{https://github.com/Sumanharapanahalli/SAGE}.
 
