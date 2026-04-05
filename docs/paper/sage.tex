@@ -70,9 +70,9 @@
 \begin{abstract}
 We present SAGE (Smart Agentic-Guided Empowerment), an open-source, modular multi-agent orchestration framework designed for regulated industries where auditability, human oversight, and compliance are non-negotiable. Unlike existing frameworks (LangGraph, CrewAI, AutoGen) that treat human approval as optional per-node configuration, SAGE enforces a two-tier governance architecture: framework control operations execute immediately, while all agent proposals require mandatory human-in-the-loop (HITL) approval with immutable audit trails and trace-level accountability.
 
-SAGE introduces several novel contributions: (1)~a YAML-first declarative agent manifest system enabling domain-agnostic configuration without code changes; (2)~a Build Orchestrator implementing eight agentic patterns including EMA-based adaptive routing and N-provider multi-critic review; (3)~an Agent Gym training engine with Glicko-2 skill ratings and spaced repetition; (4)~eleven domain-specific execution runners spanning software, firmware, PCB design, ML, and documentation; (5)~a Product Owner agent converting basic customer inputs into structured requirements following proper product management principles; (6)~a comprehensive Systems Engineering framework implementing IEEE 15288 standards with regulatory compliance (IEC 62304, 21 CFR Part 11); (7)~OpenTelemetry distributed tracing and CloudEvents structured messaging for observability; and (8)~zero mandatory API keys enabling fully air-gapped deployment.
+SAGE introduces several novel contributions: (1)~a YAML-first declarative agent manifest system enabling domain-agnostic configuration without code changes; (2)~a Build Orchestrator implementing eight agentic patterns including EMA-based adaptive routing and N-provider multi-critic review; (3)~an Agent Gym training engine with Glicko-2 skill ratings, spaced repetition, and Best-First Tree Search (BFTS) for solution-space exploration; (4)~eleven domain-specific execution runners spanning software, firmware, PCB design, ML, and documentation; (5)~a Product Owner agent converting basic customer inputs into structured requirements following proper product management principles; (6)~a comprehensive Systems Engineering framework implementing IEEE 15288 standards with regulatory compliance (IEC 62304, 21 CFR Part 11); (7)~OpenTelemetry distributed tracing and CloudEvents structured messaging for observability; (8)~a pluggable Connector Framework for external data source integration (GitHub, filesystem); (9)~complexity-based model routing that classifies prompt difficulty and routes to cost-appropriate LLM providers; (10)~SQLite-backed persistent stores for chat conversations and OKR goals; and (11)~zero mandatory API keys enabling fully air-gapped deployment.
 
-The system comprises ${\sim}42{,}500$ lines of production Python, 190+ REST API endpoints, 26 React UI pages, and 16 modular skills, including comprehensive regulatory compliance capabilities. Empirical evaluation across 496 Agent Gym training sessions demonstrates measurable skill improvement (average Glicko-2 rating: 1,484), while a 100-solution stress test reveals current scaling limitations (2\% end-to-end success rate) with documented root cause analysis. We report both successes and failures transparently.
+The system comprises ${\sim}72{,}000$ lines of production code (48,700 Python + 23,000 TypeScript), 227+ REST API endpoints, 39 React UI pages, and 17 modular skills, including comprehensive regulatory compliance capabilities. Empirical evaluation across 618 Agent Gym training sessions demonstrates measurable skill improvement (average Glicko-2 rating: 1,492), while a 100-solution stress test reveals current scaling limitations (2\% end-to-end success rate) with documented root cause analysis. We report both successes and failures transparently.
 
 \medskip
 \noindent\textbf{Keywords:} multi-agent systems, human-in-the-loop, regulated AI, lean development, agent training, governance
@@ -106,15 +106,19 @@ This paper makes the following contributions:
 
     \item \textbf{Build Orchestrator} implementing eight agentic patterns --- ReAct, hierarchical decomposition, wave-based parallelism, EMA-based adaptive routing, N-provider multi-critic review, HITL gates, iterative refinement, and anti-drift checkpoints --- for end-to-end product construction (\S\ref{sec:orchestrator}).
 
-    \item \textbf{Agent Gym} training engine with Glicko-2 skill ratings, spaced repetition scheduling, and adaptive exercise selection across 598 seed exercises in 11 domains (\S\ref{sec:gym}).
+    \item \textbf{Agent Gym} training engine with Glicko-2 skill ratings, spaced repetition scheduling, BFTS tree search~\citep{aiscientistv2}, and adaptive exercise selection across 661 seed exercises in 11 domains (\S\ref{sec:gym}).
 
     \item \textbf{Domain-aware runner architecture} with eleven specialized execution environments implementing a common \texttt{BaseRunner} interface (\S\ref{sec:runners}).
 
-    \item \textbf{Modular skill marketplace} with 16 YAML-based skill manifests supporting public, private, and disabled visibility tiers (\S\ref{sec:skills}).
+    \item \textbf{Modular skill marketplace} with 17 YAML-based skill manifests supporting public, private, and disabled visibility tiers (\S\ref{sec:skills}).
 
     \item \textbf{Communication layers} comprising OpenTelemetry distributed tracing with graceful no-op degradation and CloudEvents v1.0 structured messaging (\S\ref{sec:communication}).
 
-    \item \textbf{Empirical evaluation} across 496 training sessions and 100-solution stress tests with transparent reporting of both successes and failures (\S\ref{sec:evaluation}).
+    \item \textbf{Connector Framework} providing pluggable external data source integration via an abstract base connector with registry pattern, shipping GitHub and filesystem connectors (\S\ref{sec:connectors}).
+
+    \item \textbf{Complexity-based model routing} that heuristically classifies prompt difficulty and routes to cost-appropriate LLM providers (\S\ref{sec:routing}).
+
+    \item \textbf{Empirical evaluation} across 618 training sessions and 100-solution stress tests with transparent reporting of both successes and failures (\S\ref{sec:evaluation}).
 \end{enumerate}
 
 % ============================================================================
@@ -171,14 +175,16 @@ Figure~\ref{fig:architecture} illustrates SAGE's layered architecture.
     \node[layer=blue,    below=of sol]    (core)    {Core Engine};
     \node[layer=green,   below=of core]   (agents)  {Agent Layer};
     \node[layer=purple,  below=of agents] (runners) {Domain Runners (11)};
-    \node[layer=red,     below=of runners](api)     {FastAPI (190+ endpoints)};
-    \node[layer=yellow,  below=of api]    (ui)      {React Dashboard (26 pages)};
+    \node[layer=cyan,    below=of runners](conn)    {Connector Framework};
+    \node[layer=red,     below=of conn]   (api)     {FastAPI (227+ endpoints)};
+    \node[layer=yellow,  below=of api]    (ui)      {React Dashboard (39 pages)};
 
     % Right-side annotations
     \node[annot, right=0.3cm of sol.east]     {project / prompts / tasks .yaml};
     \node[annot, right=0.3cm of core.east]    {LLM Gateway, Queue, Skills, SysEng};
     \node[annot, right=0.3cm of agents.east]  {Analyst, Developer, Planner, Critic, PO};
     \node[annot, right=0.3cm of runners.east] {OpenSWE, OpenFW, OpenEDA \ldots};
+    \node[annot, right=0.3cm of conn.east]    {GitHub, Filesystem, Slack};
 
     % Memory — left side
     \node[rectangle, draw=teal!70, rounded corners=5pt, minimum width=2cm, minimum height=1.4cm,
@@ -189,7 +195,8 @@ Figure~\ref{fig:architecture} illustrates SAGE's layered architecture.
     \draw[arrow] (sol)     -- (core);
     \draw[arrow] (core)    -- (agents);
     \draw[arrow] (agents)  -- (runners);
-    \draw[arrow] (runners) -- (api);
+    \draw[arrow] (runners) -- (conn);
+    \draw[arrow] (conn)    -- (api);
     \draw[arrow] (api)     -- (ui);
 
     % Memory feedback loop
@@ -197,7 +204,7 @@ Figure~\ref{fig:architecture} illustrates SAGE's layered architecture.
     \draw[darrow] (memory.north) |- node[above, pos=0.7, font=\scriptsize\itshape, color=teal!70] {compounding feedback} (core.west);
 
 \end{tikzpicture}
-\caption{SAGE dependency hierarchy. Solutions plug in via YAML only. The API exposes agents and runners to the UI. The dashed arrow represents the compounding feedback loop: human decisions stored in memory enrich future agent context.}
+\caption{SAGE dependency hierarchy. Solutions plug in via YAML only. The Connector Framework provides pluggable external data source integration. The API exposes agents, runners, and connectors to the UI. The dashed arrow represents the compounding feedback loop: human decisions stored in memory enrich future agent context.}
 \label{fig:architecture}
 \end{figure}
 
@@ -874,12 +881,113 @@ The CloudEvents module (\texttt{src/modules/cloud\_events.py}) implements the Cl
 Skills are YAML files defining agent capabilities with runner bindings, role mappings, grading rubrics, and certification requirements. The skill system supports three visibility tiers:
 
 \begin{itemize}[noitemsep]
-    \item \textbf{Public} --- open-source skills shipped with SAGE (16 skills across 10+ domains)
+    \item \textbf{Public} --- open-source skills shipped with SAGE (17 skills across 10+ domains)
     \item \textbf{Private} --- proprietary skills loaded via \texttt{SAGE\_SKILLS\_DIR} environment variable, never committed to the open-source repository
     \item \textbf{Disabled} --- dormant skills retained for versioning but not loaded
 \end{itemize}
 
 Skills are hot-reloadable at runtime without server restart. Each skill defines acceptance criteria and grading rubrics used by the Agent Gym for automated evaluation.
+
+% ============================================================================
+\section{Connector Framework}
+\label{sec:connectors}
+
+SAGE provides a pluggable connector architecture for integrating external data sources into the agent knowledge pipeline. Inspired by the Onyx project's approach to unified data ingestion, the framework defines an abstract base connector with three required methods: \texttt{connect()}, \texttt{fetch()}, and \texttt{sync()}.
+
+\subsection{Architecture}
+
+The \texttt{ConnectorRegistry} implements the registry pattern: connectors self-register at import time, and the API layer discovers available types dynamically. This enables adding new data sources without modifying existing code.
+
+\begin{lstlisting}[language=Python, caption={BaseConnector abstract interface.}]
+class BaseConnector(ABC):
+    @abstractmethod
+    def connect(self, config: dict) -> bool: ...
+    @abstractmethod
+    def fetch(self, query: str) -> list[dict]: ...
+    @abstractmethod
+    def sync(self) -> dict: ...
+\end{lstlisting}
+
+\subsection{Shipped Connectors}
+
+Two connectors ship with the framework:
+
+\begin{itemize}[noitemsep]
+    \item \textbf{GitHub Connector} --- uses the \texttt{gh} CLI to fetch issues, pull requests, and commits from configured repositories. Requires no API key when \texttt{gh} is authenticated.
+    \item \textbf{Filesystem Connector} --- indexes local text files by extension (26 supported extensions), respecting configurable \texttt{max\_files} and \texttt{max\_size} limits.
+\end{itemize}
+
+API endpoints: \texttt{GET /connectors} (list available types), \texttt{POST /connectors/\{type\}/configure}, \texttt{POST /connectors/\{type\}/sync}.
+
+% ============================================================================
+\section{Complexity-Based Model Routing}
+\label{sec:routing}
+
+To optimize cost without sacrificing quality, SAGE implements heuristic complexity classification that routes prompts to cost-appropriate LLM providers.
+
+\subsection{Classification}
+
+The \texttt{ComplexityClassifier} scores prompts on a 0--100 scale across four dimensions:
+
+\begin{table}[h]
+\centering
+\small
+\caption{Complexity scoring dimensions.}
+\label{tab:complexity}
+\begin{tabular}{@{}llc@{}}
+\toprule
+\textbf{Dimension} & \textbf{Signal} & \textbf{Max Points} \\
+\midrule
+Length        & Word count thresholds (20/50/100/200+) & 40 \\
+Code blocks  & Presence of \texttt{```} fenced blocks    & 20 \\
+Tool keywords & \texttt{implement}, \texttt{refactor}, \texttt{debug}, etc. & 25 \\
+Safety domain & \texttt{FMEA}, \texttt{ASIL}, \texttt{IEC 62304}, etc.      & 20 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Thresholds: LOW ($<15$), MEDIUM (15--45), HIGH ($>45$). The \texttt{route\_to\_model()} function maps complexity to provider tiers (e.g., LOW $\rightarrow$ Haiku/Flash, MEDIUM $\rightarrow$ Sonnet, HIGH $\rightarrow$ Opus/Pro).
+
+\subsection{Integration}
+
+Classification runs inside \texttt{LLMGateway.generate()} after PII detection and before budget checks. Routing statistics are exposed via \texttt{GET /llm/routing-stats} and displayed in the Costs dashboard with color-coded LOW/MEDIUM/HIGH counters.
+
+% ============================================================================
+\section{Persistent Stores}
+\label{sec:stores}
+
+Two SQLite-backed stores provide server-side persistence for data previously held only in browser localStorage:
+
+\begin{itemize}[noitemsep]
+    \item \textbf{Chat Store} (\texttt{chat\_conversations} table) --- persists conversation history with role context, enabling cross-device access and surviving browser data clears. Fields: id, user\_id, solution, role\_id, role\_name, title, messages (JSON), timestamps.
+    \item \textbf{Goals Store} (\texttt{objectives} table) --- persists OKR objectives and key results with quarter-based filtering. Fields: id, user\_id, solution, title, quarter, status, owner, key\_results (JSON), timestamps.
+\end{itemize}
+
+Both stores use WAL mode with busy timeouts for concurrent access safety. The frontend uses TanStack Query (\texttt{useQuery}/\texttt{useMutation}) with graceful fallback to localStorage when the API is unreachable.
+
+% ============================================================================
+\section{Best-First Tree Search}
+\label{sec:bfts}
+
+Inspired by the AI-Scientist-v2 approach to solution-space exploration~\citep{aiscientistv2}, the Agent Gym integrates a Best-First Tree Search (BFTS) evaluator for candidate solution ranking and refinement.
+
+\subsection{Algorithm}
+
+Given $N$ candidate solutions, the evaluator:
+\begin{enumerate}[noitemsep]
+    \item Scores all candidates via a configurable scorer function
+    \item Sorts the frontier by score (descending) --- best-first expansion
+    \item Expands top-$k$ nodes by generating $b$ child variants per node (branching factor)
+    \item Repeats until \texttt{max\_depth} or \texttt{max\_iterations} is reached
+    \item Returns the highest-scoring node across the entire search tree via DFS
+\end{enumerate}
+
+\begin{equation}
+\text{best} = \arg\max_{n \in \text{tree}} \text{scorer}(n.\text{solution})
+\label{eq:bfts}
+\end{equation}
+
+The search is exposed via \texttt{POST /gym/tree-search} with configurable \texttt{max\_depth} (default 3), \texttt{branching\_factor} (default 3), and \texttt{max\_iterations} (default 50). In production, the scorer function would be an LLM-based evaluator; the default implementation uses a length-based heuristic for testing.
 
 % ============================================================================
 \section{Evaluation}
@@ -891,7 +999,7 @@ We evaluate SAGE across two dimensions: agent skill development via the Agent Gy
 
 \begin{table}[h]
 \centering
-\caption{Agent Gym training results: 496 sessions across 33 skill-role combinations. Combinations with $<10$ sessions are marked with $\dagger$.}
+\caption{Agent Gym training results: 618 sessions across 33 skill-role combinations. Combinations with $<10$ sessions are marked with $\dagger$.}
 \label{tab:gym-results}
 \begin{tabular}{llcccc}
 \toprule
@@ -960,10 +1068,11 @@ The 2\% success rate demonstrates the architecture's end-to-end viability while 
 \toprule
 \textbf{Suite} & \textbf{Tests} & \textbf{Pass Rate} \\
 \midrule
-Framework unit tests & 1,569 & 100\% \\
+Framework unit tests (97 files) & 1,569+ & 100\% \\
 E2E system tests & 58 & 100\% \\
 Agent Gym system tests & 48 & 100\% \\
-Browser E2E tests & 25 & 100\% \\
+Browser E2E tests (7 spec files) & 93 & 100\% \\
+Frontend unit tests (11 files) & 45+ & 100\% \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -974,7 +1083,7 @@ Browser E2E tests & 25 & 100\% \\
 
 \subsection{Strengths}
 
-SAGE occupies a unique position at the intersection of open-source, compliance-first, multi-domain, and agent training capabilities. The YAML-first configuration model enables new industry adoption without code changes, validated across 18 bundled solution templates spanning medical devices, automotive, aerospace, fintech, and IoT.
+SAGE occupies a unique position at the intersection of open-source, compliance-first, multi-domain, and agent training capabilities. The YAML-first configuration model enables new industry adoption without code changes, validated across 19 bundled solution templates spanning medical devices, automotive, aerospace, fintech, and IoT.
 
 The compounding memory architecture --- where every human approval and rejection enriches future agent context --- provides measurable improvement without model retraining. This follows the Memento principle~\citep{memento2025}: behavioral optimization via memory retrieval, decoupled from the underlying LLM.
 
@@ -992,7 +1101,7 @@ The compounding memory architecture --- where every human approval and rejection
 
 \textbf{Internal validity.} Agent Gym ratings depend on the quality of grading rubrics and critic prompts. Biased rubrics would produce misleading ratings. We mitigate this by using N-provider multi-critic review (aggregating scores from multiple independent LLMs), but the rubrics themselves have not been externally validated.
 
-\textbf{External validity.} All 496 training sessions used a single primary LLM provider. Results may not generalize to other providers. The 100-solution stress test used descriptions authored by the development team, which may not represent the diversity of real-world product descriptions.
+\textbf{External validity.} All 618 training sessions used a single primary LLM provider. Results may not generalize to other providers. The 100-solution stress test used descriptions authored by the development team, which may not represent the diversity of real-world product descriptions.
 
 \textbf{Construct validity.} The Glicko-2 rating system was designed for competitive games (chess, Go), not for agent skill assessment. While the mathematical properties (uncertainty quantification, volatility tracking) are useful, the interpretation of rating differences in this context is not established. A 100-point gap in chess corresponds to approximately 64\% expected win rate; the analogous interpretation for agent skills is undefined.
 
@@ -1031,14 +1140,14 @@ SAGE demonstrates that governance-first multi-agent orchestration is architectur
 
 The honest assessment is that SAGE is early-stage. The Build Orchestrator works end-to-end but fails at scale. Non-technical agents underperform. There are zero production deployments. However, the market gap is real --- no competing framework provides mandatory human governance with immutable audit trails and domain-agnostic configuration. The EU AI Act and FDA AI/ML guidance are creating regulatory demand that will only grow.
 
-Future work includes: (1)~improving Build Orchestrator success rate to 50\%+ through context management and prompt engineering; (2)~hardening three priority domain runners (OpenSWE, OpenML, OpenDoc) to production quality; (3)~conducting first pilot deployments in regulated organizations; and (4)~scaling the Agent Gym exercise catalog to validate the variant generation pipeline at 10,000+ exercises.
+Future work includes: (1)~improving Build Orchestrator success rate to 50\%+ through context management and prompt engineering; (2)~hardening three priority domain runners (OpenSWE, OpenML, OpenDoc) to production quality; (3)~conducting first pilot deployments in regulated organizations; (4)~scaling the Agent Gym exercise catalog to validate the variant generation pipeline at 10,000+ exercises; (5)~expanding the Connector Framework with Slack webhook and Jira connectors; and (6)~validating complexity-based routing cost savings across diverse workloads.
 
 SAGE is available under the MIT License at \url{https://github.com/Sumanharapanahalli/SAGE}.
 
 % ============================================================================
 \section*{Acknowledgments}
 
-The architectural design of SAGE was influenced by several open-source projects and research efforts: LangGraph for graph-based orchestration patterns, DeerFlow (ByteDance) for supervisor-agent topology, Paperclip for governance models, Aider for git-integrated code changes, Claude Code for project-level runtime directories, and the Meta-Harness paper (arXiv:2603.28052) for terminal execution innovations.
+The architectural design of SAGE was influenced by several open-source projects and research efforts: LangGraph for graph-based orchestration patterns, DeerFlow~\citep{deerflow2025} (ByteDance) for supervisor-agent topology, Paperclip for governance models, Aider for git-integrated code changes, Claude Code for project-level runtime directories, AI-Scientist-v2~\citep{aiscientistv2} for BFTS tree search, Onyx for connector-based data ingestion, and the Meta-Harness paper (arXiv:2603.28052) for terminal execution innovations.
 
 % ============================================================================
 \bibliographystyle{plainnat}

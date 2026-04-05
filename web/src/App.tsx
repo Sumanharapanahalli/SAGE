@@ -42,6 +42,8 @@ import KnowledgeBrowser from './pages/KnowledgeBrowser'
 import SkillsTools from './pages/SkillsTools'
 import CodeExecution from './pages/CodeExecution'
 import Chat from './pages/Chat'
+import ErrorBoundary from './components/ErrorBoundary'
+import OfflineBanner from './components/OfflineBanner'
 import ThemeProvider from './components/theme/ThemeProvider'
 import { AuthProvider } from './context/AuthContext'
 import { UserPrefsProvider } from './context/UserPrefsContext'
@@ -188,6 +190,7 @@ function AppShell() {
       <TourOverlay />
       <LLMDisconnectedBanner />
       <ChatPanel />
+      <OfflineBanner />
       <ToastContainer />
     </>
   )
@@ -195,6 +198,7 @@ function AppShell() {
 
 export default function App() {
   return (
+    <ErrorBoundary>
     <BrowserRouter>
       <AuthProvider>
         <UserPrefsProvider>
@@ -210,5 +214,6 @@ export default function App() {
         </UserPrefsProvider>
       </AuthProvider>
     </BrowserRouter>
+    </ErrorBoundary>
   )
 }

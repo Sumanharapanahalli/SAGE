@@ -2,7 +2,7 @@
 
 All endpoints are served at `http://localhost:8000`. Every response is JSON.
 
-**Total endpoints: 170** across 28 categories.
+**Total endpoints: 227+** across 30+ categories.
 
 ---
 
@@ -872,6 +872,62 @@ Standardized event format (CloudEvents v1.0 spec) for all SAGE events. Zero exte
 **Event type conventions:** `sage.<domain>.<action>` (e.g., `sage.proposal.created`, `sage.build.task_completed`, `sage.gym.session_completed`).
 
 **Extension attributes:** Pass SAGE-specific metadata via `extensions={"sagetenant": "team-a", "sagetraceid": "..."}`.
+
+---
+
+## Conversations (Persistent Chat)
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/conversations` | List conversations `?user_id=&solution=` |
+| POST | `/conversations` | Create conversation `{user_id, solution, role_id, role_name, title}` |
+| GET | `/conversations/{id}` | Get single conversation with messages |
+| PUT | `/conversations/{id}` | Update conversation (title, messages) |
+| DELETE | `/conversations/{id}` | Delete a conversation |
+
+---
+
+## Goals (OKR Persistence)
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/goals` | List objectives `?user_id=&solution=&quarter=` |
+| POST | `/goals` | Create objective `{user_id, solution, title, quarter, status, owner, key_results}` |
+| GET | `/goals/{id}` | Get single objective |
+| PUT | `/goals/{id}` | Update objective fields |
+| DELETE | `/goals/{id}` | Delete an objective |
+
+---
+
+## Connectors
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/connectors` | List available connector types and their status |
+| POST | `/connectors/{type}/configure` | Configure a connector `{config: {...}}` |
+| POST | `/connectors/{type}/sync` | Trigger data sync for a configured connector |
+
+Available types: `github` (issues, PRs, commits via `gh` CLI), `filesystem` (local file indexing).
+
+---
+
+## Complexity Routing
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/llm/routing-stats` | Get routing decision counts `{low, medium, high}` |
+
+Classification happens automatically in `LLMGateway.generate()`. Stats reset on server restart.
+
+---
+
+## BFTS Tree Search
+
+| Method | Path | Description |
+|---|---|---|
+| POST | `/gym/tree-search` | Run best-first tree search over candidates `{candidates[], max_depth, branching_factor, max_iterations}` |
+
+Returns: `{best_solution, best_score, iterations, tree_depth}`.
 
 ---
 

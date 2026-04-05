@@ -1,6 +1,6 @@
 # SAGE Framework — User Guide
 
-> Version 6.0.0 | Last updated: 2026-03-24
+> Version 7.0.0 | Last updated: 2026-04-05
 
 This guide covers everything needed to install, configure, run, and operate the SAGE Framework from day to day. It assumes no prior knowledge of the codebase.
 
@@ -23,6 +23,11 @@ This guide covers everything needed to install, configure, run, and operate the 
 13. [Action-Aware Chat](#13-action-aware-chat)
 14. [Build Orchestrator](#14-build-orchestrator)
 15. [Organization & Multi-Solution](#15-organization--multi-solution)
+16. [Persistent Chat & Goals](#16-persistent-chat--goals)
+17. [Connector Framework](#17-connector-framework)
+18. [Complexity-Based Model Routing](#18-complexity-based-model-routing)
+19. [Agent Gym & BFTS Tree Search](#19-agent-gym--bfts-tree-search)
+20. [Safety Analysis](#20-safety-analysis)
 
 ---
 
@@ -298,7 +303,7 @@ Open `http://localhost:5173`. The sidebar is organised into five areas: **Work**
 
 **Cmd+K** — press anywhere to open the command palette and jump to any page instantly.
 
-### All 27 UI Pages
+### All 39 UI Pages
 
 | Area | Page | Route | Purpose |
 |---|---|---|---|
@@ -833,4 +838,175 @@ curl -X POST http://localhost:8000/org/channels \
 # Add a task route
 curl -X POST http://localhost:8000/org/routes \
   -d '{"from_solution": "sol_a", "to_solution": "sol_b", "task_type": "SECURITY_REVIEW"}'
+```
+
+---
+
+## 16. Persistent Chat & Goals
+
+Chat conversations and OKR goals are now persisted server-side in SQLite, surviving browser refreshes and enabling cross-device access.
+
+### 16.1 Chat Persistence
+
+Conversations are stored in `.sage/chat.db` with full message history.
+
+```bash
+# List conversations
+curl http://localhost:8000/conversations?user_id=default&solution=starter
+
+# Create a conversation
+curl -X POST http://localhost:8000/conversations \
+  -d '{"user_id": "default", "solution": "starter", "role_id": "developer", "role_name": "Developer", "title": "Bug fix discussion"}'
+
+# Update with new messages
+curl -X PUT http://localhost:8000/conversations/{id} \
+  -d '{"messages": [{"role": "user", "content": "Hello"}, {"role": "assistant", "content": "Hi!"}]}'
+
+# Delete
+curl -X DELETE http://localhost:8000/conversations/{id}
+```
+
+The Chat page (`/chat`) uses TanStack Query with automatic fallback to localStorage when the API is unreachable.
+
+### 16.2 Goals/OKR Persistence
+
+OKR objectives are stored in `.sage/goals.db` with quarter-based filtering.
+
+```bash
+# List goals (optionally filter by quarter)
+curl "http://localhost:8000/goals?user_id=default&solution=starter&quarter=Q2-2026"
+
+# Create an objective
+curl -X POST http://localhost:8000/goals \
+  -d '{"user_id": "default", "solution": "starter", "title": "Ship v2", "quarter": "Q2-2026", "status": "on_track", "owner": "founder"}'
+```
+
+The Goals page (`/goals`) shows objectives grouped by quarter with add/delete operations.
+
+---
+
+## 17. Connector Framework
+
+SAGE provides pluggable connectors for integrating external data sources into the agent knowledge pipeline.
+
+### 17.1 Available Connectors
+
+| Connector | Description |
+|---|---|
+| `github` | Fetches issues, PRs, and commits via `gh` CLI |
+| `filesystem` | Indexes local text files (26 supported extensions) |
+
+### 17.2 Usage
+
+```bash
+# List available connector types
+curl http://localhost:8000/connectors
+
+# Configure a connector
+curl -X POST http://localhost:8000/connectors/github/configure \
+  -d '{"repo": "owner/repo"}'
+
+# Trigger sync
+curl -X POST http://localhost:8000/connectors/github/sync
+```
+
+### 17.3 Adding Custom Connectors
+
+Implement the `BaseConnector` ABC:
+
+```python
+from src.connectors.base import BaseConnector, connector_registry
+
+class MyConnector(BaseConnector):
+    name = "my_source"
+    description = "My custom data source"
+
+    def connect(self, config: dict) -> bool: ...
+    def fetch(self, query: str) -> list[dict]: ...
+    def sync(self) -> dict: ...
+
+connector_registry.register("my_source", MyConnector)
+```
+
+---
+
+## 18. Complexity-Based Model Routing
+
+SAGE automatically classifies prompt complexity and routes to cost-appropriate LLM providers.
+
+### 18.1 How It Works
+
+The `ComplexityClassifier` scores prompts (0-100) across four dimensions:
+- **Length** (0-40 pts): word count thresholds
+- **Code blocks** (0-20 pts): presence of fenced code
+- **Tool keywords** (0-25 pts): `implement`, `refactor`, `debug`, etc.
+- **Safety domain** (0-20 pts): `FMEA`, `ASIL`, `IEC 62304`, etc.
+
+Classification: LOW (<15), MEDIUM (15-45), HIGH (>45).
+
+### 18.2 Routing
+
+| Complexity | Routed To |
+|---|---|
+| LOW | Fast/cheap model (Haiku, Flash) |
+| MEDIUM | Balanced model (Sonnet) |
+| HIGH | Most capable model (Opus, Pro) |
+
+Routing stats are visible on the **Costs** page (`/costs`) and via `GET /llm/routing-stats`.
+
+---
+
+## 19. Agent Gym & BFTS Tree Search
+
+### 19.1 Agent Gym
+
+The Agent Gym (`/agent-gym`) provides structured training for agents with Glicko-2 skill ratings.
+
+```bash
+# Start a training session
+curl -X POST http://localhost:8000/gym/train \
+  -d '{"role": "developer", "difficulty": "medium"}'
+
+# View leaderboard
+curl http://localhost:8000/gym/ratings
+
+# View analytics
+curl http://localhost:8000/gym/analytics
+```
+
+### 19.2 BFTS Tree Search
+
+Best-First Tree Search explores candidate solutions by scoring, branching the best, and pruning weak paths.
+
+```bash
+curl -X POST http://localhost:8000/gym/tree-search \
+  -d '{"candidates": ["solution A", "solution B", "solution C"], "max_depth": 3, "branching_factor": 3}'
+```
+
+Response includes `best_solution`, `best_score`, `iterations`, and `tree_depth`.
+
+---
+
+## 20. Safety Analysis
+
+The Safety Analysis page (`/safety`) provides tabs for functional safety workflows:
+
+- **FTA** — Fault Tree Analysis with gate builder (AND/OR gates, basic events)
+- **FMEA** — Failure Mode and Effects Analysis
+- **ASIL** — Automotive Safety Integrity Level classification (severity, exposure, controllability)
+- **SIL** — Safety Integrity Level classification by failure rate
+- **IEC 62304** — Software safety classification by risk level
+
+```bash
+# Run FMEA analysis
+curl -X POST http://localhost:8000/safety/fmea -d '{"entries": [...]}'
+
+# Classify ASIL
+curl -X POST http://localhost:8000/safety/asil \
+  -d '{"severity": "S3", "exposure": "E4", "controllability": "C3"}'
+
+# Classify SIL
+curl -X POST http://localhost:8000/safety/sil \
+  -d '{"probability_dangerous_failure_per_hour": 1e-7}'
+```
 ```

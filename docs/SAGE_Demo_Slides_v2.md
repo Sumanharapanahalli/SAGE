@@ -321,7 +321,7 @@ npm install -g @google/gemini-cli && gemini  # free Google login
 ---
 
 *SAGE Framework — Open Source (MIT) · Self-Hosted · Agent-First · Community-Driven*
-*136 API endpoints · 27 UI pages · 79 E2E tests (78 passing) · 17+ solution templates · github.com/Sumanharapanahalli/sage*
+*227+ API endpoints · 39 UI pages · 93 browser E2E tests · 19 solution templates · github.com/Sumanharapanahalli/sage*
 
 ---
 

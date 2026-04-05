@@ -81,7 +81,7 @@ src/agents/                7 agent types (Analyst, Developer, Monitor, Planner, 
 src/integrations/          9 domain runners + Build Orchestrator + external connectors
 src/interface/api.py       156 endpoints (5,385 lines)
 src/memory/                Audit logger (SQLite) + vector memory (ChromaDB)
-web/src/                   React 18 + TypeScript dashboard (27 pages)
+web/src/                   React 18 + TypeScript dashboard (39 pages)
 skills/public/             14 YAML skill manifests
 ```
 
@@ -271,10 +271,12 @@ SAGE occupies a unique intersection: **open-source + compliance-first + multi-do
 2. **HITL governance is production-grade** — trace IDs, risk tiers, batch approval, rejection learning
 3. **Multi-LLM abstraction works** — 5+ providers, no mandatory keys, runtime switching
 4. **Audit logging is solid** — immutable SQLite, per-solution isolation, compliance-ready
-5. **Frontend is complete** — 27 pages, real state management, production build
-6. **Agent Gym produces measurable ratings** — 496 sessions, Glicko-2 with confidence intervals
-7. **17 solution templates** with 4-5 fully fleshed out (medtech, meditation, IoT medical, automotive)
-8. **14 skill manifests** with runner bindings, role mappings, and grading rubrics
+5. **Frontend is complete** — 39 pages, real state management, production build, 93 browser E2E tests
+6. **Agent Gym produces measurable ratings** — 618 sessions, Glicko-2 with confidence intervals, BFTS tree search
+7. **19 solution templates** with 4-5 fully fleshed out (medtech, meditation, IoT medical, automotive)
+8. **17 skill manifests** with runner bindings, role mappings, and grading rubrics
+9. **Connector framework** — pluggable GitHub and filesystem data source integration
+10. **Complexity-based routing** — automatic cost optimization via prompt classification
 
 ### 6.2 What Is Incomplete or Weak
 
@@ -301,7 +303,7 @@ SAGE occupies a unique intersection: **open-source + compliance-first + multi-do
 
 **1. Real market gap.** No open-source AI agent framework targets regulated industries with mandatory governance. LangGraph, CrewAI, AutoGen all assume compliance is bolted on after the fact. SAGE builds it in. This is a genuine unserved market.
 
-**2. Substantial working code.** 35,000+ lines of production Python, 156 API endpoints, 27 UI pages, 181 commits in 16 days. This is not a pitch deck — it's a working system with documented test results.
+**2. Substantial working code.** ~72,000 lines of production code (Python + TypeScript), 227+ API endpoints, 39 UI pages, 200+ commits. This is not a pitch deck — it's a working system with documented test results.
 
 **3. Honest about failures.** The 100-solution pipeline test failed at 98%. This is documented transparently with root cause analysis. Investors should value this — teams that hide failures are more dangerous than teams that expose them.
 

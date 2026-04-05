@@ -381,6 +381,9 @@ export const fetchCostDaily = (params?: { tenant?: string; solution?: string; pe
 export const setCostBudget = (body: { tenant?: string; solution?: string; monthly_usd: number }) =>
   post<{ saved: boolean; key: string; monthly_usd: number; message: string }>('/costs/budget', body)
 
+export const fetchRoutingStats = () =>
+  get<{ routing_stats: Record<string, number>; total_classified: number; distribution: Record<string, number> }>('/llm/routing-stats')
+
 // Workflow Diagrams
 export interface WorkflowDiagram {
   solution: string
@@ -1065,19 +1068,19 @@ export const fetchGymLeaderboard = () =>
 export const runFMEA = (entries: Array<{
   component: string; failure_mode: string; effect: string
   severity: number; occurrence: number; detection: number
-}>) => post<any>('/fmea', { entries })
+}>) => post<any>('/safety/fmea', { entries })
 
 export const runFTA = (body: { top_event: string; gates: any[] }) =>
-  post<any>('/fta', body)
+  post<any>('/safety/fta', { tree: body })
 
 export const classifyASIL = (severity: string, exposure: string, controllability: string) =>
-  post<any>('/asil', { severity, exposure, controllability })
+  post<any>('/safety/asil', { severity, exposure, controllability })
 
-export const classifySIL = (target_failure_rate: number) =>
-  post<any>('/sil', { target_failure_rate })
+export const classifySIL = (probability_dangerous_failure_per_hour: number) =>
+  post<any>('/safety/sil', { probability_dangerous_failure_per_hour })
 
 export const classifyIEC62304 = (risk_level: string) =>
-  post<any>('/iec62304-class', { risk_level })
+  post<any>('/safety/iec62304-class', { risk_level })
 
 // ---------------------------------------------------------------------------
 // Knowledge Base — search, browse, manage
@@ -1186,4 +1189,79 @@ export const removeOrgRoute = (task_type: string, source: string, target: string
 // ---------------------------------------------------------------------------
 export const sageAsk = (question: string) =>
   get<any>(`/sage/ask?q=${encodeURIComponent(question)}`)
+
+// ---------------------------------------------------------------------------
+// Chat Conversation Persistence
+// ---------------------------------------------------------------------------
+export interface ConversationDTO {
+  id: string
+  user_id: string
+  solution: string
+  role_id: string
+  role_name: string
+  title: string
+  messages: Array<{ id: string; role: string; content: string; timestamp: number; streaming?: boolean }>
+  created_at: string
+  updated_at: string
+}
+
+export const listConversations = (userId: string, solution: string) =>
+  get<ConversationDTO[]>(`/conversations?user_id=${encodeURIComponent(userId)}&solution=${encodeURIComponent(solution)}`)
+
+export const createConversation = (userId: string, solution: string, roleId: string, roleName: string) =>
+  post<ConversationDTO>('/conversations', { user_id: userId, solution, role_id: roleId, role_name: roleName, messages: [] })
+
+export const getConversation = (convId: string) =>
+  get<ConversationDTO>(`/conversations/${convId}`)
+
+export const updateConversation = (convId: string, data: { title?: string; messages?: any[] }) =>
+  put<ConversationDTO>(`/conversations/${convId}`, data)
+
+export const deleteConversation = (convId: string) =>
+  del<{ deleted: boolean }>(`/conversations/${convId}`)
+
+// ---------------------------------------------------------------------------
+// Goals / OKR Persistence
+// ---------------------------------------------------------------------------
+export interface GoalDTO {
+  id: string
+  user_id: string
+  solution: string
+  title: string
+  quarter: string
+  status: string
+  owner: string
+  key_results: Array<{ title: string; current: number; target: number; unit: string; linked_task_ids?: string[] }>
+  created_at: string
+  updated_at: string
+}
+
+export const listGoals = (userId: string, solution: string, quarter?: string) =>
+  get<GoalDTO[]>(`/goals?user_id=${encodeURIComponent(userId)}&solution=${encodeURIComponent(solution)}${quarter ? `&quarter=${encodeURIComponent(quarter)}` : ''}`)
+
+export const createGoal = (data: {
+  user_id: string; solution: string; title: string; quarter: string;
+  status: string; owner: string; key_results: any[];
+}) => post<GoalDTO>('/goals', data)
+
+export const getGoal = (goalId: string) =>
+  get<GoalDTO>(`/goals/${goalId}`)
+
+export const updateGoal = (goalId: string, data: Record<string, unknown>) =>
+  put<GoalDTO>(`/goals/${goalId}`, data)
+
+export const deleteGoal = (goalId: string) =>
+  del<{ deleted: boolean }>(`/goals/${goalId}`)
+
+// ---------------------------------------------------------------------------
+// Connector Framework
+// ---------------------------------------------------------------------------
+export const listConnectors = () =>
+  get<{ connectors: Array<{ type: string; class: string; doc: string }> }>('/connectors')
+
+export const configureConnector = (type: string, config: Record<string, unknown>) =>
+  post<{ type: string; connected: boolean }>(`/connectors/${type}/configure`, { config })
+
+export const syncConnector = (type: string, config: Record<string, unknown>) =>
+  post<Record<string, unknown>>(`/connectors/${type}/sync`, { config })
 

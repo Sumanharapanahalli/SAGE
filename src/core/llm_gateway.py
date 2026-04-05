@@ -776,6 +776,7 @@ class LLMGateway:
             "started_at": time.time(),
             "day_started_at": time.time(),  # resets at UTC midnight
         }
+        self._routing_stats = {"low": 0, "medium": 0, "high": 0}
 
         config = _load_config()
         llm_cfg = config.get("llm", {})
@@ -920,6 +921,16 @@ class LLMGateway:
                     )
             except ImportError:
                 pass  # pii_filter not available — proceed without PII check
+
+            # ----------------------------------------------------------------
+            # Complexity classification for routing stats
+            # ----------------------------------------------------------------
+            try:
+                from src.core.complexity_classifier import complexity_classifier
+                _complexity = complexity_classifier.classify(prompt, system_prompt)
+                self._routing_stats[_complexity.value] = self._routing_stats.get(_complexity.value, 0) + 1
+            except Exception:
+                pass  # classifier failure is non-fatal
 
             # ----------------------------------------------------------------
             # T1-004: Budget check before LLM call

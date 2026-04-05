@@ -47,7 +47,7 @@ Use this to understand how data flows, where to plug in, and what runs when.
           │  LLM Gateway    │      │  Skill System       │
           │  (singleton)    │      │                     │
           │                 │      │  SkillRegistry      │
-          │  Providers:     │      │  16 skill YAMLs     │
+          │  Providers:     │      │  17 skill YAMLs     │
           │  - Gemini CLI   │      │  Engines field      │
           │  - Claude Code  │      │  Hot-reload         │
           │  - Ollama       │      │  Visibility tiers   │

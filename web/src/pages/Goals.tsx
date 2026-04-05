@@ -1,6 +1,13 @@
 import { useState, useEffect } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Target, ChevronDown, ChevronUp, Plus, X, Check } from 'lucide-react'
 import OtherSelect from '../components/ui/OtherSelect'
+import { useAuth } from '../context/AuthContext'
+import { useProjectConfig } from '../hooks/useProjectConfig'
+import {
+  listGoals, createGoal, deleteGoal as apiDeleteGoal,
+  type GoalDTO,
+} from '../api/client'
 
 // ---------------------------------------------------------------------------
 // Data model
@@ -23,48 +30,22 @@ interface Objective {
   key_results: KeyResult[]
 }
 
-// ---------------------------------------------------------------------------
-// Default seed data
-// ---------------------------------------------------------------------------
-const SEED: Objective[] = [
-  {
-    id: 'obj-1',
-    title: 'Ship the core agent platform',
-    quarter: 'Q1-2025',
-    status: 'on_track',
-    owner: 'AI Team',
-    key_results: [
-      { id: 'kr-1-1', title: 'Complete SWE workflow', current: 1, target: 1, unit: 'workflow', linked_task_ids: [] },
-      { id: 'kr-1-2', title: 'Onboard first solution', current: 1, target: 1, unit: 'solution', linked_task_ids: [] },
-      { id: 'kr-1-3', title: 'Pass all framework tests', current: 383, target: 400, unit: 'tests', linked_task_ids: [] },
-    ],
-  },
-  {
-    id: 'obj-2',
-    title: 'Onboard first enterprise customer',
-    quarter: 'Q1-2025',
-    status: 'at_risk',
-    owner: 'Founder',
-    key_results: [
-      { id: 'kr-2-1', title: 'Deploy PoseEngine solution', current: 0, target: 1, unit: 'deployment', linked_task_ids: [] },
-      { id: 'kr-2-2', title: 'Complete 20 agent tasks', current: 7, target: 20, unit: 'tasks', linked_task_ids: [] },
-      { id: 'kr-2-3', title: 'Zero critical bugs in prod', current: 2, target: 0, unit: 'bugs', linked_task_ids: [] },
-    ],
-  },
-]
-
-const STORAGE_KEY = 'sage_okr_objectives'
-
-function loadObjectives(): Objective[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) return JSON.parse(raw) as Objective[]
-  } catch { /* ignore */ }
-  return SEED
-}
-
-function saveObjectives(objs: Objective[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(objs))
+function dtoToObjective(dto: GoalDTO): Objective {
+  return {
+    id: dto.id,
+    title: dto.title,
+    quarter: dto.quarter,
+    status: dto.status as Objective['status'],
+    owner: dto.owner,
+    key_results: dto.key_results.map((kr, i) => ({
+      id: `kr-${dto.id}-${i}`,
+      title: kr.title,
+      current: kr.current,
+      target: kr.target,
+      unit: kr.unit,
+      linked_task_ids: kr.linked_task_ids ?? [],
+    })),
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -411,24 +392,57 @@ function AddGoalForm({
 // Goals page
 // ---------------------------------------------------------------------------
 export default function Goals() {
-  const [objectives, setObjectives] = useState<Objective[]>(loadObjectives)
-  const [activeQuarter, setActiveQuarter] = useState('Q1-2025')
+  const [objectives, setObjectives] = useState<Objective[]>([])
+  const [activeQuarter, setActiveQuarter] = useState('Q2-2025')
   const [adding, setAdding] = useState(false)
+  const queryClient = useQueryClient()
 
-  // Persist on change
+  const { user } = useAuth()
+  const { data: projectData } = useProjectConfig()
+  const userId = (user as any)?.sub ?? 'anonymous'
+  const solution = (projectData as any)?.project ?? ''
+
+  const { data: goalsData } = useQuery({
+    queryKey: ['goals', userId, solution],
+    queryFn: () => listGoals(userId, solution),
+    staleTime: 30_000,
+    retry: false,
+  })
+
   useEffect(() => {
-    saveObjectives(objectives)
-  }, [objectives])
+    if (goalsData) {
+      setObjectives(goalsData.map(dtoToObjective))
+    }
+  }, [goalsData])
 
   const filtered = objectives.filter(o => o.quarter === activeQuarter)
 
-  function handleAdd(obj: Objective) {
-    setObjectives(prev => [...prev, obj])
+  async function handleAdd(obj: Objective) {
+    try {
+      await createGoal({
+        user_id: userId,
+        solution,
+        title: obj.title,
+        quarter: obj.quarter,
+        status: obj.status,
+        owner: obj.owner,
+        key_results: obj.key_results.map(kr => ({
+          title: kr.title, current: kr.current, target: kr.target, unit: kr.unit,
+        })),
+      })
+      queryClient.invalidateQueries({ queryKey: ['goals', userId, solution] })
+    } catch {
+      // Fallback to local-only
+      setObjectives(prev => [...prev, obj])
+    }
     setAdding(false)
   }
 
   function handleDelete(id: string) {
     setObjectives(prev => prev.filter(o => o.id !== id))
+    apiDeleteGoal(id).then(() => {
+      queryClient.invalidateQueries({ queryKey: ['goals', userId, solution] })
+    }).catch(() => {})
   }
 
   return (

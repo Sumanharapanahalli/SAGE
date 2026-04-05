@@ -2190,6 +2190,19 @@ async def llm_status():
     }
 
 
+@app.get("/llm/routing-stats")
+async def llm_routing_stats():
+    """Return complexity-based routing statistics."""
+    from src.core.llm_gateway import llm_gateway
+    stats = getattr(llm_gateway, "_routing_stats", {"low": 0, "medium": 0, "high": 0})
+    total = sum(stats.values())
+    return {
+        "routing_stats": stats,
+        "total_classified": total,
+        "distribution": {k: round(v / total * 100, 1) if total > 0 else 0 for k, v in stats.items()},
+    }
+
+
 class LLMSwitchRequest(BaseModel):
     provider: str   # "gemini" | "local" | "claude-code" | "claude"
     model: Optional[str] = None   # gemini model name, GGUF path, or claude model name
@@ -5441,3 +5454,186 @@ async def clear_chat_history(user_id: str, solution: str = ""):
     sol = solution or (project_config.project_name if project_config else "sage")
     count = audit_logger.clear_chat_history(user_id, sol)
     return {"cleared": count, "user_id": user_id, "solution": sol}
+
+
+# ---------------------------------------------------------------------------
+# Chat Conversation Persistence (CRUD)
+# ---------------------------------------------------------------------------
+
+
+def _get_chat_store():
+    from src.stores.chat_store import ChatStore
+    from src.memory.audit_logger import _resolve_db_path
+    import os
+
+    db_path = os.path.join(os.path.dirname(_resolve_db_path()), "chat_conversations.db")
+    return ChatStore(db_path)
+
+
+class ConversationCreate(BaseModel):
+    user_id: str
+    solution: str = ""
+    role_id: str = ""
+    role_name: str = ""
+    messages: list = []
+
+
+class ConversationUpdate(BaseModel):
+    title: str | None = None
+    messages: list | None = None
+
+
+@app.get("/conversations")
+async def list_conversations(user_id: str, solution: str = ""):
+    return _get_chat_store().list(user_id, solution)
+
+
+@app.post("/conversations")
+async def create_conversation(req: ConversationCreate):
+    return _get_chat_store().create(
+        req.user_id, req.solution, req.role_id, req.role_name, req.messages
+    )
+
+
+@app.get("/conversations/{conv_id}")
+async def get_conversation(conv_id: str):
+    conv = _get_chat_store().get(conv_id)
+    if conv is None:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    return conv
+
+
+@app.put("/conversations/{conv_id}")
+async def update_conversation(conv_id: str, req: ConversationUpdate):
+    result = _get_chat_store().update(conv_id, title=req.title, messages=req.messages)
+    if result is None:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    return result
+
+
+@app.delete("/conversations/{conv_id}")
+async def delete_conversation(conv_id: str):
+    if _get_chat_store().delete(conv_id):
+        return {"deleted": True}
+    from fastapi import HTTPException
+    raise HTTPException(status_code=404, detail="Conversation not found")
+
+
+# ---------------------------------------------------------------------------
+# Goals / OKR Persistence (CRUD)
+# ---------------------------------------------------------------------------
+
+
+def _get_goals_store():
+    from src.stores.goals_store import GoalsStore
+    from src.memory.audit_logger import _resolve_db_path
+    import os
+
+    db_path = os.path.join(os.path.dirname(_resolve_db_path()), "goals.db")
+    return GoalsStore(db_path)
+
+
+class GoalCreate(BaseModel):
+    user_id: str
+    solution: str = ""
+    title: str
+    quarter: str
+    status: str = "on_track"
+    owner: str = ""
+    key_results: list = []
+
+
+class GoalUpdate(BaseModel):
+    title: str | None = None
+    quarter: str | None = None
+    status: str | None = None
+    owner: str | None = None
+    key_results: list | None = None
+
+
+@app.get("/goals")
+async def list_goals(user_id: str, solution: str = "", quarter: str = ""):
+    return _get_goals_store().list(
+        user_id, solution, quarter=quarter or None
+    )
+
+
+@app.post("/goals")
+async def create_goal(req: GoalCreate):
+    return _get_goals_store().create(
+        req.user_id, req.solution, req.title,
+        req.quarter, req.status, req.owner, req.key_results,
+    )
+
+
+@app.get("/goals/{goal_id}")
+async def get_goal(goal_id: str):
+    goal = _get_goals_store().get(goal_id)
+    if goal is None:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Goal not found")
+    return goal
+
+
+@app.put("/goals/{goal_id}")
+async def update_goal(goal_id: str, req: GoalUpdate):
+    kwargs = {k: v for k, v in req.model_dump().items() if v is not None}
+    result = _get_goals_store().update(goal_id, **kwargs)
+    if result is None:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Goal not found")
+    return result
+
+
+@app.delete("/goals/{goal_id}")
+async def delete_goal(goal_id: str):
+    if _get_goals_store().delete(goal_id):
+        return {"deleted": True}
+    from fastapi import HTTPException
+    raise HTTPException(status_code=404, detail="Goal not found")
+
+
+# ---------------------------------------------------------------------------
+# Connector Framework
+# ---------------------------------------------------------------------------
+
+
+@app.get("/connectors")
+async def list_connectors():
+    """List available connector types."""
+    from src.connectors import connector_registry
+    return {"connectors": connector_registry.get_info()}
+
+
+class ConnectorConfigRequest(BaseModel):
+    config: dict
+
+
+@app.post("/connectors/{connector_type}/configure")
+async def configure_connector(connector_type: str, req: ConnectorConfigRequest):
+    """Create and configure a connector instance."""
+    from src.connectors import connector_registry
+    try:
+        c = connector_registry.create(connector_type)
+        ok = c.connect(req.config)
+        return {"type": connector_type, "connected": ok}
+    except KeyError:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail=f"Unknown connector type: {connector_type}")
+
+
+@app.post("/connectors/{connector_type}/sync")
+async def sync_connector(connector_type: str, req: ConnectorConfigRequest):
+    """Configure and sync a connector."""
+    from src.connectors import connector_registry
+    try:
+        c = connector_registry.create(connector_type)
+        if not c.connect(req.config):
+            return {"error": "Connection failed", "type": connector_type}
+        result = c.sync()
+        return {"type": connector_type, **result}
+    except KeyError:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail=f"Unknown connector type: {connector_type}")

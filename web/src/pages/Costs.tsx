@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation } from '@tanstack/react-query'
-import { fetchCostSummary, fetchCostDaily, setCostBudget } from '../api/client'
+import { fetchCostSummary, fetchCostDaily, setCostBudget, fetchRoutingStats } from '../api/client'
 import type { CostSummary, DailyCost, CostBySolution } from '../types/module'
 import { DollarSign, TrendingUp, Phone, Calculator, Settings, Check } from 'lucide-react'
 
@@ -96,6 +96,13 @@ export default function Costs() {
       monthly_usd: parseFloat(budgetAmount),
       ...(budgetSolution ? { solution: budgetSolution } : {}),
     }),
+  })
+
+  const routingQuery = useQuery({
+    queryKey: ['routing-stats'],
+    queryFn: fetchRoutingStats,
+    refetchInterval: 30_000,
+    retry: false,
   })
 
   const summary: CostSummary | undefined = summaryQuery.data
@@ -301,6 +308,32 @@ export default function Costs() {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Complexity Routing Stats */}
+      {routingQuery.data && routingQuery.data.total_classified > 0 && (
+        <div className="sage-card" style={{ background: '#1c1c1e', borderColor: '#2a2a2e' }}>
+          <h2 className="text-sm font-semibold mb-3" style={{ color: '#e4e4e7' }}>
+            <TrendingUp size={14} className="inline mr-2" style={{ color: '#a78bfa' }} />
+            Complexity Routing
+          </h2>
+          <div className="grid grid-cols-3 gap-3">
+            {(['low', 'medium', 'high'] as const).map(level => {
+              const count = routingQuery.data!.routing_stats[level] ?? 0
+              const pct = routingQuery.data!.distribution[level] ?? 0
+              const colors = { low: '#22c55e', medium: '#f59e0b', high: '#ef4444' }
+              return (
+                <div key={level} style={{ padding: '12px 16px', background: '#111113', borderRadius: 8, textAlign: 'center' }}>
+                  <div style={{ fontSize: 20, fontWeight: 700, color: colors[level] }}>{fmtK(count)}</div>
+                  <div style={{ fontSize: 11, color: '#71717a', marginTop: 2 }}>{level.toUpperCase()} ({pct}%)</div>
+                </div>
+              )
+            })}
+          </div>
+          <p style={{ fontSize: 11, color: '#52525b', marginTop: 8 }}>
+            {routingQuery.data.total_classified} prompts classified across {Object.keys(routingQuery.data.routing_stats).length} complexity tiers
+          </p>
         </div>
       )}
 

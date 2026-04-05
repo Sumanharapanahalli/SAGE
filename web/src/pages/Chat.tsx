@@ -1,11 +1,16 @@
 import { useState, useRef, useEffect, useCallback, KeyboardEvent } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   Send, Plus, Trash2, Bot, Search, GitMerge, Activity,
   Lightbulb, Cpu, Target, Code2, Shield, Brain, Users,
   Loader2, ChevronDown, Sparkles, type LucideIcon,
 } from 'lucide-react'
-import { fetchAgentRoles, postChat, executeChat, clearChatHistory, sageAsk } from '../api/client'
+import {
+  fetchAgentRoles, postChat, executeChat, clearChatHistory, sageAsk,
+  listConversations, createConversation, updateConversation,
+  deleteConversation as apiDeleteConversation,
+  type ConversationDTO,
+} from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import { useProjectConfig } from '../hooks/useProjectConfig'
 
@@ -55,19 +60,18 @@ function getRoleColor(roleId: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// Storage
+// Storage — conversations are persisted via /conversations API
 // ---------------------------------------------------------------------------
-const STORAGE_KEY = 'sage_chat_conversations'
 
-function loadConversations(): Conversation[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? JSON.parse(raw) : []
-  } catch { return [] }
-}
-
-function saveConversations(convs: Conversation[]) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(convs)) } catch {}
+function dtoToConversation(dto: ConversationDTO): Conversation {
+  return {
+    id: dto.id,
+    title: dto.title,
+    roleId: dto.role_id,
+    roleName: dto.role_name,
+    messages: dto.messages as Message[],
+    createdAt: new Date(dto.created_at).getTime(),
+  }
 }
 
 function getSessionId(): string {
@@ -122,20 +126,38 @@ function renderContent(text: string) {
 // Main Chat Page
 // ---------------------------------------------------------------------------
 export default function Chat() {
-  const [conversations, setConversations] = useState<Conversation[]>(loadConversations)
-  const [activeId, setActiveId] = useState<string | null>(conversations[0]?.id ?? null)
+  const [conversations, setConversations] = useState<Conversation[]>([])
+  const [activeId, setActiveId] = useState<string | null>(null)
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [showRolePicker, setShowRolePicker] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const queryClient = useQueryClient()
 
   const { user } = useAuth()
   const { data: projectData } = useProjectConfig()
   const userId = (user as any)?.sub ?? 'anonymous'
   const solution = (projectData as any)?.project ?? ''
   const sessionId = getSessionId()
+
+  // Fetch conversations from API
+  const { data: convData } = useQuery({
+    queryKey: ['conversations', userId, solution],
+    queryFn: () => listConversations(userId, solution),
+    staleTime: 30_000,
+    retry: false,
+  })
+
+  // Sync API data into local state
+  useEffect(() => {
+    if (convData) {
+      const mapped = convData.map(dtoToConversation)
+      setConversations(mapped)
+      if (!activeId && mapped.length > 0) setActiveId(mapped[0].id)
+    }
+  }, [convData])
 
   const { data: rolesData } = useQuery({
     queryKey: ['agent-roles'],
@@ -153,9 +175,6 @@ export default function Chat() {
 
   const activeConv = conversations.find(c => c.id === activeId)
 
-  // Persist conversations
-  useEffect(() => { saveConversations(conversations) }, [conversations])
-
   // Scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -169,27 +188,36 @@ export default function Chat() {
     }
   }, [input])
 
-  const startNewChat = useCallback((roleId: string, roleName: string) => {
-    const conv: Conversation = {
-      id: crypto.randomUUID(),
-      title: 'New conversation',
-      roleId, roleName,
-      messages: [],
-      createdAt: Date.now(),
+  const startNewChat = useCallback(async (roleId: string, roleName: string) => {
+    try {
+      const dto = await createConversation(userId, solution, roleId, roleName)
+      const conv = dtoToConversation(dto)
+      setConversations(prev => [conv, ...prev])
+      setActiveId(conv.id)
+      setShowRolePicker(false)
+      setTimeout(() => inputRef.current?.focus(), 50)
+    } catch {
+      // Fallback to local-only conversation if API fails
+      const conv: Conversation = {
+        id: crypto.randomUUID(),
+        title: 'New conversation',
+        roleId, roleName,
+        messages: [],
+        createdAt: Date.now(),
+      }
+      setConversations(prev => [conv, ...prev])
+      setActiveId(conv.id)
+      setShowRolePicker(false)
     }
-    setConversations(prev => [conv, ...prev])
-    setActiveId(conv.id)
-    setShowRolePicker(false)
-    setTimeout(() => inputRef.current?.focus(), 50)
-  }, [])
+  }, [userId, solution])
 
-  const deleteConversation = useCallback((id: string) => {
+  const handleDeleteConversation = useCallback((id: string) => {
     setConversations(prev => {
       const next = prev.filter(c => c.id !== id)
       if (activeId === id) setActiveId(next[0]?.id ?? null)
       return next
     })
-    // Also clear server-side chat history
+    apiDeleteConversation(id).catch(() => {})
     clearChatHistory(userId, solution || 'default').catch(() => {})
   }, [activeId, userId, solution])
 
@@ -234,15 +262,22 @@ export default function Chat() {
 
       const reply = res.reply ?? res.confirmation_prompt ?? 'No response received.'
 
-      setConversations(prev => prev.map(c => {
-        if (c.id !== activeId) return c
-        const msgs = [...c.messages]
-        const lastIdx = msgs.length - 1
-        if (msgs[lastIdx]?.role === 'assistant') {
-          msgs[lastIdx] = { ...msgs[lastIdx], content: reply, streaming: false }
-        }
-        return { ...c, messages: msgs }
-      }))
+      setConversations(prev => {
+        const updated = prev.map(c => {
+          if (c.id !== activeId) return c
+          const msgs = [...c.messages]
+          const lastIdx = msgs.length - 1
+          if (msgs[lastIdx]?.role === 'assistant') {
+            msgs[lastIdx] = { ...msgs[lastIdx], content: reply, streaming: false }
+          }
+          const title = c.messages.filter(m => m.role === 'user').length === 0
+            ? text.slice(0, 60) + (text.length > 60 ? '…' : '') : c.title
+          // Persist to backend
+          updateConversation(c.id, { title, messages: msgs }).catch(() => {})
+          return { ...c, title, messages: msgs }
+        })
+        return updated
+      })
     } catch {
       setConversations(prev => prev.map(c => {
         if (c.id !== activeId) return c
@@ -331,7 +366,7 @@ export default function Chat() {
                     </div>
                   </div>
                   <button
-                    onClick={e => { e.stopPropagation(); deleteConversation(conv.id) }}
+                    onClick={e => { e.stopPropagation(); handleDeleteConversation(conv.id) }}
                     style={{
                       background: 'none', border: 'none', cursor: 'pointer',
                       color: '#3f3f46', padding: 2, flexShrink: 0, opacity: 0.6,

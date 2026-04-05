@@ -84,6 +84,31 @@ erDiagram
         TEXT    core_values      "JSON array of values"
     }
 
+    chat_conversations {
+        TEXT    id               PK "UUID v4"
+        TEXT    user_id          "user identifier"
+        TEXT    solution         "solution name"
+        TEXT    role_id          "agent role key"
+        TEXT    role_name        "agent role display name"
+        TEXT    title            "conversation title"
+        TEXT    messages         "JSON array of {role, content} messages"
+        TEXT    created_at       "ISO 8601 UTC"
+        TEXT    updated_at       "ISO 8601 UTC"
+    }
+
+    objectives {
+        TEXT    id               PK "UUID v4"
+        TEXT    user_id          "user identifier"
+        TEXT    solution         "solution name"
+        TEXT    title            "objective title"
+        TEXT    quarter          "e.g. Q2-2026"
+        TEXT    status           "on_track | at_risk | behind | completed"
+        TEXT    owner            "owner name"
+        TEXT    key_results      "JSON array of {title, target, current, unit}"
+        TEXT    created_at       "ISO 8601 UTC"
+        TEXT    updated_at       "ISO 8601 UTC"
+    }
+
     compliance_audit_log ||--o{ proposal_store   : "trace_id links"
     compliance_audit_log ||--o{ task_queue        : "logged per task"
     proposal_store       ||--o{ task_queue        : "approved proposals create tasks"
@@ -102,6 +127,8 @@ erDiagram
 | `vector_store` | `.sage/chroma_db/` | ChromaDB vector knowledge store |
 | `build_runs` | In-memory (BuildOrchestrator) | Build pipeline state |
 | `org_config` | `solutions/org.yaml` | Multi-solution org configuration |
+| `chat_conversations` | `.sage/chat.db` | Persistent chat conversation history |
+| `objectives` | `.sage/goals.db` | OKR objectives and key results |
 
 ## Per-Solution Isolation
 

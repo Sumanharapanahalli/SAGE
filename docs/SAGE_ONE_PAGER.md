@@ -1,12 +1,12 @@
 # SAGE[ai] — Smart Agentic-Guided Empowerment
 
-[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![GitHub Stars](https://img.shields.io/github/stars/Sumanharapanahalli/sage?style=social)](https://github.com/Sumanharapanahalli/sage)
 [![GitHub Forks](https://img.shields.io/github/forks/Sumanharapanahalli/sage?style=social)](https://github.com/Sumanharapanahalli/sage/fork)
 
 ### *One framework. One founder. A billion-dollar operation.*
 ### *Open Source — Community-Driven — Transparent — Auditable*
-### *2026-03-24*
+### *2026-04-05*
 
 ---
 
@@ -28,6 +28,8 @@ SAGE is the operating system for that company.
 - **Compounding intelligence.** Every approval, rejection, and correction is stored in vector memory. Agents improve with every interaction — no retraining, no cold starts.
 - **Domain-agnostic.** Three YAML files define an entire company function. No Python changes. Swap domains, swap teams, swap industries — the framework stays unchanged.
 - **Open-source first.** Licensed under MIT. Zero mandatory API keys. Runs fully offline with Ollama. Every dependency has a free, self-hosted alternative. The framework is fully open on GitHub; your proprietary solutions stay in a private repo mounted via `SAGE_SOLUTIONS_DIR`.
+- **Pluggable connectors.** GitHub, filesystem (and soon Slack) connectors bring external data into the agent knowledge pipeline via a registry-based architecture.
+- **Cost-aware routing.** Complexity classifier routes simple tasks to fast/cheap models and complex tasks to capable/expensive models automatically.
 
 ---
 
@@ -110,10 +112,17 @@ Any job role becomes an AI agent. The founder hires, configures, and routes work
 | **Langfuse Observability** | LLM trace, cost tracking, LLM-as-a-Judge evals |
 | **Onboarding Wizard** | LLM generates all 3 solution YAML files from a description or existing repo |
 | **SSE Streaming** | Token-streaming for analysis and agent responses |
+| **Connector Framework** | Pluggable external data sources (GitHub, filesystem) with registry pattern |
+| **Complexity Routing** | Heuristic prompt classification routes to cost-appropriate LLM providers |
+| **Persistent Chat** | SQLite-backed conversation storage — survives browser refresh |
+| **Persistent Goals** | SQLite-backed OKR objectives with quarter filtering |
+| **BFTS Tree Search** | Best-first tree search for Agent Gym solution exploration |
+| **Functional Safety** | FTA, FMEA, ASIL, SIL classification via dedicated safety endpoints |
+| **CDS Compliance** | Common Data Standard regulatory compliance tracking |
 
 ---
 
-## Dashboard (27 Pages)
+## Dashboard (39 Pages)
 
 | Area | Page | Route | Purpose |
 |---|---|---|---|
@@ -141,9 +150,22 @@ Any job role becomes an AI agent. The founder hires, configures, and routes work
 | **Admin** | Integrations | `/integrations` | GitLab, Slack, n8n, Composio |
 | **Admin** | Settings | `/settings` | Solution config |
 | **Admin** | Organization | `/settings/organization` | Company mission, vision, values |
+| **Intelligence** | Chat | `/chat` | Persistent API-backed conversations with role selection |
+| **Intelligence** | Product Backlog | `/product-backlog` | 4-tab requirements workflow with Product Owner agent |
+| **Intelligence** | Agent Gym | `/agent-gym` | Training sessions, Glicko-2 ratings, BFTS tree search |
+| **Intelligence** | Training Runs | `/training-runs` | Training session history and analytics |
+| **Intelligence** | Skills & Tools | `/skills-tools` | Skill marketplace with runner bindings |
+| **Knowledge** | Costs | `/costs` | Token spend, budget controls, complexity routing stats |
+| **Organization** | Model Registry | `/model-registry` | LLM provider management |
+| **Organization** | Device Fleet | `/device-fleet` | HIL device management |
+| **Admin** | CDS Compliance | `/cds-compliance` | CDS regulatory compliance tracking |
+| **Admin** | Regulatory | `/regulatory` | IEC 62304, 21 CFR Part 11 compliance |
+| **Admin** | Safety Analysis | `/safety` | FTA, FMEA, ASIL, SIL classification |
+| **Admin** | Code Execution | `/code-execution` | Sandboxed code execution console |
 | — | Issues | `/issues` | Feature backlog with priority filters |
 | — | Guide | `/guide` | Interactive framework guide |
 | — | Activity | `/activity` | Real-time audit log timeline |
+| — | Serial Console | `/serial-console` | Serial device communication |
 
 Cmd+K opens the command palette to jump to any page instantly.
 
@@ -256,7 +278,7 @@ Pre-built agent teams with correct roles, system prompts, task types, and compli
 
 ---
 
-*SAGE Framework — Open Source (MIT) · Self-Hosted · Agent-First · Community-Driven*
+*SAGE Framework — Open Source (MIT License) · Self-Hosted · Agent-First · Community-Driven*
 *github.com/Sumanharapanahalli/sage*
 
 ---
@@ -265,7 +287,7 @@ Pre-built agent teams with correct roles, system prompts, task types, and compli
 
 SAGE follows an **open-core** approach:
 
-- **Framework (this repo):** Fully open source under MIT. All 136 API endpoints, 27 UI pages, 17+ solution templates, and the complete agent architecture are public, auditable, and forkable.
+- **Framework (this repo):** Fully open source under MIT. All 227+ API endpoints, 39 UI pages, 19 solution templates, and the complete agent architecture are public, auditable, and forkable.
 - **Your solutions (private):** Mount via `SAGE_SOLUTIONS_DIR` from a separate private repository. Your proprietary YAML configs, domain knowledge, and `.sage/` runtime data never touch the public repo.
 - **Community contributions welcome:** File issues, submit PRs, propose new solution templates, or build MCP tool servers. See `CONTRIBUTING.md` for guidelines.
 - **Transparent by design:** Every agent decision, every approval, every rejection is logged in an immutable audit trail. The codebase itself is public for security review and regulatory confidence.
@@ -281,10 +303,10 @@ SAGE follows an **open-core** approach:
 - **Build Orchestrator** — end-to-end product builder with 13+ domain detection, 19+ agents, 5 teams, Q-learning adaptive router, anti-drift checkpoints
 
 ### SAGE 10 Framework Features
-- **136 API endpoints** across 22 categories
-- **27 UI pages** in 5-area sidebar (Work, Intelligence, Knowledge, Organization, Admin)
-- **17+ bundled solutions** covering medical, automotive, avionics, IoT, fintech, and more
-- **53 test files** including 58 system E2E tests for full API lifecycle
+- **227+ API endpoints** across 28+ categories
+- **39 UI pages** in 5-area sidebar (Work, Intelligence, Knowledge, Organization, Admin)
+- **19 bundled solutions** covering medical, automotive, avionics, IoT, fintech, and more
+- **115+ test files** (97 Python + 11 frontend unit + 7 e2e spec files) with 93 browser E2E tests
 - **Agent budgets** — Monthly call ceilings per role with hard/soft cutoff
 - **Undo** — Revert approved code diffs with one click
 - **Live agents panel** — Real-time active-agent visibility

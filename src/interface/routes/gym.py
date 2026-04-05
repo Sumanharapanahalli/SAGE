@@ -174,3 +174,34 @@ async def gym_catalog_generate(req: CatalogGenerateRequest):
         "exercises": [e.to_dict() for e in generated],
         "catalog_stats": exercise_catalog.stats(),
     }
+
+
+class TreeSearchRequest(BaseModel):
+    candidates: List[str]
+    max_depth: int = 3
+    branching_factor: int = 3
+    max_iterations: int = 50
+
+
+@router.post("/gym/tree-search")
+async def gym_tree_search(req: TreeSearchRequest):
+    """Run BFTS tree search over candidate solutions."""
+    from src.core.tree_search import TreeSearchEvaluator
+
+    # Simple length-based scorer as default — in production, use LLM evaluator
+    def default_scorer(solution: str) -> float:
+        return min(1.0, len(solution) / 500.0)
+
+    evaluator = TreeSearchEvaluator(
+        scorer=default_scorer,
+        max_depth=req.max_depth,
+        branching_factor=req.branching_factor,
+        max_iterations=req.max_iterations,
+    )
+    best = evaluator.evaluate(req.candidates)
+    return {
+        "best_solution": best.solution if best else None,
+        "best_score": best.score if best else 0,
+        "iterations": evaluator.iterations,
+        "tree_depth": best.depth if best else 0,
+    }
