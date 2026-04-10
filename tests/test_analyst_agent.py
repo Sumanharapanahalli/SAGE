@@ -48,7 +48,7 @@ def _query_audit(db_path, action_type=None):
 
 def test_analyze_log_returns_required_fields(tmp_audit_db):
     """analyze_log() must return a dict with keys: severity, root_cause_hypothesis, recommended_action, trace_id."""
-    with patch("src.core.llm_gateway.LLMGateway.generate", return_value=FIXED_ANALYSIS_JSON), \
+    with patch("src.agents.analyst._sdk_bridge.run_agent", return_value=FIXED_ANALYSIS_JSON), \
          patch("src.agents.analyst.audit_logger", tmp_audit_db), \
          patch("src.agents.analyst.vector_memory") as mock_vm:
         mock_vm.search.return_value = []
@@ -65,7 +65,7 @@ def test_analyze_log_returns_required_fields(tmp_audit_db):
 
 def test_analyze_log_creates_audit_record(tmp_audit_db):
     """analyze_log() must create an ANALYSIS_PROPOSAL record in the audit database."""
-    with patch("src.core.llm_gateway.LLMGateway.generate", return_value=FIXED_ANALYSIS_JSON), \
+    with patch("src.agents.analyst._sdk_bridge.run_agent", return_value=FIXED_ANALYSIS_JSON), \
          patch("src.agents.analyst.audit_logger", tmp_audit_db), \
          patch("src.agents.analyst.vector_memory") as mock_vm:
         mock_vm.search.return_value = []
@@ -79,7 +79,7 @@ def test_analyze_log_creates_audit_record(tmp_audit_db):
 
 def test_analyze_log_trace_id_is_uuid(tmp_audit_db):
     """The trace_id in the result must be a valid UUID v4."""
-    with patch("src.core.llm_gateway.LLMGateway.generate", return_value=FIXED_ANALYSIS_JSON), \
+    with patch("src.agents.analyst._sdk_bridge.run_agent", return_value=FIXED_ANALYSIS_JSON), \
          patch("src.agents.analyst.audit_logger", tmp_audit_db), \
          patch("src.agents.analyst.vector_memory") as mock_vm:
         mock_vm.search.return_value = []
@@ -93,7 +93,7 @@ def test_analyze_log_trace_id_is_uuid(tmp_audit_db):
 
 def test_analyze_log_handles_json_parse_failure(tmp_audit_db):
     """When LLM returns non-JSON, analyze_log() must still return a dict with all required fields."""
-    with patch("src.core.llm_gateway.LLMGateway.generate", return_value="not valid json at all"), \
+    with patch("src.agents.analyst._sdk_bridge.run_agent", return_value="not valid json at all"), \
          patch("src.agents.analyst.audit_logger", tmp_audit_db), \
          patch("src.agents.analyst.vector_memory") as mock_vm:
         mock_vm.search.return_value = []
@@ -111,13 +111,15 @@ def test_analyze_log_uses_rag_context(tmp_audit_db):
     """
     When vector memory has prior context, the LLM prompt must contain 'PAST CONTEXT'.
     """
-    captured_prompts = []
+    captured_tasks = []
+    captured_contexts = []
 
-    def capture_generate(prompt, system_prompt=""):
-        captured_prompts.append(prompt)
+    def capture_run_agent(role_id, task, context, task_type):
+        captured_tasks.append(task)
+        captured_contexts.append(context)
         return FIXED_ANALYSIS_JSON
 
-    with patch("src.core.llm_gateway.LLMGateway.generate", side_effect=capture_generate), \
+    with patch("src.agents.analyst._sdk_bridge.run_agent", side_effect=capture_run_agent), \
          patch("src.agents.analyst.audit_logger", tmp_audit_db), \
          patch("src.agents.analyst.vector_memory") as mock_vm:
         mock_vm.search.return_value = ["Previous incident: UART timeout resolved by increasing buffer size."]
@@ -125,10 +127,10 @@ def test_analyze_log_uses_rag_context(tmp_audit_db):
         agent = AnalystAgent()
         agent.analyze_log("ERROR: UART timeout again")
 
-    assert len(captured_prompts) >= 1, "LLM generate must be called."
-    combined_prompt = " ".join(captured_prompts)
+    assert len(captured_tasks) >= 1, "SDK bridge run_agent must be called."
+    combined_prompt = " ".join(captured_tasks + captured_contexts)
     assert "PAST CONTEXT" in combined_prompt, (
-        f"Expected 'PAST CONTEXT' in LLM prompt, but got: {combined_prompt[:300]!r}"
+        f"Expected 'PAST CONTEXT' in prompts, but got: {combined_prompt[:300]!r}"
     )
 
 
@@ -175,7 +177,7 @@ def test_learn_from_feedback_creates_audit_record(tmp_audit_db):
 
 def test_analyze_log_with_empty_string(tmp_audit_db):
     """analyze_log('') must not raise an exception and must return a result dict."""
-    with patch("src.core.llm_gateway.LLMGateway.generate", return_value=FIXED_ANALYSIS_JSON), \
+    with patch("src.agents.analyst._sdk_bridge.run_agent", return_value=FIXED_ANALYSIS_JSON), \
          patch("src.agents.analyst.audit_logger", tmp_audit_db), \
          patch("src.agents.analyst.vector_memory") as mock_vm:
         mock_vm.search.return_value = []
@@ -191,7 +193,7 @@ def test_analyze_log_with_empty_string(tmp_audit_db):
 def test_analyze_log_with_long_entry(tmp_audit_db):
     """analyze_log() with 10000-char input must not raise an exception."""
     long_entry = "x" * 10000
-    with patch("src.core.llm_gateway.LLMGateway.generate", return_value=FIXED_ANALYSIS_JSON), \
+    with patch("src.agents.analyst._sdk_bridge.run_agent", return_value=FIXED_ANALYSIS_JSON), \
          patch("src.agents.analyst.audit_logger", tmp_audit_db), \
          patch("src.agents.analyst.vector_memory") as mock_vm:
         mock_vm.search.return_value = []
@@ -212,7 +214,7 @@ def test_severity_values(tmp_audit_db):
             "root_cause_hypothesis": f"hypothesis for {severity}",
             "recommended_action": f"action for {severity}",
         })
-        with patch("src.core.llm_gateway.LLMGateway.generate", return_value=llm_response), \
+        with patch("src.agents.analyst._sdk_bridge.run_agent", return_value=llm_response), \
              patch("src.agents.analyst.audit_logger", tmp_audit_db), \
              patch("src.agents.analyst.vector_memory") as mock_vm:
             mock_vm.search.return_value = []

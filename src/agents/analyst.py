@@ -5,6 +5,7 @@ from src.core.llm_gateway import llm_gateway
 from src.core.project_loader import project_config
 from src.memory.vector_store import vector_memory
 from src.memory.audit_logger import audit_logger
+from src.agents import _sdk_bridge
 
 class AnalystAgent:
     def __init__(self):
@@ -38,7 +39,12 @@ class AnalystAgent:
 
         # 3. LLM Inference
         try:
-            response_text = llm_gateway.generate(user_prompt, system_prompt)
+            response_text = _sdk_bridge.run_agent(
+                role_id="analyst",
+                task=user_prompt,
+                context=system_prompt,
+                task_type="analysis",
+            )
             # clean json markdown if present
             response_text = response_text.replace("```json", "").replace("```", "").strip()
             analysis = json.loads(response_text)
