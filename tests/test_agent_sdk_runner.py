@@ -81,3 +81,50 @@ def test_build_agent_definition_uses_role_prompt_and_tools():
     assert agent_def["description"] == "Reviews code for security issues"
     assert agent_def["prompt"] == "You are a security expert."
     assert agent_def["tools"] == ["Read", "Grep"]
+
+
+async def test_run_falls_back_to_gateway_when_sdk_unavailable():
+    """When SDK is unavailable, run() delegates to LLMGateway.generate()."""
+    from src.core.agent_sdk_runner import AgentSDKRunner
+
+    runner = AgentSDKRunner()
+
+    fake_gateway = MagicMock()
+    fake_gateway.sdk_available = False
+    fake_gateway.generate.return_value = '{"summary": "ok", "analysis": "done"}'
+
+    fake_role = {
+        "name": "Analyst",
+        "system_prompt": "You analyze.",
+    }
+
+    with patch.object(runner, "_llm_gateway", fake_gateway), \
+         patch.object(runner, "_load_role") as mock_load:
+        mock_load.return_value = fake_role
+
+        result = await runner.run(
+            role_id="analyst",
+            task="analyze the logs",
+            context={"task_type": "analysis"},
+        )
+
+    assert fake_gateway.generate.called
+    assert result["status"] in ("fallback_gateway", "success")
+    assert result["role_id"] == "analyst"
+
+
+async def test_run_returns_error_for_unknown_role():
+    from src.core.agent_sdk_runner import AgentSDKRunner
+
+    runner = AgentSDKRunner()
+    with patch.object(runner, "_load_role") as mock_load:
+        mock_load.return_value = None  # unknown role
+
+        result = await runner.run(
+            role_id="does_not_exist",
+            task="anything",
+            context={},
+        )
+
+    assert result["status"] == "error"
+    assert "unknown" in result["error"].lower() or "not found" in result["error"].lower()
