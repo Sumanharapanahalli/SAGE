@@ -24,6 +24,8 @@ from typing import Optional
 
 import yaml
 
+from src.agents import _sdk_bridge
+
 logger = logging.getLogger(__name__)
 
 # Task types are loaded dynamically from the active project config
@@ -132,7 +134,12 @@ class PlannerAgent:
 
         user_prompt = f"Task: {description}\n\nGenerate the execution plan as a JSON array:"
 
-        response_text = self.llm.generate(user_prompt, system_prompt)
+        response_text = _sdk_bridge.run_agent(
+            role_id="planner",
+            task=user_prompt,
+            context=system_prompt,
+            task_type="planning",
+        )
 
         try:
             response_text = response_text.replace("```json", "").replace("```", "").strip()
