@@ -106,7 +106,42 @@ class AgentSDKRunner:
 
 **Role translation:** SAGE role definitions from `prompts.yaml` are mapped to SDK `AgentDefinition` objects. Task types drive `allowed_tools` selection.
 
-**Task type → SDK tool mapping:**
+**Tool resolution order** (first match wins):
+
+1. **Per-role `sdk_tools` field** in `prompts.yaml` (explicit opt-in, most specific)
+2. **Task type → SDK tool mapping** (fallback default)
+3. **Empty set** (role has no SDK tools; falls back to pure LLM generation via gateway)
+
+**Per-role opt-in (recommended for non-SWE roles):**
+
+```yaml
+roles:
+  marketing_strategist:
+    name: "Marketing Strategist"
+    system_prompt: "..."
+    sdk_tools: ["Read", "Grep", "Glob", "WebSearch", "WebFetch"]
+    # Read-only research role, no code editing
+
+  security_analyst:
+    name: "Security Analyst"
+    system_prompt: "..."
+    sdk_tools: ["Read", "Grep", "Glob"]
+    # Strictly read-only
+
+  coder:
+    name: "Code Implementer"
+    system_prompt: "..."
+    sdk_tools: ["Read", "Edit", "Write", "Bash", "Grep", "Glob"]
+    # Full SWE toolkit
+
+  clinical_reviewer:
+    name: "Clinical Reviewer"
+    system_prompt: "..."
+    sdk_tools: ["Read", "Grep", "WebSearch", "WebFetch"]
+    # Research + citation lookup
+```
+
+**Task type → SDK tool mapping (fallback when `sdk_tools` not specified):**
 
 | SAGE Task Type | SDK Tools |
 |---|---|
@@ -288,6 +323,42 @@ task_types:
 
 Enforced via `automation_bias_hook` on `PreToolUse` for the recommendation tool.
 
+### 4.5 Agent Coverage Matrix
+
+Not all SAGE agents benefit equally from the Agent SDK. This matrix defines which agents get SDK routing, which get evolutionary treatment, and which are untouched.
+
+| Agent | SDK Routing | Default SDK Tools | Evolutionary Layer |
+|---|---|---|---|
+| **CodingAgent** (`src/agents/coder.py`) | ✅ Migrate | `Read`, `Edit`, `Write`, `Bash`, `Grep`, `Glob` | PromptEvolver + CodeEvolver |
+| **DeveloperAgent** (`src/agents/developer.py`) | ✅ Migrate | `Read`, `Edit`, `Write`, `Bash`, `Grep`, `Glob` | PromptEvolver + CodeEvolver |
+| **AnalystAgent** (`src/agents/analyst.py`) | ✅ Migrate | `Read`, `Grep`, `Glob`, `WebSearch`, `WebFetch` | PromptEvolver |
+| **CriticAgent** (`src/agents/critic.py`) | ✅ Migrate | `Read`, `Grep`, `Glob` (read-only) | PromptEvolver |
+| **PlannerAgent** (`src/agents/planner.py`) | ✅ Migrate | `Read`, `Grep`, `Glob`, `Agent` (spawns subagents) | PromptEvolver + BuildEvolver |
+| **ProductOwnerAgent** (`src/agents/product_owner.py`) | 🟡 Optional | `Read`, `Grep`, `WebSearch`, `WebFetch` | PromptEvolver |
+| **UniversalAgent** (`src/agents/universal.py`) | 🟡 Per-role opt-in via `sdk_tools` | From role config or task-type fallback | PromptEvolver (per role) |
+| **MonitorAgent** (`src/agents/monitor.py`) | ❌ Skip | N/A — daemon polling, no LLM tools | N/A |
+
+**Legend:**
+- ✅ **Migrate** — Agent's `generate()` call is routed through `AgentSDKRunner`
+- 🟡 **Optional / per-role opt-in** — SDK routing happens only when explicitly configured
+- ❌ **Skip** — Agent architecture doesn't benefit from SDK (e.g., event-driven, no LLM calls)
+
+### Rationale
+
+**SWE-oriented agents (Coder, Developer) gain the most:** The SDK's `Edit`, `Write`, `Bash` tools replace hand-rolled filesystem operations and deliver real side effects that SAGE's current ReAct loop only simulates.
+
+**Analytical agents (Analyst, Critic, Planner) gain read-only leverage:** `Read`/`Grep`/`Glob` replace custom file-inspection code; `WebSearch`/`WebFetch` add current-information capabilities previously unavailable. `PlannerAgent` specifically benefits from the `Agent` tool, which lets it spawn SDK subagents for parallel decomposition (matching SAGE's wave-based execution model).
+
+**Domain-specific roles (UniversalAgent with custom roles) opt in per role:** A `marketing_strategist` needs research tools but not `Edit`; a `clinical_reviewer` needs citation lookup but not `Bash`. The per-role `sdk_tools` field in `prompts.yaml` gives solution authors explicit control. Omitting the field falls back to task-type defaults.
+
+**MonitorAgent is architecturally different:** It's a daemon that polls Teams/Metabase/GitLab and routes events to callbacks. It doesn't make LLM calls itself — it dispatches to other agents. SDK integration has nothing to add here. The existing polling architecture stays untouched.
+
+### Evolutionary Layer Applicability
+
+- **PromptEvolver** — Works for **any agent with an LLM-driven system prompt**. Evolves the `system_prompt` text, evaluated by agent performance metrics from the audit log. Marketing strategists, clinical reviewers, coders — all benefit equally.
+- **CodeEvolver** — Only applies to SWE agents (CodingAgent, DeveloperAgent) and SWE task types. No sense evolving "code" for a marketing role.
+- **BuildEvolver** — Only for BuildOrchestrator workflows. Requires a decomposable multi-agent build plan as input.
+
 ---
 
 ## 5. HITL Model — Two Gates
@@ -359,9 +430,15 @@ Human approves the outcome. **Rollback mechanism:** SDK file checkpointing is us
 | File | Change |
 |---|---|
 | `src/core/llm_gateway.py` | Add `sdk_available` property. No behavior change. |
-| `src/agents/universal.py` | Route through `AgentSDKRunner.run()`. Falls back to current path. |
-| `src/agents/coder.py` | Same routing change. |
-| `src/agents/analyst.py` | Same routing change. |
+| `src/agents/universal.py` | Route through `AgentSDKRunner.run()`. Per-role `sdk_tools` lookup. |
+| `src/agents/coder.py` | Route through `AgentSDKRunner.run()` with full SWE toolkit. |
+| `src/agents/developer.py` | Route through `AgentSDKRunner.run()` with full SWE toolkit. |
+| `src/agents/analyst.py` | Route through `AgentSDKRunner.run()` with read-only + web tools. |
+| `src/agents/critic.py` | Route through `AgentSDKRunner.run()` with read-only tools. |
+| `src/agents/planner.py` | Route through `AgentSDKRunner.run()` with `Agent` tool for subagent spawning. |
+| `src/agents/product_owner.py` | Optional routing (opt-in via solution config). |
+| `src/agents/monitor.py` | **Unchanged** — daemon polling, no SDK relevance. |
+| `src/core/project_loader.py` | Add support for per-role `sdk_tools` field parsing. |
 | `src/interface/api.py` | Add evolution + regulatory endpoints with lazy imports. |
 | `solutions/starter/project.yaml` | Add `intended_purpose` template (commented, opt-in). |
 | `solutions/starter/tasks.yaml` | Add `time_criticality` field template. |
@@ -463,10 +540,20 @@ Each phase: write tests first, implement to green, refactor, commit.
 - **Gate:** All existing tests still pass; new runner works with SDK uninstalled
 
 ### Phase 2 — Agent Migration
-- Route `UniversalAgent` through `AgentSDKRunner`
-- Validate against existing solutions
-- Tests: universal agent produces identical outputs via fallback path
-- **Gate:** Regression-free migration
+Migrate agents to `AgentSDKRunner` per the Agent Coverage Matrix (§4.5). Order of migration is by risk (lowest first):
+
+1. `UniversalAgent` — per-role opt-in via `sdk_tools`, lowest risk
+2. `CriticAgent` — read-only tools, no side effects
+3. `AnalystAgent` — read-only + web, no side effects
+4. `PlannerAgent` — adds `Agent` tool for subagent spawning
+5. `DeveloperAgent` — write access, requires Gate 1/Gate 2 HITL verification
+6. `CodingAgent` — full SWE toolkit, highest risk — last
+
+`MonitorAgent` is explicitly skipped. `ProductOwnerAgent` is optional and defers to solution configuration.
+
+- Add `sdk_tools` field parsing to `src/core/project_loader.py`
+- Tests per agent: fallback produces identical outputs to current implementation; SDK path exercises correct tool set; HITL gates fire as expected
+- **Gate:** All 6 migrated agents regression-free against existing solutions; Monitor untouched
 
 ### Phase 3 — Program Database + Evaluators
 - `Candidate`, `ProgramDatabase`, base `Evaluator` interface
