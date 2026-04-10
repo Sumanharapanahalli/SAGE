@@ -79,6 +79,19 @@ Every SDK code path is guarded by `try/except ImportError`. If
 `claude_agent_sdk` is not installed at runtime, the runner transparently
 routes through `_run_via_gateway` — existing agents see no behavior change.
 
+## Migrated Agents (Phase 2)
+
+The following SAGE agents route their LLM calls through `AgentSDKRunner`:
+
+- **Universal Agent** (`role_id="analyst"`, `task_type="analysis"`) - General-purpose analysis and signal processing
+- **Critic Agent** (`role_id="technical_reviewer"`, `task_type="review"`) - Code and plan reviews
+- **Analyst Agent** (`role_id="analyst"`, `task_type="analysis"`) - Log analysis and root cause investigation
+- **Planner Agent** (`role_id="planner"`, `task_type="planning"`) - Task planning and decomposition
+- **Developer Agent** (`role_id="developer"`, `task_type="code_review"`) - ReAct loop for merge requests
+- **Coder Agent** (`role_id="coder"`, `task_type="code_generation"`) - ReAct loop for step implementation
+
+All agents fall back gracefully to `LLMGateway.generate()` when the Claude Agent SDK is unavailable, ensuring zero behavior change for non-Claude-Code providers.
+
 ## Related
 
 - Parent spec: `docs/superpowers/specs/2026-04-10-agent-sdk-evolutionary-integration-design.md`
