@@ -30,6 +30,7 @@ make test-all           # Framework + all solution tests
 - **LLM**: Multi-provider (Gemini, Claude Code, Ollama, local)
 - **Memory**: ChromaDB vector store + audit logs
 - **Testing**: pytest + comprehensive TDD coverage
+- **Agent SDK**: Optional Claude Agent SDK integration (`claude-agent-sdk`) — activates when Claude Code is the active provider, falls back gracefully otherwise
 
 ## Project Structure (Essential)
 
@@ -56,6 +57,7 @@ web/src/                React dashboard — reads from API only
 ### 🔧 Feature Documentation  
 - **[Agent Gym](.claude/docs/features/agent-gym.md)** — Self-play training, Glicko-2 ratings, exercise catalog
 - **[Regulatory Compliance](.claude/docs/features/regulatory-compliance.md)** — IEC 62304, 21 CFR Part 11, traceability matrices
+- **[Agent SDK Integration](.claude/docs/features/agent-sdk.md)** — Claude Agent SDK bridge, two-gate HITL, evolutionary layer
 
 ---
 
