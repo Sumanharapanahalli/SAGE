@@ -19,6 +19,8 @@ import json
 import logging
 from typing import Optional
 
+from src.agents import _sdk_bridge
+
 
 class UniversalAgent:
     """
@@ -117,8 +119,11 @@ confidence: HIGH, MEDIUM, or LOW based on available information
         self.logger.info("UniversalAgent running role=%s trace=%s", role_id, trace_id)
 
         # ── LLM call ───────────────────────────────────────────────────────
-        raw = llm_gateway.generate(
-            prompt, system_prompt, trace_name=f"universal_agent_{role_id}"
+        raw = _sdk_bridge.run_agent(
+            role_id=role_id,
+            task=task,
+            context=context,
+            task_type="analysis",
         )
 
         # ── Parse response ─────────────────────────────────────────────────
