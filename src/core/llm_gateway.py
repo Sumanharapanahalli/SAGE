@@ -784,6 +784,7 @@ class LLMGateway:
         _init_langfuse(config)
 
         backend = llm_cfg.get("provider", "gemini")
+        self._current_provider_name: str = backend
         self.logger.info("Selected LLM provider: %s", backend)
 
         if backend == "gemini":
@@ -811,6 +812,22 @@ class LLMGateway:
             "LLM Gateway active: %s (concurrency=%d)",
             self.provider.provider_name(), _concurrency,
         )
+
+    @property
+    def sdk_available(self) -> bool:
+        """True when claude_agent_sdk is installed AND active provider is claude-code.
+
+        Used by AgentSDKRunner for graceful fallback detection.
+        """
+        import sys
+        if sys.modules.get("claude_agent_sdk", "MISSING") is None:
+            return False
+        try:
+            import claude_agent_sdk  # noqa: F401
+        except ImportError:
+            return False
+
+        return getattr(self, "_current_provider_name", "") == "claude-code"
 
     def generate_stream(self, prompt, system_prompt="You are a helpful AI assistant.",
                         trace_name: str = "llm_stream", metadata: dict = None):
