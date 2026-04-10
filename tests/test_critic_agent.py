@@ -31,6 +31,32 @@ import pytest
 pytestmark = pytest.mark.unit
 
 
+class SDKBridgeMock:
+    """Mock that captures SDK bridge calls for testing."""
+    def __init__(self):
+        self.call_args = None
+        self.call_count = 0
+        self.return_value = '{"score": 85, "flaws": [], "suggestions": [], "missing": [], "security_risks": [], "summary": "Test summary"}'
+
+    def run_agent(self, role_id, task, context="", *, task_type=None):
+        self.call_args = ((role_id, task, context), {'task_type': task_type})
+        self.call_count += 1
+        return self.return_value
+
+
+@pytest.fixture(autouse=True)
+def mock_sdk_bridge(monkeypatch):
+    """Mock the SDK bridge for all tests that might use _call_llm."""
+    mock = SDKBridgeMock()
+
+    # Import and patch the SDK bridge
+    import src.agents._sdk_bridge as _sdk_bridge
+    monkeypatch.setattr(_sdk_bridge, "run_agent", mock.run_agent)
+
+    # Store the mock on the module for tests to access
+    _sdk_bridge._test_mock = mock
+
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -62,7 +88,9 @@ class TestReviewPlan:
 
     def test_returns_score_and_flaws(self):
         critic = _fresh_critic()
-        critic._llm_gateway.generate.return_value = _mock_llm_response(
+        # Mock the SDK bridge to return specific score
+        import src.agents._sdk_bridge as _sdk_bridge
+        _sdk_bridge._test_mock.return_value = _mock_llm_response(
             score=72, flaws=["Missing error handling", "No tests"]
         )
         result = critic.review_plan([{"step": 1, "task_type": "BACKEND"}], "Build a web app")
@@ -86,10 +114,13 @@ class TestReviewPlan:
 
     def test_includes_product_description_in_prompt(self):
         critic = _fresh_critic()
-        critic._llm_gateway.generate.return_value = _mock_llm_response(score=90)
+        # Mock the SDK bridge to return specific score
+        import src.agents._sdk_bridge as _sdk_bridge
+        _sdk_bridge._test_mock.return_value = _mock_llm_response(score=90)
         critic.review_plan([], "Build a surgical robot controller")
-        prompt = critic._llm_gateway.generate.call_args[0][0]
-        assert "surgical robot" in prompt
+        # Check that the task (prompt) includes the product description
+        task_prompt = _sdk_bridge._test_mock.call_args[0][1]
+        assert "surgical robot" in task_prompt
 
 
 # ---------------------------------------------------------------------------
@@ -109,18 +140,24 @@ class TestReviewCode:
 
     def test_truncates_long_code(self):
         critic = _fresh_critic()
-        critic._llm_gateway.generate.return_value = _mock_llm_response(score=80)
+        # Mock the SDK bridge to return specific score
+        import src.agents._sdk_bridge as _sdk_bridge
+        _sdk_bridge._test_mock.return_value = _mock_llm_response(score=80)
         long_code = "x = 1\n" * 10000
         critic.review_code(long_code, "test")
-        prompt = critic._llm_gateway.generate.call_args[0][0]
-        assert len(prompt) < len(long_code)
+        # Check that the task (prompt) is truncated
+        task_prompt = _sdk_bridge._test_mock.call_args[0][1]
+        assert len(task_prompt) < len(long_code)
 
     def test_includes_context(self):
         critic = _fresh_critic()
-        critic._llm_gateway.generate.return_value = _mock_llm_response(score=80)
+        # Mock the SDK bridge to return specific score
+        import src.agents._sdk_bridge as _sdk_bridge
+        _sdk_bridge._test_mock.return_value = _mock_llm_response(score=80)
         critic.review_code("code", "task", context="Prior feedback: fix XSS")
-        prompt = critic._llm_gateway.generate.call_args[0][0]
-        assert "Prior feedback: fix XSS" in prompt
+        # Check that the task (prompt) includes context
+        task_prompt = _sdk_bridge._test_mock.call_args[0][1]
+        assert "Prior feedback: fix XSS" in task_prompt
 
 
 # ---------------------------------------------------------------------------
@@ -272,28 +309,38 @@ class TestReviewWithLoop:
 
 class TestCallLLM:
 
-    def test_extracts_json_from_markdown_fences(self):
+    def test_extracts_json_from_markdown_fences(self, monkeypatch):
         critic = _fresh_critic()
-        critic._llm_gateway.generate.return_value = '```json\n{"score": 90, "summary": "Good"}\n```'
+        # Override the default SDK bridge mock for this test
+        import src.agents._sdk_bridge as _sdk_bridge
+        monkeypatch.setattr(_sdk_bridge, "run_agent", lambda *args, **kwargs: '```json\n{"score": 90, "summary": "Good"}\n```')
         result = critic._call_llm("test", "test", "TEST")
         assert result["score"] == 90
 
-    def test_handles_non_json_output(self):
+    def test_handles_non_json_output(self, monkeypatch):
         critic = _fresh_critic()
-        critic._llm_gateway.generate.return_value = "I cannot produce JSON today"
+        # Override the default SDK bridge mock for this test
+        import src.agents._sdk_bridge as _sdk_bridge
+        monkeypatch.setattr(_sdk_bridge, "run_agent", lambda *args, **kwargs: "I cannot produce JSON today")
         result = critic._call_llm("test", "test", "TEST")
         assert result["score"] == 0
 
-    def test_handles_llm_exception(self):
+    def test_handles_llm_exception(self, monkeypatch):
         critic = _fresh_critic()
-        critic._llm_gateway.generate.side_effect = RuntimeError("LLM down")
+        # Override the default SDK bridge mock to raise an exception
+        import src.agents._sdk_bridge as _sdk_bridge
+        def raise_error(*args, **kwargs):
+            raise RuntimeError("LLM down")
+        monkeypatch.setattr(_sdk_bridge, "run_agent", raise_error)
         result = critic._call_llm("test", "test", "TEST")
         assert result["score"] == 0
         assert "error" in result
 
-    def test_score_coerced_to_int(self):
+    def test_score_coerced_to_int(self, monkeypatch):
         critic = _fresh_critic()
-        critic._llm_gateway.generate.return_value = '{"score": "88", "summary": "Good"}'
+        # Override the default SDK bridge mock for this test
+        import src.agents._sdk_bridge as _sdk_bridge
+        monkeypatch.setattr(_sdk_bridge, "run_agent", lambda *args, **kwargs: '{"score": "88", "summary": "Good"}')
         result = critic._call_llm("test", "test", "TEST")
         assert isinstance(result["score"], int)
         assert result["score"] == 88
@@ -460,37 +507,41 @@ class TestReviewWithLoopEdgeCases:
 
 class TestCallLLMEdgeCases:
 
-    def test_nested_json_in_markdown_fences(self):
+    def test_nested_json_in_markdown_fences(self, monkeypatch):
         """_call_llm() extracts nested JSON from markdown fences."""
         critic = _fresh_critic()
         nested = '```json\n{"score": 75, "summary": "OK", "details": {"sub": [1, 2]}}\n```'
-        critic._llm_gateway.generate.return_value = nested
+        import src.agents._sdk_bridge as _sdk_bridge
+        monkeypatch.setattr(_sdk_bridge, "run_agent", lambda *args, **kwargs: nested)
         result = critic._call_llm("test", "test", "TEST")
         assert result["score"] == 75
         assert result["details"]["sub"] == [1, 2]
 
-    def test_multiple_json_blocks_picks_valid_object(self):
+    def test_multiple_json_blocks_picks_valid_object(self, monkeypatch):
         """_call_llm() with multiple JSON blocks extracts the one with score."""
         critic = _fresh_critic()
         # After stripping fences and using regex to find {…}, the greedy match
         # should capture the full JSON object.
         response = 'Some text\n{"score": 60, "summary": "First block"}\nMore text'
-        critic._llm_gateway.generate.return_value = response
+        import src.agents._sdk_bridge as _sdk_bridge
+        monkeypatch.setattr(_sdk_bridge, "run_agent", lambda *args, **kwargs: response)
         result = critic._call_llm("test", "test", "TEST")
         assert result["score"] == 60
 
-    def test_json_with_extra_text_around_fences(self):
+    def test_json_with_extra_text_around_fences(self, monkeypatch):
         """_call_llm() handles text before and after markdown JSON fences."""
         critic = _fresh_critic()
         response = 'Here is my review:\n```json\n{"score": 88, "summary": "Great"}\n```\nThat is all.'
-        critic._llm_gateway.generate.return_value = response
+        import src.agents._sdk_bridge as _sdk_bridge
+        monkeypatch.setattr(_sdk_bridge, "run_agent", lambda *args, **kwargs: response)
         result = critic._call_llm("test", "test", "TEST")
         assert result["score"] == 88
 
-    def test_empty_string_response(self):
+    def test_empty_string_response(self, monkeypatch):
         """_call_llm() handles empty string from LLM."""
         critic = _fresh_critic()
-        critic._llm_gateway.generate.return_value = ""
+        import src.agents._sdk_bridge as _sdk_bridge
+        monkeypatch.setattr(_sdk_bridge, "run_agent", lambda *args, **kwargs: "")
         result = critic._call_llm("test", "test", "TEST")
         assert result["score"] == 0
 
@@ -644,3 +695,33 @@ class TestReviewPlanMulti:
         )
         assert result["score"] == 0
         assert "error" in result
+
+
+def test_critic_call_llm_routes_through_sdk_bridge(monkeypatch):
+    from src.agents.critic import CriticAgent
+
+    captured = {}
+
+    def fake_run_agent(role_id, task, context="", *, task_type=None):
+        captured["role_id"] = role_id
+        captured["task"] = task
+        captured["task_type"] = task_type
+        return '{"score": 9, "flaws": [], "suggestions": [], "missing": [], ' \
+               '"security_risks": [], "summary": "looks good"}'
+
+    # First import the module that the critic will use
+    import src.agents._sdk_bridge as _sdk_bridge
+    monkeypatch.setattr(
+        _sdk_bridge,
+        "run_agent",
+        fake_run_agent,
+    )
+    agent = CriticAgent()
+    out = agent._call_llm(
+        user_prompt="review this plan",
+        system_prompt="you are a critic",
+        action_type="review_plan",
+    )
+    assert captured["role_id"] == "technical_reviewer"
+    assert "review this plan" in captured["task"]
+    assert out["score"] == 9

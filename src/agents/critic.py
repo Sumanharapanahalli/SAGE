@@ -23,6 +23,8 @@ import time
 import uuid
 from typing import Dict, Any, Optional
 
+from src.agents import _sdk_bridge
+
 logger = logging.getLogger(__name__)
 
 # Path for persisted critic prompts (editable by founder)
@@ -873,8 +875,11 @@ class CriticAgent:
     ) -> Dict[str, Any]:
         """Call LLM and parse JSON response. Returns error dict on failure."""
         try:
-            response_text = self.llm.generate(
-                user_prompt, system_prompt, trace_name=f"critic.{action_type.lower()}"
+            response_text = _sdk_bridge.run_agent(
+                role_id="technical_reviewer",
+                task=user_prompt,
+                context=system_prompt,
+                task_type="review",
             )
             # Clean markdown fences
             response_text = response_text.replace("```json", "").replace("```", "").strip()
