@@ -81,3 +81,7 @@ msal
 # pip install composio-langchain
 # Set COMPOSIO_API_KEY in .env, then: composio add <app>
 composio-langchain
+
+# Claude Agent SDK (optional - enables SDK features when Claude Code is active provider)
+# Falls back gracefully when not installed. See src/core/agent_sdk_runner.py
+claude-agent-sdk>=0.1.0
