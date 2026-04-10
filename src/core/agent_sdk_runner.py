@@ -11,8 +11,16 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict, List, Optional
 
+# Regulatory hooks import with graceful fallback
+try:
+    from src.core.regulatory import automation_bias_hook, transparency_validator_hook
+    REGULATORY_AVAILABLE = True
+except ImportError:
+    REGULATORY_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
+if not REGULATORY_AVAILABLE:
+    logger.info("Regulatory hooks not available - install regulatory dependencies if needed")
 
 
 # Task type → default SDK tool set (used when role has no sdk_tools field)
@@ -228,6 +236,7 @@ class AgentSDKRunner:
                 agent_def=agent_def,
                 task=task,
                 trace_id=trace_id,
+                context=context,
             )
         except ImportError:
             logger.warning("claude_agent_sdk import failed at runtime; falling back")
@@ -309,20 +318,68 @@ class AgentSDKRunner:
         agent_def: Dict[str, Any],
         task: str,
         trace_id: str,
+        context: Optional[Dict[str, Any]] = None,
     ) -> str:
-        """Execute the SDK query loop. Extracted for testability."""
+        """Execute the SDK query loop with regulatory hooks."""
         from claude_agent_sdk import query, ClaudeAgentOptions  # type: ignore
+        from src.core.sdk_hooks import (
+            destructive_op_hook,
+            budget_check_hook,
+            pii_filter_hook,
+            audit_logger_hook,
+            change_tracker_hook,
+        )
+
+        # Build hook configuration including regulatory hooks
+        pre_tool_hooks = [
+            destructive_op_hook,
+            budget_check_hook,
+            pii_filter_hook,
+        ]
+
+        post_tool_hooks = [
+            audit_logger_hook,
+            change_tracker_hook,
+        ]
+
+        # Add regulatory hooks when enabled and available
+        if REGULATORY_AVAILABLE and self._is_regulatory_enabled(context):
+            pre_tool_hooks.append(automation_bias_hook)
+            post_tool_hooks.append(transparency_validator_hook)
+            logger.info("Regulatory hooks enabled for this execution")
 
         messages_collected: List[str] = []
         options = ClaudeAgentOptions(
             system_prompt=agent_def["prompt"],
             allowed_tools=agent_def["tools"],
             permission_mode="acceptEdits",
+            hooks={
+                "PreToolUse": pre_tool_hooks,
+                "PostToolUse": post_tool_hooks,
+            },
         )
         async for message in query(prompt=task, options=options):
             if hasattr(message, "result"):
                 messages_collected.append(str(message.result))
         return "\n".join(messages_collected)
+
+    def _is_regulatory_enabled(self, context: Optional[Dict[str, Any]] = None) -> bool:
+        """Check if regulatory features are enabled for this solution."""
+        # Check if intended_purpose is configured in project.yaml
+        from src.core.project_loader import project_config
+
+        try:
+            project_data = project_config.get_project_data()
+            has_intended_purpose = "intended_purpose" in project_data
+        except:
+            has_intended_purpose = False
+
+        # Also check context for explicit regulatory flag
+        context_flag = False
+        if context:
+            context_flag = context.get("regulatory_enabled", False)
+
+        return has_intended_purpose or context_flag
 
 
 # Module-level singleton (lazy to avoid circular imports)

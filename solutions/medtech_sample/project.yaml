@@ -38,6 +38,24 @@ active_modules:
   - integrations
   - workflows
 
+intended_purpose:
+  function: "Clinical decision support for diabetic foot ulcer risk assessment"
+  performance_claims:
+    sensitivity: 0.89
+    specificity: 0.85
+    confidence_interval: "95%"
+  target_population:
+    age_range: [18, 85]
+    exclusions: ["pregnancy", "non-diabetic patients"]
+  boundary_conditions:
+    - "For screening and monitoring only"
+    - "Not for acute medical decisions"
+    - "Requires healthcare provider verification"
+  user_group: "Licensed healthcare providers"
+  fda_classification: "Non-Device CDS"
+  mdr_class: "Class I"
+  predicate_device: null
+
 compliance_standards:
   - "HIPAA Security Rule 45 CFR §164 — Protected Health Information"
   - "FDA 21 CFR Part 820 — Quality System Regulation (QSR)"

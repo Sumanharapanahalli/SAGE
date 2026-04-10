@@ -14,6 +14,8 @@ from .transparency_report import (
     transparency_validator_hook,
     is_clinical_tool,
 )
+from .automation_bias import AutomationBiasControls, automation_bias_hook
+from .gold_standard_evaluator import GoldStandardEvaluator
 
 __all__ = [
     "IntendedPurpose",
@@ -24,4 +26,7 @@ __all__ = [
     "validate_transparency_report",
     "transparency_validator_hook",
     "is_clinical_tool",
+    "AutomationBiasControls",
+    "automation_bias_hook",
+    "GoldStandardEvaluator"
 ]
