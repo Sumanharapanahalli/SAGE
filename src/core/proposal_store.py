@@ -321,6 +321,33 @@ class ProposalStore:
         logger.info("Proposal rejected: %s by %s — %s", trace_id, decided_by, feedback)
         return proposal
 
+    def await_decision(self, trace_id: str, timeout_seconds: float = 300.0) -> Optional[Proposal]:
+        """Block until the proposal is approved or rejected, or timeout elapses.
+
+        Polls the underlying store at 50ms intervals. Returns the final
+        Proposal object on decision, or None if the timeout is reached
+        before a decision is recorded.
+
+        Args:
+            trace_id: Proposal to wait on.
+            timeout_seconds: Maximum wait time. Default 5 minutes.
+
+        Returns:
+            Proposal with status in {"approved", "rejected"}, or None on timeout.
+        """
+        import time as _time
+
+        poll_interval = 0.05  # 50 ms
+        deadline = _time.monotonic() + timeout_seconds
+
+        while _time.monotonic() < deadline:
+            proposal = self.get(trace_id)
+            if proposal is not None and proposal.status in ("approved", "rejected"):
+                return proposal
+            _time.sleep(poll_interval)
+
+        return None
+
     def expire_old(self):
         """Mark all pending expired proposals as 'expired'. Call from background job."""
         now = datetime.now(timezone.utc).isoformat()
