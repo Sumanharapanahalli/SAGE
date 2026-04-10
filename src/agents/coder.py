@@ -15,6 +15,8 @@ import logging
 import os
 import subprocess
 
+from src.agents import _sdk_bridge
+
 logger = logging.getLogger("CodingAgent")
 
 # Project root — two levels up from src/agents/
@@ -201,7 +203,12 @@ class CodingAgent:
 
         for step in range(max_steps):
             user_prompt = "\n\n".join(history) + "\n\nStep:"
-            response = self.llm.generate(user_prompt, system_prompt, trace_name="coder.react")
+            response = _sdk_bridge.run_agent(
+                role_id="coder",
+                task=user_prompt,
+                context=system_prompt,
+                task_type="code_generation",
+            )
             history.append(f"Step {step + 1}:\n{response}")
 
             if "FinalAnswer:" in response:
@@ -233,7 +240,12 @@ class CodingAgent:
 
         # Max steps reached — force final answer
         forced = "\n\n".join(history) + "\n\nYou have reached the step limit. Summarise what was done:"
-        response = self.llm.generate(forced, system_prompt, trace_name="coder.react.final")
+        response = _sdk_bridge.run_agent(
+            role_id="coder",
+            task=forced,
+            context=system_prompt,
+            task_type="code_generation",
+        )
         return response, written_files
 
     # -----------------------------------------------------------------------
