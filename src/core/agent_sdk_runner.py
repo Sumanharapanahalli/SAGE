@@ -241,6 +241,61 @@ class AgentSDKRunner:
                 "trace_id": trace_id,
             }
 
+        # ---------------- Gate 2: Result Approval ----------------
+        from src.core.sdk_change_tracker import sdk_change_tracker
+        changes = sdk_change_tracker.get_session_changes(trace_id)
+
+        result_proposal = store.create(
+            action_type="result_approval",
+            risk_class=RiskClass.STATEFUL,
+            payload={
+                "role_id": role_id,
+                "task": task,
+                "result_summary": (result_text or "")[:2000],
+                "files_created": list(changes.created),
+                "files_modified": list(changes.modified),
+                "files_deleted": list(changes.deleted),
+                "commands_run": list(changes.bash_commands),
+            },
+            description=f"Result approval for role={role_id}",
+            proposed_by=context.get("actor", "agent_sdk_runner"),
+        )
+
+        gate2_timeout = float(context.get("gate2_timeout_seconds", 3600))
+        result_decision = await loop.run_in_executor(
+            None, store.await_decision, result_proposal.trace_id, gate2_timeout
+        )
+
+        # Clear session tracker regardless of decision
+        sdk_change_tracker.clear_session(trace_id)
+
+        if result_decision is None:
+            return {
+                "role_id": role_id,
+                "status": "timeout_at_result",
+                "trace_id": trace_id,
+                "proposal_id": result_proposal.trace_id,
+            }
+        if result_decision.status == "rejected":
+            # Feed rejection into vector memory (compounding intelligence)
+            try:
+                from src.memory.vector_store import vector_memory
+                vector_memory.add_feedback(
+                    result_decision.feedback or "rejected",
+                    metadata={"phase": "result_approval", "trace_id": trace_id,
+                              "role_id": role_id},
+                )
+            except Exception:
+                logger.debug("vector_memory feedback ingest skipped")
+
+            return {
+                "role_id": role_id,
+                "status": "rejected_at_result",
+                "reason": result_decision.feedback,
+                "trace_id": trace_id,
+                "proposal_id": result_proposal.trace_id,
+            }
+
         return {
             "role_id": role_id,
             "role_name": role_config.get("name", role_id),

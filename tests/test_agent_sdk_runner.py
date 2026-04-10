@@ -165,15 +165,19 @@ async def test_gate1_creates_goal_alignment_proposal(tmp_audit_db):
         import threading
         import time
 
-        def approve_when_ready():
-            for _ in range(100):
-                if created_proposals:
-                    time.sleep(0.05)
-                    store.approve(created_proposals[0].trace_id, decided_by="test")
+        def approve_all_when_ready():
+            seen = set()
+            for _ in range(200):
+                for p in list(created_proposals):
+                    if p.trace_id not in seen:
+                        seen.add(p.trace_id)
+                        time.sleep(0.05)
+                        store.approve(p.trace_id, decided_by="test")
+                if len(seen) >= 2:
                     return
                 time.sleep(0.05)
 
-        threading.Thread(target=approve_when_ready, daemon=True).start()
+        threading.Thread(target=approve_all_when_ready, daemon=True).start()
 
         result = await runner.run(
             role_id="analyst",
@@ -236,3 +240,121 @@ async def test_gate1_rejection_aborts_execution(tmp_audit_db):
     assert result["status"] == "rejected_at_goal"
     assert "out of scope" in result.get("reason", "")
     sdk_query_called.assert_not_called()
+
+
+async def test_gate2_creates_result_approval_proposal(tmp_audit_db):
+    """Gate 2: after SDK execution, runner creates a result_approval proposal."""
+    from src.core.agent_sdk_runner import AgentSDKRunner
+    from src.core.proposal_store import get_proposal_store
+    from src.core.sdk_change_tracker import sdk_change_tracker
+
+    runner = AgentSDKRunner()
+    fake_gateway = MagicMock()
+    fake_gateway.sdk_available = True
+
+    fake_role = {"name": "Coder", "system_prompt": "code", "sdk_tools": ["Edit"]}
+
+    store = get_proposal_store()
+    created_proposals = []
+    original_create = store.create
+
+    def tracking_create(*args, **kwargs):
+        p = original_create(*args, **kwargs)
+        created_proposals.append(p)
+        return p
+
+    async def fake_sdk_query(agent_def, task, trace_id):
+        # Simulate the SDK modifying a file during execution
+        sdk_change_tracker.record(trace_id, "Edit", {"file_path": "src/foo.py"})
+        return "implemented"
+
+    with patch.object(runner, "_llm_gateway", fake_gateway), \
+         patch.object(runner, "_load_role", return_value=fake_role), \
+         patch.object(store, "create", side_effect=tracking_create), \
+         patch.object(runner, "_run_sdk_query", side_effect=fake_sdk_query):
+
+        import threading
+        import time
+
+        def approve_all_when_ready():
+            seen = set()
+            for _ in range(200):
+                for p in list(created_proposals):
+                    if p.trace_id not in seen:
+                        seen.add(p.trace_id)
+                        time.sleep(0.05)
+                        store.approve(p.trace_id, decided_by="test")
+                if len(seen) >= 2:
+                    return
+                time.sleep(0.05)
+
+        threading.Thread(target=approve_all_when_ready, daemon=True).start()
+
+        result = await runner.run(
+            role_id="coder",
+            task="implement foo",
+            context={"task_type": "implementation"},
+        )
+
+    gate2 = [p for p in created_proposals if p.action_type == "result_approval"]
+    assert len(gate2) == 1
+    assert "src/foo.py" in str(gate2[0].payload.get("files_modified", []))
+    assert result["status"] == "success"
+
+
+async def test_gate2_rejection_marks_result_rejected(tmp_audit_db):
+    """Gate 2 rejection returns status=rejected_at_result with the reason."""
+    from src.core.agent_sdk_runner import AgentSDKRunner
+    from src.core.proposal_store import get_proposal_store
+
+    runner = AgentSDKRunner()
+    fake_gateway = MagicMock()
+    fake_gateway.sdk_available = True
+
+    fake_role = {"name": "Coder", "system_prompt": "code", "sdk_tools": ["Edit"]}
+
+    store = get_proposal_store()
+    created_proposals = []
+    original_create = store.create
+
+    def tracking_create(*args, **kwargs):
+        p = original_create(*args, **kwargs)
+        created_proposals.append(p)
+        return p
+
+    async def fake_sdk_query(agent_def, task, trace_id):
+        return "some result"
+
+    with patch.object(runner, "_llm_gateway", fake_gateway), \
+         patch.object(runner, "_load_role", return_value=fake_role), \
+         patch.object(store, "create", side_effect=tracking_create), \
+         patch.object(runner, "_run_sdk_query", side_effect=fake_sdk_query):
+
+        import threading
+        import time
+
+        def decide_proposals():
+            seen = set()
+            for _ in range(200):
+                for p in list(created_proposals):
+                    if p.trace_id not in seen:
+                        seen.add(p.trace_id)
+                        time.sleep(0.05)
+                        if p.action_type == "goal_alignment":
+                            store.approve(p.trace_id, decided_by="test")
+                        else:
+                            store.reject(p.trace_id, decided_by="test", feedback="bad output")
+                if len(seen) >= 2:
+                    return
+                time.sleep(0.05)
+
+        threading.Thread(target=decide_proposals, daemon=True).start()
+
+        result = await runner.run(
+            role_id="coder",
+            task="do it",
+            context={"task_type": "implementation"},
+        )
+
+    assert result["status"] == "rejected_at_result"
+    assert "bad output" in result.get("reason", "")
