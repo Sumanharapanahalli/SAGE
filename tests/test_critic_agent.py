@@ -97,9 +97,11 @@ class TestReviewPlan:
         assert result["score"] == 72
         assert "Missing error handling" in result["flaws"]
 
-    def test_handles_json_parse_error(self):
+    def test_handles_json_parse_error(self, monkeypatch):
         critic = _fresh_critic()
-        critic._llm_gateway.generate.return_value = "This is not JSON at all"
+        # Mock SDK bridge to return non-JSON
+        import src.agents._sdk_bridge as _sdk_bridge
+        monkeypatch.setattr(_sdk_bridge, "run_agent", lambda *args, **kwargs: "This is not JSON at all")
         result = critic.review_plan([], "test")
         assert result["score"] == 0
 
@@ -131,7 +133,9 @@ class TestReviewCode:
 
     def test_returns_score_and_issues(self):
         critic = _fresh_critic()
-        critic._llm_gateway.generate.return_value = _mock_llm_response(
+        # Mock the SDK bridge to return specific score
+        import src.agents._sdk_bridge as _sdk_bridge
+        _sdk_bridge._test_mock.return_value = _mock_llm_response(
             score=65, issues=["SQL injection risk"], security_risks=["XSS"]
         )
         result = critic.review_code("def foo(): pass", "Build a login page")
@@ -168,7 +172,9 @@ class TestReviewIntegration:
 
     def test_returns_score_and_gaps(self):
         critic = _fresh_critic()
-        critic._llm_gateway.generate.return_value = _mock_llm_response(
+        # Mock the SDK bridge to return specific score
+        import src.agents._sdk_bridge as _sdk_bridge
+        _sdk_bridge._test_mock.return_value = _mock_llm_response(
             score=78, gaps=["No load test"], risks=["Data race"]
         )
         result = critic.review_integration("All tests pass", "combined diff here")
@@ -176,11 +182,14 @@ class TestReviewIntegration:
 
     def test_truncates_long_diff(self):
         critic = _fresh_critic()
-        critic._llm_gateway.generate.return_value = _mock_llm_response(score=80)
+        # Mock the SDK bridge to return specific score
+        import src.agents._sdk_bridge as _sdk_bridge
+        _sdk_bridge._test_mock.return_value = _mock_llm_response(score=80)
         long_diff = "+ line\n" * 10000
         critic.review_integration("pass", long_diff)
-        prompt = critic._llm_gateway.generate.call_args[0][0]
-        assert len(prompt) < len(long_diff)
+        # Check that the task (prompt) is truncated
+        task_prompt = _sdk_bridge._test_mock.call_args[0][1]
+        assert len(task_prompt) < len(long_diff)
 
 
 # ---------------------------------------------------------------------------
@@ -200,13 +209,22 @@ class TestReviewWithLoop:
             assert result["final_score"] == 85
             assert result["iterations"] == 1
 
-    def test_iterates_when_below_threshold(self):
+    def test_iterates_when_below_threshold(self, monkeypatch):
         critic = _fresh_critic()
         responses = [
             _mock_llm_response(score=40, flaws=["Bad"]),
             _mock_llm_response(score=75),
         ]
-        critic._llm_gateway.generate.side_effect = responses
+        call_count = 0
+        def mock_sdk_bridge(*args, **kwargs):
+            nonlocal call_count
+            response = responses[call_count]
+            call_count += 1
+            return response
+
+        import src.agents._sdk_bridge as _sdk_bridge
+        monkeypatch.setattr(_sdk_bridge, "run_agent", mock_sdk_bridge)
+
         with patch.object(critic, "_store_feedback"):
             result = critic.review_with_loop(
                 review_fn="plan", artifact=[], description="test",
@@ -219,7 +237,9 @@ class TestReviewWithLoop:
 
     def test_respects_max_iterations(self):
         critic = _fresh_critic()
-        critic._llm_gateway.generate.return_value = _mock_llm_response(score=30, flaws=["Still bad"])
+        # Mock the SDK bridge to return specific score
+        import src.agents._sdk_bridge as _sdk_bridge
+        _sdk_bridge._test_mock.return_value = _mock_llm_response(score=30, flaws=["Still bad"])
         with patch.object(critic, "_store_feedback"):
             result = critic.review_with_loop(
                 review_fn="plan", artifact=[], description="test",
@@ -230,13 +250,22 @@ class TestReviewWithLoop:
             assert result["passed"] is False
             assert result["final_score"] == 30
 
-    def test_calls_revise_fn_between_iterations(self):
+    def test_calls_revise_fn_between_iterations(self, monkeypatch):
         critic = _fresh_critic()
         responses = [
             _mock_llm_response(score=40),
             _mock_llm_response(score=80),
         ]
-        critic._llm_gateway.generate.side_effect = responses
+        call_count = 0
+        def mock_sdk_bridge(*args, **kwargs):
+            nonlocal call_count
+            response = responses[call_count]
+            call_count += 1
+            return response
+
+        import src.agents._sdk_bridge as _sdk_bridge
+        monkeypatch.setattr(_sdk_bridge, "run_agent", mock_sdk_bridge)
+
         revise_fn = MagicMock(return_value=["revised plan"])
         with patch.object(critic, "_store_feedback"):
             critic.review_with_loop(
@@ -275,7 +304,9 @@ class TestReviewWithLoop:
 
     def test_no_revise_fn_stops_after_first_review(self):
         critic = _fresh_critic()
-        critic._llm_gateway.generate.return_value = _mock_llm_response(score=40)
+        # Mock the SDK bridge to return specific score
+        import src.agents._sdk_bridge as _sdk_bridge
+        _sdk_bridge._test_mock.return_value = _mock_llm_response(score=40)
         with patch.object(critic, "_store_feedback"):
             result = critic.review_with_loop(
                 review_fn="plan", artifact=[], description="test",
@@ -284,14 +315,23 @@ class TestReviewWithLoop:
             assert result["iterations"] == 1
             assert result["passed"] is False
 
-    def test_history_contains_all_iterations(self):
+    def test_history_contains_all_iterations(self, monkeypatch):
         critic = _fresh_critic()
         responses = [
             _mock_llm_response(score=40),
             _mock_llm_response(score=50),
             _mock_llm_response(score=80),
         ]
-        critic._llm_gateway.generate.side_effect = responses
+        call_count = 0
+        def mock_sdk_bridge(*args, **kwargs):
+            nonlocal call_count
+            response = responses[call_count]
+            call_count += 1
+            return response
+
+        import src.agents._sdk_bridge as _sdk_bridge
+        monkeypatch.setattr(_sdk_bridge, "run_agent", mock_sdk_bridge)
+
         with patch.object(critic, "_store_feedback"):
             result = critic.review_with_loop(
                 review_fn="plan", artifact=[], description="test",
@@ -390,7 +430,9 @@ class TestReviewPlanEdgeCases:
     def test_empty_plan_list(self):
         """review_plan() with an empty plan list should still call LLM and return score."""
         critic = _fresh_critic()
-        critic._llm_gateway.generate.return_value = _mock_llm_response(
+        # Mock the SDK bridge to return specific score
+        import src.agents._sdk_bridge as _sdk_bridge
+        _sdk_bridge._test_mock.return_value = _mock_llm_response(
             score=30, flaws=["No tasks defined"]
         )
         result = critic.review_plan([], "Build a web app")
@@ -400,12 +442,14 @@ class TestReviewPlanEdgeCases:
     def test_very_large_plan(self):
         """review_plan() with 100+ steps should not crash and truncates in prompt."""
         critic = _fresh_critic()
-        critic._llm_gateway.generate.return_value = _mock_llm_response(score=60)
+        # Mock the SDK bridge to return specific score
+        import src.agents._sdk_bridge as _sdk_bridge
+        _sdk_bridge._test_mock.return_value = _mock_llm_response(score=60)
         large_plan = [{"step": i, "task_type": "BACKEND", "description": f"Task {i}"} for i in range(120)]
         result = critic.review_plan(large_plan, "Massive system")
         assert result["score"] == 60
-        # The LLM was called (prompt was constructed)
-        critic._llm_gateway.generate.assert_called_once()
+        # The SDK bridge was called (prompt was constructed)
+        assert _sdk_bridge._test_mock.call_count > 0
 
 
 class TestReviewCodeEdgeCases:
@@ -413,7 +457,9 @@ class TestReviewCodeEdgeCases:
     def test_empty_code_string(self):
         """review_code() with empty code should still work."""
         critic = _fresh_critic()
-        critic._llm_gateway.generate.return_value = _mock_llm_response(
+        # Mock the SDK bridge to return specific score
+        import src.agents._sdk_bridge as _sdk_bridge
+        _sdk_bridge._test_mock.return_value = _mock_llm_response(
             score=0, issues=["No code provided"]
         )
         result = critic.review_code("", "Build a login page")
@@ -441,14 +487,23 @@ class TestReviewWithLoopEdgeCases:
             assert result["passed"] is True
             assert result["iterations"] == 1
 
-    def test_threshold_100_needs_perfect_score(self):
+    def test_threshold_100_needs_perfect_score(self, monkeypatch):
         """review_with_loop() with threshold=100 fails unless score=100."""
         critic = _fresh_critic()
         responses = [
             _mock_llm_response(score=95),
             _mock_llm_response(score=99),
         ]
-        critic._llm_gateway.generate.side_effect = responses
+        call_count = 0
+        def mock_sdk_bridge(*args, **kwargs):
+            nonlocal call_count
+            response = responses[call_count]
+            call_count += 1
+            return response
+
+        import src.agents._sdk_bridge as _sdk_bridge
+        monkeypatch.setattr(_sdk_bridge, "run_agent", mock_sdk_bridge)
+
         with patch.object(critic, "_store_feedback"):
             result = critic.review_with_loop(
                 review_fn="plan", artifact=[], description="test",
@@ -461,7 +516,9 @@ class TestReviewWithLoopEdgeCases:
     def test_threshold_100_passes_with_score_100(self):
         """review_with_loop() with threshold=100 passes when score is exactly 100."""
         critic = _fresh_critic()
-        critic._llm_gateway.generate.return_value = _mock_llm_response(score=100)
+        # Mock the SDK bridge to return specific score
+        import src.agents._sdk_bridge as _sdk_bridge
+        _sdk_bridge._test_mock.return_value = _mock_llm_response(score=100)
         with patch.object(critic, "_store_feedback"):
             result = critic.review_with_loop(
                 review_fn="plan", artifact=[], description="test", threshold=100
@@ -471,7 +528,9 @@ class TestReviewWithLoopEdgeCases:
     def test_max_iterations_one(self):
         """review_with_loop() with max_iterations=1 only does one review."""
         critic = _fresh_critic()
-        critic._llm_gateway.generate.return_value = _mock_llm_response(score=40)
+        # Mock the SDK bridge to return specific score
+        import src.agents._sdk_bridge as _sdk_bridge
+        _sdk_bridge._test_mock.return_value = _mock_llm_response(score=40)
         with patch.object(critic, "_store_feedback"):
             result = critic.review_with_loop(
                 review_fn="plan", artifact=[], description="test",
@@ -484,7 +543,9 @@ class TestReviewWithLoopEdgeCases:
     def test_score_exactly_at_threshold(self):
         """review_with_loop() passes when score == threshold (boundary condition)."""
         critic = _fresh_critic()
-        critic._llm_gateway.generate.return_value = _mock_llm_response(score=70)
+        # Mock the SDK bridge to return specific score
+        import src.agents._sdk_bridge as _sdk_bridge
+        _sdk_bridge._test_mock.return_value = _mock_llm_response(score=70)
         with patch.object(critic, "_store_feedback"):
             result = critic.review_with_loop(
                 review_fn="plan", artifact=[], description="test", threshold=70
@@ -496,7 +557,9 @@ class TestReviewWithLoopEdgeCases:
     def test_score_one_below_threshold(self):
         """review_with_loop() fails when score is threshold-1."""
         critic = _fresh_critic()
-        critic._llm_gateway.generate.return_value = _mock_llm_response(score=69)
+        # Mock the SDK bridge to return specific score
+        import src.agents._sdk_bridge as _sdk_bridge
+        _sdk_bridge._test_mock.return_value = _mock_llm_response(score=69)
         with patch.object(critic, "_store_feedback"):
             result = critic.review_with_loop(
                 review_fn="plan", artifact=[], description="test",
@@ -577,7 +640,9 @@ class TestReviewIntegrationEdgeCases:
     def test_empty_test_results_and_diff(self):
         """review_integration() with empty test results and diff."""
         critic = _fresh_critic()
-        critic._llm_gateway.generate.return_value = _mock_llm_response(
+        # Mock the SDK bridge to return specific score
+        import src.agents._sdk_bridge as _sdk_bridge
+        _sdk_bridge._test_mock.return_value = _mock_llm_response(
             score=50, gaps=["No tests at all"], risks=["Unknown state"]
         )
         result = critic.review_integration("", "")
@@ -586,12 +651,15 @@ class TestReviewIntegrationEdgeCases:
     def test_very_long_diff_is_truncated(self):
         """review_integration() truncates diff to 8000 chars."""
         critic = _fresh_critic()
-        critic._llm_gateway.generate.return_value = _mock_llm_response(score=70)
+        # Mock the SDK bridge to return specific score
+        import src.agents._sdk_bridge as _sdk_bridge
+        _sdk_bridge._test_mock.return_value = _mock_llm_response(score=70)
         long_diff = "+" * 20000
         critic.review_integration("pass", long_diff)
-        prompt = critic._llm_gateway.generate.call_args[0][0]
+        # Check that the task (prompt) is truncated
+        task_prompt = _sdk_bridge._test_mock.call_args[0][1]
         # The diff is truncated to 8000 chars inside the prompt
-        assert len(prompt) < 20000
+        assert len(task_prompt) < 20000
 
 
 # ===========================================================================
