@@ -376,3 +376,28 @@ def test_add_mr_comment_handles_error(tmp_audit_db):
         result = agent.add_mr_comment(project_id=123, mr_iid=7, comment="Test comment")
 
     assert "error" in result, f"Expected 'error' key on network failure, got: {result}"
+
+
+def test_developer_react_loop_routes_through_sdk_bridge(monkeypatch):
+    from src.agents.developer import DeveloperAgent
+
+    calls = []
+
+    def fake_run_agent(role_id, task, context="", *, task_type=None):
+        calls.append({"role_id": role_id, "task_type": task_type})
+        return "Thought: done\nFinalAnswer: ok"
+
+    monkeypatch.setattr(
+        "src.agents.developer._sdk_bridge.run_agent",
+        fake_run_agent,
+    )
+    agent = DeveloperAgent()
+    result = agent._react_loop(
+        task="review the MR",
+        tools={"dummy": lambda: "test"},
+        max_steps=1,
+    )
+    assert len(calls) >= 1
+    assert calls[0]["role_id"] == "developer"
+    assert calls[0]["task_type"] == "code_review"
+    assert result is not None

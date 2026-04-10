@@ -19,6 +19,8 @@ from typing import Optional
 import requests
 import yaml
 
+from src.agents import _sdk_bridge
+
 logger = logging.getLogger(__name__)
 
 CONFIG_PATH = os.path.join(
@@ -144,7 +146,12 @@ class DeveloperAgent:
 
         for step in range(max_steps):
             user_prompt = "\n".join(history) + "\n\nStep:"
-            response = self.llm.generate(user_prompt, system_prompt)
+            response = _sdk_bridge.run_agent(
+                role_id="developer",
+                task=user_prompt,
+                context=system_prompt,
+                task_type="code_review",
+            )
             history.append(response)
 
             # Check for FinalAnswer
@@ -181,7 +188,12 @@ class DeveloperAgent:
             "\n".join(history)
             + "\n\nYou have reached the step limit. Output your FinalAnswer now (valid JSON):"
         )
-        response = self.llm.generate(forced_prompt, system_prompt)
+        response = _sdk_bridge.run_agent(
+            role_id="developer",
+            task=forced_prompt,
+            context=system_prompt,
+            task_type="code_review",
+        )
         if "FinalAnswer:" in response:
             idx = response.index("FinalAnswer:")
             return response[idx + len("FinalAnswer:"):].strip()
