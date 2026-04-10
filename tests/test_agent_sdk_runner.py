@@ -128,3 +128,111 @@ async def test_run_returns_error_for_unknown_role():
 
     assert result["status"] == "error"
     assert "unknown" in result["error"].lower() or "not found" in result["error"].lower()
+
+
+async def test_gate1_creates_goal_alignment_proposal(tmp_audit_db):
+    """Gate 1: SDK path creates a goal_alignment proposal before execution."""
+    from src.core.agent_sdk_runner import AgentSDKRunner
+    from src.core.proposal_store import get_proposal_store
+
+    runner = AgentSDKRunner()
+    fake_gateway = MagicMock()
+    fake_gateway.sdk_available = True
+
+    fake_role = {
+        "name": "Analyst",
+        "system_prompt": "analyze",
+        "sdk_tools": ["Read", "Grep"],
+    }
+
+    store = get_proposal_store()
+    created_proposals = []
+    original_create = store.create
+
+    def tracking_create(*args, **kwargs):
+        p = original_create(*args, **kwargs)
+        created_proposals.append(p)
+        return p
+
+    async def fake_sdk_query(agent_def, task, trace_id):
+        return "result text"
+
+    with patch.object(runner, "_llm_gateway", fake_gateway), \
+         patch.object(runner, "_load_role", return_value=fake_role), \
+         patch.object(store, "create", side_effect=tracking_create), \
+         patch.object(runner, "_run_sdk_query", side_effect=fake_sdk_query):
+
+        import threading
+        import time
+
+        def approve_when_ready():
+            for _ in range(100):
+                if created_proposals:
+                    time.sleep(0.05)
+                    store.approve(created_proposals[0].trace_id, decided_by="test")
+                    return
+                time.sleep(0.05)
+
+        threading.Thread(target=approve_when_ready, daemon=True).start()
+
+        result = await runner.run(
+            role_id="analyst",
+            task="look at the logs",
+            context={"task_type": "analysis"},
+        )
+
+    gate1_proposals = [p for p in created_proposals if p.action_type == "goal_alignment"]
+    assert len(gate1_proposals) == 1
+    assert result["status"] == "success"
+
+
+async def test_gate1_rejection_aborts_execution(tmp_audit_db):
+    """Gate 1 rejection prevents SDK execution from starting."""
+    from src.core.agent_sdk_runner import AgentSDKRunner
+    from src.core.proposal_store import get_proposal_store
+
+    runner = AgentSDKRunner()
+    fake_gateway = MagicMock()
+    fake_gateway.sdk_available = True
+
+    fake_role = {"name": "Analyst", "system_prompt": "analyze", "sdk_tools": ["Read"]}
+
+    store = get_proposal_store()
+    created_proposals = []
+    original_create = store.create
+
+    def tracking_create(*args, **kwargs):
+        p = original_create(*args, **kwargs)
+        created_proposals.append(p)
+        return p
+
+    sdk_query_called = MagicMock()
+
+    with patch.object(runner, "_llm_gateway", fake_gateway), \
+         patch.object(runner, "_load_role", return_value=fake_role), \
+         patch.object(store, "create", side_effect=tracking_create), \
+         patch.object(runner, "_run_sdk_query", side_effect=sdk_query_called):
+
+        import threading
+        import time
+
+        def reject_when_ready():
+            for _ in range(100):
+                if created_proposals:
+                    time.sleep(0.05)
+                    store.reject(created_proposals[0].trace_id, decided_by="test",
+                                 feedback="out of scope")
+                    return
+                time.sleep(0.05)
+
+        threading.Thread(target=reject_when_ready, daemon=True).start()
+
+        result = await runner.run(
+            role_id="analyst",
+            task="do something risky",
+            context={"task_type": "analysis"},
+        )
+
+    assert result["status"] == "rejected_at_goal"
+    assert "out of scope" in result.get("reason", "")
+    sdk_query_called.assert_not_called()

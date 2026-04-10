@@ -172,46 +172,102 @@ class AgentSDKRunner:
         task: str,
         context: Dict[str, Any],
     ) -> Dict[str, Any]:
-        """SDK execution path — stub in Task 7, Gate 1/2 wiring lands in Task 8."""
-        # Lazy import so the module loads without claude_agent_sdk installed
-        try:
-            from claude_agent_sdk import query, ClaudeAgentOptions  # type: ignore
-        except ImportError:
-            logger.warning("claude_agent_sdk import failed at runtime; falling back")
-            return await self._run_via_gateway(role_id, role_config, task, context)
+        """SDK execution path with Gate 1 (goal alignment) gating."""
+        from src.core.proposal_store import get_proposal_store, RiskClass
+        import asyncio
+        import uuid
+
+        trace_id = context.get("trace_id") or str(uuid.uuid4())
+        store = get_proposal_store()
 
         agent_def = self._build_agent_definition(
             role_id, role_config, task_type=context.get("task_type")
         )
 
-        trace_id = context.get("trace_id", "")
-        messages_collected: List[str] = []
-
-        try:
-            options = ClaudeAgentOptions(
-                system_prompt=agent_def["prompt"],
-                allowed_tools=agent_def["tools"],
-                permission_mode="acceptEdits",
-            )
-            async for message in query(prompt=task, options=options):
-                if hasattr(message, "result"):
-                    messages_collected.append(str(message.result))
-
-            return {
+        # ---------------- Gate 1: Goal Alignment ----------------
+        goal_proposal = store.create(
+            action_type="goal_alignment",
+            risk_class=RiskClass.STATEFUL,
+            payload={
                 "role_id": role_id,
                 "role_name": role_config.get("name", role_id),
-                "status": "success",
-                "result": "\n".join(messages_collected) if messages_collected else "",
+                "task": task,
+                "intended_approach": agent_def["prompt"][:500],
+                "tools_requested": agent_def["tools"],
+                "task_type": context.get("task_type"),
+            },
+            description=f"Goal alignment for role={role_id}",
+            proposed_by=context.get("actor", "agent_sdk_runner"),
+        )
+
+        gate1_timeout = float(context.get("gate1_timeout_seconds", 1800))
+        loop = asyncio.get_event_loop()
+        decision = await loop.run_in_executor(
+            None, store.await_decision, goal_proposal.trace_id, gate1_timeout
+        )
+
+        if decision is None:
+            return {
+                "role_id": role_id,
+                "status": "timeout_at_goal",
                 "trace_id": trace_id,
+                "proposal_id": goal_proposal.trace_id,
             }
+        if decision.status == "rejected":
+            return {
+                "role_id": role_id,
+                "status": "rejected_at_goal",
+                "reason": decision.feedback,
+                "trace_id": trace_id,
+                "proposal_id": goal_proposal.trace_id,
+            }
+
+        # ---------------- SDK execution ----------------
+        try:
+            result_text = await self._run_sdk_query(
+                agent_def=agent_def,
+                task=task,
+                trace_id=trace_id,
+            )
+        except ImportError:
+            logger.warning("claude_agent_sdk import failed at runtime; falling back")
+            return await self._run_via_gateway(role_id, role_config, task, context)
         except Exception as exc:
-            logger.exception("AgentSDKRunner SDK path failed for role=%s", role_id)
+            logger.exception("SDK query failed for role=%s", role_id)
             return {
                 "role_id": role_id,
                 "status": "error",
                 "error": str(exc),
                 "trace_id": trace_id,
             }
+
+        return {
+            "role_id": role_id,
+            "role_name": role_config.get("name", role_id),
+            "status": "success",
+            "result": result_text,
+            "trace_id": trace_id,
+        }
+
+    async def _run_sdk_query(
+        self,
+        agent_def: Dict[str, Any],
+        task: str,
+        trace_id: str,
+    ) -> str:
+        """Execute the SDK query loop. Extracted for testability."""
+        from claude_agent_sdk import query, ClaudeAgentOptions  # type: ignore
+
+        messages_collected: List[str] = []
+        options = ClaudeAgentOptions(
+            system_prompt=agent_def["prompt"],
+            allowed_tools=agent_def["tools"],
+            permission_mode="acceptEdits",
+        )
+        async for message in query(prompt=task, options=options):
+            if hasattr(message, "result"):
+                messages_collected.append(str(message.result))
+        return "\n".join(messages_collected)
 
 
 # Module-level singleton (lazy to avoid circular imports)
