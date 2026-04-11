@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import random
 import uuid
 import sqlite3
 from datetime import datetime, timezone
@@ -100,18 +101,132 @@ class EvolutionOrchestrator:
 
     async def evolve_prompt(self, role_id: str, task: str, context: dict) -> dict:
         """
-        Run prompt evolution for a specific role and task.
+        Run complete prompt evolution cycle for a role.
 
-        TODO: Implement full evolution cycle in next task.
-        For now, returns placeholder result.
+        1. Ensure seeded population exists for this role
+        2. For each generation: evaluate → select → reproduce → mutate
+        3. Track fitness progression and lineage
+        4. Return best candidate from final generation
         """
-        # Placeholder implementation
-        return {
+        from .prompt_evolver import PromptEvolver
+        from .prompt_evaluator import PromptEvaluator
+
+        logger.info(f"Starting prompt evolution for {role_id}: {self.max_generations} generations, pop {self.population_size}")
+
+        evolver = self._get_evolver()
+        evaluator = self._get_evaluator()
+
+        # Get current generation (for resuming evolution runs)
+        current_gen = self.get_current_generation()
+
+        # Track fitness progression
+        fitness_history = []
+
+        for generation in range(current_gen + 1, self.max_generations + 1):
+            logger.info(f"Generation {generation}/{self.max_generations}")
+
+            # Get current population
+            candidates = self.db.get_generation(generation - 1, "prompt")
+            if not candidates:
+                logger.error(f"No candidates found for generation {generation - 1}")
+                break
+
+            # Evaluate unevaluated candidates
+            for candidate in candidates:
+                if candidate.fitness == 0.0:  # Unevaluated
+                    eval_result = await evaluator.evaluate(candidate)
+                    candidate.fitness = eval_result["fitness"]
+                    candidate.metadata.update(eval_result.get("breakdown", {}))
+                    self.db.store(candidate)  # Update with fitness
+
+            # Track generation fitness
+            gen_stats = self.get_population_stats(generation - 1)
+            fitness_history.append(gen_stats)
+            logger.info(f"Generation {generation - 1} fitness: avg={gen_stats['fitness']['avg']:.3f}, max={gen_stats['fitness']['max']:.3f}")
+
+            # Stop if we've reached max generations
+            if generation >= self.max_generations:
+                break
+
+            # Select parents via tournament selection
+            # Use smaller tournament size if we have few candidates
+            available_candidates = len(candidates)
+            tournament_size = min(3, max(1, available_candidates))
+            num_parents = max(1, self.population_size // 2)
+
+            parents = self.db.tournament_select(
+                tournament_size=tournament_size,
+                num_winners=num_parents,
+                candidate_type="prompt",
+                generation=generation - 1
+            )
+
+            if len(parents) < 1:
+                logger.warning(f"No parents available for reproduction")
+                break
+
+            # Generate next generation
+            next_generation_candidates = []
+
+            for i in range(self.population_size):
+                if evolver.should_crossover() and len(parents) >= 2:
+                    # Crossover
+                    parent1, parent2 = random.sample(parents, 2)
+                    child = await evolver.crossover(parent1, parent2)
+                else:
+                    # Mutation
+                    parent = random.choice(parents)
+                    child = await evolver.mutate(parent)
+
+                child.generation = generation
+                next_generation_candidates.append(child)
+
+            # Store new generation
+            for candidate in next_generation_candidates:
+                self.db.store(candidate)
+
+            logger.info(f"Created generation {generation} with {len(next_generation_candidates)} candidates")
+
+        # Find and return best candidate from final generation
+        final_generation = self.get_current_generation()
+        final_candidates = self.db.get_generation(final_generation, "prompt")
+
+        if not final_candidates:
+            logger.error("No candidates in final generation")
+            return {"error": "Evolution failed - no final candidates"}
+
+        # Best candidate has highest fitness
+        best_candidate = max(final_candidates, key=lambda c: c.fitness)
+
+        # Calculate improvement from seed
+        seed_candidates = self.db.get_generation(0, "prompt")
+        seed_fitness = max(c.fitness for c in seed_candidates) if seed_candidates else 0.0
+        improvement = best_candidate.fitness - seed_fitness
+
+        result = {
             "best_candidate": {
-                "content": f"Evolved prompt for {role_id}",
-                "fitness": 0.85
+                "id": best_candidate.id,
+                "content": best_candidate.content,
+                "fitness": best_candidate.fitness,
+                "generation": best_candidate.generation,
+                "metadata": best_candidate.metadata
             },
-            "generation": 1,
-            "total_candidates": 5,
-            "improvement": 0.15
+            "generation": final_generation,
+            "total_candidates": len(final_candidates),
+            "improvement": improvement,
+            "fitness_history": fitness_history,
+            "role_id": role_id
         }
+
+        logger.info(f"Evolution complete: best fitness {best_candidate.fitness:.3f} (improvement: +{improvement:.3f})")
+        return result
+
+    def _get_evolver(self) -> 'PromptEvolver':
+        """Get PromptEvolver instance (factory method for testing)."""
+        from .prompt_evolver import PromptEvolver
+        return PromptEvolver()
+
+    def _get_evaluator(self) -> 'PromptEvaluator':
+        """Get PromptEvaluator instance (factory method for testing)."""
+        from .prompt_evaluator import PromptEvaluator
+        return PromptEvaluator()
