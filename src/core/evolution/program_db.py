@@ -12,6 +12,35 @@ from .candidate import Candidate
 logger = logging.getLogger(__name__)
 
 
+def get_evolution_db_path() -> str:
+    """
+    Resolve the evolution DB path to the active solution's .sage/ directory.
+
+    Path: <solution_dir>/.sage/evolution.db
+
+    Mirrors audit_logger._resolve_db_path() pattern for consistency.
+    Each solution gets its own evolution database for complete isolation.
+    """
+    project = os.environ.get("SAGE_PROJECT", "").strip().lower()
+    solutions_dir = os.environ.get(
+        "SAGE_SOLUTIONS_DIR",
+        os.path.join(os.path.dirname(__file__), "..", "..", "..", "solutions"),
+    )
+
+    if project:
+        sage_dir = os.path.join(os.path.abspath(solutions_dir), project, ".sage")
+        os.makedirs(sage_dir, exist_ok=True)
+        return os.path.join(sage_dir, "evolution.db")
+
+    # Framework fallback — no solution active
+    framework_sage = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))),
+        ".sage",
+    )
+    os.makedirs(framework_sage, exist_ok=True)
+    return os.path.join(framework_sage, "evolution.db")
+
+
 class ProgramDatabase:
     """
     SQLite-backed storage for evolutionary candidates.
@@ -20,8 +49,8 @@ class ProgramDatabase:
     Supports lineage tracking, fitness-based queries, and tournament selection.
     """
 
-    def __init__(self, db_path: str):
-        self.db_path = db_path
+    def __init__(self, db_path: Optional[str] = None):
+        self.db_path = db_path or get_evolution_db_path()
         self._init_schema()
 
     def _init_schema(self):
