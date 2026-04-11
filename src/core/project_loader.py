@@ -284,12 +284,28 @@ class ProjectConfig:
 
         The .sage/ folder should be gitignored in every solution repo.
         It is never committed — it is runtime state, not configuration.
+
+        SECURITY: Project name is validated to prevent path traversal attacks.
         """
+        from src.modules.path_validator import get_safe_sage_dir, safe_mkdir
+
         if self._name:
-            sage_dir = os.path.join(_SOLUTIONS_DIR, self._name, ".sage")
+            sage_dir, err = get_safe_sage_dir(self._name, _SOLUTIONS_DIR)
+            if err:
+                logger.error(f"Invalid project name '{self._name}': {err}")
+                raise ValueError(f"Invalid project name: {err}")
+
+            success, err = safe_mkdir(sage_dir)
+            if not success:
+                logger.error(f"Failed to create .sage directory: {err}")
+                raise OSError(f"Failed to create .sage directory: {err}")
         else:
             sage_dir = os.path.join(_PROJECT_ROOT, ".sage")
-        os.makedirs(sage_dir, exist_ok=True)
+            success, err = safe_mkdir(sage_dir)
+            if not success:
+                logger.error(f"Failed to create framework .sage directory: {err}")
+                raise OSError(f"Failed to create framework .sage directory: {err}")
+
         return sage_dir
 
     # ------------------------------------------------------------------

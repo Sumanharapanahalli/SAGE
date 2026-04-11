@@ -6,6 +6,7 @@ import uuid
 from datetime import datetime, timezone
 
 from src.core.db import get_connection
+from src.modules.path_validator import get_safe_sage_dir, safe_mkdir
 
 
 def _resolve_db_path() -> str:
@@ -22,6 +23,9 @@ def _resolve_db_path() -> str:
     The .sage/ directory mirrors the .claude/ convention: it is runtime state
     that lives with the solution, is auto-created on first use, and must be
     gitignored in every solution repository.
+
+    SECURITY: Project name is validated to prevent path traversal attacks.
+    Resolved path is verified to stay within solutions directory.
     """
     project = os.environ.get("SAGE_PROJECT", "").strip().lower()
     solutions_dir = os.environ.get(
@@ -29,16 +33,38 @@ def _resolve_db_path() -> str:
         os.path.join(os.path.dirname(__file__), "..", "..", "solutions"),
     )
     if project:
-        sage_dir = os.path.join(os.path.abspath(solutions_dir), project, ".sage")
-        os.makedirs(sage_dir, exist_ok=True)
-        return os.path.join(sage_dir, "audit_log.db")
+        # Safely construct and validate the .sage directory path
+        sage_dir, err = get_safe_sage_dir(project, solutions_dir)
+        if err:
+            logger_obj = logging.getLogger(__name__)
+            logger_obj.error(f"Invalid project name '{project}': {err}")
+            raise ValueError(f"Invalid project name: {err}")
+
+        # Safely create the directory
+        success, err = safe_mkdir(sage_dir)
+        if not success:
+            logger_obj = logging.getLogger(__name__)
+            logger_obj.error(f"Failed to create .sage directory: {err}")
+            raise OSError(f"Failed to create .sage directory: {err}")
+
+        db_path = os.path.join(sage_dir, "audit_log.db")
+        logging.getLogger(__name__).debug(f"Using project audit DB: {db_path}")
+        return db_path
+
     # Framework fallback — no solution active
     framework_sage = os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
         ".sage",
     )
-    os.makedirs(framework_sage, exist_ok=True)
-    return os.path.join(framework_sage, "audit_log.db")
+    success, err = safe_mkdir(framework_sage)
+    if not success:
+        logger_obj = logging.getLogger(__name__)
+        logger_obj.error(f"Failed to create framework .sage directory: {err}")
+        raise OSError(f"Failed to create framework .sage directory: {err}")
+
+    db_path = os.path.join(framework_sage, "audit_log.db")
+    logging.getLogger(__name__).debug(f"Using framework audit DB: {db_path}")
+    return db_path
 
 
 DB_PATH = _resolve_db_path()

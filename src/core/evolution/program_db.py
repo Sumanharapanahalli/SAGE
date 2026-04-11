@@ -7,6 +7,7 @@ import sqlite3
 from typing import Optional
 
 from src.core.db import get_connection
+from src.modules.path_validator import get_safe_sage_dir, safe_mkdir
 from .candidate import Candidate
 
 logger = logging.getLogger(__name__)
@@ -20,6 +21,9 @@ def get_evolution_db_path() -> str:
 
     Mirrors audit_logger._resolve_db_path() pattern for consistency.
     Each solution gets its own evolution database for complete isolation.
+
+    SECURITY: Project name is validated to prevent path traversal attacks.
+    Resolved path is verified to stay within solutions directory.
     """
     project = os.environ.get("SAGE_PROJECT", "").strip().lower()
     solutions_dir = os.environ.get(
@@ -28,17 +32,35 @@ def get_evolution_db_path() -> str:
     )
 
     if project:
-        sage_dir = os.path.join(os.path.abspath(solutions_dir), project, ".sage")
-        os.makedirs(sage_dir, exist_ok=True)
-        return os.path.join(sage_dir, "evolution.db")
+        # Safely construct and validate the .sage directory path
+        sage_dir, err = get_safe_sage_dir(project, solutions_dir)
+        if err:
+            logger.error(f"Invalid project name '{project}': {err}")
+            raise ValueError(f"Invalid project name: {err}")
+
+        # Safely create the directory
+        success, err = safe_mkdir(sage_dir)
+        if not success:
+            logger.error(f"Failed to create .sage directory: {err}")
+            raise OSError(f"Failed to create .sage directory: {err}")
+
+        db_path = os.path.join(sage_dir, "evolution.db")
+        logger.debug(f"Using project evolution DB: {db_path}")
+        return db_path
 
     # Framework fallback — no solution active
     framework_sage = os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))),
         ".sage",
     )
-    os.makedirs(framework_sage, exist_ok=True)
-    return os.path.join(framework_sage, "evolution.db")
+    success, err = safe_mkdir(framework_sage)
+    if not success:
+        logger.error(f"Failed to create framework .sage directory: {err}")
+        raise OSError(f"Failed to create framework .sage directory: {err}")
+
+    db_path = os.path.join(framework_sage, "evolution.db")
+    logger.debug(f"Using framework evolution DB: {db_path}")
+    return db_path
 
 
 class ProgramDatabase:
