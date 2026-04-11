@@ -64,8 +64,8 @@ def test_evolution_config_validation():
             pass
 
 
-def test_evolution_requires_prompt_candidate_type():
-    """Test that prompt evolution only works with prompt candidate type."""
+def test_prompt_evolution_works():
+    """Test that prompt evolution executes successfully."""
     import asyncio
 
     runner = get_agent_sdk_runner()
@@ -86,3 +86,102 @@ def test_evolution_requires_prompt_candidate_type():
         ))
 
         mock_orch.evolve_prompt.assert_called_once()
+
+
+def test_code_evolution_not_implemented():
+    """Test that code evolution raises NotImplementedError."""
+    import asyncio
+
+    runner = get_agent_sdk_runner()
+
+    with patch('src.core.evolution.orchestrator.EvolutionOrchestrator'), \
+         patch('src.core.evolution.program_db.get_evolution_db_path', return_value='/tmp/test.db'), \
+         patch('src.core.evolution.program_db.ProgramDatabase'):
+        try:
+            asyncio.run(runner.run_with_evolution(
+                role_id="test",
+                task="test task",
+                evolver_type="code",  # Should raise NotImplementedError
+                config={}
+            ))
+            assert False, "Should have raised NotImplementedError"
+        except NotImplementedError as e:
+            assert "code" in str(e)
+
+
+def test_build_evolution_not_implemented():
+    """Test that build evolution raises NotImplementedError."""
+    import asyncio
+
+    runner = get_agent_sdk_runner()
+
+    with patch('src.core.evolution.orchestrator.EvolutionOrchestrator'), \
+         patch('src.core.evolution.program_db.get_evolution_db_path', return_value='/tmp/test.db'), \
+         patch('src.core.evolution.program_db.ProgramDatabase'):
+        try:
+            asyncio.run(runner.run_with_evolution(
+                role_id="test",
+                task="test task",
+                evolver_type="build",  # Should raise NotImplementedError
+                config={}
+            ))
+            assert False, "Should have raised NotImplementedError"
+        except NotImplementedError as e:
+            assert "build" in str(e)
+
+
+def test_environment_variable_extraction():
+    """Test that SAGE_PROJECT environment variable is extracted correctly."""
+    import asyncio
+
+    runner = get_agent_sdk_runner()
+
+    # Test with SAGE_PROJECT set
+    with patch.dict(os.environ, {"SAGE_PROJECT": "test_solution"}):
+        with patch('src.core.evolution.orchestrator.EvolutionOrchestrator') as mock_orch_class, \
+             patch('src.core.evolution.program_db.get_evolution_db_path', return_value='/tmp/test.db'), \
+             patch('src.core.evolution.program_db.ProgramDatabase'):
+            mock_orch = AsyncMock()
+            mock_orch_class.return_value = mock_orch
+            mock_orch.evolve_prompt.return_value = {"result": "success"}
+
+            asyncio.run(runner.run_with_evolution(
+                role_id="test",
+                task="test",
+                evolver_type="prompt",
+                config={}
+            ))
+
+            # Verify orchestrator was created with correct solution name
+            mock_orch_class.assert_called_once()
+            args, kwargs = mock_orch_class.call_args
+            assert kwargs["solution_name"] == "test_solution"
+
+
+def test_environment_variable_default_fallback():
+    """Test that missing SAGE_PROJECT defaults to 'default'."""
+    import asyncio
+
+    runner = get_agent_sdk_runner()
+
+    # Test without SAGE_PROJECT set (remove if exists)
+    env_without_sage = {k: v for k, v in os.environ.items() if k != "SAGE_PROJECT"}
+    with patch.dict(os.environ, env_without_sage, clear=True):
+        with patch('src.core.evolution.orchestrator.EvolutionOrchestrator') as mock_orch_class, \
+             patch('src.core.evolution.program_db.get_evolution_db_path', return_value='/tmp/test.db'), \
+             patch('src.core.evolution.program_db.ProgramDatabase'):
+            mock_orch = AsyncMock()
+            mock_orch_class.return_value = mock_orch
+            mock_orch.evolve_prompt.return_value = {"result": "success"}
+
+            asyncio.run(runner.run_with_evolution(
+                role_id="test",
+                task="test",
+                evolver_type="prompt",
+                config={}
+            ))
+
+            # Verify orchestrator was created with default solution name
+            mock_orch_class.assert_called_once()
+            args, kwargs = mock_orch_class.call_args
+            assert kwargs["solution_name"] == "default"
