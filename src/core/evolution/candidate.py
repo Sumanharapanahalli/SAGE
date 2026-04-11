@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from datetime import datetime
 from typing import Literal
 from dataclasses import dataclass
@@ -41,15 +42,13 @@ class Candidate:
             "fitness": self.fitness,
             "parent_ids": ",".join(self.parent_ids),
             "generation": self.generation,
-            "metadata": str(self.metadata),  # JSON string
+            "metadata": json.dumps(self.metadata),
             "created_at": self.created_at.isoformat(),
         }
 
     @classmethod
     def from_dict(cls, data: dict) -> Candidate:
         """Restore from SQLite dict representation."""
-        import json
-
         return cls(
             id=data["id"],
             content=data["content"],
