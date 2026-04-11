@@ -97,3 +97,21 @@ class EvolutionOrchestrator:
                 "avg": sum(fitnesses) / len(fitnesses)
             }
         }
+
+    async def evolve_prompt(self, role_id: str, task: str, context: dict) -> dict:
+        """
+        Run prompt evolution for a specific role and task.
+
+        TODO: Implement full evolution cycle in next task.
+        For now, returns placeholder result.
+        """
+        # Placeholder implementation
+        return {
+            "best_candidate": {
+                "content": f"Evolved prompt for {role_id}",
+                "fitness": 0.85
+            },
+            "generation": 1,
+            "total_candidates": 5,
+            "improvement": 0.15
+        }

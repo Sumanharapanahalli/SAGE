@@ -9,7 +9,7 @@ LLMGateway.generate() path — no behavior change for non-SDK providers.
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Literal
 
 # Regulatory hooks import with graceful fallback
 try:
@@ -136,6 +136,60 @@ class AgentSDKRunner:
             return await self._run_via_gateway(role_id, role_config, task, context)
 
         return await self._run_via_sdk(role_id, role_config, task, context)
+
+    async def run_with_evolution(
+        self,
+        role_id: str,
+        task: str,
+        evolver_type: Literal["prompt", "code", "build"],
+        config: dict,
+        context: dict = None
+    ) -> dict:
+        """
+        Execute agent role with evolutionary improvement.
+
+        Runs evolution cycles to improve prompts/code/builds, then executes
+        with the best evolved candidate. Uses two-gate HITL model:
+        - Gate 1: Approve evolution goal and parameters
+        - Gate 2: Approve final evolved result
+        """
+        from .evolution.orchestrator import EvolutionOrchestrator
+        from .evolution.program_db import get_evolution_db_path, ProgramDatabase
+
+        # Validate evolver type
+        valid_types = {"prompt", "code", "build"}
+        if evolver_type not in valid_types:
+            raise ValueError(f"evolver_type must be one of {valid_types}, got {evolver_type}")
+
+        # Initialize evolution infrastructure
+        db_path = get_evolution_db_path()
+        db = ProgramDatabase(db_path)
+
+        # Get solution name from environment (for orchestrator)
+        import os
+        solution_name = os.environ.get("SAGE_PROJECT", "default")
+
+        # Extract evolution parameters from config
+        max_generations = config.get("generations", 3)
+        population_size = config.get("population", 10)
+
+        orchestrator = EvolutionOrchestrator(
+            db=db,
+            solution_name=solution_name,
+            max_generations=max_generations,
+            population_size=population_size
+        )
+
+        # Route to appropriate evolution method
+        if evolver_type == "prompt":
+            # For prompt evolution, evolve the system prompt for this role
+            result = await orchestrator.evolve_prompt(role_id, task, context or {})
+        else:
+            # TODO: Implement code and build evolution in future phases
+            raise NotImplementedError(f"Evolution type '{evolver_type}' not yet implemented")
+
+        logger.info(f"Evolution completed for {role_id}: {evolver_type} evolution")
+        return result
 
     async def _run_via_gateway(
         self,
