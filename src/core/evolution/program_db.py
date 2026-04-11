@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
+import random
 import sqlite3
 from typing import Optional
 
@@ -106,6 +107,59 @@ class ProgramDatabase:
             rows = conn.execute(
                 "SELECT * FROM candidates WHERE candidate_type = ? ORDER BY fitness DESC LIMIT ?",
                 (candidate_type, limit)
+            ).fetchall()
+
+            return [Candidate.from_dict(dict(row)) for row in rows]
+        finally:
+            conn.close()
+
+    def tournament_select(
+        self,
+        tournament_size: int,
+        num_winners: int,
+        candidate_type: str,
+        generation: Optional[int] = None
+    ) -> list[Candidate]:
+        """
+        Tournament selection for parent sampling.
+
+        Biases toward high fitness while preserving diversity.
+        Each tournament picks random candidates and selects the fittest.
+        """
+        # Get candidate pool
+        if generation is not None:
+            pool = self.get_generation(generation, candidate_type)
+        else:
+            pool = self.get_all_by_type(candidate_type)
+
+        if len(pool) < tournament_size:
+            logger.warning(f"Pool size {len(pool)} < tournament size {tournament_size}")
+            return pool[:num_winners]
+
+        winners = []
+        for _ in range(num_winners):
+            # Sample tournament contestants
+            contestants = random.sample(pool, min(tournament_size, len(pool)))
+
+            # Select winner (highest fitness)
+            winner = max(contestants, key=lambda c: c.fitness)
+            winners.append(winner)
+
+            # Remove winner from pool to ensure diversity
+            pool = [c for c in pool if c.id != winner.id]
+
+            if len(pool) < tournament_size:
+                break
+
+        return winners
+
+    def get_all_by_type(self, candidate_type: str) -> list[Candidate]:
+        """Get all candidates of a given type (for tournament selection pool)."""
+        conn = get_connection(self.db_path)
+        try:
+            rows = conn.execute(
+                "SELECT * FROM candidates WHERE candidate_type = ? ORDER BY fitness DESC",
+                (candidate_type,)
             ).fetchall()
 
             return [Candidate.from_dict(dict(row)) for row in rows]
