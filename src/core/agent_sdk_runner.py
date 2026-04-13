@@ -184,9 +184,18 @@ class AgentSDKRunner:
         if evolver_type == "prompt":
             # For prompt evolution, evolve the system prompt for this role
             result = await orchestrator.evolve_prompt(role_id, task, context or {})
+        elif evolver_type == "code":
+            # For code evolution, evolve source code
+            code_file = config.get("code_file", "main.py")
+            code_content = (context or {}).get("code", "# Empty code file\n")
+            result = await orchestrator.evolve_code(code_file, code_content, context or {})
+        elif evolver_type == "build":
+            # For build evolution, evolve build plans
+            build_file = config.get("build_file", "build.yaml")
+            build_plan = (context or {}).get("build_plan", {"steps": []})
+            result = await orchestrator.evolve_build_plan(build_file, build_plan, context or {})
         else:
-            # TODO: Implement code and build evolution in future phases
-            raise NotImplementedError(f"Evolution type '{evolver_type}' not yet implemented")
+            raise ValueError(f"Unknown evolver_type: {evolver_type}")
 
         logger.info(f"Evolution completed for {role_id}: {evolver_type} evolution")
         return result
@@ -290,7 +299,6 @@ class AgentSDKRunner:
                 agent_def=agent_def,
                 task=task,
                 trace_id=trace_id,
-                context=context,
             )
         except ImportError:
             logger.warning("claude_agent_sdk import failed at runtime; falling back")

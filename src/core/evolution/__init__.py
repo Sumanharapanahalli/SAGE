@@ -11,6 +11,10 @@ from .evaluators import Evaluator, EnsembleEvaluator
 from .orchestrator import EvolutionOrchestrator
 from .prompt_evolver import PromptEvolver
 from .prompt_evaluator import PromptEvaluator
+from .code_evolver import CodeEvolver
+from .code_evaluator import CodeEvaluator
+from .build_evolver import BuildEvolver
+from .build_evaluator import BuildEvaluator
 
 __all__ = [
     "Candidate",
@@ -20,5 +24,9 @@ __all__ = [
     "EnsembleEvaluator",
     "EvolutionOrchestrator",
     "PromptEvolver",
-    "PromptEvaluator"
+    "PromptEvaluator",
+    "CodeEvolver",
+    "CodeEvaluator",
+    "BuildEvolver",
+    "BuildEvaluator"
 ]

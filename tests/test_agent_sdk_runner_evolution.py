@@ -88,46 +88,55 @@ def test_prompt_evolution_works():
         mock_orch.evolve_prompt.assert_called_once()
 
 
-def test_code_evolution_not_implemented():
-    """Test that code evolution raises NotImplementedError."""
+def test_code_evolution_implemented():
+    """Test that code evolution works correctly."""
     import asyncio
 
     runner = get_agent_sdk_runner()
 
-    with patch('src.core.evolution.orchestrator.EvolutionOrchestrator'), \
+    with patch('src.core.evolution.orchestrator.EvolutionOrchestrator') as mock_orch_class, \
          patch('src.core.evolution.program_db.get_evolution_db_path', return_value='/tmp/test.db'), \
          patch('src.core.evolution.program_db.ProgramDatabase'):
-        try:
-            asyncio.run(runner.run_with_evolution(
-                role_id="test",
-                task="test task",
-                evolver_type="code",  # Should raise NotImplementedError
-                config={}
-            ))
-            assert False, "Should have raised NotImplementedError"
-        except NotImplementedError as e:
-            assert "code" in str(e)
+        mock_orch = AsyncMock()
+        mock_orch_class.return_value = mock_orch
+        mock_orch.evolve_code.return_value = {"result": "success", "evolver_type": "code"}
+
+        result = asyncio.run(runner.run_with_evolution(
+            role_id="test",
+            task="test task",
+            evolver_type="code",
+            config={"code_file": "test.py"},
+            context={"code": "def test(): pass"}
+        ))
+
+        assert "result" in result
+        mock_orch.evolve_code.assert_called_once_with("test.py", "def test(): pass", {"code": "def test(): pass"})
 
 
-def test_build_evolution_not_implemented():
-    """Test that build evolution raises NotImplementedError."""
+def test_build_evolution_implemented():
+    """Test that build evolution works correctly."""
     import asyncio
 
     runner = get_agent_sdk_runner()
 
-    with patch('src.core.evolution.orchestrator.EvolutionOrchestrator'), \
+    with patch('src.core.evolution.orchestrator.EvolutionOrchestrator') as mock_orch_class, \
          patch('src.core.evolution.program_db.get_evolution_db_path', return_value='/tmp/test.db'), \
          patch('src.core.evolution.program_db.ProgramDatabase'):
-        try:
-            asyncio.run(runner.run_with_evolution(
-                role_id="test",
-                task="test task",
-                evolver_type="build",  # Should raise NotImplementedError
-                config={}
-            ))
-            assert False, "Should have raised NotImplementedError"
-        except NotImplementedError as e:
-            assert "build" in str(e)
+        mock_orch = AsyncMock()
+        mock_orch_class.return_value = mock_orch
+        mock_orch.evolve_build_plan.return_value = {"result": "success", "evolver_type": "build"}
+
+        build_plan = {"steps": [{"name": "test", "command": "echo test"}]}
+        result = asyncio.run(runner.run_with_evolution(
+            role_id="test",
+            task="test task",
+            evolver_type="build",
+            config={"build_file": "build.yaml"},
+            context={"build_plan": build_plan}
+        ))
+
+        assert "result" in result
+        mock_orch.evolve_build_plan.assert_called_once_with("build.yaml", build_plan, {"build_plan": build_plan})
 
 
 def test_environment_variable_extraction():
