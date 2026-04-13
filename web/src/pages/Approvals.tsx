@@ -9,6 +9,7 @@ import {
 } from '../api/client'
 import type { Proposal } from '../api/client'
 import { Inbox, CheckSquare, X, AlertTriangle, Clock, Check, RefreshCw } from 'lucide-react'
+import EvolutionProposalCard from '../components/evolution/EvolutionProposalCard'
 
 // ---------------------------------------------------------------------------
 // Risk class config
@@ -50,6 +51,10 @@ function formatActionType(actionType: string): string {
   return actionType
     .replace(/_/g, ' ')
     .replace(/\b\w/g, c => c.toUpperCase())
+}
+
+function isEvolutionProposal(proposal: Proposal): boolean {
+  return proposal.action_type === 'evolution_candidate'
 }
 
 function sortProposals(proposals: Proposal[]): Proposal[] {
@@ -251,6 +256,89 @@ function DetailPanel({
   }
 
   const disabled = acting || loading
+
+  // Handle evolution proposals with specialized UI
+  if (isEvolutionProposal(proposal)) {
+    return (
+      <div
+        className="flex-1 flex flex-col overflow-hidden"
+        style={{ backgroundColor: '#18181b' }}
+      >
+        <EvolutionProposalCard proposal={proposal} />
+        <div
+          className="px-6 py-4 shrink-0 space-y-3"
+          style={{ borderTop: '1px solid #27272a', backgroundColor: '#09090b' }}
+        >
+          {/* Approving as */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs shrink-0" style={{ color: '#52525b' }}>Approving as</span>
+            <input
+              type="text"
+              value={approver}
+              onChange={e => setApprover(e.target.value)}
+              placeholder="your name"
+              className="flex-1 text-xs px-2 py-1 bg-transparent border-b outline-none"
+              style={{ borderColor: '#3f3f46', color: '#f4f4f5' }}
+            />
+          </div>
+
+          {/* Evolution-specific feedback */}
+          <select
+            value={feedback}
+            onChange={e => setFeedback(e.target.value)}
+            className="w-full text-xs px-3 py-2 outline-none"
+            style={{
+              backgroundColor: '#18181b',
+              border: '1px solid #3f3f46',
+              color: '#f4f4f5',
+            }}
+          >
+            <option value="">Select rejection reason...</option>
+            <option value="poor_fitness">Poor Fitness Score</option>
+            <option value="risky_mutation">Risky Mutation</option>
+            <option value="premature_convergence">Premature Convergence</option>
+            <option value="regulatory_concern">Regulatory Concern</option>
+          </select>
+
+          {/* Buttons */}
+          <div className="flex gap-2">
+            <button
+              onClick={handleApprove}
+              disabled={disabled}
+              className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold py-2 transition-colors"
+              style={{
+                backgroundColor: disabled ? '#166534' : '#16a34a',
+                color: '#fff',
+                opacity: disabled ? 0.6 : 1,
+                cursor: disabled ? 'not-allowed' : 'pointer',
+              }}
+              onMouseEnter={e => { if (!disabled) (e.currentTarget as HTMLElement).style.backgroundColor = '#15803d' }}
+              onMouseLeave={e => { if (!disabled) (e.currentTarget as HTMLElement).style.backgroundColor = '#16a34a' }}
+            >
+              <Check size={13} />
+              Approve
+            </button>
+            <button
+              onClick={handleReject}
+              disabled={disabled || !feedback}
+              className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold py-2 transition-colors"
+              style={{
+                backgroundColor: disabled || !feedback ? '#7f1d1d' : '#dc2626',
+                color: '#fff',
+                opacity: disabled || !feedback ? 0.6 : 1,
+                cursor: disabled || !feedback ? 'not-allowed' : 'pointer',
+              }}
+              onMouseEnter={e => { if (!disabled && feedback) (e.currentTarget as HTMLElement).style.backgroundColor = '#b91c1c' }}
+              onMouseLeave={e => { if (!disabled && feedback) (e.currentTarget as HTMLElement).style.backgroundColor = '#dc2626' }}
+            >
+              <X size={13} />
+              Reject
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div

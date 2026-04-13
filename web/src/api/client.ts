@@ -963,3 +963,54 @@ export interface RequirementsGatheringResponse {
 export const gatherRequirements = (req: RequirementsGatheringRequest) =>
   post<RequirementsGatheringResponse>('/product-owner/requirements', req)
 
+// Evolution types
+export interface EvolutionCandidate {
+  candidate_id: string
+  generation: number
+  fitness_score: number
+  mutation_type: string
+  parent_ids: string[]
+  evaluator_scores: Record<string, number>
+  changes: {
+    added: string[]
+    modified: string[]
+    removed: string[]
+  }
+}
+
+export interface EvolutionExperiment {
+  experiment_id: string
+  status: 'running' | 'paused' | 'complete' | 'failed'
+  current_generation: number
+  max_generations: number
+  population_size: number
+  best_fitness: number
+  created_at: string
+  parameters: {
+    mutation_rate: number
+    crossover_rate: number
+    evaluator_weights: Record<string, number>
+  }
+}
+
+// Evolution API functions
+export const fetchEvolutionExperiments = () =>
+  get<{ experiments: EvolutionExperiment[] }>('/evolution/experiments')
+
+export const startEvolutionExperiment = (config: {
+  solution_name: string
+  target_type: 'prompt' | 'code' | 'build'
+  population_size: number
+  max_generations: number
+  mutation_rate: number
+  crossover_rate: number
+}) => post<{ experiment_id: string }>('/evolution/experiments', config)
+
+export const getEvolutionStatus = (experimentId: string) =>
+  get<{
+    status: string
+    current_generation: number
+    best_fitness: number
+    population_health: string
+  }>(`/evolution/experiments/${experimentId}/status`)
+
