@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import {
   Play, Pause, Square, Target, Clock, TrendingUp, Beaker,
@@ -138,9 +138,11 @@ export default function Evolution() {
   const selectedExperiment = experiments.find(exp => exp.experiment_id === selectedExperimentId)
 
   // Auto-select first experiment if none selected
-  if (!selectedExperimentId && experiments.length > 0) {
-    setSelectedExperimentId(experiments[0].experiment_id)
-  }
+  useEffect(() => {
+    if (!selectedExperimentId && experiments.length > 0) {
+      setSelectedExperimentId(experiments[0].experiment_id)
+    }
+  }, [experiments, selectedExperimentId])
 
   return (
     <div className="p-6 space-y-6">

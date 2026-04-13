@@ -32,6 +32,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/approvals':      'Approvals',
   '/knowledge':         'Knowledge',
   '/product-backlog':   'Product Backlog',
+  '/evolution':         'Evolution',
   '/guide':             'User Guide',
   '/settings/organization': 'Organization',
 }
@@ -50,6 +51,7 @@ const ROUTE_TO_AREA: Record<string, string> = {
   '/improvements':   'Intelligence',
   '/workflows':      'Intelligence',
   '/goals':          'Intelligence',
+  '/evolution':      'Intelligence',
   '/audit':          'Knowledge',
   '/costs':          'Knowledge',
   '/activity':       'Knowledge',
