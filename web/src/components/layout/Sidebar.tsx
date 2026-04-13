@@ -6,7 +6,7 @@ import {
   Terminal, Wand2, Plug, ListOrdered, ShieldCheck, DollarSign,
   GitBranch, Target, Inbox, Network, Building2,
   CheckSquare, Zap, Database, BookOpen, Shield,
-  ChevronDown, ChevronsUpDown, LayoutGrid, Users, type LucideIcon,
+  ChevronDown, ChevronsUpDown, LayoutGrid, Users, TrendingUp, type LucideIcon,
 } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { fetchProjects, fetchHealth, switchProject } from '../../api/client'
@@ -56,6 +56,7 @@ const NAV_AREAS: NavArea[] = [
       { to: '/improvements', icon: Lightbulb, label: 'Improvements', moduleId: 'improvements', tooltip: 'Feature request queue and AI-generated implementation plans' },
       { to: '/workflows',    icon: GitBranch, label: 'Workflows',    moduleId: 'workflows',    tooltip: 'LangGraph workflow definitions and execution history' },
       { to: '/goals',        icon: Target,    label: 'Goals',        moduleId: 'improvements', tooltip: 'High-level objectives tracked against in-progress work' },
+      { to: '/evolution',    icon: TrendingUp, label: 'Evolution',   moduleId: 'evolution',    tooltip: 'Genetic algorithm evolution experiments and real-time monitoring' },
     ],
   },
   {
@@ -93,7 +94,7 @@ const NAV_AREAS: NavArea[] = [
 // Icon lookup for SolutionRail — subset of PRESET_ICONS available in this file
 const RAIL_ICONS: Record<string, any> = {
   Cpu, Bot, Activity, Search, GitMerge, Lightbulb, Target,
-  Database, Shield, Network, Zap,
+  Database, Shield, Network, Zap, TrendingUp,
 }
 
 function SolutionRail({ onOpenWizard }: { onOpenWizard: () => void }) {
