@@ -87,7 +87,7 @@ def list_events(params: dict) -> dict:
         rows = conn.execute(
             f"""SELECT * FROM compliance_audit_log
                 {where_sql}
-                ORDER BY timestamp DESC, id DESC
+                ORDER BY timestamp DESC, rowid DESC
                 LIMIT ? OFFSET ?""",
             args + [limit, offset],
         ).fetchall()
@@ -110,7 +110,7 @@ def get_by_trace(params: dict) -> dict:
         rows = conn.execute(
             """SELECT * FROM compliance_audit_log
                WHERE trace_id = ? OR json_extract(metadata, '$.trace_id') = ?
-               ORDER BY timestamp ASC, id ASC""",
+               ORDER BY timestamp ASC, rowid ASC""",
             (trace_id, trace_id),
         ).fetchall()
     finally:
