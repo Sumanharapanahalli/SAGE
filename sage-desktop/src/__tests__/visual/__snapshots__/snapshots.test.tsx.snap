@@ -1,0 +1,52 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`visual regression (DOM snapshots) > Agents page empty state 1`] = `
+<p
+  class="text-sm text-slate-500"
+>
+  Loading agents…
+</p>
+`;
+
+exports[`visual regression (DOM snapshots) > Approvals page empty state 1`] = `
+<p
+  class="text-sm text-slate-500"
+>
+  Loading approvals…
+</p>
+`;
+
+exports[`visual regression (DOM snapshots) > Audit page empty state 1`] = `
+<div
+  class="flex flex-col gap-4"
+>
+  <div
+    class="flex items-center gap-2"
+  >
+    <label
+      class="text-xs font-medium uppercase text-slate-500"
+    >
+      Action type
+    </label>
+    <input
+      class="w-60 rounded border border-sage-100 bg-white px-2 py-1 text-sm"
+      placeholder="e.g. yaml_edit"
+      type="text"
+      value=""
+    />
+  </div>
+  <p
+    class="text-sm text-slate-500"
+  >
+    Loading events…
+  </p>
+</div>
+`;
+
+exports[`visual regression (DOM snapshots) > Status page empty state 1`] = `
+<p
+  class="text-sm text-slate-500"
+>
+  Loading status…
+</p>
+`;

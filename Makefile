@@ -205,6 +205,18 @@ desktop-nsis: desktop-bundle
 desktop-offline-cache:
 	bash sage-desktop/scripts/build-offline-cache.sh
 
+# Rust mutation testing — requires `cargo install cargo-mutants` on $PATH.
+# Reports surviving mutants; exits non-zero if any escape the test suite.
+desktop-mutate-rs:
+	cd sage-desktop/src-tauri && cargo mutants \
+	    --no-default-features \
+	    --timeout 120 \
+	    --file src/errors.rs \
+	    --file src/rpc.rs \
+	    --file src/sidecar.rs \
+	    --file src/update_status.rs \
+	    -- --lib --no-default-features
+
 # Python sidecar tests (~82 tests; no Rust, no Node)
 test-desktop-sidecar:
 	cd sage-desktop/sidecar && $(abspath $(PYTEST)) tests/ -v

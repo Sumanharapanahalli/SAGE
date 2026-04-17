@@ -1,0 +1,84 @@
+name: SAGE Desktop Mutation + Visual CI
+
+# Runs slower quality gates on a separate schedule so they don't block
+# the fast-path PR CI. Required infra:
+#   - cargo-mutants for Rust sidecar
+#   - Vitest obj snapshots for frontend (no extra deps)
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'   # Weekly, Monday 06:00 UTC
+  pull_request:
+    paths:
+      - 'sage-desktop/src-tauri/**'
+      - 'sage-desktop/src/**'
+      - '.github/workflows/sage-desktop-mutation.yml'
+
+jobs:
+  rust-mutation:
+    name: Rust sidecar mutation testing
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: sage-desktop/src-tauri -> target
+
+      - name: Install cargo-mutants
+        run: cargo install cargo-mutants --locked
+
+      - name: Run cargo-mutants (feature-agnostic modules)
+        working-directory: sage-desktop/src-tauri
+        run: |
+          # Skip desktop-gated modules (commands/*, lib.rs app builder)
+          # because they need WebView2. Focus on errors, rpc, sidecar,
+          # update_status — the pure-Rust core.
+          cargo mutants \
+              --no-default-features \
+              --timeout 120 \
+              --file src/errors.rs \
+              --file src/rpc.rs \
+              --file src/sidecar.rs \
+              --file src/update_status.rs \
+              -- --lib --no-default-features \
+              || echo "::warning::mutations survived — see mutants.out/"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cargo-mutants-report
+          path: sage-desktop/src-tauri/mutants.out/
+          if-no-files-found: warn
+
+  visual-regression:
+    name: Frontend DOM snapshots
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: sage-desktop
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: sage-desktop/package-lock.json
+
+      - run: npm ci
+
+      - name: Run visual snapshot tests
+        run: npx vitest run src/__tests__/visual/
+
+      - name: Upload diff on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-diffs
+          path: sage-desktop/src/__tests__/visual/__snapshots__/
+          if-no-files-found: ignore
