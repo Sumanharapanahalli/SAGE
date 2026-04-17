@@ -323,6 +323,24 @@ export interface ApproveBuildParams {
   feedback?: string;
 }
 
+// ── YAML authoring ────────────────────────────────────────────────────────
+
+export type YamlFileName = "project" | "prompts" | "tasks";
+
+export interface YamlReadResult {
+  file: YamlFileName;
+  solution: string;
+  content: string;
+  path: string;
+}
+
+export interface YamlWriteResult {
+  file: YamlFileName;
+  solution: string;
+  path: string;
+  bytes: number;
+}
+
 // ── Onboarding wizard ─────────────────────────────────────────────────────
 
 export interface OnboardingParams {

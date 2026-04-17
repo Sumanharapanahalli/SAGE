@@ -48,6 +48,7 @@ from handlers import (
     queue,
     solutions,
     status,
+    yaml_edit,
 )
 
 
@@ -88,6 +89,8 @@ def _build_dispatcher() -> Dispatcher:
     d.register("builds.list", builds.list_runs)
     d.register("builds.get", builds.get)
     d.register("builds.approve", builds.approve_stage)
+    d.register("yaml.read", yaml_edit.read)
+    d.register("yaml.write", yaml_edit.write)
     return d
 
 
@@ -99,6 +102,9 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
     """
     handshake._SOLUTION_NAME = solution_name
     handshake._SOLUTION_PATH = solution_path
+
+    yaml_edit._solution_name = solution_name or None
+    yaml_edit._solution_path = solution_path
 
     solutions._current_name = solution_name
     solutions._current_path = solution_path

@@ -101,6 +101,8 @@ mod desktop_app {
                 crate::commands::builds::list_builds,
                 crate::commands::builds::get_build,
                 crate::commands::builds::approve_build_stage,
+                crate::commands::yaml_edit::read_yaml,
+                crate::commands::yaml_edit::write_yaml,
             ])
             .run(tauri::generate_context!())
             .expect("error while running sage-desktop app");

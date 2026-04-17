@@ -36,6 +36,9 @@ import type {
   OnboardingParams,
   OnboardingResult,
   StatusResponse,
+  YamlFileName,
+  YamlReadResult,
+  YamlWriteResult,
 } from "./types";
 
 /**
@@ -194,6 +197,14 @@ export const getBuild = (run_id: string) =>
 export const approveBuildStage = (params: ApproveBuildParams) =>
   call<BuildRunDetail>("approve_build_stage", params);
 
+// ── YAML authoring ────────────────────────────────────────────────────────
+
+export const readYaml = (file: YamlFileName) =>
+  call<YamlReadResult>("read_yaml", { file });
+
+export const writeYaml = (file: YamlFileName, content: string) =>
+  call<YamlWriteResult>("write_yaml", { file, content });
+
 // ── Queue ─────────────────────────────────────────────────────────────────
 
 export const getQueueStatus = () => call<QueueStatus>("get_queue_status");
@@ -232,4 +243,7 @@ export type {
   OnboardingParams,
   OnboardingResult,
   StatusResponse,
+  YamlFileName,
+  YamlReadResult,
+  YamlWriteResult,
 };
