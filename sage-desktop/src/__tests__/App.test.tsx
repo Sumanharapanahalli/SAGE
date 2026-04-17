@@ -38,6 +38,13 @@ vi.mock("@/api/client", () => ({
     parallel_enabled: false, max_workers: 0,
   }),
   listQueueTasks: vi.fn().mockResolvedValue([]),
+  listSolutions: vi.fn().mockResolvedValue([]),
+  getCurrentSolution: vi.fn().mockResolvedValue(null),
+  switchSolution: vi.fn(),
+}));
+
+vi.mock("@tauri-apps/api/event", () => ({
+  listen: vi.fn().mockResolvedValue(() => {}),
 }));
 
 import { App } from "@/App";

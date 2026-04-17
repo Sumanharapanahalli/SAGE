@@ -1,14 +1,24 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+vi.mock("@/api/client", () => ({
+  getCurrentSolution: vi.fn().mockResolvedValue(null),
+}));
 
 import { Sidebar } from "@/components/layout/Sidebar";
 
 function renderAt(path: string) {
+  const qc = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
   return render(
-    <MemoryRouter initialEntries={[path]}>
-      <Sidebar />
-    </MemoryRouter>,
+    <QueryClientProvider client={qc}>
+      <MemoryRouter initialEntries={[path]}>
+        <Sidebar />
+      </MemoryRouter>
+    </QueryClientProvider>,
   );
 }
 
@@ -25,5 +35,10 @@ describe("Sidebar", () => {
     renderAt("/audit");
     const link = screen.getByRole("link", { name: /audit/i });
     expect(link).toHaveAttribute("aria-current", "page");
+  });
+
+  it("renders a solution footer", () => {
+    renderAt("/approvals");
+    expect(screen.getByTestId("sidebar-solution")).toHaveTextContent(/solution/i);
   });
 });
