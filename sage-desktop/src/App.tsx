@@ -10,6 +10,7 @@ import { Audit } from "@/pages/Audit";
 import Backlog from "@/pages/Backlog";
 import Builds from "@/pages/Builds";
 import Constitution from "@/pages/Constitution";
+import Knowledge from "@/pages/Knowledge";
 import Onboarding from "@/pages/Onboarding";
 import Settings from "@/pages/Settings";
 import { Status } from "@/pages/Status";
@@ -46,6 +47,7 @@ export function App() {
             <Route path="onboarding" element={<Onboarding />} />
             <Route path="yaml" element={<YamlEdit />} />
             <Route path="constitution" element={<Constitution />} />
+            <Route path="knowledge" element={<Knowledge />} />
             <Route path="settings" element={<Settings />} />
           </Route>
         </Routes>

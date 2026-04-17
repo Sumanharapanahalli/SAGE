@@ -10,6 +10,7 @@ const TITLE_MAP: Record<string, string> = {
   "/onboarding": "New solution",
   "/yaml": "Edit YAML",
   "/constitution": "Constitution",
+  "/knowledge": "Knowledge",
   "/settings": "Settings",
 };
 

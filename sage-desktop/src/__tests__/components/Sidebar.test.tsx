@@ -48,4 +48,11 @@ describe("Sidebar", () => {
       screen.getByRole("link", { name: /constitution/i }),
     ).toHaveAttribute("href", "/constitution");
   });
+
+  it("includes the Knowledge entry (Phase 5c)", () => {
+    renderAt("/approvals");
+    expect(
+      screen.getByRole("link", { name: /knowledge/i }),
+    ).toHaveAttribute("href", "/knowledge");
+  });
 });
