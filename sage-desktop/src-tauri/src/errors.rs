@@ -23,6 +23,7 @@ pub const RPC_PROPOSAL_NOT_FOUND: i32 = -32003;
 pub const RPC_SOLUTION_UNAVAILABLE: i32 = -32004;
 pub const RPC_ALREADY_DECIDED: i32 = -32005;
 pub const RPC_SAGE_IMPORT_ERROR: i32 = -32010;
+pub const RPC_FEATURE_REQUEST_NOT_FOUND: i32 = -32020;
 
 #[derive(Debug, Error, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(tag = "kind", content = "detail")]
@@ -56,6 +57,9 @@ pub enum DesktopError {
 
     #[error("sidecar crashed or unreachable: {message}")]
     SidecarDown { message: String },
+
+    #[error("feature request not found: {feature_id}")]
+    FeatureRequestNotFound { feature_id: String },
 
     #[error("sidecar error ({code}): {message}")]
     Other { code: i32, message: String },
@@ -106,6 +110,9 @@ impl DesktopError {
                     .to_string();
                 DesktopError::MethodNotFound { method }
             }
+            RPC_FEATURE_REQUEST_NOT_FOUND => DesktopError::FeatureRequestNotFound {
+                feature_id: get_str("feature_id"),
+            },
             _ => DesktopError::Other { code, message },
         }
     }
@@ -208,6 +215,21 @@ mod tests {
             status: "rejected".into(),
         };
         assert_eq!(err.to_string(), "proposal already rejected: t1");
+    }
+
+    #[test]
+    fn feature_request_not_found_extracts_feature_id() {
+        let err = DesktopError::from_rpc(
+            RPC_FEATURE_REQUEST_NOT_FOUND,
+            "feature request not found: abc".into(),
+            Some(json!({"feature_id": "abc"})),
+        );
+        assert_eq!(
+            err,
+            DesktopError::FeatureRequestNotFound {
+                feature_id: "abc".into()
+            }
+        );
     }
 
     #[test]

@@ -85,6 +85,13 @@ mod desktop_app {
                 crate::commands::audit::audit_stats,
                 crate::commands::agents::list_agents,
                 crate::commands::agents::get_agent,
+                crate::commands::llm::get_llm_info,
+                crate::commands::llm::switch_llm,
+                crate::commands::backlog::list_feature_requests,
+                crate::commands::backlog::submit_feature_request,
+                crate::commands::backlog::update_feature_request,
+                crate::commands::queue::get_queue_status,
+                crate::commands::queue::list_queue_tasks,
             ])
             .run(tauri::generate_context!())
             .expect("error while running sage-desktop app");

@@ -10,3 +10,6 @@ pub mod approvals;
 pub mod audit;
 pub mod agents;
 pub mod status;
+pub mod llm;
+pub mod backlog;
+pub mod queue;
