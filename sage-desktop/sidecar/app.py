@@ -44,6 +44,7 @@ from handlers import (
     builds,
     constitution,
     handshake,
+    knowledge,
     llm,
     onboarding,
     queue,
@@ -96,6 +97,11 @@ def _build_dispatcher() -> Dispatcher:
     d.register("constitution.update", constitution.update)
     d.register("constitution.preamble", constitution.preamble)
     d.register("constitution.check_action", constitution.check_action)
+    d.register("knowledge.list", knowledge.list_entries)
+    d.register("knowledge.search", knowledge.search)
+    d.register("knowledge.add", knowledge.add)
+    d.register("knowledge.delete", knowledge.delete)
+    d.register("knowledge.stats", knowledge.stats)
     return d
 
 
@@ -206,6 +212,14 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
         )
     except Exception as e:  # noqa: BLE001
         logging.warning("Constitution unavailable: %s", e)
+
+    try:
+        from src.memory.vector_store import VectorMemory
+
+        knowledge._vm = VectorMemory(explicit_solution=solution_name)
+        knowledge._solution_name = solution_name
+    except Exception as e:  # noqa: BLE001
+        logging.warning("VectorMemory unavailable: %s", e)
 
 
 def _parse_args(argv: list[str]) -> argparse.Namespace:
