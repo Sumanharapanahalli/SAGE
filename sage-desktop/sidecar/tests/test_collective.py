@@ -70,6 +70,20 @@ class _FakeCM:
     def get_learning(self, learning_id: str):
         return self._learnings.get(learning_id)
 
+    def search_learnings(self, query, tags=None, solution=None, limit=10):
+        items = list(self._learnings.values())
+        if query:
+            q = query.lower()
+            items = [
+                x for x in items
+                if q in x["title"].lower() or q in x["content"].lower()
+            ]
+        if tags:
+            items = [x for x in items if any(t in x.get("tags", []) for t in tags)]
+        if solution:
+            items = [x for x in items if x["author_solution"] == solution]
+        return items[:limit]
+
 
 @pytest.fixture
 def wired():
@@ -139,3 +153,35 @@ def test_get_learning_rejects_empty_id(wired, monkeypatch):
     monkeypatch.setattr(collective, "_cm", wired)
     with pytest.raises(RpcError):
         collective.get_learning({"id": ""})
+
+
+def test_search_learnings_matches_query(wired, monkeypatch):
+    monkeypatch.setattr(collective, "_cm", wired)
+    wired._add_learning(title="UART overflow recovery")
+    wired._add_learning(title="SPI timing tricks")
+    out = collective.search_learnings({"query": "UART"})
+    assert out["count"] == 1
+    assert out["results"][0]["title"] == "UART overflow recovery"
+    assert out["query"] == "UART"
+
+
+def test_search_learnings_accepts_empty_query(wired, monkeypatch):
+    monkeypatch.setattr(collective, "_cm", wired)
+    wired._add_learning(title="one")
+    wired._add_learning(title="two")
+    out = collective.search_learnings({"query": ""})
+    assert out["count"] == 2
+
+
+def test_search_learnings_clamps_limit(wired, monkeypatch):
+    monkeypatch.setattr(collective, "_cm", wired)
+    with pytest.raises(RpcError) as e:
+        collective.search_learnings({"query": "x", "limit": 500})
+    assert e.value.code == -32602
+
+
+def test_search_learnings_rejects_non_string_query(wired, monkeypatch):
+    monkeypatch.setattr(collective, "_cm", wired)
+    with pytest.raises(RpcError) as e:
+        collective.search_learnings({"query": 42})
+    assert e.value.code == -32602

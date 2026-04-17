@@ -115,3 +115,28 @@ def get_learning(params: Any) -> dict:
         raise RpcError(RPC_SIDECAR_ERROR, f"get_learning failed: {e}") from e
 
     return {"learning": result}
+
+
+def search_learnings(params: Any) -> dict:
+    p = _require_dict(params)
+    query = p.get("query", "")
+    if not isinstance(query, str):
+        raise RpcError(RPC_INVALID_PARAMS, "'query' must be a string")
+    tags = _optional_str_list(p.get("tags"), "tags")
+    solution = p.get("solution")
+    if solution is not None and not isinstance(solution, str):
+        raise RpcError(RPC_INVALID_PARAMS, "'solution' must be a string")
+    limit = _coerce_int(
+        p.get("limit"), "limit", _SEARCH_LIMIT_DEFAULT, 1, _SEARCH_LIMIT_MAX
+    )
+
+    cm = _require_cm()
+    try:
+        raw = cm.search_learnings(
+            query=query, tags=tags or None, solution=solution or None, limit=limit
+        )
+    except Exception as e:  # noqa: BLE001
+        raise RpcError(RPC_SIDECAR_ERROR, f"search_learnings failed: {e}") from e
+
+    results = list(raw or [])
+    return {"query": query, "results": results, "count": len(results)}
