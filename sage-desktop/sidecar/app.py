@@ -36,7 +36,18 @@ from rpc import (
     RPC_INTERNAL_ERROR,
 )
 from dispatcher import Dispatcher
-from handlers import agents, approvals, audit, backlog, handshake, llm, queue, solutions, status
+from handlers import (
+    agents,
+    approvals,
+    audit,
+    backlog,
+    handshake,
+    llm,
+    onboarding,
+    queue,
+    solutions,
+    status,
+)
 
 
 def _configure_logging() -> None:
@@ -71,6 +82,7 @@ def _build_dispatcher() -> Dispatcher:
     d.register("queue.list_tasks", queue.list_queue_tasks)
     d.register("solutions.list", solutions.list_solutions)
     d.register("solutions.get_current", solutions.get_current)
+    d.register("onboarding.generate", onboarding.generate)
     return d
 
 
@@ -93,6 +105,13 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
         solutions._sage_root = Path(_sr) if _sr else None
     except Exception as e:  # noqa: BLE001
         logging.warning("solutions.list wiring unavailable: %s", e)
+
+    try:
+        from src.core.onboarding import generate_solution as _gs
+
+        onboarding._generate_fn = _gs
+    except Exception as e:  # noqa: BLE001
+        logging.warning("onboarding.generate wiring unavailable: %s", e)
 
     if not solution_path:
         logging.info("No solution path provided — running in minimal mode.")

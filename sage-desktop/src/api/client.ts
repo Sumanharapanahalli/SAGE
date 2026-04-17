@@ -29,6 +29,8 @@ import type {
   SolutionRef,
   CurrentSolution,
   SwitchSolutionResult,
+  OnboardingParams,
+  OnboardingResult,
   StatusResponse,
 } from "./types";
 
@@ -170,6 +172,11 @@ export const getCurrentSolution = () =>
 export const switchSolution = (name: string, path: string) =>
   call<SwitchSolutionResult>("switch_solution", { name, path });
 
+// ── Onboarding ────────────────────────────────────────────────────────────
+
+export const onboardingGenerate = (params: OnboardingParams) =>
+  call<OnboardingResult>("onboarding_generate", params);
+
 // ── Queue ─────────────────────────────────────────────────────────────────
 
 export const getQueueStatus = () => call<QueueStatus>("get_queue_status");
@@ -201,5 +208,7 @@ export type {
   SolutionRef,
   CurrentSolution,
   SwitchSolutionResult,
+  OnboardingParams,
+  OnboardingResult,
   StatusResponse,
 };

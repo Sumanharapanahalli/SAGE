@@ -13,5 +13,6 @@ pub mod status;
 pub mod llm;
 pub mod backlog;
 pub mod queue;
+pub mod onboarding;
 pub mod solutions;
 pub mod switch;

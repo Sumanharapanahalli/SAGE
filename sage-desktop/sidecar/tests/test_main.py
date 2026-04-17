@@ -123,6 +123,18 @@ def test_solutions_get_current_without_solution_returns_null():
     assert out[0]["result"] is None
 
 
+# ---------- onboarding ----------
+
+def test_onboarding_generate_wires_to_handler():
+    """The dispatcher should route to `onboarding.generate` and surface
+    InvalidParams when called with no description/solution_name — proves
+    the handler is registered and the error mapping works end-to-end."""
+    out = _drive(_req("o1", "onboarding.generate", {}) + "\n")
+    assert out[0]["id"] == "o1"
+    assert "error" in out[0], f"expected error, got {out[0]}"
+    assert out[0]["error"]["code"] == -32602
+
+
 def test_sidecar_wires_up_stores_when_solution_path_given(tmp_path):
     """When --solution-path is provided, approvals.list_pending should work
     (returning an empty list, not an INVALID_PARAMS error)."""
