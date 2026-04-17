@@ -425,35 +425,9 @@ def _check_approver_permission(action_type: str, decided_by: str) -> tuple[bool,
 # ---------------------------------------------------------------------------
 
 def _init_feature_requests_table():
+    from src.core.feature_request_store import FeatureRequestStore
     try:
-        db_path = _get_db_path()
-        conn = sqlite3.connect(db_path)
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS feature_requests (
-                id           TEXT PRIMARY KEY,
-                module_id    TEXT NOT NULL,
-                module_name  TEXT NOT NULL,
-                title        TEXT NOT NULL,
-                description  TEXT NOT NULL,
-                priority     TEXT DEFAULT 'medium',
-                status       TEXT DEFAULT 'pending',
-                requested_by TEXT DEFAULT 'anonymous',
-                scope        TEXT DEFAULT 'solution',
-                created_at   TEXT,
-                updated_at   TEXT,
-                reviewer_note TEXT,
-                plan_trace_id TEXT
-            )
-        """)
-        # Migration: add scope column to existing databases that predate this field
-        try:
-            conn.execute("ALTER TABLE feature_requests ADD COLUMN scope TEXT DEFAULT 'solution'")
-            conn.commit()
-            logger.info("Migrated feature_requests table: added scope column.")
-        except Exception:
-            pass  # Column already exists
-        conn.commit()
-        conn.close()
+        FeatureRequestStore(_get_db_path()).init_schema()
         logger.info("Feature requests table ready.")
     except Exception as exc:
         logger.error("Failed to initialise feature_requests table: %s", exc)
@@ -1900,23 +1874,21 @@ async def submit_feature_request(request: FeatureRequestCreate):
     During development this is open to all. Post-release, wrap with
     authentication middleware to enforce role-based access.
     """
-    req_id = str(uuid.uuid4())
-    now = datetime.now(timezone.utc).isoformat()
+    from src.core.feature_request_store import FeatureRequestStore
 
     try:
-        db_path = _get_db_path()
-        conn = sqlite3.connect(db_path)
-        conn.execute(
-            """INSERT INTO feature_requests
-               (id, module_id, module_name, title, description, priority,
-                status, requested_by, scope, created_at, updated_at)
-               VALUES (?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?)""",
-            (req_id, request.module_id, request.module_name, request.title,
-             request.description, request.priority, request.requested_by,
-             request.scope, now, now),
+        store = FeatureRequestStore(_get_db_path())
+        fr = store.submit(
+            title=request.title,
+            description=request.description,
+            module_id=request.module_id,
+            module_name=request.module_name,
+            priority=request.priority,
+            requested_by=request.requested_by,
+            scope=request.scope,
         )
-        conn.commit()
-        conn.close()
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
         logger.error("Failed to store feature request: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
@@ -1929,14 +1901,14 @@ async def submit_feature_request(request: FeatureRequestCreate):
             action_type="FEATURE_REQUEST_SUBMITTED",
             input_context=f"scope={request.scope} module={request.module_id} title={request.title}",
             output_content=request.description,
-            metadata={"request_id": req_id, "module_id": request.module_id,
+            metadata={"request_id": fr.id, "module_id": request.module_id,
                       "priority": request.priority, "scope": request.scope},
         )
     except Exception as e:
         logger.warning("Audit log failed for feature request: %s", e)
 
     return {
-        "id": req_id,
+        "id": fr.id,
         "status": "pending",
         "message": "Feature request submitted. The engineering team will review it.",
     }
@@ -1953,28 +1925,13 @@ async def list_feature_requests(
     scope="solution" returns items for the active solution's backlog.
     scope="sage"     returns SAGE framework improvement ideas.
     """
+    from src.core.feature_request_store import FeatureRequestStore
     try:
-        db_path = _get_db_path()
-        conn = sqlite3.connect(db_path)
-        conn.row_factory = sqlite3.Row
-
-        query = "SELECT * FROM feature_requests WHERE 1=1"
-        params: list = []
+        store = FeatureRequestStore(_get_db_path())
+        rows = [fr.to_dict() for fr in store.list(status=status, scope=scope)]
         if module_id:
-            query += " AND module_id = ?"
-            params.append(module_id)
-        if status:
-            query += " AND status = ?"
-            params.append(status)
-        if scope:
-            query += " AND scope = ?"
-            params.append(scope)
-        query += " ORDER BY created_at DESC"
-
-        rows = [dict(r) for r in conn.execute(query, params).fetchall()]
-        conn.close()
+            rows = [r for r in rows if r.get("module_id") == module_id]
         return {"requests": rows, "count": len(rows)}
-
     except Exception as e:
         logger.error("Feature request list error: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
@@ -2102,23 +2059,17 @@ async def update_feature_request(req_id: str, body: FeatureRequestUpdate):
     """
     Update the status of a feature request (approve / reject / complete).
     """
-    status_map = {
-        "approve": "approved",
-        "reject": "rejected",
-        "complete": "completed",
-    }
-    new_status = status_map.get(body.action.lower(), "pending")
-    now = datetime.now(timezone.utc).isoformat()
+    from src.core.feature_request_store import FeatureRequestStore
+
+    action = body.action.lower()
+    if action not in {"approve", "reject", "complete"}:
+        raise HTTPException(status_code=422, detail=f"unknown action: {body.action}")
 
     try:
-        db_path = _get_db_path()
-        conn = sqlite3.connect(db_path)
-        conn.execute(
-            "UPDATE feature_requests SET status=?, reviewer_note=?, updated_at=? WHERE id=?",
-            (new_status, body.reviewer_note, now, req_id),
-        )
-        conn.commit()
-        conn.close()
+        store = FeatureRequestStore(_get_db_path())
+        fr = store.update(req_id, action=action, reviewer_note=body.reviewer_note)
+    except KeyError:
+        raise HTTPException(status_code=404, detail=f"feature request not found: {req_id}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -2129,12 +2080,12 @@ async def update_feature_request(req_id: str, body: FeatureRequestUpdate):
             action_type="FEATURE_REQUEST_UPDATED",
             input_context=f"req_id={req_id} action={body.action}",
             output_content=body.reviewer_note,
-            metadata={"request_id": req_id, "new_status": new_status},
+            metadata={"request_id": req_id, "new_status": fr.status},
         )
     except Exception as e:
         logger.warning("Audit log failed for feature request update: %s", e)
 
-    return {"id": req_id, "status": new_status, "reviewer_note": body.reviewer_note}
+    return {"id": fr.id, "status": fr.status, "reviewer_note": fr.reviewer_note}
 
 
 # ===========================================================================
