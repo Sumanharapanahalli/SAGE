@@ -42,6 +42,16 @@ describe("ErrorBanner", () => {
     expect(screen.getByRole("alert")).toHaveTextContent("approved");
   });
 
+  it("renders SolutionNotFound with the solution name", () => {
+    render(
+      <ErrorBanner
+        error={{ kind: "SolutionNotFound", detail: { name: "yoga" } }}
+      />,
+    );
+    expect(screen.getByRole("alert")).toHaveTextContent(/solution not found/i);
+    expect(screen.getByRole("alert")).toHaveTextContent("yoga");
+  });
+
   it("falls back to Other with code + message", () => {
     render(
       <ErrorBanner

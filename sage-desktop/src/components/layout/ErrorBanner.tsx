@@ -51,6 +51,11 @@ function describe(err: DesktopError): { title: string; detail: string } {
         title: "Feature request not found",
         detail: `id: ${err.detail.feature_id}`,
       };
+    case "SolutionNotFound":
+      return {
+        title: "Solution not found",
+        detail: `name: ${err.detail.name}`,
+      };
     case "Other":
       return {
         title: `Error (${err.detail.code})`,
