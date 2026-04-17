@@ -152,6 +152,25 @@ def test_builds_start_without_description_returns_invalid_params():
     assert out[0]["error"]["code"] == -32602
 
 
+# ---------- yaml authoring ----------
+
+def test_yaml_read_without_solution_returns_sidecar_error():
+    out = _drive(_req("y1", "yaml.read", {"file": "project"}) + "\n")
+    assert out[0]["id"] == "y1"
+    assert "error" in out[0]
+    assert out[0]["error"]["code"] == -32000
+
+
+def test_yaml_write_with_invalid_file_name_returns_invalid_params():
+    out = _drive(
+        _req("y2", "yaml.write", {"file": "secrets", "content": "x: 1\n"})
+        + "\n"
+    )
+    assert out[0]["id"] == "y2"
+    assert "error" in out[0]
+    assert out[0]["error"]["code"] == -32602
+
+
 def test_sidecar_wires_up_stores_when_solution_path_given(tmp_path):
     """When --solution-path is provided, approvals.list_pending should work
     (returning an empty list, not an INVALID_PARAMS error)."""
