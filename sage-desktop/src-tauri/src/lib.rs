@@ -22,7 +22,7 @@ mod desktop_app {
 
     use crate::sidecar::{Sidecar, SidecarConfig};
 
-    fn default_sidecar_config() -> SidecarConfig {
+    fn default_sidecar_config(resource_dir: Option<PathBuf>) -> SidecarConfig {
         let sage_root = std::env::var("SAGE_ROOT")
             .map(PathBuf::from)
             .unwrap_or_else(|_| {
@@ -44,6 +44,7 @@ mod desktop_app {
             solution_name,
             solution_path,
             sage_root,
+            resource_dir,
         }
     }
 
@@ -58,7 +59,8 @@ mod desktop_app {
         tauri::Builder::default()
             .plugin(tauri_plugin_shell::init())
             .setup(|app| {
-                let cfg = default_sidecar_config();
+                let resource_dir = app.path().resource_dir().ok();
+                let cfg = default_sidecar_config(resource_dir);
                 let handle = app.handle().clone();
                 tauri::async_runtime::spawn(async move {
                     match Sidecar::spawn(cfg).await {
