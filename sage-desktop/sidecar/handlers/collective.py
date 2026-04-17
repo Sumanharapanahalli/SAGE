@@ -140,3 +140,61 @@ def search_learnings(params: Any) -> dict:
 
     results = list(raw or [])
     return {"query": query, "results": results, "count": len(results)}
+
+
+def publish_learning(params: Any) -> dict:
+    p = _require_dict(params)
+    author_agent = _require_str(p.get("author_agent"), "author_agent")
+    author_solution = _require_str(p.get("author_solution"), "author_solution")
+    topic = _require_str(p.get("topic"), "topic")
+    title = _require_str(p.get("title"), "title")
+    content = _require_str(p.get("content"), "content")
+    tags = _optional_str_list(p.get("tags"), "tags")
+    confidence = p.get("confidence", 0.5)
+    if not isinstance(confidence, (int, float)) or isinstance(confidence, bool):
+        raise RpcError(RPC_INVALID_PARAMS, "'confidence' must be a number")
+    if not 0.0 <= float(confidence) <= 1.0:
+        raise RpcError(RPC_INVALID_PARAMS, "'confidence' must be between 0.0 and 1.0")
+    source_task_id = p.get("source_task_id", "")
+    if not isinstance(source_task_id, str):
+        raise RpcError(RPC_INVALID_PARAMS, "'source_task_id' must be a string")
+    proposed_by = p.get("proposed_by", "operator@desktop")
+    if not isinstance(proposed_by, str) or not proposed_by.strip():
+        raise RpcError(RPC_INVALID_PARAMS, "'proposed_by' must be a non-empty string")
+
+    payload = {
+        "author_agent": author_agent,
+        "author_solution": author_solution,
+        "topic": topic,
+        "title": title,
+        "content": content,
+        "tags": tags,
+        "confidence": float(confidence),
+        "source_task_id": source_task_id,
+    }
+
+    cm = _require_cm()
+    try:
+        result = cm.publish_learning(payload, proposed_by=proposed_by)
+    except Exception as e:  # noqa: BLE001
+        raise RpcError(RPC_SIDECAR_ERROR, f"publish_learning failed: {e}") from e
+
+    if getattr(cm, "require_approval", False):
+        return {"id": None, "gated": True, "trace_id": str(result)}
+    return {"id": str(result), "gated": False}
+
+
+def validate_learning(params: Any) -> dict:
+    p = _require_dict(params)
+    learning_id = _require_str(p.get("id"), "id")
+    validated_by = _require_str(p.get("validated_by"), "validated_by")
+
+    cm = _require_cm()
+    try:
+        updated = cm.validate_learning(learning_id, validated_by)
+    except ValueError as e:
+        raise RpcError(RPC_SIDECAR_ERROR, str(e)) from e
+    except Exception as e:  # noqa: BLE001
+        raise RpcError(RPC_SIDECAR_ERROR, f"validate_learning failed: {e}") from e
+
+    return {"learning": updated}

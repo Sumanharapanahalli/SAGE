@@ -84,6 +84,29 @@ class _FakeCM:
             items = [x for x in items if x["author_solution"] == solution]
         return items[:limit]
 
+    def publish_learning(self, learning: dict, proposed_by: str = "system") -> str:
+        # Mirror the real class: returns id OR trace_id depending on
+        # require_approval.
+        if self.require_approval:
+            trace_id = f"trace-{uuid.uuid4().hex[:8]}"
+            self._proposals[trace_id] = {"learning": learning, "proposed_by": proposed_by}
+            return trace_id
+        lid = str(uuid.uuid4())
+        full = dict(learning, id=lid, validation_count=0,
+                    created_at="2026-04-17T00:00:00+00:00",
+                    updated_at="2026-04-17T00:00:00+00:00")
+        self._learnings[lid] = full
+        return lid
+
+    def validate_learning(self, learning_id: str, validated_by: str) -> dict:
+        if learning_id not in self._learnings:
+            raise ValueError(f"Learning {learning_id} not found")
+        l = self._learnings[learning_id]
+        l["validation_count"] += 1
+        l["confidence"] = min(1.0, l["confidence"] + (1.0 - l["confidence"]) * 0.1)
+        l["updated_at"] = "2026-04-17T00:00:01+00:00"
+        return l
+
 
 @pytest.fixture
 def wired():
@@ -185,3 +208,69 @@ def test_search_learnings_rejects_non_string_query(wired, monkeypatch):
     with pytest.raises(RpcError) as e:
         collective.search_learnings({"query": 42})
     assert e.value.code == -32602
+
+
+def test_publish_learning_ungated_returns_id(wired, monkeypatch):
+    monkeypatch.setattr(collective, "_cm", wired)
+    out = collective.publish_learning({
+        "author_agent": "analyst",
+        "author_solution": "medtech",
+        "topic": "uart",
+        "title": "test",
+        "content": "details",
+    })
+    assert out["gated"] is False
+    assert out["id"] is not None
+    assert "trace_id" not in out or out.get("trace_id") is None
+
+
+def test_publish_learning_gated_returns_trace_id(wired, monkeypatch):
+    wired.require_approval = True
+    monkeypatch.setattr(collective, "_cm", wired)
+    out = collective.publish_learning({
+        "author_agent": "analyst",
+        "author_solution": "medtech",
+        "topic": "uart",
+        "title": "t",
+        "content": "c",
+        "proposed_by": "operator@desktop",
+    })
+    assert out["gated"] is True
+    assert out["id"] is None
+    assert out["trace_id"].startswith("trace-")
+
+
+def test_publish_learning_requires_core_fields(wired, monkeypatch):
+    monkeypatch.setattr(collective, "_cm", wired)
+    for payload in [
+        {"author_solution": "s", "topic": "t", "title": "ti", "content": "c"},
+        {"author_agent": "a", "topic": "t", "title": "ti", "content": "c"},
+        {"author_agent": "a", "author_solution": "s", "title": "ti", "content": "c"},
+        {"author_agent": "a", "author_solution": "s", "topic": "t", "content": "c"},
+        {"author_agent": "a", "author_solution": "s", "topic": "t", "title": "ti"},
+    ]:
+        with pytest.raises(RpcError) as e:
+            collective.publish_learning(payload)
+        assert e.value.code == -32602
+
+
+def test_validate_learning_bumps_count(wired, monkeypatch):
+    monkeypatch.setattr(collective, "_cm", wired)
+    lid = wired._add_learning()
+    out = collective.validate_learning({"id": lid, "validated_by": "qa@medtech"})
+    assert out["learning"]["validation_count"] == 1
+    assert out["learning"]["confidence"] > 0.5
+
+
+def test_validate_learning_rejects_empty_validator(wired, monkeypatch):
+    monkeypatch.setattr(collective, "_cm", wired)
+    with pytest.raises(RpcError):
+        collective.validate_learning({"id": "any", "validated_by": ""})
+
+
+def test_validate_learning_propagates_not_found(wired, monkeypatch):
+    monkeypatch.setattr(collective, "_cm", wired)
+    with pytest.raises(RpcError) as e:
+        collective.validate_learning({"id": "ghost", "validated_by": "qa"})
+    assert e.value.code == -32000
+    assert "not found" in e.value.message.lower()
