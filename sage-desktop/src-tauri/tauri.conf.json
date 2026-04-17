@@ -25,6 +25,16 @@
       "csp": null
     }
   },
+  "plugins": {
+    "updater": {
+      "active": true,
+      "endpoints": [
+        "https://github.com/suman-harapanahalli/SAGE/releases/latest/download/latest.json"
+      ],
+      "dialog": false,
+      "pubkey": ""
+    }
+  },
   "bundle": {
     "active": true,
     "targets": ["msi", "nsis"],

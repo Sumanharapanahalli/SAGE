@@ -58,6 +58,7 @@ mod desktop_app {
 
         tauri::Builder::default()
             .plugin(tauri_plugin_shell::init())
+            .plugin(tauri_plugin_updater::Builder::new().build())
             .setup(|app| {
                 let resource_dir = app.path().resource_dir().ok();
                 let cfg = default_sidecar_config(resource_dir);
