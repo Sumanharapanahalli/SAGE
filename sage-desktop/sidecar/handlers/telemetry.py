@@ -5,10 +5,17 @@ that happens, `record` is a no-op. Even when enabled we *never* send
 raw event payloads — every field is filtered through ``_ALLOWED_FIELDS``
 so only non-identifying values reach the local JSONL buffer.
 
-The buffer lives at ``<config_dir>/telemetry.jsonl`` and is consumed by
-a future uploader (not yet implemented — Phase 4.8 only ships the
-collection side; shipping the uploader without the consent UI would
-violate the opt-in guarantee).
+The buffer lives at ``<config_dir>/telemetry.jsonl``. Phase 4.6 adds a
+``flush_buffer()`` that POSTs the buffered events to the URL named by
+the ``SAGE_TELEMETRY_ENDPOINT`` env var and truncates the buffer on
+2xx. The env var is deliberately not a persisted config key so a
+malicious ``config.json`` can never redirect the feed.
+
+The upload path re-gates on ``config.enabled`` at the very top — that
+is the guarantee we need so "I opted out" always means "nothing
+leaves my device from this point on," even if an event was buffered
+before opt-out (the opt-out itself wipes the buffer, but a race
+between record + set_enabled is closed by the re-gate).
 """
 from __future__ import annotations
 
@@ -16,9 +23,11 @@ import json
 import logging
 import os
 import time
+import urllib.error
+import urllib.request
 import uuid
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 LOGGER = logging.getLogger(__name__)
 
@@ -149,6 +158,109 @@ def record(config: TelemetryConfig, event: str, payload: dict[str, Any]) -> bool
         return False
 
 
+def flush_buffer(
+    config: TelemetryConfig,
+    endpoint: Optional[str] = None,
+    sender: Optional[Callable[[str, bytes], int]] = None,
+    timeout: float = 3.0,
+) -> dict[str, Any]:
+    """POST buffered events to ``endpoint`` and truncate on 2xx.
+
+    Re-gates on ``config.enabled`` — the whole point of this function is
+    to honour "I opted out" even for events buffered just before the
+    toggle flipped.
+
+    Returns a small summary dict (never raises). Designed to be called
+    from an RPC handler, so it must be resilient: network failures,
+    missing endpoint, empty buffer, and malformed lines all resolve to
+    a benign ``{"sent": 0, "reason": ...}`` outcome rather than an
+    exception.
+
+    ``sender`` is injected for tests so we never have to open a real
+    socket in unit tests — production passes ``None`` and we default
+    to the urllib POST shipping with the stdlib.
+    """
+    if not config.enabled:
+        return {"sent": 0, "reason": "opted_out"}
+
+    endpoint = endpoint or os.environ.get("SAGE_TELEMETRY_ENDPOINT", "")
+    if not endpoint:
+        return {"sent": 0, "reason": "no_endpoint"}
+
+    if not config.buffer_path.exists():
+        return {"sent": 0, "reason": "empty_buffer"}
+
+    raw = config.buffer_path.read_text(encoding="utf-8")
+    if not raw.strip():
+        return {"sent": 0, "reason": "empty_buffer"}
+
+    # Defensive re-filter: the buffer was built by record() which already
+    # ran filter_payload(), but a rogue edit of the JSONL file could have
+    # snuck extra keys in — drop them before anything leaves the disk.
+    events: list[dict[str, Any]] = []
+    for line in raw.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            entry = json.loads(line)
+        except Exception:  # noqa: BLE001
+            continue
+        name = entry.get("event")
+        if not isinstance(name, str):
+            continue
+        clean = filter_payload(name, entry)
+        if clean is None:
+            continue
+        # Preserve the stamped metadata that filter_payload strips.
+        for k in ("ts", "session_id", "anon_id"):
+            if k in entry:
+                clean[k] = entry[k]
+        events.append(clean)
+
+    if not events:
+        # Buffer had rows but none survived re-filter; wipe to keep the
+        # file from growing forever.
+        config.buffer_path.write_text("", encoding="utf-8")
+        return {"sent": 0, "reason": "nothing_valid"}
+
+    body = json.dumps({"events": events}).encode("utf-8")
+
+    try:
+        if sender is not None:
+            status = sender(endpoint, body)
+        else:
+            status = _default_sender(endpoint, body, timeout=timeout)
+    except Exception as e:  # noqa: BLE001
+        LOGGER.warning("telemetry upload failed: %s", e)
+        return {"sent": 0, "reason": "network_error"}
+
+    if not (200 <= status < 300):
+        return {"sent": 0, "reason": f"http_{status}"}
+
+    # 2xx — safe to drop the buffer.
+    try:
+        config.buffer_path.write_text("", encoding="utf-8")
+    except Exception as e:  # noqa: BLE001
+        LOGGER.warning("telemetry buffer truncate failed: %s", e)
+
+    return {"sent": len(events), "reason": "ok"}
+
+
+def _default_sender(endpoint: str, body: bytes, timeout: float = 3.0) -> int:
+    req = urllib.request.Request(
+        endpoint,
+        data=body,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return int(resp.status)
+    except urllib.error.HTTPError as e:
+        return int(e.code)
+
+
 # ── RPC handlers ──────────────────────────────────────────────────────────
 
 _config: Optional[TelemetryConfig] = None
@@ -188,3 +300,13 @@ def set_enabled(params: dict) -> dict:
     cfg = _cfg()
     cfg.set_enabled(enabled)
     return {"enabled": cfg.enabled, "anon_id": cfg.anon_id}
+
+
+def flush(params: dict) -> dict:
+    """RPC: attempt to POST the buffered telemetry events.
+
+    Consent re-gated inside ``flush_buffer``. Safe to call from any
+    UI context — returns a summary dict, never raises.
+    """
+    cfg = _cfg()
+    return flush_buffer(cfg)

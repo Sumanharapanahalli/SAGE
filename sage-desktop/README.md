@@ -21,30 +21,40 @@ Phase 4 release.
 
 ### 1. Download
 
-Grab the latest `SAGE Desktop_<version>_x64_en-US.msi` from the
-repository's Releases page. If MSI is blocked by policy on your
-machine, the same release also publishes a `SAGE Desktop_<version>_x64-setup.exe`
-(NSIS) — identical payload, different installer format.
+Grab the latest installer for your platform from the repository's
+Releases page:
 
-Both installers are **per-user**: they install to
-`%LOCALAPPDATA%\Programs\sage-desktop\` and never prompt for admin.
+| Platform | Recommended | Fallback |
+|---|---|---|
+| Windows 10/11 x64 | `SAGE Desktop_<v>_x64_en-US.msi` | `SAGE Desktop_<v>_x64-setup.exe` (NSIS) |
+| macOS 13+ (Intel) | `SAGE Desktop_<v>_x64.dmg` | — |
+| macOS 13+ (Apple Silicon) | `SAGE Desktop_<v>_aarch64.dmg` | — |
+| Linux x64 | `sage-desktop_<v>_amd64.AppImage` | `sage-desktop_<v>_amd64.deb` |
 
-### 2. SmartScreen caveat (Phase 4 only)
+All installers are **per-user**: Windows installs to
+`%LOCALAPPDATA%\Programs\sage-desktop\`, macOS drags into
+`~/Applications/SAGE Desktop.app`, AppImage runs in place from any
+writable directory. None prompt for admin/sudo.
 
-Phase 4 ships the installer **unsigned**. The first time you run it,
-Windows SmartScreen will display:
+### 2. First-launch warnings (Phase 4.5 only)
 
-```
-Windows protected your PC
+Phase 4.5 ships installers that are **not code-signed by a trusted
+CA**. The first launch will raise a warning on every platform:
 
-Microsoft Defender SmartScreen prevented an unrecognized app from
-starting. Running this app might put your PC at risk.
-```
+- **Windows** — SmartScreen shows "Windows protected your PC". Click
+  **"More info"** → **"Run anyway"**.
+- **macOS** — Gatekeeper says the app "can't be opened because Apple
+  cannot check it for malicious software". Right-click the app in
+  Finder → **Open** → confirm. (One-shot; subsequent launches are
+  silent.)
+- **Linux** — AppImage needs the execute bit:
+  `chmod +x sage-desktop_<v>_amd64.AppImage`, then run it directly.
 
-Click **"More info"** → **"Run anyway"**. This is expected. Code
-signing with an EV cert lands in Phase 4.6; until then, each release
-is verified by its ed25519 signature at update time — SmartScreen is
-Microsoft's Authenticode layer, which is separate.
+Trusted CA code signing (EV cert on Windows, notarytool on macOS)
+lands in Phase 4.6. Until then every release is still verified by its
+ed25519 signature at update time — the platforms' signing layers are
+separate from the updater's built-in signature check, which is
+already enforced.
 
 ### 3. Launch
 
@@ -121,18 +131,18 @@ added.
 
 ## File locations
 
-| What | Path (Windows) |
-|---|---|
-| App binaries | `%LOCALAPPDATA%\Programs\sage-desktop\` |
-| Consent + anon ID | `%APPDATA%\sage-desktop\config.json` |
-| Telemetry buffer | `%APPDATA%\sage-desktop\telemetry.ndjson` |
-| Updater pubkey | bundled inside `sage-desktop.exe` |
-| Active solution's data | `<solution-root>\.sage\*` |
+| What | Windows | macOS | Linux |
+|---|---|---|---|
+| App binaries | `%LOCALAPPDATA%\Programs\sage-desktop\` | `~/Applications/SAGE Desktop.app/` | AppImage path |
+| Consent + anon ID | `%APPDATA%\sage-desktop\config.json` | `~/Library/Application Support/sage-desktop/config.json` | `~/.config/sage-desktop/config.json` |
+| Telemetry buffer | `%APPDATA%\sage-desktop\telemetry.ndjson` | `~/Library/Application Support/sage-desktop/telemetry.ndjson` | `~/.config/sage-desktop/telemetry.ndjson` |
+| Updater pubkey | bundled inside the app | bundled inside the app | bundled inside the app |
+| Active solution's data | `<solution-root>\.sage\*` | `<solution-root>/.sage/*` | `<solution-root>/.sage/*` |
 
-To wipe every trace of the app: uninstall from **Settings → Apps**,
-then delete `%APPDATA%\sage-desktop\`. `.sage/` data under your
-solution directory is preserved — the framework never touches it on
-uninstall.
+To wipe every trace of the app: uninstall via your platform's normal
+mechanism, then delete the per-user config directory above. `.sage/`
+data under your solution directory is preserved — the framework
+never touches it on uninstall.
 
 ---
 
@@ -183,9 +193,15 @@ environment variables — never by reading the key from the repo.
 
 ## Status and limits
 
-Phase 4 is **Windows only**. macOS notarization and Linux AppImage are
-scoped to a follow-up phase. The MSI/NSIS target is x86_64 Windows
-10+ with WebView2 runtime (installed via the Tauri bootstrapper).
+Phase 4.5 ships **Windows (x64), macOS (x64 + Apple Silicon), and
+Linux (x64 AppImage + .deb)** installers — all unsigned by a public
+CA and all user-gated by the ed25519 updater key. The Windows target
+requires WebView2 runtime (installed via the Tauri bootstrapper);
+macOS requires 13+; Linux requires `libwebkit2gtk-4.1`.
+
+Phase 4.6 adds trusted-CA code signing on Windows/macOS, the HTTPS
+telemetry uploader, and the background update check. Phase 4.7 adds
+Playwright-driven pixel-diff regression for the four canonical pages.
 
 For bug reports, open an issue on the upstream SAGE repository and tag
-`sage-desktop` + `phase-4`.
+`sage-desktop` + `phase-4.5`.

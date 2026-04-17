@@ -19,3 +19,15 @@ export function useSetTelemetryEnabled() {
     onSuccess: (data) => qc.setQueryData(telemetryKey, data),
   });
 }
+
+/**
+ * Phase 4.6: trigger the sidecar to flush its buffered events via
+ * `telemetry.flush`. Consent is re-checked inside the sidecar, so
+ * calling this while opted-out returns `{ sent: 0, reason: "opted_out" }`
+ * rather than leaking anything.
+ */
+export function useFlushTelemetry() {
+  return useMutation<{ sent: number; reason: string }, DesktopError, void>({
+    mutationFn: () => client.telemetryFlush(),
+  });
+}

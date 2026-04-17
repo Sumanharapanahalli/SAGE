@@ -167,3 +167,152 @@ def test_opt_out_clears_event_buffer(cfg: tel.TelemetryConfig) -> None:
     # Buffer is cleared — file may not exist, or exists and is empty
     if cfg.buffer_path.exists():
         assert cfg.buffer_path.read_text(encoding="utf-8") == ""
+
+
+# ── Phase 4.6: flush_buffer uploader ──────────────────────────────────────
+
+
+class _CapturingSender:
+    """Test double that records the POST body and returns a canned status."""
+
+    def __init__(self, status: int = 200) -> None:
+        self.status = status
+        self.calls: list[tuple[str, bytes]] = []
+
+    def __call__(self, endpoint: str, body: bytes) -> int:
+        self.calls.append((endpoint, body))
+        return self.status
+
+
+def test_flush_noop_when_opted_out(cfg: tel.TelemetryConfig) -> None:
+    """Re-gate: even if the buffer contains events, opt-out blocks upload."""
+    cfg.set_enabled(True)
+    tel.record(cfg, "approval.decided", {"status": "approved"})
+    cfg.set_enabled(False)  # Wipes buffer AND sets enabled=False
+    cfg.buffer_path.write_text(
+        json.dumps({"event": "approval.decided", "status": "approved"}) + "\n",
+        encoding="utf-8",
+    )  # Simulate a pre-opt-out-race buffered event
+
+    sender = _CapturingSender()
+    result = tel.flush_buffer(cfg, endpoint="https://example.test/ingest", sender=sender)
+    assert result == {"sent": 0, "reason": "opted_out"}
+    assert sender.calls == []
+
+
+def test_flush_noop_when_endpoint_missing(cfg: tel.TelemetryConfig) -> None:
+    cfg.set_enabled(True)
+    tel.record(cfg, "approval.decided", {"status": "approved"})
+    sender = _CapturingSender()
+    result = tel.flush_buffer(cfg, endpoint="", sender=sender)
+    assert result["sent"] == 0
+    assert result["reason"] == "no_endpoint"
+    assert sender.calls == []
+
+
+def test_flush_noop_when_buffer_empty(cfg: tel.TelemetryConfig) -> None:
+    cfg.set_enabled(True)
+    sender = _CapturingSender()
+    result = tel.flush_buffer(cfg, endpoint="https://example.test/ingest", sender=sender)
+    assert result["sent"] == 0
+    assert result["reason"] == "empty_buffer"
+    assert sender.calls == []
+
+
+def test_flush_posts_events_and_truncates_on_2xx(cfg: tel.TelemetryConfig) -> None:
+    cfg.set_enabled(True)
+    tel.record(cfg, "approval.decided", {"status": "approved"})
+    tel.record(cfg, "build.completed", {"status": "completed", "duration_ms": 42})
+
+    sender = _CapturingSender(status=200)
+    result = tel.flush_buffer(cfg, endpoint="https://example.test/ingest", sender=sender)
+
+    assert result == {"sent": 2, "reason": "ok"}
+    assert len(sender.calls) == 1
+    endpoint, body = sender.calls[0]
+    assert endpoint == "https://example.test/ingest"
+    payload = json.loads(body)
+    assert [e["event"] for e in payload["events"]] == [
+        "approval.decided",
+        "build.completed",
+    ]
+    # 2xx → buffer truncated
+    assert cfg.buffer_path.read_text(encoding="utf-8") == ""
+
+
+def test_flush_keeps_buffer_on_non_2xx(cfg: tel.TelemetryConfig) -> None:
+    cfg.set_enabled(True)
+    tel.record(cfg, "approval.decided", {"status": "approved"})
+    before = cfg.buffer_path.read_text(encoding="utf-8")
+
+    sender = _CapturingSender(status=500)
+    result = tel.flush_buffer(cfg, endpoint="https://example.test/ingest", sender=sender)
+
+    assert result["sent"] == 0
+    assert result["reason"] == "http_500"
+    # Buffer untouched so the next flush can retry
+    assert cfg.buffer_path.read_text(encoding="utf-8") == before
+
+
+def test_flush_survives_network_error(cfg: tel.TelemetryConfig) -> None:
+    cfg.set_enabled(True)
+    tel.record(cfg, "approval.decided", {"status": "approved"})
+    before = cfg.buffer_path.read_text(encoding="utf-8")
+
+    def boom(_endpoint: str, _body: bytes) -> int:
+        raise OSError("connection refused")
+
+    result = tel.flush_buffer(cfg, endpoint="https://example.test/ingest", sender=boom)
+    assert result["sent"] == 0
+    assert result["reason"] == "network_error"
+    assert cfg.buffer_path.read_text(encoding="utf-8") == before
+
+
+def test_flush_defensive_filter_drops_tampered_fields(cfg: tel.TelemetryConfig) -> None:
+    """A rogue edit of telemetry.jsonl can't smuggle banned keys out."""
+    cfg.set_enabled(True)
+    tampered = {
+        "event": "approval.decided",
+        "status": "approved",
+        "user_email": "leak@example.com",
+        "trace_id": "proposal-99",
+        "ts": 123,
+        "session_id": "fake-session",
+        "anon_id": cfg.anon_id,
+    }
+    cfg.buffer_path.write_text(json.dumps(tampered) + "\n", encoding="utf-8")
+
+    sender = _CapturingSender(status=200)
+    result = tel.flush_buffer(cfg, endpoint="https://example.test/ingest", sender=sender)
+
+    assert result["sent"] == 1
+    _, body = sender.calls[0]
+    sent = json.loads(body)["events"][0]
+    assert "user_email" not in sent
+    assert "trace_id" not in sent
+    # Stamped metadata preserved
+    assert sent["ts"] == 123
+    assert sent["session_id"] == "fake-session"
+
+
+def test_flush_env_var_is_honoured(cfg: tel.TelemetryConfig, monkeypatch) -> None:
+    cfg.set_enabled(True)
+    tel.record(cfg, "approval.decided", {"status": "approved"})
+    monkeypatch.setenv("SAGE_TELEMETRY_ENDPOINT", "https://env.example/ingest")
+
+    sender = _CapturingSender(status=200)
+    # Explicit endpoint=None should fall through to the env var.
+    result = tel.flush_buffer(cfg, endpoint=None, sender=sender)
+    assert result["sent"] == 1
+    assert sender.calls[0][0] == "https://env.example/ingest"
+
+
+def test_flush_rpc_delegates_to_flush_buffer(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setenv("SAGE_DESKTOP_CONFIG_DIR", str(tmp_path))
+    monkeypatch.delenv("SAGE_TELEMETRY_ENDPOINT", raising=False)
+    tel._config = None
+    tel.set_enabled({"enabled": True})
+    resp = tel.flush({})
+    # Without an endpoint the RPC still returns cleanly, not raises.
+    assert resp["sent"] == 0
+    assert resp["reason"] in {"no_endpoint", "empty_buffer"}

@@ -25,6 +25,21 @@ jobs:
             target: x86_64-pc-windows-msvc
             sidecar_ext: .exe
             bundle_targets: msi,nsis
+          - label: macOS x64
+            os: macos-13
+            target: x86_64-apple-darwin
+            sidecar_ext: ""
+            bundle_targets: app,dmg
+          - label: macOS arm64
+            os: macos-latest
+            target: aarch64-apple-darwin
+            sidecar_ext: ""
+            bundle_targets: app,dmg
+          - label: Linux x64
+            os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            sidecar_ext: ""
+            bundle_targets: appimage,deb
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -50,6 +65,17 @@ jobs:
           workspaces: sage-desktop/src-tauri -> target
           key: ${{ matrix.target }}
 
+      - name: Install Linux system deps for Tauri + AppImage
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+              libwebkit2gtk-4.1-dev \
+              libappindicator3-dev \
+              librsvg2-dev \
+              patchelf \
+              libayatana-appindicator3-dev
+
       - name: Install Python deps
         run: |
           python -m pip install --upgrade pip
@@ -66,8 +92,12 @@ jobs:
         shell: bash
         run: |
           mkdir -p sage-desktop/src-tauri/bin
-          cp "sage-desktop/sidecar/dist/sage-sidecar${{ matrix.sidecar_ext }}" \
-             "sage-desktop/src-tauri/bin/sage-sidecar-${{ matrix.target }}${{ matrix.sidecar_ext }}"
+          staged="sage-desktop/src-tauri/bin/sage-sidecar-${{ matrix.target }}${{ matrix.sidecar_ext }}"
+          cp "sage-desktop/sidecar/dist/sage-sidecar${{ matrix.sidecar_ext }}" "${staged}"
+          # Tauri externalBin needs the execute bit set on POSIX bundles.
+          if [[ "${{ runner.os }}" != "Windows" ]]; then
+              chmod +x "${staged}"
+          fi
 
       - name: Install npm deps
         run: npm ci
@@ -78,6 +108,22 @@ jobs:
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          # Phase 4.6 code-signing hook-up. These env vars are read by
+          # tauri 2's bundler when present; absent = no-op, which is the
+          # current default for PRs/forks without the cert secrets.
+          # Windows Authenticode (EV cert via Azure Code Signing or a
+          # local .pfx):
+          TAURI_WINDOWS_SIGNING_CERTIFICATE_THUMBPRINT: ${{ secrets.WINDOWS_CERT_THUMBPRINT }}
+          WINDOWS_CODESIGN_TOOL: ${{ secrets.WINDOWS_CODESIGN_TOOL }}
+          # macOS codesign + notarytool. These together let Tauri's
+          # bundler sign the .app + notarize the .dmg. Skipped when
+          # empty.
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: npm run tauri -- build --bundles ${{ matrix.bundle_targets }}
 
       - name: Collect installers + signatures
@@ -153,6 +199,11 @@ jobs:
             dist/*.msi.sig
             dist/*-setup.exe
             dist/*-setup.exe.sig
+            dist/*.dmg
+            dist/*.dmg.sig
+            dist/*.AppImage
+            dist/*.AppImage.sig
+            dist/*.deb
             dist/latest.json
           draft: false
           prerelease: false

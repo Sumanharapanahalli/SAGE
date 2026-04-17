@@ -44,15 +44,39 @@ pub fn resolve_sidecar_path(resource_dir: Option<PathBuf>) -> PathBuf {
         return PathBuf::from(p);
     }
     if let Some(dir) = resource_dir {
-        let candidates: &[&str] = if cfg!(windows) {
+        // Phase 4.5: probe every supported target triple. Order matters —
+        // the active host's native triple goes first so production picks
+        // its own exe without touching the disk for siblings.
+        let candidates: &[&str] = if cfg!(all(windows, target_arch = "x86_64")) {
             &[
                 "sage-sidecar-x86_64-pc-windows-msvc.exe",
                 "sage-sidecar-x86_64-pc-windows-gnu.exe",
             ]
+        } else if cfg!(all(windows, target_arch = "aarch64")) {
+            &[
+                "sage-sidecar-aarch64-pc-windows-msvc.exe",
+                "sage-sidecar-x86_64-pc-windows-msvc.exe",
+            ]
+        } else if cfg!(all(target_os = "macos", target_arch = "aarch64")) {
+            &[
+                "sage-sidecar-aarch64-apple-darwin",
+                "sage-sidecar-x86_64-apple-darwin",
+            ]
         } else if cfg!(target_os = "macos") {
-            &["sage-sidecar-x86_64-apple-darwin"]
+            &[
+                "sage-sidecar-x86_64-apple-darwin",
+                "sage-sidecar-aarch64-apple-darwin",
+            ]
+        } else if cfg!(all(target_os = "linux", target_arch = "aarch64")) {
+            &[
+                "sage-sidecar-aarch64-unknown-linux-gnu",
+                "sage-sidecar-x86_64-unknown-linux-gnu",
+            ]
         } else {
-            &["sage-sidecar-x86_64-unknown-linux-gnu"]
+            &[
+                "sage-sidecar-x86_64-unknown-linux-gnu",
+                "sage-sidecar-aarch64-unknown-linux-gnu",
+            ]
         };
         for name in candidates {
             let exe = dir.join(name);
@@ -67,6 +91,18 @@ pub fn resolve_sidecar_path(resource_dir: Option<PathBuf>) -> PathBuf {
         .join("sidecar")
         .join("__main__.py")
 }
+
+/// Target triples the release matrix produces PyInstaller binaries for.
+/// Exposed so drift-guard tests and the generate-latest-json script can
+/// reference the same list.
+pub const SUPPORTED_SIDECAR_TRIPLES: &[&str] = &[
+    "x86_64-pc-windows-msvc",
+    "aarch64-pc-windows-msvc",
+    "x86_64-apple-darwin",
+    "aarch64-apple-darwin",
+    "x86_64-unknown-linux-gnu",
+    "aarch64-unknown-linux-gnu",
+];
 
 #[derive(Clone)]
 pub struct SidecarConfig {
@@ -439,6 +475,51 @@ mod tests {
         std::env::remove_var("SAGE_SIDECAR_PATH");
         let p = resolve_sidecar_path(None);
         assert!(p.to_str().unwrap().ends_with("__main__.py"));
+    }
+
+    #[test]
+    fn supported_triples_covers_six_platforms() {
+        // Release matrix invariant: every entry in SUPPORTED_SIDECAR_TRIPLES
+        // MUST correspond to a PyInstaller build in the release workflow.
+        // If you add a triple, update `.github/workflows/sage-desktop-release.yml`.
+        assert_eq!(SUPPORTED_SIDECAR_TRIPLES.len(), 6);
+        for triple in SUPPORTED_SIDECAR_TRIPLES {
+            assert!(
+                triple.contains("windows") || triple.contains("darwin") || triple.contains("linux"),
+                "unexpected triple: {triple}"
+            );
+        }
+    }
+
+    #[test]
+    fn sidecar_path_picks_up_native_triple_when_bundled() {
+        std::env::remove_var("SAGE_SIDECAR_PATH");
+        let tmp = std::env::temp_dir().join(format!("sage-bundle-{}", std::process::id()));
+        let _ = std::fs::create_dir_all(&tmp);
+
+        // Emit every supported triple's expected filename — the one matching
+        // the compiled-for host should win via cfg!() selection order.
+        let ext = if cfg!(windows) { ".exe" } else { "" };
+        let native_triple = if cfg!(all(windows, target_arch = "x86_64")) {
+            "x86_64-pc-windows-msvc"
+        } else if cfg!(all(windows, target_arch = "aarch64")) {
+            "aarch64-pc-windows-msvc"
+        } else if cfg!(all(target_os = "macos", target_arch = "aarch64")) {
+            "aarch64-apple-darwin"
+        } else if cfg!(target_os = "macos") {
+            "x86_64-apple-darwin"
+        } else if cfg!(all(target_os = "linux", target_arch = "aarch64")) {
+            "aarch64-unknown-linux-gnu"
+        } else {
+            "x86_64-unknown-linux-gnu"
+        };
+        let native_path = tmp.join(format!("sage-sidecar-{native_triple}{ext}"));
+        std::fs::write(&native_path, b"").expect("create stub exe");
+
+        let resolved = resolve_sidecar_path(Some(tmp.clone()));
+        assert_eq!(resolved, native_path);
+
+        let _ = std::fs::remove_dir_all(&tmp);
     }
 
     #[tokio::test]

@@ -22,7 +22,9 @@ export default defineConfig({
     globals: true,
     setupFiles: ["./src/__tests__/setup.ts"],
     css: false,
-    // e2e/* specs run under tauri-driver + WebdriverIO, not vitest.
-    exclude: ["node_modules/**", "e2e/**"],
+    // e2e/* specs run under tauri-driver + WebdriverIO;
+    // playwright/* specs run under @playwright/test. Neither belongs
+    // in the vitest run.
+    exclude: ["node_modules/**", "e2e/**", "playwright/**"],
   },
 });

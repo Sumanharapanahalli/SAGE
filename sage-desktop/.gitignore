@@ -35,3 +35,8 @@ src-tauri/bin/sage-sidecar*
 # Mutation + coverage reports
 reports/
 .stryker-tmp/
+
+# Playwright artifacts — snapshots are committed, runtime output is not.
+playwright-report/
+test-results/
+playwright/.cache/

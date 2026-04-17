@@ -69,3 +69,34 @@ describe("tauri-driver E2E scaffolding", () => {
     }
   });
 });
+
+describe("Phase 4.7 Playwright visual regression", () => {
+  const pwRoot = resolve(process.cwd(), "playwright");
+
+  it("playwright.config.ts exists and targets the Vite dev server", () => {
+    const cfg = resolve(process.cwd(), "playwright.config.ts");
+    expect(statSync(cfg).isFile()).toBe(true);
+    const src = readFileSync(cfg, "utf-8");
+    expect(src).toContain("baseURL");
+    expect(src).toContain("localhost:1420");
+  });
+
+  it("mock-sidecar fixture covers the invoke() bridge", () => {
+    const src = readFileSync(
+      resolve(pwRoot, "fixtures", "mock-sidecar.ts"),
+      "utf-8",
+    );
+    expect(src).toContain("__TAURI_INTERNALS__");
+    expect(src).toContain("installSidecarMock");
+  });
+
+  it("has pixel-diff specs for the 4 canonical pages", () => {
+    for (const name of ["approvals", "builds", "audit", "yaml"]) {
+      const spec = resolve(pwRoot, `${name}.spec.ts`);
+      expect(statSync(spec).isFile()).toBe(true);
+      const src = readFileSync(spec, "utf-8");
+      expect(src).toContain("toHaveScreenshot");
+      expect(src).toContain(`/${name}`);
+    }
+  });
+});

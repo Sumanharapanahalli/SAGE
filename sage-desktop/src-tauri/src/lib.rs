@@ -18,7 +18,7 @@ pub mod commands;
 mod desktop_app {
     use std::path::PathBuf;
 
-    use tauri::Manager;
+    use tauri::{Emitter, Manager};
     use tokio::sync::RwLock;
 
     use crate::sidecar::{Sidecar, SidecarConfig};
@@ -75,6 +75,29 @@ mod desktop_app {
                         }
                     }
                 });
+
+                // Phase 4.6: background update probe on launch. Runs in
+                // the background so slow networks never delay startup; the
+                // result is emitted as a Tauri event the frontend can
+                // subscribe to. Opt-out respected via the SAGE_SKIP_BG_UPDATE
+                // env var for CI and offline dev loops.
+                let updater_handle = app.handle().clone();
+                tauri::async_runtime::spawn(async move {
+                    if std::env::var("SAGE_SKIP_BG_UPDATE").is_ok() {
+                        return;
+                    }
+                    // Small delay so the sidecar spawn has first crack at
+                    // the async runtime — UI becomes interactive sooner.
+                    tokio::time::sleep(std::time::Duration::from_secs(3)).await;
+                    match crate::commands::updates::probe_update(&updater_handle).await {
+                        Ok(status) => {
+                            let _ = updater_handle.emit("update-check-result", &status);
+                        }
+                        Err(e) => {
+                            tracing::warn!("background update probe failed: {e}");
+                        }
+                    }
+                });
                 Ok(())
             })
             .invoke_handler(tauri::generate_handler![
@@ -111,6 +134,7 @@ mod desktop_app {
                 crate::commands::updates::install_update,
                 crate::commands::telemetry::telemetry_get_status,
                 crate::commands::telemetry::telemetry_set_enabled,
+                crate::commands::telemetry::telemetry_flush,
             ])
             .run(tauri::generate_context!())
             .expect("error while running sage-desktop app");

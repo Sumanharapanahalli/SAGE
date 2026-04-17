@@ -220,6 +220,9 @@ export const telemetryGetStatus = () =>
 export const telemetrySetEnabled = (enabled: boolean) =>
   call<TelemetryStatus>("telemetry_set_enabled", { enabled });
 
+export const telemetryFlush = () =>
+  call<{ sent: number; reason: string }>("telemetry_flush");
+
 // ── Queue ─────────────────────────────────────────────────────────────────
 
 export const getQueueStatus = () => call<QueueStatus>("get_queue_status");

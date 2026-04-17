@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
-# Build the standalone sage-sidecar.exe from sage-sidecar.spec.
+# Build the standalone sage-sidecar executable from sage-sidecar.spec.
 #
-# Output: sage-desktop/sidecar/dist/sage-sidecar.exe
+# Output:
+#   Windows: sage-desktop/sidecar/dist/sage-sidecar.exe
+#   macOS:   sage-desktop/sidecar/dist/sage-sidecar
+#   Linux:   sage-desktop/sidecar/dist/sage-sidecar
+#
 # Prereq: the repo-root .venv exists and has pyinstaller installed
-#         (make venv; .venv/Scripts/pip install pyinstaller).
+#         (make venv; .venv/{Scripts,bin}/pip install pyinstaller).
 set -euo pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -13,8 +17,10 @@ repo_root="$(cd "${desktop_dir}/.." && pwd)"
 # Resolve the venv Python — Windows Git Bash uses Scripts/, POSIX uses bin/.
 if [[ -x "${repo_root}/.venv/Scripts/python.exe" ]]; then
     py="${repo_root}/.venv/Scripts/python.exe"
+    exe_ext=".exe"
 elif [[ -x "${repo_root}/.venv/bin/python" ]]; then
     py="${repo_root}/.venv/bin/python"
+    exe_ext=""
 else
     echo "ERROR: no .venv found at ${repo_root}/.venv — run 'make venv' first" >&2
     exit 1
@@ -29,11 +35,12 @@ rm -rf build dist
     --clean \
     sage-sidecar.spec
 
-exe="dist/sage-sidecar.exe"
+exe="dist/sage-sidecar${exe_ext}"
 if [[ ! -f "${exe}" ]]; then
     echo "ERROR: build completed but ${exe} missing" >&2
     exit 1
 fi
 
+# Portable byte-size (GNU stat vs BSD stat).
 size_bytes=$(stat -c '%s' "${exe}" 2>/dev/null || stat -f '%z' "${exe}")
 echo "built: ${exe} ($((size_bytes / 1024 / 1024)) MB)"

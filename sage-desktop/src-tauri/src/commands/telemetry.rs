@@ -30,3 +30,14 @@ pub async fn telemetry_set_enabled(
         .call("telemetry.set_enabled", json!({ "enabled": enabled }))
         .await
 }
+
+#[tauri::command]
+pub async fn telemetry_flush(
+    sidecar: State<'_, RwLock<Sidecar>>,
+) -> Result<Value, DesktopError> {
+    sidecar
+        .read()
+        .await
+        .call("telemetry.flush", json!({}))
+        .await
+}

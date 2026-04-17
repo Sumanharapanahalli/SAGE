@@ -11,8 +11,13 @@ use tauri_plugin_updater::UpdaterExt;
 use crate::errors::DesktopError;
 use crate::update_status::UpdateStatus;
 
-#[tauri::command]
-pub async fn check_update(app: AppHandle) -> Result<UpdateStatus, DesktopError> {
+/// Shared update-probing helper. Used by both the manual
+/// ``check_update`` command (user clicks "Check for updates" in
+/// Settings) and the background probe fired once on launch from
+/// ``lib.rs::setup`` (Phase 4.6). Returns an ``UpdateStatus`` variant
+/// — errors propagate as ``UpdateStatus::Error`` rather than as Err so
+/// the frontend renders them uniformly.
+pub async fn probe_update(app: &AppHandle) -> Result<UpdateStatus, DesktopError> {
     let current = app.package_info().version.to_string();
     let updater = app.updater().map_err(|e| DesktopError::Other {
         code: -1,
@@ -31,6 +36,11 @@ pub async fn check_update(app: AppHandle) -> Result<UpdateStatus, DesktopError> 
             detail: format!("{e}"),
         }),
     }
+}
+
+#[tauri::command]
+pub async fn check_update(app: AppHandle) -> Result<UpdateStatus, DesktopError> {
+    probe_update(&app).await
 }
 
 #[tauri::command]

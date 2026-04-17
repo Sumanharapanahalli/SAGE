@@ -514,3 +514,194 @@ docs/
   buffer locally; the HTTPS POST transport is Phase 4.6. That means
   Phase 4 ships *no* network egress from the installed app by default.
 
+---
+
+## Phase 4.5 — Cross-platform packaging
+
+Phase 4.5 extends Phase 4's Windows-only release pipeline to also
+produce installable macOS and Linux artifacts from the same source
+tree. No feature changes — strictly packaging.
+
+### Deliverables
+
+- **Sidecar target matrix** — `resolve_sidecar_path()` (src-tauri/src/sidecar.rs)
+  now probes six candidate filenames before falling back to the dev
+  entrypoint:
+  - `sage-sidecar-x86_64-pc-windows-msvc.exe`
+  - `sage-sidecar-aarch64-pc-windows-msvc.exe`
+  - `sage-sidecar-x86_64-apple-darwin`
+  - `sage-sidecar-aarch64-apple-darwin`
+  - `sage-sidecar-x86_64-unknown-linux-gnu`
+  - `sage-sidecar-aarch64-unknown-linux-gnu`
+  The per-triple candidate order is driven by `cfg!()` so a native
+  build picks its own exe first. `SUPPORTED_SIDECAR_TRIPLES` is a
+  public const so the release workflow and drift-guard tests share
+  one source of truth.
+- **Tauri bundle targets** — `tauri.conf.json.bundle.targets`
+  extended from `["msi", "nsis"]` to include `"app"`, `"dmg"`,
+  `"appimage"`, `"deb"`. Tauri picks the relevant subset per host at
+  build time.
+- **Portable build script** — `scripts/build-sidecar.sh` detects the
+  host's `.venv` layout (Scripts/ vs bin/) and emits the correct
+  extension-less executable on POSIX (Windows still writes `.exe`).
+- **Expanded release workflow matrix** —
+  `.github/workflows/sage-desktop-release.yml` adds `macos-13`
+  (Intel), `macos-latest` (Apple Silicon), and `ubuntu-latest` (x64
+  AppImage + .deb) runners alongside the existing Windows job. Each
+  runner builds PyInstaller, stages the triple-named sidecar under
+  `src-tauri/bin/`, sets the POSIX execute bit, then runs Tauri with
+  its own `bundle_targets` set. Linux additionally installs
+  `libwebkit2gtk-4.1-dev` + `libappindicator3-dev` + `patchelf` so
+  Tauri 2 + AppImage can build on a stock Ubuntu image.
+- **Updater manifest cross-arch** — `scripts/generate-latest-json.py`
+  now distinguishes `darwin-x86_64` vs `darwin-aarch64` and
+  `linux-x86_64` vs `linux-aarch64` by scanning bundle filenames for
+  an `aarch64`/`arm64` marker (Tauri embeds the arch into the DMG /
+  AppImage stem by default). The Windows key stays `windows-x86_64`
+  until a Windows-on-ARM build is added to the matrix.
+
+### Testing delta (on top of Phase 4)
+
+- Rust: +2 tests in `sidecar.rs` (`supported_triples_covers_six_platforms`,
+  `sidecar_path_picks_up_native_triple_when_bundled`) guarding the
+  target-triple matrix.
+- Python: +14 tests in `test_latest_json.py` parametrizing every
+  Tauri bundle filename pattern through `_detect_platform()` +
+  `build_manifest()`.
+
+### Distribution caveats (Phase 4.5)
+
+- **No trusted-CA code signing yet.** Gatekeeper (macOS) and
+  SmartScreen (Windows) both raise a first-launch warning. AppImage
+  needs `chmod +x` to run. Trusted signing moves to Phase 4.6.
+- **Linux deps.** `.AppImage` is self-contained; `.deb` expects
+  `libwebkit2gtk-4.1` to be available via apt.
+- **macOS universal binary.** The matrix produces two separate DMGs
+  (Intel + Apple Silicon), not a universal binary — that's a Phase
+  4.6 optimization.
+
+---
+
+## Phase 4.6 — Code signing hooks + telemetry uploader + background update
+
+Phase 4.6 closes the deferred transport and signing work that Phase 4
+and 4.5 explicitly punted on. No new user-visible UI — existing
+Settings panels gain new capabilities; everything remains opt-in.
+
+### Deliverables
+
+- **Telemetry HTTPS uploader** — `flush_buffer()` in
+  `sidecar/handlers/telemetry.py` reads the local JSONL buffer,
+  defensively re-filters every row through the PII allowlist (so a
+  tampered buffer file can't smuggle banned keys past the wire), and
+  POSTs a `{"events": [...]}` JSON body to
+  `$SAGE_TELEMETRY_ENDPOINT`. 2xx → buffer truncated; anything else
+  → buffer preserved for retry. Consent is **re-gated at flush
+  time** (`if not config.enabled: return opted_out`) so "I opted
+  out" always wins the race against in-flight buffered events. No
+  destination is hardcoded; the env var is deliberately off-disk so
+  a malicious `config.json` can never redirect the feed. Exposed as
+  RPC `telemetry.flush` → Tauri command `telemetry_flush` → React
+  hook `useFlushTelemetry`.
+- **Background update probe on launch** — `lib.rs::setup` spawns a
+  second async task (after a 3s warm-up so the sidecar gets first
+  crack at the runtime) that calls `probe_update(&AppHandle)` and
+  emits the `UpdateStatus` as a `update-check-result` Tauri event.
+  The frontend UpdatePanel already knows how to render that status,
+  so the only wiring needed is a listener. Opt-out via env var
+  `SAGE_SKIP_BG_UPDATE` for CI and offline dev loops. The manual
+  `Check for updates` button still works; it now shares the same
+  `probe_update` helper.
+- **Code-signing scaffolding** — The release workflow now threads
+  trusted-CA signing secrets into `tauri build`:
+  - Windows: `TAURI_WINDOWS_SIGNING_CERTIFICATE_THUMBPRINT` +
+    `WINDOWS_CODESIGN_TOOL` (for EV cert via signtool or Azure
+    Code Signing).
+  - macOS: `APPLE_CERTIFICATE`, `APPLE_CERTIFICATE_PASSWORD`,
+    `APPLE_SIGNING_IDENTITY`, plus `APPLE_ID`, `APPLE_PASSWORD`,
+    `APPLE_TEAM_ID` for notarytool.
+  When the secrets are missing (PRs from forks, dev tags), the
+  build falls back to the Phase 4.5 unsigned path so contributors
+  don't need production certs to ship a test release.
+
+### Testing delta
+
+- Python: +9 tests in `test_telemetry.py` covering `flush_buffer`:
+  opt-out re-gate, missing endpoint, empty buffer, 2xx truncation,
+  non-2xx retention, network-error resilience, defensive re-filter,
+  env-var fallback, and the `telemetry.flush` RPC shim.
+- Rust: no new tests — `probe_update` shares its logic with
+  `check_update` which is already exercised via `update_status.rs`
+  tests; the setup hook firing is an integration-only concern.
+- Web: +2 tests in `hooks/useTelemetry.test.ts` covering
+  `useFlushTelemetry` success and opt-out paths.
+
+### Privacy invariants preserved
+
+- The allowlist is enforced **twice**: at `record()` time (when the
+  event lands on disk) and at `flush_buffer()` time (when it leaves
+  the device). Adding a key to the allowlist remains the only way
+  for a field to reach the wire.
+- `session_id` values still never persist in `config.json`;
+  `flush_buffer` preserves the ones already stamped on buffered
+  events but does not mint new ones.
+- Opting out still wipes the local buffer immediately.
+
+---
+
+## Phase 4.7 — Playwright pixel-diff for 4 canonical pages
+
+Phase 4.7 replaces the vitest DOM-snapshot layer from Phase 4 with
+actual image-pixel regression for the four high-churn canonical
+pages: **Approvals, Builds, Audit, YAML**. DOM snapshots stay as a
+fast local check; pixel-diff runs as a nightly CI gate.
+
+### Deliverables
+
+- **Playwright config** — `sage-desktop/playwright.config.ts` runs
+  Chromium against `npm run dev` (port 1420), snapshots to
+  `playwright/snapshots/`, 0.2% pixel-diff tolerance (accommodates
+  font-rendering jitter across CI runners without masking real
+  drift).
+- **Tauri invoke() mock** — `playwright/fixtures/mock-sidecar.ts`
+  stubs `window.__TAURI_INTERNALS__.invoke` so every page renders
+  canned, deterministic data without a real sidecar or packaged
+  app. Defaults cover status/handshake/queue/audit/approvals/etc;
+  individual specs can override per-command.
+- **Four canonical specs** — `approvals.spec.ts`, `builds.spec.ts`,
+  `audit.spec.ts`, `yaml.spec.ts`. Each loads the route, waits for
+  its heading/body text, and calls `toHaveScreenshot(...)`.
+- **Drift-guard** — vitest test in
+  `src/__tests__/e2e-config.test.ts` asserts the config, the
+  fixture, and all four spec files exist + reference
+  `toHaveScreenshot` + their route. This runs in the default
+  `npm test` so structural breakage fails fast without needing
+  Playwright installed locally.
+- **CI wiring** — `sage-desktop-mutation.yml` gains a
+  `playwright-visual` job that runs `npm run test:visual` on
+  ubuntu-latest with a pinned Chromium. Non-blocking: mismatches
+  surface as warnings with the full playwright report uploaded as
+  an artifact so the PR author can inspect + refresh baselines.
+
+### Running locally
+
+```bash
+# One-time: install Chromium into ~/.cache/ms-playwright
+npx playwright install chromium
+
+# Run the suite against the dev server
+npm run test:visual
+
+# Refresh baselines after an intentional UI change
+npm run test:visual:update
+```
+
+### Why four pages (not all eight)
+
+The eight primary pages exist, but Approvals/Builds/Audit/YAML are
+where the visual churn lives. Status/Agents/Onboarding/Backlog have
+barely changed visually since Phase 2 and don't justify the
+per-runner screenshot maintenance cost yet. Adding a page is two
+new files (`*.spec.ts` + its committed baseline); the infrastructure
+is designed to scale to all eight when the churn justifies it.
+

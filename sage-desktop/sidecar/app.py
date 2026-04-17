@@ -94,6 +94,7 @@ def _build_dispatcher() -> Dispatcher:
     d.register("yaml.write", yaml_edit.write)
     d.register("telemetry.get_status", telemetry.get_status)
     d.register("telemetry.set_enabled", telemetry.set_enabled)
+    d.register("telemetry.flush", telemetry.flush)
     return d
 
 
