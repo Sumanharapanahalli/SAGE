@@ -37,17 +37,25 @@ export function Sidebar() {
           </li>
         ))}
       </ul>
-      <div className="mt-auto pt-4 text-xs text-sage-700" data-testid="sidebar-solution">
-        <div className="uppercase tracking-wide text-sage-500">Solution</div>
-        <div className="mt-0.5 truncate font-medium" title={label}>
-          {label}
-        </div>
+      <div className="mt-auto">
         <NavLink
-          to="/settings#solution"
-          className="mt-1 inline-block text-[11px] text-sage-600 underline-offset-2 hover:underline"
+          to="/onboarding"
+          className="block rounded border border-dashed border-sage-400 px-3 py-2 text-center text-sm text-sage-700 hover:bg-sage-100"
         >
-          Switch…
+          + New solution
         </NavLink>
+        <div className="pt-4 text-xs text-sage-700" data-testid="sidebar-solution">
+          <div className="uppercase tracking-wide text-sage-500">Solution</div>
+          <div className="mt-0.5 truncate font-medium" title={label}>
+            {label}
+          </div>
+          <NavLink
+            to="/settings#solution"
+            className="mt-1 inline-block text-[11px] text-sage-600 underline-offset-2 hover:underline"
+          >
+            Switch…
+          </NavLink>
+        </div>
       </div>
     </nav>
   );

@@ -41,6 +41,7 @@ vi.mock("@/api/client", () => ({
   listSolutions: vi.fn().mockResolvedValue([]),
   getCurrentSolution: vi.fn().mockResolvedValue(null),
   switchSolution: vi.fn(),
+  onboardingGenerate: vi.fn(),
 }));
 
 vi.mock("@tauri-apps/api/event", () => ({

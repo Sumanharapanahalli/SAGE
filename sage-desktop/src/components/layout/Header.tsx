@@ -6,6 +6,7 @@ const TITLE_MAP: Record<string, string> = {
   "/audit": "Audit",
   "/status": "Status",
   "/backlog": "Backlog",
+  "/onboarding": "New solution",
   "/settings": "Settings",
 };
 
