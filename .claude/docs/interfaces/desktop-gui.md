@@ -255,3 +255,42 @@ The single-lane invariant stands: one sidecar = one active solution. The
 - Web: +6 `useSolutions`, +2 `useAppEvents`, +7 `SolutionPicker`, +1
   Sidebar footer, +1 Settings picker — 84 vitest tests total.
 
+---
+
+## Phase 3c — Onboarding wizard (landed on `feature/sage-desktop-phase3c`)
+
+Phase 3a made switching possible; 3c makes *creating* possible. A user
+can now go from "I want a yoga coach app" to a working solution
+directory without leaving sage-desktop and without `POST
+/onboarding/generate` on FastAPI.
+
+- `onboarding.generate` RPC in the sidecar — a thin wrapper over
+  `src.core.onboarding.generate_solution`. Validates `description` and
+  `solution_name`; re-raises framework errors as typed RPC codes:
+  `ValueError` → `-32602` (`InvalidParams`), `RuntimeError` (LLM down)
+  → `-32000` (`SidecarDown`).
+- `onboarding_generate(description, solution_name, compliance_standards?,
+  integrations?, parent_solution?)` Tauri command — proxy-only, uses the
+  existing `State<RwLock<Sidecar>>` read-lock pattern (the sidecar's own
+  stdin mutex serializes the LLM call).
+- React: `useOnboardingGenerate` mutation hook invalidates `solutionsKey`
+  on `status == "created"` so the Sidebar picker refreshes; an
+  `OnboardingWizard` component with client-side validation
+  (`^[a-z][a-z0-9_]*$` + min 30-char description) and a typed-error
+  alert panel; `/onboarding` page; "+ New solution" link in the Sidebar
+  (always visible, above the current-solution footer).
+- After a successful `created` result the wizard offers "Switch to it"
+  (calls `useSwitchSolution` → navigates to `/status`) or "Stay on
+  current". An `exists` status renders a yellow soft-fail panel (no
+  Switch button — the solution already existed).
+
+The framework function is untouched — 3c is pure wiring.
+
+### Testing delta
+- Python: +7 unit tests (`handlers/onboarding`) and +1 e2e round-trip
+  in `test_main.py` — 118 sidecar tests total.
+- Rust: proxy-only command, no new tests (the existing 20 still pass
+  against the enlarged handler list).
+- Web: +3 `useOnboardingGenerate` and +5 `OnboardingWizard` tests — 92
+  vitest tests total.
+
