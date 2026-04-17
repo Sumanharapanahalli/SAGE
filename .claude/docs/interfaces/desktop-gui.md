@@ -376,3 +376,44 @@ through the approval path (`yaml_edit` proposal kind, unchanged).
 - Web: +4 `useYamlEdit` hook tests, +3 `YamlEdit` page tests — 119
   vitest tests total.
 
+## Phase 5b — Constitution authoring (landed on `feature/sage-desktop-phase5b`)
+
+Exposes `src/core/constitution.py` through the sidecar so operators can
+author per-solution principles, constraints, voice, and decision rules
+without leaving the desktop app. The Constitution is what every agent's
+system prompt is prepended with — the single highest-leverage
+solution-level configuration in SAGE.
+
+- Four sidecar handlers in `handlers/constitution.py`:
+  `constitution.get`, `constitution.update`, `constitution.preamble`,
+  `constitution.check_action`. The concrete `Constitution` instance is
+  wired at startup by `_wire_handlers`; if the import fails the
+  handlers degrade gracefully to typed `SidecarError` responses.
+  `update` replaces the full state in memory, runs `validate()` before
+  writing to disk, and reloads on failure so in-memory state never
+  drifts past a rejected edit.
+- Four Tauri commands (`constitution_{get,update,preamble,check_action}`)
+  — proxy-only, same `State<RwLock<Sidecar>>` read-lock pattern.
+- React: `useConstitution` (query), `useUpdateConstitution` (mutation,
+  invalidates the query), `useCheckAction` (on-demand mutation). Seven
+  domain components: `PrinciplesEditor`, `ConstraintsEditor`,
+  `VoiceEditor`, `DecisionsEditor`, `PreamblePreview`, `ActionChecker`,
+  `VersionHistoryList`. The `Constitution` page composes the editors
+  left and preview/checker/history right; Save is disabled until the
+  draft diverges from the loaded state.
+- Route `/constitution`, Sidebar "Constitution" entry, Header title
+  map updated.
+
+**Law 1 note.** Operator-authored constitutions bypass the proposal
+queue by the same rationale as Phase 3b YAML authoring. When an
+*agent* proposes a constitution change, it still flows through the
+existing `yaml_edit` proposal kind so the audit trail remains uniform.
+
+### Testing delta
+- Python: +13 unit tests (`handlers/constitution`) including a real
+  `Constitution` round-trip — 158 sidecar tests total.
+- Rust: proxy-only commands, no new tests.
+- Web: +4 `useConstitution` hook tests, +5 `PrinciplesEditor`, +4
+  `ConstraintsEditor`, +3 `ActionChecker`, +2 `Constitution` page, +1
+  Sidebar entry — 133 vitest tests total.
+
