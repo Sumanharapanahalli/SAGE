@@ -70,3 +70,48 @@ def _optional_str_list(value: Any, name: str) -> list[str]:
     if not isinstance(value, list) or not all(isinstance(v, str) for v in value):
         raise RpcError(RPC_INVALID_PARAMS, f"'{name}' must be a list of strings")
     return value
+
+
+# ── RPC methods ──────────────────────────────────────────────────
+
+
+def list_learnings(params: Any) -> dict:
+    p = _require_dict(params)
+    solution = p.get("solution")
+    topic = p.get("topic")
+    if solution is not None and not isinstance(solution, str):
+        raise RpcError(RPC_INVALID_PARAMS, "'solution' must be a string")
+    if topic is not None and not isinstance(topic, str):
+        raise RpcError(RPC_INVALID_PARAMS, "'topic' must be a string")
+    limit = _coerce_int(p.get("limit"), "limit", _LIMIT_DEFAULT, 1, _LIMIT_MAX)
+    offset = _coerce_int(p.get("offset"), "offset", 0, 0, 10_000_000)
+
+    cm = _require_cm()
+    try:
+        full = cm.list_learnings(
+            solution=solution or None, topic=topic or None, limit=10_000_000, offset=0
+        )
+    except Exception as e:  # noqa: BLE001
+        raise RpcError(RPC_SIDECAR_ERROR, f"list_learnings failed: {e}") from e
+
+    total = len(full)
+    entries = full[offset: offset + limit]
+    return {
+        "entries": entries,
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+    }
+
+
+def get_learning(params: Any) -> dict:
+    p = _require_dict(params)
+    learning_id = _require_str(p.get("id"), "id")
+
+    cm = _require_cm()
+    try:
+        result = cm.get_learning(learning_id)
+    except Exception as e:  # noqa: BLE001
+        raise RpcError(RPC_SIDECAR_ERROR, f"get_learning failed: {e}") from e
+
+    return {"learning": result}

@@ -40,6 +40,36 @@ class _FakeCM:
         self._pulled = False
         self._indexed = 0
 
+    # ── Learning helpers (fake) ────────────────────────────────
+    def _add_learning(self, *, solution="s1", topic="t1", title="t", content="c") -> str:
+        lid = str(uuid.uuid4())
+        self._learnings[lid] = {
+            "id": lid,
+            "author_agent": "analyst",
+            "author_solution": solution,
+            "topic": topic,
+            "title": title,
+            "content": content,
+            "tags": [],
+            "confidence": 0.5,
+            "validation_count": 0,
+            "created_at": "2026-04-17T00:00:00+00:00",
+            "updated_at": "2026-04-17T00:00:00+00:00",
+            "source_task_id": "",
+        }
+        return lid
+
+    def list_learnings(self, solution=None, topic=None, limit=50, offset=0):
+        items = list(self._learnings.values())
+        if solution:
+            items = [x for x in items if x["author_solution"] == solution]
+        if topic:
+            items = [x for x in items if x["topic"] == topic]
+        return items[offset: offset + limit]
+
+    def get_learning(self, learning_id: str):
+        return self._learnings.get(learning_id)
+
 
 @pytest.fixture
 def wired():
@@ -60,3 +90,52 @@ def test_require_dict_rejects_non_dict():
     with pytest.raises(RpcError) as e:
         collective._require_dict("not a dict")
     assert e.value.code == -32602
+
+
+def test_list_learnings_returns_paginated_slice(wired, monkeypatch):
+    monkeypatch.setattr(collective, "_cm", wired)
+    for i in range(5):
+        wired._add_learning(topic=f"t{i}")
+    out = collective.list_learnings({"limit": 2, "offset": 1})
+    assert len(out["entries"]) == 2
+    assert out["total"] == 5
+    assert out["limit"] == 2
+    assert out["offset"] == 1
+
+
+def test_list_learnings_filters_by_solution_and_topic(wired, monkeypatch):
+    monkeypatch.setattr(collective, "_cm", wired)
+    wired._add_learning(solution="a", topic="t1")
+    wired._add_learning(solution="a", topic="t2")
+    wired._add_learning(solution="b", topic="t1")
+    out = collective.list_learnings({"solution": "a", "topic": "t1"})
+    assert out["total"] == 1
+    assert out["entries"][0]["author_solution"] == "a"
+    assert out["entries"][0]["topic"] == "t1"
+
+
+def test_list_learnings_rejects_oversized_limit(wired, monkeypatch):
+    monkeypatch.setattr(collective, "_cm", wired)
+    with pytest.raises(RpcError) as e:
+        collective.list_learnings({"limit": 10000})
+    assert e.value.code == -32602
+
+
+def test_get_learning_returns_entry(wired, monkeypatch):
+    monkeypatch.setattr(collective, "_cm", wired)
+    lid = wired._add_learning(title="needle")
+    out = collective.get_learning({"id": lid})
+    assert out["learning"]["id"] == lid
+    assert out["learning"]["title"] == "needle"
+
+
+def test_get_learning_returns_null_when_missing(wired, monkeypatch):
+    monkeypatch.setattr(collective, "_cm", wired)
+    out = collective.get_learning({"id": "ghost"})
+    assert out == {"learning": None}
+
+
+def test_get_learning_rejects_empty_id(wired, monkeypatch):
+    monkeypatch.setattr(collective, "_cm", wired)
+    with pytest.raises(RpcError):
+        collective.get_learning({"id": ""})
