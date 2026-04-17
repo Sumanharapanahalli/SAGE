@@ -252,3 +252,62 @@ def create_help_request(params: Any) -> dict:
         raise RpcError(RPC_SIDECAR_ERROR, f"create_help_request failed: {e}") from e
 
     return {"id": str(req_id)}
+
+
+def claim_help_request(params: Any) -> dict:
+    p = _require_dict(params)
+    request_id = _require_str(p.get("id"), "id")
+    agent = _require_str(p.get("agent"), "agent")
+    solution = _require_str(p.get("solution"), "solution")
+
+    cm = _require_cm()
+    try:
+        updated = cm.claim_help_request(request_id, agent, solution)
+    except ValueError as e:
+        raise RpcError(RPC_SIDECAR_ERROR, str(e)) from e
+    except Exception as e:  # noqa: BLE001
+        raise RpcError(RPC_SIDECAR_ERROR, f"claim_help_request failed: {e}") from e
+
+    return {"request": updated}
+
+
+def respond_to_help_request(params: Any) -> dict:
+    p = _require_dict(params)
+    request_id = _require_str(p.get("id"), "id")
+    responder_agent = _require_str(p.get("responder_agent"), "responder_agent")
+    responder_solution = _require_str(p.get("responder_solution"), "responder_solution")
+    content = _require_str(p.get("content"), "content")
+
+    cm = _require_cm()
+    try:
+        updated = cm.respond_to_help_request(
+            request_id,
+            {
+                "responder_agent": responder_agent,
+                "responder_solution": responder_solution,
+                "content": content,
+            },
+        )
+    except ValueError as e:
+        raise RpcError(RPC_SIDECAR_ERROR, str(e)) from e
+    except Exception as e:  # noqa: BLE001
+        raise RpcError(
+            RPC_SIDECAR_ERROR, f"respond_to_help_request failed: {e}"
+        ) from e
+
+    return {"request": updated}
+
+
+def close_help_request(params: Any) -> dict:
+    p = _require_dict(params)
+    request_id = _require_str(p.get("id"), "id")
+
+    cm = _require_cm()
+    try:
+        updated = cm.close_help_request(request_id)
+    except ValueError as e:
+        raise RpcError(RPC_SIDECAR_ERROR, str(e)) from e
+    except Exception as e:  # noqa: BLE001
+        raise RpcError(RPC_SIDECAR_ERROR, f"close_help_request failed: {e}") from e
+
+    return {"request": updated}

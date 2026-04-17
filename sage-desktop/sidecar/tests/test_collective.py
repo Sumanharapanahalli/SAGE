@@ -154,6 +154,40 @@ class _FakeCM:
         }
         return hid
 
+    def claim_help_request(self, request_id: str, agent: str, solution: str) -> dict:
+        if request_id not in self._help_open:
+            raise ValueError(f"Help request {request_id} not found in open requests")
+        data = self._help_open[request_id]
+        if data.get("claimed_by"):
+            raise ValueError(f"Help request {request_id} is already claimed")
+        data["status"] = "claimed"
+        data["claimed_by"] = {
+            "agent": agent, "solution": solution,
+            "claimed_at": "2026-04-17T00:00:01+00:00",
+        }
+        return data
+
+    def respond_to_help_request(self, request_id: str, response: dict) -> dict:
+        src = self._help_open if request_id in self._help_open else self._help_closed
+        if request_id not in src:
+            raise ValueError(f"Help request {request_id} not found")
+        src[request_id].setdefault("responses", []).append({
+            "responder_agent": response.get("responder_agent", ""),
+            "responder_solution": response.get("responder_solution", ""),
+            "content": response.get("content", ""),
+            "created_at": "2026-04-17T00:00:02+00:00",
+        })
+        return src[request_id]
+
+    def close_help_request(self, request_id: str) -> dict:
+        if request_id not in self._help_open:
+            raise ValueError(f"Help request {request_id} not found in open requests")
+        data = self._help_open.pop(request_id)
+        data["status"] = "closed"
+        data["resolved_at"] = "2026-04-17T00:00:03+00:00"
+        self._help_closed[request_id] = data
+        return data
+
 
 @pytest.fixture
 def wired():
@@ -378,3 +412,68 @@ def test_create_help_request_requires_title(wired, monkeypatch):
         collective.create_help_request({
             "title": "", "requester_agent": "a", "requester_solution": "s",
         })
+
+
+def test_claim_help_request_transitions_to_claimed(wired, monkeypatch):
+    monkeypatch.setattr(collective, "_cm", wired)
+    hid = wired._add_help()
+    out = collective.claim_help_request(
+        {"id": hid, "agent": "fw", "solution": "iot"}
+    )
+    assert out["request"]["status"] == "claimed"
+    assert out["request"]["claimed_by"]["agent"] == "fw"
+
+
+def test_claim_help_request_raises_if_already_claimed(wired, monkeypatch):
+    monkeypatch.setattr(collective, "_cm", wired)
+    hid = wired._add_help()
+    wired._help_open[hid]["claimed_by"] = {"agent": "other", "solution": "x"}
+    with pytest.raises(RpcError) as e:
+        collective.claim_help_request(
+            {"id": hid, "agent": "fw", "solution": "iot"}
+        )
+    assert e.value.code == -32000
+    assert "claimed" in e.value.message.lower()
+
+
+def test_claim_help_request_requires_fields(wired, monkeypatch):
+    monkeypatch.setattr(collective, "_cm", wired)
+    with pytest.raises(RpcError):
+        collective.claim_help_request({"id": "", "agent": "a", "solution": "s"})
+
+
+def test_respond_to_help_request_appends_response(wired, monkeypatch):
+    monkeypatch.setattr(collective, "_cm", wired)
+    hid = wired._add_help()
+    out = collective.respond_to_help_request({
+        "id": hid, "responder_agent": "fw",
+        "responder_solution": "iot", "content": "try X",
+    })
+    assert len(out["request"]["responses"]) == 1
+    assert out["request"]["responses"][0]["content"] == "try X"
+
+
+def test_respond_to_help_request_requires_content(wired, monkeypatch):
+    monkeypatch.setattr(collective, "_cm", wired)
+    hid = wired._add_help()
+    with pytest.raises(RpcError):
+        collective.respond_to_help_request({
+            "id": hid, "responder_agent": "a",
+            "responder_solution": "s", "content": "  ",
+        })
+
+
+def test_close_help_request_moves_to_closed(wired, monkeypatch):
+    monkeypatch.setattr(collective, "_cm", wired)
+    hid = wired._add_help()
+    out = collective.close_help_request({"id": hid})
+    assert out["request"]["status"] == "closed"
+    assert hid in wired._help_closed
+    assert hid not in wired._help_open
+
+
+def test_close_help_request_not_found(wired, monkeypatch):
+    monkeypatch.setattr(collective, "_cm", wired)
+    with pytest.raises(RpcError) as e:
+        collective.close_help_request({"id": "ghost"})
+    assert e.value.code == -32000
