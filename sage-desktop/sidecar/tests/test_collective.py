@@ -107,6 +107,53 @@ class _FakeCM:
         l["updated_at"] = "2026-04-17T00:00:01+00:00"
         return l
 
+    def _add_help(self, *, status="open", expertise=None, urgency="medium"):
+        hid = f"hr-{uuid.uuid4().hex[:8]}"
+        data = {
+            "id": hid,
+            "title": "help me",
+            "requester_agent": "dev",
+            "requester_solution": "auto",
+            "status": status,
+            "urgency": urgency,
+            "required_expertise": expertise or [],
+            "context": "",
+            "created_at": "2026-04-17T00:00:00+00:00",
+            "claimed_by": None,
+            "responses": [],
+            "resolved_at": None,
+        }
+        (self._help_open if status == "open" else self._help_closed)[hid] = data
+        return hid
+
+    def list_help_requests(self, status="open", expertise=None):
+        source = self._help_open if status == "open" else self._help_closed
+        items = list(source.values())
+        if expertise:
+            items = [
+                x for x in items
+                if any(e in x.get("required_expertise", []) for e in expertise)
+            ]
+        return items
+
+    def create_help_request(self, request: dict) -> str:
+        hid = f"hr-{uuid.uuid4().hex[:8]}"
+        self._help_open[hid] = {
+            "id": hid,
+            "title": request.get("title", ""),
+            "requester_agent": request.get("requester_agent", ""),
+            "requester_solution": request.get("requester_solution", ""),
+            "status": "open",
+            "urgency": request.get("urgency", "medium"),
+            "required_expertise": request.get("required_expertise", []),
+            "context": request.get("context", ""),
+            "created_at": "2026-04-17T00:00:00+00:00",
+            "claimed_by": None,
+            "responses": [],
+            "resolved_at": None,
+        }
+        return hid
+
 
 @pytest.fixture
 def wired():
@@ -274,3 +321,60 @@ def test_validate_learning_propagates_not_found(wired, monkeypatch):
         collective.validate_learning({"id": "ghost", "validated_by": "qa"})
     assert e.value.code == -32000
     assert "not found" in e.value.message.lower()
+
+
+def test_list_help_requests_defaults_to_open(wired, monkeypatch):
+    monkeypatch.setattr(collective, "_cm", wired)
+    wired._add_help(status="open")
+    wired._add_help(status="closed")
+    out = collective.list_help_requests({})
+    assert out["count"] == 1
+    assert out["entries"][0]["status"] == "open"
+
+
+def test_list_help_requests_filters_by_expertise(wired, monkeypatch):
+    monkeypatch.setattr(collective, "_cm", wired)
+    wired._add_help(expertise=["i2c"])
+    wired._add_help(expertise=["uart"])
+    out = collective.list_help_requests({"expertise": ["uart"]})
+    assert out["count"] == 1
+    assert "uart" in out["entries"][0]["required_expertise"]
+
+
+def test_list_help_requests_rejects_bad_status(wired, monkeypatch):
+    monkeypatch.setattr(collective, "_cm", wired)
+    with pytest.raises(RpcError) as e:
+        collective.list_help_requests({"status": "archived"})
+    assert e.value.code == -32602
+
+
+def test_create_help_request_returns_id(wired, monkeypatch):
+    monkeypatch.setattr(collective, "_cm", wired)
+    out = collective.create_help_request({
+        "title": "I2C help",
+        "requester_agent": "developer",
+        "requester_solution": "automotive",
+        "urgency": "high",
+        "required_expertise": ["i2c"],
+        "context": "stuck",
+    })
+    assert out["id"].startswith("hr-")
+    assert len(wired._help_open) == 1
+
+
+def test_create_help_request_rejects_bad_urgency(wired, monkeypatch):
+    monkeypatch.setattr(collective, "_cm", wired)
+    with pytest.raises(RpcError) as e:
+        collective.create_help_request({
+            "title": "x", "requester_agent": "a",
+            "requester_solution": "s", "urgency": "emergency",
+        })
+    assert e.value.code == -32602
+
+
+def test_create_help_request_requires_title(wired, monkeypatch):
+    monkeypatch.setattr(collective, "_cm", wired)
+    with pytest.raises(RpcError):
+        collective.create_help_request({
+            "title": "", "requester_agent": "a", "requester_solution": "s",
+        })

@@ -198,3 +198,57 @@ def validate_learning(params: Any) -> dict:
         raise RpcError(RPC_SIDECAR_ERROR, f"validate_learning failed: {e}") from e
 
     return {"learning": updated}
+
+
+def list_help_requests(params: Any) -> dict:
+    p = _require_dict(params)
+    status = p.get("status", "open")
+    if status not in _STATUSES:
+        raise RpcError(
+            RPC_INVALID_PARAMS, f"'status' must be one of {sorted(_STATUSES)}"
+        )
+    expertise = _optional_str_list(p.get("expertise"), "expertise")
+
+    cm = _require_cm()
+    try:
+        entries = cm.list_help_requests(status=status, expertise=expertise or None)
+    except Exception as e:  # noqa: BLE001
+        raise RpcError(RPC_SIDECAR_ERROR, f"list_help_requests failed: {e}") from e
+
+    entries = list(entries or [])
+    return {"entries": entries, "count": len(entries)}
+
+
+def create_help_request(params: Any) -> dict:
+    p = _require_dict(params)
+    title = _require_str(p.get("title"), "title")
+    requester_agent = _require_str(p.get("requester_agent"), "requester_agent")
+    requester_solution = _require_str(p.get("requester_solution"), "requester_solution")
+    urgency = p.get("urgency", "medium")
+    if urgency not in _URGENCIES:
+        raise RpcError(
+            RPC_INVALID_PARAMS, f"'urgency' must be one of {sorted(_URGENCIES)}"
+        )
+    required_expertise = _optional_str_list(
+        p.get("required_expertise"), "required_expertise"
+    )
+    context = p.get("context", "")
+    if not isinstance(context, str):
+        raise RpcError(RPC_INVALID_PARAMS, "'context' must be a string")
+
+    payload = {
+        "title": title,
+        "requester_agent": requester_agent,
+        "requester_solution": requester_solution,
+        "urgency": urgency,
+        "required_expertise": required_expertise,
+        "context": context,
+    }
+
+    cm = _require_cm()
+    try:
+        req_id = cm.create_help_request(payload)
+    except Exception as e:  # noqa: BLE001
+        raise RpcError(RPC_SIDECAR_ERROR, f"create_help_request failed: {e}") from e
+
+    return {"id": str(req_id)}
