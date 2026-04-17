@@ -28,6 +28,7 @@ export type DesktopError =
   | { kind: "InvalidParams"; detail: { message: string } }
   | { kind: "MethodNotFound"; detail: { method: string } }
   | { kind: "SidecarDown"; detail: { message: string } }
+  | { kind: "FeatureRequestNotFound"; detail: { feature_id: string } }
   | { kind: "Other"; detail: { code: number; message: string } };
 
 // ── Proposals ─────────────────────────────────────────────────────────────
@@ -139,4 +140,86 @@ export interface HandshakeResponse {
   solution_name: string;
   solution_path: string;
   warnings: string[];
+}
+
+// ── LLM ───────────────────────────────────────────────────────────────────
+
+export interface LlmInfo {
+  provider_name: string;
+  model: string;
+  available_providers: string[];
+}
+
+export interface LlmSwitchResult {
+  provider: string;
+  provider_name: string;
+  saved_as_default: boolean;
+}
+
+// ── Feature requests (backlog) ────────────────────────────────────────────
+
+export type FeatureRequestScope = "solution" | "sage";
+export type FeatureRequestPriority = "low" | "medium" | "high" | "critical";
+export type FeatureRequestStatus =
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "completed"
+  | "in_progress";
+
+export interface FeatureRequest {
+  id: string;
+  module_id: string;
+  module_name: string;
+  title: string;
+  description: string;
+  priority: FeatureRequestPriority;
+  status: FeatureRequestStatus;
+  requested_by: string;
+  scope: FeatureRequestScope;
+  created_at: string;
+  updated_at: string;
+  reviewer_note: string;
+  plan_trace_id: string;
+}
+
+export interface FeatureRequestSubmit {
+  title: string;
+  description: string;
+  priority?: FeatureRequestPriority;
+  scope?: FeatureRequestScope;
+  module_id?: string;
+  module_name?: string;
+  requested_by?: string;
+}
+
+export type FeatureRequestAction = "approve" | "reject" | "complete";
+
+export interface FeatureRequestUpdate {
+  id: string;
+  action: FeatureRequestAction;
+  reviewer_note?: string;
+}
+
+// ── Queue ─────────────────────────────────────────────────────────────────
+
+export interface QueueStatus {
+  pending: number;
+  in_progress: number;
+  done: number;
+  failed: number;
+  blocked: number;
+  parallel_enabled: boolean;
+  max_workers: number;
+}
+
+export interface QueueTask {
+  id: string;
+  task_type: string;
+  status: string;
+  priority?: number;
+  created_at?: string;
+  started_at?: string;
+  completed_at?: string;
+  error?: string;
 }

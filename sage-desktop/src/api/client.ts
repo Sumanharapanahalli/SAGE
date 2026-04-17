@@ -15,8 +15,17 @@ import type {
   AuditTraceResponse,
   BatchApproveResult,
   DesktopError,
+  FeatureRequest,
+  FeatureRequestScope,
+  FeatureRequestStatus,
+  FeatureRequestSubmit,
+  FeatureRequestUpdate,
   HandshakeResponse,
+  LlmInfo,
+  LlmSwitchResult,
   Proposal,
+  QueueStatus,
+  QueueTask,
   StatusResponse,
 } from "./types";
 
@@ -126,6 +135,36 @@ export const auditStats = () => call<AuditStats>("audit_stats");
 export const listAgents = () => call<Agent[]>("list_agents");
 export const getAgent = (name: string) => call<Agent>("get_agent", { name });
 
+// ── LLM ───────────────────────────────────────────────────────────────────
+
+export const getLlmInfo = () => call<LlmInfo>("get_llm_info");
+
+export const switchLlm = (req: {
+  provider: string;
+  model?: string;
+  save_as_default?: boolean;
+}) => call<LlmSwitchResult>("switch_llm", req);
+
+// ── Backlog ───────────────────────────────────────────────────────────────
+
+export const listFeatureRequests = (
+  params: { status?: FeatureRequestStatus; scope?: FeatureRequestScope } = {},
+) => call<FeatureRequest[]>("list_feature_requests", params);
+
+export const submitFeatureRequest = (req: FeatureRequestSubmit) =>
+  call<FeatureRequest>("submit_feature_request", req);
+
+export const updateFeatureRequest = (req: FeatureRequestUpdate) =>
+  call<FeatureRequest>("update_feature_request", req);
+
+// ── Queue ─────────────────────────────────────────────────────────────────
+
+export const getQueueStatus = () => call<QueueStatus>("get_queue_status");
+
+export const listQueueTasks = (
+  params: { status?: string; limit?: number } = {},
+) => call<QueueTask[]>("list_queue_tasks", params);
+
 // Re-exports to reduce import boilerplate at call sites
 export type {
   Agent,
@@ -135,7 +174,16 @@ export type {
   AuditTraceResponse,
   BatchApproveResult,
   DesktopError,
+  FeatureRequest,
+  FeatureRequestScope,
+  FeatureRequestStatus,
+  FeatureRequestSubmit,
+  FeatureRequestUpdate,
   HandshakeResponse,
+  LlmInfo,
+  LlmSwitchResult,
   Proposal,
+  QueueStatus,
+  QueueTask,
   StatusResponse,
 };
