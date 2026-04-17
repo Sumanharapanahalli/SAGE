@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("@/api/client", () => ({
   getStatus: vi.fn(),
   handshake: vi.fn(),
+  getQueueStatus: vi.fn(),
 }));
 
 import * as client from "@/api/client";
@@ -24,6 +25,10 @@ describe("Status page", () => {
       llm: { provider: "gemini", model: "gemini-2.0" },
       pending_approvals: 3,
     });
+    vi.mocked(client.getQueueStatus).mockResolvedValue({
+      pending: 0, in_progress: 0, done: 0, failed: 0, blocked: 0,
+      parallel_enabled: false, max_workers: 0,
+    });
     render(<Status />, { wrapper: wrapperWith(createTestQueryClient()) });
     await waitFor(() => expect(screen.getByText(/medtech/)).toBeInTheDocument());
     expect(screen.getByText(/gemini/)).toBeInTheDocument();
@@ -34,6 +39,10 @@ describe("Status page", () => {
     vi.mocked(client.getStatus).mockRejectedValue({
       kind: "SidecarDown",
       detail: { message: "stream closed" },
+    });
+    vi.mocked(client.getQueueStatus).mockResolvedValue({
+      pending: 0, in_progress: 0, done: 0, failed: 0, blocked: 0,
+      parallel_enabled: false, max_workers: 0,
     });
     render(<Status />, { wrapper: wrapperWith(createTestQueryClient()) });
     await waitFor(() =>
