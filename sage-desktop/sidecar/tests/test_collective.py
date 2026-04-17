@@ -528,3 +528,57 @@ def test_stats_reports_git_offline(wired, monkeypatch):
     wired._git_available = False
     out = collective.stats({})
     assert out["git_available"] is False
+
+
+def test_real_collective_memory_roundtrip(tmp_path, monkeypatch):
+    """Guard the real CollectiveMemory contract end-to-end."""
+    from src.core.collective_memory import CollectiveMemory
+
+    repo = tmp_path / "collective"
+    cm = CollectiveMemory(repo_path=str(repo), require_approval=False)
+    monkeypatch.setattr(collective, "_cm", cm)
+
+    empty = collective.list_learnings({})
+    assert empty["total"] == 0
+
+    published = collective.publish_learning({
+        "author_agent": "analyst",
+        "author_solution": "medtech",
+        "topic": "uart",
+        "title": "UART recovery",
+        "content": "When overflow detected, flush buffer then...",
+        "tags": ["uart", "embedded"],
+        "confidence": 0.7,
+    })
+    assert published["gated"] is False
+    learning_id = published["id"]
+
+    listed = collective.list_learnings({})
+    assert listed["total"] == 1
+    assert listed["entries"][0]["id"] == learning_id
+
+    got = collective.get_learning({"id": learning_id})
+    assert got["learning"]["title"] == "UART recovery"
+
+    validated = collective.validate_learning(
+        {"id": learning_id, "validated_by": "qa@medtech"}
+    )
+    assert validated["learning"]["validation_count"] == 1
+
+    help_out = collective.create_help_request({
+        "title": "I2C help",
+        "requester_agent": "developer",
+        "requester_solution": "automotive",
+        "urgency": "high",
+        "required_expertise": ["i2c"],
+    })
+    hid = help_out["id"]
+    claimed = collective.claim_help_request(
+        {"id": hid, "agent": "fw", "solution": "iot"}
+    )
+    assert claimed["request"]["status"] == "claimed"
+
+    stats_out = collective.stats({})
+    assert stats_out["learning_count"] == 1
+    assert stats_out["help_request_count"] == 1
+    assert stats_out["repo_path"] == str(repo)
