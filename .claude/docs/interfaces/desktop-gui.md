@@ -417,3 +417,53 @@ existing `yaml_edit` proposal kind so the audit trail remains uniform.
   `ConstraintsEditor`, +3 `ActionChecker`, +2 `Constitution` page, +1
   Sidebar entry — 133 vitest tests total.
 
+## Phase 5c — Knowledge browser (landed on `feature/sage-desktop-phase5c`)
+
+Exposes the active solution's `VectorMemory` (ChromaDB +
+sentence-transformers, or the keyword fallback in minimal mode) through
+the sidecar so operators can browse, search, add, and delete entries
+without FastAPI. The vector store is SAGE's "compounding intelligence"
+surface (Law 3) — making it visible is what turns it from a black box
+into an inspectable training signal.
+
+- Five sidecar handlers in `handlers/knowledge.py`:
+  `knowledge.list`, `knowledge.search`, `knowledge.add`,
+  `knowledge.delete`, `knowledge.stats`. `list` paginates at the
+  sidecar (VectorMemory's `list_entries` has no offset) and clamps
+  `limit` to `[1, 500]`; `search` clamps `top_k` to `[1, 50]`.
+  `stats` reports `{total, collection, backend, solution}` with
+  `llamaindex` mapped to `full` for the UI. The `VectorMemory`
+  instance is wired at startup by `_wire_handlers`; if the import
+  fails every handler degrades to a typed `SidecarError` so the UI
+  can render a single disabled state.
+- Five Tauri commands (`knowledge_{list,search,add,delete,stats}`) —
+  proxy-only, same `State<RwLock<Sidecar>>` read-lock pattern.
+- React: `useKnowledgeList` / `useKnowledgeSearch` / `useKnowledgeStats`
+  queries plus `useAddKnowledge` / `useDeleteKnowledge` mutations
+  (both invalidate `["knowledge"]` on success). Three domain
+  components: `KnowledgeEntryRow` (collapse/expand, metadata tags,
+  two-click delete confirm), `KnowledgeSearchResults` (ranked list
+  with optional score), `AddKnowledgeForm` (textarea + metadata
+  key/value pairs). The `Knowledge` page has Browse / Search tabs,
+  shows a banner when `backend = minimal`, and keeps the add form
+  permanently below the tabs.
+- Route `/knowledge`, Sidebar "Knowledge" entry, Header title map
+  updated.
+
+**Law 1 note.** Operator-authored add/delete bypass the proposal
+queue by the same rationale as Phase 3b YAML authoring and Phase 5b
+Constitution. An *agent* that wants to add or delete a memory still
+flows through the existing `STATEFUL` / `DESTRUCTIVE` proposal kinds
+unchanged. The sidecar audit logger is not wired for this handler
+by design: the web UI's approval path already writes to audit, and
+the desktop edit is the operator's own action.
+
+### Testing delta
+- Python: +18 unit tests (`handlers/knowledge`) including a real
+  `VectorMemory` round-trip in `SAGE_MINIMAL=1` mode — 176 sidecar
+  tests total.
+- Rust: proxy-only commands, no new tests.
+- Web: +5 `useKnowledge` hook tests, +3 `KnowledgeEntryRow`, +2
+  `AddKnowledgeForm`, +2 `Knowledge` page, +1 Sidebar entry — 152
+  vitest tests total.
+
