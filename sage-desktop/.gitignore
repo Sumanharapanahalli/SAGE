@@ -18,3 +18,20 @@ sidecar/**/*.pyc
 Thumbs.db
 .idea/
 .vscode/
+
+# Updater signing — private keys MUST NEVER be committed.
+# Only *.pub files are allowed through. Note `keys/*.key` matches the
+# private key (sage-desktop.key) but NOT the pubkey (sage-desktop.key.pub)
+# because gitignore globs don't span dots.
+keys/*.key
+src-tauri/keys/*.key
+
+# PyInstaller + offline pip cache
+offline/wheels/
+sidecar/build/
+sidecar/dist/
+src-tauri/bin/sage-sidecar*
+
+# Mutation + coverage reports
+reports/
+.stryker-tmp/

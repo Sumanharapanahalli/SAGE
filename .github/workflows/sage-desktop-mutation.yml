@@ -82,3 +82,32 @@ jobs:
           name: visual-diffs
           path: sage-desktop/src/__tests__/visual/__snapshots__/
           if-no-files-found: ignore
+
+  ts-mutation:
+    name: Frontend hook mutation testing
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: sage-desktop
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: sage-desktop/package-lock.json
+
+      - run: npm ci
+
+      - name: Run Stryker on src/hooks
+        # Allow the job to succeed even if the threshold is missed so we
+        # see the full report — nightly signal, not per-PR block.
+        run: npm run mutate:web || echo "::warning::stryker threshold not met — see reports/mutation"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: stryker-report
+          path: sage-desktop/reports/mutation/
+          if-no-files-found: warn

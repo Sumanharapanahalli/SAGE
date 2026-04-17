@@ -50,4 +50,22 @@ describe("tauri-driver E2E scaffolding", () => {
     expect(spec).toContain("Application updates");
     expect(spec).toContain("Check for updates");
   });
+
+  it("per-page smoke specs exist for all 8 primary pages", () => {
+    for (const name of [
+      "approvals",
+      "agents",
+      "audit",
+      "status",
+      "builds",
+      "yaml",
+      "onboarding",
+      "backlog",
+    ]) {
+      const spec = resolve(e2eRoot, "specs", `${name}.spec.mjs`);
+      expect(statSync(spec).isFile()).toBe(true);
+      const src = readFileSync(spec, "utf-8");
+      expect(src).toContain(`a[href="/${name}"]`);
+    }
+  });
 });

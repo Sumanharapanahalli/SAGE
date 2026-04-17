@@ -22,6 +22,10 @@ from typing import Any, Optional
 
 LOGGER = logging.getLogger(__name__)
 
+# Per-launch session id. Generated once at import; never persisted.
+# Rebinds per process, so two runs of the same user see two values.
+_SESSION_ID = str(uuid.uuid4())
+
 # Fields that may appear in event payloads. Anything else is dropped.
 # Keep this list conservative — adding a key here is a privacy decision.
 _ALLOWED_FIELDS = frozenset(
@@ -100,6 +104,12 @@ class TelemetryConfig:
             self._anon_id = str(uuid.uuid4())
         self._enabled = bool(enabled)
         self._save()
+        # Opt-out wipes any buffered events immediately (PRIVACY.md §5.1)
+        if not self._enabled and self.buffer_path.exists():
+            try:
+                self.buffer_path.write_text("", encoding="utf-8")
+            except Exception as e:  # noqa: BLE001
+                LOGGER.warning("telemetry buffer wipe failed: %s", e)
 
 
 def filter_payload(event: str, payload: dict[str, Any]) -> Optional[dict[str, Any]]:
@@ -126,6 +136,7 @@ def record(config: TelemetryConfig, event: str, payload: dict[str, Any]) -> bool
     if clean is None:
         return False
     clean["ts"] = int(time.time())
+    clean["session_id"] = _SESSION_ID
     if config.anon_id:
         clean["anon_id"] = config.anon_id
     try:

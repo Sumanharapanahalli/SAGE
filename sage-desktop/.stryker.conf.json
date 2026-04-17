@@ -1,0 +1,32 @@
+{
+  "$schema": "https://raw.githubusercontent.com/stryker-mutator/stryker-js/master/packages/api/schema/stryker-core.json",
+  "_comment": "Mutation-testing the React Query hooks — the thinnest layer where logic bugs (wrong keys, missing invalidations, swapped mutation args) cause real UI regressions. Scoped narrow so CI nightly completes under 30min.",
+  "packageManager": "npm",
+  "testRunner": "vitest",
+  "testRunnerNodeArgs": [],
+  "coverageAnalysis": "perTest",
+  "mutate": [
+    "src/hooks/**/*.ts",
+    "!src/hooks/**/*.test.ts"
+  ],
+  "reporters": [
+    "html",
+    "clear-text",
+    "progress",
+    "json"
+  ],
+  "htmlReporter": {
+    "fileName": "reports/mutation/index.html"
+  },
+  "jsonReporter": {
+    "fileName": "reports/mutation/mutation.json"
+  },
+  "thresholds": {
+    "high": 85,
+    "low": 75,
+    "break": 75
+  },
+  "timeoutMS": 30000,
+  "concurrency": 2,
+  "disableTypeChecks": "src/**/*.{ts,tsx}"
+}

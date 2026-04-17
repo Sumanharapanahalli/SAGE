@@ -41,7 +41,7 @@ endif
         list-solutions list-projects clean help doctor \
         desktop-install desktop-dev desktop-build \
         desktop-sidecar-bundle desktop-bundle desktop-msi desktop-nsis \
-        desktop-offline-cache \
+        desktop-offline-cache desktop-mutate-rs desktop-mutate-web \
         test-desktop test-desktop-sidecar test-desktop-rs test-desktop-web \
         test-desktop-e2e
 
@@ -216,6 +216,12 @@ desktop-mutate-rs:
 	    --file src/sidecar.rs \
 	    --file src/update_status.rs \
 	    -- --lib --no-default-features
+
+# TS mutation testing on the React Query hooks.
+# Requires `npm install` (stryker-mutator + vitest runner pulled in).
+# Slow — run nightly in CI, not per-commit.
+desktop-mutate-web:
+	cd sage-desktop && npm run mutate:web
 
 # Python sidecar tests (~82 tests; no Rust, no Node)
 test-desktop-sidecar:

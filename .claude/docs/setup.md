@@ -87,14 +87,48 @@ make test-desktop-e2e         # Spawn real sidecar, round-trip NDJSON
 None of these tests need a running FastAPI server, network access, or
 admin privileges.
 
-### Release build (Phase 4 — not yet wired)
+### Release build (Phase 4)
+
+Producing an installable Windows MSI from a clean checkout:
 
 ```bash
-make desktop-build            # Produces .exe bundle (deferred)
+make desktop-install          # npm deps into sage-desktop/
+make desktop-bundle           # PyInstaller → sidecar exe in src-tauri/bin/
+make desktop-msi              # Tauri WiX bundle → target/release/bundle/msi/
+make desktop-nsis             # Tauri NSIS fallback → target/release/bundle/nsis/
+```
+
+`desktop-bundle` is a prerequisite for both `desktop-msi` and
+`desktop-nsis`; the sidecar exe goes into `src-tauri/bin/` under the
+Rust-target-triple naming that Tauri's `externalBin` resolver expects
+(`sage-sidecar-x86_64-pc-windows-msvc.exe`).
+
+For signed releases, set `TAURI_SIGNING_PRIVATE_KEY` and
+`TAURI_SIGNING_PRIVATE_KEY_PASSWORD` before running
+`desktop-msi` / `desktop-nsis`. The matching public key lives at
+`sage-desktop/src-tauri/keys/sage-desktop.pub` and is baked into the
+app via `tauri.conf.json.plugins.updater.pubkey`. Generate a fresh
+keypair with `sage-desktop/scripts/generate-keypair.sh` if you don't
+have one — commit only the `.pub` half.
+
+Air-gapped contributor onboarding:
+
+```bash
+make desktop-offline-cache    # pip download all wheels + SHA-256 MANIFEST
+# Later, on the air-gapped machine:
+bash sage-desktop/scripts/install-offline.sh
+```
+
+Mutation testing for the Rust layer (slow; not part of `make test-desktop`):
+
+```bash
+make desktop-mutate-rs        # cargo-mutants against errors/rpc/sidecar/update_status
 ```
 
 See [interfaces/desktop-gui.md](interfaces/desktop-gui.md) for
 architecture details, the RPC method list, and the failure model.
+The end-user-facing install, update, and telemetry contract lives in
+`sage-desktop/README.md` and `docs/PRIVACY.md`.
 
 ## Development Environment
 

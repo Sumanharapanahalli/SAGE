@@ -127,3 +127,43 @@ def test_set_enabled_rpc_round_trips(tmp_path: Path, monkeypatch) -> None:
     assert resp2["enabled"] is False
     # Opt-in anon_id is retained per contract
     assert resp2["anon_id"] == resp["anon_id"]
+
+
+def test_record_stamps_session_id(cfg: tel.TelemetryConfig) -> None:
+    cfg.set_enabled(True)
+    assert tel.record(cfg, "build.started", {"kind": "build"}) is True
+    event = json.loads(cfg.buffer_path.read_text(encoding="utf-8").strip())
+    assert "session_id" in event
+    assert len(event["session_id"]) == 36  # UUID4 canonical form
+
+
+def test_session_id_is_stable_within_process(cfg: tel.TelemetryConfig) -> None:
+    """Per-launch session id — same value for every record() call in this process."""
+    cfg.set_enabled(True)
+    tel.record(cfg, "build.started", {"kind": "build"})
+    tel.record(cfg, "build.completed", {"status": "completed"})
+    lines = cfg.buffer_path.read_text(encoding="utf-8").strip().splitlines()
+    assert len(lines) == 2
+    e1, e2 = json.loads(lines[0]), json.loads(lines[1])
+    assert e1["session_id"] == e2["session_id"]
+
+
+def test_session_id_not_persisted_to_disk(cfg: tel.TelemetryConfig) -> None:
+    """session_id only lives in the event buffer, never in config.json."""
+    cfg.set_enabled(True)
+    tel.record(cfg, "build.started", {"kind": "build"})
+    saved_config = json.loads(cfg.config_path.read_text(encoding="utf-8"))
+    assert "session_id" not in saved_config
+
+
+def test_opt_out_clears_event_buffer(cfg: tel.TelemetryConfig) -> None:
+    """Opting out wipes any buffered events on disk (PRIVACY.md §5.1 contract)."""
+    cfg.set_enabled(True)
+    tel.record(cfg, "approval.decided", {"status": "approved"})
+    assert cfg.buffer_path.exists()
+    assert cfg.buffer_path.stat().st_size > 0
+
+    cfg.set_enabled(False)
+    # Buffer is cleared — file may not exist, or exists and is empty
+    if cfg.buffer_path.exists():
+        assert cfg.buffer_path.read_text(encoding="utf-8") == ""
