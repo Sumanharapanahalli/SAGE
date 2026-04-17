@@ -18,6 +18,16 @@ import type {
   BuildRunDetail,
   BuildRunSummary,
   CheckActionResult,
+  CollectiveGetResult,
+  CollectiveHelpCreateResult,
+  CollectiveHelpListResult,
+  CollectiveHelpMutationResult,
+  CollectiveListResult,
+  CollectivePublishResult,
+  CollectiveSearchResult,
+  CollectiveStats,
+  CollectiveSyncResult,
+  CollectiveValidateResult,
   ConstitutionData,
   ConstitutionState,
   ConstitutionUpdateResult,
@@ -259,6 +269,90 @@ export const getQueueStatus = () => call<QueueStatus>("get_queue_status");
 export const listQueueTasks = (
   params: { status?: string; limit?: number } = {},
 ) => call<QueueTask[]>("list_queue_tasks", params);
+
+// ── Collective Intelligence ─────────────────────────────────────────────
+
+export const collectiveListLearnings = (params: {
+  solution?: string;
+  topic?: string;
+  limit?: number;
+  offset?: number;
+} = {}) => call<CollectiveListResult>("collective_list_learnings", params);
+
+export const collectiveGetLearning = (id: string) =>
+  call<CollectiveGetResult>("collective_get_learning", { id });
+
+export const collectiveSearchLearnings = (params: {
+  query: string;
+  tags?: string[];
+  solution?: string;
+  limit?: number;
+}) => call<CollectiveSearchResult>("collective_search_learnings", params);
+
+export const collectivePublishLearning = (payload: {
+  author_agent: string;
+  author_solution: string;
+  topic: string;
+  title: string;
+  content: string;
+  tags?: string[];
+  confidence?: number;
+  source_task_id?: string;
+  proposed_by?: string;
+}) => call<CollectivePublishResult>("collective_publish_learning", payload);
+
+export const collectiveValidateLearning = (id: string, validated_by: string) =>
+  call<CollectiveValidateResult>("collective_validate_learning", {
+    id,
+    validated_by,
+  });
+
+export const collectiveListHelpRequests = (params: {
+  status?: "open" | "closed";
+  expertise?: string[];
+} = {}) =>
+  call<CollectiveHelpListResult>("collective_list_help_requests", params);
+
+export const collectiveCreateHelpRequest = (payload: {
+  title: string;
+  requester_agent: string;
+  requester_solution: string;
+  urgency?: "low" | "medium" | "high" | "critical";
+  required_expertise?: string[];
+  context?: string;
+}) =>
+  call<CollectiveHelpCreateResult>("collective_create_help_request", payload);
+
+export const collectiveClaimHelpRequest = (
+  id: string,
+  agent: string,
+  solution: string,
+) =>
+  call<CollectiveHelpMutationResult>("collective_claim_help_request", {
+    id,
+    agent,
+    solution,
+  });
+
+export const collectiveRespondToHelpRequest = (payload: {
+  id: string;
+  responder_agent: string;
+  responder_solution: string;
+  content: string;
+}) =>
+  call<CollectiveHelpMutationResult>(
+    "collective_respond_to_help_request",
+    payload,
+  );
+
+export const collectiveCloseHelpRequest = (id: string) =>
+  call<CollectiveHelpMutationResult>("collective_close_help_request", { id });
+
+export const collectiveSync = () =>
+  call<CollectiveSyncResult>("collective_sync");
+
+export const collectiveStats = () =>
+  call<CollectiveStats>("collective_stats");
 
 // Re-exports to reduce import boilerplate at call sites
 export type {

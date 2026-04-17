@@ -481,3 +481,106 @@ export interface KnowledgeDeleteResult {
   id: string;
   deleted: boolean;
 }
+
+// ── Collective Intelligence (Phase 5a) ──────────────────────────────────
+
+export interface CollectiveLearning {
+  id: string;
+  author_agent: string;
+  author_solution: string;
+  topic: string;
+  title: string;
+  content: string;
+  tags: string[];
+  confidence: number;
+  validation_count: number;
+  created_at: string;
+  updated_at: string;
+  source_task_id: string;
+}
+
+export interface HelpRequestResponse {
+  responder_agent: string;
+  responder_solution: string;
+  content: string;
+  created_at: string;
+}
+
+export interface HelpRequestClaim {
+  agent: string;
+  solution: string;
+  claimed_at: string;
+}
+
+export type HelpRequestStatus = "open" | "claimed" | "closed";
+export type HelpRequestUrgency = "low" | "medium" | "high" | "critical";
+
+export interface HelpRequest {
+  id: string;
+  title: string;
+  requester_agent: string;
+  requester_solution: string;
+  status: HelpRequestStatus;
+  urgency: HelpRequestUrgency;
+  required_expertise: string[];
+  context: string;
+  created_at: string;
+  claimed_by: HelpRequestClaim | null;
+  responses: HelpRequestResponse[];
+  resolved_at: string | null;
+}
+
+export interface CollectiveListResult {
+  entries: CollectiveLearning[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface CollectiveGetResult {
+  learning: CollectiveLearning | null;
+}
+
+export interface CollectiveSearchResult {
+  query: string;
+  results: CollectiveLearning[];
+  count: number;
+}
+
+export interface CollectivePublishResult {
+  id: string | null;
+  gated: boolean;
+  trace_id?: string;
+}
+
+export interface CollectiveValidateResult {
+  learning: CollectiveLearning;
+}
+
+export interface CollectiveHelpListResult {
+  entries: HelpRequest[];
+  count: number;
+}
+
+export interface CollectiveHelpCreateResult {
+  id: string;
+}
+
+export interface CollectiveHelpMutationResult {
+  request: HelpRequest;
+}
+
+export interface CollectiveSyncResult {
+  pulled: boolean;
+  indexed: number;
+}
+
+export interface CollectiveStats {
+  learning_count: number;
+  help_request_count: number;
+  help_requests_closed: number;
+  topics: Record<string, number>;
+  contributors: Record<string, number>;
+  git_available: boolean;
+  repo_path: string;
+}
