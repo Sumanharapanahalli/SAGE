@@ -28,6 +28,7 @@ use crate::rpc::{parse_response_line, RpcRequest};
 
 type PendingMap = Arc<Mutex<HashMap<String, oneshot::Sender<Result<Value, DesktopError>>>>>;
 
+#[derive(Clone)]
 pub struct SidecarConfig {
     /// Absolute path to the python interpreter to use.
     pub python: PathBuf,
@@ -44,7 +45,8 @@ pub struct SidecarConfig {
 pub struct Sidecar {
     stdin: Arc<Mutex<ChildStdin>>,
     pending: PendingMap,
-    _child: Arc<Mutex<Child>>,
+    child: Arc<Mutex<Child>>,
+    cfg: SidecarConfig,
 }
 
 impl Sidecar {
@@ -156,8 +158,51 @@ impl Sidecar {
         Ok(Self {
             stdin: Arc::new(Mutex::new(stdin)),
             pending,
-            _child: Arc::new(Mutex::new(child)),
+            child: Arc::new(Mutex::new(child)),
+            cfg,
         })
+    }
+
+    /// The config this sidecar was spawned with (name/path may be None).
+    pub fn config(&self) -> &SidecarConfig {
+        &self.cfg
+    }
+
+    /// Gracefully shut down the current sidecar and respawn with a new solution.
+    ///
+    /// Closes stdin → waits up to 3 s for the child to exit → kills it if it
+    /// doesn't → spawns a new sidecar with the caller's name/path overrides.
+    /// The current `Sidecar` is mutated in-place so callers holding an
+    /// `RwLock<Sidecar>` can swap without moving the value out of the lock.
+    pub async fn replace_solution(
+        &mut self,
+        name: String,
+        path: PathBuf,
+    ) -> Result<(), DesktopError> {
+        use std::time::Duration as StdDuration;
+
+        // Close stdin so the sidecar's reader hits EOF and exits.
+        {
+            let mut s = self.stdin.lock().await;
+            let _ = s.shutdown().await;
+        }
+        // Wait for clean exit, force-kill on timeout.
+        {
+            let mut c = self.child.lock().await;
+            let _ = tokio::time::timeout(StdDuration::from_secs(3), c.wait()).await;
+            let _ = c.start_kill();
+        }
+
+        let mut cfg = self.cfg.clone();
+        cfg.solution_name = Some(name);
+        cfg.solution_path = Some(path);
+        let fresh = Self::spawn(cfg).await?;
+
+        self.stdin = fresh.stdin;
+        self.pending = fresh.pending;
+        self.child = fresh.child;
+        self.cfg = fresh.cfg;
+        Ok(())
     }
 
     /// Send a JSON-RPC request and wait for its correlated response.
@@ -270,6 +315,45 @@ mod tests {
             .expect("handshake should succeed");
         assert!(result.get("sidecar_version").is_some());
         assert!(result.get("warnings").is_some());
+    }
+
+    #[tokio::test]
+    async fn replace_solution_spawns_fresh_sidecar() {
+        let root = repo_root();
+        let sidecar_dir = root.join("sage-desktop").join("sidecar");
+        let cfg = SidecarConfig {
+            python: python_exe(),
+            sidecar_dir,
+            solution_name: None,
+            solution_path: None,
+            sage_root: root.clone(),
+        };
+        let mut sidecar = match Sidecar::spawn(cfg).await {
+            Ok(s) => s,
+            Err(e) => {
+                eprintln!("skipping: could not spawn sidecar: {e}");
+                return;
+            }
+        };
+        // Initial handshake OK
+        let _ = sidecar
+            .call("handshake", serde_json::json!({}))
+            .await
+            .expect("initial handshake");
+
+        // Swap to a dummy solution path — sidecar will warn but still run
+        let swap_path = root.join("solutions").join("starter");
+        sidecar
+            .replace_solution("starter".into(), swap_path)
+            .await
+            .expect("replace_solution");
+
+        // Handshake after swap still works
+        let result = sidecar
+            .call("handshake", serde_json::json!({}))
+            .await
+            .expect("post-swap handshake");
+        assert!(result.get("sidecar_version").is_some());
     }
 
     #[tokio::test]
