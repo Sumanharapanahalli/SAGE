@@ -46,6 +46,13 @@ vi.mock("@/api/client", () => ({
   listBuilds: vi.fn().mockResolvedValue([]),
   getBuild: vi.fn(),
   approveBuildStage: vi.fn(),
+  readYaml: vi.fn().mockResolvedValue({
+    file: "project",
+    solution: "demo",
+    content: "",
+    path: "",
+  }),
+  writeYaml: vi.fn(),
 }));
 
 vi.mock("@tauri-apps/api/event", () => ({

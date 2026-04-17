@@ -12,6 +12,7 @@ import Builds from "@/pages/Builds";
 import Onboarding from "@/pages/Onboarding";
 import Settings from "@/pages/Settings";
 import { Status } from "@/pages/Status";
+import YamlEdit from "@/pages/YamlEdit";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -42,6 +43,7 @@ export function App() {
             <Route path="backlog" element={<Backlog />} />
             <Route path="builds" element={<Builds />} />
             <Route path="onboarding" element={<Onboarding />} />
+            <Route path="yaml" element={<YamlEdit />} />
             <Route path="settings" element={<Settings />} />
           </Route>
         </Routes>

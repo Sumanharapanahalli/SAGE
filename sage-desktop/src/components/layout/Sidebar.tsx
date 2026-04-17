@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { to: "/status", label: "Status" },
   { to: "/builds", label: "Builds" },
   { to: "/backlog", label: "Backlog" },
+  { to: "/yaml", label: "YAML" },
   { to: "/settings", label: "Settings" },
 ] as const;
 

@@ -17,3 +17,4 @@ pub mod queue;
 pub mod onboarding;
 pub mod solutions;
 pub mod switch;
+pub mod yaml_edit;
