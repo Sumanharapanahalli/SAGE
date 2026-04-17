@@ -294,3 +294,45 @@ The framework function is untouched — 3c is pure wiring.
 - Web: +3 `useOnboardingGenerate` and +5 `OnboardingWizard` tests — 92
   vitest tests total.
 
+---
+
+## Phase 3d — Build Console (landed on `feature/sage-desktop-phase3d`)
+
+Phase 3c scaffolds a solution; 3d executes the build pipeline against
+it. The Builds page drives the `BuildOrchestrator` (decompose → plan →
+agent execution → integration) through the same stdin/stdout RPC path,
+so a user can go from "start a build of this yoga app" to a completed,
+approved run without FastAPI.
+
+- Four sidecar handlers (`builds.start`, `builds.list`, `builds.get`,
+  `builds.approve`) wrap `src.integrations.build_orchestrator`. The
+  orchestrator's dict-with-`error`-key convention is translated into
+  typed `RpcError`s: "not found" / "state not ready" → `-32602`
+  (`InvalidParams`), internal exceptions → `-32000` (`SidecarDown`).
+  `builds.approve` is a unified gate — it reads the current state and
+  routes to `approve_plan`, `approve_build`, or `reject` so the
+  frontend doesn't have to know the state machine.
+- Four Tauri commands (`start_build`, `list_builds`, `get_build`,
+  `approve_build_stage`) — proxy-only, all use the existing
+  `State<RwLock<Sidecar>>` read-lock pattern.
+- React: `useBuilds` (5 s poll), `useBuild(runId)` (3 s poll only while
+  the run is actively executing — paused on `awaiting_*` and terminal
+  states), `useStartBuild`, `useApproveBuildStage`. A two-column page
+  with `StartBuildForm` (min-30-char product description; defaults
+  critic_threshold=70, hitl_level=standard), `BuildRunsTable` (color-
+  coded state badges), and `BuildRunDetailView` (shows plan / agent
+  results / critic scores; surfaces approval buttons only when the run
+  is in `awaiting_plan` or `awaiting_build`).
+- Route `/builds`, Sidebar "Builds" entry, Header title map updated.
+
+The BuildOrchestrator itself is untouched — 3d is pure wiring.
+
+### Testing delta
+- Python: +13 unit tests (`handlers/builds`) and +2 e2e round-trips in
+  `test_main.py` — 133 sidecar tests total.
+- Rust: proxy-only commands, no new tests (the existing 20 still pass
+  against the enlarged handler list).
+- Web: +7 `useBuilds` hook tests, +3 `StartBuildForm`, +3
+  `BuildRunsTable`, +6 `BuildRunDetailView`, +1 App route — 112 vitest
+  tests total.
+
