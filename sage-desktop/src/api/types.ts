@@ -242,3 +242,22 @@ export interface QueueTask {
   completed_at?: string;
   error?: string;
 }
+
+// ── Onboarding wizard ─────────────────────────────────────────────────────
+
+export interface OnboardingParams {
+  description: string;
+  solution_name: string;
+  compliance_standards?: string[];
+  integrations?: string[];
+  parent_solution?: string;
+}
+
+export interface OnboardingResult {
+  solution_name: string;
+  path: string;
+  status: "created" | "exists";
+  files: Record<string, string>;
+  suggested_routes: string[];
+  message: string;
+}
