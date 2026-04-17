@@ -107,6 +107,11 @@ mod desktop_app {
                 crate::commands::constitution::constitution_update,
                 crate::commands::constitution::constitution_preamble,
                 crate::commands::constitution::constitution_check_action,
+                crate::commands::knowledge::knowledge_list,
+                crate::commands::knowledge::knowledge_search,
+                crate::commands::knowledge::knowledge_add,
+                crate::commands::knowledge::knowledge_delete,
+                crate::commands::knowledge::knowledge_stats,
             ])
             .run(tauri::generate_context!())
             .expect("error while running sage-desktop app");

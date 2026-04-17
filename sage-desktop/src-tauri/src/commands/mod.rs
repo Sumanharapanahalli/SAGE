@@ -14,6 +14,7 @@ pub mod llm;
 pub mod backlog;
 pub mod builds;
 pub mod constitution;
+pub mod knowledge;
 pub mod queue;
 pub mod onboarding;
 pub mod solutions;
