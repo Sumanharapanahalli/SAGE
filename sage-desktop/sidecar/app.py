@@ -42,6 +42,7 @@ from handlers import (
     audit,
     backlog,
     builds,
+    constitution,
     handshake,
     llm,
     onboarding,
@@ -91,6 +92,10 @@ def _build_dispatcher() -> Dispatcher:
     d.register("builds.approve", builds.approve_stage)
     d.register("yaml.read", yaml_edit.read)
     d.register("yaml.write", yaml_edit.write)
+    d.register("constitution.get", constitution.get)
+    d.register("constitution.update", constitution.update)
+    d.register("constitution.preamble", constitution.preamble)
+    d.register("constitution.check_action", constitution.check_action)
     return d
 
 
@@ -192,6 +197,15 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
         queue._queue = get_task_queue(solution_name)
     except Exception as e:  # noqa: BLE001
         logging.warning("TaskQueue unavailable: %s", e)
+
+    try:
+        from src.core.constitution import Constitution
+
+        constitution._ctx = Constitution(
+            solutions_dir=str(solution_path.parent), solution=solution_name
+        )
+    except Exception as e:  # noqa: BLE001
+        logging.warning("Constitution unavailable: %s", e)
 
 
 def _parse_args(argv: list[str]) -> argparse.Namespace:
