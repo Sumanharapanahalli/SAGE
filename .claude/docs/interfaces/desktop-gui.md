@@ -336,3 +336,43 @@ The BuildOrchestrator itself is untouched — 3d is pure wiring.
   `BuildRunsTable`, +6 `BuildRunDetailView`, +1 App route — 112 vitest
   tests total.
 
+## Phase 3b — YAML authoring (landed on `feature/sage-desktop-phase3d-next`)
+
+Closes the last "can't do this without the web UI" gap: editing the
+active solution's YAML triad (`project.yaml`, `prompts.yaml`,
+`tasks.yaml`) live from the desktop app. The `/yaml` page reads the
+current file through the sidecar and writes it back atomically, with
+syntax validation before the file is touched.
+
+- Two sidecar handlers (`yaml.read`, `yaml.write`) in
+  `handlers/yaml_edit.py`. Only the three allowed filenames pass
+  validation; unknown names → `-32602` (`InvalidParams`). The file-name
+  check runs *before* the solution-wiring check so invalid params
+  surface correctly even when no solution is active. On write,
+  `yaml.safe_load` parses the incoming string; parse errors are
+  translated to `InvalidParams` with the yaml library's message so the
+  UI can render it verbatim.
+- Two Tauri commands (`read_yaml`, `write_yaml`) — proxy-only, same
+  `State<RwLock<Sidecar>>` read-lock pattern. No file I/O in Rust.
+- React: `useReadYaml(file)` and `useWriteYaml()` (invalidates the
+  read-query on success so the editor refreshes from disk after a
+  save). The `YamlEdit` page has a file dropdown, a controlled
+  textarea, and Save/Revert buttons; Save is disabled until the draft
+  diverges from the loaded content.
+- Route `/yaml`, Sidebar "YAML" entry, Header title map updated.
+
+**Law 1 note.** User-driven edits deliberately bypass `ProposalStore`.
+The web UI routes YAML edits through the proposal queue for audit
+uniformity, but the desktop trust model treats a human typing in the
+editor as the human's own action, not an agent proposal. The sidecar
+still validates YAML syntax, so a bad parse can never damage the
+solution. If an agent ever *suggests* a YAML change, it'll still go
+through the approval path (`yaml_edit` proposal kind, unchanged).
+
+### Testing delta
+- Python: +10 unit tests (`handlers/yaml_edit`) and +2 e2e round-trips
+  in `test_main.py` — 145 sidecar tests total.
+- Rust: proxy-only commands, no new tests (20/20 still green).
+- Web: +4 `useYamlEdit` hook tests, +3 `YamlEdit` page tests — 119
+  vitest tests total.
+
