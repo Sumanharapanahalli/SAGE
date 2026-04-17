@@ -36,7 +36,7 @@ from rpc import (
     RPC_INTERNAL_ERROR,
 )
 from dispatcher import Dispatcher
-from handlers import agents, approvals, audit, backlog, handshake, llm, queue, status
+from handlers import agents, approvals, audit, backlog, handshake, llm, queue, solutions, status
 
 
 def _configure_logging() -> None:
@@ -69,6 +69,8 @@ def _build_dispatcher() -> Dispatcher:
     d.register("backlog.update", backlog.update_feature_request)
     d.register("queue.get_status", queue.get_queue_status)
     d.register("queue.list_tasks", queue.list_queue_tasks)
+    d.register("solutions.list", solutions.list_solutions)
+    d.register("solutions.get_current", solutions.get_current)
     return d
 
 
@@ -80,6 +82,17 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
     """
     handshake._SOLUTION_NAME = solution_name
     handshake._SOLUTION_PATH = solution_path
+
+    solutions._current_name = solution_name
+    solutions._current_path = solution_path
+    try:
+        from src.core.project_loader import list_solutions as _lf
+
+        solutions._list_fn = _lf
+        _sr = os.environ.get("SAGE_ROOT")
+        solutions._sage_root = Path(_sr) if _sr else None
+    except Exception as e:  # noqa: BLE001
+        logging.warning("solutions.list wiring unavailable: %s", e)
 
     if not solution_path:
         logging.info("No solution path provided — running in minimal mode.")

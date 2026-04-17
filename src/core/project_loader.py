@@ -31,6 +31,7 @@ Usage:
 
 import logging
 import os
+from pathlib import Path
 from typing import Any, Tuple
 
 import yaml
@@ -529,3 +530,32 @@ _DEFAULT_TASK_TYPES = [
 # ---------------------------------------------------------------------------
 
 project_config = ProjectConfig()
+
+
+def list_solutions(sage_root):
+    """Return sorted SolutionRef dicts for each valid solution under <sage_root>/solutions/.
+
+    A valid solution is a non-dotfile directory that contains either
+    ``project.yaml`` or ``SKILL.md``.
+    """
+    root = Path(sage_root) / "solutions"
+    if not root.is_dir():
+        return []
+    out = []
+    for entry in sorted(root.iterdir(), key=lambda p: p.name):
+        if entry.name.startswith("."):
+            continue
+        if not entry.is_dir():
+            continue
+        has_yaml = (entry / "project.yaml").is_file()
+        has_skill = (entry / "SKILL.md").is_file()
+        if not (has_yaml or has_skill):
+            continue
+        out.append(
+            {
+                "name": entry.name,
+                "path": str(entry.resolve()),
+                "has_sage_dir": (entry / ".sage").is_dir(),
+            }
+        )
+    return out

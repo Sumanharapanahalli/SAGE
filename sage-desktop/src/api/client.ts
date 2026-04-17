@@ -26,6 +26,9 @@ import type {
   Proposal,
   QueueStatus,
   QueueTask,
+  SolutionRef,
+  CurrentSolution,
+  SwitchSolutionResult,
   StatusResponse,
 } from "./types";
 
@@ -157,6 +160,16 @@ export const submitFeatureRequest = (req: FeatureRequestSubmit) =>
 export const updateFeatureRequest = (req: FeatureRequestUpdate) =>
   call<FeatureRequest>("update_feature_request", req);
 
+// ── Solutions ─────────────────────────────────────────────────────────────
+
+export const listSolutions = () => call<SolutionRef[]>("list_solutions");
+
+export const getCurrentSolution = () =>
+  call<CurrentSolution | null>("get_current_solution");
+
+export const switchSolution = (name: string, path: string) =>
+  call<SwitchSolutionResult>("switch_solution", { name, path });
+
 // ── Queue ─────────────────────────────────────────────────────────────────
 
 export const getQueueStatus = () => call<QueueStatus>("get_queue_status");
@@ -185,5 +198,8 @@ export type {
   Proposal,
   QueueStatus,
   QueueTask,
+  SolutionRef,
+  CurrentSolution,
+  SwitchSolutionResult,
   StatusResponse,
 };

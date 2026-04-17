@@ -2,13 +2,14 @@
 
 use serde_json::{json, Value};
 use tauri::State;
+use tokio::sync::RwLock;
 
 use crate::errors::DesktopError;
 use crate::sidecar::Sidecar;
 
 #[tauri::command]
 pub async fn list_audit_events(
-    sidecar: State<'_, Sidecar>,
+    sidecar: State<'_, RwLock<Sidecar>>,
     limit: Option<u32>,
     offset: Option<u32>,
     action_type: Option<String>,
@@ -24,22 +25,24 @@ pub async fn list_audit_events(
     if let Some(t) = trace_id {
         params["trace_id"] = json!(t);
     }
-    sidecar.call("audit.list", params).await
+    sidecar.read().await.call("audit.list", params).await
 }
 
 #[tauri::command]
 pub async fn get_audit_by_trace(
-    sidecar: State<'_, Sidecar>,
+    sidecar: State<'_, RwLock<Sidecar>>,
     trace_id: String,
 ) -> Result<Value, DesktopError> {
     sidecar
+        .read()
+        .await
         .call("audit.get_by_trace", json!({ "trace_id": trace_id }))
         .await
 }
 
 #[tauri::command]
 pub async fn audit_stats(
-    sidecar: State<'_, Sidecar>,
+    sidecar: State<'_, RwLock<Sidecar>>,
 ) -> Result<Value, DesktopError> {
-    sidecar.call("audit.stats", json!({})).await
+    sidecar.read().await.call("audit.stats", json!({})).await
 }

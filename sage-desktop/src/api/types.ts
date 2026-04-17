@@ -29,6 +29,7 @@ export type DesktopError =
   | { kind: "MethodNotFound"; detail: { method: string } }
   | { kind: "SidecarDown"; detail: { message: string } }
   | { kind: "FeatureRequestNotFound"; detail: { feature_id: string } }
+  | { kind: "SolutionNotFound"; detail: { name: string } }
   | { kind: "Other"; detail: { code: number; message: string } };
 
 // ── Proposals ─────────────────────────────────────────────────────────────
@@ -199,6 +200,24 @@ export interface FeatureRequestUpdate {
   id: string;
   action: FeatureRequestAction;
   reviewer_note?: string;
+}
+
+// ── Solutions ─────────────────────────────────────────────────────────────
+
+export interface SolutionRef {
+  name: string;
+  path: string;
+  has_sage_dir: boolean;
+}
+
+export interface CurrentSolution {
+  name: string;
+  path: string;
+}
+
+export interface SwitchSolutionResult {
+  name: string;
+  path: string;
 }
 
 // ── Queue ─────────────────────────────────────────────────────────────────

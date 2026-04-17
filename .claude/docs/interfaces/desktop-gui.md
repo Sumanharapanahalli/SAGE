@@ -216,4 +216,42 @@ because the supporting module isn't on `main` yet
 - No packaging polish, code signing, or auto-update. Phase 4.
 - No SSO / remote identity. `decided_by` defaults to the local Windows
   user.
-- No solution switcher in the UI — one sidecar per launch. Phase 2.
+- YAML authoring, onboarding wizard, and Build Console are deferred to
+  Phase 3b/3c/3d.
+
+---
+
+## Phase 3a — Solution switcher (landed on `feature/sage-desktop-phase3a`)
+
+The single-lane invariant stands: one sidecar = one active solution. The
+3a work makes that choice a **runtime** one.
+
+- `solutions.list` / `solutions.get_current` RPCs + matching
+  `list_solutions` / `get_current_solution` Tauri commands.
+- `switch_solution(name, path)` command: closes sidecar stdin, waits up
+  to 3 s, force-kills on timeout, respawns with
+  `--solution-name/--solution-path`, re-handshakes under a write lock,
+  then emits a `solution-switched` Tauri event.
+- Sidecar handle moves from `State<Sidecar>` to
+  `State<RwLock<Sidecar>>` — read-path commands use `.read().await`;
+  the switch takes `.write().await`.
+- React: `useSolutions` / `useCurrentSolution` / `useSwitchSolution`
+  hooks, a `useAppEvents` listener that invalidates the whole React
+  Query cache on `solution-switched`, a `SolutionPicker` component,
+  Sidebar footer showing the active solution, Settings page section
+  anchored at `/settings#solution`.
+- Typed error: `DesktopError::SolutionNotFound { name }` (RPC code
+  `-32021`) rendered by `ErrorBanner`.
+
+`src/core/project_loader.py` grew a `list_solutions(sage_root)` helper
+(pure function, no framework coupling) which the sidecar wires at
+`_wire_handlers` time.
+
+### Testing delta
+- Python: +6 unit tests (handlers/solutions) and 2 e2e round-trips in
+  `test_main.py`.
+- Rust: +1 errors test (`SolutionNotFound`) and +1 sidecar integration
+  test (`replace_solution_spawns_fresh_sidecar`).
+- Web: +6 `useSolutions`, +2 `useAppEvents`, +7 `SolutionPicker`, +1
+  Sidebar footer, +1 Settings picker — 84 vitest tests total.
+
