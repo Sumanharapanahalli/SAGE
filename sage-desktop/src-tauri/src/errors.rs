@@ -24,6 +24,7 @@ pub const RPC_SOLUTION_UNAVAILABLE: i32 = -32004;
 pub const RPC_ALREADY_DECIDED: i32 = -32005;
 pub const RPC_SAGE_IMPORT_ERROR: i32 = -32010;
 pub const RPC_FEATURE_REQUEST_NOT_FOUND: i32 = -32020;
+pub const RPC_SOLUTION_NOT_FOUND: i32 = -32021;
 
 #[derive(Debug, Error, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(tag = "kind", content = "detail")]
@@ -60,6 +61,9 @@ pub enum DesktopError {
 
     #[error("feature request not found: {feature_id}")]
     FeatureRequestNotFound { feature_id: String },
+
+    #[error("solution not found: {name}")]
+    SolutionNotFound { name: String },
 
     #[error("sidecar error ({code}): {message}")]
     Other { code: i32, message: String },
@@ -112,6 +116,9 @@ impl DesktopError {
             }
             RPC_FEATURE_REQUEST_NOT_FOUND => DesktopError::FeatureRequestNotFound {
                 feature_id: get_str("feature_id"),
+            },
+            RPC_SOLUTION_NOT_FOUND => DesktopError::SolutionNotFound {
+                name: get_str("name"),
             },
             _ => DesktopError::Other { code, message },
         }
@@ -215,6 +222,21 @@ mod tests {
             status: "rejected".into(),
         };
         assert_eq!(err.to_string(), "proposal already rejected: t1");
+    }
+
+    #[test]
+    fn solution_not_found_extracts_name() {
+        let err = DesktopError::from_rpc(
+            RPC_SOLUTION_NOT_FOUND,
+            "solution not found".into(),
+            Some(json!({ "name": "yoga" })),
+        );
+        assert_eq!(
+            err,
+            DesktopError::SolutionNotFound {
+                name: "yoga".into()
+            }
+        );
     }
 
     #[test]
