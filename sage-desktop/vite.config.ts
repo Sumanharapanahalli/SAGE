@@ -22,5 +22,7 @@ export default defineConfig({
     globals: true,
     setupFiles: ["./src/__tests__/setup.ts"],
     css: false,
+    // e2e/* specs run under tauri-driver + WebdriverIO, not vitest.
+    exclude: ["node_modules/**", "e2e/**"],
   },
 });

@@ -36,6 +36,7 @@ import type {
   OnboardingParams,
   OnboardingResult,
   StatusResponse,
+  TelemetryStatus,
   UpdateStatus,
   YamlFileName,
   YamlReadResult,
@@ -211,6 +212,14 @@ export const writeYaml = (file: YamlFileName, content: string) =>
 export const checkUpdate = () => call<UpdateStatus>("check_update");
 export const installUpdate = () => call<void>("install_update");
 
+// ── Telemetry ─────────────────────────────────────────────────────────────
+
+export const telemetryGetStatus = () =>
+  call<TelemetryStatus>("telemetry_get_status");
+
+export const telemetrySetEnabled = (enabled: boolean) =>
+  call<TelemetryStatus>("telemetry_set_enabled", { enabled });
+
 // ── Queue ─────────────────────────────────────────────────────────────────
 
 export const getQueueStatus = () => call<QueueStatus>("get_queue_status");
@@ -249,6 +258,7 @@ export type {
   OnboardingParams,
   OnboardingResult,
   StatusResponse,
+  TelemetryStatus,
   UpdateStatus,
   YamlFileName,
   YamlReadResult,

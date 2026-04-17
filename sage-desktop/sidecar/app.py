@@ -48,6 +48,7 @@ from handlers import (
     queue,
     solutions,
     status,
+    telemetry,
     yaml_edit,
 )
 
@@ -91,6 +92,8 @@ def _build_dispatcher() -> Dispatcher:
     d.register("builds.approve", builds.approve_stage)
     d.register("yaml.read", yaml_edit.read)
     d.register("yaml.write", yaml_edit.write)
+    d.register("telemetry.get_status", telemetry.get_status)
+    d.register("telemetry.set_enabled", telemetry.set_enabled)
     return d
 
 

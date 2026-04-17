@@ -5,11 +5,13 @@
  * files exist and reference the correct paths, so drift is caught at
  * `npm run test` time rather than at release time.
  */
-import { readFileSync, statSync } from "node:fs";
-import { resolve } from "node:path";
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
+/// <reference types="node" />
+import { readFileSync, statSync } from "fs";
+import { resolve } from "path";
 import { describe, expect, it } from "vitest";
 
-const e2eRoot = resolve(__dirname, "..", "..", "e2e");
+const e2eRoot = resolve(process.cwd(), "e2e");
 
 describe("tauri-driver E2E scaffolding", () => {
   it("tauri-driver.config.mjs exists", () => {

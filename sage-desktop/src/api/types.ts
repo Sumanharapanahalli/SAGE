@@ -357,6 +357,15 @@ export type UpdateStatus =
     }
   | { kind: "Error"; detail: string };
 
+// ── Telemetry ─────────────────────────────────────────────────────────────
+
+export interface TelemetryStatus {
+  enabled: boolean;
+  anon_id: string | null;
+  allowed_events: string[];
+  allowed_fields: string[];
+}
+
 // ── Onboarding wizard ─────────────────────────────────────────────────────
 
 export interface OnboardingParams {

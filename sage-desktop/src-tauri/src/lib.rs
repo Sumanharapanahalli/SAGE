@@ -109,6 +109,8 @@ mod desktop_app {
                 crate::commands::yaml_edit::write_yaml,
                 crate::commands::updates::check_update,
                 crate::commands::updates::install_update,
+                crate::commands::telemetry::telemetry_get_status,
+                crate::commands::telemetry::telemetry_set_enabled,
             ])
             .run(tauri::generate_context!())
             .expect("error while running sage-desktop app");

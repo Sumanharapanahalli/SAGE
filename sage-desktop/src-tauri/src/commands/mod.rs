@@ -17,5 +17,6 @@ pub mod queue;
 pub mod onboarding;
 pub mod solutions;
 pub mod switch;
+pub mod telemetry;
 pub mod updates;
 pub mod yaml_edit;

@@ -6,6 +6,7 @@ import {
 } from "@/hooks/useSolutions";
 import { LlmProviderForm } from "@/components/domain/LlmProviderForm";
 import { SolutionPicker } from "@/components/domain/SolutionPicker";
+import { TelemetryPanel } from "@/components/domain/TelemetryPanel";
 import { UpdatePanel } from "@/components/domain/UpdatePanel";
 
 export default function Settings() {
@@ -71,6 +72,11 @@ export default function Settings() {
           Checks GitHub Releases for a newer signed SAGE Desktop build.
         </p>
         <UpdatePanel />
+      </section>
+
+      <section id="telemetry" className="rounded border border-gray-200 p-4">
+        <h2 className="mb-2 font-semibold">Telemetry</h2>
+        <TelemetryPanel />
       </section>
     </div>
   );
