@@ -36,7 +36,7 @@ from rpc import (
     RPC_INTERNAL_ERROR,
 )
 from dispatcher import Dispatcher
-from handlers import agents, approvals, audit, backlog, handshake, llm, status
+from handlers import agents, approvals, audit, backlog, handshake, llm, queue, status
 
 
 def _configure_logging() -> None:
@@ -67,6 +67,8 @@ def _build_dispatcher() -> Dispatcher:
     d.register("backlog.list", backlog.list_feature_requests)
     d.register("backlog.submit", backlog.submit_feature_request)
     d.register("backlog.update", backlog.update_feature_request)
+    d.register("queue.get_status", queue.get_queue_status)
+    d.register("queue.list_tasks", queue.list_queue_tasks)
     return d
 
 
@@ -133,6 +135,13 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
         llm._gateway = lg
     except Exception as e:  # noqa: BLE001
         logging.warning("LLMGateway unavailable: %s", e)
+
+    try:
+        from src.core.queue_manager import get_task_queue
+
+        queue._queue = get_task_queue(solution_name)
+    except Exception as e:  # noqa: BLE001
+        logging.warning("TaskQueue unavailable: %s", e)
 
 
 def _parse_args(argv: list[str]) -> argparse.Namespace:
