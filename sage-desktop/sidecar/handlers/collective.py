@@ -311,3 +311,35 @@ def close_help_request(params: Any) -> dict:
         raise RpcError(RPC_SIDECAR_ERROR, f"close_help_request failed: {e}") from e
 
     return {"request": updated}
+
+
+def sync(params: Any) -> dict:
+    if params is not None and not isinstance(params, dict):
+        raise RpcError(RPC_INVALID_PARAMS, "params must be an object")
+    cm = _require_cm()
+    try:
+        result = cm.sync()
+    except Exception as e:  # noqa: BLE001
+        raise RpcError(RPC_SIDECAR_ERROR, f"sync failed: {e}") from e
+    pulled = bool(result.get("pulled", False))
+    indexed = int(result.get("indexed", 0))
+    return {"pulled": pulled, "indexed": indexed}
+
+
+def stats(params: Any) -> dict:
+    if params is not None and not isinstance(params, dict):
+        raise RpcError(RPC_INVALID_PARAMS, "params must be an object")
+    cm = _require_cm()
+    try:
+        base = cm.get_stats()
+    except Exception as e:  # noqa: BLE001
+        raise RpcError(RPC_SIDECAR_ERROR, f"get_stats failed: {e}") from e
+    return {
+        "learning_count": int(base.get("learning_count", 0)),
+        "help_request_count": int(base.get("help_request_count", 0)),
+        "help_requests_closed": int(base.get("help_requests_closed", 0)),
+        "topics": dict(base.get("topics") or {}),
+        "contributors": dict(base.get("contributors") or {}),
+        "git_available": bool(getattr(cm, "_git_available", False)),
+        "repo_path": str(getattr(cm, "repo_path", "")),
+    }

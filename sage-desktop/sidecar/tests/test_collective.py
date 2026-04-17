@@ -188,6 +188,27 @@ class _FakeCM:
         self._help_closed[request_id] = data
         return data
 
+    def sync(self) -> dict:
+        self._pulled = True
+        self._indexed = len(self._learnings)
+        return {"pulled": True, "indexed": self._indexed}
+
+    def get_stats(self) -> dict:
+        topics: dict[str, int] = {}
+        contributors: dict[str, int] = {}
+        for l in self._learnings.values():
+            topics[l["topic"]] = topics.get(l["topic"], 0) + 1
+            contributors[l["author_solution"]] = (
+                contributors.get(l["author_solution"], 0) + 1
+            )
+        return {
+            "learning_count": len(self._learnings),
+            "help_request_count": len(self._help_open),
+            "help_requests_closed": len(self._help_closed),
+            "topics": topics,
+            "contributors": contributors,
+        }
+
 
 @pytest.fixture
 def wired():
@@ -477,3 +498,33 @@ def test_close_help_request_not_found(wired, monkeypatch):
     with pytest.raises(RpcError) as e:
         collective.close_help_request({"id": "ghost"})
     assert e.value.code == -32000
+
+
+def test_sync_delegates_and_returns_counts(wired, monkeypatch):
+    monkeypatch.setattr(collective, "_cm", wired)
+    wired._add_learning()
+    out = collective.sync({})
+    assert out == {"pulled": True, "indexed": 1}
+
+
+def test_stats_includes_git_flag_and_repo_path(wired, monkeypatch):
+    monkeypatch.setattr(collective, "_cm", wired)
+    wired._add_learning(solution="a", topic="t1")
+    wired._add_learning(solution="a", topic="t2")
+    wired._add_help(status="open")
+    wired._add_help(status="closed")
+    out = collective.stats({})
+    assert out["learning_count"] == 2
+    assert out["help_request_count"] == 1
+    assert out["help_requests_closed"] == 1
+    assert out["topics"] == {"t1": 1, "t2": 1}
+    assert out["contributors"] == {"a": 2}
+    assert out["git_available"] is True
+    assert out["repo_path"] == "/tmp/fake-collective"
+
+
+def test_stats_reports_git_offline(wired, monkeypatch):
+    monkeypatch.setattr(collective, "_cm", wired)
+    wired._git_available = False
+    out = collective.stats({})
+    assert out["git_available"] is False
