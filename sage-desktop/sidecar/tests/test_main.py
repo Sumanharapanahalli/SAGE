@@ -104,6 +104,25 @@ def test_blank_lines_are_ignored():
 
 # ---------- with solution path (end-to-end wiring) ----------
 
+# ---------- solutions ----------
+
+def test_solutions_list_round_trip():
+    """Smoke test: `solutions.list` should return a list (possibly empty) —
+    the SAGE_ROOT env var and project_loader.list_solutions are wired in
+    `_wire_handlers`, so this exercises the full path through the real
+    dispatcher."""
+    out = _drive(_req("sl", "solutions.list") + "\n")
+    assert "result" in out[0], f"got error: {out[0]}"
+    assert isinstance(out[0]["result"], list)
+
+
+def test_solutions_get_current_without_solution_returns_null():
+    out = _drive(_req("sc", "solutions.get_current") + "\n")
+    assert "result" in out[0]
+    # No --solution-name passed, so current is null
+    assert out[0]["result"] is None
+
+
 def test_sidecar_wires_up_stores_when_solution_path_given(tmp_path):
     """When --solution-path is provided, approvals.list_pending should work
     (returning an empty list, not an INVALID_PARAMS error)."""
