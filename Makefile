@@ -175,6 +175,28 @@ desktop-build:
 	@echo "Building sage-desktop release bundle..."
 	cd sage-desktop && npm run tauri build
 
+# Build the PyInstaller sidecar bundle only (no Tauri shell).
+desktop-sidecar-bundle:
+	bash sage-desktop/scripts/build-sidecar.sh
+
+# Copy the bundled sidecar into src-tauri/bin/ so Tauri externalBin
+# picks it up when packaging. Platform-specific filename is required by
+# the Tauri bundler: <name>-<rust-target-triple><ext>.
+desktop-bundle: desktop-sidecar-bundle
+	mkdir -p sage-desktop/src-tauri/bin
+	cp sage-desktop/sidecar/dist/sage-sidecar.exe \
+	   sage-desktop/src-tauri/bin/sage-sidecar-x86_64-pc-windows-msvc.exe
+	cp sage-desktop/sidecar/dist/sage-sidecar.exe \
+	   sage-desktop/src-tauri/bin/sage-sidecar-x86_64-pc-windows-gnu.exe
+
+# Full MSI build — requires desktop-bundle first.
+desktop-msi: desktop-bundle
+	cd sage-desktop && npm run tauri -- build --bundles msi
+
+# NSIS fallback installer (per-user, no UAC).
+desktop-nsis: desktop-bundle
+	cd sage-desktop && npm run tauri -- build --bundles nsis
+
 # Python sidecar tests (~82 tests; no Rust, no Node)
 test-desktop-sidecar:
 	cd sage-desktop/sidecar && $(abspath $(PYTEST)) tests/ -v

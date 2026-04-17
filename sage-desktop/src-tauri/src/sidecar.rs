@@ -44,16 +44,21 @@ pub fn resolve_sidecar_path(resource_dir: Option<PathBuf>) -> PathBuf {
         return PathBuf::from(p);
     }
     if let Some(dir) = resource_dir {
-        let exe_name = if cfg!(windows) {
-            "sage-sidecar-x86_64-pc-windows-msvc.exe"
+        let candidates: &[&str] = if cfg!(windows) {
+            &[
+                "sage-sidecar-x86_64-pc-windows-msvc.exe",
+                "sage-sidecar-x86_64-pc-windows-gnu.exe",
+            ]
         } else if cfg!(target_os = "macos") {
-            "sage-sidecar-x86_64-apple-darwin"
+            &["sage-sidecar-x86_64-apple-darwin"]
         } else {
-            "sage-sidecar-x86_64-unknown-linux-gnu"
+            &["sage-sidecar-x86_64-unknown-linux-gnu"]
         };
-        let exe = dir.join(exe_name);
-        if exe.exists() {
-            return exe;
+        for name in candidates {
+            let exe = dir.join(name);
+            if exe.exists() {
+                return exe;
+            }
         }
     }
     // Dev fallback: sage-desktop/src-tauri/../sidecar/__main__.py
