@@ -42,6 +42,7 @@ from handlers import (
     audit,
     backlog,
     builds,
+    evolution,
     handshake,
     llm,
     onboarding,
@@ -91,6 +92,10 @@ def _build_dispatcher() -> Dispatcher:
     d.register("builds.approve", builds.approve_stage)
     d.register("yaml.read", yaml_edit.read)
     d.register("yaml.write", yaml_edit.write)
+    d.register("evolution.leaderboard", evolution.leaderboard)
+    d.register("evolution.history", evolution.history)
+    d.register("evolution.analytics", evolution.analytics)
+    d.register("evolution.train", evolution.train)
     return d
 
 
@@ -123,6 +128,16 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
         onboarding._generate_fn = _gs
     except Exception as e:  # noqa: BLE001
         logging.warning("onboarding.generate wiring unavailable: %s", e)
+
+    try:
+        from src.core.agent_gym import AgentGym, GymDB
+
+        _db_path = ".gym_data.db"
+        if solution_path:
+            _db_path = str(solution_path / ".sage" / "gym_data.db")
+        evolution._gym = AgentGym(GymDB(_db_path))
+    except Exception as e:  # noqa: BLE001
+        logging.warning("AgentGym unavailable: %s", e)
 
     try:
         from src.integrations.build_orchestrator import build_orchestrator as _bo

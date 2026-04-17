@@ -35,6 +35,11 @@ import type {
   SwitchSolutionResult,
   OnboardingParams,
   OnboardingResult,
+  LeaderboardResult,
+  HistoryResult,
+  AnalyticsResult,
+  TrainParams,
+  TrainResult,
   StatusResponse,
   YamlFileName,
   YamlReadResult,
@@ -184,6 +189,20 @@ export const switchSolution = (name: string, path: string) =>
 export const onboardingGenerate = (params: OnboardingParams) =>
   call<OnboardingResult>("onboarding_generate", params);
 
+// ── Evolution (Agent Gym) ─────────────────────────────────────────────────
+
+export const evolutionLeaderboard = () =>
+  call<LeaderboardResult>("evolution_leaderboard");
+
+export const evolutionHistory = (limit?: number) =>
+  call<HistoryResult>("evolution_history", { limit });
+
+export const evolutionAnalytics = (role?: string, skill?: string) =>
+  call<AnalyticsResult>("evolution_analytics", { role, skill });
+
+export const evolutionTrain = (params: TrainParams) =>
+  call<TrainResult>("evolution_train", params);
+
 // ── Builds ────────────────────────────────────────────────────────────────
 
 export const startBuild = (params: StartBuildParams) =>
@@ -242,6 +261,11 @@ export type {
   SwitchSolutionResult,
   OnboardingParams,
   OnboardingResult,
+  LeaderboardResult,
+  HistoryResult,
+  AnalyticsResult,
+  TrainParams,
+  TrainResult,
   StatusResponse,
   YamlFileName,
   YamlReadResult,

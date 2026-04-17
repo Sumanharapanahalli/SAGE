@@ -376,3 +376,43 @@ through the approval path (`yaml_edit` proposal kind, unchanged).
 - Web: +4 `useYamlEdit` hook tests, +3 `YamlEdit` page tests — 119
   vitest tests total.
 
+## Phase 5a — Evolution UI (landed on `feature/sage-desktop-phase1`)
+
+Exposes Agent Gym's learning loop inside the desktop app without
+touching FastAPI. `/evolution` page surfaces the leaderboard, a
+training panel, and recent session history — backed by four NDJSON
+RPCs (`evolution.leaderboard`, `evolution.history`,
+`evolution.analytics`, `evolution.train`).
+
+- Sidecar handler (`handlers/evolution.py`) wires a singleton
+  `AgentGym(GymDB(...))` keyed to the active solution's
+  `.sage/gym_data.db`. Import-time failures (missing deps, absent
+  solution) degrade gracefully: handlers return `SidecarError`
+  instead of crashing the process. `train` maps `ValueError` →
+  `InvalidParams`, `RuntimeError` → `SidecarError` so LLM / exercise
+  failures stay recoverable.
+- Four Tauri commands (`evolution_leaderboard`, `evolution_history`,
+  `evolution_analytics`, `evolution_train`) — proxy-only, same
+  `State<RwLock<Sidecar>>` read-lock pattern.
+- React: `useLeaderboard`, `useHistory(limit)`, `useAnalytics(role)`
+  (gated on role selection), `useTrainAgent` (mutation invalidates
+  leaderboard + history on success). Page composes `Leaderboard`,
+  `TrainPanel`, `RecentHistory`, and a collapsible `Analytics` JSON
+  dump for the selected role.
+- Route `/evolution`, Sidebar "Evolution" entry between Audit and
+  Status, Header title map updated.
+
+**Law 1 note.** `evolution.train` triggers a bounded training round
+against an exercise the operator explicitly selected — it is the
+operator's own action, not an agent proposal. No proposal queue,
+no approval gate. The audit trail lives in the gym DB (`GymDB`
+writes every session) and in the LLM gateway's usual audit log.
+
+### Testing delta
+- Python: +12 unit tests (`handlers/evolution`) — 157 sidecar tests
+  total.
+- Rust: proxy-only commands, no new tests.
+- Web: +4 `useEvolution` hook tests, +3 `Leaderboard`, +3
+  `TrainPanel`, +2 `RecentHistory`, +1 Sidebar entry, +1 Evolution
+  page — 133 vitest tests total.
+

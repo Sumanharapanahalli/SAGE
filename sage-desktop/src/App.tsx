@@ -9,6 +9,7 @@ import { Approvals } from "@/pages/Approvals";
 import { Audit } from "@/pages/Audit";
 import Backlog from "@/pages/Backlog";
 import Builds from "@/pages/Builds";
+import { Evolution } from "@/pages/Evolution";
 import Onboarding from "@/pages/Onboarding";
 import Settings from "@/pages/Settings";
 import { Status } from "@/pages/Status";
@@ -39,6 +40,7 @@ export function App() {
             <Route path="approvals" element={<Approvals />} />
             <Route path="agents" element={<Agents />} />
             <Route path="audit" element={<Audit />} />
+            <Route path="evolution" element={<Evolution />} />
             <Route path="status" element={<Status />} />
             <Route path="backlog" element={<Backlog />} />
             <Route path="builds" element={<Builds />} />

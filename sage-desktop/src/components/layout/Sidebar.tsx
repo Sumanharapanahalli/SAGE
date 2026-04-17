@@ -7,6 +7,7 @@ const NAV_ITEMS = [
   { to: "/approvals", label: "Approvals" },
   { to: "/agents", label: "Agents" },
   { to: "/audit", label: "Audit" },
+  { to: "/evolution", label: "Evolution" },
   { to: "/status", label: "Status" },
   { to: "/builds", label: "Builds" },
   { to: "/backlog", label: "Backlog" },

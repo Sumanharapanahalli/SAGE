@@ -31,6 +31,11 @@ describe("Sidebar", () => {
     expect(screen.getByRole("link", { name: /status/i })).toBeInTheDocument();
   });
 
+  it("includes the Evolution entry between Audit and Status", () => {
+    renderAt("/approvals");
+    expect(screen.getByRole("link", { name: /evolution/i })).toBeInTheDocument();
+  });
+
   it("marks the active route with aria-current=page", () => {
     renderAt("/audit");
     const link = screen.getByRole("link", { name: /audit/i });

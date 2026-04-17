@@ -359,3 +359,60 @@ export interface OnboardingResult {
   suggested_routes: string[];
   message: string;
 }
+
+// ── Evolution (Agent Gym) ─────────────────────────────────────────────────
+
+export interface LeaderboardEntry {
+  agent_role: string;
+  rating: number;
+  rating_deviation: number;
+  wins: number;
+  losses: number;
+  win_rate: number;
+  sessions: number;
+  streak?: number;
+  best_score?: number;
+}
+
+export interface LeaderboardResult {
+  leaderboard: LeaderboardEntry[];
+  stats: {
+    total_agents: number;
+    total_sessions: number;
+    avg_rating: number;
+  };
+}
+
+export interface HistorySession {
+  session_id: string;
+  agent_role: string;
+  exercise_id?: string;
+  score?: number;
+  passed?: boolean;
+  timestamp?: string;
+}
+
+export interface HistoryResult {
+  sessions: HistorySession[];
+}
+
+export type AnalyticsResult = Record<string, unknown>;
+
+export interface TrainParams {
+  role: string;
+  difficulty?: string;
+  skill_name?: string;
+  exercise_id?: string;
+}
+
+export interface TrainResult {
+  session_id: string;
+  agent_role: string;
+  status: string;
+  grade?: { score: number; passed: boolean };
+  elo_before?: number;
+  elo_after?: number;
+  reflection?: string;
+  improvement_plan?: string[];
+  duration_s?: number;
+}
