@@ -341,6 +341,22 @@ export interface YamlWriteResult {
   bytes: number;
 }
 
+// ── Auto-update ───────────────────────────────────────────────────────────
+
+/**
+ * Mirrors the serde tag="kind" enum in src-tauri/src/update_status.rs.
+ * Frontend receives one of three shapes from `check_update`.
+ */
+export type UpdateStatus =
+  | { kind: "UpToDate"; current_version: string }
+  | {
+      kind: "Available";
+      current_version: string;
+      new_version: string;
+      notes: string;
+    }
+  | { kind: "Error"; detail: string };
+
 // ── Onboarding wizard ─────────────────────────────────────────────────────
 
 export interface OnboardingParams {

@@ -6,6 +6,7 @@ import {
 } from "@/hooks/useSolutions";
 import { LlmProviderForm } from "@/components/domain/LlmProviderForm";
 import { SolutionPicker } from "@/components/domain/SolutionPicker";
+import { UpdatePanel } from "@/components/domain/UpdatePanel";
 
 export default function Settings() {
   const info = useLlmInfo();
@@ -62,6 +63,14 @@ export default function Settings() {
         {switcher.isError && (
           <p className="mt-2 text-sm text-red-700">Switch failed.</p>
         )}
+      </section>
+
+      <section id="updates" className="rounded border border-gray-200 p-4">
+        <h2 className="mb-2 font-semibold">Application updates</h2>
+        <p className="mb-3 text-sm text-gray-600">
+          Checks GitHub Releases for a newer signed SAGE Desktop build.
+        </p>
+        <UpdatePanel />
       </section>
     </div>
   );

@@ -36,6 +36,7 @@ import type {
   OnboardingParams,
   OnboardingResult,
   StatusResponse,
+  UpdateStatus,
   YamlFileName,
   YamlReadResult,
   YamlWriteResult,
@@ -205,6 +206,11 @@ export const readYaml = (file: YamlFileName) =>
 export const writeYaml = (file: YamlFileName, content: string) =>
   call<YamlWriteResult>("write_yaml", { file, content });
 
+// ── Auto-update ───────────────────────────────────────────────────────────
+
+export const checkUpdate = () => call<UpdateStatus>("check_update");
+export const installUpdate = () => call<void>("install_update");
+
 // ── Queue ─────────────────────────────────────────────────────────────────
 
 export const getQueueStatus = () => call<QueueStatus>("get_queue_status");
@@ -243,6 +249,7 @@ export type {
   OnboardingParams,
   OnboardingResult,
   StatusResponse,
+  UpdateStatus,
   YamlFileName,
   YamlReadResult,
   YamlWriteResult,
