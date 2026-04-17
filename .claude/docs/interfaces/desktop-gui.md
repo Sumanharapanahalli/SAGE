@@ -107,14 +107,28 @@ NDJSON frames — one JSON object per line. Every request has
 | `audit_stats` | Totals + `by_action_type` histogram |
 | `list_agents` | Core + custom roles with enrichment (event_count, last_active) |
 | `get_agent` | Single agent by name |
+| `llm.get_info` | Current provider name, model, and list of available providers |
+| `llm.switch` | Runtime provider/model swap (framework control — no HITL) |
+| `backlog.list` | List solution or framework feature requests, filterable by status/scope |
+| `backlog.submit` | Create a new feature request; validates priority + scope |
+| `backlog.update` | Approve / reject / complete an existing request |
+| `queue.get_status` | Pending / in-progress / done / failed / blocked counts + parallel config |
+| `queue.list_tasks` | Paginated task list (≤50 by default), optional status filter |
+
+### Phase 2 methods
+
+- Shares one SQLite file with the FastAPI Web UI (`/features/list` returns the same rows).
+- LLM switch reuses `src/core/proposal_executor._execute_llm_switch` so CLI, Web UI, and
+  desktop all land on the same runtime state.
+- New error variant: `FeatureRequestNotFound { feature_id: string }` (RPC code `-32020`).
 
 Error codes mirror the sidecar RPC constants and map to a Rust tagged
-enum (`DesktopError`) with eleven variants:
+enum (`DesktopError`) with twelve variants:
 
 ```
 ProposalNotFound / ProposalExpired / AlreadyDecided / RbacDenied
 SolutionUnavailable / SageImportError / InvalidRequest / InvalidParams
-MethodNotFound / SidecarDown / Other
+MethodNotFound / SidecarDown / FeatureRequestNotFound / Other
 ```
 
 The React client (`src/api/types.ts`) mirrors the same tagged union, so

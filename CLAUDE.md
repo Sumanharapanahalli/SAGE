@@ -64,7 +64,7 @@ sage-desktop/           Third interface: Tauri + Python sidecar via stdin/stdout
 - **[Technical Decisions](.claude/docs/decisions.md)** — ADRs, rationale, alternatives considered
 
 ### 🖥️ Interfaces
-- **[Desktop (sage-desktop)](.claude/docs/interfaces/desktop-gui.md)** — No-sockets Tauri + Python sidecar app; when to use vs. web/VS Code
+- **[Desktop (sage-desktop)](.claude/docs/interfaces/desktop-gui.md)** — No-sockets Tauri + Python sidecar app; when to use vs. web/VS Code. Phase 2 ships Settings + Backlog pages and a queue tile on Status.
 
 ### 🔧 Feature Documentation  
 - **[Agent Gym](.claude/docs/features/agent-gym.md)** — Self-play training, Glicko-2 ratings, exercise catalog

@@ -137,6 +137,12 @@ your-solutions-repo/
 - The SAGE framework repo contains no user data, ever
 - Regulated industries: the `.sage/audit_log.db` is the per-solution compliance record
 
+**Shared state across interfaces:** `sage-desktop` submits solution feature requests
+directly to `.sage/audit_log.db` via `FeatureRequestStore` — no HTTP, no sync protocol.
+The same rows appear in the FastAPI Web UI's Improvements page because they read the
+same SQLite file. This is the two-backlogs guarantee at the storage layer: `scope="solution"`
+and `scope="sage"` rows co-exist in one table, and every interface sees both scopes.
+
 ## Reference Architectures
 
 These are not dependencies — they are thinking influences:
