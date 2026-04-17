@@ -21,6 +21,12 @@ make run PROJECT=xxx    # Start FastAPI backend on :8000
 make ui                 # Start Vite frontend on :5173
 make test               # Framework unit tests
 make test-all           # Framework + all solution tests
+
+# sage-desktop (Tauri + Python sidecar, no sockets, no ports)
+make desktop-install    # One-time npm install in sage-desktop/
+make desktop-dev        # Tauri dev loop (Rust + Vite + sidecar)
+make test-desktop       # Sidecar (pytest) + Rust (cargo) + React (vitest)
+make test-desktop-e2e   # Round-trip real sidecar subprocess
 ```
 
 ## Core Tech Stack
@@ -36,9 +42,13 @@ make test-all           # Framework + all solution tests
 ```
 src/core/               LLM gateway, build orchestrator, agent gym, orchestrator intelligence (9 modules)
 src/agents/             Universal, Analyst, Developer, Monitor, Planner, Critic, Product Owner
-src/interface/api.py    FastAPI — the only public interface
+src/interface/api.py    FastAPI — HTTP interface for web UI and VS Code extension
 solutions/              Solution configurations (project.yaml, prompts.yaml, tasks.yaml)
-web/src/                React dashboard — reads from API only
+web/src/                React dashboard — HTTP interface; reads from FastAPI only
+web/src-tauri/          Tauri shell that bundles web/ into a window (still needs :8000)
+sage-desktop/           Third interface: Tauri + Python sidecar via stdin/stdout NDJSON.
+                        No HTTP, no ports — for port-restricted environments.
+                        See .claude/docs/interfaces/desktop-gui.md
 .claude/docs/           Claude Code instruction documentation (see below)
 ```
 
@@ -52,6 +62,9 @@ web/src/                React dashboard — reads from API only
 - **[Setup Guide](.claude/docs/setup.md)** — Installation, LLM providers, environment configuration  
 - **[Workflows](.claude/docs/workflows.md)** — SAGE lean loop, approval gates, build orchestrator flows
 - **[Technical Decisions](.claude/docs/decisions.md)** — ADRs, rationale, alternatives considered
+
+### 🖥️ Interfaces
+- **[Desktop (sage-desktop)](.claude/docs/interfaces/desktop-gui.md)** — No-sockets Tauri + Python sidecar app; when to use vs. web/VS Code
 
 ### 🔧 Feature Documentation  
 - **[Agent Gym](.claude/docs/features/agent-gym.md)** — Self-play training, Glicko-2 ratings, exercise catalog

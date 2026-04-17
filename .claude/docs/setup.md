@@ -41,6 +41,61 @@ cd ~/.claude/skills/gstack && ./setup
 
 Once installed, OpenBrowser auto-detects gstack and uses real Chromium for testing. Without gstack, it falls back to LLM-simulated testing.
 
+## sage-desktop (optional — no-sockets Tauri app)
+
+Only needed for operators in port-restricted corporate environments.
+Everyone else can use the web UI and skip this section.
+
+### Prerequisites
+
+- **Rust toolchain** (stable) — install from https://rustup.rs
+- **Node.js 18+** — the web UI already needs this
+- **Edge WebView2 runtime** — ships with Windows 10/11; manual install
+  only for offline Server SKUs
+- **Python interpreter + SAGE deps on PATH** — during `dev`, the sidecar
+  uses your system Python; the release build will bundle its own via
+  Tauri `externalBin` (Phase 4)
+
+### One-time install
+
+```bash
+make desktop-install          # cd sage-desktop && npm install
+```
+
+### Run in dev mode
+
+```bash
+make desktop-dev              # Tauri dev — Rust core + Vite + sidecar
+```
+
+Environment knobs read by the sidecar spawner (all optional):
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `SAGE_ROOT` | inferred from `current_exe()` | Repo root; sidecar adds it to `sys.path` |
+| `SAGE_PYTHON` | `python` | Which interpreter to spawn |
+| `SAGE_SOLUTION_NAME` | — | Pin sidecar to a named solution under `SAGE_SOLUTIONS_DIR` |
+| `SAGE_SOLUTION_PATH` | — | Absolute path to a solution dir (overrides name) |
+
+### Tests
+
+```bash
+make test-desktop             # Sidecar (pytest) + Rust (cargo) + React (vitest)
+make test-desktop-e2e         # Spawn real sidecar, round-trip NDJSON
+```
+
+None of these tests need a running FastAPI server, network access, or
+admin privileges.
+
+### Release build (Phase 4 — not yet wired)
+
+```bash
+make desktop-build            # Produces .exe bundle (deferred)
+```
+
+See [interfaces/desktop-gui.md](interfaces/desktop-gui.md) for
+architecture details, the RPC method list, and the failure model.
+
 ## Development Environment
 
 ### Environment Variables

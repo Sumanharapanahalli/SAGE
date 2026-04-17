@@ -94,6 +94,28 @@ Every event — analysis, approval, rejection, feedback — is written to SQLite
 **Compounding context beats cold-start retrieval.**
 A correction stored today makes tomorrow's analysis better without any model change. Design all agents to write meaningful feedback to the vector store on rejection — not just "rejected", but the human's actual reasoning.
 
+## Interfaces — Three Doors Into the Same Brain
+
+SAGE ships three operator interfaces. They are **complementary**, not
+alternatives — pick based on your environment, not preference. All three
+read/write the same SQLite + Chroma files under the active solution's
+`.sage/` dir, so a decision approved in one is visible to all.
+
+| Interface | Path | IPC | Listening ports | Use when |
+|---|---|---|---|---|
+| **Web UI + FastAPI** | `web/` + `src/interface/api.py` | HTTP to `localhost:8000` | Yes (`:8000` + `:5173` in dev) | Developer machines, CI dashboards, any env with loopback |
+| **Tauri shell over web** | `web/src-tauri/` | HTTP to `localhost:8000` | Yes (still needs FastAPI) | Want a desktop window but can keep HTTP |
+| **sage-desktop** | `sage-desktop/` | stdin/stdout NDJSON JSON-RPC | **None** | Locked-down corporate envs, air-gapped installs, compliance teams that forbid open sockets |
+
+The shared-state model is deliberate: `.sage/audit_log.db` is the single
+source of truth, and every interface is a thin presentation layer over
+the same Python library modules (`src/core/*`, `src/agents/*`,
+`src/memory/*`). The desktop sidecar is just another in-process importer
+— it bypasses FastAPI by calling the same modules directly.
+
+See [desktop-gui.md](interfaces/desktop-gui.md) for sage-desktop's RPC
+contract, failure model, and file layout.
+
 ## The .sage/ Directory — Solution Runtime Isolation
 
 Every solution gets its own `.sage/` directory, auto-created at first run inside the solution folder. This is the **only place** SAGE writes runtime data.
