@@ -41,6 +41,7 @@ from handlers import (
     approvals,
     audit,
     backlog,
+    builds,
     handshake,
     llm,
     onboarding,
@@ -83,6 +84,10 @@ def _build_dispatcher() -> Dispatcher:
     d.register("solutions.list", solutions.list_solutions)
     d.register("solutions.get_current", solutions.get_current)
     d.register("onboarding.generate", onboarding.generate)
+    d.register("builds.start", builds.start)
+    d.register("builds.list", builds.list_runs)
+    d.register("builds.get", builds.get)
+    d.register("builds.approve", builds.approve_stage)
     return d
 
 
@@ -112,6 +117,13 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
         onboarding._generate_fn = _gs
     except Exception as e:  # noqa: BLE001
         logging.warning("onboarding.generate wiring unavailable: %s", e)
+
+    try:
+        from src.integrations.build_orchestrator import build_orchestrator as _bo
+
+        builds._orch = _bo
+    except Exception as e:  # noqa: BLE001
+        logging.warning("build_orchestrator wiring unavailable: %s", e)
 
     if not solution_path:
         logging.info("No solution path provided — running in minimal mode.")

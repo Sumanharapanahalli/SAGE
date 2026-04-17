@@ -9,11 +9,14 @@ import { invoke } from "@tauri-apps/api/core";
 
 import type {
   Agent,
+  ApproveBuildParams,
   AuditEvent,
   AuditListResponse,
   AuditStats,
   AuditTraceResponse,
   BatchApproveResult,
+  BuildRunDetail,
+  BuildRunSummary,
   DesktopError,
   FeatureRequest,
   FeatureRequestScope,
@@ -27,6 +30,7 @@ import type {
   QueueStatus,
   QueueTask,
   SolutionRef,
+  StartBuildParams,
   CurrentSolution,
   SwitchSolutionResult,
   OnboardingParams,
@@ -177,6 +181,19 @@ export const switchSolution = (name: string, path: string) =>
 export const onboardingGenerate = (params: OnboardingParams) =>
   call<OnboardingResult>("onboarding_generate", params);
 
+// ── Builds ────────────────────────────────────────────────────────────────
+
+export const startBuild = (params: StartBuildParams) =>
+  call<BuildRunDetail>("start_build", params);
+
+export const listBuilds = () => call<BuildRunSummary[]>("list_builds");
+
+export const getBuild = (run_id: string) =>
+  call<BuildRunDetail>("get_build", { run_id });
+
+export const approveBuildStage = (params: ApproveBuildParams) =>
+  call<BuildRunDetail>("approve_build_stage", params);
+
 // ── Queue ─────────────────────────────────────────────────────────────────
 
 export const getQueueStatus = () => call<QueueStatus>("get_queue_status");
@@ -188,11 +205,14 @@ export const listQueueTasks = (
 // Re-exports to reduce import boilerplate at call sites
 export type {
   Agent,
+  ApproveBuildParams,
   AuditEvent,
   AuditListResponse,
   AuditStats,
   AuditTraceResponse,
   BatchApproveResult,
+  BuildRunDetail,
+  BuildRunSummary,
   DesktopError,
   FeatureRequest,
   FeatureRequestScope,
@@ -206,6 +226,7 @@ export type {
   QueueStatus,
   QueueTask,
   SolutionRef,
+  StartBuildParams,
   CurrentSolution,
   SwitchSolutionResult,
   OnboardingParams,

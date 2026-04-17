@@ -42,6 +42,10 @@ vi.mock("@/api/client", () => ({
   getCurrentSolution: vi.fn().mockResolvedValue(null),
   switchSolution: vi.fn(),
   onboardingGenerate: vi.fn(),
+  startBuild: vi.fn(),
+  listBuilds: vi.fn().mockResolvedValue([]),
+  getBuild: vi.fn(),
+  approveBuildStage: vi.fn(),
 }));
 
 vi.mock("@tauri-apps/api/event", () => ({
@@ -83,6 +87,19 @@ describe("App routing", () => {
     );
     await waitFor(() =>
       expect(screen.getByRole("heading")).toHaveTextContent(/status/i),
+    );
+  });
+
+  it("renders the Builds route", async () => {
+    render(
+      <MemoryRouter initialEntries={["/builds"]}>
+        <App />
+      </MemoryRouter>,
+    );
+    await waitFor(() =>
+      expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
+        /builds/i,
+      ),
     );
   });
 });

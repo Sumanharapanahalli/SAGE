@@ -135,6 +135,23 @@ def test_onboarding_generate_wires_to_handler():
     assert out[0]["error"]["code"] == -32602
 
 
+# ---------- builds ----------
+
+def test_builds_list_round_trip():
+    """`builds.list` should return a list (possibly empty) — exercises
+    the full dispatcher → orchestrator path."""
+    out = _drive(_req("b1", "builds.list") + "\n")
+    assert "result" in out[0], f"got error: {out[0]}"
+    assert isinstance(out[0]["result"], list)
+
+
+def test_builds_start_without_description_returns_invalid_params():
+    out = _drive(_req("b2", "builds.start", {}) + "\n")
+    assert out[0]["id"] == "b2"
+    assert "error" in out[0]
+    assert out[0]["error"]["code"] == -32602
+
+
 def test_sidecar_wires_up_stores_when_solution_path_given(tmp_path):
     """When --solution-path is provided, approvals.list_pending should work
     (returning an empty list, not an INVALID_PARAMS error)."""

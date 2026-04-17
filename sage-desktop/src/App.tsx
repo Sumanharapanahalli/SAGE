@@ -8,6 +8,7 @@ import { Agents } from "@/pages/Agents";
 import { Approvals } from "@/pages/Approvals";
 import { Audit } from "@/pages/Audit";
 import Backlog from "@/pages/Backlog";
+import Builds from "@/pages/Builds";
 import Onboarding from "@/pages/Onboarding";
 import Settings from "@/pages/Settings";
 import { Status } from "@/pages/Status";
@@ -39,6 +40,7 @@ export function App() {
             <Route path="audit" element={<Audit />} />
             <Route path="status" element={<Status />} />
             <Route path="backlog" element={<Backlog />} />
+            <Route path="builds" element={<Builds />} />
             <Route path="onboarding" element={<Onboarding />} />
             <Route path="settings" element={<Settings />} />
           </Route>
