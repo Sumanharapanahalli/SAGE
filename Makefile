@@ -40,6 +40,8 @@ endif
         docker-up docker-down docker-up-d \
         list-solutions list-projects clean help doctor \
         desktop-install desktop-dev desktop-build \
+        desktop-sidecar-bundle desktop-bundle desktop-msi desktop-nsis \
+        desktop-offline-cache \
         test-desktop test-desktop-sidecar test-desktop-rs test-desktop-web \
         test-desktop-e2e
 
@@ -196,6 +198,12 @@ desktop-msi: desktop-bundle
 # NSIS fallback installer (per-user, no UAC).
 desktop-nsis: desktop-bundle
 	cd sage-desktop && npm run tauri -- build --bundles nsis
+
+# Populate sage-desktop/offline/wheels/ with every wheel needed to install
+# SAGE deps offline. Source machine still needs internet — the *target*
+# machine can then run install-offline.sh with --no-index.
+desktop-offline-cache:
+	bash sage-desktop/scripts/build-offline-cache.sh
 
 # Python sidecar tests (~82 tests; no Rust, no Node)
 test-desktop-sidecar:
