@@ -9,6 +9,7 @@
 pub mod errors;
 pub mod rpc;
 pub mod sidecar;
+pub mod update_status;
 
 #[cfg(feature = "desktop")]
 pub mod commands;
@@ -106,6 +107,8 @@ mod desktop_app {
                 crate::commands::builds::approve_build_stage,
                 crate::commands::yaml_edit::read_yaml,
                 crate::commands::yaml_edit::write_yaml,
+                crate::commands::updates::check_update,
+                crate::commands::updates::install_update,
             ])
             .run(tauri::generate_context!())
             .expect("error while running sage-desktop app");
