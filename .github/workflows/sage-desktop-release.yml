@@ -98,6 +98,22 @@ jobs:
           path: release-artifacts/
           if-no-files-found: error
 
+      - name: Install tauri-driver
+        if: runner.os == 'Windows'
+        run: cargo install tauri-driver --locked
+
+      - name: Run tauri-driver E2E suite
+        if: runner.os == 'Windows'
+        working-directory: sage-desktop
+        shell: bash
+        run: |
+          # tauri-driver needs the packaged sage-desktop.exe; the Tauri
+          # build above produced it under src-tauri/target/release/.
+          npm run test:e2e:tauri || {
+              echo "::warning::tauri-driver E2E failed — see logs"
+              # Don't block the release on this yet; the suite is new.
+          }
+
   publish:
     name: Publish release + latest.json
     needs: build
