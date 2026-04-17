@@ -18,6 +18,7 @@ mod desktop_app {
     use std::path::PathBuf;
 
     use tauri::Manager;
+    use tokio::sync::RwLock;
 
     use crate::sidecar::{Sidecar, SidecarConfig};
 
@@ -62,7 +63,7 @@ mod desktop_app {
                 tauri::async_runtime::spawn(async move {
                     match Sidecar::spawn(cfg).await {
                         Ok(sidecar) => {
-                            handle.manage(sidecar);
+                            handle.manage(RwLock::new(sidecar));
                             tracing::info!("sidecar online");
                         }
                         Err(e) => {
@@ -92,6 +93,9 @@ mod desktop_app {
                 crate::commands::backlog::update_feature_request,
                 crate::commands::queue::get_queue_status,
                 crate::commands::queue::list_queue_tasks,
+                crate::commands::solutions::list_solutions,
+                crate::commands::solutions::get_current_solution,
+                crate::commands::switch::switch_solution,
             ])
             .run(tauri::generate_context!())
             .expect("error while running sage-desktop app");

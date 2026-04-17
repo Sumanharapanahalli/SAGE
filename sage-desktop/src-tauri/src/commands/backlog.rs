@@ -1,5 +1,6 @@
 use serde_json::{json, Value};
 use tauri::State;
+use tokio::sync::RwLock;
 
 use crate::errors::DesktopError;
 use crate::sidecar::Sidecar;
@@ -8,9 +9,11 @@ use crate::sidecar::Sidecar;
 pub async fn list_feature_requests(
     status: Option<String>,
     scope: Option<String>,
-    sidecar: State<'_, Sidecar>,
+    sidecar: State<'_, RwLock<Sidecar>>,
 ) -> Result<Value, DesktopError> {
     sidecar
+        .read()
+        .await
         .call("backlog.list", json!({"status": status, "scope": scope}))
         .await
 }
@@ -24,9 +27,11 @@ pub async fn submit_feature_request(
     requested_by: Option<String>,
     module_id: Option<String>,
     module_name: Option<String>,
-    sidecar: State<'_, Sidecar>,
+    sidecar: State<'_, RwLock<Sidecar>>,
 ) -> Result<Value, DesktopError> {
     sidecar
+        .read()
+        .await
         .call(
             "backlog.submit",
             json!({
@@ -47,9 +52,11 @@ pub async fn update_feature_request(
     id: String,
     action: String,
     reviewer_note: Option<String>,
-    sidecar: State<'_, Sidecar>,
+    sidecar: State<'_, RwLock<Sidecar>>,
 ) -> Result<Value, DesktopError> {
     sidecar
+        .read()
+        .await
         .call(
             "backlog.update",
             json!({

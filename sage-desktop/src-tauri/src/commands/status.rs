@@ -2,16 +2,17 @@
 
 use serde_json::{json, Value};
 use tauri::State;
+use tokio::sync::RwLock;
 
 use crate::errors::DesktopError;
 use crate::sidecar::Sidecar;
 
 #[tauri::command]
-pub async fn get_status(sidecar: State<'_, Sidecar>) -> Result<Value, DesktopError> {
-    sidecar.call("status.get", json!({})).await
+pub async fn get_status(sidecar: State<'_, RwLock<Sidecar>>) -> Result<Value, DesktopError> {
+    sidecar.read().await.call("status.get", json!({})).await
 }
 
 #[tauri::command]
-pub async fn handshake(sidecar: State<'_, Sidecar>) -> Result<Value, DesktopError> {
-    sidecar.call("handshake", json!({})).await
+pub async fn handshake(sidecar: State<'_, RwLock<Sidecar>>) -> Result<Value, DesktopError> {
+    sidecar.read().await.call("handshake", json!({})).await
 }
