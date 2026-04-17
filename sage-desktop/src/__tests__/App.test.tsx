@@ -24,6 +24,20 @@ vi.mock("@/api/client", () => ({
   }),
   handshake: vi.fn(),
   toDesktopError: (e: unknown) => e,
+  getLlmInfo: vi.fn().mockResolvedValue({
+    provider_name: "GeminiCLIProvider",
+    model: "gemini-2.0",
+    available_providers: ["gemini"],
+  }),
+  switchLlm: vi.fn(),
+  listFeatureRequests: vi.fn().mockResolvedValue([]),
+  submitFeatureRequest: vi.fn(),
+  updateFeatureRequest: vi.fn(),
+  getQueueStatus: vi.fn().mockResolvedValue({
+    pending: 0, in_progress: 0, done: 0, failed: 0, blocked: 0,
+    parallel_enabled: false, max_workers: 0,
+  }),
+  listQueueTasks: vi.fn().mockResolvedValue([]),
 }));
 
 import { App } from "@/App";

@@ -5,6 +5,8 @@ import { Layout } from "@/components/layout/Layout";
 import { Agents } from "@/pages/Agents";
 import { Approvals } from "@/pages/Approvals";
 import { Audit } from "@/pages/Audit";
+import Backlog from "@/pages/Backlog";
+import Settings from "@/pages/Settings";
 import { Status } from "@/pages/Status";
 
 const queryClient = new QueryClient({
@@ -27,6 +29,8 @@ export function App() {
           <Route path="agents" element={<Agents />} />
           <Route path="audit" element={<Audit />} />
           <Route path="status" element={<Status />} />
+          <Route path="backlog" element={<Backlog />} />
+          <Route path="settings" element={<Settings />} />
         </Route>
       </Routes>
     </QueryClientProvider>

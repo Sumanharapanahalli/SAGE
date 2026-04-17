@@ -5,6 +5,8 @@ const TITLE_MAP: Record<string, string> = {
   "/agents": "Agents",
   "/audit": "Audit",
   "/status": "Status",
+  "/backlog": "Backlog",
+  "/settings": "Settings",
 };
 
 export function Header() {

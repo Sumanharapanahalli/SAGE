@@ -46,6 +46,11 @@ function describe(err: DesktopError): { title: string; detail: string } {
         title: "Method not found",
         detail: err.detail.method,
       };
+    case "FeatureRequestNotFound":
+      return {
+        title: "Feature request not found",
+        detail: `id: ${err.detail.feature_id}`,
+      };
     case "Other":
       return {
         title: `Error (${err.detail.code})`,

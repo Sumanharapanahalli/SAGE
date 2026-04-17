@@ -6,6 +6,8 @@ const NAV_ITEMS = [
   { to: "/agents", label: "Agents" },
   { to: "/audit", label: "Audit" },
   { to: "/status", label: "Status" },
+  { to: "/backlog", label: "Backlog" },
+  { to: "/settings", label: "Settings" },
 ] as const;
 
 export function Sidebar() {
