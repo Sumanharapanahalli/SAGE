@@ -36,7 +36,7 @@ from rpc import (
     RPC_INTERNAL_ERROR,
 )
 from dispatcher import Dispatcher
-from handlers import agents, approvals, audit, handshake, llm, status
+from handlers import agents, approvals, audit, backlog, handshake, llm, status
 
 
 def _configure_logging() -> None:
@@ -64,6 +64,9 @@ def _build_dispatcher() -> Dispatcher:
     d.register("status.get", status.get_status)
     d.register("llm.get_info", llm.get_llm_info)
     d.register("llm.switch", llm.switch_llm)
+    d.register("backlog.list", backlog.list_feature_requests)
+    d.register("backlog.submit", backlog.submit_feature_request)
+    d.register("backlog.update", backlog.update_feature_request)
     return d
 
 
@@ -104,6 +107,15 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
         agents._logger = audit_logger
     except Exception as e:  # noqa: BLE001
         logging.warning("AuditLogger unavailable: %s", e)
+
+    try:
+        from src.core.feature_request_store import FeatureRequestStore
+
+        fr_store = FeatureRequestStore(str(sage_dir / "audit_log.db"))
+        fr_store.init_schema()
+        backlog._store = fr_store
+    except Exception as e:  # noqa: BLE001
+        logging.warning("FeatureRequestStore unavailable: %s", e)
 
     try:
         from src.core.project_loader import ProjectConfig
