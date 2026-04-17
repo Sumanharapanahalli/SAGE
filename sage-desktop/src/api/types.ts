@@ -359,3 +359,77 @@ export interface OnboardingResult {
   suggested_routes: string[];
   message: string;
 }
+
+// ── Constitution ──────────────────────────────────────────────────────────
+
+export interface ConstitutionPrinciple {
+  id: string;
+  text: string;
+  weight: number;
+}
+
+export interface ConstitutionMeta {
+  name: string;
+  version: number;
+  last_updated: string;
+  updated_by: string;
+}
+
+export interface ConstitutionVoice {
+  tone?: string;
+  avoid?: string[];
+}
+
+export interface ConstitutionDecisions {
+  auto_approve_categories?: string[];
+  escalation_keywords?: string[];
+}
+
+export interface ConstitutionHistoryEntry {
+  version: number;
+  changed_by: string;
+  timestamp: string;
+}
+
+export interface ConstitutionData {
+  meta?: ConstitutionMeta;
+  principles?: ConstitutionPrinciple[];
+  constraints?: string[];
+  voice?: ConstitutionVoice;
+  decisions?: ConstitutionDecisions;
+  knowledge?: Record<string, unknown>;
+  _history?: ConstitutionHistoryEntry[];
+}
+
+export interface ConstitutionStats {
+  is_empty: boolean;
+  name: string;
+  version: number;
+  principle_count: number;
+  constraint_count: number;
+  non_negotiable_count: number;
+  has_voice: boolean;
+  has_decisions: boolean;
+  has_knowledge: boolean;
+  history_entries: number;
+}
+
+export interface ConstitutionState {
+  data: ConstitutionData;
+  stats: ConstitutionStats;
+  preamble: string;
+  history: ConstitutionHistoryEntry[];
+  errors: string[];
+}
+
+export interface ConstitutionUpdateResult {
+  stats: ConstitutionStats;
+  preamble: string;
+  version: number;
+  path: string;
+}
+
+export interface CheckActionResult {
+  allowed: boolean;
+  violations: string[];
+}

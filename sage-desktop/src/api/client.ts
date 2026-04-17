@@ -17,6 +17,10 @@ import type {
   BatchApproveResult,
   BuildRunDetail,
   BuildRunSummary,
+  CheckActionResult,
+  ConstitutionData,
+  ConstitutionState,
+  ConstitutionUpdateResult,
   DesktopError,
   FeatureRequest,
   FeatureRequestScope,
@@ -205,6 +209,28 @@ export const readYaml = (file: YamlFileName) =>
 export const writeYaml = (file: YamlFileName, content: string) =>
   call<YamlWriteResult>("write_yaml", { file, content });
 
+// ── Constitution ──────────────────────────────────────────────────────────
+
+export const constitutionGet = () =>
+  call<ConstitutionState>("constitution_get");
+
+export const constitutionUpdate = (
+  data: ConstitutionData,
+  changed_by?: string,
+) =>
+  call<ConstitutionUpdateResult>("constitution_update", {
+    data,
+    changed_by,
+  });
+
+export const constitutionPreamble = () =>
+  call<{ preamble: string }>("constitution_preamble");
+
+export const constitutionCheckAction = (action_description: string) =>
+  call<CheckActionResult>("constitution_check_action", {
+    action_description,
+  });
+
 // ── Queue ─────────────────────────────────────────────────────────────────
 
 export const getQueueStatus = () => call<QueueStatus>("get_queue_status");
@@ -224,6 +250,10 @@ export type {
   BatchApproveResult,
   BuildRunDetail,
   BuildRunSummary,
+  CheckActionResult,
+  ConstitutionData,
+  ConstitutionState,
+  ConstitutionUpdateResult,
   DesktopError,
   FeatureRequest,
   FeatureRequestScope,
