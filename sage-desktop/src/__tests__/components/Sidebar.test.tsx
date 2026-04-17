@@ -41,4 +41,11 @@ describe("Sidebar", () => {
     renderAt("/approvals");
     expect(screen.getByTestId("sidebar-solution")).toHaveTextContent(/solution/i);
   });
+
+  it("includes the Constitution entry (Phase 5b)", () => {
+    renderAt("/approvals");
+    expect(
+      screen.getByRole("link", { name: /constitution/i }),
+    ).toHaveAttribute("href", "/constitution");
+  });
 });
