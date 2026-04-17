@@ -243,6 +243,86 @@ export interface QueueTask {
   error?: string;
 }
 
+// ── Build pipeline ────────────────────────────────────────────────────────
+
+export type BuildState =
+  | "decomposing"
+  | "awaiting_plan"
+  | "building"
+  | "awaiting_build"
+  | "integrating"
+  | "completed"
+  | "failed"
+  | "rejected";
+
+export type HitlLevel = "permissive" | "standard" | "strict";
+
+export interface StartBuildParams {
+  product_description: string;
+  solution_name?: string;
+  repo_url?: string;
+  workspace_dir?: string;
+  critic_threshold?: number;
+  hitl_level?: HitlLevel;
+}
+
+/** Summary shape returned by builds.list — one row per run. */
+export interface BuildRunSummary {
+  run_id: string;
+  solution_name: string;
+  state: BuildState | string;
+  created_at: string;
+  task_count: number;
+}
+
+export interface BuildCriticScore {
+  phase: string;
+  score: number;
+  passed: boolean;
+  iterations: number;
+}
+
+export interface BuildAgentResult {
+  task_type: string;
+  description: string;
+  status: string;
+  tier: string;
+  step: number;
+  wave: number;
+  agent_role: string;
+  acceptance_criteria: string[];
+  error: string;
+  files_changed: string[];
+}
+
+/** Full detail returned by builds.get / builds.start / builds.approve. */
+export interface BuildRunDetail {
+  run_id: string;
+  solution_name: string;
+  state: BuildState | string;
+  state_description: string;
+  created_at: string;
+  updated_at: string;
+  product_description: string;
+  hitl_level: HitlLevel | string;
+  hitl_gates: string[];
+  detected_domains: string[];
+  plan: Array<Record<string, unknown>>;
+  task_count: number;
+  critic_scores: BuildCriticScore[];
+  critic_reports: Array<Record<string, unknown>>;
+  agent_results: BuildAgentResult[];
+  integration_result: Record<string, unknown> | null;
+  phase_durations: Record<string, number>;
+  error?: string;
+}
+
+export interface ApproveBuildParams {
+  run_id: string;
+  approved: boolean;
+  feedback?: string;
+}
+
 // ── Onboarding wizard ─────────────────────────────────────────────────────
 
 export interface OnboardingParams {
