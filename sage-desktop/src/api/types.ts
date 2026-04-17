@@ -433,3 +433,51 @@ export interface CheckActionResult {
   allowed: boolean;
   violations: string[];
 }
+
+// ── Knowledge Browser ─────────────────────────────────────────────────────
+
+export type KnowledgeBackend = "full" | "lite" | "minimal";
+
+export interface KnowledgeEntry {
+  id: string;
+  text: string;
+  metadata: Record<string, unknown>;
+}
+
+export interface KnowledgeListResult {
+  entries: KnowledgeEntry[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface KnowledgeSearchHit {
+  text: string;
+  id?: string;
+  score?: number;
+  metadata?: Record<string, unknown>;
+}
+
+export interface KnowledgeSearchResult {
+  query: string;
+  results: KnowledgeSearchHit[];
+  count: number;
+}
+
+export interface KnowledgeStats {
+  total: number;
+  collection: string;
+  backend: KnowledgeBackend | string;
+  solution: string;
+}
+
+export interface KnowledgeAddResult {
+  id: string;
+  text: string;
+  metadata: Record<string, unknown>;
+}
+
+export interface KnowledgeDeleteResult {
+  id: string;
+  deleted: boolean;
+}

@@ -28,6 +28,11 @@ import type {
   FeatureRequestSubmit,
   FeatureRequestUpdate,
   HandshakeResponse,
+  KnowledgeAddResult,
+  KnowledgeDeleteResult,
+  KnowledgeListResult,
+  KnowledgeSearchResult,
+  KnowledgeStats,
   LlmInfo,
   LlmSwitchResult,
   Proposal,
@@ -230,6 +235,22 @@ export const constitutionCheckAction = (action_description: string) =>
   call<CheckActionResult>("constitution_check_action", {
     action_description,
   });
+
+// ── Knowledge Browser ─────────────────────────────────────────────────────
+
+export const knowledgeList = (params: { limit?: number; offset?: number } = {}) =>
+  call<KnowledgeListResult>("knowledge_list", params);
+
+export const knowledgeSearch = (query: string, top_k?: number) =>
+  call<KnowledgeSearchResult>("knowledge_search", { query, top_k });
+
+export const knowledgeAdd = (text: string, metadata?: Record<string, unknown>) =>
+  call<KnowledgeAddResult>("knowledge_add", { text, metadata });
+
+export const knowledgeDelete = (id: string) =>
+  call<KnowledgeDeleteResult>("knowledge_delete", { id });
+
+export const knowledgeStats = () => call<KnowledgeStats>("knowledge_stats");
 
 // ── Queue ─────────────────────────────────────────────────────────────────
 
