@@ -36,7 +36,7 @@ from rpc import (
     RPC_INTERNAL_ERROR,
 )
 from dispatcher import Dispatcher
-from handlers import agents, approvals, audit, handshake, status
+from handlers import agents, approvals, audit, handshake, llm, status
 
 
 def _configure_logging() -> None:
@@ -62,6 +62,8 @@ def _build_dispatcher() -> Dispatcher:
     d.register("agents.list", agents.list_agents)
     d.register("agents.get", agents.get_agent)
     d.register("status.get", status.get_status)
+    d.register("llm.get_info", llm.get_llm_info)
+    d.register("llm.switch", llm.switch_llm)
     return d
 
 
@@ -116,6 +118,7 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
         from src.core.llm_gateway import llm_gateway as lg
 
         status._llm = lg
+        llm._gateway = lg
     except Exception as e:  # noqa: BLE001
         logging.warning("LLMGateway unavailable: %s", e)
 
