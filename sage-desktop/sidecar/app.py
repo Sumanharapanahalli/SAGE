@@ -42,7 +42,10 @@ from handlers import (
     audit,
     backlog,
     builds,
+    collective,
+    constitution,
     handshake,
+    knowledge,
     llm,
     onboarding,
     queue,
@@ -91,6 +94,27 @@ def _build_dispatcher() -> Dispatcher:
     d.register("builds.approve", builds.approve_stage)
     d.register("yaml.read", yaml_edit.read)
     d.register("yaml.write", yaml_edit.write)
+    d.register("constitution.get", constitution.get)
+    d.register("constitution.update", constitution.update)
+    d.register("constitution.preamble", constitution.preamble)
+    d.register("constitution.check_action", constitution.check_action)
+    d.register("knowledge.list", knowledge.list_entries)
+    d.register("knowledge.search", knowledge.search)
+    d.register("knowledge.add", knowledge.add)
+    d.register("knowledge.delete", knowledge.delete)
+    d.register("knowledge.stats", knowledge.stats)
+    d.register("collective.list_learnings", collective.list_learnings)
+    d.register("collective.get_learning", collective.get_learning)
+    d.register("collective.search_learnings", collective.search_learnings)
+    d.register("collective.publish_learning", collective.publish_learning)
+    d.register("collective.validate_learning", collective.validate_learning)
+    d.register("collective.list_help_requests", collective.list_help_requests)
+    d.register("collective.create_help_request", collective.create_help_request)
+    d.register("collective.claim_help_request", collective.claim_help_request)
+    d.register("collective.respond_to_help_request", collective.respond_to_help_request)
+    d.register("collective.close_help_request", collective.close_help_request)
+    d.register("collective.sync", collective.sync)
+    d.register("collective.stats", collective.stats)
     return d
 
 
@@ -192,6 +216,30 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
         queue._queue = get_task_queue(solution_name)
     except Exception as e:  # noqa: BLE001
         logging.warning("TaskQueue unavailable: %s", e)
+
+    try:
+        from src.core.constitution import Constitution
+
+        constitution._ctx = Constitution(
+            solutions_dir=str(solution_path.parent), solution=solution_name
+        )
+    except Exception as e:  # noqa: BLE001
+        logging.warning("Constitution unavailable: %s", e)
+
+    try:
+        from src.memory.vector_store import VectorMemory
+
+        knowledge._vm = VectorMemory(explicit_solution=solution_name)
+        knowledge._solution_name = solution_name
+    except Exception as e:  # noqa: BLE001
+        logging.warning("VectorMemory unavailable: %s", e)
+
+    try:
+        from src.core.collective_memory import get_collective_memory
+
+        collective._cm = get_collective_memory()
+    except Exception as e:  # noqa: BLE001
+        logging.warning("CollectiveMemory unavailable: %s", e)
 
 
 def _parse_args(argv: list[str]) -> argparse.Namespace:

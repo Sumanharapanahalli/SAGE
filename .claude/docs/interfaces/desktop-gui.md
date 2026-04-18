@@ -376,3 +376,133 @@ through the approval path (`yaml_edit` proposal kind, unchanged).
 - Web: +4 `useYamlEdit` hook tests, +3 `YamlEdit` page tests — 119
   vitest tests total.
 
+## Phase 5a — Collective Intelligence Browser (landed on `feature/sage-desktop-phase5a`)
+
+**Route:** `/collective`
+**RPC namespace:** `collective.*` (12 methods)
+**Sidecar module:** `sidecar/handlers/collective.py`
+**Python surface:** `src/core/collective_memory.py`
+
+Three-tab page surfacing the git-backed cross-solution knowledge
+sharing repo:
+
+- **Learnings** — browse/search/publish/validate entries with
+  solution/topic/tag filters. Pagination via `< Prev / Next >`.
+- **Help Requests** — Open/Closed toggle, expertise filter;
+  Claim / Respond / Close actions per card. Close requires a
+  two-click confirm.
+- **Stats** — counters (learnings, open help, closed help) plus
+  topic and contributor histograms.
+
+**Law 1 positioning:** operator validate/claim/respond/close/create
+bypass the proposal queue (human-in-the-UI IS the approval).
+`publish_learning` respects the framework's `require_approval`
+flag: gated publishes return `{ gated: true, trace_id }` and the
+UI displays "Submitted as proposal `<trace_id>`" instead of
+"Published." Agent-authored publishes use the same gated path via
+the existing `collective_publish` proposal kind.
+
+**Git offline:** when the `CollectiveMemory` singleton reports
+`_git_available = false`, the header shows "git: offline" in amber
+and the Sync button is disabled. All other operations still work —
+the Python layer writes YAML directly and skips the commit step.
+
+**RPC methods:**
+`list_learnings`, `get_learning`, `search_learnings`,
+`publish_learning`, `validate_learning`, `list_help_requests`,
+`create_help_request`, `claim_help_request`,
+`respond_to_help_request`, `close_help_request`, `sync`, `stats`.
+
+---
+
+## Phase 5b — Constitution authoring (landed on `feature/sage-desktop-phase5b`)
+
+Exposes `src/core/constitution.py` through the sidecar so operators can
+author per-solution principles, constraints, voice, and decision rules
+without leaving the desktop app. The Constitution is what every agent's
+system prompt is prepended with — the single highest-leverage
+solution-level configuration in SAGE.
+
+- Four sidecar handlers in `handlers/constitution.py`:
+  `constitution.get`, `constitution.update`, `constitution.preamble`,
+  `constitution.check_action`. The concrete `Constitution` instance is
+  wired at startup by `_wire_handlers`; if the import fails the
+  handlers degrade gracefully to typed `SidecarError` responses.
+  `update` replaces the full state in memory, runs `validate()` before
+  writing to disk, and reloads on failure so in-memory state never
+  drifts past a rejected edit.
+- Four Tauri commands (`constitution_{get,update,preamble,check_action}`)
+  — proxy-only, same `State<RwLock<Sidecar>>` read-lock pattern.
+- React: `useConstitution` (query), `useUpdateConstitution` (mutation,
+  invalidates the query), `useCheckAction` (on-demand mutation). Seven
+  domain components: `PrinciplesEditor`, `ConstraintsEditor`,
+  `VoiceEditor`, `DecisionsEditor`, `PreamblePreview`, `ActionChecker`,
+  `VersionHistoryList`. The `Constitution` page composes the editors
+  left and preview/checker/history right; Save is disabled until the
+  draft diverges from the loaded state.
+- Route `/constitution`, Sidebar "Constitution" entry, Header title
+  map updated.
+
+**Law 1 note.** Operator-authored constitutions bypass the proposal
+queue by the same rationale as Phase 3b YAML authoring. When an
+*agent* proposes a constitution change, it still flows through the
+existing `yaml_edit` proposal kind so the audit trail remains uniform.
+
+### Testing delta
+- Python: +13 unit tests (`handlers/constitution`) including a real
+  `Constitution` round-trip — 158 sidecar tests total.
+- Rust: proxy-only commands, no new tests.
+- Web: +4 `useConstitution` hook tests, +5 `PrinciplesEditor`, +4
+  `ConstraintsEditor`, +3 `ActionChecker`, +2 `Constitution` page, +1
+  Sidebar entry — 133 vitest tests total.
+
+## Phase 5c — Knowledge browser (landed on `feature/sage-desktop-phase5c`)
+
+Exposes the active solution's `VectorMemory` (ChromaDB +
+sentence-transformers, or the keyword fallback in minimal mode) through
+the sidecar so operators can browse, search, add, and delete entries
+without FastAPI. The vector store is SAGE's "compounding intelligence"
+surface (Law 3) — making it visible is what turns it from a black box
+into an inspectable training signal.
+
+- Five sidecar handlers in `handlers/knowledge.py`:
+  `knowledge.list`, `knowledge.search`, `knowledge.add`,
+  `knowledge.delete`, `knowledge.stats`. `list` paginates at the
+  sidecar (VectorMemory's `list_entries` has no offset) and clamps
+  `limit` to `[1, 500]`; `search` clamps `top_k` to `[1, 50]`.
+  `stats` reports `{total, collection, backend, solution}` with
+  `llamaindex` mapped to `full` for the UI. The `VectorMemory`
+  instance is wired at startup by `_wire_handlers`; if the import
+  fails every handler degrades to a typed `SidecarError` so the UI
+  can render a single disabled state.
+- Five Tauri commands (`knowledge_{list,search,add,delete,stats}`) —
+  proxy-only, same `State<RwLock<Sidecar>>` read-lock pattern.
+- React: `useKnowledgeList` / `useKnowledgeSearch` / `useKnowledgeStats`
+  queries plus `useAddKnowledge` / `useDeleteKnowledge` mutations
+  (both invalidate `["knowledge"]` on success). Three domain
+  components: `KnowledgeEntryRow` (collapse/expand, metadata tags,
+  two-click delete confirm), `KnowledgeSearchResults` (ranked list
+  with optional score), `AddKnowledgeForm` (textarea + metadata
+  key/value pairs). The `Knowledge` page has Browse / Search tabs,
+  shows a banner when `backend = minimal`, and keeps the add form
+  permanently below the tabs.
+- Route `/knowledge`, Sidebar "Knowledge" entry, Header title map
+  updated.
+
+**Law 1 note.** Operator-authored add/delete bypass the proposal
+queue by the same rationale as Phase 3b YAML authoring and Phase 5b
+Constitution. An *agent* that wants to add or delete a memory still
+flows through the existing `STATEFUL` / `DESTRUCTIVE` proposal kinds
+unchanged. The sidecar audit logger is not wired for this handler
+by design: the web UI's approval path already writes to audit, and
+the desktop edit is the operator's own action.
+
+### Testing delta
+- Python: +18 unit tests (`handlers/knowledge`) including a real
+  `VectorMemory` round-trip in `SAGE_MINIMAL=1` mode — 176 sidecar
+  tests total.
+- Rust: proxy-only commands, no new tests.
+- Web: +5 `useKnowledge` hook tests, +3 `KnowledgeEntryRow`, +2
+  `AddKnowledgeForm`, +2 `Knowledge` page, +1 Sidebar entry — 152
+  vitest tests total.
+

@@ -160,6 +160,20 @@ _DISPATCH["collective_publish"] = _execute_collective_publish
 
 When `require_approval=True` (default), learnings are submitted as proposals for human review before being committed to the shared repo.
 
+## sage-desktop integration
+
+Phase 5a ships `/collective` in sage-desktop — the full CollectiveMemory
+surface is available over the `collective.*` RPC namespace
+(sidecar/handlers/collective.py). Operators get a 3-tab page
+(Learnings / Help Requests / Stats) for browse, search, publish,
+validate, triage, and sync without FastAPI.
+
+Operator-driven actions bypass the proposal queue by the same
+Law 1 pattern as Phase 3b YAML authoring, 5b Constitution, and 5c
+Knowledge. `publish_learning` honors `CollectiveMemory.require_approval`
+— gated publishes return `{ gated: true, trace_id }` and surface in
+`/approvals`.
+
 ## Tests
 
 - `tests/test_collective_memory.py` — 35+ unit tests (CRUD, search, validation, Git ops, thread safety)

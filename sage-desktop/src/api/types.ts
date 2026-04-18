@@ -359,3 +359,228 @@ export interface OnboardingResult {
   suggested_routes: string[];
   message: string;
 }
+
+// ── Constitution ──────────────────────────────────────────────────────────
+
+export interface ConstitutionPrinciple {
+  id: string;
+  text: string;
+  weight: number;
+}
+
+export interface ConstitutionMeta {
+  name: string;
+  version: number;
+  last_updated: string;
+  updated_by: string;
+}
+
+export interface ConstitutionVoice {
+  tone?: string;
+  avoid?: string[];
+}
+
+export interface ConstitutionDecisions {
+  auto_approve_categories?: string[];
+  escalation_keywords?: string[];
+}
+
+export interface ConstitutionHistoryEntry {
+  version: number;
+  changed_by: string;
+  timestamp: string;
+}
+
+export interface ConstitutionData {
+  meta?: ConstitutionMeta;
+  principles?: ConstitutionPrinciple[];
+  constraints?: string[];
+  voice?: ConstitutionVoice;
+  decisions?: ConstitutionDecisions;
+  knowledge?: Record<string, unknown>;
+  _history?: ConstitutionHistoryEntry[];
+}
+
+export interface ConstitutionStats {
+  is_empty: boolean;
+  name: string;
+  version: number;
+  principle_count: number;
+  constraint_count: number;
+  non_negotiable_count: number;
+  has_voice: boolean;
+  has_decisions: boolean;
+  has_knowledge: boolean;
+  history_entries: number;
+}
+
+export interface ConstitutionState {
+  data: ConstitutionData;
+  stats: ConstitutionStats;
+  preamble: string;
+  history: ConstitutionHistoryEntry[];
+  errors: string[];
+}
+
+export interface ConstitutionUpdateResult {
+  stats: ConstitutionStats;
+  preamble: string;
+  version: number;
+  path: string;
+}
+
+export interface CheckActionResult {
+  allowed: boolean;
+  violations: string[];
+}
+
+// ── Knowledge Browser ─────────────────────────────────────────────────────
+
+export type KnowledgeBackend = "full" | "lite" | "minimal";
+
+export interface KnowledgeEntry {
+  id: string;
+  text: string;
+  metadata: Record<string, unknown>;
+}
+
+export interface KnowledgeListResult {
+  entries: KnowledgeEntry[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface KnowledgeSearchHit {
+  text: string;
+  id?: string;
+  score?: number;
+  metadata?: Record<string, unknown>;
+}
+
+export interface KnowledgeSearchResult {
+  query: string;
+  results: KnowledgeSearchHit[];
+  count: number;
+}
+
+export interface KnowledgeStats {
+  total: number;
+  collection: string;
+  backend: KnowledgeBackend | string;
+  solution: string;
+}
+
+export interface KnowledgeAddResult {
+  id: string;
+  text: string;
+  metadata: Record<string, unknown>;
+}
+
+export interface KnowledgeDeleteResult {
+  id: string;
+  deleted: boolean;
+}
+
+// ── Collective Intelligence (Phase 5a) ──────────────────────────────────
+
+export interface CollectiveLearning {
+  id: string;
+  author_agent: string;
+  author_solution: string;
+  topic: string;
+  title: string;
+  content: string;
+  tags: string[];
+  confidence: number;
+  validation_count: number;
+  created_at: string;
+  updated_at: string;
+  source_task_id: string;
+}
+
+export interface HelpRequestResponse {
+  responder_agent: string;
+  responder_solution: string;
+  content: string;
+  created_at: string;
+}
+
+export interface HelpRequestClaim {
+  agent: string;
+  solution: string;
+  claimed_at: string;
+}
+
+export type HelpRequestStatus = "open" | "claimed" | "closed";
+export type HelpRequestUrgency = "low" | "medium" | "high" | "critical";
+
+export interface HelpRequest {
+  id: string;
+  title: string;
+  requester_agent: string;
+  requester_solution: string;
+  status: HelpRequestStatus;
+  urgency: HelpRequestUrgency;
+  required_expertise: string[];
+  context: string;
+  created_at: string;
+  claimed_by: HelpRequestClaim | null;
+  responses: HelpRequestResponse[];
+  resolved_at: string | null;
+}
+
+export interface CollectiveListResult {
+  entries: CollectiveLearning[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface CollectiveGetResult {
+  learning: CollectiveLearning | null;
+}
+
+export interface CollectiveSearchResult {
+  query: string;
+  results: CollectiveLearning[];
+  count: number;
+}
+
+export interface CollectivePublishResult {
+  id: string | null;
+  gated: boolean;
+  trace_id?: string;
+}
+
+export interface CollectiveValidateResult {
+  learning: CollectiveLearning;
+}
+
+export interface CollectiveHelpListResult {
+  entries: HelpRequest[];
+  count: number;
+}
+
+export interface CollectiveHelpCreateResult {
+  id: string;
+}
+
+export interface CollectiveHelpMutationResult {
+  request: HelpRequest;
+}
+
+export interface CollectiveSyncResult {
+  pulled: boolean;
+  indexed: number;
+}
+
+export interface CollectiveStats {
+  learning_count: number;
+  help_request_count: number;
+  help_requests_closed: number;
+  topics: Record<string, number>;
+  contributors: Record<string, number>;
+  git_available: boolean;
+  repo_path: string;
+}

@@ -200,15 +200,17 @@ class TestGitTracking:
         changes = [
             {"file": "train.py", "search": "DEPTH = 8", "replace": "DEPTH = 12"}
         ]
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
+        f = tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False)
+        try:
             f.write("# Model config\nDEPTH = 8\nWIDTH = 512\n")
-            f.flush()
+            f.close()
             changes[0]["file"] = f.name
             success = engine._apply_changes(changes, os.path.dirname(f.name))
             assert success is True
             with open(f.name) as check:
                 content = check.read()
                 assert "DEPTH = 12" in content
+        finally:
             os.unlink(f.name)
 
 
@@ -503,12 +505,14 @@ class TestResearchProgram:
 
     def test_load_program_md(self):
         engine = _fresh_engine()
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        f = tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False)
+        try:
             f.write("# Research Program\n\nModify train.py to improve val_bpb.\n")
-            f.flush()
+            f.close()
             program = engine.load_program(f.name)
             assert isinstance(program, str)
             assert "val_bpb" in program
+        finally:
             os.unlink(f.name)
 
     def test_program_injected_into_llm_prompt(self):
