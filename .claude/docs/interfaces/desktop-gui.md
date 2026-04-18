@@ -376,6 +376,45 @@ through the approval path (`yaml_edit` proposal kind, unchanged).
 - Web: +4 `useYamlEdit` hook tests, +3 `YamlEdit` page tests — 119
   vitest tests total.
 
+## Phase 5a — Collective Intelligence Browser (landed on `feature/sage-desktop-phase5a`)
+
+**Route:** `/collective`
+**RPC namespace:** `collective.*` (12 methods)
+**Sidecar module:** `sidecar/handlers/collective.py`
+**Python surface:** `src/core/collective_memory.py`
+
+Three-tab page surfacing the git-backed cross-solution knowledge
+sharing repo:
+
+- **Learnings** — browse/search/publish/validate entries with
+  solution/topic/tag filters. Pagination via `< Prev / Next >`.
+- **Help Requests** — Open/Closed toggle, expertise filter;
+  Claim / Respond / Close actions per card. Close requires a
+  two-click confirm.
+- **Stats** — counters (learnings, open help, closed help) plus
+  topic and contributor histograms.
+
+**Law 1 positioning:** operator validate/claim/respond/close/create
+bypass the proposal queue (human-in-the-UI IS the approval).
+`publish_learning` respects the framework's `require_approval`
+flag: gated publishes return `{ gated: true, trace_id }` and the
+UI displays "Submitted as proposal `<trace_id>`" instead of
+"Published." Agent-authored publishes use the same gated path via
+the existing `collective_publish` proposal kind.
+
+**Git offline:** when the `CollectiveMemory` singleton reports
+`_git_available = false`, the header shows "git: offline" in amber
+and the Sync button is disabled. All other operations still work —
+the Python layer writes YAML directly and skips the commit step.
+
+**RPC methods:**
+`list_learnings`, `get_learning`, `search_learnings`,
+`publish_learning`, `validate_learning`, `list_help_requests`,
+`create_help_request`, `claim_help_request`,
+`respond_to_help_request`, `close_help_request`, `sync`, `stats`.
+
+---
+
 ## Phase 5b — Constitution authoring (landed on `feature/sage-desktop-phase5b`)
 
 Exposes `src/core/constitution.py` through the sidecar so operators can
