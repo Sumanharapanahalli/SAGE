@@ -82,9 +82,13 @@ class TestFilesystemSandbox:
         os.makedirs(sol_dir)
 
         with _patch_solution_dir(str(tmp_path)):
-            # Symlink escape attempt
+            # Symlink escape attempt — skip when OS denies symlink creation
+            # (Windows without Developer Mode / admin rights).
             escape_link = os.path.join(sol_dir, "escape")
-            os.symlink("/tmp", escape_link)
+            try:
+                os.symlink("/tmp", escape_link)
+            except (OSError, NotImplementedError) as e:
+                pytest.skip(f"symlink unsupported in this environment: {e}")
             with pytest.raises(ValueError, match="escapes sandbox"):
                 _enforce_sandbox("escape/something")
 

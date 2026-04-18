@@ -10,6 +10,8 @@ import time
 import pytest
 from playwright.sync_api import sync_playwright, Page, Browser, BrowserContext
 
+pytestmark = pytest.mark.e2e
+
 # ---------------------------------------------------------------------------
 # Playwright sync fixtures
 # ---------------------------------------------------------------------------

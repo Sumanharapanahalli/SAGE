@@ -187,6 +187,10 @@ def test_stats_maps_llamaindex_to_full(wired):
 def test_real_vector_memory_roundtrip(tmp_path, monkeypatch):
     """Guard the real VectorMemory contract end-to-end in minimal mode."""
     monkeypatch.setenv("SAGE_MINIMAL", "1")
+    # Isolate the vector DB path to tmp_path so repeated runs don't pollute
+    # each other (explicit_solution resolves under SAGE_SOLUTIONS_DIR/.sage).
+    monkeypatch.setenv("SAGE_SOLUTIONS_DIR", str(tmp_path))
+    (tmp_path / "demo").mkdir()
     from src.memory.vector_store import VectorMemory
 
     vm = VectorMemory(explicit_solution="demo")

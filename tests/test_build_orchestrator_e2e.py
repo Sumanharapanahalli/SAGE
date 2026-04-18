@@ -344,7 +344,11 @@ class TestFullPipeline:
             orch = BuildOrchestrator(checkpoint_db=tempfile.NamedTemporaryFile(suffix=".db", delete=False).name)
             plan = orch._decompose(run)
 
-            assert len(plan) == 2
+            # Plan is enriched with 4 quality-gate tasks (QA, SECURITY,
+            # SYSTEM_TEST, TESTS) appended to the 2 original tasks.
+            assert len(plan) >= 2
+            assert plan[0]["task_type"] == "BACKEND"
+            assert plan[1]["task_type"] == "FRONTEND"
             # Verify acceptance criteria were added from defaults
             assert plan[0]["acceptance_criteria"] == DEFAULT_ACCEPTANCE_CRITERIA["BACKEND"]
             assert plan[1]["acceptance_criteria"] == DEFAULT_ACCEPTANCE_CRITERIA["FRONTEND"]
