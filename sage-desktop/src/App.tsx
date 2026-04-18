@@ -9,6 +9,7 @@ import { Approvals } from "@/pages/Approvals";
 import { Audit } from "@/pages/Audit";
 import Backlog from "@/pages/Backlog";
 import Builds from "@/pages/Builds";
+import Collective from "@/pages/Collective";
 import Constitution from "@/pages/Constitution";
 import Knowledge from "@/pages/Knowledge";
 import Onboarding from "@/pages/Onboarding";
@@ -48,6 +49,7 @@ export function App() {
             <Route path="yaml" element={<YamlEdit />} />
             <Route path="constitution" element={<Constitution />} />
             <Route path="knowledge" element={<Knowledge />} />
+            <Route path="collective" element={<Collective />} />
             <Route path="settings" element={<Settings />} />
           </Route>
         </Routes>

@@ -11,6 +11,7 @@ const TITLE_MAP: Record<string, string> = {
   "/yaml": "Edit YAML",
   "/constitution": "Constitution",
   "/knowledge": "Knowledge",
+  "/collective": "Collective Intelligence",
   "/settings": "Settings",
 };
 

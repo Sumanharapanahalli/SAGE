@@ -55,4 +55,11 @@ describe("Sidebar", () => {
       screen.getByRole("link", { name: /knowledge/i }),
     ).toHaveAttribute("href", "/knowledge");
   });
+
+  it("includes the Collective entry (Phase 5a)", () => {
+    renderAt("/approvals");
+    expect(
+      screen.getByRole("link", { name: /collective/i }),
+    ).toHaveAttribute("href", "/collective");
+  });
 });

@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { to: "/yaml", label: "YAML" },
   { to: "/constitution", label: "Constitution" },
   { to: "/knowledge", label: "Knowledge" },
+  { to: "/collective", label: "Collective" },
   { to: "/settings", label: "Settings" },
 ] as const;
 
