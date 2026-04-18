@@ -7,10 +7,30 @@ Run: python -m pytest tests/system/test_browser_e2e.py -v --tb=short
 
 import json
 import time
+
 import pytest
 from playwright.sync_api import sync_playwright, Page, Browser, BrowserContext
 
 pytestmark = pytest.mark.e2e
+
+
+def _backend_up() -> bool:
+    """Fast probe that returns True only if the SAGE FastAPI backend answers /health."""
+    try:
+        import urllib.request
+        with urllib.request.urlopen("http://localhost:8000/health", timeout=0.5) as r:
+            return r.status == 200
+    except Exception:
+        return False
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _require_live_stack():
+    """Skip the whole module when backend:8000 is not reachable — these tests
+    drive a real browser against a live backend + frontend and cannot pass
+    otherwise."""
+    if not _backend_up():
+        pytest.skip("SAGE backend not reachable on :8000 — live-stack e2e tests skipped")
 
 # ---------------------------------------------------------------------------
 # Playwright sync fixtures

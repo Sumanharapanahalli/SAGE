@@ -8,14 +8,17 @@ claude_path and save_as_default were silently dropped.
 These tests exist because the approval flow in test_api.py only tests
 the HTTP layer (approve endpoint returns 200) — it does NOT verify
 what the executor actually did with the proposal payload.
+
+Tests drive the async executor via ``asyncio.run`` directly so they
+do not depend on a specific pytest-asyncio plugin configuration — the
+full-suite run showed plugin interactions that dropped the
+``@pytest.mark.asyncio`` mark on some tests, leaving the coroutines
+un-awaited.
 """
 
+import asyncio
 import os
-import tempfile
-import textwrap
 from unittest.mock import MagicMock, patch
-
-import pytest
 
 from src.core.proposal_store import get_proposal_store, RiskClass
 
@@ -38,10 +41,15 @@ def _make_llm_switch_proposal(payload: dict):
 
 
 # Providers are lazy-imported inside _execute_llm_switch, so patch at source.
-_GW   = "src.core.llm_gateway.LLMGateway"
-_CC   = "src.core.llm_gateway.ClaudeCodeCLIProvider"
-_GEM  = "src.core.llm_gateway.GeminiCLIProvider"
-_OLL  = "src.core.llm_gateway.OllamaProvider"
+_GW = "src.core.llm_gateway.LLMGateway"
+_CC = "src.core.llm_gateway.ClaudeCodeCLIProvider"
+_GEM = "src.core.llm_gateway.GeminiCLIProvider"
+_OLL = "src.core.llm_gateway.OllamaProvider"
+
+
+def _run(coro):
+    """Drive a coroutine to completion, independent of pytest-asyncio state."""
+    return asyncio.run(coro)
 
 
 # ---------------------------------------------------------------------------
@@ -50,8 +58,7 @@ _OLL  = "src.core.llm_gateway.OllamaProvider"
 
 class TestExecuteLLMSwitch:
 
-    @pytest.mark.asyncio
-    async def test_claude_path_forwarded_to_provider(self):
+    def test_claude_path_forwarded_to_provider(self):
         """
         Regression: claude_path in payload must reach ClaudeCodeCLIProvider.
         Bug: payload["claude_path"] was never written into llm_cfg, so the
@@ -73,14 +80,13 @@ class TestExecuteLLMSwitch:
 
         with patch(_CC, side_effect=fake_cc), patch(_GW, return_value=MagicMock()):
             from src.core.proposal_executor import _execute_llm_switch
-            await _execute_llm_switch(proposal)
+            _run(_execute_llm_switch(proposal))
 
         assert captured.get("claude_path") == custom_path, (
             f"claude_path not forwarded. Captured cfg: {captured}"
         )
 
-    @pytest.mark.asyncio
-    async def test_model_forwarded_to_claude_code_provider(self):
+    def test_model_forwarded_to_claude_code_provider(self):
         """req_model must be written into llm_cfg['claude_model']."""
         proposal = _make_llm_switch_proposal({
             "provider": "claude-code", "model": "claude-opus-4-6",
@@ -90,11 +96,10 @@ class TestExecuteLLMSwitch:
         with patch(_CC, side_effect=lambda cfg: (captured.update(cfg), MagicMock())[1]), \
              patch(_GW, return_value=MagicMock()):
             from src.core.proposal_executor import _execute_llm_switch
-            await _execute_llm_switch(proposal)
+            _run(_execute_llm_switch(proposal))
         assert captured.get("claude_model") == "claude-opus-4-6"
 
-    @pytest.mark.asyncio
-    async def test_no_claude_path_key_when_payload_is_none(self):
+    def test_no_claude_path_key_when_payload_is_none(self):
         """claude_path must NOT appear in cfg when payload value is None —
         auto-detection inside ClaudeCodeCLIProvider must run instead."""
         proposal = _make_llm_switch_proposal({
@@ -105,11 +110,10 @@ class TestExecuteLLMSwitch:
         with patch(_CC, side_effect=lambda cfg: (captured.update(cfg), MagicMock())[1]), \
              patch(_GW, return_value=MagicMock()):
             from src.core.proposal_executor import _execute_llm_switch
-            await _execute_llm_switch(proposal)
+            _run(_execute_llm_switch(proposal))
         assert "claude_path" not in captured
 
-    @pytest.mark.asyncio
-    async def test_gemini_model_forwarded(self):
+    def test_gemini_model_forwarded(self):
         proposal = _make_llm_switch_proposal({
             "provider": "gemini", "model": "gemini-2.5-pro", "save_as_default": False,
         })
@@ -117,11 +121,10 @@ class TestExecuteLLMSwitch:
         with patch(_GEM, side_effect=lambda cfg: (captured.update(cfg), MagicMock())[1]), \
              patch(_GW, return_value=MagicMock()):
             from src.core.proposal_executor import _execute_llm_switch
-            await _execute_llm_switch(proposal)
+            _run(_execute_llm_switch(proposal))
         assert captured.get("gemini_model") == "gemini-2.5-pro"
 
-    @pytest.mark.asyncio
-    async def test_ollama_model_forwarded(self):
+    def test_ollama_model_forwarded(self):
         proposal = _make_llm_switch_proposal({
             "provider": "ollama", "model": "llama3.2", "save_as_default": False,
         })
@@ -129,11 +132,10 @@ class TestExecuteLLMSwitch:
         with patch(_OLL, side_effect=lambda cfg: (captured.update(cfg), MagicMock())[1]), \
              patch(_GW, return_value=MagicMock()):
             from src.core.proposal_executor import _execute_llm_switch
-            await _execute_llm_switch(proposal)
+            _run(_execute_llm_switch(proposal))
         assert captured.get("ollama_model") == "llama3.2"
 
-    @pytest.mark.asyncio
-    async def test_result_contains_provider_and_name(self):
+    def test_result_contains_provider_and_name(self):
         """Return value must have 'provider' and 'provider_name' keys."""
         proposal = _make_llm_switch_proposal({
             "provider": "claude-code", "model": "claude-sonnet-4-6",
@@ -143,7 +145,7 @@ class TestExecuteLLMSwitch:
         gw_mock.get_provider_name.return_value = "ClaudeCodeCLI (claude-sonnet-4-6)"
         with patch(_CC, return_value=MagicMock()), patch(_GW, return_value=gw_mock):
             from src.core.proposal_executor import _execute_llm_switch
-            result = await _execute_llm_switch(proposal)
+            result = _run(_execute_llm_switch(proposal))
         assert result["provider"] == "claude-code"
         assert "provider_name" in result
 
@@ -165,14 +167,12 @@ class TestSaveAsDefault:
             "config", "config.yaml",
         )
 
-    @pytest.mark.asyncio
-    async def test_save_as_default_updates_provider_in_config(self):
+    def test_save_as_default_updates_provider_in_config(self):
         """When save_as_default=True, the provider line in config.yaml is updated."""
         config_path = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
             "config", "config.yaml",
         )
-        # Back up original
         with open(config_path) as f:
             original = f.read()
 
@@ -183,7 +183,7 @@ class TestSaveAsDefault:
             })
             with patch(_CC, return_value=MagicMock()), patch(_GW, return_value=MagicMock()):
                 from src.core.proposal_executor import _execute_llm_switch
-                result = await _execute_llm_switch(proposal)
+                result = _run(_execute_llm_switch(proposal))
 
             with open(config_path) as f:
                 saved = f.read()
@@ -196,8 +196,7 @@ class TestSaveAsDefault:
             with open(config_path, "w") as f:
                 f.write(original)
 
-    @pytest.mark.asyncio
-    async def test_save_as_default_false_leaves_config_unchanged(self):
+    def test_save_as_default_false_leaves_config_unchanged(self):
         """When save_as_default=False, config.yaml must not be written."""
         config_path = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
@@ -213,7 +212,7 @@ class TestSaveAsDefault:
             })
             with patch(_OLL, return_value=MagicMock()), patch(_GW, return_value=MagicMock()):
                 from src.core.proposal_executor import _execute_llm_switch
-                await _execute_llm_switch(proposal)
+                _run(_execute_llm_switch(proposal))
 
             with open(config_path) as f:
                 after = f.read()
@@ -223,8 +222,7 @@ class TestSaveAsDefault:
             with open(config_path, "w") as f:
                 f.write(original)
 
-    @pytest.mark.asyncio
-    async def test_save_as_default_updates_model_line(self):
+    def test_save_as_default_updates_model_line(self):
         """save_as_default=True with a claude model must update claude_model in config."""
         config_path = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
@@ -240,7 +238,7 @@ class TestSaveAsDefault:
             })
             with patch(_CC, return_value=MagicMock()), patch(_GW, return_value=MagicMock()):
                 from src.core.proposal_executor import _execute_llm_switch
-                await _execute_llm_switch(proposal)
+                _run(_execute_llm_switch(proposal))
 
             with open(config_path) as f:
                 saved = f.read()

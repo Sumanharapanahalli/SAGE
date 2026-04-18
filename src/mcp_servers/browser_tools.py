@@ -25,12 +25,24 @@ except ImportError:
 
 
 def _check_playwright() -> str | None:
-    """Return None if Playwright is available, or an error reason string."""
+    """Return None if Playwright AND the chromium browser binary are available,
+    or an error reason string otherwise."""
     try:
-        import playwright  # noqa: F401
-        return None
+        from playwright.sync_api import sync_playwright
     except ImportError:
         return "playwright not installed. Run: pip install playwright && playwright install chromium"
+
+    try:
+        with sync_playwright() as p:
+            path = p.chromium.executable_path
+            if not path or not os.path.isfile(path):
+                return (
+                    "playwright chromium binary missing at "
+                    f"{path!r}. Run: playwright install chromium"
+                )
+    except Exception as exc:
+        return f"playwright runtime unavailable: {exc}"
+    return None
 
 
 def _get_screenshot_dir() -> str:
