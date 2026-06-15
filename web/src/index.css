@@ -43,6 +43,15 @@
   --sage-risk-stateful-bg:        #fefce8;  --sage-risk-stateful-fg:      #a16207;  --sage-risk-stateful-border:      #fcd34d;
   --sage-risk-ephemeral-bg:       #eff6ff;  --sage-risk-ephemeral-fg:     #1d4ed8;  --sage-risk-ephemeral-border:     #93c5fd;
   --sage-risk-informational-bg:   #f9fafb;  --sage-risk-informational-fg: #4b5563;  --sage-risk-informational-border: #d1d5db;
+
+  /* Neutral surfaces, borders & text — consumed by the ui/ primitives
+     (Card, Modal, Select) and exposed as Tailwind utilities in tailwind.config.ts. */
+  --sage-surface:        #ffffff;
+  --sage-surface-muted:  #f9fafb;   /* gray-50 */
+  --sage-border:         #e5e7eb;   /* gray-200 */
+  --sage-text:           #1f2937;   /* gray-800 */
+  --sage-text-muted:     #6b7280;   /* gray-500 */
+  --sage-overlay:        rgba(17, 24, 39, 0.5);
 }
 
 body {
