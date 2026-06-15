@@ -3,22 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { fetchAuditEvents, type AuditEvent } from '../api/client'
 import ModuleWrapper from '../components/shared/ModuleWrapper'
 import { Loader2, Radio } from 'lucide-react'
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function timeAgo(isoString: string): string {
-  const diff = Date.now() - new Date(isoString).getTime()
-  const mins  = Math.floor(diff / 60_000)
-  const hours = Math.floor(diff / 3_600_000)
-  const days  = Math.floor(diff / 86_400_000)
-  if (mins < 2)   return 'just now'
-  if (hours < 1)  return `${mins}m ago`
-  if (days < 1)   return `${hours}h ago`
-  if (days < 30)  return `${days}d ago`
-  return new Date(isoString).toLocaleDateString()
-}
+import { formatRelativeTime } from '../lib/date'
 
 // ---------------------------------------------------------------------------
 // Event type classification
@@ -160,7 +145,7 @@ function ActivityRow({ event }: { event: AuditEvent }) {
 
       {/* Time */}
       <div className="text-xs shrink-0" style={{ color: '#9ca3af' }}>
-        {timeAgo(event.created_at)}
+        {formatRelativeTime(event.created_at)}
       </div>
     </div>
   )
