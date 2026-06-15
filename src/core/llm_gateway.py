@@ -374,12 +374,19 @@ class ClaudeCodeCLIProvider(LLMProvider):
             env["PATH"] = env.get("PATH", "") + os.pathsep + npm_bin
 
         try:
-            cmd = [self.claude_path, "--model", self.model, "-p", combined]
+            # IMPORTANT: pass the prompt via STDIN, not as a `-p <prompt>` argv.
+            # Windows CreateProcess caps a command line at ~32K chars; a large
+            # context (e.g. a whole source file) as an argument silently fails and
+            # claude returns empty. `claude -p` with no prompt arg reads stdin
+            # (input-format text), which has no such limit. (Same fix we applied to
+            # the Gemini CLI provider.)
+            cmd = [self.claude_path, "--model", self.model, "-p"]
             if self.disallowed_tools:
                 cmd += ["--disallowedTools", self.disallowed_tools]
-            self.logger.debug("Calling Claude Code CLI with -p flag...")
+            self.logger.debug("Calling Claude Code CLI via stdin...")
             result = subprocess.run(
                 cmd,
+                input=combined,
                 capture_output=True,
                 text=True,
                 timeout=self.timeout,
