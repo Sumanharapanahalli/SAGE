@@ -95,7 +95,7 @@ class EvaluatorOptimizerRunner:
         try:
             if name == "gemini":
                 from src.core.llm_gateway import GeminiCLIProvider
-                return GeminiCLIProvider({"gemini_model": model or "gemini-2.5-flash", "timeout": 180})
+                return GeminiCLIProvider({"gemini_model": model or "gemini-3-flash", "timeout": 180})
             if name == "claude-code":
                 from src.core.llm_gateway import ClaudeCodeCLIProvider
                 return ClaudeCodeCLIProvider({"claude_model": model or "claude-sonnet-4-6", "timeout": 180})
