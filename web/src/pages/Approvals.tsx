@@ -10,6 +10,7 @@ import {
 } from '../api/client'
 import type { Proposal } from '../api/client'
 import { Inbox, CheckSquare, X, AlertTriangle, Clock, Check, RefreshCw } from 'lucide-react'
+import RiskBadge, { RISK_CONFIG } from '../components/ui/RiskBadge'
 
 // ---------------------------------------------------------------------------
 // Risk class config
@@ -18,14 +19,6 @@ import { Inbox, CheckSquare, X, AlertTriangle, Clock, Check, RefreshCw } from 'l
 const RISK_ORDER: Proposal['risk_class'][] = [
   'DESTRUCTIVE', 'EXTERNAL', 'STATEFUL', 'EPHEMERAL', 'INFORMATIONAL',
 ]
-
-const RISK_STYLES: Record<Proposal['risk_class'], { dot: string; badge: string; border: string }> = {
-  DESTRUCTIVE:   { dot: '#ef4444', badge: 'bg-red-900 text-red-300',    border: '#ef4444' },
-  EXTERNAL:      { dot: '#f97316', badge: 'bg-orange-900 text-orange-300', border: '#f97316' },
-  STATEFUL:      { dot: '#eab308', badge: 'bg-yellow-900 text-yellow-300', border: '#eab308' },
-  EPHEMERAL:     { dot: '#3b82f6', badge: 'bg-blue-900 text-blue-300',   border: '#3b82f6' },
-  INFORMATIONAL: { dot: '#71717a', badge: 'bg-gray-50 text-gray-500',   border: '#71717a' },
-}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -118,7 +111,7 @@ function ProposalRow({
   onCheck: (v: boolean) => void
   showCheckbox: boolean
 }) {
-  const style = RISK_STYLES[proposal.risk_class]
+  const riskConfig = RISK_CONFIG[proposal.risk_class]
 
   return (
     <button
@@ -126,7 +119,7 @@ function ProposalRow({
       className="w-full text-left px-3 py-3 flex items-start gap-2.5 relative transition-colors"
       style={{
         backgroundColor: selected ? '#d1d5db' : 'transparent',
-        borderLeft: selected ? `3px solid ${style.border}` : '3px solid transparent',
+        borderLeft: selected ? `3px solid ${riskConfig.borderVar}` : '3px solid transparent',
         borderBottom: '1px solid #e5e7eb',
       }}
       onMouseEnter={e => { if (!selected) (e.currentTarget as HTMLElement).style.backgroundColor = '#e5e7eb' }}
@@ -138,7 +131,7 @@ function ProposalRow({
         style={{
           width: '6px',
           height: '6px',
-          backgroundColor: isNew ? style.dot : 'transparent',
+          backgroundColor: isNew ? riskConfig.colorVar : 'transparent',
           display: 'inline-block',
           flexShrink: 0,
         }}
@@ -159,11 +152,7 @@ function ProposalRow({
       {/* Content */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-0.5">
-          <span
-            className={`text-[10px] font-bold uppercase px-1.5 py-0.5 shrink-0 ${style.badge}`}
-          >
-            {proposal.risk_class}
-          </span>
+          <RiskBadge risk={proposal.risk_class} className="shrink-0" />
           <span
             className="text-xs font-medium truncate"
             style={{ color: '#374151' }}
@@ -228,7 +217,6 @@ function DetailPanel({
     )
   }
 
-  const style = RISK_STYLES[proposal.risk_class]
   const isDestructive = proposal.risk_class === 'DESTRUCTIVE'
 
   const handleApprove = async () => {
@@ -266,9 +254,7 @@ function DetailPanel({
         <div className="flex items-start gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <span className={`text-xs font-bold uppercase px-2 py-0.5 ${style.badge}`}>
-                {proposal.risk_class}
-              </span>
+              <RiskBadge risk={proposal.risk_class} />
               {!proposal.reversible && (
                 <span className="text-xs font-bold px-2 py-0.5 bg-red-950 text-red-400">
                   IRREVERSIBLE

@@ -11,17 +11,10 @@ import ModuleWrapper from '../components/shared/ModuleWrapper'
 import { Loader2, CheckCircle2, XCircle, Clock, AlertTriangle, Trash2, ChevronDown, ChevronUp } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
+import RiskBadge, { RISK_CONFIG, type RiskLevel } from '../components/ui/RiskBadge'
 
 // Dashboard content is fully driven by the solution's project.yaml `dashboard:` section.
 // No solution-specific logic lives in this file — add dashboard config to your project.yaml.
-
-const RISK_COLOURS: Record<string, string> = {
-  INFORMATIONAL: 'bg-gray-700 text-gray-300',
-  EPHEMERAL:     'bg-blue-900/60 text-blue-300',
-  STATEFUL:      'bg-yellow-900/60 text-yellow-300',
-  EXTERNAL:      'bg-orange-900/60 text-orange-300',
-  DESTRUCTIVE:   'bg-red-900/70 text-red-300',
-}
 
 const ACTION_TYPE_LABELS: Record<string, string> = {
   yaml_edit:           'YAML Edit',
@@ -71,9 +64,13 @@ function ProposalCard({ p, approverIdentity }: { p: Proposal; approverIdentity: 
       {/* Main row */}
       <div className="p-3">
         <div className="flex items-start gap-2 flex-wrap">
-          <span className={`text-[10px] font-mono px-2 py-0.5 rounded shrink-0 ${RISK_COLOURS[p.risk_class] ?? 'bg-gray-700 text-gray-300'}`}>
-            {p.risk_class}
-          </span>
+          {p.risk_class in RISK_CONFIG ? (
+            <RiskBadge risk={p.risk_class as RiskLevel} className="shrink-0" />
+          ) : (
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded shrink-0 bg-gray-700 text-gray-300">
+              {p.risk_class}
+            </span>
+          )}
           <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-gray-700 text-gray-400 shrink-0">
             {actionLabel}
           </span>
