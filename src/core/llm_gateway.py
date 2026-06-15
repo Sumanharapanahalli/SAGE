@@ -80,7 +80,7 @@ def _load_config():
 # ---------------------------------------------------------------------------
 _MODEL_LIMITS: dict = {
     # Gemini (Google free tier)
-    "gemini-3-flash":         {"daily_requests": 500,  "context_tokens": 1_048_576},
+    "gemini-3.5-flash":         {"daily_requests": 500,  "context_tokens": 1_048_576},
     "gemini-3.1-flash-lite":  {"daily_requests": 1500, "context_tokens": 1_048_576},
     "gemini-2.5-flash":       {"daily_requests": 500,  "context_tokens": 1_048_576},
     "gemini-2.5-pro":         {"daily_requests": 25,   "context_tokens": 1_048_576},
@@ -133,7 +133,7 @@ class GeminiCLIProvider(LLMProvider):
 
     def __init__(self, config):
         self.logger = logging.getLogger("GeminiCLI")
-        self.model = config.get("gemini_model", "gemini-3-flash")
+        self.model = config.get("gemini_model", "gemini-3.5-flash")
         self.timeout = config.get("gemini_timeout", config.get("timeout", 120))
         self.gemini_path = self._find_gemini()
         self.logger.info("Gemini CLI provider ready (model: %s, path: %s)", self.model, self.gemini_path)
