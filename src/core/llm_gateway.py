@@ -167,14 +167,14 @@ class GeminiCLIProvider(LLMProvider):
         if not self.gemini_path:
             return "Error: Gemini CLI not found. Install with: npm install -g @google/gemini-cli"
 
+        # Keep this MINIMAL. A heavy "you are a pure text-generation API" preamble
+        # makes gemini-2.5-flash respond TO the preamble ("I am ready to act as an
+        # API, please provide a prompt") instead of doing the task. System + request,
+        # with a short tool-suppression note at the END, answers reliably.
         combined = (
-            "IMPORTANT: You are acting as a pure text-generation API. "
-            "Do NOT use any tools, do NOT run any commands, do NOT execute code, "
-            "do NOT read files. Respond ONLY with the requested text output.\n\n"
-            "SYSTEM INSTRUCTION (follow strictly):\n"
-            + system_prompt + "\n\n"
-            + "USER REQUEST:\n"
-            + prompt + "\n"
+            (system_prompt + "\n\n" if system_prompt else "")
+            + prompt
+            + "\n\n(Answer directly with the requested output only — do not use tools or run commands.)"
         )
 
         # Build environment with required project settings.
@@ -188,15 +188,20 @@ class GeminiCLIProvider(LLMProvider):
             env["PATH"] = env.get("PATH", "") + os.pathsep + npm_bin
 
         try:
-            # Build command: use -p flag for non-interactive/headless mode
+            # -m selects the model (e.g. gemini-2.5-flash). The prompt goes via
+            # STDIN, NOT a -p argument: gemini's Windows launcher is a .CMD that
+            # re-parses args through cmd.exe, which mangles long prompts with
+            # quotes/newlines (a short prompt works, an evaluator prompt exits
+            # rc=1). gemini reads the prompt from stdin in headless mode.
             if self.gemini_path == "__npx__":
-                cmd = ["npx", "-y", "@google/gemini-cli", "-p", combined]
+                cmd = ["npx", "-y", "@google/gemini-cli", "-m", self.model]
             else:
-                cmd = [self.gemini_path, "-p", combined]
+                cmd = [self.gemini_path, "-m", self.model]
 
-            self.logger.debug("Calling Gemini CLI with -p flag...")
+            self.logger.debug("Calling Gemini CLI (prompt via stdin)...")
             result = subprocess.run(
                 cmd,
+                input=combined,
                 capture_output=True,
                 text=True,
                 timeout=self.timeout,
