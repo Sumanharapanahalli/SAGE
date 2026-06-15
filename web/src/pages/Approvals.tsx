@@ -11,6 +11,7 @@ import {
 import type { Proposal } from '../api/client'
 import { Inbox, CheckSquare, X, AlertTriangle, Clock, Check, RefreshCw } from 'lucide-react'
 import RiskBadge, { RISK_CONFIG } from '../components/ui/RiskBadge'
+import { formatRelativeTime } from '../lib/date'
 
 // ---------------------------------------------------------------------------
 // Risk class config
@@ -23,14 +24,6 @@ const RISK_ORDER: Proposal['risk_class'][] = [
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function relativeTime(iso: string): string {
-  const ms = Date.now() - new Date(iso).getTime()
-  if (ms < 60_000) return 'just now'
-  if (ms < 3_600_000) return `${Math.floor(ms / 60_000)}m ago`
-  if (ms < 86_400_000) return `${Math.floor(ms / 3_600_000)}h ago`
-  return `${Math.floor(ms / 86_400_000)}d ago`
-}
 
 function formatCountdown(iso: string): string {
   const ms = new Date(iso).getTime() - Date.now()
@@ -165,7 +158,7 @@ function ProposalRow({
         </p>
         <div className="flex items-center gap-1 mt-1" style={{ color: '#9ca3af' }}>
           <Clock size={10} />
-          <span className="text-[10px]">{relativeTime(proposal.created_at)}</span>
+          <span className="text-[10px]">{formatRelativeTime(proposal.created_at)}</span>
         </div>
       </div>
     </button>
@@ -277,7 +270,7 @@ function DetailPanel({
         <div className="flex items-center gap-3 mt-2 text-xs" style={{ color: '#9ca3af' }}>
           <span>Proposed by <span style={{ color: '#9ca3af' }}>{proposal.proposed_by}</span></span>
           <span>·</span>
-          <span>{relativeTime(proposal.created_at)}</span>
+          <span>{formatRelativeTime(proposal.created_at)}</span>
           <span>·</span>
           <span className="font-mono">{proposal.trace_id.slice(0, 8)}…</span>
         </div>

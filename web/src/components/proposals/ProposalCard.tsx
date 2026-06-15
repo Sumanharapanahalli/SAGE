@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { CheckCircle, XCircle, AlertTriangle, Clock, ChevronDown, ChevronUp } from 'lucide-react'
 import RiskBadge, { RISK_CONFIG } from '../ui/RiskBadge'
+import { formatRelativeTime } from '../../lib/date'
 
 interface Proposal {
   trace_id: string
@@ -50,12 +51,7 @@ export default function ProposalCard({ proposal, onApprove, onReject }: Proposal
     }
   }
 
-  const relativeTime = (() => {
-    const ms = Date.now() - new Date(proposal.created_at).getTime()
-    if (ms < 60000) return 'just now'
-    if (ms < 3600000) return `${Math.floor(ms / 60000)}m ago`
-    return `${Math.floor(ms / 3600000)}h ago`
-  })()
+  const relativeTime = formatRelativeTime(proposal.created_at)
 
   const riskConfig = RISK_CONFIG[proposal.risk_class] || RISK_CONFIG.STATEFUL
 
