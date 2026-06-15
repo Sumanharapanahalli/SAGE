@@ -122,11 +122,15 @@ class EvaluatorOptimizerRunner:
         try:
             if name == "gemini":
                 from src.core.llm_gateway import GeminiCLIProvider
-                return GeminiCLIProvider({"gemini_model": model or "gemini-3.5-flash", "timeout": 180})
+                return GeminiCLIProvider({"gemini_model": model or "gemini-3.5-flash",
+                                          "timeout": cfg.get("timeout", 180)})
             if name == "claude-code":
                 from src.core.llm_gateway import ClaudeCodeCLIProvider
+                # Default the optimizer timeout high: it is the agentic claude-code
+                # CLI generating whole files/large diffs, which legitimately takes
+                # minutes (a trivial ask returns in ~10s, a full-file rewrite far more).
                 return ClaudeCodeCLIProvider({
-                    "claude_model": model or "claude-sonnet-4-6", "timeout": 180,
+                    "claude_model": model or "claude-sonnet-4-6", "timeout": cfg.get("timeout", 600),
                     # forwarded by the hardened __init__ so the optimizer can't write to disk
                     "disallowed_tools": cfg.get("disallowed_tools", ""),
                     "cwd": cfg.get("cwd"),
