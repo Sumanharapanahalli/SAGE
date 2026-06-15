@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { CheckCircle, XCircle, AlertTriangle, Clock, ChevronDown, ChevronUp } from 'lucide-react'
+import RiskBadge, { RISK_CONFIG } from '../ui/RiskBadge'
 
 interface Proposal {
   trace_id: string
@@ -17,14 +18,6 @@ interface ProposalCardProps {
   proposal: Proposal
   onApprove: (traceId: string, approvedBy?: string, note?: string) => Promise<void>
   onReject: (traceId: string, feedback: string) => Promise<void>
-}
-
-const riskColors: Record<string, string> = {
-  INFORMATIONAL: 'bg-gray-100 text-gray-600 border-gray-200',
-  EPHEMERAL:     'bg-blue-50 text-blue-700 border-blue-200',
-  STATEFUL:      'bg-amber-50 text-amber-700 border-amber-200',
-  EXTERNAL:      'bg-orange-50 text-orange-700 border-orange-200',
-  DESTRUCTIVE:   'bg-red-50 text-red-700 border-red-200',
 }
 
 export default function ProposalCard({ proposal, onApprove, onReject }: ProposalCardProps) {
@@ -64,14 +57,21 @@ export default function ProposalCard({ proposal, onApprove, onReject }: Proposal
     return `${Math.floor(ms / 3600000)}h ago`
   })()
 
+  const riskConfig = RISK_CONFIG[proposal.risk_class] || RISK_CONFIG.STATEFUL
+
   return (
-    <div className={`rounded-lg border p-4 ${riskColors[proposal.risk_class] || riskColors.STATEFUL}`}>
+    <div
+      className="rounded-lg border p-4"
+      style={{
+        backgroundColor: riskConfig.bgVar,
+        color: riskConfig.colorVar,
+        borderColor: riskConfig.borderVar,
+      }}
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-bold uppercase tracking-wide opacity-70">
-              [{proposal.risk_class}]
-            </span>
+            <RiskBadge risk={proposal.risk_class} />
             {!proposal.reversible && (
               <span className="text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded font-medium">
                 Irreversible
