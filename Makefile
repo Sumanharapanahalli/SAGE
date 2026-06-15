@@ -130,6 +130,12 @@ testbench:
 optimize:
 	$(PYTHON) -m src.core.evaluator_optimizer --task "$(TASK)" $(if $(CONTEXT),--context-file $(CONTEXT),) $(if $(OUT),--out $(OUT),)
 
+# Gemini visual UI evaluator — screenshot a URL and have Gemini grade the RENDERED
+# interface (Gemini "sees" the web the same way Claude does). Needs Playwright
+# (TESTBENCH_PLAYWRIGHT_DIR) + the gemini CLI. Usage: make ui-eval URL=http://localhost:5173
+ui-eval:
+	$(PYTHON) testbench/ui_eval.py --url "$(URL)" $(if $(CRITERIA),--criteria "$(CRITERIA)",)
+
 test-compliance:
 	SAGE_SOLUTIONS_DIR=$(SOLUTIONS_DIR) $(PYTEST) solutions/medtech/tests/validation/ -v --tb=long
 
