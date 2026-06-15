@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { fetchHealth, fetchAudit, fetchPendingProposals, approveProposalFull, rejectProposal, approveBatchProposals, fetchProjects, type Proposal } from '../api/client'
+import { fetchHealth, fetchAudit, approveProposalFull, rejectProposalFull, approveBatchProposals, fetchProjects, type Proposal } from '../api/client'
+import { useProposals, PROPOSALS_QUERY_KEY } from '../hooks/useProposals'
+import { formatRelativeTime } from '../lib/date'
 import { ActiveAgentsPanel } from '../components/ActiveAgentsPanel'
 import { useProjectConfig } from '../hooks/useProjectConfig'
 import SystemHealthCard from '../components/dashboard/SystemHealthCard'
@@ -41,20 +43,17 @@ function ProposalCard({ p, approverIdentity }: { p: Proposal; approverIdentity: 
 
   const approveMut = useMutation({
     mutationFn: () => approveProposalFull(p.trace_id, approverIdentity || 'human'),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['proposals-pending'] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: PROPOSALS_QUERY_KEY }),
   })
   const rejectMut = useMutation({
-    mutationFn: () => rejectProposal(p.trace_id, rejectNote),
+    mutationFn: () => rejectProposalFull(p.trace_id, approverIdentity || 'human', rejectNote),
     onSuccess: () => {
       setRejecting(false)
-      qc.invalidateQueries({ queryKey: ['proposals-pending'] })
+      qc.invalidateQueries({ queryKey: PROPOSALS_QUERY_KEY })
     },
   })
 
-  const ageSeconds = Math.floor((Date.now() - new Date(p.created_at).getTime()) / 1000)
-  const ageLabel = ageSeconds < 60 ? `${ageSeconds}s ago`
-    : ageSeconds < 3600 ? `${Math.floor(ageSeconds / 60)}m ago`
-    : `${Math.floor(ageSeconds / 3600)}h ago`
+  const ageLabel = formatRelativeTime(p.created_at)
 
   const actionLabel = ACTION_TYPE_LABELS[p.action_type] ?? p.action_type
   const hasPayload = p.payload && Object.keys(p.payload).length > 0
@@ -204,12 +203,7 @@ function ProposalCard({ p, approverIdentity }: { p: Proposal; approverIdentity: 
 const IDENTITY_KEY = 'sage_approver_identity'
 
 function PendingApprovalsPanel() {
-  const qc = useQueryClient()
-  const { data, isLoading } = useQuery({
-    queryKey: ['proposals-pending'],
-    queryFn: fetchPendingProposals,
-    refetchInterval: 10_000,
-  })
+  const { proposals, isLoading, invalidate } = useProposals()
 
   const [approverIdentity, setApproverIdentity] = useState<string>(() =>
     localStorage.getItem(IDENTITY_KEY) ?? ''
@@ -218,8 +212,6 @@ function PendingApprovalsPanel() {
   useEffect(() => {
     localStorage.setItem(IDENTITY_KEY, approverIdentity)
   }, [approverIdentity])
-
-  const proposals: Proposal[] = data?.proposals ?? []
 
   // Group by action_type
   const grouped = proposals.reduce<Record<string, Proposal[]>>((acc, p) => {
@@ -231,7 +223,7 @@ function PendingApprovalsPanel() {
   const batchMut = useMutation({
     mutationFn: (ids: string[]) =>
       approveBatchProposals(ids, approverIdentity || 'human'),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['proposals-pending'] }),
+    onSuccess: () => invalidate(),
   })
 
   return (

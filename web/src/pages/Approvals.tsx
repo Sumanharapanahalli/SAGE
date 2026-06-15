@@ -9,6 +9,7 @@ import {
   fetchApprovalRoles,
 } from '../api/client'
 import type { Proposal } from '../api/client'
+import { PROPOSALS_QUERY_KEY } from '../hooks/useProposals'
 import { Inbox, CheckSquare, X, AlertTriangle, Clock, Check, RefreshCw } from 'lucide-react'
 import RiskBadge, { RISK_CONFIG } from '../components/ui/RiskBadge'
 import { formatRelativeTime } from '../lib/date'
@@ -445,7 +446,7 @@ export default function Approvals() {
   const initialIdsRef = useRef<Set<string> | null>(null)
 
   const { data, isLoading } = useQuery({
-    queryKey: ['proposals-pending'],
+    queryKey: PROPOSALS_QUERY_KEY,
     queryFn: fetchPendingProposals,
     refetchInterval: 10_000,
   })
@@ -516,7 +517,7 @@ export default function Approvals() {
       await approveProposalFull(traceId, approver || 'human', feedback)
       addToast('Proposal approved', 'success')
       removeProposal(traceId)
-      queryClient.invalidateQueries({ queryKey: ['proposals-pending'] })
+      queryClient.invalidateQueries({ queryKey: PROPOSALS_QUERY_KEY })
     } catch {
       addToast('Approval failed — check API', 'error')
     }
@@ -528,7 +529,7 @@ export default function Approvals() {
       await rejectProposalFull(traceId, approver || 'human', feedback)
       addToast('Proposal rejected', 'success')
       removeProposal(traceId)
-      queryClient.invalidateQueries({ queryKey: ['proposals-pending'] })
+      queryClient.invalidateQueries({ queryKey: PROPOSALS_QUERY_KEY })
     } catch {
       addToast('Rejection failed — check API', 'error')
     }
@@ -549,7 +550,7 @@ export default function Approvals() {
       const count = data.results.filter((r: { status: string }) => r.status === 'approved').length
       addToast(`Approved ${count} proposal${count !== 1 ? 's' : ''}`, 'success')
       setCheckedIds(new Set())
-      queryClient.invalidateQueries({ queryKey: ['proposals-pending'] })
+      queryClient.invalidateQueries({ queryKey: PROPOSALS_QUERY_KEY })
     },
     onError: () => addToast('Batch approval failed', 'error'),
   })
