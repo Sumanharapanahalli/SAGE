@@ -147,35 +147,51 @@ export default function Header({ onOpenPalette }: HeaderProps) {
         </span>
       </div>
 
-      {/* Model selector badge — Claude-style */}
+      {/*
+        Header color strategy (one meaning per color — see PROPOSAL #4):
+          - STATUS palette: green = online, red = offline. Used ONLY for the
+            connection indicator below, and always with a text label.
+          - SELECTION state: blue = active (the chat toggle when open).
+          - METADATA / neutral: grays for the breadcrumb, model badge, palette.
+        Green is no longer overloaded onto branding/metadata.
+      */}
+
+      {/* Model badge — metadata, neutral (was green-bg + orange-text, incoherent) */}
       {online && (
         <div
-          className="flex items-center gap-1.5 px-2.5 py-1 cursor-pointer"
+          className="flex items-center gap-1.5 px-2.5 py-1"
           style={{
-            background: 'rgba(16, 185, 129, 0.08)',
-            border: '1px solid rgba(16, 185, 129, 0.15)',
+            background: 'rgba(255, 255, 255, 0.04)',
+            border: '1px solid #2a2a2e',
             borderRadius: '8px',
             fontSize: '11px',
-            color: '#f97316',
+            color: '#a1a1aa',
             fontWeight: 500,
           }}
           title={`LLM: ${provider}${model ? ` / ${model}` : ''}`}
         >
-          <Sparkles size={11} />
+          <Sparkles size={11} style={{ color: '#a1a1aa' }} />
           <span>{provider}{model ? ` · ${model}` : ''}</span>
         </div>
       )}
 
-      {/* Status dot */}
-      <div className="flex items-center gap-1.5">
+      {/* Connection status — one labelled dot, the only use of the status palette.
+          Text uses the light-400 shade for >=4.5:1 contrast on the dark header. */}
+      <div
+        className="flex items-center gap-1.5"
+        title={online ? 'Backend online' : 'Backend offline'}
+      >
         <span
           style={{
-            width: 6, height: 6, borderRadius: '50%',
+            width: 7, height: 7, borderRadius: '50%',
             backgroundColor: online ? '#22c55e' : '#ef4444',
             display: 'inline-block',
-            boxShadow: online ? '0 0 6px rgba(34,197,94,0.4)' : '0 0 6px rgba(239,68,68,0.4)',
+            boxShadow: online ? '0 0 6px rgba(34,197,94,0.45)' : '0 0 6px rgba(239,68,68,0.45)',
           }}
         />
+        <span style={{ fontSize: '11px', fontWeight: 600, color: online ? '#4ade80' : '#f87171' }}>
+          {online ? 'Online' : 'Offline'}
+        </span>
       </div>
 
       {/* Command palette */}
