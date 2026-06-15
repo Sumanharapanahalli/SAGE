@@ -1,0 +1,59 @@
+# Test-bench config for the Poseengine / Reflect solution (mobile app + web/API).
+# Run:  python testbench/run.py --config testbench/configs/poseengine.yaml
+#   (needs the backend up: in the Poseengine repo, `make api-up`)
+project: poseengine
+
+suites:
+  # --- web/API: functional + integration + system against the running backend ---
+  api:
+    base_url: "http://localhost:8000"
+    health: ["/health", "/api/v1/system/health"]
+    reads:
+      - /api/v1/overview
+      - /api/v1/modules
+      - /api/v1/movements/
+      - /api/v1/personas
+      - /api/v1/engine/profile
+      - /api/v1/knowledge
+      - /api/v1/sessions/config
+      - /api/v1/tenants
+    auth:
+      register: /api/v1/auth/register
+      login: /api/v1/auth/login
+    protected:
+      - /api/v1/system/metrics
+      - /api/v1/system/analytics
+    ws_chat:
+      path: /ws/agent/pose_engine
+      send: { type: query, query: "show me the engine performance" }
+      expect_any: [compute, "per-frame", fps, frame]
+
+  # --- concurrency / load ---
+  load:
+    base_url: "http://localhost:8000"
+    users: 20
+    journey: [/api/v1/overview, /api/v1/modules, /api/v1/personas]
+    burst: { endpoint: /api/v1/engine/profile, n: 200 }
+
+  # --- UI smoke (headless Chromium; needs Playwright in playwright_dir) ---
+  browser:
+    url: "http://localhost:8000"
+    playwright_dir: "/tmp/pwtest"
+    views:
+      - { name: engine, click: ".tab-btn[data-tab='engine']" }
+      - { name: sessions, click: ".tab-btn[data-tab='sessions']" }
+      - { name: knowledge, click: ".tab-btn[data-tab='knowledge']" }
+    interactions:
+      - { name: coach-preview, goto_view: ".tab-btn[data-tab='knowledge']",
+          click: "button:has-text('Preview cue')", expect_selector: "#kp-result" }
+
+  # --- mobile app (Flutter) — runs in the prebuilt Docker image, no local SDK ---
+  mobile:
+    kind: flutter
+    cwd: "solutions/poseengine/source/flutter_app"
+    test_cmd: "flutter pub get && flutter test"
+    docker_image: "poseengine-flutter"
+
+  # poseengine is mobile+web, not embedded — left here disabled for completeness
+  embedded:
+    enabled: false

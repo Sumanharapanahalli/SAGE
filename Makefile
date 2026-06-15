@@ -34,7 +34,7 @@ endif
 
 .PHONY: venv venv-minimal install install-dev install-ui install-minimal \
         run api cli monitor demo ui \
-        test test-unit test-solution \
+        test test-unit test-solution testbench \
         test-meditation-app test-four-in-a-line \
         test-all test-api \
         docker-up docker-down docker-up-d \
@@ -115,6 +115,11 @@ test-unit: test
 
 test-api:
 	$(PYTEST) tests/test_api.py -v
+
+# Generic, config-driven test bench for any solution (web/API, mobile, embedded).
+# Usage: make testbench PROJECT=poseengine [SUITE=api,load]   (see testbench/README.md)
+testbench:
+	$(PYTHON) testbench/run.py --solution $(PROJECT) $(if $(SUITE),--suite $(SUITE),) --report testbench/last-report.md
 
 # Solution-specific tests (PROJECT picks the solution, e.g. PROJECT=starter)
 test-solution:
