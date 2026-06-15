@@ -13,6 +13,7 @@ Thread-locked: only ONE inference at a time (GPU safety + QMS compliance).
 import threading
 import subprocess
 import logging
+import random
 import time
 import os
 import yaml
@@ -836,6 +837,70 @@ class LLMGateway:
             self.provider.provider_name(), _concurrency,
         )
 
+        # ── Resilience: retry transient LLM failures (backoff + jitter) ──
+        # API/CLI providers hit transient failures (rate limits, 5xx, timeouts,
+        # the odd empty response). Without a retry, one blip fails a whole agent
+        # workflow. Configurable via llm.retry; defaults are conservative and
+        # only ever fire on a *transient* error, so success paths are unchanged.
+        _retry_cfg = llm_cfg.get("retry", {}) if isinstance(llm_cfg, dict) else {}
+        self._retry_max = int(_retry_cfg.get("max_retries", 2))
+        self._retry_base_delay = float(_retry_cfg.get("base_delay", 0.5))
+        self._retry_max_delay = float(_retry_cfg.get("max_delay", 8.0))
+
+    # Substrings that mark a *retryable* failure (vs a permanent one like
+    # "not configured" / "not installed", which must NOT be retried).
+    _TRANSIENT_ERROR_MARKERS = (
+        "timed out", "timeout", "rate limit", "429", "500", "502", "503", "504",
+        "temporarily", "unavailable", "connection", "reset by peer", "overloaded",
+        "empty output",
+    )
+
+    def _is_transient_error(self, result) -> bool:
+        """True if a provider result represents a transient (retryable) failure."""
+        if result is None:
+            return True
+        if not isinstance(result, str):
+            return False
+        low = result.strip().lower()
+        if low == "":
+            return True  # an empty response is treated as a transient blip
+        if not low.startswith("error"):
+            return False
+        return any(m in low for m in self._TRANSIENT_ERROR_MARKERS)
+
+    def _retry_delay(self, attempt: int) -> float:
+        """Exponential backoff with full jitter, capped at max_delay."""
+        capped = min(self._retry_max_delay, self._retry_base_delay * (2 ** attempt))
+        return capped * (0.5 + random.random() * 0.5)  # 50–100% jitter
+
+    def _generate_with_retry(self, prompt, system_prompt) -> str:
+        """Call the provider, retrying transient failures with backoff.
+
+        Retries on a raised exception OR a returned transient-error string, up to
+        self._retry_max extra attempts. A successful or permanently-failed result
+        is returned immediately (so non-retryable errors fail fast). The final
+        exception is re-raised so the caller's existing handling still applies.
+        """
+        for attempt in range(self._retry_max + 1):
+            try:
+                result = self.provider.generate(prompt, system_prompt)
+            except Exception as e:  # noqa: BLE001 — provider may raise anything
+                if attempt < self._retry_max:
+                    delay = self._retry_delay(attempt)
+                    self.logger.warning("provider raised (%s); retry %d/%d in %.2fs",
+                                        e, attempt + 1, self._retry_max, delay)
+                    time.sleep(delay)
+                    continue
+                raise
+            if self._is_transient_error(result) and attempt < self._retry_max:
+                delay = self._retry_delay(attempt)
+                self.logger.warning("transient provider error (%r); retry %d/%d in %.2fs",
+                                    (result or "")[:80], attempt + 1, self._retry_max, delay)
+                time.sleep(delay)
+                continue
+            return result
+        return result  # pragma: no cover — loop always returns or raises first
+
     def generate_stream(self, prompt, system_prompt="You are a helpful AI assistant.",
                         trace_name: str = "llm_stream", metadata: dict = None):
         """
@@ -1022,7 +1087,7 @@ class LLMGateway:
                 trace_id=trace_id,
             ) as _otel_span:
                 try:
-                    result = self.provider.generate(prompt, system_prompt)
+                    result = self._generate_with_retry(prompt, system_prompt)
                     elapsed = time.time() - start
                     self.logger.info("Generation done in %.2fs", elapsed)
                     # Roll daily counter over at UTC midnight
