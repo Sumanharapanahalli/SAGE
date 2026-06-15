@@ -116,6 +116,11 @@ test-unit: test
 test-api:
 	$(PYTEST) tests/test_api.py -v
 
+# Generic, config-driven test bench for any solution (web/API, mobile, embedded).
+# Usage: make testbench PROJECT=<solution> [SUITE=api,load]   (see testbench/README.md)
+testbench:
+	$(PYTHON) testbench/run.py --solution $(PROJECT) $(if $(SUITE),--suite $(SUITE),) --report testbench/last-report.md
+
 test-compliance:
 	SAGE_SOLUTIONS_DIR=$(SOLUTIONS_DIR) $(PYTEST) solutions/medtech/tests/validation/ -v --tb=long
 
