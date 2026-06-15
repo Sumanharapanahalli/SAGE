@@ -1,0 +1,247 @@
+import { useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
+import { Command, MessageSquare, Sparkles, ChevronRight } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import { fetchHealth } from '../../api/client'
+import { useProjectConfig } from '../../hooks/useProjectConfig'
+import { useChatContext } from '../../context/ChatContext'
+import UserMenu from './UserMenu'
+
+const PAGE_TITLES: Record<string, string> = {
+  '/':               'Dashboard',
+  '/agents':         'AI Agents',
+  '/analyst':        'Log Analyst',
+  '/developer':      'Developer',
+  '/audit':          'Audit Log',
+  '/monitor':        'Monitor',
+  '/improvements':   'Improvements',
+  '/llm':            'LLM Settings',
+  '/orchestrator':   'Orchestrator Intelligence',
+  '/preflight':      'Preflight Check',
+  '/settings':       'Settings',
+  '/yaml-editor':    'Config Editor',
+  '/build':          'Build Console',
+  '/live-console':   'Live Console',
+  '/onboarding':     'New Solution',
+  '/queue':          'Task Queue',
+  '/access-control': 'Access Control',
+  '/costs':          'Cost Tracker',
+  '/workflows':      'Workflows',
+  '/issues':         'Issues',
+  '/activity':       'Activity',
+  '/goals':          'Goals',
+  '/org':            'Org Chart',
+  '/approvals':      'Approvals',
+  '/knowledge':      'Knowledge Base',
+  '/product-backlog': 'Product Backlog',
+  '/cds-compliance':  'CDS Compliance',
+  '/regulatory':      'Regulatory Compliance',
+  '/guide':           'User Guide',
+  '/settings/organization': 'Organization',
+  '/gym':             'Agent Gym',
+  '/safety':          'Safety Analysis',
+  '/skills':          'Skills & Tools',
+  '/code':            'Code Execution',
+  '/chat':            'Chat',
+  '/constitution':    'Constitution',
+}
+
+const ROUTE_TO_AREA: Record<string, string> = {
+  '/':                'Work',
+  '/chat':            'Work',
+  '/approvals':       'Work',
+  '/queue':           'Work',
+  '/product-backlog': 'Work',
+  '/build':           'Work',
+  '/live-console':    'Work',
+  '/agents':         'Intelligence',
+  '/analyst':        'Intelligence',
+  '/developer':      'Intelligence',
+  '/monitor':        'Intelligence',
+  '/improvements':   'Intelligence',
+  '/workflows':      'Intelligence',
+  '/goals':          'Intelligence',
+  '/gym':            'Intelligence',
+  '/code':           'Intelligence',
+  '/audit':          'Knowledge',
+  '/costs':          'Knowledge',
+  '/activity':       'Knowledge',
+  '/knowledge':      'Knowledge',
+  '/issues':         'Knowledge',
+  '/safety':         'Compliance',
+  '/org-graph':      'Organization',
+  '/onboarding':     'Organization',
+  '/llm':            'Admin',
+  '/yaml-editor':    'Admin',
+  '/access-control': 'Admin',
+  '/integrations':   'Admin',
+  '/skills':         'Admin',
+  '/constitution':            'Admin',
+  '/settings':               'Admin',
+  '/guide':                  'Admin',
+  '/cds-compliance':         'Admin',
+  '/regulatory':              'Admin',
+  '/settings/organization':  'Admin',
+}
+
+interface HeaderProps {
+  onOpenPalette?: () => void
+}
+
+export default function Header({ onOpenPalette }: HeaderProps) {
+  const { pathname } = useLocation()
+  const { openChat, panelState } = useChatContext()
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'j') {
+        e.preventDefault()
+        if (panelState === 'closed' || panelState === 'minimised') {
+          openChat()
+        }
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [panelState, openChat])
+
+  const { data: healthData, isError: healthError } = useQuery({
+    queryKey: ['health'],
+    queryFn: fetchHealth,
+    refetchInterval: 30_000,
+  })
+
+  const { data: projectData } = useProjectConfig()
+
+  const online = !healthError && !!healthData
+  const provider = (healthData as any)?.llm_provider ?? 'Unknown'
+  const model = (healthData as any)?.llm_model ?? ''
+  const uiLabels = (projectData as any)?.ui_labels ?? {}
+  const UI_LABEL_ROUTES: Record<string, string> = {
+    '/analyst':   uiLabels.analyst_page_title,
+    '/developer': uiLabels.developer_page_title,
+    '/monitor':   uiLabels.monitor_page_title,
+  }
+  const title = UI_LABEL_ROUTES[pathname] ?? PAGE_TITLES[pathname] ?? 'SAGE[ai]'
+  const area = ROUTE_TO_AREA[pathname] ?? 'SAGE'
+  const projectName = (projectData as any)?.name ?? 'SAGE Framework'
+
+  const chatActive = panelState !== 'closed'
+
+  return (
+    <header
+      className="h-12 border-b flex items-center px-4 gap-2 shrink-0"
+      style={{
+        backgroundColor: 'var(--color-surface-base, #111113)',
+        borderColor: 'var(--color-border-subtle, #1e1e22)',
+      }}
+    >
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-1.5 flex-1 min-w-0">
+        <span
+          style={{
+            fontSize: '12px',
+            color: 'var(--color-text-muted, #6b7280)',
+            fontWeight: 500,
+          }}
+        >
+          {projectName}
+        </span>
+        <ChevronRight size={10} style={{ color: 'var(--color-text-disabled, #4b5563)' }} />
+        <span style={{ fontSize: '12px', color: 'var(--color-text-secondary, #9ca3af)' }}>
+          {area}
+        </span>
+        <ChevronRight size={10} style={{ color: 'var(--color-text-disabled, #4b5563)' }} />
+        <span
+          style={{
+            fontSize: '13px',
+            fontWeight: 600,
+            color: 'var(--color-text-primary, #e4e4e7)',
+          }}
+        >
+          {title}
+        </span>
+      </div>
+
+      {/* Model info — neutral informational badge, no accent color */}
+      {online && (
+        <div
+          className="flex items-center gap-1.5 px-2.5 py-1"
+          style={{
+            background: 'var(--color-surface-overlay, rgba(255,255,255,0.04))',
+            border: '1px solid var(--color-border-default, rgba(255,255,255,0.09))',
+            borderRadius: '8px',
+            fontSize: '11px',
+            color: 'var(--color-text-secondary, #9ca3af)',
+            fontWeight: 500,
+          }}
+          title={`LLM: ${provider}${model ? ` / ${model}` : ''}`}
+        >
+          <Sparkles size={11} style={{ color: 'var(--color-text-muted, #6b7280)' }} />
+          <span>{provider}{model ? ` · ${model}` : ''}</span>
+        </div>
+      )}
+
+      {/*
+        Consolidated status indicator — single labelled dot.
+        Online: var(--color-status-success) ~#22c55e — contrast ≥8.7:1 on dark bg (WCAG AA).
+        Offline: var(--color-status-error)   ~#ef4444 — contrast ≥5.3:1 on dark bg (WCAG AA).
+        No checkmark, no separate badge — one unambiguous signal.
+      */}
+      <div
+        className="flex items-center gap-1"
+        style={{
+          fontSize: '11px',
+          fontWeight: 500,
+          color: online
+            ? 'var(--color-status-success, #22c55e)'
+            : 'var(--color-status-error, #ef4444)',
+          userSelect: 'none',
+        }}
+        title={online ? 'API reachable' : 'API unreachable'}
+      >
+        <span aria-hidden="true" style={{ fontSize: '9px', lineHeight: 1 }}>●</span>
+        <span>{online ? 'Online' : 'Offline'}</span>
+      </div>
+
+      {/* Command palette — neutral utility */}
+      <button
+        onClick={onOpenPalette}
+        className="flex items-center gap-1 text-xs px-2 py-1 transition-colors shrink-0"
+        style={{
+          color: 'var(--color-text-secondary, #9ca3af)',
+          border: '1px solid var(--color-border-default, rgba(255,255,255,0.12))',
+          borderRadius: '6px',
+          background: 'var(--color-surface-overlay, rgba(255,255,255,0.03))',
+        }}
+        title="Command palette (Cmd+K)"
+      >
+        <Command size={10} />
+        <span style={{ fontSize: '10px', fontWeight: 500 }}>K</span>
+      </button>
+
+      {/* Chat toggle — neutral active state; accent reserved for CTAs only */}
+      <button
+        onClick={() => openChat()}
+        title="SAGE Chat (Ctrl+J)"
+        className="flex items-center gap-1 text-xs px-2 py-1 transition-colors shrink-0"
+        style={{
+          color: chatActive
+            ? 'var(--color-text-primary, #e4e4e7)'
+            : 'var(--color-text-disabled, #52525b)',
+          border: `1px solid ${chatActive
+            ? 'var(--color-border-emphasis, rgba(255,255,255,0.2))'
+            : 'var(--color-border-subtle, rgba(255,255,255,0.08))'}`,
+          borderRadius: '6px',
+          background: chatActive
+            ? 'var(--color-surface-raised, rgba(255,255,255,0.08))'
+            : 'var(--color-surface-overlay, rgba(255,255,255,0.02))',
+        }}
+      >
+        <MessageSquare size={11} />
+      </button>
+
+      <UserMenu />
+    </header>
+  )
+}
