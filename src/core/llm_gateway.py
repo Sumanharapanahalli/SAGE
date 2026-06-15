@@ -317,6 +317,13 @@ class ClaudeCodeCLIProvider(LLMProvider):
         self.logger = logging.getLogger("ClaudeCodeCLI")
         self.model = config.get("claude_model", "claude-sonnet-4-5")
         self.timeout = config.get("timeout", 120)
+        # Hardening hooks (opt-in; default preserves prior agentic behaviour):
+        #   disallowed_tools -> passed to --disallowedTools so the CLI can't touch
+        #     files (use for the Evaluator-Optimizer optimizer: pure text proposal,
+        #     no writes to the real repo => HITL integrity).
+        #   cwd -> run the subprocess here (e.g. a throwaway sandbox).
+        self.disallowed_tools = config.get("disallowed_tools", "")
+        self.cwd = config.get("cwd")
         # Accept explicit path from config or UI, otherwise auto-detect
         explicit_path = config.get("claude_path", "")
         if explicit_path and os.path.exists(explicit_path):
@@ -368,6 +375,8 @@ class ClaudeCodeCLIProvider(LLMProvider):
 
         try:
             cmd = [self.claude_path, "--model", self.model, "-p", combined]
+            if self.disallowed_tools:
+                cmd += ["--disallowedTools", self.disallowed_tools]
             self.logger.debug("Calling Claude Code CLI with -p flag...")
             result = subprocess.run(
                 cmd,
@@ -377,6 +386,7 @@ class ClaudeCodeCLIProvider(LLMProvider):
                 encoding="utf-8",
                 errors="replace",
                 env=env,
+                cwd=self.cwd,
             )
             if result.returncode != 0:
                 err = result.stderr.strip() if result.stderr else "Unknown error"

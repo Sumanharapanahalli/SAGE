@@ -31,8 +31,10 @@ class MockEvaluator:
 
 
 def _run(opt, ev, **cfg):
+    # mechanics tests use fixed evaluator response sequences, so disable rubric
+    # sharpening (which would consume the first response); rubric has its own tests.
     base = {"optimizer_provider": opt, "evaluator_provider": ev,
-            "max_iterations": 4, "score_threshold": 8.0}
+            "max_iterations": 4, "score_threshold": 8.0, "generate_rubric": False}
     base.update(cfg)
     return EvaluatorOptimizerRunner(base).run("improve the thing", context="current artifact")
 
@@ -84,3 +86,71 @@ def test_extract_json_tolerates_fences_and_prose():
 def test_missing_providers_returns_error():
     r = EvaluatorOptimizerRunner({"optimizer_provider": None, "evaluator_provider": None}).run("x")
     assert r["converged"] is False and "error" in r
+
+
+# -- hardening: rubric sharpening, fence stripping, retry, sandbox ----------
+
+class RecordingEvaluator:
+    """Records the prompts it received; replays a fixed JSON response list."""
+    def __init__(self, responses):
+        self.responses = responses
+        self.prompts = []
+    def generate(self, prompt, system_prompt=""):
+        self.prompts.append(prompt)
+        r = self.responses[min(len(self.prompts) - 1, len(self.responses) - 1)]
+        return r
+
+
+def test_rubric_is_generated_and_fed_into_evaluation():
+    # first evaluator call is the rubric request; it must flow into the eval prompt
+    ev = RecordingEvaluator([
+        "1. must be correct\n2. must be clear",          # rubric
+        '{"score": 9, "pass": true, "feedback": ""}',     # evaluation
+    ])
+    r = EvaluatorOptimizerRunner(
+        {"optimizer_provider": MockOptimizer(), "evaluator_provider": ev,
+         "generate_rubric": True}
+    ).run("improve the thing")
+    assert r["converged"] is True
+    # the rubric request came first, then the evaluation carried the sharpened rubric
+    assert "scoring rubric" in ev.prompts[0]
+    assert "DETAILED RUBRIC" in ev.prompts[1]
+
+
+def test_strip_fences_unwraps_single_code_block():
+    s = EvaluatorOptimizerRunner._strip_fences
+    assert s("```tsx\nconst x = 1;\n```") == "const x = 1;"
+    assert s("```\nplain\n```") == "plain"
+    assert s("no fence here") == "no fence here"        # untouched
+    assert s("") == ""
+
+
+def test_optimizer_retries_once_on_empty():
+    class FlakyOptimizer:
+        def __init__(self):
+            self.calls = 0
+        def generate(self, prompt, system_prompt=""):
+            self.calls += 1
+            return "" if self.calls == 1 else "recovered solution"
+    opt = FlakyOptimizer()
+    ev = MockEvaluator(['{"score": 9, "pass": true, "feedback": ""}'])
+    r = EvaluatorOptimizerRunner(
+        {"optimizer_provider": opt, "evaluator_provider": ev, "generate_rubric": False}
+    ).run("x")
+    assert opt.calls == 2                 # retried after the empty first response
+    assert r["final"] == "recovered solution"
+
+
+def test_sandbox_hardening_applied_to_built_optimizer():
+    # when SAGE builds the optimizer itself, it must be tool-restricted + sandboxed
+    captured = {}
+    def fake_build(cfg):
+        captured.update(cfg)
+        return MockOptimizer()
+    EvaluatorOptimizerRunner(
+        {"optimizer": {"provider": "claude-code"}, "evaluator_provider": MockEvaluator(["{}"])},
+        build_provider=fake_build,
+    )
+    assert "Write" in captured.get("disallowed_tools", "")
+    assert "Edit" in captured.get("disallowed_tools", "")
+    assert captured.get("cwd")            # a throwaway sandbox cwd was assigned

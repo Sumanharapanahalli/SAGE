@@ -20,6 +20,24 @@ provider builder.
 it. The final solution is returned for the approval gate — submit it to the
 `ProposalStore` so a human signs off. Nothing is committed automatically.
 
+## Hardening
+
+The optimizer is usually the agentic `claude-code` CLI, which will **write files**
+if you let it (in an early run it created `Button.tsx` directly in the repo —
+bypassing the human gate). The loop is hardened so that can't happen:
+
+- **Sandboxed optimizer** — when SAGE builds the optimizer it passes
+  `--disallowedTools "Write Edit MultiEdit NotebookEdit Bash"` and a throwaway
+  cwd, so the optimizer can only emit *text*. The proposal always reaches a human
+  before it touches any file. Opt out with `sandbox=False` / `--no-sandbox` (only
+  for a trusted, non-file-writing optimizer).
+- **Sharpened rubric** — before iterating, the evaluator expands the terse
+  `criteria` into a concrete, checkable rubric and judges every iteration against
+  it. A fixed bar keeps scoring consistent and stops evaluator drift. Opt out with
+  `generate_rubric=False` / `--no-rubric`.
+- **Robust optimize step** — a wrapping ```` ```code fence ```` is stripped from
+  each candidate, and an empty/errored optimizer response is retried once.
+
 ## Run it
 
 ```bash
@@ -56,14 +74,17 @@ result = runner.run(task="...", context="...current artifact...")
 ```
 
 Providers are injectable (`optimizer_provider` / `evaluator_provider`) for testing —
-see `tests/test_evaluator_optimizer.py` (mock providers; 6 tests, no live LLMs).
+see `tests/test_evaluator_optimizer.py` (mock providers; 10 tests, no live LLMs —
+covers convergence, rubric sharpening, fence stripping, retry, and the sandbox).
 
 ## How it converges
 
+0. **Sharpen** (once) — Gemini turns `criteria` into a concrete rubric used for
+   every later judgement.
 1. **Optimize** — Claude produces a candidate (iteration 1) or revises against the
-   evaluator's last feedback (later iterations).
+   evaluator's last feedback (later iterations); fences stripped, retried once if empty.
 2. **Evaluate** — Gemini returns `{score 0-10, pass, feedback}` (JSON; tolerant of
-   fences/prose).
+   fences/prose) against the sharpened rubric.
 3. **Stop** when `pass` is true or `score >= threshold`; otherwise loop with the
    feedback fed back to the optimizer, up to `max_iterations`. If it never passes,
    the **best-scoring** candidate is returned (a human still decides).

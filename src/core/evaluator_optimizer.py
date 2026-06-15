@@ -16,6 +16,18 @@ builder. Like everything in SAGE, the loop PRODUCES a result — it does not app
 it. The final solution is returned for the human-in-the-loop approval gate (submit
 it to the ProposalStore); nothing is committed automatically.
 
+Hardening (so the loop can't quietly break the HITL guarantee):
+  * SANDBOXED OPTIMIZER — the optimizer is usually the agentic claude-code CLI,
+    which will WRITE files in its cwd if allowed. When SAGE builds it, we pass
+    `--disallowedTools "Write Edit MultiEdit NotebookEdit Bash"` and a throwaway
+    cwd, so it can only emit text. The proposal reaches a human before it touches
+    any repo. (`sandbox=False` opts out — for trusted, non-agentic optimizers.)
+  * SHARPENED RUBRIC — before the loop, the evaluator expands the terse criteria
+    into a concrete, checkable rubric, then judges every iteration against it. A
+    fixed bar keeps scoring consistent and stops evaluator drift. (`generate_rubric=False` opts out.)
+  * ROBUST OPTIMIZE STEP — a wrapping ```code fence``` is stripped from each
+    candidate, and an empty/errored optimizer response is retried once.
+
 Use it to make SAGE better: point the optimizer at a SAGE artifact (a prompt, a
 config, a code change) with a task + criteria, and let Gemini hold the bar.
 
@@ -33,6 +45,7 @@ from __future__ import annotations
 import json
 import logging
 import re
+import tempfile
 from typing import Callable, Optional
 
 logger = logging.getLogger("EvaluatorOptimizer")
@@ -79,10 +92,24 @@ class EvaluatorOptimizerRunner:
         self.max_iterations = int(self.config.get("max_iterations", 4))
         self.score_threshold = float(self.config.get("score_threshold", 8.0))
         self.criteria = self.config.get("criteria", "correctness, clarity, completeness")
-        # provider builder is injectable so tests can pass mocks; defaults to SAGE's.
+        self.rubric = self.criteria  # may be sharpened in run()
+        self.generate_rubric = self.config.get("generate_rubric", True)
+        self.sandbox = self.config.get("sandbox", True)
         self._build = build_provider or self._default_build_provider
+
+        # HARDENING — keep the human-in-the-loop guarantee. The optimizer is the
+        # agentic claude-code CLI; left alone it WRITES files in its cwd (it created
+        # Button.tsx directly). So when we build it ourselves, run it (a) tool-
+        # restricted (no Write/Edit/Bash -> a pure text proposal, never touching the
+        # repo) and (b) in a throwaway sandbox cwd as defence in depth. The final
+        # candidate is returned for the human to apply; nothing auto-applies.
+        opt_cfg = dict(self.config.get("optimizer", {}))
+        if self.sandbox and "optimizer_provider" not in self.config:
+            opt_cfg.setdefault("disallowed_tools", "Write Edit MultiEdit NotebookEdit Bash")
+            opt_cfg.setdefault("cwd", tempfile.mkdtemp(prefix="eo_sandbox_"))
+
         # Allow direct provider injection (tests) via optimizer_provider/evaluator_provider.
-        self.optimizer = self.config.get("optimizer_provider") or self._build(self.config.get("optimizer", {}))
+        self.optimizer = self.config.get("optimizer_provider") or self._build(opt_cfg)
         self.evaluator = self.config.get("evaluator_provider") or self._build(self.config.get("evaluator", {}))
 
     # -- provider building (mirrors DualLLMRunner._build_provider) ----------
@@ -98,7 +125,12 @@ class EvaluatorOptimizerRunner:
                 return GeminiCLIProvider({"gemini_model": model or "gemini-3.5-flash", "timeout": 180})
             if name == "claude-code":
                 from src.core.llm_gateway import ClaudeCodeCLIProvider
-                return ClaudeCodeCLIProvider({"claude_model": model or "claude-sonnet-4-6", "timeout": 180})
+                return ClaudeCodeCLIProvider({
+                    "claude_model": model or "claude-sonnet-4-6", "timeout": 180,
+                    # forwarded by the hardened __init__ so the optimizer can't write to disk
+                    "disallowed_tools": cfg.get("disallowed_tools", ""),
+                    "cwd": cfg.get("cwd"),
+                })
             if name == "claude":
                 from src.core.llm_gateway import ClaudeAPIProvider
                 return ClaudeAPIProvider({"claude_model": model or "claude-sonnet-4-6", "timeout": 180})
@@ -124,11 +156,45 @@ class EvaluatorOptimizerRunner:
 
     def _evaluator_prompt(self, task, candidate):
         return (
-            f"TASK:\n{task}\n\nCRITERIA:\n{self.criteria}\n\n"
+            f"TASK:\n{task}\n\nCRITERIA:\n{self.rubric}\n\n"
             f"CANDIDATE SOLUTION:\n{candidate}\n\n"
             "Score 0-10, decide pass/fail against the criteria, and give specific actionable "
             "feedback. Respond with JSON only."
         )
+
+    # -- rubric sharpening (Gemini finding #6: self-sharpening loop) ---------
+    def _generate_rubric(self, task: str) -> str:
+        """Ask the evaluator to expand the terse criteria into a concrete, checkable
+        rubric BEFORE judging. A sharper bar yields more consistent scoring across
+        iterations and stops the evaluator from drifting. Falls back to the raw
+        criteria if anything goes wrong — never blocks the loop."""
+        try:
+            prompt = (
+                f"TASK THE SOLUTION MUST SATISFY:\n{task}\n\n"
+                f"HIGH-LEVEL CRITERIA:\n{self.criteria}\n\n"
+                "Expand these into a concrete scoring rubric: a short numbered list of "
+                "specific, checkable requirements a solution must meet, each phrased so it "
+                "can be objectively verified. Output ONLY the rubric as plain text."
+            )
+            rubric = (self.evaluator.generate(prompt, "You are a meticulous test-rubric author. "
+                                              "Output only the rubric, no preamble.") or "").strip()
+            rubric = self._strip_fences(rubric)
+            if rubric and len(rubric) > 20:
+                logger.info("rubric sharpened: %d chars", len(rubric))
+                return f"{self.criteria}\n\nDETAILED RUBRIC:\n{rubric}"
+        except Exception as e:  # noqa: BLE001
+            logger.warning("rubric generation failed, using raw criteria: %s", e)
+        return self.criteria
+
+    @staticmethod
+    def _strip_fences(text: str) -> str:
+        """Drop a single wrapping ```lang ... ``` fence so the candidate is raw code,
+        not a Markdown block (the evaluator and any downstream apply step want the
+        bare artifact)."""
+        if not text:
+            return text
+        m = re.match(r"^\s*```[a-zA-Z0-9_-]*\n(.*)\n```\s*$", text, re.DOTALL)
+        return m.group(1) if m else text
 
     # -- the loop -----------------------------------------------------------
     def run(self, task: str, context: str = "") -> dict:
@@ -136,15 +202,21 @@ class EvaluatorOptimizerRunner:
             return {"error": "optimizer and evaluator providers must both be available",
                     "converged": False, "iterations": 0, "history": []}
 
+        # sharpen the bar once, up front, so every iteration is judged the same way
+        self.rubric = self._generate_rubric(task) if self.generate_rubric else self.criteria
+
         history = []
         candidate = None
         feedback = ""
         score = 0.0
 
         for i in range(1, self.max_iterations + 1):
-            # OPTIMIZE (Claude)
+            # OPTIMIZE (Claude) — strip any wrapping fence; retry once if empty/errored
             opt_prompt = self._optimizer_prompt(task, context, candidate, feedback, score)
-            candidate = (self.optimizer.generate(opt_prompt, OPTIMIZER_SYSTEM) or "").strip()
+            candidate = self._strip_fences((self.optimizer.generate(opt_prompt, OPTIMIZER_SYSTEM) or "").strip())
+            if not candidate or candidate.lower().startswith("error"):
+                logger.warning("iter %d: optimizer returned empty/error, retrying once", i)
+                candidate = self._strip_fences((self.optimizer.generate(opt_prompt, OPTIMIZER_SYSTEM) or "").strip())
 
             # EVALUATE (Gemini)
             eval_raw = self.evaluator.generate(self._evaluator_prompt(task, candidate), EVALUATOR_SYSTEM)
@@ -190,6 +262,11 @@ def _main(argv=None):
     ap.add_argument("--max-iterations", type=int, default=4)
     ap.add_argument("--threshold", type=float, default=8.0)
     ap.add_argument("--out", help="write the final solution to this file")
+    ap.add_argument("--no-rubric", action="store_true",
+                    help="skip the up-front evaluator rubric-sharpening pass")
+    ap.add_argument("--no-sandbox", action="store_true",
+                    help="DANGER: let the optimizer use file-writing tools in the cwd "
+                         "(default: tool-restricted, throwaway cwd — pure text proposer)")
     args = ap.parse_args(argv)
 
     context = ""
@@ -203,6 +280,8 @@ def _main(argv=None):
         "criteria": args.criteria,
         "max_iterations": args.max_iterations,
         "score_threshold": args.threshold,
+        "generate_rubric": not args.no_rubric,
+        "sandbox": not args.no_sandbox,
     })
     result = runner.run(args.task, context)
 
