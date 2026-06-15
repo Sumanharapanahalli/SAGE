@@ -1,0 +1,944 @@
+// FILE: web/src/lib/date.ts
+
+export function formatRelativeTime(iso: string): string {
+  const ms = Date.now() - new Date(iso).getTime()
+  if (ms < 60_000) return `${Math.floor(ms / 1000)}s ago`
+  if (ms < 3_600_000) return `${Math.floor(ms / 60_000)}m ago`
+  if (ms < 86_400_000) return `${Math.floor(ms / 3_600_000)}h ago`
+  return `${Math.floor(ms / 86_400_000)}d ago`
+}
+```
+
+```typescript
+// FILE: web/src/hooks/useProposals.ts
+
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import {
+  fetchProposals,
+  approveProposal,
+  rejectProposal,
+  approveBatchProposals,
+} from '../api/client'
+import type { Proposal } from '../api/client'
+
+export interface BatchApproveResult {
+  results: { status: string; trace_id: string }[]
+}
+
+const PROPOSALS_KEY = ['proposals-pending'] as const
+
+export function useProposals() {
+  const queryClient = useQueryClient()
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: PROPOSALS_KEY,
+    queryFn: fetchProposals,
+    refetchInterval: 5_000,
+  })
+
+  const proposals: Proposal[] = data?.proposals ?? []
+
+  const approveMutation = useMutation({
+    mutationFn: (vars: { traceId: string; approver: string; feedback: string }) =>
+      approveProposal(vars.traceId, vars.approver, vars.feedback),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: PROPOSALS_KEY }),
+  })
+
+  const rejectMutation = useMutation({
+    mutationFn: (vars: { traceId: string; approver: string; feedback: string }) =>
+      rejectProposal(vars.traceId, vars.approver, vars.feedback),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: PROPOSALS_KEY }),
+  })
+
+  const batchApproveMutation = useMutation({
+    mutationFn: (vars: { traceIds: string[]; approver: string }) =>
+      approveBatchProposals(vars.traceIds, vars.approver),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: PROPOSALS_KEY }),
+  })
+
+  return {
+    proposals,
+    isLoading,
+    error,
+    data,
+    approve: (traceId: string, approver: string, feedback: string) =>
+      approveMutation.mutateAsync({ traceId, approver, feedback }),
+    rejectFull: (traceId: string, approver: string, feedback: string) =>
+      rejectMutation.mutateAsync({ traceId, approver, feedback }),
+    batchApprove: (traceIds: string[], approver: string): Promise<BatchApproveResult> =>
+      batchApproveMutation.mutateAsync({ traceIds, approver }),
+    isBatchPending: batchApproveMutation.isPending,
+  }
+}
+```
+
+```typescript
+// FILE: web/src/pages/Dashboard.tsx
+
+import { useState, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
+import { fetchProject, fetchHealth, fetchAuditLog } from '../api/client'
+import type { Proposal } from '../api/client'
+import { useProposals } from '../hooks/useProposals'
+import ProposalCard from '../components/proposals/ProposalCard'
+import { ToastContainer } from '../components/shared/ToastContainer'
+import type { Toast } from '../components/shared/ToastContainer'
+import ModuleWrapper from '../components/layout/ModuleWrapper'
+import SystemHealthCard from '../components/dashboard/SystemHealthCard'
+import ActiveAlertsPanel from '../components/dashboard/ActiveAlertsPanel'
+import ErrorTrendChart from '../components/dashboard/ErrorTrendChart'
+import ActiveAgentsPanel from '../components/dashboard/ActiveAgentsPanel'
+import EmptyState from '../components/dashboard/EmptyState'
+
+function PendingApprovalsPanel() {
+  const { proposals, isLoading, approve, rejectFull } = useProposals()
+  const [toasts, setToasts] = useState<Toast[]>([])
+
+  const addToast = useCallback((message: string, type: 'success' | 'error') => {
+    const id = Math.random().toString(36).slice(2)
+    setToasts(prev => [...prev, { id, message, type }])
+    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000)
+  }, [])
+
+  const pending = proposals.filter((p: Proposal) => p.status === 'pending')
+
+  const handleApprove = useCallback(
+    async (traceId: string, approver: string, feedback: string) => {
+      try {
+        await approve(traceId, approver || 'human', feedback)
+        addToast('Proposal approved', 'success')
+      } catch {
+        addToast('Approval failed — check API', 'error')
+      }
+    },
+    [approve, addToast],
+  )
+
+  const handleReject = useCallback(
+    async (traceId: string, approver: string, feedback: string) => {
+      try {
+        await rejectFull(traceId, approver || 'human', feedback)
+        addToast('Proposal rejected', 'success')
+      } catch {
+        addToast('Rejection failed — check API', 'error')
+      }
+    },
+    [rejectFull, addToast],
+  )
+
+  if (!isLoading && pending.length === 0) return null
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 p-4">
+      <h3 className="text-sm font-semibold text-gray-700 mb-3">
+        Pending Approvals{pending.length > 0 ? ` (${pending.length})` : ''}
+      </h3>
+      <div className="space-y-3">
+        {pending.map(proposal => (
+          <ProposalCard
+            key={proposal.trace_id}
+            proposal={proposal}
+            onApprove={handleApprove}
+            onReject={handleReject}
+          />
+        ))}
+      </div>
+      <ToastContainer
+        toasts={toasts}
+        onDismiss={id => setToasts(prev => prev.filter(t => t.id !== id))}
+      />
+    </div>
+  )
+}
+
+export default function Dashboard() {
+  const navigate = useNavigate()
+
+  const { data: projectData, isLoading: projectLoading } = useQuery({
+    queryKey: ['project'],
+    queryFn: fetchProject,
+  })
+
+  const { data: health } = useQuery({
+    queryKey: ['health'],
+    queryFn: fetchHealth,
+    refetchInterval: 30_000,
+  })
+
+  const { data: audit } = useQuery({
+    queryKey: ['audit-log'],
+    queryFn: fetchAuditLog,
+    refetchInterval: 15_000,
+  })
+
+  const hasProjects = !!projectData
+
+  if (projectLoading)
+    return (
+      <div className="space-y-4 p-6">
+        {[...Array(3)].map((_, i) => (
+          <div
+            key={i}
+            style={{
+              height: '80px',
+              borderRadius: '12px',
+              background:
+                'linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%)',
+              backgroundSize: '400% 100%',
+              animation: 'skeleton-shimmer 1.5s ease-in-out infinite',
+            }}
+          />
+        ))}
+        <style>{`@keyframes skeleton-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
+      </div>
+    )
+
+  const skipped = localStorage.getItem('sage_skip_empty_state') === '1'
+  if (!hasProjects && !skipped) return <EmptyState />
+
+  const dashboardConfig = (projectData as any)?.dashboard ?? {}
+  const contextItems: { label: string; description: string }[] =
+    dashboardConfig.context_items ?? []
+  const quickActions: { label: string; route: string; description: string }[] =
+    dashboardConfig.quick_actions ?? []
+  const contextColor: string =
+    dashboardConfig.context_color ?? 'border-gray-200 bg-gray-50'
+
+  return (
+    <ModuleWrapper moduleId="dashboard">
+      <div className="space-y-6">
+        {(projectData?.name || contextItems.length > 0) && (
+          <div className={`rounded-xl border p-5 ${contextColor}`}>
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h3 className="text-base font-semibold text-gray-800">
+                  {projectData?.name ?? 'SAGE Framework'}
+                </h3>
+                <span className="text-xs text-gray-500">
+                  {(projectData as any)?.ui_labels?.dashboard_subtitle ??
+                    (projectData?.description
+                      ? String(projectData.description).slice(0, 80)
+                      : projectData?.domain ?? 'General purpose AI agent framework')}
+                </span>
+              </div>
+              {projectData?.version && (
+                <span className="text-xs font-medium bg-white/70 px-2.5 py-1 rounded-full text-gray-600">
+                  v{projectData.version}
+                </span>
+              )}
+            </div>
+            {contextItems.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {contextItems.map(item => (
+                  <div key={item.label} className="bg-white/60 rounded-lg px-3 py-2">
+                    <div className="text-xs font-semibold text-gray-600 mb-0.5">
+                      {item.label}
+                    </div>
+                    <div className="text-xs text-gray-500">{item.description}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {quickActions.length > 0 && (
+          <div>
+            <h3 className="text-sm font-semibold text-gray-600 mb-2">Quick Actions</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {quickActions.map(action => (
+                <button
+                  key={action.label}
+                  onClick={() => navigate(action.route)}
+                  className="bg-white rounded-lg border border-gray-200 px-4 py-3 hover:bg-gray-50
+                             hover:border-gray-300 transition-colors group text-left"
+                >
+                  <div className="text-sm font-medium text-gray-800 group-hover:text-blue-600">
+                    {action.label}
+                  </div>
+                  <div className="text-xs text-gray-400 mt-0.5">{action.description}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 gap-6">
+          <PendingApprovalsPanel />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {health && <SystemHealthCard data={health} />}
+          <ActiveAlertsPanel entries={audit?.entries ?? []} />
+          <ErrorTrendChart entries={audit?.entries ?? []} />
+        </div>
+
+        <ActiveAgentsPanel />
+      </div>
+    </ModuleWrapper>
+  )
+}
+```
+
+```typescript
+// FILE: web/src/pages/Approvals.tsx
+
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { useQuery, useMutation } from '@tanstack/react-query'
+import { undoProposal, fetchApprovalRoles } from '../api/client'
+import type { Proposal } from '../api/client'
+import { useProposals } from '../hooks/useProposals'
+import { formatRelativeTime } from '../lib/date'
+import { ToastContainer } from '../components/shared/ToastContainer'
+import type { Toast } from '../components/shared/ToastContainer'
+import { Inbox, CheckSquare, X, AlertTriangle, Clock, Check, RefreshCw } from 'lucide-react'
+import RiskBadge, { RISK_CONFIG } from '../components/ui/RiskBadge'
+
+const RISK_ORDER: Proposal['risk_class'][] = [
+  'DESTRUCTIVE',
+  'EXTERNAL',
+  'STATEFUL',
+  'EPHEMERAL',
+  'INFORMATIONAL',
+]
+
+function formatCountdown(iso: string): string {
+  const ms = new Date(iso).getTime() - Date.now()
+  if (ms <= 0) return 'Expired'
+  if (ms < 60_000) return `${Math.floor(ms / 1000)}s`
+  if (ms < 3_600_000) return `${Math.floor(ms / 60_000)}m`
+  return `${Math.floor(ms / 3_600_000)}h`
+}
+
+function formatActionType(actionType: string): string {
+  return actionType
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, c => c.toUpperCase())
+}
+
+function sortProposals(proposals: Proposal[]): Proposal[] {
+  return [...proposals].sort((a, b) => {
+    const ai = RISK_ORDER.indexOf(a.risk_class)
+    const bi = RISK_ORDER.indexOf(b.risk_class)
+    if (ai !== bi) return ai - bi
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  })
+}
+
+function ProposalRow({
+  proposal,
+  selected,
+  isNew,
+  onClick,
+  checked,
+  onCheck,
+  showCheckbox,
+}: {
+  proposal: Proposal
+  selected: boolean
+  isNew: boolean
+  onClick: () => void
+  checked: boolean
+  onCheck: (v: boolean) => void
+  showCheckbox: boolean
+}) {
+  const riskConfig = RISK_CONFIG[proposal.risk_class]
+
+  return (
+    <button
+      onClick={onClick}
+      className="w-full text-left px-3 py-3 flex items-start gap-2.5 relative transition-colors"
+      style={{
+        backgroundColor: selected ? '#d1d5db' : 'transparent',
+        borderLeft: selected ? `3px solid ${riskConfig.borderVar}` : '3px solid transparent',
+        borderBottom: '1px solid #e5e7eb',
+      }}
+      onMouseEnter={e => {
+        if (!selected) (e.currentTarget as HTMLElement).style.backgroundColor = '#e5e7eb'
+      }}
+      onMouseLeave={e => {
+        if (!selected) (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'
+      }}
+    >
+      <span
+        className="mt-1.5 shrink-0"
+        style={{
+          width: '6px',
+          height: '6px',
+          backgroundColor: isNew ? riskConfig.colorVar : 'transparent',
+          display: 'inline-block',
+          flexShrink: 0,
+        }}
+      />
+
+      {showCheckbox && (
+        <input
+          type="checkbox"
+          checked={checked}
+          onClick={e => e.stopPropagation()}
+          onChange={e => onCheck(e.target.checked)}
+          className="mt-0.5 shrink-0"
+          style={{ accentColor: '#f4f4f5' }}
+        />
+      )}
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-0.5">
+          <RiskBadge risk={proposal.risk_class} className="shrink-0" />
+          <span className="text-xs font-medium truncate" style={{ color: '#374151' }}>
+            {formatActionType(proposal.action_type)}
+          </span>
+        </div>
+        <p className="text-xs truncate" style={{ color: '#6b7280' }}>
+          {proposal.description}
+        </p>
+        <div className="flex items-center gap-1 mt-1" style={{ color: '#9ca3af' }}>
+          <Clock size={10} />
+          <span className="text-[10px]">{formatRelativeTime(proposal.created_at)}</span>
+        </div>
+      </div>
+    </button>
+  )
+}
+
+function DetailPanel({
+  proposal,
+  onApprove,
+  onReject,
+  onUndo,
+  loading,
+}: {
+  proposal: Proposal | null
+  onApprove: (traceId: string, approver: string, feedback: string) => Promise<void>
+  onReject: (traceId: string, approver: string, feedback: string) => Promise<void>
+  onUndo: (traceId: string) => void
+  loading: boolean
+}) {
+  const [approver, setApprover] = useState<string>(
+    () => localStorage.getItem('sage_approver_name') ?? '',
+  )
+  const [feedback, setFeedback] = useState('')
+  const [acting, setActing] = useState(false)
+
+  useEffect(() => {
+    if (approver) localStorage.setItem('sage_approver_name', approver)
+  }, [approver])
+
+  useEffect(() => {
+    setFeedback('')
+  }, [proposal?.trace_id])
+
+  if (!proposal) {
+    return (
+      <div
+        className="flex-1 flex flex-col items-center justify-center"
+        style={{ backgroundColor: '#ffffff' }}
+      >
+        <Inbox size={40} style={{ color: '#d1d5db' }} />
+        <p className="mt-3 text-sm font-medium" style={{ color: '#9ca3af' }}>
+          Select a proposal to review
+        </p>
+      </div>
+    )
+  }
+
+  const isDestructive = proposal.risk_class === 'DESTRUCTIVE'
+  const disabled = acting || loading
+
+  const handleApprove = async () => {
+    setActing(true)
+    try {
+      await onApprove(proposal.trace_id, approver || 'human', feedback)
+      setFeedback('')
+    } finally {
+      setActing(false)
+    }
+  }
+
+  const handleReject = async () => {
+    setActing(true)
+    try {
+      await onReject(proposal.trace_id, approver || 'human', feedback)
+      setFeedback('')
+    } finally {
+      setActing(false)
+    }
+  }
+
+  return (
+    <div className="flex-1 flex flex-col overflow-hidden" style={{ backgroundColor: '#ffffff' }}>
+      <div className="px-6 py-4 shrink-0" style={{ borderBottom: '1px solid #e5e7eb' }}>
+        <div className="flex items-start gap-3">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <RiskBadge risk={proposal.risk_class} />
+              {!proposal.reversible && (
+                <span className="text-xs font-bold px-2 py-0.5 bg-red-950 text-red-400">
+                  IRREVERSIBLE
+                </span>
+              )}
+              {proposal.expires_at && (
+                <span className="text-xs font-mono" style={{ color: '#9ca3af' }}>
+                  expires in {formatCountdown(proposal.expires_at)}
+                </span>
+              )}
+            </div>
+            <h2 className="text-base font-semibold" style={{ color: '#374151' }}>
+              {formatActionType(proposal.action_type)}
+            </h2>
+            <p className="text-sm mt-0.5" style={{ color: '#6b7280' }}>
+              {proposal.description}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 mt-2 text-xs" style={{ color: '#9ca3af' }}>
+          <span>
+            Proposed by <span style={{ color: '#9ca3af' }}>{proposal.proposed_by}</span>
+          </span>
+          <span>·</span>
+          <span>{formatRelativeTime(proposal.created_at)}</span>
+          <span>·</span>
+          <span className="font-mono">{proposal.trace_id.slice(0, 8)}…</span>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-6 py-4">
+        {isDestructive && (
+          <div
+            className="flex items-start gap-2 px-3 py-2 mb-4"
+            style={{ backgroundColor: '#450a0a', border: '1px solid #ef4444' }}
+          >
+            <AlertTriangle
+              size={14}
+              className="shrink-0 mt-0.5"
+              style={{ color: '#ef4444' }}
+            />
+            <p className="text-xs" style={{ color: '#fca5a5' }}>
+              This action is <strong>destructive</strong> and may be irreversible. Review
+              carefully before approving.
+            </p>
+          </div>
+        )}
+
+        <div className="mb-4">
+          <p
+            className="text-xs font-semibold uppercase tracking-widest mb-2"
+            style={{ color: '#9ca3af' }}
+          >
+            Payload
+          </p>
+          {proposal.action_type === 'code_diff' && proposal.payload?.diff ? (
+            <div
+              className="text-xs overflow-auto p-4 font-mono leading-relaxed"
+              style={{
+                backgroundColor: '#fafafa',
+                border: '1px solid #e5e7eb',
+                maxHeight: '320px',
+              }}
+            >
+              {String(proposal.payload.diff)
+                .split('\n')
+                .map((line, i) => {
+                  let color = '#a1a1aa'
+                  let bg = 'transparent'
+                  if (line.startsWith('+') && !line.startsWith('+++')) {
+                    color = '#86efac'
+                    bg = 'rgba(22,101,52,0.3)'
+                  } else if (line.startsWith('-') && !line.startsWith('---')) {
+                    color = '#fca5a5'
+                    bg = 'rgba(127,29,29,0.3)'
+                  } else if (line.startsWith('@@')) {
+                    color = '#93c5fd'
+                    bg = 'rgba(30,58,138,0.2)'
+                  }
+                  return (
+                    <span
+                      key={i}
+                      style={{
+                        display: 'block',
+                        color,
+                        backgroundColor: bg,
+                        whiteSpace: 'pre-wrap',
+                        wordBreak: 'break-all',
+                      }}
+                    >
+                      {line || '\u00a0'}
+                    </span>
+                  )
+                })}
+            </div>
+          ) : (
+            <pre
+              className="text-xs overflow-auto p-4 font-mono leading-relaxed"
+              style={{
+                backgroundColor: '#fafafa',
+                color: '#6b7280',
+                border: '1px solid #e5e7eb',
+                maxHeight: '320px',
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-all',
+              }}
+            >
+              {JSON.stringify(proposal.payload, null, 2)}
+            </pre>
+          )}
+        </div>
+      </div>
+
+      <div
+        className="px-6 py-4 shrink-0 space-y-3"
+        style={{ borderTop: '1px solid #e5e7eb', backgroundColor: '#fafafa' }}
+      >
+        <div className="flex items-center gap-2">
+          <span className="text-xs shrink-0" style={{ color: '#9ca3af' }}>
+            Approving as
+          </span>
+          <input
+            type="text"
+            value={approver}
+            onChange={e => setApprover(e.target.value)}
+            placeholder="your name"
+            className="flex-1 text-xs px-2 py-1 bg-transparent border-b outline-none"
+            style={{ borderColor: '#d1d5db', color: '#374151' }}
+          />
+        </div>
+
+        <textarea
+          rows={2}
+          value={feedback}
+          onChange={e => setFeedback(e.target.value)}
+          placeholder="Optional context or feedback…"
+          className="w-full text-xs px-3 py-2 resize-none outline-none"
+          style={{
+            backgroundColor: '#ffffff',
+            border: '1px solid #d1d5db',
+            color: '#374151',
+          }}
+        />
+
+        <div className="flex gap-2">
+          <button
+            onClick={handleApprove}
+            disabled={disabled}
+            className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold py-2 transition-colors"
+            style={{
+              backgroundColor: disabled ? '#166534' : '#16a34a',
+              color: '#fff',
+              opacity: disabled ? 0.6 : 1,
+              cursor: disabled ? 'not-allowed' : 'pointer',
+            }}
+            onMouseEnter={e => {
+              if (!disabled)
+                (e.currentTarget as HTMLElement).style.backgroundColor = '#15803d'
+            }}
+            onMouseLeave={e => {
+              if (!disabled)
+                (e.currentTarget as HTMLElement).style.backgroundColor = '#16a34a'
+            }}
+          >
+            <Check size={13} />
+            Approve
+          </button>
+          <button
+            onClick={handleReject}
+            disabled={disabled}
+            className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold py-2 transition-colors"
+            style={{
+              backgroundColor: disabled ? '#7f1d1d' : '#dc2626',
+              color: '#fff',
+              opacity: disabled ? 0.6 : 1,
+              cursor: disabled ? 'not-allowed' : 'pointer',
+            }}
+            onMouseEnter={e => {
+              if (!disabled)
+                (e.currentTarget as HTMLElement).style.backgroundColor = '#b91c1c'
+            }}
+            onMouseLeave={e => {
+              if (!disabled)
+                (e.currentTarget as HTMLElement).style.backgroundColor = '#dc2626'
+            }}
+          >
+            <X size={13} />
+            Reject
+          </button>
+        </div>
+        {proposal.action_type === 'code_diff' && proposal.status === 'approved' && (
+          <button
+            onClick={() => onUndo(proposal.trace_id)}
+            className="px-3 py-1.5 text-xs font-medium rounded"
+            style={{ background: '#78350f', color: '#fde68a' }}
+            title="Revert the applied code changes"
+          >
+            Undo
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
+export default function Approvals() {
+  const { proposals, isLoading, data, approve, rejectFull, batchApprove, isBatchPending } =
+    useProposals()
+
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [seenIds, setSeenIds] = useState<Set<string>>(new Set())
+  const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set())
+  const [toasts, setToasts] = useState<Toast[]>([])
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
+
+  const initialIdsRef = useRef<Set<string> | null>(null)
+
+  const { data: approvalRolesData } = useQuery({
+    queryKey: ['approval-roles'],
+    queryFn: fetchApprovalRoles,
+    retry: false,
+  })
+
+  useEffect(() => {
+    if (!data) return
+    setLastUpdated(new Date())
+    const ids = new Set<string>(data.proposals.map((p: Proposal) => p.trace_id))
+    if (initialIdsRef.current === null) {
+      initialIdsRef.current = ids
+      setSeenIds(ids)
+    }
+  }, [data])
+
+  const sorted = sortProposals(proposals.filter((p: Proposal) => p.status === 'pending'))
+  const pendingCount = sorted.length
+
+  useEffect(() => {
+    document.title =
+      pendingCount > 0 ? `Approvals (${pendingCount}) — SAGE` : 'Approvals — SAGE'
+    return () => {
+      document.title = 'SAGE[ai]'
+    }
+  }, [pendingCount])
+
+  useEffect(() => {
+    if (!selectedId && sorted.length > 0) setSelectedId(sorted[0].trace_id)
+    if (selectedId && !sorted.find(p => p.trace_id === selectedId)) {
+      setSelectedId(sorted.length > 0 ? sorted[0].trace_id : null)
+    }
+  }, [sorted, selectedId])
+
+  useEffect(() => {
+    if (selectedId) setSeenIds(prev => new Set([...prev, selectedId]))
+  }, [selectedId])
+
+  const addToast = useCallback((message: string, type: 'success' | 'error') => {
+    const id = Math.random().toString(36).slice(2)
+    setToasts(prev => [...prev, { id, message, type }])
+    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000)
+  }, [])
+
+  const removeProposal = useCallback(
+    (traceId: string) => {
+      setCheckedIds(prev => {
+        const s = new Set(prev)
+        s.delete(traceId)
+        return s
+      })
+      const idx = sorted.findIndex(p => p.trace_id === traceId)
+      const next = sorted[idx + 1] ?? sorted[idx - 1]
+      setSelectedId(next?.trace_id ?? null)
+    },
+    [sorted],
+  )
+
+  const handleApprove = useCallback(
+    async (traceId: string, approver: string, feedback: string) => {
+      try {
+        await approve(traceId, approver || 'human', feedback)
+        addToast('Proposal approved', 'success')
+        removeProposal(traceId)
+      } catch {
+        addToast('Approval failed — check API', 'error')
+      }
+    },
+    [approve, addToast, removeProposal],
+  )
+
+  const handleReject = useCallback(
+    async (traceId: string, approver: string, feedback: string) => {
+      try {
+        await rejectFull(traceId, approver || 'human', feedback)
+        addToast('Proposal rejected', 'success')
+        removeProposal(traceId)
+      } catch {
+        addToast('Rejection failed — check API', 'error')
+      }
+    },
+    [rejectFull, addToast, removeProposal],
+  )
+
+  const undoMutation = useMutation({
+    mutationFn: (trace_id: string) => undoProposal(trace_id),
+    onSuccess: () => addToast('Undo triggered — changes will be reverted', 'success'),
+    onError: (err: Error) => addToast(err.message, 'error'),
+  })
+
+  const handleBatchApprove = useCallback(async () => {
+    try {
+      const result = await batchApprove(
+        [...checkedIds],
+        localStorage.getItem('sage_approver_name') || 'human',
+      )
+      const count = result.results.filter(
+        (r: { status: string }) => r.status === 'approved',
+      ).length
+      addToast(`Approved ${count} proposal${count !== 1 ? 's' : ''}`, 'success')
+      setCheckedIds(new Set())
+    } catch {
+      addToast('Batch approval failed', 'error')
+    }
+  }, [batchApprove, checkedIds, addToast])
+
+  const checkedList = sorted.filter(p => checkedIds.has(p.trace_id))
+  const allLowRisk = checkedList.every(
+    p => p.risk_class === 'INFORMATIONAL' || p.risk_class === 'EPHEMERAL',
+  )
+  const showCheckboxes = sorted.length > 1
+  const secondsAgo = Math.floor((Date.now() - lastUpdated.getTime()) / 1000)
+  const selected = sorted.find(p => p.trace_id === selectedId) ?? null
+
+  // suppress unused-variable warning for approvalRolesData used by callers
+  void approvalRolesData
+
+  return (
+    <div
+      className="flex h-full overflow-hidden"
+      style={{ backgroundColor: '#fafafa', margin: '-24px' }}
+    >
+      <div
+        className="flex flex-col shrink-0 overflow-hidden"
+        style={{
+          width: '320px',
+          backgroundColor: '#ffffff',
+          borderRight: '1px solid #e5e7eb',
+        }}
+      >
+        <div
+          className="px-4 py-3 shrink-0 flex items-center gap-2"
+          style={{ borderBottom: '1px solid #e5e7eb' }}
+        >
+          <Inbox size={15} style={{ color: '#9ca3af' }} />
+          <span className="text-sm font-semibold flex-1" style={{ color: '#374151' }}>
+            Pending Approvals
+          </span>
+          {pendingCount > 0 && (
+            <span
+              className="text-xs font-bold px-2 py-0.5"
+              style={{ backgroundColor: '#ef4444', color: '#fff' }}
+            >
+              {pendingCount}
+            </span>
+          )}
+        </div>
+
+        {showCheckboxes && (
+          <div
+            className="px-3 py-2 flex items-center gap-2 shrink-0"
+            style={{ borderBottom: '1px solid #e5e7eb', backgroundColor: '#fafafa' }}
+          >
+            <input
+              type="checkbox"
+              checked={checkedIds.size === sorted.length && sorted.length > 0}
+              onChange={e => {
+                if (e.target.checked) setCheckedIds(new Set(sorted.map(p => p.trace_id)))
+                else setCheckedIds(new Set())
+              }}
+              style={{ accentColor: '#f4f4f5' }}
+            />
+            <span className="text-xs flex-1" style={{ color: '#9ca3af' }}>
+              {checkedIds.size > 0 ? `${checkedIds.size} selected` : 'Select all'}
+            </span>
+            {checkedIds.size > 0 && allLowRisk && (
+              <button
+                onClick={handleBatchApprove}
+                disabled={isBatchPending}
+                className="flex items-center gap-1 text-xs px-2 py-1 font-medium"
+                style={{ backgroundColor: '#16a34a', color: '#fff' }}
+              >
+                <CheckSquare size={11} />
+                Approve {checkedIds.size}
+              </button>
+            )}
+            {checkedIds.size > 0 && !allLowRisk && (
+              <span className="text-[10px]" style={{ color: '#9ca3af' }}>
+                High-risk selected
+              </span>
+            )}
+          </div>
+        )}
+
+        <div className="flex-1 overflow-y-auto">
+          {isLoading && (
+            <div
+              className="flex items-center justify-center h-32 gap-2"
+              style={{ color: '#9ca3af' }}
+            >
+              <RefreshCw size={14} className="animate-spin" />
+              <span className="text-xs">Loading…</span>
+            </div>
+          )}
+          {!isLoading && sorted.length === 0 && (
+            <div className="flex flex-col items-center justify-center h-48 px-6 text-center">
+              <CheckSquare size={32} style={{ color: '#d1d5db' }} />
+              <p className="mt-3 text-sm font-medium" style={{ color: '#9ca3af' }}>
+                No pending approvals
+              </p>
+              <p className="mt-1 text-xs" style={{ color: '#d1d5db' }}>
+                Your agents are waiting for new tasks
+              </p>
+            </div>
+          )}
+          {sorted.map(p => (
+            <ProposalRow
+              key={p.trace_id}
+              proposal={p}
+              selected={selectedId === p.trace_id}
+              isNew={!seenIds.has(p.trace_id)}
+              onClick={() => setSelectedId(p.trace_id)}
+              checked={checkedIds.has(p.trace_id)}
+              onCheck={v =>
+                setCheckedIds(prev => {
+                  const s = new Set(prev)
+                  if (v) s.add(p.trace_id)
+                  else s.delete(p.trace_id)
+                  return s
+                })
+              }
+              showCheckbox={showCheckboxes}
+            />
+          ))}
+        </div>
+
+        <div
+          className="px-3 py-2 flex items-center gap-1.5 shrink-0"
+          style={{ borderTop: '1px solid #e5e7eb' }}
+        >
+          <RefreshCw size={10} style={{ color: '#d1d5db' }} />
+          <span className="text-[10px]" style={{ color: '#d1d5db' }}>
+            Updated {secondsAgo}s ago
+          </span>
+        </div>
+      </div>
+
+      <DetailPanel
+        proposal={selected}
+        onApprove={handleApprove}
+        onReject={handleReject}
+        onUndo={traceId => undoMutation.mutate(traceId)}
+        loading={isBatchPending}
+      />
+
+      <ToastContainer
+        toasts={toasts}
+        onDismiss={id => setToasts(prev => prev.filter(t => t.id !== id))}
+      />
+    </div>
+  )
+}

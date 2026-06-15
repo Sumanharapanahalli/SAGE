@@ -2,6 +2,21 @@
 
 Each loop-ready item from Gemini's platform observation (`docs/SAGE_GEMINI_OBSERVATIONS.md`), as a ready-to-run Evaluator-Optimizer command (Claude fixes -> gemini-3.5-flash grades). Each result is a **proposal** — review the `OUT` file and apply it through the human approval gate. Run them one at a time so you review each.
 
+## Status — run 2026-06-15 (results in `docs/proposals/2026-06-15-gemini-queue/`)
+
+All 5 loop-ready items were run through the hardened loop and adversarially reviewed (repo-aware). **Nothing applied — proposals await the human approval gate.** See [`docs/proposals/2026-06-15-gemini-queue/SYNTHESIS.md`](proposals/2026-06-15-gemini-queue/SYNTHESIS.md).
+
+| # | Item | Loop score | Review verdict |
+|---|------|-----------|----------------|
+| 4 | Header status/color/label consistency | 4.0 | **REVISE** (cleanest — apply first; add `--color-*` tokens to `:root`) |
+| 1 | Kill thread-locked gateway singleton | 3.0 | **REVISE** (update 3 tests + docs; fix hidden `proposal_executor.py` no-op) |
+| 5 | Providers ABC + tracing + retry | 3.0 | **REVISE** (re-export `generate_parallel`/langfuse; restore YAML config) |
+| 2 | UI primitives + tokens-via-Tailwind | 10.0 | **REVISE** (add `class-variance-authority`; preserve 3 dropped `@keyframes`) |
+| 3 | Single-source + `useProposals` hook | 10.0 | **REJECT** (8+ compile failures; re-spec) |
+| 6 | Self-sharpening rubrics | — | **DONE** — shipped in commit `af9aa95` |
+
+Conflicts: #1↔#5 both rewrite `llm_gateway.py`; #2↔#4 both touch `index.css` (apply #4 first). Recommended order: **#4 → (#1 *or* #5) → #2**. Meta-finding: the in-loop Gemini score is unreliable on its own (#2/#3 scored 10/10 yet are build-breaking/reject) — trust the repo-aware review.
+
 ```bash
 # 1. Unblock concurrency: kill the thread-locked LLM gateway singleton (agent-framework)
 make optimize TASK="Unblock concurrency: kill the thread-locked LLM gateway singleton — Remove the global lock; gate only local GPU models with a semaphore while letting API providers run concurrently via an async client (httpx). Convert the gateway from a sin" OUT=/tmp/sage_fix_1.txt

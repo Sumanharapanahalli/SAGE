@@ -1,0 +1,1359 @@
+### `src/core/retry_policy.py`
+
+```python
+"""Exponential back-off + full jitter retry policy for transient LLM errors."""
+from __future__ import annotations
+
+import logging
+import random
+import time
+from dataclasses import dataclass
+from typing import Any, Callable
+
+logger = logging.getLogger(__name__)
+
+TRANSIENT_STATUS_CODES = {429, 500, 503}
+
+
+def _is_transient(exc: Exception) -> bool:
+    msg = str(exc)
+    if any(str(c) in msg for c in TRANSIENT_STATUS_CODES):
+        return True
+    for attr in ("status_code", "status", "code"):
+        code = getattr(exc, attr, None)
+        if isinstance(code, int) and code in TRANSIENT_STATUS_CODES:
+            return True
+    return False
+
+
+@dataclass
+class RetryPolicy:
+    max_attempts: int = 3
+    base_delay: float = 1.0
+    max_delay: float = 30.0
+    jitter: bool = True
+
+    @classmethod
+    def from_config(cls, config: dict) -> "RetryPolicy":
+        rc = config.get("retry", {})
+        return cls(
+            max_attempts=int(rc.get("max_attempts", 3)),
+            base_delay=float(rc.get("base_delay", 1.0)),
+            max_delay=float(rc.get("max_delay", 30.0)),
+            jitter=bool(rc.get("jitter", True)),
+        )
+
+    def delay_for(self, attempt: int) -> float:
+        delay = min(self.base_delay * (2 ** attempt), self.max_delay)
+        return random.uniform(0.0, delay) if self.jitter else delay
+
+
+def with_retry(
+    policy: RetryPolicy,
+    fn: Callable,
+    *args: Any,
+    on_retry: Callable[[int, Exception], None] | None = None,
+    **kwargs: Any,
+) -> Any:
+    """Call fn(*args, **kwargs), retrying transient errors per policy.
+
+    Raises the last exception when all attempts are exhausted.
+    Non-transient exceptions propagate immediately without retry.
+    """
+    last_exc: Exception | None = None
+    for attempt in range(policy.max_attempts):
+        try:
+            return fn(*args, **kwargs)
+        except Exception as exc:
+            if not _is_transient(exc):
+                raise
+            last_exc = exc
+            if attempt < policy.max_attempts - 1:
+                if on_retry:
+                    on_retry(attempt, exc)
+                delay = policy.delay_for(attempt)
+                logger.warning(
+                    "Transient error (attempt %d/%d), retrying in %.2fs: %s",
+                    attempt + 1, policy.max_attempts, delay, exc,
+                )
+                time.sleep(delay)
+    raise last_exc  # type: ignore[misc]
+```
+
+---
+
+### `src/core/llm_gateway.py`
+
+```python
+"""
+LLM Gateway — unified interface to multiple LLM providers.
+
+Design invariants
+-----------------
+* Every provider implements ``LLMProvider`` ABC — mock providers can be
+  injected during tests without touching the gateway internals.
+* Observability is non-optional: every ``generate()`` / ``generate_stream()``
+  call carries a ``trace_id`` (UUID v4 when the caller omits one) and records
+  a span via a ``Tracer`` implementation.  ``ConsoleTracer`` is the
+  zero-dependency default; ``LangfuseTracer`` activates automatically when
+  ``LANGFUSE_PUBLIC_KEY`` / ``LANGFUSE_SECRET_KEY`` are present.
+* ``RetryPolicy`` (exponential back-off + full jitter) is applied
+  automatically for network-backed providers on HTTP 429 / 500 / 503.
+* Gemini: ``GeminiSDKProvider`` is preferred when ``GOOGLE_API_KEY`` /
+  ``GEMINI_API_KEY`` is set; ``GeminiCLIProvider`` is the automatic fallback.
+* All existing public call-site signatures are preserved.
+"""
+from __future__ import annotations
+
+import abc
+import concurrent.futures
+import json
+import logging
+import os
+import subprocess
+import threading
+import time
+import uuid
+from collections import Counter
+from contextlib import nullcontext
+from typing import Any, Generator, Iterator
+
+from src.core.retry_policy import RetryPolicy, with_retry
+
+# ---------------------------------------------------------------------------
+# Constants / config helpers
+# ---------------------------------------------------------------------------
+
+_MODEL_LIMITS: dict[str, dict] = {
+    "gemini-pro":        {"daily_requests": 1_500, "context_tokens": 32_768},
+    "gemini-1.5-pro":   {"daily_requests": 1_000, "context_tokens": 1_048_576},
+    "gemini-1.5-flash": {"daily_requests": 1_500, "context_tokens": 1_048_576},
+    "claude-3-opus":    {"daily_requests": 0,     "context_tokens": 200_000},
+    "claude-3-sonnet":  {"daily_requests": 0,     "context_tokens": 200_000},
+    "claude-3-haiku":   {"daily_requests": 0,     "context_tokens": 200_000},
+    "llama-local":      {"daily_requests": 0,     "context_tokens": 4_096},
+}
+
+_CONFIG_CACHE: dict | None = None
+_CONFIG_LOCK = threading.Lock()
+
+
+def _load_config() -> dict:
+    global _CONFIG_CACHE
+    if _CONFIG_CACHE is not None:
+        return _CONFIG_CACHE
+    with _CONFIG_LOCK:
+        if _CONFIG_CACHE is not None:
+            return _CONFIG_CACHE
+        candidates = [
+            "config.json",
+            "config/config.json",
+            os.path.join(os.path.dirname(__file__), "../../config.json"),
+        ]
+        for path in candidates:
+            if os.path.exists(path):
+                try:
+                    with open(path, encoding="utf-8") as fh:
+                        _CONFIG_CACHE = json.load(fh)
+                        return _CONFIG_CACHE
+                except Exception:
+                    pass
+        _CONFIG_CACHE = {}
+        return _CONFIG_CACHE
+
+
+# ---------------------------------------------------------------------------
+# Tracing ABC + implementations
+# ---------------------------------------------------------------------------
+
+class Tracer(abc.ABC):
+    """Mandatory observability hook — always active, never optional."""
+
+    @abc.abstractmethod
+    def start_span(self, trace_id: str, name: str, metadata: dict) -> Any:
+        """Open a span and return an opaque handle passed back to end_span."""
+
+    @abc.abstractmethod
+    def end_span(
+        self,
+        span: Any,
+        output: str,
+        *,
+        error: str | None = None,
+        usage: dict | None = None,
+    ) -> None:
+        """Close the span, recording output, error, and token usage."""
+
+    @abc.abstractmethod
+    def log_event(self, trace_id: str, event_name: str, data: dict) -> None:
+        """Attach a named event to an ongoing trace (PII redaction, retries…)."""
+
+
+class ConsoleTracer(Tracer):
+    """Zero-dependency tracer — structured log lines, no external service."""
+
+    def __init__(self) -> None:
+        self._log = logging.getLogger("ConsoleTracer")
+
+    def start_span(self, trace_id: str, name: str, metadata: dict) -> dict:
+        span: dict = {
+            "trace_id": trace_id,
+            "name": name,
+            "start": time.time(),
+            "meta": metadata,
+        }
+        self._log.info(
+            "[TRACE START] trace=%s span=%s provider=%s",
+            trace_id, name, metadata.get("provider", "?"),
+        )
+        return span
+
+    def end_span(
+        self,
+        span: Any,
+        output: str,
+        *,
+        error: str | None = None,
+        usage: dict | None = None,
+    ) -> None:
+        elapsed = time.time() - span.get("start", time.time())
+        if error:
+            self._log.error(
+                "[TRACE END  ] trace=%s span=%s elapsed=%.2fs ERROR=%s",
+                span["trace_id"], span["name"], elapsed, error,
+            )
+        else:
+            tokens = (
+                f"in={usage['input_tokens']} out={usage['output_tokens']}"
+                if usage and "input_tokens" in usage
+                else str(usage)
+            )
+            self._log.info(
+                "[TRACE END  ] trace=%s span=%s elapsed=%.2fs tokens=%s",
+                span["trace_id"], span["name"], elapsed, tokens,
+            )
+
+    def log_event(self, trace_id: str, event_name: str, data: dict) -> None:
+        self._log.info(
+            "[TRACE EVENT] trace=%s event=%s data=%s", trace_id, event_name, data
+        )
+
+
+class LangfuseTracer(Tracer):
+    """Langfuse-backed tracer — activated when credentials are available."""
+
+    def __init__(self, public_key: str, secret_key: str, host: str) -> None:
+        from langfuse import Langfuse  # type: ignore[import]
+        self._lf = Langfuse(public_key=public_key, secret_key=secret_key, host=host)
+        self._traces: dict[str, Any] = {}
+        self._lock = threading.Lock()
+        self._log = logging.getLogger("LangfuseTracer")
+
+    def start_span(self, trace_id: str, name: str, metadata: dict) -> Any:
+        try:
+            trace = self._lf.trace(id=trace_id, name=name, metadata=metadata)
+            span = trace.span(name=name, input=metadata.get("input", {}))
+            with self._lock:
+                self._traces[trace_id] = trace
+            return span
+        except Exception as exc:
+            self._log.warning("Langfuse start_span failed: %s", exc)
+            return {"trace_id": trace_id, "name": name, "start": time.time(), "_fallback": True}
+
+    def end_span(
+        self,
+        span: Any,
+        output: str,
+        *,
+        error: str | None = None,
+        usage: dict | None = None,
+    ) -> None:
+        try:
+            if isinstance(span, dict) and span.get("_fallback"):
+                return
+            span.end(
+                output=output,
+                level="ERROR" if error else "DEFAULT",
+                status_message=error or "",
+                usage=usage,
+            )
+        except Exception as exc:
+            self._log.warning("Langfuse end_span failed: %s", exc)
+
+    def log_event(self, trace_id: str, event_name: str, data: dict) -> None:
+        try:
+            with self._lock:
+                trace = self._traces.get(trace_id)
+            if trace:
+                trace.event(name=event_name, metadata=data)
+        except Exception as exc:
+            self._log.warning("Langfuse log_event failed: %s", exc)
+
+
+def init_tracer(config: dict) -> Tracer:
+    """Always returns a non-None Tracer — ConsoleTracer is the guaranteed fallback."""
+    lf_cfg = config.get("langfuse", {})
+    pub = lf_cfg.get("public_key") or os.environ.get("LANGFUSE_PUBLIC_KEY", "")
+    sec = lf_cfg.get("secret_key") or os.environ.get("LANGFUSE_SECRET_KEY", "")
+    if pub and sec:
+        try:
+            host = lf_cfg.get("host", "https://cloud.langfuse.com")
+            tracer = LangfuseTracer(pub, sec, host)
+            logging.getLogger("LLMGateway").info("Langfuse tracing active (host=%s).", host)
+            return tracer
+        except Exception as exc:
+            logging.getLogger("LLMGateway").warning(
+                "Langfuse init failed (%s) — ConsoleTracer active.", exc
+            )
+    return ConsoleTracer()
+
+
+# ---------------------------------------------------------------------------
+# Provider ABC
+# ---------------------------------------------------------------------------
+
+class LLMProvider(abc.ABC):
+    """Abstract base class that every LLM provider must implement.
+
+    Inject any subclass (including a ``MockProvider``) at construction time
+    for hermetic unit tests — no subprocess or network required.
+
+    Contract for network providers
+    --------------------------------
+    ``generate()`` MUST raise on transient HTTP errors (429/500/503) rather
+    than returning an error string, so ``with_retry()`` can catch and retry.
+    CLI/local providers may return error strings directly.
+    """
+
+    @abc.abstractmethod
+    def generate(self, prompt: str, system_prompt: str) -> str:
+        """Return the model's response as a plain string."""
+
+    @abc.abstractmethod
+    def provider_name(self) -> str:
+        """Short stable identifier, e.g. ``'gemini-sdk'``, ``'claude-api'``."""
+
+    def is_network_provider(self) -> bool:
+        """Return True when this provider makes outbound HTTP/gRPC calls.
+
+        Overridden to True in SDK/REST-based providers to enable auto-retry.
+        """
+        return False
+
+    def stream(self, prompt: str, system_prompt: str) -> Iterator[str]:
+        """Yield response chunks.  Default: simulate streaming from generate()."""
+        full = self.generate(prompt, system_prompt)
+        words = full.split(" ")
+        chunk_size = 4
+        for i in range(0, len(words), chunk_size):
+            suffix = " " if i + chunk_size < len(words) else ""
+            yield " ".join(words[i : i + chunk_size]) + suffix
+
+
+# ---------------------------------------------------------------------------
+# Gemini providers
+# ---------------------------------------------------------------------------
+
+class GeminiSDKProvider(LLMProvider):
+    """Google Gemini via ``google-generativeai`` SDK (preferred over CLI)."""
+
+    def __init__(self, cfg: dict) -> None:
+        self.model = cfg.get("gemini_model", "gemini-1.5-flash")
+        self._api_key = (
+            cfg.get("gemini_api_key")
+            or os.environ.get("GOOGLE_API_KEY")
+            or os.environ.get("GEMINI_API_KEY", "")
+        )
+        self._client: Any = None
+        self.available = False
+        self._log = logging.getLogger("GeminiSDKProvider")
+        self._init_sdk()
+
+    def _init_sdk(self) -> None:
+        if not self._api_key:
+            return
+        try:
+            import google.generativeai as genai  # type: ignore[import]
+            genai.configure(api_key=self._api_key)
+            self._client = genai.GenerativeModel(self.model)
+            self.available = True
+            self._log.info("Gemini SDK initialised (model=%s).", self.model)
+        except ImportError:
+            self._log.info("google-generativeai not installed; Gemini SDK unavailable.")
+        except Exception as exc:
+            self._log.warning("Gemini SDK init error: %s", exc)
+
+    def generate(self, prompt: str, system_prompt: str) -> str:
+        if self._client is None:
+            raise RuntimeError("GeminiSDKProvider not available")
+        combined = f"{system_prompt}\n\n{prompt}" if system_prompt else prompt
+        resp = self._client.generate_content(combined)
+        return resp.text.strip()
+
+    def provider_name(self) -> str:
+        return "gemini-sdk"
+
+    def is_network_provider(self) -> bool:
+        return True
+
+
+class GeminiCLIProvider(LLMProvider):
+    """Gemini via the ``gemini`` CLI (automatic fallback when SDK unavailable)."""
+
+    def __init__(self, cfg: dict) -> None:
+        self.model = cfg.get("gemini_model", "gemini-1.5-flash")
+        self._cli = cfg.get("gemini_cli_path", "gemini")
+        self._timeout = int(cfg.get("gemini_timeout", 120))
+        self._log = logging.getLogger("GeminiCLIProvider")
+
+    def generate(self, prompt: str, system_prompt: str) -> str:
+        cmd = [self._cli, "-m", self.model, "-p", prompt]
+        try:
+            result = subprocess.run(
+                cmd, capture_output=True, text=True,
+                timeout=self._timeout, encoding="utf-8", errors="replace",
+                env=os.environ.copy(),
+            )
+            if result.returncode != 0:
+                err = result.stderr.strip() or "non-zero exit"
+                self._log.error("Gemini CLI error (rc=%d): %s", result.returncode, err)
+                return f"Error from Gemini CLI: {err}"
+            return result.stdout.strip() or "Error: Gemini CLI returned empty output."
+        except subprocess.TimeoutExpired:
+            return "Error: Gemini CLI timed out."
+        except FileNotFoundError:
+            return f"Error: Gemini CLI not found at '{self._cli}'."
+        except Exception as exc:
+            self._log.error("Gemini CLI failed: %s", exc)
+            return f"Error: {exc}"
+
+    def provider_name(self) -> str:
+        return "gemini-cli"
+
+
+# ---------------------------------------------------------------------------
+# Local llama.cpp provider
+# ---------------------------------------------------------------------------
+
+class LocalLlamaProvider(LLMProvider):
+    """llama.cpp model loaded in-process via ``llama-cpp-python``."""
+
+    def __init__(self, cfg: dict) -> None:
+        self._model_path = cfg.get("local_model_path", "")
+        self._n_ctx = int(cfg.get("local_n_ctx", 4096))
+        self._n_threads = int(cfg.get("local_n_threads", os.cpu_count() or 4))
+        self._max_tokens = int(cfg.get("local_max_tokens", 512))
+        self._model: Any = None
+        self._log = logging.getLogger("LocalLlamaProvider")
+        self._load()
+
+    def _load(self) -> None:
+        if not self._model_path or not os.path.exists(self._model_path):
+            self._log.warning("Local model path not found: %s", self._model_path)
+            return
+        try:
+            from llama_cpp import Llama  # type: ignore[import]
+            self._model = Llama(
+                model_path=self._model_path,
+                n_ctx=self._n_ctx,
+                n_threads=self._n_threads,
+                verbose=False,
+            )
+            self._log.info("Local llama model loaded: %s", self._model_path)
+        except ImportError:
+            self._log.warning("llama-cpp-python not installed.")
+        except Exception as exc:
+            self._log.error("Failed to load local model: %s", exc)
+
+    def generate(self, prompt: str, system_prompt: str) -> str:
+        if self._model is None:
+            return "Error: Local model not loaded."
+        full_prompt = (
+            f"### System:\n{system_prompt}\n\n### User:\n{prompt}\n\n### Assistant:\n"
+        )
+        try:
+            out = self._model(full_prompt, max_tokens=self._max_tokens, stop=["###"])
+            return out["choices"][0]["text"].strip()
+        except Exception as exc:
+            self._log.error("Local inference failed: %s", exc)
+            return f"Error: {exc}"
+
+    def provider_name(self) -> str:
+        return "local"
+
+
+# ---------------------------------------------------------------------------
+# Claude Code CLI provider
+# ---------------------------------------------------------------------------
+
+class ClaudeCodeCLIProvider(LLMProvider):
+    """Claude via the ``claude`` CLI subprocess."""
+
+    def __init__(self, cfg: dict) -> None:
+        self.model = cfg.get("claude_model", "claude-3-5-sonnet-20241022")
+        self._cli = cfg.get("claude_code_cli", "claude")
+        self._timeout = int(cfg.get("claude_timeout", 120))
+        self._log = logging.getLogger("ClaudeCodeCLIProvider")
+
+    def generate(self, prompt: str, system_prompt: str) -> str:
+        cmd = [
+            self._cli, "-p", prompt,
+            "--system-prompt", system_prompt,
+            "--output-format", "text",
+            "--model", self.model,
+        ]
+        try:
+            result = subprocess.run(
+                cmd, capture_output=True, text=True,
+                timeout=self._timeout, encoding="utf-8", errors="replace",
+                env=os.environ.copy(),
+            )
+            if result.returncode != 0:
+                err = result.stderr.strip() or "non-zero exit"
+                self._log.error("Claude CLI error (rc=%d): %s", result.returncode, err)
+                return f"Error from Claude CLI: {err}"
+            return result.stdout.strip() or "Error: Claude CLI returned empty output."
+        except subprocess.TimeoutExpired:
+            return "Error: Claude CLI timed out."
+        except FileNotFoundError:
+            return f"Error: Claude CLI not found at '{self._cli}'."
+        except Exception as exc:
+            self._log.error("Claude CLI failed: %s", exc)
+            return f"Error: {exc}"
+
+    def provider_name(self) -> str:
+        return "claude-code"
+
+
+# ---------------------------------------------------------------------------
+# Claude API provider
+# ---------------------------------------------------------------------------
+
+class ClaudeAPIProvider(LLMProvider):
+    """Anthropic Claude via the official SDK — raises on transient errors."""
+
+    def __init__(self, cfg: dict) -> None:
+        self.model = cfg.get("claude_model", "claude-3-5-sonnet-20241022")
+        self._max_tokens = int(cfg.get("claude_max_tokens", 4096))
+        self._api_key = (
+            cfg.get("anthropic_api_key") or os.environ.get("ANTHROPIC_API_KEY", "")
+        )
+        self._client: Any = None
+        self._log = logging.getLogger("ClaudeAPIProvider")
+        self._init_client()
+
+    def _init_client(self) -> None:
+        if not self._api_key:
+            self._log.warning("No ANTHROPIC_API_KEY; ClaudeAPIProvider unavailable.")
+            return
+        try:
+            import anthropic  # type: ignore[import]
+            self._client = anthropic.Anthropic(api_key=self._api_key)
+            self._log.info("Claude API client initialised (model=%s).", self.model)
+        except ImportError:
+            self._log.warning("anthropic package not installed.")
+        except Exception as exc:
+            self._log.error("Claude API client init failed: %s", exc)
+
+    def generate(self, prompt: str, system_prompt: str) -> str:
+        if self._client is None:
+            raise RuntimeError("ClaudeAPIProvider not available (missing key or package)")
+        msg = self._client.messages.create(
+            model=self.model,
+            max_tokens=self._max_tokens,
+            system=system_prompt,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        return msg.content[0].text.strip()
+
+    def stream(self, prompt: str, system_prompt: str) -> Iterator[str]:
+        if self._client is None:
+            yield "Error: ClaudeAPIProvider not available."
+            return
+        with self._client.messages.stream(
+            model=self.model,
+            max_tokens=self._max_tokens,
+            system=system_prompt,
+            messages=[{"role": "user", "content": prompt}],
+        ) as s:
+            yield from s.text_stream
+
+    def provider_name(self) -> str:
+        return "claude-api"
+
+    def is_network_provider(self) -> bool:
+        return True
+
+
+# ---------------------------------------------------------------------------
+# Ollama provider
+# ---------------------------------------------------------------------------
+
+class OllamaProvider(LLMProvider):
+    """Local Ollama HTTP API — raises on network/transient errors for retry."""
+
+    def __init__(self, cfg: dict) -> None:
+        self.model = cfg.get("ollama_model", "llama3")
+        self._base_url = cfg.get("ollama_base_url", "http://localhost:11434")
+        self._timeout = int(cfg.get("ollama_timeout", 120))
+        self._log = logging.getLogger("OllamaProvider")
+
+    def generate(self, prompt: str, system_prompt: str) -> str:
+        import urllib.request
+        payload = json.dumps({
+            "model": self.model,
+            "prompt": prompt,
+            "system": system_prompt,
+            "stream": False,
+        }).encode()
+        req = urllib.request.Request(
+            f"{self._base_url}/api/generate",
+            data=payload,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=self._timeout) as resp:
+                body = json.loads(resp.read().decode())
+                return body.get("response", "").strip()
+        except Exception as exc:
+            raise RuntimeError(f"Ollama request failed: {exc}") from exc
+
+    def provider_name(self) -> str:
+        return "ollama"
+
+    def is_network_provider(self) -> bool:
+        return True
+
+
+# ---------------------------------------------------------------------------
+# Generic CLI provider
+# ---------------------------------------------------------------------------
+
+class GenericCLIProvider(LLMProvider):
+    """Wrapper for arbitrary CLI tools not covered by the typed providers."""
+
+    def __init__(self, cfg: dict) -> None:
+        self.model = cfg.get("generic_model", "generic")
+        self.path = cfg.get("generic_cli_path", "")
+        self._args_template: list[str] = cfg.get("generic_cli_args", ["{prompt}"])
+        self._timeout = int(cfg.get("generic_timeout", 60))
+        self._log = logging.getLogger("GenericCLIProvider")
+
+    def generate(self, prompt: str, system_prompt: str) -> str:
+        if not self.path:
+            return "Error: generic_cli_path not configured."
+        cmd = [self.path] + [
+            a.replace("{prompt}", prompt).replace("{system}", system_prompt)
+            for a in self._args_template
+        ]
+        try:
+            result = subprocess.run(
+                cmd, capture_output=True, text=True,
+                timeout=self._timeout, encoding="utf-8", errors="replace",
+                env=os.environ.copy(),
+            )
+            if result.returncode != 0:
+                err = result.stderr.strip() or "non-zero exit"
+                self._log.error("Generic CLI error (rc=%d): %s", result.returncode, err)
+                return f"Error from {self.model}: {err}"
+            return result.stdout.strip() or f"Error: {self.model} returned empty output."
+        except subprocess.TimeoutExpired:
+            return f"Error: {self.model} CLI timed out."
+        except FileNotFoundError:
+            return f"Error: CLI not found at '{self.path}'."
+        except Exception as exc:
+            self._log.error("Generic CLI failed: %s", exc)
+            return f"Error: {exc}"
+
+    def provider_name(self) -> str:
+        return "generic-cli"
+
+
+# ---------------------------------------------------------------------------
+# Provider Pool
+# ---------------------------------------------------------------------------
+
+class ProviderPool:
+    """Registry of named LLMProvider instances with built-in parallel dispatch."""
+
+    def __init__(self) -> None:
+        self._providers: dict[str, LLMProvider] = {}
+        self._default: str | None = None
+        self._lock = threading.Lock()
+        self._log = logging.getLogger("ProviderPool")
+
+    def register(self, name: str, provider: LLMProvider) -> None:
+        with self._lock:
+            self._providers[name] = provider
+            if self._default is None:
+                self._default = name
+
+    def get(self, name: str) -> LLMProvider | None:
+        return self._providers.get(name)
+
+    def get_default(self) -> LLMProvider | None:
+        return self._providers.get(self._default) if self._default else None
+
+    @property
+    def default_name(self) -> str | None:
+        return self._default
+
+    def set_default(self, name: str) -> None:
+        if name in self._providers:
+            self._default = name
+
+    def list_providers(self) -> list[str]:
+        return list(self._providers.keys())
+
+    def remove(self, name: str) -> None:
+        with self._lock:
+            self._providers.pop(name, None)
+            if self._default == name:
+                self._default = next(iter(self._providers), None)
+
+    def status(self) -> dict:
+        return {"default": self._default, "providers": self.list_providers()}
+
+    def generate_parallel(
+        self,
+        prompt: str,
+        system_prompt: str,
+        *,
+        strategy: str = "voting",
+        provider_names: list[str] | None = None,
+        retry_policy: RetryPolicy | None = None,
+    ) -> dict:
+        """Run prompt across multiple providers concurrently.
+
+        Parameters
+        ----------
+        strategy:
+            ``voting``   — majority-vote on identical responses (default).
+            ``fastest``  — return the first successful response.
+            ``fallback`` — try providers in order; return first success.
+            ``quality``  — return the longest response (proxy for detail).
+        retry_policy:
+            When provided, applied to network-backed providers automatically.
+        """
+        names = provider_names or self.list_providers()
+        start = time.time()
+
+        def _elapsed_ms() -> int:
+            return int((time.time() - start) * 1000)
+
+        def _call(name: str) -> tuple[str, str | None, str | None]:
+            provider = self.get(name)
+            if provider is None:
+                return name, None, f"provider '{name}' not registered"
+            try:
+                if retry_policy is not None and provider.is_network_provider():
+                    resp = with_retry(retry_policy, provider.generate, prompt, system_prompt)
+                else:
+                    resp = provider.generate(prompt, system_prompt)
+                return name, resp, None
+            except Exception as exc:
+                self._log.warning("Provider '%s' failed: %s", name, exc)
+                return name, None, str(exc)
+
+        if strategy == "fallback":
+            for name in names:
+                n, resp, _ = _call(name)
+                if resp is not None:
+                    return {
+                        "response": resp, "provider": n,
+                        "strategy": "fallback", "elapsed_ms": _elapsed_ms(),
+                    }
+            return {"error": "all providers failed", "strategy": "fallback"}
+
+        results: list[tuple[str, str | None, str | None]] = []
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max(len(names), 1)) as ex:
+            futures = {ex.submit(_call, n): n for n in names}
+
+            if strategy == "fastest":
+                for future in concurrent.futures.as_completed(futures):
+                    n, resp, _ = future.result()
+                    if resp is not None:
+                        for f in futures:
+                            f.cancel()
+                        return {
+                            "response": resp, "provider": n,
+                            "strategy": "fastest", "elapsed_ms": _elapsed_ms(),
+                        }
+                return {"error": "all providers failed", "strategy": "fastest"}
+
+            for future in concurrent.futures.as_completed(futures):
+                results.append(future.result())
+
+        successes = [(n, r) for n, r, _ in results if r is not None]
+        if not successes:
+            return {"error": "all providers failed", "strategy": strategy}
+
+        if strategy == "voting":
+            votes = Counter(r for _, r in successes)
+            winner = votes.most_common(1)[0][0]
+            winning_provider = next(n for n, r in successes if r == winner)
+            return {
+                "response": winner, "provider": winning_provider,
+                "strategy": "voting", "votes": dict(votes), "elapsed_ms": _elapsed_ms(),
+            }
+
+        if strategy == "quality":
+            best_name, best_resp = max(successes, key=lambda x: len(x[1]))
+            return {
+                "response": best_resp, "provider": best_name,
+                "strategy": "quality", "elapsed_ms": _elapsed_ms(),
+            }
+
+        name, resp = successes[0]
+        return {
+            "response": resp, "provider": name,
+            "strategy": strategy, "elapsed_ms": _elapsed_ms(),
+        }
+
+
+# ---------------------------------------------------------------------------
+# Optional project_config import (non-fatal)
+# ---------------------------------------------------------------------------
+
+try:
+    from src.core.project_loader import project_config  # type: ignore[import]
+except Exception:
+    project_config = None  # type: ignore[assignment]
+
+
+# ---------------------------------------------------------------------------
+# LLM Gateway (thread-safe singleton)
+# ---------------------------------------------------------------------------
+
+class LLMGateway:
+    """
+    Thread-safe singleton routing LLM calls through a provider-aware semaphore.
+
+    Always-on tracing
+    -----------------
+    ``ConsoleTracer`` is the default; ``LangfuseTracer`` activates when
+    ``LANGFUSE_PUBLIC_KEY`` + ``LANGFUSE_SECRET_KEY`` are present.
+    Every call carries a ``trace_id`` (UUID v4 auto-generated when omitted).
+
+    Retry
+    -----
+    ``RetryPolicy`` (exponential back-off + full jitter) is applied
+    automatically for ``is_network_provider()`` providers on transient errors.
+
+    Backward compatibility
+    ----------------------
+    All existing public method signatures are preserved unchanged.
+    New parameters (``trace_id``, ``agent_name``) default to empty / None.
+    """
+
+    _instance: "LLMGateway | None" = None
+    _init_lock = threading.Lock()
+
+    PROVIDER_CONCURRENCY: dict[str, int] = {
+        "local":       1,
+        "generic-cli": 1,
+        "ollama":      2,
+        "gemini":      4,
+        "claude":      4,
+        "claude-code": 2,
+    }
+
+    def __new__(cls) -> "LLMGateway":
+        if cls._instance is None:
+            with cls._init_lock:
+                if cls._instance is None:
+                    cls._instance = super().__new__(cls)
+                    cls._instance._initialized = False
+        return cls._instance
+
+    def __init__(self) -> None:
+        if self._initialized:
+            return
+        self._initialized = True
+
+        self.logger = logging.getLogger("LLMGateway")
+        self.provider: LLMProvider | None = None
+        self.provider_pool = ProviderPool()
+        self._usage: dict[str, Any] = {
+            "calls": 0,
+            "calls_today": 0,
+            "estimated_tokens": 0,
+            "errors": 0,
+            "started_at": time.time(),
+            "day_started_at": time.time(),
+        }
+        self._routing_stats: dict[str, int] = {"low": 0, "medium": 0, "high": 0}
+
+        config = _load_config()
+        llm_cfg = config.get("llm", {})
+
+        # Always-on tracer — ConsoleTracer when no external credentials present.
+        self._tracer: Tracer = init_tracer(config)
+
+        # Configurable retry policy loaded from config / defaults.
+        self._retry_policy: RetryPolicy = RetryPolicy.from_config(config)
+        self.logger.info(
+            "Retry policy: max_attempts=%d base_delay=%.1fs max_delay=%.1fs",
+            self._retry_policy.max_attempts,
+            self._retry_policy.base_delay,
+            self._retry_policy.max_delay,
+        )
+
+        backend = llm_cfg.get("provider", "claude-code")
+        self.logger.info("Selected LLM provider: %s", backend)
+        self.provider = self._build_provider(backend, llm_cfg)
+
+        concurrency = self.PROVIDER_CONCURRENCY.get(backend, 1)
+        self._inference_semaphore = threading.Semaphore(concurrency)
+        self.logger.info(
+            "LLM Gateway active: %s (concurrency=%d)",
+            self.provider.provider_name() if self.provider else "none",
+            concurrency,
+        )
+
+    # ------------------------------------------------------------------
+    # Provider factory
+    # ------------------------------------------------------------------
+
+    def _build_provider(self, backend: str, llm_cfg: dict) -> LLMProvider:
+        if backend == "gemini":
+            sdk = GeminiSDKProvider(llm_cfg)
+            if sdk.available:
+                return sdk
+            self.logger.info("Gemini SDK unavailable — falling back to CLI.")
+            return GeminiCLIProvider(llm_cfg)
+        if backend == "local":
+            return LocalLlamaProvider(llm_cfg)
+        if backend == "claude-code":
+            return ClaudeCodeCLIProvider(llm_cfg)
+        if backend == "claude":
+            return ClaudeAPIProvider(llm_cfg)
+        if backend == "ollama":
+            return OllamaProvider(llm_cfg)
+        if backend == "generic-cli":
+            return GenericCLIProvider(llm_cfg)
+        self.logger.error("Unknown provider '%s'. Defaulting to claude-code.", backend)
+        return ClaudeCodeCLIProvider(llm_cfg)
+
+    # ------------------------------------------------------------------
+    # Core generate()
+    # ------------------------------------------------------------------
+
+    def generate(
+        self,
+        prompt: str,
+        system_prompt: str = "You are a helpful AI assistant.",
+        trace_name: str = "llm_generate",
+        metadata: dict | None = None,
+        trace_id: str = "",
+        agent_name: str = "",
+    ) -> str:
+        """Thread-safe generation with mandatory tracing and configurable retry.
+
+        Parameters
+        ----------
+        prompt:        User / task prompt.
+        system_prompt: Role / instruction context.
+        trace_name:    Span label in the tracer.
+        metadata:      Extra key-value pairs attached to the trace span.
+        trace_id:      Correlation ID; auto-generated as UUID v4 when empty.
+        agent_name:    Agent role for per-agent budget enforcement.
+        """
+        if self.provider is None:
+            return "Error: No LLM provider configured."
+
+        if not trace_id:
+            trace_id = str(uuid.uuid4())
+
+        start = time.time()
+        self.logger.debug("Acquiring inference semaphore [trace=%s]", trace_id)
+
+        with self._inference_semaphore:
+            self.logger.debug(
+                "Semaphore acquired. Provider: %s [trace=%s]",
+                self.provider.provider_name(), trace_id,
+            )
+
+            config = _load_config()
+
+            # PII detection — optional import, non-fatal.
+            try:
+                from src.core import pii_filter  # type: ignore[import]
+                scrubbed, detected = pii_filter.scrub_text(prompt, config)
+                if detected:
+                    self.logger.warning("PII detected and redacted: %s", detected)
+                    self._tracer.log_event(trace_id, "pii_detected", {"entities": detected})
+                    if config.get("pii", {}).get("fail_on_detection", False):
+                        raise ValueError(f"Prompt rejected: PII detected — {detected}")
+                prompt = scrubbed
+                if not pii_filter.check_data_residency(self.provider.provider_name(), config):
+                    raise ValueError(
+                        "Provider not allowed for configured data residency region"
+                    )
+            except ImportError:
+                pass
+
+            # Complexity classification — non-fatal.
+            try:
+                from src.core.complexity_classifier import complexity_classifier  # type: ignore[import]
+                cx = complexity_classifier.classify(prompt, system_prompt)
+                self._routing_stats[cx.value] = self._routing_stats.get(cx.value, 0) + 1
+            except Exception:
+                pass
+
+            # Budget check pre-call — raises ValueError to abort the call.
+            try:
+                from src.core import cost_tracker as _ct  # type: ignore[import]
+                from src.core.tenant import get_current_tenant  # type: ignore[import]
+                _tenant = get_current_tenant()
+                _sol = ""
+                try:
+                    from src.core.project_loader import project_config as _pc  # type: ignore[import]
+                    _sol = _pc.project_name or ""
+                except Exception:
+                    pass
+                _ct.check_budget(_tenant, _sol)
+            except ValueError:
+                raise
+            except Exception:
+                pass
+
+            # Per-agent monthly call ceiling.
+            if agent_name and project_config is not None:
+                try:
+                    ab = project_config.get_agent_budget(agent_name)
+                    if ab is not None:
+                        limit = int(ab.get("monthly_calls", 0))
+                        if limit > 0:
+                            calls = int(self._usage.get(f"agent_{agent_name}_calls", 0))
+                            if calls >= limit:
+                                raise RuntimeError(
+                                    f"Agent '{agent_name}' monthly call budget ({limit}) exceeded."
+                                )
+                            self._usage[f"agent_{agent_name}_calls"] = calls + 1
+                except RuntimeError:
+                    raise
+                except Exception as exc:
+                    self.logger.warning("Agent budget check failed (non-fatal): %s", exc)
+
+            # Always-on trace span — opened here, closed in finally equivalent below.
+            trace_meta: dict = {
+                "provider": self.provider.provider_name(),
+                "model": getattr(self.provider, "model", "unknown"),
+                "input": {
+                    "system": system_prompt[:500],
+                    "prompt": prompt[:500],
+                },
+                **(metadata or {}),
+            }
+            span = self._tracer.start_span(trace_id, trace_name, trace_meta)
+            tracer_usage: dict | None = None
+            result = ""
+
+            # Optional OTel span — no-op context manager when module absent.
+            try:
+                from src.core.tracing import trace_llm_call as _otel_trace  # type: ignore[import]
+                _otel_ctx: Any = _otel_trace(
+                    provider=self.provider.provider_name(),
+                    model=getattr(self.provider, "model", "unknown"),
+                    prompt_length=len(prompt),
+                    system_prompt_length=len(system_prompt),
+                    trace_name=trace_name,
+                    trace_id=trace_id,
+                )
+            except ImportError:
+                _otel_ctx = nullcontext()
+
+            try:
+                with _otel_ctx as _otel_span:
+                    if self.provider.is_network_provider():
+                        def _on_retry(attempt: int, exc: Exception) -> None:
+                            self._tracer.log_event(
+                                trace_id, "retry",
+                                {"attempt": attempt + 1, "error": str(exc)},
+                            )
+                        result = with_retry(
+                            self._retry_policy,
+                            self.provider.generate,
+                            prompt,
+                            system_prompt,
+                            on_retry=_on_retry,
+                        )
+                    else:
+                        result = self.provider.generate(prompt, system_prompt)
+
+                    elapsed = time.time() - start
+                    self.logger.info(
+                        "Generation done in %.2fs [trace=%s]", elapsed, trace_id
+                    )
+
+                    input_tokens  = (len(prompt) + len(system_prompt)) // 4
+                    output_tokens = len(result) // 4
+                    self._maybe_reset_daily()
+                    self._usage["calls"]            += 1
+                    self._usage["calls_today"]      += 1
+                    self._usage["estimated_tokens"] += input_tokens + output_tokens
+                    tracer_usage = {
+                        "input_tokens": input_tokens,
+                        "output_tokens": output_tokens,
+                    }
+
+                    try:
+                        _otel_span.set_attribute("llm.output_tokens", output_tokens)
+                        _otel_span.set_attribute("llm.input_tokens",  input_tokens)
+                        _otel_span.set_attribute("llm.duration_s",    elapsed)
+                    except Exception:
+                        pass
+
+                    # Cost recording post-call — non-fatal.
+                    try:
+                        from src.core import cost_tracker as _ct2  # type: ignore[import]
+                        from src.core.tenant import get_current_tenant  # type: ignore[import]
+                        _sol2 = ""
+                        try:
+                            from src.core.project_loader import project_config as _pc2  # type: ignore[import]
+                            _sol2 = _pc2.project_name or ""
+                        except Exception:
+                            pass
+                        _ct2.record_usage(
+                            get_current_tenant(), _sol2,
+                            getattr(self.provider, "model", "unknown"),
+                            input_tokens, output_tokens, trace_id,
+                        )
+                    except Exception:
+                        pass
+
+            except ValueError:
+                self._tracer.end_span(span, "", error="rejected (budget/pii)")
+                raise
+            except Exception as exc:
+                self.logger.error("Generation failed [trace=%s]: %s", trace_id, exc)
+                self._usage["errors"] += 1
+                self._tracer.end_span(span, "", error=str(exc))
+                return f"Error: {exc}"
+
+            self._tracer.end_span(span, result, usage=tracer_usage)
+            return result
+
+    # ------------------------------------------------------------------
+    # Streaming generate()
+    # ------------------------------------------------------------------
+
+    def generate_stream(
+        self,
+        prompt: str,
+        system_prompt: str = "You are a helpful AI assistant.",
+        trace_name: str = "llm_stream",
+        metadata: dict | None = None,
+        trace_id: str = "",
+    ) -> Generator[str, None, None]:
+        """Yield response chunks with always-on tracing.
+
+        ``ClaudeAPIProvider`` streams natively; all other providers simulate
+        streaming by chunking ``generate()`` output.  The span is always
+        opened and closed regardless of how the generator is consumed.
+        """
+        if self.provider is None:
+            yield "Error: No LLM provider configured."
+            return
+
+        if not trace_id:
+            trace_id = str(uuid.uuid4())
+
+        span = self._tracer.start_span(
+            trace_id,
+            trace_name,
+            {
+                "provider": self.provider.provider_name(),
+                "model": getattr(self.provider, "model", "unknown"),
+                **(metadata or {}),
+            },
+        )
+        chunks: list[str] = []
+        stream_error: str | None = None
+
+        try:
+            with self._inference_semaphore:
+                start = time.time()
+                self.logger.debug(
+                    "Streaming started. Provider: %s [trace=%s]",
+                    self.provider.provider_name(), trace_id,
+                )
+                for chunk in self.provider.stream(prompt, system_prompt):
+                    chunks.append(chunk)
+                    yield chunk
+
+                elapsed = time.time() - start
+                self.logger.info(
+                    "Streaming done in %.2fs [trace=%s]", elapsed, trace_id
+                )
+                self._maybe_reset_daily()
+                self._usage["calls"]       += 1
+                self._usage["calls_today"] += 1
+                self._usage["estimated_tokens"] += (
+                    (len(prompt) + len(system_prompt) + sum(len(c) for c in chunks)) // 4
+                )
+        except Exception as exc:
+            stream_error = str(exc)
+            self.logger.error("Streaming failed [trace=%s]: %s", trace_id, exc)
+        finally:
+            self._tracer.end_span(
+                span,
+                "".join(chunks),
+                error=stream_error,
+                usage={"chars": sum(len(c) for c in chunks)},
+            )
+
+    # ------------------------------------------------------------------
+    # Task-routed generate()
+    # ------------------------------------------------------------------
+
+    def generate_for_task(
+        self,
+        task_type: str,
+        prompt: str,
+        system_prompt: str = "You are a helpful AI assistant.",
+        trace_name: str = "llm_generate",
+        metadata: dict | None = None,
+        trace_id: str = "",
+    ) -> str:
+        """Route to a task-specific model when ``task_routing`` is configured.
+
+        Falls back to the default provider when routing is disabled or no
+        route is defined for ``task_type``.
+        """
+        config = _load_config()
+        routing_cfg = config.get("llm", {}).get("task_routing", {})
+
+        if not routing_cfg.get("enabled", False):
+            return self.generate(prompt, system_prompt, trace_name, metadata, trace_id)
+
+        route_value: str = routing_cfg.get("routes", {}).get(task_type, "")
+        if not route_value:
+            return self.generate(prompt, system_prompt, trace_name, metadata, trace_id)
+
+        if "/" in route_value:
+            routed_provider, routed_model = route_value.split("/", 1)
+        else:
+            routed_provider, routed_model = "", route_value
+
+        current = self.provider.provider_name().lower() if self.provider else ""
+        if not routed_provider or routed_provider.lower() in current:
+            return self.generate(prompt, system_prompt, trace_name, metadata, trace_id)
+
+        self.logger.info(
+            "Task routing: task_type=%s → provider=%s model=%s",
+            task_type, routed_provider, routed_model,
+        )
+        llm_cfg = config.get("llm", {}).copy()
+        try:
+            tmp: LLMProvider
+            if routed_provider == "ollama":
+                llm_cfg["ollama_model"] = routed_model
+                tmp = OllamaProvider(llm_cfg)
+            elif routed_provider in ("claude", "claude-code"):
+                llm_cfg["claude_model"] = routed_model
+                tmp = ClaudeCodeCLIProvider(llm_cfg)
+            elif routed_provider == "gemini":
+                llm_cfg["gemini_model"] = routed_model
+                sdk = GeminiSDKProvider(llm_cfg)
+                tmp = sdk if sdk.available else GeminiCLIProvider(llm_cfg)
+            else:
+                self.logger.warning(
+                    "Task routing: unknown provider '%s' — using default", routed_provider
+                )
+                return self.generate(prompt, system_prompt, trace_name, metadata, trace_id)
+
+            saved = self.provider
+            self.provider = tmp
+            try:
+                return self.generate(prompt, system_prompt, trace_name, metadata, trace_id)
+            finally:
+                self.provider = saved
+
+        except Exception as exc:
+            self.logger.warning(
+                "Task routing provider init failed (%s) — fallback: %s", routed_provider, exc
+            )
+            return self.generate(prompt, system_prompt, trace_name, metadata, trace_id)
+
+    # ------------------------------------------------------------------
+    # Multi-provider parallel generation
+    # ------------------------------------------------------------------
+
+    def generate_multi(
+        self,
+        prompt: str,
+        system_prompt: str,
+        *,
+        strategy: str = "voting",
+        provider_names: list[str] | None = None,
+    ) -> dict:
+        """Delegate to ``ProviderPool.generate_parallel`` with this gateway's retry policy."""
+        return self.provider_pool.generate_parallel(
+            prompt,
+            system_prompt,
+            strategy=strategy,
+            provider_names=provider_names,
+            retry_policy=self._retry_policy,
+        )
+
+    # ------------------------------------------------------------------
+    # Helpers
+    # ------------------------------------------------------------------
+
+    def _maybe_reset_daily(self) -> None:
+        import datetime as dt
+        day_start = dt.datetime.fromtimestamp(
+            self._usage["day_started_at"], tz=dt.timezone.utc
+        ).date()
+        today = dt.datetime.now(dt.timezone.utc).date()
+        if today > day_start:
+            self._usage["calls_today"]    = 0
+            self._usage["day_started_at"] = time.time()
+            self.logger.info("Daily request counter reset (new UTC day).")
+
+    def get_provider_name(self) -> str:
+        return self.provider.provider_name() if self.provider else "None"
+
+    def get_usage(self) -> dict:
+        import datetime as dt
+        return {
+            "calls":            self._usage["calls"],
+            "calls_today":      self._usage["calls_today"],
+            "estimated_tokens": self._usage["estimated_tokens"],
+            "errors":           self._usage["errors"],
+            "started_at":       dt.datetime.fromtimestamp(
+                                    self._usage["started_at"], tz=dt.timezone.utc
+                                ).isoformat(),
+            "day_started_at":   dt.datetime.fromtimestamp(
+                                    self._usage["day_started_at"], tz=dt.timezone.utc
+                                ).isoformat(),
+        }
+
+    def get_model_info(self) -> dict:
+        model = "unknown"
+        if self.provider is not None:
+            model = getattr(self.provider, "model", "unknown")
+        limits = _MODEL_LIMITS.get(model, {"daily_requests": 0, "context_tokens": 4096})
+        return {
+            "model":               model,
+            "daily_request_limit": limits["daily_requests"],
+            "context_tokens":      limits["context_tokens"],
+            "unlimited":           limits["daily_requests"] == 0,
+        }
+
+    def reset_usage(self) -> None:
+        self._usage.update({
+            "calls": 0, "calls_today": 0, "estimated_tokens": 0, "errors": 0,
+            "started_at": time.time(), "day_started_at": time.time(),
+        })
+
+
+# ---------------------------------------------------------------------------
+# Module-level singleton — backward-compatible access point
+# ---------------------------------------------------------------------------
+
+llm_gateway = LLMGateway()
+```
