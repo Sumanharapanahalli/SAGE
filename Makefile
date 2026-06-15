@@ -124,6 +124,12 @@ test-api:
 testbench:
 	$(PYTHON) testbench/run.py --solution $(PROJECT) $(if $(SUITE),--suite $(SUITE),) --report testbench/last-report.md
 
+# Evaluator-Optimizer self-improvement loop — Claude optimizes, Gemini evaluates,
+# looping until the evaluator passes it. See docs/EVALUATOR_OPTIMIZER.md.
+# Usage: make optimize TASK="improve X" [CONTEXT=path/to/file] [OUT=path]
+optimize:
+	$(PYTHON) -m src.core.evaluator_optimizer --task "$(TASK)" $(if $(CONTEXT),--context-file $(CONTEXT),) $(if $(OUT),--out $(OUT),)
+
 test-compliance:
 	SAGE_SOLUTIONS_DIR=$(SOLUTIONS_DIR) $(PYTEST) solutions/medtech/tests/validation/ -v --tb=long
 
