@@ -38,7 +38,6 @@ const PAGE_TITLES: Record<string, string> = {
   '/regulatory':      'Regulatory Compliance',
   '/guide':           'User Guide',
   '/settings/organization': 'Organization',
-  // New pages
   '/gym':             'Agent Gym',
   '/safety':          'Safety Analysis',
   '/skills':          'Skills & Tools',
@@ -127,82 +126,93 @@ export default function Header({ onOpenPalette }: HeaderProps) {
   const area = ROUTE_TO_AREA[pathname] ?? 'SAGE'
   const projectName = (projectData as any)?.name ?? 'SAGE Framework'
 
+  const chatActive = panelState !== 'closed'
+
   return (
     <header
       className="h-12 border-b flex items-center px-4 gap-2 shrink-0"
-      style={{ backgroundColor: '#111113', borderColor: '#1e1e22' }}
+      style={{
+        backgroundColor: 'var(--color-surface-base, #111113)',
+        borderColor: 'var(--color-border-subtle, #1e1e22)',
+      }}
     >
       {/* Breadcrumb */}
       <div className="flex items-center gap-1.5 flex-1 min-w-0">
-        <span style={{ fontSize: '12px', color: '#6b7280', fontWeight: 500 }}>
+        <span
+          style={{
+            fontSize: '12px',
+            color: 'var(--color-text-muted, #6b7280)',
+            fontWeight: 500,
+          }}
+        >
           {projectName}
         </span>
-        <ChevronRight size={10} style={{ color: '#d1d5db' }} />
-        <span style={{ fontSize: '12px', color: '#9ca3af' }}>
+        <ChevronRight size={10} style={{ color: 'var(--color-text-disabled, #4b5563)' }} />
+        <span style={{ fontSize: '12px', color: 'var(--color-text-secondary, #9ca3af)' }}>
           {area}
         </span>
-        <ChevronRight size={10} style={{ color: '#d1d5db' }} />
-        <span style={{ fontSize: '13px', fontWeight: 600, color: '#e4e4e7' }}>
+        <ChevronRight size={10} style={{ color: 'var(--color-text-disabled, #4b5563)' }} />
+        <span
+          style={{
+            fontSize: '13px',
+            fontWeight: 600,
+            color: 'var(--color-text-primary, #e4e4e7)',
+          }}
+        >
           {title}
         </span>
       </div>
 
-      {/*
-        Header color strategy (one meaning per color — see PROPOSAL #4):
-          - STATUS palette: green = online, red = offline. Used ONLY for the
-            connection indicator below, and always with a text label.
-          - SELECTION state: blue = active (the chat toggle when open).
-          - METADATA / neutral: grays for the breadcrumb, model badge, palette.
-        Green is no longer overloaded onto branding/metadata.
-      */}
-
-      {/* Model badge — metadata, neutral (was green-bg + orange-text, incoherent) */}
+      {/* Model info — neutral informational badge, no accent color */}
       {online && (
         <div
           className="flex items-center gap-1.5 px-2.5 py-1"
           style={{
-            background: 'rgba(255, 255, 255, 0.04)',
-            border: '1px solid #2a2a2e',
+            background: 'var(--color-surface-overlay, rgba(255,255,255,0.04))',
+            border: '1px solid var(--color-border-default, rgba(255,255,255,0.09))',
             borderRadius: '8px',
             fontSize: '11px',
-            color: '#a1a1aa',
+            color: 'var(--color-text-secondary, #9ca3af)',
             fontWeight: 500,
           }}
           title={`LLM: ${provider}${model ? ` / ${model}` : ''}`}
         >
-          <Sparkles size={11} style={{ color: '#a1a1aa' }} />
+          <Sparkles size={11} style={{ color: 'var(--color-text-muted, #6b7280)' }} />
           <span>{provider}{model ? ` · ${model}` : ''}</span>
         </div>
       )}
 
-      {/* Connection status — one labelled dot, the only use of the status palette.
-          Text uses the light-400 shade for >=4.5:1 contrast on the dark header. */}
+      {/*
+        Consolidated status indicator — single labelled dot.
+        Online: var(--color-status-success) ~#22c55e — contrast ≥8.7:1 on dark bg (WCAG AA).
+        Offline: var(--color-status-error)   ~#ef4444 — contrast ≥5.3:1 on dark bg (WCAG AA).
+        No checkmark, no separate badge — one unambiguous signal.
+      */}
       <div
-        className="flex items-center gap-1.5"
-        title={online ? 'Backend online' : 'Backend offline'}
+        className="flex items-center gap-1"
+        style={{
+          fontSize: '11px',
+          fontWeight: 500,
+          color: online
+            ? 'var(--color-status-success, #22c55e)'
+            : 'var(--color-status-error, #ef4444)',
+          userSelect: 'none',
+        }}
+        title={online ? 'API reachable' : 'API unreachable'}
       >
-        <span
-          style={{
-            width: 7, height: 7, borderRadius: '50%',
-            backgroundColor: online ? '#22c55e' : '#ef4444',
-            display: 'inline-block',
-            boxShadow: online ? '0 0 6px rgba(34,197,94,0.45)' : '0 0 6px rgba(239,68,68,0.45)',
-          }}
-        />
-        <span style={{ fontSize: '11px', fontWeight: 600, color: online ? '#4ade80' : '#f87171' }}>
-          {online ? 'Online' : 'Offline'}
-        </span>
+        <span aria-hidden="true" style={{ fontSize: '9px', lineHeight: 1 }}>●</span>
+        <span>{online ? 'Online' : 'Offline'}</span>
       </div>
 
-      {/* Command palette */}
+      {/* Command palette — neutral utility */}
       <button
         onClick={onOpenPalette}
         className="flex items-center gap-1 text-xs px-2 py-1 transition-colors shrink-0"
         style={{
-          color: '#9ca3af',
-          border: '1px solid #e5e7eb',
+          color: 'var(--color-text-secondary, #9ca3af)',
+          border: '1px solid var(--color-border-default, rgba(255,255,255,0.12))',
           borderRadius: '6px',
-          background: 'rgba(255,255,255,0.02)',
+          background: 'var(--color-surface-overlay, rgba(255,255,255,0.03))',
         }}
         title="Command palette (Cmd+K)"
       >
@@ -210,16 +220,22 @@ export default function Header({ onOpenPalette }: HeaderProps) {
         <span style={{ fontSize: '10px', fontWeight: 500 }}>K</span>
       </button>
 
-      {/* Chat */}
+      {/* Chat toggle — neutral active state; accent reserved for CTAs only */}
       <button
         onClick={() => openChat()}
         title="SAGE Chat (Ctrl+J)"
         className="flex items-center gap-1 text-xs px-2 py-1 transition-colors shrink-0"
         style={{
-          color: panelState !== 'closed' ? '#3b82f6' : '#52525b',
-          border: `1px solid ${panelState !== 'closed' ? '#1d4ed8' : '#e5e7eb'}`,
+          color: chatActive
+            ? 'var(--color-text-primary, #e4e4e7)'
+            : 'var(--color-text-disabled, #52525b)',
+          border: `1px solid ${chatActive
+            ? 'var(--color-border-emphasis, rgba(255,255,255,0.2))'
+            : 'var(--color-border-subtle, rgba(255,255,255,0.08))'}`,
           borderRadius: '6px',
-          background: panelState !== 'closed' ? 'rgba(59,130,246,0.08)' : 'rgba(255,255,255,0.02)',
+          background: chatActive
+            ? 'var(--color-surface-raised, rgba(255,255,255,0.08))'
+            : 'var(--color-surface-overlay, rgba(255,255,255,0.02))',
         }}
       >
         <MessageSquare size={11} />

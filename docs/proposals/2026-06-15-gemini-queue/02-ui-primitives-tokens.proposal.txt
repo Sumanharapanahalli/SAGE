@@ -1,0 +1,660 @@
+/* ===== FILE: web/src/index.css ===== */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ──────────────────────────────────────────────────────────────────────────
+   SAGE CSS Custom Properties — White & Orange Theme
+   ────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Sidebar */
+  --sage-sidebar-bg:          #ffffff;
+  --sage-sidebar-text:        #6b7280;
+  --sage-sidebar-active-bg:   #fff7ed;
+  --sage-sidebar-active-text: #c2410c;
+  --sage-sidebar-hover-bg:    #fff7ed;
+  --sage-sidebar-accent:      #f97316;
+
+  /* Primary accent */
+  --sage-accent:              #f97316;
+  --sage-accent-hover:        #ea580c;
+  --sage-accent-light:        #fff7ed;
+  --sage-accent-text:         #ffffff;
+
+  /* Badge */
+  --sage-badge-bg:            #fff7ed;
+  --sage-badge-text:          #c2410c;
+
+  /* Rail */
+  --sage-rail-bg:             #fafafa;
+  --sage-rail-text:           #6b7280;
+  --sage-rail-active:         #c2410c;
+
+  /* Base */
+  --sage-text:                #374151;
+  --sage-border:              #e5e7eb;
+
+  /* Modal overlay */
+  --sage-overlay:             rgba(107, 114, 128, 0.4);
+
+  /* Risk levels */
+  --sage-risk-destructive-bg:     #fef2f2;  --sage-risk-destructive-fg:   #b91c1c;  --sage-risk-destructive-border:   #fca5a5;
+  --sage-risk-external-bg:        #fff7ed;  --sage-risk-external-fg:      #c2410c;  --sage-risk-external-border:      #fdba74;
+  --sage-risk-stateful-bg:        #fefce8;  --sage-risk-stateful-fg:      #a16207;  --sage-risk-stateful-border:      #fcd34d;
+  --sage-risk-ephemeral-bg:       #eff6ff;  --sage-risk-ephemeral-fg:     #1d4ed8;  --sage-risk-ephemeral-border:     #93c5fd;
+  --sage-risk-informational-bg:   #f9fafb;  --sage-risk-informational-fg: #4b5563;  --sage-risk-informational-border: #d1d5db;
+
+  /* User preferences */
+  --sage-user-accent:     #f97316;
+  --sage-content-bg:      #ffffff;
+  --sage-font-family:     'Inter', sans-serif;
+  --sage-font-size-base:  14px;
+  --sage-density:         1rem;
+}
+
+body {
+  @apply bg-white text-gray-800 font-sans;
+  font-family: var(--sage-font-family);
+  font-size:   var(--sage-font-size-base);
+}
+
+/* ── Navigation ──────────────────────────────────────────────────────────── */
+
+.sage-nav-item {
+  transition: background-color 0.12s ease, color 0.12s ease;
+  border-radius: 6px;
+}
+.sage-nav-item:hover {
+  background-color: var(--sage-sidebar-hover-bg);
+  color: var(--sage-sidebar-active-text);
+}
+.sage-nav-item-active {
+  color: #c2410c !important;
+  font-weight: 600;
+  border-left: 2px solid var(--sage-sidebar-accent, #f97316) !important;
+  background-color: #fff7ed;
+  border-radius: 0 6px 6px 0;
+}
+.sage-nav-group {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #9ca3af;
+  padding: 0.75rem 1rem 0.25rem;
+}
+
+/* ── Page transition ─────────────────────────────────────────────────────── */
+
+.sage-page-enter { animation: sage-fade-in 0.15s ease-out; }
+
+@keyframes sage-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Command palette ─────────────────────────────────────────────────────── */
+
+.sage-palette-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(107, 114, 128, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex; align-items: flex-start; justify-content: center;
+  padding-top: 12vh;
+}
+.sage-palette-box {
+  width: 100%; max-width: 580px;
+  background: #ffffff;
+  border: 1px solid var(--sage-border);
+  border-radius: 12px;
+  box-shadow: 0 25px 60px rgba(107, 114, 128, 0.25);
+  overflow: hidden;
+}
+.sage-palette-input {
+  width: 100%; background: transparent;
+  border: none; border-bottom: 1px solid var(--sage-border);
+  color: var(--sage-text); font-size: 0.95rem;
+  padding: 1rem 1.25rem; outline: none;
+}
+.sage-palette-input::placeholder { color: #9ca3af; }
+.sage-palette-result {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.625rem 1.25rem; cursor: pointer;
+  font-size: 0.875rem; color: var(--sage-rail-text);
+  transition: background-color 0.08s ease;
+}
+.sage-palette-result:hover,
+.sage-palette-result.active {
+  background-color: var(--sage-accent-light);
+  color: var(--sage-sidebar-active-text);
+}
+
+/* ── Shared component styles ─────────────────────────────────────────────── */
+
+.sage-card {
+  background: var(--sage-content-bg);
+  border: 1px solid var(--sage-border);
+  border-radius: 10px; padding: 1.25rem;
+  transition: box-shadow 0.15s ease;
+}
+.sage-card:hover { box-shadow: 0 2px 8px rgba(249, 115, 22, 0.08); }
+
+.sage-btn {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.5rem 1rem; font-size: 0.8125rem; font-weight: 500;
+  border-radius: 8px; border: none; cursor: pointer;
+  transition: all 0.12s ease;
+}
+.sage-btn-primary { background: var(--sage-accent, #f97316); color: white; }
+.sage-btn-primary:hover {
+  background: var(--sage-accent-hover, #ea580c);
+  transform: translateY(-1px); box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
+}
+.sage-btn-secondary {
+  background: transparent; color: var(--sage-rail-text);
+  border: 1px solid var(--sage-border);
+}
+.sage-btn-secondary:hover {
+  background: var(--sage-accent-light); color: var(--sage-sidebar-active-text);
+  border-color: var(--sage-risk-external-border);
+}
+
+.sage-empty {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 3rem 1.5rem; text-align: center; color: #9ca3af;
+}
+.sage-empty svg { margin-bottom: 1rem; opacity: 0.4; }
+
+.sage-tag {
+  display: inline-flex; align-items: center;
+  padding: 0.125rem 0.5rem; font-size: 0.6875rem; font-weight: 500;
+  border-radius: 9999px; background: rgba(249, 115, 22, 0.1);
+  color: var(--sage-accent-hover);
+}
+
+.sage-table { width: 100%; font-size: 0.8125rem; border-collapse: collapse; }
+.sage-table th {
+  text-align: left; padding: 0.625rem 0.75rem; font-weight: 600;
+  font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.05em;
+  color: #9ca3af; border-bottom: 1px solid var(--sage-border);
+}
+.sage-table td {
+  padding: 0.625rem 0.75rem;
+  border-bottom: 1px solid var(--sage-rail-bg); color: var(--sage-text);
+}
+
+.sage-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--sage-border); margin-bottom: 1.5rem; }
+.sage-tab {
+  padding: 0.625rem 1rem; font-size: 0.8125rem; font-weight: 500;
+  color: #9ca3af; background: none; border: none;
+  border-bottom: 2px solid transparent; cursor: pointer; transition: all 0.12s ease;
+}
+.sage-tab:hover { color: var(--sage-sidebar-active-text); }
+.sage-tab-active { color: var(--sage-accent); border-bottom-color: var(--sage-accent); }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--sage-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--sage-rail-text); }
+```
+
+```ts
+// ===== FILE: web/tailwind.config.ts =====
+import type { Config } from 'tailwindcss'
+
+export default {
+  content: ['./index.html', './src/**/*.{ts,tsx}'],
+  theme: {
+    extend: {
+      colors: {
+        // ── Accent ──────────────────────────────────────────────────────────
+        'sage-accent':              'var(--sage-accent)',
+        'sage-accent-hover':        'var(--sage-accent-hover)',
+        'sage-accent-light':        'var(--sage-accent-light)',
+        'sage-accent-text':         'var(--sage-accent-text)',
+
+        // ── Base ─────────────────────────────────────────────────────────────
+        'sage-content-bg':          'var(--sage-content-bg)',
+        'sage-border':              'var(--sage-border)',
+        'sage-text':                'var(--sage-text)',
+        'sage-overlay':             'var(--sage-overlay)',
+
+        // ── Sidebar ──────────────────────────────────────────────────────────
+        'sage-sidebar-bg':          'var(--sage-sidebar-bg)',
+        'sage-sidebar-text':        'var(--sage-sidebar-text)',
+        'sage-sidebar-active-bg':   'var(--sage-sidebar-active-bg)',
+        'sage-sidebar-active-text': 'var(--sage-sidebar-active-text)',
+        'sage-sidebar-hover-bg':    'var(--sage-sidebar-hover-bg)',
+        'sage-sidebar-accent':      'var(--sage-sidebar-accent)',
+
+        // ── Badge ─────────────────────────────────────────────────────────────
+        'sage-badge-bg':            'var(--sage-badge-bg)',
+        'sage-badge-text':          'var(--sage-badge-text)',
+
+        // ── Rail ─────────────────────────────────────────────────────────────
+        'sage-rail-bg':             'var(--sage-rail-bg)',
+        'sage-rail-text':           'var(--sage-rail-text)',
+        'sage-rail-active':         'var(--sage-rail-active)',
+
+        // ── Risk — destructive ───────────────────────────────────────────────
+        'sage-risk-destructive-bg':       'var(--sage-risk-destructive-bg)',
+        'sage-risk-destructive-fg':       'var(--sage-risk-destructive-fg)',
+        'sage-risk-destructive-border':   'var(--sage-risk-destructive-border)',
+
+        // ── Risk — external ──────────────────────────────────────────────────
+        'sage-risk-external-bg':          'var(--sage-risk-external-bg)',
+        'sage-risk-external-fg':          'var(--sage-risk-external-fg)',
+        'sage-risk-external-border':      'var(--sage-risk-external-border)',
+
+        // ── Risk — stateful ──────────────────────────────────────────────────
+        'sage-risk-stateful-bg':          'var(--sage-risk-stateful-bg)',
+        'sage-risk-stateful-fg':          'var(--sage-risk-stateful-fg)',
+        'sage-risk-stateful-border':      'var(--sage-risk-stateful-border)',
+
+        // ── Risk — ephemeral ─────────────────────────────────────────────────
+        'sage-risk-ephemeral-bg':         'var(--sage-risk-ephemeral-bg)',
+        'sage-risk-ephemeral-fg':         'var(--sage-risk-ephemeral-fg)',
+        'sage-risk-ephemeral-border':     'var(--sage-risk-ephemeral-border)',
+
+        // ── Risk — informational ─────────────────────────────────────────────
+        'sage-risk-informational-bg':     'var(--sage-risk-informational-bg)',
+        'sage-risk-informational-fg':     'var(--sage-risk-informational-fg)',
+        'sage-risk-informational-border': 'var(--sage-risk-informational-border)',
+
+        // ── User overrides ───────────────────────────────────────────────────
+        'sage-user-accent':         'var(--sage-user-accent)',
+      },
+      fontFamily: {
+        sage: ['var(--sage-font-family)'],
+      },
+      spacing: {
+        'sage-density': 'var(--sage-density)',
+      },
+      keyframes: {
+        'modal-overlay-in': {
+          from: { opacity: '0' },
+          to:   { opacity: '1' },
+        },
+        'modal-dialog-in': {
+          from: { opacity: '0', transform: 'translateY(-6px) scale(0.975)' },
+          to:   { opacity: '1', transform: 'translateY(0px) scale(1)' },
+        },
+      },
+      animation: {
+        'modal-overlay-in': 'modal-overlay-in 0.15s ease both',
+        'modal-dialog-in':  'modal-dialog-in 0.18s ease both',
+      },
+    },
+  },
+  plugins: [],
+} satisfies Config
+```
+
+```tsx
+// ===== FILE: web/src/components/ui/Card.tsx =====
+import React, { forwardRef } from 'react'
+import { cva, cx, type VariantProps } from 'class-variance-authority'
+
+const cardVariants = cva(
+  [
+    'rounded-[10px] transition-shadow duration-150',
+    'focus-visible:outline-none focus-visible:ring-2',
+    'focus-visible:ring-sage-accent focus-visible:ring-offset-2',
+  ],
+  {
+    variants: {
+      variant: {
+        default:  'bg-sage-content-bg border border-sage-border hover:shadow-md',
+        elevated: 'bg-sage-content-bg border border-sage-border shadow-md hover:shadow-lg',
+        outline:  'bg-transparent border border-sage-accent hover:shadow-md',
+        flush:    'bg-sage-content-bg',
+      },
+      size: {
+        sm: 'p-3',
+        md: 'p-5',
+        lg: 'p-7',
+      },
+    },
+    compoundVariants: [
+      { variant: 'flush', size: 'sm', class: 'p-0' },
+      { variant: 'flush', size: 'md', class: 'p-0' },
+      { variant: 'flush', size: 'lg', class: 'p-0' },
+    ],
+    defaultVariants: {
+      variant: 'default',
+      size: 'md',
+    },
+  }
+)
+
+type CardVariant = NonNullable<VariantProps<typeof cardVariants>['variant']>
+type CardSize    = NonNullable<VariantProps<typeof cardVariants>['size']>
+
+interface CardProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof cardVariants> {}
+
+const Card = forwardRef<HTMLDivElement, CardProps>(
+  ({ variant, size, className, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cx(cardVariants({ variant, size }), className)}
+      {...props}
+    />
+  )
+)
+
+Card.displayName = 'Card'
+
+export { Card, cardVariants }
+export type { CardProps, CardVariant, CardSize }
+```
+
+```tsx
+// ===== FILE: web/src/components/ui/Modal.tsx =====
+import React, { forwardRef, useEffect, useCallback, useId, useRef } from 'react'
+import { createPortal } from 'react-dom'
+import { cva, cx, type VariantProps } from 'class-variance-authority'
+
+const FOCUSABLE =
+  'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
+
+const dialogVariants = cva(
+  [
+    'bg-sage-content-bg border border-sage-border rounded-xl shadow-2xl',
+    'flex flex-col w-full max-h-[calc(100vh-3rem)]',
+    'animate-modal-dialog-in',
+  ],
+  {
+    variants: {
+      size: {
+        sm: 'max-w-sm',
+        md: 'max-w-xl',
+        lg: 'max-w-3xl',
+        xl: 'max-w-5xl',
+      },
+    },
+    defaultVariants: { size: 'md' },
+  }
+)
+
+type ModalSize    = NonNullable<VariantProps<typeof dialogVariants>['size']>
+type ModalVariant = 'default' | 'alert'
+
+interface ModalProps extends VariantProps<typeof dialogVariants> {
+  open: boolean
+  onClose: () => void
+  title?: React.ReactNode
+  variant?: ModalVariant
+  closeOnOverlayClick?: boolean
+  children?: React.ReactNode
+  footer?: React.ReactNode
+}
+
+const Modal = forwardRef<HTMLDivElement, ModalProps>(
+  (
+    {
+      open,
+      onClose,
+      title,
+      size,
+      variant = 'default',
+      closeOnOverlayClick = true,
+      children,
+      footer,
+    },
+    forwardedRef
+  ) => {
+    const uid       = useId()
+    const titleId   = title !== undefined ? `${uid}-title` : undefined
+    const internalRef = useRef<HTMLDivElement>(null)
+
+    const mergedRef = useCallback(
+      (node: HTMLDivElement | null) => {
+        ;(internalRef as React.MutableRefObject<HTMLDivElement | null>).current = node
+        if (typeof forwardedRef === 'function') forwardedRef(node)
+        else if (forwardedRef)
+          (forwardedRef as React.MutableRefObject<HTMLDivElement | null>).current = node
+      },
+      [forwardedRef]
+    )
+
+    useEffect(() => {
+      if (!open) return
+      const dialog = internalRef.current
+      if (!dialog) return
+
+      const getFocusable = () =>
+        Array.from(dialog.querySelectorAll<HTMLElement>(FOCUSABLE))
+
+      const initial = getFocusable()
+      if (initial.length > 0) initial[0].focus()
+      else dialog.focus()
+
+      const trap = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') { onClose(); return }
+        if (e.key !== 'Tab') return
+        const els   = getFocusable()
+        if (els.length === 0) { e.preventDefault(); return }
+        const first = els[0]
+        const last  = els[els.length - 1]
+        if (e.shiftKey) {
+          if (document.activeElement === first || document.activeElement === dialog) {
+            e.preventDefault()
+            last.focus()
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault()
+            first.focus()
+          }
+        }
+      }
+
+      document.addEventListener('keydown', trap)
+      const prevOverflow = document.body.style.overflow
+      document.body.style.overflow = 'hidden'
+      return () => {
+        document.removeEventListener('keydown', trap)
+        document.body.style.overflow = prevOverflow
+      }
+    }, [open, onClose])
+
+    if (!open || typeof document === 'undefined') return null
+
+    return createPortal(
+      <div
+        className="fixed inset-0 z-[200] bg-sage-overlay backdrop-blur-sm flex items-center justify-center p-6 animate-modal-overlay-in"
+        onClick={
+          closeOnOverlayClick
+            ? (e) => { if (e.target === e.currentTarget) onClose() }
+            : undefined
+        }
+      >
+        <div
+          ref={mergedRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={titleId}
+          tabIndex={-1}
+          className={cx(dialogVariants({ size }))}
+        >
+          {title !== undefined && (
+            <div className="flex items-center justify-between gap-3 px-6 py-[1.125rem] border-b border-sage-border flex-shrink-0">
+              <h2
+                id={titleId}
+                className="text-[0.9375rem] font-semibold text-sage-text leading-snug m-0"
+              >
+                {title}
+              </h2>
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Close"
+                className={cx(
+                  'inline-flex items-center justify-center flex-shrink-0 p-0',
+                  'w-7 h-7 rounded-md border border-transparent bg-transparent',
+                  'text-sage-rail-text cursor-pointer transition-colors duration-[120ms]',
+                  'hover:bg-sage-accent-light hover:text-sage-sidebar-active-text',
+                  'hover:border-sage-risk-external-border',
+                  'focus-visible:outline-none focus-visible:ring-2',
+                  'focus-visible:ring-sage-accent focus-visible:ring-offset-2'
+                )}
+              >
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                  <path
+                    d="M1 1l10 10M11 1L1 11"
+                    stroke="currentColor"
+                    strokeWidth="1.75"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </button>
+            </div>
+          )}
+
+          <div className="px-6 py-5 overflow-y-auto flex-1 text-sage-rail-text text-sm leading-relaxed">
+            {children}
+          </div>
+
+          {footer && (
+            <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-sage-border flex-shrink-0">
+              {footer}
+            </div>
+          )}
+        </div>
+      </div>,
+      document.body
+    )
+  }
+)
+
+Modal.displayName = 'Modal'
+
+export { Modal }
+export type { ModalProps, ModalSize, ModalVariant }
+```
+
+```tsx
+// ===== FILE: web/src/components/ui/Select.tsx =====
+import React, { forwardRef } from 'react'
+import { cva, cx, type VariantProps } from 'class-variance-authority'
+
+const selectVariants = cva(
+  [
+    'appearance-none w-full font-sage rounded-md cursor-pointer',
+    'bg-sage-content-bg text-sage-text leading-tight',
+    'transition-[border-color,box-shadow,opacity] duration-150',
+    'focus:outline-none',
+    'disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-sage-rail-bg',
+  ],
+  {
+    variants: {
+      variant: {
+        default: [
+          'border border-sage-border',
+          'enabled:hover:border-sage-accent',
+          'focus:border-sage-accent focus:ring-[3px] focus:ring-sage-accent-light focus:ring-offset-0',
+        ],
+        error: [
+          'border border-sage-risk-destructive-border',
+          'enabled:hover:border-sage-risk-destructive-fg',
+          'focus:border-sage-risk-destructive-fg focus:ring-[3px] focus:ring-sage-risk-destructive-bg focus:ring-offset-0',
+        ],
+        success: [
+          'border border-sage-risk-ephemeral-border',
+          'enabled:hover:border-sage-risk-ephemeral-fg',
+          'focus:border-sage-risk-ephemeral-fg focus:ring-[3px] focus:ring-sage-risk-ephemeral-bg focus:ring-offset-0',
+        ],
+      },
+      size: {
+        sm: 'text-xs  py-1            pl-[0.625rem] pr-8',
+        md: 'text-sm  py-2            pl-[0.875rem] pr-9',
+        lg: 'text-base py-[0.625rem]  pl-4          pr-10',
+      },
+    },
+    defaultVariants: { variant: 'default', size: 'md' },
+  }
+)
+
+type SelectVariant = NonNullable<VariantProps<typeof selectVariants>['variant']>
+type SelectSize    = NonNullable<VariantProps<typeof selectVariants>['size']>
+
+interface SelectOption {
+  value: string
+  label: string
+  disabled?: boolean
+}
+
+interface SelectProps
+  extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'size'>,
+    VariantProps<typeof selectVariants> {
+  options?: SelectOption[]
+  placeholder?: string
+}
+
+const arrowRight: Record<SelectSize, string> = {
+  sm: 'right-2',
+  md: 'right-[0.625rem]',
+  lg: 'right-3',
+}
+
+const arrowDim: Record<SelectSize, number> = { sm: 10, md: 12, lg: 14 }
+
+const Select = forwardRef<HTMLSelectElement, SelectProps>(
+  ({ variant, size = 'md', options, placeholder, className, children, ...rest }, ref) => {
+    const s = size ?? 'md'
+    return (
+      <div className="relative inline-block w-full">
+        <select
+          ref={ref}
+          className={cx(selectVariants({ variant, size }), className)}
+          {...rest}
+        >
+          {placeholder && (
+            <option value="" disabled>
+              {placeholder}
+            </option>
+          )}
+          {options
+            ? options.map((opt) => (
+                <option key={opt.value} value={opt.value} disabled={opt.disabled}>
+                  {opt.label}
+                </option>
+              ))
+            : children}
+        </select>
+
+        <span
+          className={cx(
+            'absolute top-1/2 -translate-y-1/2 pointer-events-none',
+            'text-sage-rail-text flex items-center',
+            arrowRight[s]
+          )}
+          aria-hidden="true"
+        >
+          <svg
+            width={arrowDim[s]}
+            height={arrowDim[s]}
+            viewBox="0 0 12 12"
+            fill="none"
+          >
+            <path
+              d="M2 4.5l4 4 4-4"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </span>
+      </div>
+    )
+  }
+)
+
+Select.displayName = 'Select'
+
+export { Select, selectVariants }
+export type { SelectProps, SelectVariant, SelectSize, SelectOption }

@@ -136,3 +136,8 @@ vscode-extension/package-lock.json
 # pycache anywhere
 **/__pycache__/
 
+# The Python `lib/` ignore above is over-broad — it also swallows the web
+# frontend's source dir. Re-include it (TS source, not a build artifact).
+!web/src/lib/
+!web/src/lib/**
+

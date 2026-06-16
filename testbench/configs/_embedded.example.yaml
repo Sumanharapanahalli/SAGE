@@ -1,0 +1,20 @@
+# Example test-bench config for an EMBEDDED solution (e.g. a firmware/device team
+# like the OneStep scanner). Copy to solutions/<name>/testbench.yaml and edit.
+project: my_device
+
+suites:
+  # Firmware host unit tests (CMake/CTest, Unity, Ceedling) — runs today.
+  embedded:
+    unit_test_cmd: "cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build && ctest --test-dir build --output-on-failure"
+    cwd: "solutions/my_device/source/firmware"
+    # Hardware-in-the-loop — wire to SAGE's serial / J-Link MCP servers (extension point):
+    hil:
+      transport: "jlink"          # serial | jlink
+      port: "COM3"                # or /dev/ttyUSB0
+      script: "tests/hil/smoke.py"
+
+  # Optional: the device's HTTP/control-plane API (same generic api driver).
+  api:
+    base_url: "http://192.168.1.50:8080"
+    health: ["/status"]
+    reads: ["/api/telemetry"]

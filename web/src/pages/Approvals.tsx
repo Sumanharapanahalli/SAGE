@@ -9,7 +9,10 @@ import {
   fetchApprovalRoles,
 } from '../api/client'
 import type { Proposal } from '../api/client'
+import { PROPOSALS_QUERY_KEY } from '../hooks/useProposals'
 import { Inbox, CheckSquare, X, AlertTriangle, Clock, Check, RefreshCw } from 'lucide-react'
+import RiskBadge, { RISK_CONFIG } from '../components/ui/RiskBadge'
+import { formatRelativeTime } from '../lib/date'
 
 // ---------------------------------------------------------------------------
 // Risk class config
@@ -19,25 +22,9 @@ const RISK_ORDER: Proposal['risk_class'][] = [
   'DESTRUCTIVE', 'EXTERNAL', 'STATEFUL', 'EPHEMERAL', 'INFORMATIONAL',
 ]
 
-const RISK_STYLES: Record<Proposal['risk_class'], { dot: string; badge: string; border: string }> = {
-  DESTRUCTIVE:   { dot: '#ef4444', badge: 'bg-red-900 text-red-300',    border: '#ef4444' },
-  EXTERNAL:      { dot: '#f97316', badge: 'bg-orange-900 text-orange-300', border: '#f97316' },
-  STATEFUL:      { dot: '#eab308', badge: 'bg-yellow-900 text-yellow-300', border: '#eab308' },
-  EPHEMERAL:     { dot: '#3b82f6', badge: 'bg-blue-900 text-blue-300',   border: '#3b82f6' },
-  INFORMATIONAL: { dot: '#71717a', badge: 'bg-gray-50 text-gray-500',   border: '#71717a' },
-}
-
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function relativeTime(iso: string): string {
-  const ms = Date.now() - new Date(iso).getTime()
-  if (ms < 60_000) return 'just now'
-  if (ms < 3_600_000) return `${Math.floor(ms / 60_000)}m ago`
-  if (ms < 86_400_000) return `${Math.floor(ms / 3_600_000)}h ago`
-  return `${Math.floor(ms / 86_400_000)}d ago`
-}
 
 function formatCountdown(iso: string): string {
   const ms = new Date(iso).getTime() - Date.now()
@@ -118,7 +105,7 @@ function ProposalRow({
   onCheck: (v: boolean) => void
   showCheckbox: boolean
 }) {
-  const style = RISK_STYLES[proposal.risk_class]
+  const riskConfig = RISK_CONFIG[proposal.risk_class]
 
   return (
     <button
@@ -126,7 +113,7 @@ function ProposalRow({
       className="w-full text-left px-3 py-3 flex items-start gap-2.5 relative transition-colors"
       style={{
         backgroundColor: selected ? '#d1d5db' : 'transparent',
-        borderLeft: selected ? `3px solid ${style.border}` : '3px solid transparent',
+        borderLeft: selected ? `3px solid ${riskConfig.borderVar}` : '3px solid transparent',
         borderBottom: '1px solid #e5e7eb',
       }}
       onMouseEnter={e => { if (!selected) (e.currentTarget as HTMLElement).style.backgroundColor = '#e5e7eb' }}
@@ -138,7 +125,7 @@ function ProposalRow({
         style={{
           width: '6px',
           height: '6px',
-          backgroundColor: isNew ? style.dot : 'transparent',
+          backgroundColor: isNew ? riskConfig.colorVar : 'transparent',
           display: 'inline-block',
           flexShrink: 0,
         }}
@@ -159,11 +146,7 @@ function ProposalRow({
       {/* Content */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-0.5">
-          <span
-            className={`text-[10px] font-bold uppercase px-1.5 py-0.5 shrink-0 ${style.badge}`}
-          >
-            {proposal.risk_class}
-          </span>
+          <RiskBadge risk={proposal.risk_class} className="shrink-0" />
           <span
             className="text-xs font-medium truncate"
             style={{ color: '#374151' }}
@@ -176,7 +159,7 @@ function ProposalRow({
         </p>
         <div className="flex items-center gap-1 mt-1" style={{ color: '#9ca3af' }}>
           <Clock size={10} />
-          <span className="text-[10px]">{relativeTime(proposal.created_at)}</span>
+          <span className="text-[10px]">{formatRelativeTime(proposal.created_at)}</span>
         </div>
       </div>
     </button>
@@ -228,7 +211,6 @@ function DetailPanel({
     )
   }
 
-  const style = RISK_STYLES[proposal.risk_class]
   const isDestructive = proposal.risk_class === 'DESTRUCTIVE'
 
   const handleApprove = async () => {
@@ -266,9 +248,7 @@ function DetailPanel({
         <div className="flex items-start gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <span className={`text-xs font-bold uppercase px-2 py-0.5 ${style.badge}`}>
-                {proposal.risk_class}
-              </span>
+              <RiskBadge risk={proposal.risk_class} />
               {!proposal.reversible && (
                 <span className="text-xs font-bold px-2 py-0.5 bg-red-950 text-red-400">
                   IRREVERSIBLE
@@ -291,7 +271,7 @@ function DetailPanel({
         <div className="flex items-center gap-3 mt-2 text-xs" style={{ color: '#9ca3af' }}>
           <span>Proposed by <span style={{ color: '#9ca3af' }}>{proposal.proposed_by}</span></span>
           <span>·</span>
-          <span>{relativeTime(proposal.created_at)}</span>
+          <span>{formatRelativeTime(proposal.created_at)}</span>
           <span>·</span>
           <span className="font-mono">{proposal.trace_id.slice(0, 8)}…</span>
         </div>
@@ -466,7 +446,7 @@ export default function Approvals() {
   const initialIdsRef = useRef<Set<string> | null>(null)
 
   const { data, isLoading } = useQuery({
-    queryKey: ['proposals-pending'],
+    queryKey: PROPOSALS_QUERY_KEY,
     queryFn: fetchPendingProposals,
     refetchInterval: 10_000,
   })
@@ -537,7 +517,7 @@ export default function Approvals() {
       await approveProposalFull(traceId, approver || 'human', feedback)
       addToast('Proposal approved', 'success')
       removeProposal(traceId)
-      queryClient.invalidateQueries({ queryKey: ['proposals-pending'] })
+      queryClient.invalidateQueries({ queryKey: PROPOSALS_QUERY_KEY })
     } catch {
       addToast('Approval failed — check API', 'error')
     }
@@ -549,7 +529,7 @@ export default function Approvals() {
       await rejectProposalFull(traceId, approver || 'human', feedback)
       addToast('Proposal rejected', 'success')
       removeProposal(traceId)
-      queryClient.invalidateQueries({ queryKey: ['proposals-pending'] })
+      queryClient.invalidateQueries({ queryKey: PROPOSALS_QUERY_KEY })
     } catch {
       addToast('Rejection failed — check API', 'error')
     }
@@ -570,7 +550,7 @@ export default function Approvals() {
       const count = data.results.filter((r: { status: string }) => r.status === 'approved').length
       addToast(`Approved ${count} proposal${count !== 1 ? 's' : ''}`, 'success')
       setCheckedIds(new Set())
-      queryClient.invalidateQueries({ queryKey: ['proposals-pending'] })
+      queryClient.invalidateQueries({ queryKey: PROPOSALS_QUERY_KEY })
     },
     onError: () => addToast('Batch approval failed', 'error'),
   })

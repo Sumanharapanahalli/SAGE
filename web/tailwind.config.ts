@@ -5,13 +5,20 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Token-driven: every sage-* utility resolves to the index.css CSS
+        // variable, so the design tokens are the single source of truth (use
+        // bg-sage-accent, text-sage-text-muted, border-sage-border, …).
+        // Replaces the old unused green numeric palette.
         sage: {
-          50: '#f0fdf4',
-          100: '#dcfce7',
-          500: '#22c55e',
-          600: '#16a34a',
-          700: '#15803d',
-          900: '#14532d',
+          accent: 'var(--sage-accent)',
+          'accent-hover': 'var(--sage-accent-hover)',
+          'accent-light': 'var(--sage-accent-light)',
+          'accent-text': 'var(--sage-accent-text)',
+          surface: 'var(--sage-surface)',
+          'surface-muted': 'var(--sage-surface-muted)',
+          border: 'var(--sage-border)',
+          text: 'var(--sage-text)',
+          'text-muted': 'var(--sage-text-muted)',
         },
       },
     },

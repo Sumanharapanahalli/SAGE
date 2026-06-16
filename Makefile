@@ -119,6 +119,23 @@ test-unit: test
 test-api:
 	$(PYTEST) tests/test_api.py -v
 
+# Generic, config-driven test bench for any solution (web/API, mobile, embedded).
+# Usage: make testbench PROJECT=<solution> [SUITE=api,load]   (see testbench/README.md)
+testbench:
+	$(PYTHON) testbench/run.py --solution $(PROJECT) $(if $(SUITE),--suite $(SUITE),) --report testbench/last-report.md
+
+# Evaluator-Optimizer self-improvement loop — Claude optimizes, Gemini evaluates,
+# looping until the evaluator passes it. See docs/EVALUATOR_OPTIMIZER.md.
+# Usage: make optimize TASK="improve X" [CONTEXT=path/to/file] [OUT=path]
+optimize:
+	$(PYTHON) -m src.core.evaluator_optimizer --task "$(TASK)" $(if $(CONTEXT),--context-file $(CONTEXT),) $(if $(OUT),--out $(OUT),)
+
+# Gemini visual UI evaluator — screenshot a URL and have Gemini grade the RENDERED
+# interface (Gemini "sees" the web the same way Claude does). Needs Playwright
+# (TESTBENCH_PLAYWRIGHT_DIR) + the gemini CLI. Usage: make ui-eval URL=http://localhost:5173
+ui-eval:
+	$(PYTHON) testbench/ui_eval.py --url "$(URL)" $(if $(CRITERIA),--criteria "$(CRITERIA)",)
+
 test-compliance:
 	SAGE_SOLUTIONS_DIR=$(SOLUTIONS_DIR) $(PYTEST) solutions/medtech/tests/validation/ -v --tb=long
 

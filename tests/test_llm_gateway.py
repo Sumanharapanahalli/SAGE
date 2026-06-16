@@ -110,6 +110,48 @@ def test_generate_handles_provider_error():
     assert len(result) > 0, "Error message should be non-empty."
 
 
+def test_generate_retries_transient_then_succeeds():
+    """A transient provider failure (e.g. 429) is retried; the later success returns."""
+    _reset_llm_gateway_singleton()
+    from src.core.llm_gateway import LLMGateway
+    gw = LLMGateway()
+    gw._retry_max = 2
+    gw._retry_base_delay = 0.0  # no real sleeping in tests
+    calls = {"n": 0}
+
+    def flaky(prompt, system_prompt):
+        calls["n"] += 1
+        if calls["n"] < 3:
+            return "Error: rate limit exceeded (429)"
+        return "recovered"
+
+    with patch.object(gw.provider, "generate", side_effect=flaky):
+        result = gw.generate("p", "s")
+    assert result == "recovered", f"expected recovered result, got {result!r}"
+    assert calls["n"] == 3, f"expected 3 attempts (2 retries), got {calls['n']}"
+    _reset_llm_gateway_singleton()
+
+
+def test_generate_does_not_retry_permanent_error():
+    """A permanent error (not transient) is returned immediately — no wasted retries."""
+    _reset_llm_gateway_singleton()
+    from src.core.llm_gateway import LLMGateway
+    gw = LLMGateway()
+    gw._retry_max = 3
+    gw._retry_base_delay = 0.0
+    calls = {"n": 0}
+
+    def permanent(prompt, system_prompt):
+        calls["n"] += 1
+        return "Error: No LLM provider configured."
+
+    with patch.object(gw.provider, "generate", side_effect=permanent):
+        result = gw.generate("p", "s")
+    assert "Error" in result
+    assert calls["n"] == 1, f"permanent error must not be retried, got {calls['n']} calls"
+    _reset_llm_gateway_singleton()
+
+
 def test_thread_lock_serializes_calls():
     """
     Spawn 3 threads calling generate() simultaneously.

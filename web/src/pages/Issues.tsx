@@ -5,22 +5,11 @@ import ModuleWrapper from '../components/shared/ModuleWrapper'
 import { Loader2, Plus, X, AlertCircle } from 'lucide-react'
 import type { Priority, RequestScope } from '../types/module'
 import OtherSelect from '../components/ui/OtherSelect'
+import { formatRelativeTime } from '../lib/date'
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function timeAgo(isoString: string): string {
-  const diff = Date.now() - new Date(isoString).getTime()
-  const mins  = Math.floor(diff / 60_000)
-  const hours = Math.floor(diff / 3_600_000)
-  const days  = Math.floor(diff / 86_400_000)
-  if (mins < 2)   return 'just now'
-  if (hours < 1)  return `${mins}m ago`
-  if (days < 1)   return `${hours}h ago`
-  if (days < 30)  return `${days}d ago`
-  return new Date(isoString).toLocaleDateString()
-}
 
 function truncate(s: string, n = 60): string {
   return s.length > n ? s.slice(0, n) + '…' : s
@@ -228,7 +217,7 @@ function SlideOver({ issue, onClose, onUpdated }: SlideOverProps) {
           {/* Created */}
           <div>
             <div className="text-xs font-medium mb-1" style={{ color: '#9ca3af' }}>Created</div>
-            <div className="text-xs" style={{ color: '#9ca3af' }}>{timeAgo(issue.created_at)}</div>
+            <div className="text-xs" style={{ color: '#9ca3af' }}>{formatRelativeTime(issue.created_at)}</div>
           </div>
         </div>
 
@@ -515,7 +504,7 @@ export default function Issues() {
                   {issue.priority}
                 </span>
                 <span className="text-xs text-right" style={{ color: '#9ca3af' }}>
-                  {timeAgo(issue.created_at)}
+                  {formatRelativeTime(issue.created_at)}
                 </span>
               </button>
             ))}
