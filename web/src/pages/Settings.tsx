@@ -43,7 +43,7 @@ const PRESET_ACCENTS = [
   { label: 'Zinc',    value: '#71717a' },
   { label: 'Blue',    value: '#3b82f6' },
   { label: 'Violet',  value: '#7c3aed' },
-  { label: 'Emerald', value: '#f97316' },
+  { label: 'Emerald', value: '#10b981' },
   { label: 'Rose',    value: '#e11d48' },
   { label: 'Amber',   value: '#f59e0b' },
   { label: 'Cyan',    value: '#06b6d4' },
@@ -206,7 +206,7 @@ export default function Settings() {
           <button
             onClick={handleSave}
             disabled={mutation.isPending}
-            className="flex-1 bg-white hover:bg-gray-700 disabled:opacity-40 text-white
+            className="flex-1 bg-gray-900 hover:bg-gray-700 disabled:opacity-40 text-white
                        text-sm font-medium py-2.5 rounded-lg transition-colors"
           >
             {mutation.isPending ? 'Saving...' : saved ? 'Saved' : 'Apply Changes'}
@@ -330,7 +330,7 @@ export default function Settings() {
         <button
           onClick={handleSaveBranding}
           disabled={brandMutation.isPending}
-          className="w-full bg-white hover:bg-gray-700 disabled:opacity-40 text-white text-sm font-medium py-2.5 transition-colors"
+          className="w-full bg-gray-900 hover:bg-gray-700 disabled:opacity-40 text-white text-sm font-medium py-2.5 transition-colors"
         >
           {brandMutation.isPending ? 'Saving...' : brandSaved ? 'Saved' : 'Save Branding'}
         </button>
@@ -347,7 +347,7 @@ export default function Settings() {
           </div>
           <button
             onClick={() => navigate('/settings/organization')}
-            className="shrink-0 px-4 py-2 bg-white hover:bg-gray-700 text-white text-xs font-medium transition-colors"
+            className="shrink-0 px-4 py-2 bg-gray-900 hover:bg-gray-700 text-white text-xs font-medium transition-colors"
           >
             Configure
           </button>

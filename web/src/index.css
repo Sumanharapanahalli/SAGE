@@ -294,3 +294,21 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+/* Sharp corners across the board */
+* { border-radius: 0 !important; }
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Dark mode overrides
+   ────────────────────────────────────────────────────────────────────────── */
+
+html.dark body {
+  background-color: #09090b;
+  color: #f4f4f5;
+}
+html.dark .bg-zinc-50  { background-color: #09090b !important; }
+html.dark .bg-white    { background-color: #18181b !important; }
+html.dark .text-zinc-900 { color: #f4f4f5 !important; }
+html.dark .border-zinc-200 { border-color: #27272a !important; }
+html.dark .text-zinc-600 { color: #a1a1aa !important; }
+html.dark .text-zinc-500 { color: #71717a !important; }
