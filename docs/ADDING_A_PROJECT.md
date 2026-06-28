@@ -377,12 +377,10 @@ make run PROJECT=automotive
 |---|---|
 | `avionics` | Avionics SW (DO-178C, DO-254, ARP4754A) |
 | `iot_medical` | IoT medical device (IEC 62304, ISO 14971) |
-| `elder_fall_detection` | Fall detection IoT (HIPAA) |
-| `fall_detection_firmware` | Fall detection firmware (IEC 62304) |
 | `finmarkets` | Financial markets (SOC 2, PCI DSS) |
 | `kappture` | Point-of-sale (PCI DSS) |
 | `poseengine` | Pose estimation ML |
-| `bluedrop_medical` | Medical device (IEC 62304, ISO 13485) |
+| `medical_device` | Medical device (IEC 62304, ISO 13485) |
 | `tictac_arena` | Board game |
 | `sol_a`, `sol_b` | Multi-solution org examples |
 

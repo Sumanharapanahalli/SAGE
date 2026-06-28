@@ -153,13 +153,6 @@ Two solutions on the same SAGE instance have zero data overlap.
 | `CHAT_ACTION` | POST /chat/execute | Chat-initiated action executed |
 | `AGENT_HIRED` | POST /agents/hire | New agent role proposed |
 
-## Elder Fall Detection ERD
-
-For the `elder_fall_detection` solution, a PostgreSQL schema with HIPAA-compliant encryption is defined. See `solutions/elder_fall_detection/` for the full schema including:
-
-- `users` — PII encrypted via pgcrypto (name, email, phone, emergency contacts)
-- `devices` — device registry with owner/status tracking
-- `fall_events` — fall detection events with encrypted GPS coords
-- `gps_history` — continuous telemetry with encrypted lat/lon
-- `audit_log` — solution-specific append-only audit trail
-- Row-Level Security (RLS) policies per role (admin, wearer, caregiver, system)
+> **Per-solution schemas.** Each solution may define its own PostgreSQL schema
+> with solution-appropriate encryption, row-level security, and audit trail. See
+> the individual solution's `db/` directory for its schema.

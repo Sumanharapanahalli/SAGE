@@ -59,7 +59,7 @@ Round 4: Final validation pass → all 100 pass
 
 ```
 test-solutions/builds/
-  001/                              ← Elder Fall Detection (medtech)
+  001/                              ← Medical device solution (medtech)
     project.yaml                    ← Domain config, compliance standards, modules
     prompts.yaml                    ← Agent role definitions with system prompts
     tasks.yaml                      ← Task type definitions with acceptance criteria

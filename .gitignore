@@ -87,10 +87,6 @@ solutions/*/
 !solutions/meditation_app/**
 !solutions/four_in_a_line
 !solutions/four_in_a_line/**
-!solutions/medtech_team
-!solutions/medtech_team/**
-!solutions/bluedrop_medical
-!solutions/bluedrop_medical/**
 
 # Node / Web build artefacts
 web/node_modules/

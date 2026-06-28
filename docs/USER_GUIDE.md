@@ -218,12 +218,10 @@ curl -X POST http://localhost:8000/config/switch \
 | `automotive` | Infotainment, ADAS, telematics | ISO 26262, UN ECE WP.29, ISO/SAE 21434 |
 | `avionics` | Avionics SW + systems | DO-178C, DO-254, ARP4754A |
 | `iot_medical` | IoT medical device (Class C) | IEC 62304, ISO 14971, IEC 62443 |
-| `elder_fall_detection` | Elder fall detection IoT | HIPAA, IEC 62304 |
-| `fall_detection_firmware` | Fall detection firmware | IEC 62304 |
 | `finmarkets` | Financial markets | SOC 2, PCI DSS |
 | `kappture` | Point-of-sale | PCI DSS |
 | `poseengine` | Pose estimation ML | None |
-| `bluedrop_medical` | Medical device | IEC 62304, ISO 13485 |
+| `medical_device` | Medical device | IEC 62304, ISO 13485 |
 | `tictac_arena` | Board game | None |
 | `sol_a`, `sol_b` | Multi-solution org examples | None |
 
