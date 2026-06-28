@@ -87,11 +87,6 @@ solutions/*/
 !solutions/meditation_app/**
 !solutions/four_in_a_line
 !solutions/four_in_a_line/**
-# Poseengine/Reflect — descriptor only; the actual source stays private, never tracked
-!solutions/poseengine
-!solutions/poseengine/*.md
-!solutions/poseengine/*.yaml
-solutions/poseengine/source/
 
 # Node / Web build artefacts
 web/node_modules/
