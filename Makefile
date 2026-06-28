@@ -37,6 +37,8 @@ endif
         test test-unit test-solution testbench \
         test-meditation-app test-four-in-a-line \
         test-all test-api \
+        desktop-install desktop-dev desktop-build \
+        test-desktop test-desktop-sidecar test-desktop-rs test-desktop-web test-desktop-e2e \
         docker-up docker-down docker-up-d \
         list-solutions list-projects clean help doctor
 
@@ -135,6 +137,40 @@ test-four-in-a-line:
 test-all:
 	@echo "=== Framework unit tests ==="
 	$(PYTEST) tests/ -m unit -v
+
+# ------------------------------------------------------------------------------
+# sage-desktop (Tauri + Python sidecar, no sockets)
+# ------------------------------------------------------------------------------
+desktop-install:
+	@echo "Installing sage-desktop npm deps..."
+	cd sage-desktop && npm install
+
+desktop-dev:
+	@echo "Starting sage-desktop dev build (requires npm deps + Rust toolchain)..."
+	cd sage-desktop && npm run tauri dev
+
+desktop-build:
+	@echo "Building sage-desktop release bundle..."
+	cd sage-desktop && npm run tauri build
+
+# Python sidecar tests (no Rust, no Node)
+test-desktop-sidecar:
+	cd sage-desktop/sidecar && $(abspath $(PYTEST)) tests/ -v
+
+# Rust pure-module tests — no desktop feature, no WebView2
+test-desktop-rs:
+	cd sage-desktop/src-tauri && cargo test --lib --no-default-features
+
+# React/vitest tests (requires `make desktop-install` first)
+test-desktop-web:
+	cd sage-desktop && npm run test
+
+# Full desktop test stack
+test-desktop: test-desktop-sidecar test-desktop-rs test-desktop-web
+
+# End-to-end smoke test via tauri-driver (requires tauri-driver installed)
+test-desktop-e2e:
+	cd sage-desktop && npm run test:e2e
 
 # ------------------------------------------------------------------------------
 # Docker
