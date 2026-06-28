@@ -449,6 +449,16 @@ async def _lifespan(_app: FastAPI):
         logger.info("Auth tables ready.")
     except Exception as exc:
         logger.warning("Auth table init skipped: %s", exc)
+    # Attach the agent-communication audit bridge: every inter-agent message
+    # published on the event bus is mirrored to the (per-solution) audit trail,
+    # so the /audit trace view is a complete record of agent communication.
+    try:
+        from src.modules.event_bus import event_bus
+        from src.core.agent_comms_audit import attach_audit_bridge
+        attach_audit_bridge(event_bus, _get_audit_logger())
+        logger.info("Agent-communication audit bridge attached.")
+    except Exception as exc:
+        logger.warning("Agent-comms audit bridge init skipped: %s", exc)
     yield
 
 app.router.lifespan_context = _lifespan
