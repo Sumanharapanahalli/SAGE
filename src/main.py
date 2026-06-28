@@ -10,16 +10,15 @@ Modes:
   demo    : Run quick demo with mock data to showcase all integrations
 
 Project selection (controls which prompts, task types, and modules are active):
-  --project medtech      Medical device manufacturing (default)
-  --project poseengine   PoseEngine + Flutter ML/mobile project
-  --project <name>       Any project in the projects/ directory
+  --project starter      Minimal starter solution
+  --project <name>       Any solution in the solutions/ directory
 
 Usage:
   python src/main.py [cli|api|monitor|demo] [--project <name>]
-  python src/main.py                         # cli mode, medtech project
+  python src/main.py                         # cli mode, first available solution
   python src/main.py api --port 8080
-  python src/main.py api --project poseengine
-  SAGE_PROJECT=poseengine python src/main.py api
+  python src/main.py api --project starter
+  SAGE_PROJECT=starter python src/main.py api
 """
 
 import argparse
@@ -309,13 +308,12 @@ Modes:
   monitor  Start background monitoring daemon
   demo     Quick demo of all integrations
 
-Projects (in projects/ directory):
-  medtech      Medical device manufacturing (default)
-  poseengine   PoseEngine + Flutter ML/mobile
-  <custom>     Any project you add to projects/
+Projects (in solutions/ directory):
+  starter      Minimal starter solution
+  <custom>     Any solution you add to solutions/
 
 Environment variables:
-  SAGE_PROJECT   Override the active project (e.g. SAGE_PROJECT=poseengine)
+  SAGE_PROJECT   Override the active project (e.g. SAGE_PROJECT=starter)
         """,
     )
     parser.add_argument(
@@ -328,7 +326,7 @@ Environment variables:
     parser.add_argument(
         "--project",
         default=None,
-        help="Active project name (default: medtech, or SAGE_PROJECT env var)",
+        help="Active project name (default: SAGE_PROJECT env var, else first available solution)",
     )
     parser.add_argument("--host", default="0.0.0.0", help="API server host (api mode only)")
     parser.add_argument("--port", type=int, default=8000, help="API server port (api mode only)")

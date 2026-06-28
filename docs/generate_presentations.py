@@ -813,7 +813,7 @@ def build_tech_pitch():
     cmds = [
         ("Setup",       "make venv              # Create .venv, install all deps"),
         ("Low-RAM",     "make venv-minimal      # Skip ChromaDB/embeddings"),
-        ("Run backend", "make run PROJECT=medtech  # FastAPI on :8000"),
+        ("Run backend", "make run PROJECT=starter  # FastAPI on :8000"),
         ("Run UI",      "make ui                # Vite frontend on :5173"),
         ("Test",        "make test              # Framework unit tests"),
         ("Test all",    "make test-all          # Framework + all solutions"),
@@ -1155,7 +1155,7 @@ def build_tech_pitch():
         "github.com/Sumanharapanahalli/sage — Star, Fork, Contribute",
         "136 API endpoints · 27 UI pages · 17+ solution templates · 79 E2E tests",
         "Framework is open — solutions are private (SAGE_SOLUTIONS_DIR)",
-        "make run PROJECT=medtech — running in 60 seconds",
+        "make run PROJECT=starter — running in 60 seconds",
     ]
     top = Inches(4.3)
     for l in links:

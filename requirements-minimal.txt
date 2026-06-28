@@ -7,7 +7,7 @@
 #
 # Usage:
 #   pip install -r requirements-minimal.txt
-#   SAGE_MINIMAL=1 python src/main.py api --project medtech
+#   SAGE_MINIMAL=1 python src/main.py api --project starter
 # ==============================================================================
 
 # Core
