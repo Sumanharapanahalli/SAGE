@@ -33,7 +33,7 @@ else
 endif
 
 .PHONY: venv venv-minimal install install-dev install-ui install-minimal \
-        run api cli monitor demo ui \
+        run api cli monitor demo ui housekeeping \
         test test-unit test-solution testbench \
         test-meditation-app test-four-in-a-line \
         test-all test-api \
@@ -97,6 +97,12 @@ monitor:
 
 demo:
 	SAGE_PROJECT=$(PROJECT) SAGE_SOLUTIONS_DIR=$(SOLUTIONS_DIR) $(PYTHON) src/main.py demo
+
+# Per-solution housekeeping (dry-run report by default; APPLY=1 to act).
+# Prunes expired proposals + old finished tasks, vacuums — never the audit log.
+housekeeping:
+	@echo "Housekeeping — project: $(PROJECT)$(if $(APPLY), (APPLY), (dry-run))"
+	SAGE_PROJECT=$(PROJECT) SAGE_SOLUTIONS_DIR=$(SOLUTIONS_DIR) $(PYTHON) -m src.agents.admin $(if $(APPLY),--apply,)
 
 # ------------------------------------------------------------------------------
 # Web UI
