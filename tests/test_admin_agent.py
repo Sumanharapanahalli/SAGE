@@ -14,7 +14,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from src.agents.admin import AdminAgent
+from src.agents.admin import AdminAgent, HousekeepingScheduler
 
 
 def _iso(dt):
@@ -188,3 +188,75 @@ class TestOrchestration:
         assert _count(db, "proposals") == p_before
         assert _count(db, "task_queue") == t_before
         assert "proposals" in out and "tasks" in out and "report" in out
+
+
+def _make_solution(base, name, now):
+    """Create base/<name>/.sage/audit_log.db with the 3 tables, seeded."""
+    sage_dir = os.path.join(base, name, ".sage")
+    os.makedirs(sage_dir, exist_ok=True)
+    path = os.path.join(sage_dir, "audit_log.db")
+    conn = sqlite3.connect(path)
+    conn.executescript(
+        """
+        CREATE TABLE compliance_audit_log (id TEXT PRIMARY KEY, timestamp TEXT,
+            actor TEXT, action_type TEXT, input_context TEXT, output_content TEXT, metadata TEXT);
+        CREATE TABLE proposals (trace_id TEXT PRIMARY KEY, created_at TEXT, action_type TEXT,
+            risk_class TEXT, reversible INTEGER, proposed_by TEXT, description TEXT, payload TEXT,
+            status TEXT DEFAULT 'pending', decided_by TEXT, decided_at TEXT, feedback TEXT,
+            expires_at TEXT, required_role TEXT);
+        CREATE TABLE task_queue (task_id TEXT PRIMARY KEY, task_type TEXT, payload TEXT,
+            priority INTEGER, status TEXT DEFAULT 'pending', created_at TEXT, started_at TEXT,
+            completed_at TEXT, result TEXT, error TEXT);
+        """
+    )
+    conn.commit()
+    conn.close()
+    _seed(path, now)
+    return path
+
+
+class TestScheduler:
+    def test_solution_dbs_discovered(self, tmp_path):
+        now = datetime(2026, 6, 28)
+        _make_solution(str(tmp_path), "alpha", now)
+        _make_solution(str(tmp_path), "beta", now)
+        os.makedirs(os.path.join(str(tmp_path), "no_sage_solution"), exist_ok=True)
+        sched = HousekeepingScheduler(solutions_dir=str(tmp_path))
+        names = [n for n, _ in sched.solution_dbs()]
+        assert names == ["alpha", "beta"]  # sorted, only ones with a .sage DB
+
+    def test_run_once_sweeps_every_solution(self, tmp_path):
+        now = datetime(2026, 6, 28)
+        a = _make_solution(str(tmp_path), "alpha", now)
+        b = _make_solution(str(tmp_path), "beta", now)
+        sched = HousekeepingScheduler(solutions_dir=str(tmp_path))
+        res = sched.run_once(dry_run=False, now=now)
+        assert set(res.keys()) == {"alpha", "beta"}
+        # housekeeping actually ran on each (old finished tasks pruned)
+        assert _count(a, "task_queue", "task_id='t_done_old'") == 0
+        assert _count(b, "task_queue", "task_id='t_done_old'") == 0
+        # audit untouched in every solution
+        assert _count(a, "compliance_audit_log") == 3
+        assert _count(b, "compliance_audit_log") == 3
+
+    def test_run_once_dry_run_changes_nothing(self, tmp_path):
+        now = datetime(2026, 6, 28)
+        a = _make_solution(str(tmp_path), "alpha", now)
+        before = _count(a, "task_queue")
+        sched = HousekeepingScheduler(solutions_dir=str(tmp_path))
+        sched.run_once(dry_run=True, now=now)
+        assert _count(a, "task_queue") == before
+
+    def test_bad_solution_does_not_abort_sweep(self, tmp_path):
+        now = datetime(2026, 6, 28)
+        _make_solution(str(tmp_path), "good", now)
+        # a solution whose .sage/audit_log.db is not a valid DB
+        bad_dir = os.path.join(str(tmp_path), "bad", ".sage")
+        os.makedirs(bad_dir, exist_ok=True)
+        with open(os.path.join(bad_dir, "audit_log.db"), "w") as f:
+            f.write("not a database")
+        sched = HousekeepingScheduler(solutions_dir=str(tmp_path))
+        res = sched.run_once(dry_run=False, now=now)
+        assert "good" in res and "bad" in res
+        assert "error" in res["bad"]  # captured, not raised
+        assert res["good"]["dry_run"] is False  # good one still ran

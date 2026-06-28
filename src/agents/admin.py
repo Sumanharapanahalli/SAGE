@@ -30,6 +30,7 @@ from __future__ import annotations
 import logging
 import os
 import sqlite3
+import threading
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
@@ -232,10 +233,83 @@ class AdminAgent:
         }
 
 
+class HousekeepingScheduler:
+    """Runs the AdminAgent across **all** solutions on a fixed interval.
+
+    This is the "local agent" form of housekeeping: a deterministic, in-process
+    (or standalone) loop with NO LLM calls and zero token cost. It sweeps every
+    solution that has a `.sage/audit_log.db`, runs the AdminAgent on each, and
+    repeats every `interval_seconds` (default 30 min). The audit log is never
+    touched (the AdminAgent guarantees that per solution).
+    """
+
+    def __init__(self, solutions_dir: Optional[str] = None, *,
+                 proposal_retention_days: int = 90, task_retention_days: int = 30):
+        self.solutions_dir = solutions_dir or os.environ.get("SAGE_SOLUTIONS_DIR", "solutions")
+        self.proposal_retention_days = proposal_retention_days
+        self.task_retention_days = task_retention_days
+        self.logger = logging.getLogger("HousekeepingScheduler")
+        self._stop = threading.Event()
+        self._thread: Optional[threading.Thread] = None
+
+    def solution_dbs(self):
+        """List (solution_name, db_path) for every solution with a .sage DB."""
+        out = []
+        base = self.solutions_dir
+        if not os.path.isdir(base):
+            return out
+        for name in sorted(os.listdir(base)):
+            db = os.path.join(base, name, ".sage", "audit_log.db")
+            if os.path.isfile(db):
+                out.append((name, db))
+        return out
+
+    def run_once(self, *, dry_run: bool = True, now: Optional[datetime] = None) -> dict:
+        """Sweep all solutions once. Returns {solution_name: housekeeping_result}."""
+        results: dict = {}
+        for name, db in self.solution_dbs():
+            try:
+                agent = AdminAgent(db_path=db)
+                results[name] = agent.run_housekeeping(
+                    dry_run=dry_run, now=now,
+                    proposal_retention_days=self.proposal_retention_days,
+                    task_retention_days=self.task_retention_days)
+            except Exception as exc:  # one bad solution must not stop the sweep
+                self.logger.error("housekeeping failed for solution %s: %s", name, exc)
+                results[name] = {"error": str(exc)}
+        return results
+
+    def start(self, *, interval_seconds: int = 1800, dry_run: bool = False):
+        """Start a daemon thread that sweeps every interval. First run is AFTER
+        the first interval (so briefly-started apps never trigger a sweep)."""
+        if self._thread and self._thread.is_alive():
+            return self._thread
+        self._stop.clear()
+
+        def _loop():
+            # _stop.wait returns True if stopped, False on timeout (interval elapsed).
+            while not self._stop.wait(interval_seconds):
+                try:
+                    res = self.run_once(dry_run=dry_run)
+                    self.logger.info("housekeeping swept %d solution(s)", len(res))
+                except Exception as exc:
+                    self.logger.error("housekeeping sweep failed: %s", exc)
+
+        self._thread = threading.Thread(target=_loop, daemon=True, name="housekeeping")
+        self._thread.start()
+        self.logger.info("housekeeping scheduler started (every %ds, apply=%s)",
+                         interval_seconds, not dry_run)
+        return self._thread
+
+    def stop(self):
+        self._stop.set()
+
+
 def _main():
     """CLI: `SAGE_PROJECT=<solution> python -m src.agents.admin [--apply]`.
 
     Defaults to a dry-run report (what *would* be cleaned). Pass --apply to act.
+    `--daemon` sweeps ALL solutions every --interval seconds (default 1800).
     """
     import argparse
     import json
@@ -246,9 +320,30 @@ def _main():
     p.add_argument("--project", help="Solution name (else SAGE_PROJECT env / active solution)")
     p.add_argument("--apply", action="store_true",
                    help="Apply housekeeping (default: dry-run report only)")
+    p.add_argument("--daemon", action="store_true",
+                   help="Sweep ALL solutions on a loop (the local housekeeping agent)")
+    p.add_argument("--interval", type=int, default=1800,
+                   help="Daemon sweep interval in seconds (default 1800 = 30 min)")
     p.add_argument("--proposal-retention-days", type=int, default=90)
     p.add_argument("--task-retention-days", type=int, default=30)
     args = p.parse_args()
+
+    if args.daemon:
+        import time
+        sched = HousekeepingScheduler(
+            proposal_retention_days=args.proposal_retention_days,
+            task_retention_days=args.task_retention_days)
+        mode = "APPLY" if args.apply else "dry-run"
+        print("housekeeping daemon: sweeping every %ds (%s). Ctrl-C to stop." % (args.interval, mode))
+        try:
+            while True:
+                res = sched.run_once(dry_run=not args.apply)
+                print(json.dumps({"swept": {k: v.get("proposals", v) for k, v in res.items()}}))
+                time.sleep(args.interval)
+        except KeyboardInterrupt:
+            print("housekeeping daemon stopped.")
+        return
+
     if args.project:
         os.environ["SAGE_PROJECT"] = args.project
     agent = AdminAgent()

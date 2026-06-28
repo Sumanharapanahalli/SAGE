@@ -459,7 +459,24 @@ async def _lifespan(_app: FastAPI):
         logger.info("Agent-communication audit bridge attached.")
     except Exception as exc:
         logger.warning("Agent-comms audit bridge init skipped: %s", exc)
-    yield
+    # Per-solution housekeeping sweep (deterministic, no LLM/tokens). Default ON;
+    # disable with SAGE_HOUSEKEEPING=0, tune cadence with SAGE_HOUSEKEEPING_INTERVAL.
+    # First sweep is AFTER the interval, so short-lived app starts never act.
+    _housekeeper = None
+    try:
+        if os.environ.get("SAGE_HOUSEKEEPING", "1") != "0":
+            from src.agents.admin import HousekeepingScheduler
+            interval = int(os.environ.get("SAGE_HOUSEKEEPING_INTERVAL", "1800"))
+            _housekeeper = HousekeepingScheduler()
+            _housekeeper.start(interval_seconds=interval, dry_run=False)
+            logger.info("Housekeeping scheduler running (every %ds).", interval)
+    except Exception as exc:
+        logger.warning("Housekeeping scheduler init skipped: %s", exc)
+    try:
+        yield
+    finally:
+        if _housekeeper is not None:
+            _housekeeper.stop()
 
 app.router.lifespan_context = _lifespan
 

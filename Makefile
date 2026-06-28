@@ -33,7 +33,7 @@ else
 endif
 
 .PHONY: venv venv-minimal install install-dev install-ui install-minimal \
-        run api cli monitor demo ui housekeeping \
+        run api cli monitor demo ui housekeeping housekeeping-daemon \
         test test-unit test-solution testbench \
         test-meditation-app test-four-in-a-line \
         test-all test-api \
@@ -103,6 +103,10 @@ demo:
 housekeeping:
 	@echo "Housekeeping — project: $(PROJECT)$(if $(APPLY), (APPLY), (dry-run))"
 	SAGE_PROJECT=$(PROJECT) SAGE_SOLUTIONS_DIR=$(SOLUTIONS_DIR) $(PYTHON) -m src.agents.admin $(if $(APPLY),--apply,)
+
+# Local housekeeping daemon — sweeps ALL solutions every 30 min (no LLM/tokens).
+housekeeping-daemon:
+	SAGE_SOLUTIONS_DIR=$(SOLUTIONS_DIR) $(PYTHON) -m src.agents.admin --daemon --apply --interval $(if $(INTERVAL),$(INTERVAL),1800)
 
 # ------------------------------------------------------------------------------
 # Web UI
