@@ -627,6 +627,14 @@ STRATEGY_ROLES = [
     "product_manager", "marketing_strategist", "operations_manager",
 ]
 
+TERMINAL_ROLES = [
+    "terminal_operator", "shell_expert",
+]
+
+RESEARCH_ROLES = [
+    "research_engineer", "ml_researcher",
+]
+
 # Orchestration roles don't need a runner — they plan/review, not execute
 ORCHESTRATION_ROLES = [
     "planner", "monitor", "critic",
@@ -642,6 +650,8 @@ ALL_ROLE_FAMILIES = {
     "opendoc": DOC_ROLES,
     "opendesign": DESIGN_ROLES,
     "openstrategy": STRATEGY_ROLES,
+    "openterminal": TERMINAL_ROLES,
+    "autoresearch": RESEARCH_ROLES,
     "orchestration": ORCHESTRATION_ROLES,
 }
 
@@ -669,6 +679,8 @@ def _auto_register_runners():
         "src.integrations.opendesign_runner",
         "src.integrations.openbrowser_runner",
         "src.integrations.openstrategy_runner",
+        "src.integrations.openterminal_runner",
+        "src.integrations.autoresearch_runner",
     ]
     for mod in runner_modules:
         try:
