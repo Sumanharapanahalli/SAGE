@@ -1,0 +1,90 @@
+# ==============================================================================
+# SAGE Solution — Poseengine / Reflect
+# ==============================================================================
+# Poseengine (product name "Reflect") is a white-label human MOVEMENT-ANALYSIS
+# platform. Two-stage core:
+#   Extract (admin): video/YouTube -> MediaPipe landmarks -> phase segmentation
+#     -> gold-standard angle ranges -> a signed skill pack (definition + reference).
+#   Teach (end user): device camera -> ML Kit landmarks -> a deterministic C++
+#     pose engine over dart:ffi -> real-time form feedback, reps, corrections.
+# Around the core: a multi-tenant FastAPI platform (SSO, JWT+roles, audit log,
+# outbox events), a Flutter app, 7 content modules (44 movements), an agent
+# framework, and the SAGE management console (content editing, calibration,
+# pack lifecycle + sign-off, tenant management + builds, live event sync).
+# ==============================================================================
+
+name: "Poseengine / Reflect"
+version: "0.4.0"
+domain: "movement_analysis"
+description: >
+  AI agent system for the Poseengine / Reflect movement-analysis platform.
+  Agents triage the C++ pose engine + dart:ffi bridge, the FastAPI backend and
+  management console, the extract pipeline (video -> signed skill pack), the
+  Flutter app, and content calibration — all pending human approval before any
+  action. The platform is white-label and multi-tenant; a skill pack encodes a
+  movement's gold-standard alignment as a versioned, signed artifact.
+
+# Reuse the SAGE founder-console modules.
+active_modules:
+  - dashboard
+  - analyst
+  - developer
+  - monitor
+  - audit
+  - improvements
+  - agents
+  - knowledge
+  - activity
+  - costs
+  - llm
+  - settings
+  - yaml-editor
+  - live-console
+  - integrations
+  - workflows
+
+# Movement coaching that makes clinical/ROM claims is a regulated path; the
+# platform ships an FDA roadmap. Standards the agents should reason within:
+compliance_standards:
+  - "FDA 21 CFR Part 11 — Electronic Records and Electronic Signatures (skill-pack sign-off)"
+  - "FDA 21 CFR Part 820 — Quality System Regulation (if marketed as a medical device)"
+  - "IEC 62304:2006/AMD1:2015 — Medical Device Software Lifecycle (pose engine SOUP)"
+  - "ISO 13485:2016 — Quality Management System"
+  - "ISO 14971:2019 — Risk Management (camera-based ROM is 2.5D, depth-ambiguous)"
+  - "IEC 62366-1:2015 — Usability Engineering (real-time coaching UI)"
+  - "HIPAA Security Rule 45 CFR §164 — if PHI / clinical sessions are stored"
+  - "GDPR / EU AI Act — biometric (pose) data, EU tenants"
+
+product:
+  pose_engine:
+    name: "C++ Pose Engine"
+    description: "Deterministic geometry+FSM engine over dart:ffi; zero-heap hot path"
+    language: "C++17"
+    analysis_types: ["static_hold", "repetition_count", "dynamic_sequence", "flow_sequence"]
+    limits: { max_rules: 16, max_flow_poses: 16, landmarks: 33 }
+    measured: "~1.3-1.7 us/frame, p99 2-3 us, 0 hot-path allocs (~0.005% of one core @30fps)"
+  extract_engine:
+    name: "Extract pipeline"
+    description: "video/YouTube -> MediaPipe -> segment -> angle ranges -> signed skill pack"
+    pose_backends: ["MediaPipe", "Sapiens/SAM-3D (planned, server-side 3D)"]
+  backend:
+    name: "Reflect platform (FastAPI)"
+    description: "Multi-tenant API + SAGE dashboard; aiosqlite/SQLite, outbox events, audit log"
+    factory: "products.therapy.app:create_app --factory"
+  app:
+    name: "Reflect app (Flutter)"
+    description: "Camera -> ML Kit -> C++ engine over FFI -> real-time cues, reps, personas"
+  catalog:
+    modules: 7
+    movements: 44
+    note: "barre, gym, physical_therapy, pilates, qigong, tai_chi, yoga"
+
+repository:
+  # Source lives in a separate (private) repository, linked per deployment.
+  # Set `source` to a local checkout or submodule path when configured.
+  source: ""
+
+theme:
+  primary: "#5b8c7e"
+  accent: "#34d399"
+  name: "Reflect"

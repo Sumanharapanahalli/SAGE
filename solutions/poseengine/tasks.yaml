@@ -1,0 +1,65 @@
+# ==============================================================================
+# SAGE Tasks — Poseengine / Reflect
+# ==============================================================================
+
+task_types:
+  - ANALYZE_ENGINE_FAULT
+  - ANALYZE_BACKEND_ERROR
+  - ANALYZE_EXTRACT_FAILURE
+  - ANALYZE_APP_CRASH
+  - REVIEW_CPP_CODE
+  - REVIEW_BACKEND_CODE
+  - REVIEW_FLUTTER_CODE
+  - REVIEW_SKILL_PACK
+  - CALIBRATE_MOVEMENT
+  - RUN_EXTRACTION
+  - DESIGN_REVIEW
+  - READINESS_AUDIT
+  - CREATE_PR
+  - MONITOR_HEALTH
+  - PLAN_TASK
+
+task_descriptions:
+  ANALYZE_ENGINE_FAULT:   "Triage a C++ pose-engine or dart:ffi bridge fault (FSM, config keys, skill-pack load)"
+  ANALYZE_BACKEND_ERROR:  "Analyze a FastAPI / dashboard error (auth, outbox, migration, tenant build)"
+  ANALYZE_EXTRACT_FAILURE: "Analyze an extract-pipeline failure (download, MediaPipe, segmentation, sign)"
+  ANALYZE_APP_CRASH:      "Analyze a Flutter app crash or camera/ML-Kit/FFI issue"
+  REVIEW_CPP_CODE:        "CTest-minded review of a C++ engine diff (zero-heap, vendored json, FSM)"
+  REVIEW_BACKEND_CODE:    "Review a backend diff (DB-as-truth + outbox, role gating, non-destructive migration)"
+  REVIEW_FLUTTER_CODE:    "Review a Flutter diff (tenant theming, design tokens, FFI config lock-step)"
+  REVIEW_SKILL_PACK:      "Check a skill pack for engine compatibility (schema v4, landmark ranges, MAX_RULES)"
+  CALIBRATE_MOVEMENT:     "Propose calibrated alignment thresholds for a movement from real footage"
+  RUN_EXTRACTION:         "Run/queue a video -> signed skill pack extraction"
+  DESIGN_REVIEW:          "UI/UX review — require options/mockups, token usage, accessibility, white-label fit"
+  READINESS_AUDIT:        "Run the cross-department readiness audit; surface prioritized gaps as proposals"
+  CREATE_PR:              "Create a PR with a change record (what/why/risk/tests) — never auto-merge"
+  MONITOR_HEALTH:         "Check CI, extract jobs, service health (3/3 services), audit anomalies"
+  PLAN_TASK:              "Decompose a complex request into ordered subtasks"
+
+task_payloads:
+  ANALYZE_ENGINE_FAULT:
+    log_text:     "string — engine log, FSM state dump, or FFI error"
+    movement_id:  "string — e.g. yoga/warrior2 (optional)"
+    analysis_type: "string — static_hold | repetition_count | dynamic_sequence | flow_sequence (optional)"
+  ANALYZE_BACKEND_ERROR:
+    log_text:     "string — API error / stack trace / migration error"
+    endpoint:     "string — e.g. GET /api/v1/system/analytics (optional)"
+    status_code:  "integer — HTTP status (optional)"
+  REVIEW_SKILL_PACK:
+    module:       "string — e.g. yoga"
+    movement_id:  "string — e.g. tadasana"
+  CALIBRATE_MOVEMENT:
+    module:       "string"
+    movement_id:  "string"
+    footage_ref:  "string — reference video/clip (optional)"
+  DESIGN_REVIEW:
+    surface:      "string — 'flutter_app' | 'sage_dashboard'"
+    screen:       "string — e.g. practice_hero | approval_inbox"
+    context:      "string — what's changing and why (optional)"
+  READINESS_AUDIT:
+    solution:     "string — solution to audit (default: poseengine)"
+    scope:        "string — 'all' | comma-list of departments (security,payments,compliance,devops,ux,qa) (optional)"
+    stage:        "string — 'prototype' | 'pilot' | 'ga' — tunes severity weighting (optional)"
+  CREATE_PR:
+    branch:       "string — source branch"
+    summary:      "string — what the PR does"
