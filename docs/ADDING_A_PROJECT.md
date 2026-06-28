@@ -357,10 +357,10 @@ make run PROJECT=four_in_a_line
 
 ### Medical Device Software Team — Regulated engineering team
 
-`solutions/medtech_team/` — embedded firmware + clinical web + DevOps, full ISO 13485 / IEC 62304 compliance.
+A regulated medical-device solution combines embedded firmware, clinical web, and DevOps with full ISO 13485 / IEC 62304 compliance.
 
 ```bash
-make run PROJECT=medtech_team
+make run PROJECT=starter
 ```
 
 ### Automotive — Infotainment & telematics

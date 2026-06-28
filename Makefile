@@ -34,9 +34,9 @@ endif
 
 .PHONY: venv venv-minimal install install-dev install-ui install-minimal \
         run api cli monitor demo ui \
-        test test-unit test-solution test-medtech test-medtech-team \
+        test test-unit test-solution \
         test-meditation-app test-four-in-a-line \
-        test-compliance test-all test-api \
+        test-all test-api \
         docker-up docker-down docker-up-d \
         list-solutions list-projects clean help doctor
 
@@ -116,21 +116,9 @@ test-unit: test
 test-api:
 	$(PYTEST) tests/test_api.py -v
 
-test-compliance:
-	SAGE_SOLUTIONS_DIR=$(SOLUTIONS_DIR) $(PYTEST) solutions/medtech/tests/validation/ -v --tb=long
-
-# Solution-specific tests
+# Solution-specific tests (PROJECT picks the solution, e.g. PROJECT=starter)
 test-solution:
 	SAGE_SOLUTIONS_DIR=$(SOLUTIONS_DIR) $(PYTEST) solutions/$(PROJECT)/tests/ -v
-
-test-medtech:
-	SAGE_SOLUTIONS_DIR=$(SOLUTIONS_DIR) $(PYTEST) solutions/medtech/tests/ \
-	  --ignore=solutions/medtech/tests/mcp \
-	  --ignore=solutions/medtech/tests/integration \
-	  -v
-
-test-medtech-team:
-	SAGE_SOLUTIONS_DIR=$(SOLUTIONS_DIR) $(PYTEST) solutions/medtech_team/tests/ -v
 
 test-meditation-app:
 	SAGE_SOLUTIONS_DIR=$(SOLUTIONS_DIR) $(PYTEST) solutions/meditation_app/tests/ -v
@@ -138,24 +126,10 @@ test-meditation-app:
 test-four-in-a-line:
 	SAGE_SOLUTIONS_DIR=$(SOLUTIONS_DIR) $(PYTEST) solutions/four_in_a_line/tests/ -v
 
-# Full suite: framework + medtech (excludes mcp/integration which need real services)
+# Full suite: framework unit tests
 test-all:
 	@echo "=== Framework unit tests ==="
 	$(PYTEST) tests/ -m unit -v
-	@echo ""
-	@echo "=== medtech solution tests ==="
-	SAGE_SOLUTIONS_DIR=$(SOLUTIONS_DIR) $(PYTEST) solutions/medtech/tests/ \
-	  --ignore=solutions/medtech/tests/mcp \
-	  --ignore=solutions/medtech/tests/integration \
-	  -v
-
-# MCP tests (requires fastmcp: pip install fastmcp)
-test-mcp:
-	SAGE_SOLUTIONS_DIR=$(SOLUTIONS_DIR) $(PYTEST) solutions/medtech/tests/mcp/ -v
-
-# Integration tests (requires configured .env with real service credentials)
-test-integration:
-	SAGE_SOLUTIONS_DIR=$(SOLUTIONS_DIR) $(PYTEST) solutions/medtech/tests/integration/ -v
 
 # ------------------------------------------------------------------------------
 # Docker
@@ -203,18 +177,13 @@ help:
 	@echo ""
 	@echo "Test:"
 	@echo "  make test                    Framework unit tests"
-	@echo "  make test-medtech            medtech solution tests"
-	@echo "  make test-medtech-team       medtech_team solution tests"
 	@echo "  make test-meditation-app     meditation_app solution tests"
 	@echo "  make test-four-in-a-line     four_in_a_line solution tests"
 	@echo "  make test-solution PROJECT=X Any solution's tests"
-	@echo "  make test-all                Framework + medtech (no external deps)"
-	@echo "  make test-mcp                MCP tests (needs fastmcp installed)"
-	@echo "  make test-integration        Integration tests (needs live services)"
-	@echo "  make test-compliance         IQ/OQ/PQ validation protocol"
+	@echo "  make test-all                Framework unit tests (no external deps)"
 	@echo ""
 	@echo "Deploy:"
 	@echo "  make docker-up [PROJECT=...] Start via Docker Compose"
 	@echo ""
-	@echo "  Solutions: starter | meditation_app | four_in_a_line | medtech_team | <your-solution>"
+	@echo "  Solutions: starter | meditation_app | four_in_a_line | <your-solution>"
 	@echo ""

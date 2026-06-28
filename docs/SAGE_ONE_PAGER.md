@@ -211,7 +211,6 @@ Pre-built agent teams with correct roles, system prompts, task types, and compli
 | Solution | Domain | Compliance Standards |
 |---|---|---|
 | `starter` | Generic template — any domain | None |
-| `medtech_team` | Medical device (embedded + web + devops) | IEC 62304, ISO 14971, IEC 60601-1, FDA 21 CFR 820 |
 | `automotive` | Infotainment + telematics + ADAS | ISO 26262, UN ECE WP.29, ISO/SAE 21434 |
 | `avionics` | Avionics SW + systems + airworthiness | DO-178C, DO-254, ARP4754A, FAA Part 25 |
 | `iot_medical` | IoT medical device (IEC 62304 Class C) | IEC 62304, ISO 14971, IEC 62443 |

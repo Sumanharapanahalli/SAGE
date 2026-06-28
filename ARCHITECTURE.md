@@ -38,7 +38,6 @@ solutions/
 │   └── evals/               Eval YAML test suites for benchmarking
 ├── meditation_app/          Flutter mobile + Node.js — consumer app example
 ├── four_in_a_line/          Casual game studio — GDPR/COPPA example
-├── medtech_team/            Regulated medical device — ISO 13485/IEC 62304 example
 └── <your_solution>/         Private solutions via SAGE_SOLUTIONS_DIR
 ```
 
@@ -95,7 +94,6 @@ Key `ProjectConfig` methods used throughout the codebase:
 | `starter` | Generic | None (template) | analyst, developer, planner, monitor |
 | `meditation_app` | Flutter mobile + Node.js | GDPR, App Store guidelines | product_advisor, qa_analyst, release_manager |
 | `four_in_a_line` | Casual game | GDPR, COPPA, App Store | game_designer, monetisation_advisor, ai_opponent_specialist |
-| `medtech_team` | Medical device software | ISO 13485, IEC 62304, ISO 14971, FDA 21 CFR Part 11 | embedded_developer, web_developer, devops_engineer, quality_engineer |
 
 ### 2.4 Project Selection at Runtime
 
@@ -107,7 +105,7 @@ python src/main.py api --project meditation_app
 SAGE_PROJECT=four_in_a_line python src/main.py api
 
 # Makefile shorthand
-make run PROJECT=medtech_team
+make run PROJECT=starter
 
 # Docker Compose
 SAGE_PROJECT=starter docker-compose up --build
@@ -609,8 +607,7 @@ SAGE/
 │   │   ├── mcp_servers/             FastMCP servers — domain-specific tools
 │   │   └── evals/                   Eval YAML test suites
 │   ├── meditation_app/              Flutter + Node.js example
-│   ├── four_in_a_line/              Casual game example
-│   └── medtech_team/                Regulated medical device example
+│   └── four_in_a_line/              Casual game example
 ├── src/
 │   ├── agents/
 │   │   ├── analyst.py               Log/metric analysis + RAG feedback loop
@@ -752,7 +749,7 @@ SAGE exposes domain tools as MCP (Model Context Protocol) servers. These are ava
 
 MCP servers live in `solutions/<name>/mcp_servers/` and are registered via `mcp_registry.py`.
 
-Example servers (medtech_team solution):
+Example servers (a regulated solution):
 
 | Server | Hardware/Service | Key Tools |
 |--------|-----------------|-----------|

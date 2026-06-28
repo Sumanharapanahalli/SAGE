@@ -58,10 +58,10 @@ solutions/<name>/
 └── mcp_servers/       # Optional: MCP server configs
 ```
 
-See `medtech/` for a complete example. Copy it as a starting template:
+See `starter/` for a complete example. Copy it as a starting template:
 
 ```bash
-cp -r solutions/medtech solutions/my_new_solution
+cp -r solutions/starter solutions/my_new_solution
 # Edit project.yaml, prompts.yaml, tasks.yaml for your domain
 ```
 

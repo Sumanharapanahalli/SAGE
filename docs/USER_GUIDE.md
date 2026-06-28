@@ -188,7 +188,7 @@ python src/main.py api --project meditation_app
 SAGE_PROJECT=four_in_a_line python src/main.py api
 
 # 3. Makefile
-make run PROJECT=medtech_team
+make run PROJECT=starter
 
 # 4. Default (if none specified)
 # Falls back to: starter
@@ -213,8 +213,6 @@ curl -X POST http://localhost:8000/config/switch \
 | `starter` | Generic template | None |
 | `meditation_app` | Flutter mobile + Node.js | GDPR |
 | `four_in_a_line` | Casual game studio | GDPR, COPPA |
-| `medtech_team` | Medical device (embedded + web) | IEC 62304, ISO 14971, FDA 21 CFR 820 |
-| `medtech` | Medical device (legacy) | IEC 62304, ISO 14971 |
 | `automotive` | Infotainment, ADAS, telematics | ISO 26262, UN ECE WP.29, ISO/SAE 21434 |
 | `avionics` | Avionics SW + systems | DO-178C, DO-254, ARP4754A |
 | `iot_medical` | IoT medical device (Class C) | IEC 62304, ISO 14971, IEC 62443 |
@@ -233,7 +231,6 @@ make run PROJECT=starter
 
 # Or any of the example solutions
 make run PROJECT=meditation_app
-make run PROJECT=medtech_team
 make run PROJECT=automotive
 
 # API: http://localhost:8000
@@ -276,7 +273,7 @@ make monitor PROJECT=meditation_app
 SAGE_PROJECT=starter docker-compose up --build
 
 # Run in background
-SAGE_PROJECT=medtech_team docker-compose up -d --build
+SAGE_PROJECT=starter docker-compose up -d --build
 
 # Stop
 docker-compose down

@@ -64,7 +64,6 @@ Solutions are **separate from the framework** — each is a folder of 3 YAML fil
 |---|---|---|
 | `starter` | Generic template | None — start here |
 | `iot_medical` | IoT medical device monitoring | IEC 62304 Class C, ISO 14971, FDA 21 CFR 820 |
-| `medtech_team` | Regulated medical device team | IEC 62304, ISO 13485, HIL testing |
 | `avionics` | Avionics software team | DO-178C, ARP4754A |
 | `railways` | Railway signalling systems | EN 50128, CENELEC |
 | `automotive` | Infotainment & telematics | ASPICE, ISO 26262 |
@@ -167,7 +166,7 @@ To run a regulated domain solution:
 
 ```bash
 make run PROJECT=iot_medical   # IoT medical device — IEC 62304 Class C
-make run PROJECT=medtech_team  # Medical device team — ISO 13485
+make run PROJECT=starter       # Generic starter template
 make run PROJECT=avionics      # Avionics — DO-178C
 make run PROJECT=railways      # Railway signalling — EN 50128
 ```
@@ -257,19 +256,6 @@ Backend at `http://localhost:8000`. Interactive docs at `http://localhost:8000/d
 ```bash
 make test-compliance   # IQ/OQ/PQ validation protocol
 ```
-
-### Per-solution regulatory documents (`solutions/medtech/docs/regulatory/`)
-
-| Document | Standard |
-|----------|---------|
-| [SRS.md](solutions/medtech/docs/regulatory/SRS.md) | Software Requirements Specification |
-| [RISK_MANAGEMENT.md](solutions/medtech/docs/regulatory/RISK_MANAGEMENT.md) | ISO 14971 Risk Management |
-| [SOUP_INVENTORY.md](solutions/medtech/docs/regulatory/SOUP_INVENTORY.md) | IEC 62304 §8.1.2 SOUP Inventory |
-| [VV_PLAN.md](solutions/medtech/docs/regulatory/VV_PLAN.md) | Verification and Validation Plan |
-| [RTM.md](solutions/medtech/docs/regulatory/RTM.md) | Requirements Traceability Matrix |
-| [DHF_INDEX.md](solutions/medtech/docs/regulatory/DHF_INDEX.md) | Design History File Index |
-| [CHANGE_CONTROL.md](solutions/medtech/docs/regulatory/CHANGE_CONTROL.md) | Change Control Procedure |
-| [SECURITY_PLAN.md](solutions/medtech/docs/regulatory/SECURITY_PLAN.md) | Cybersecurity Plan |
 
 ---
 

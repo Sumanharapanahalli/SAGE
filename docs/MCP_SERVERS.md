@@ -260,7 +260,6 @@ Each solution can define MCP servers in `solutions/<name>/mcp_servers/`:
 
 ```
 solutions/
-  medtech_team/
     mcp_servers/
       serial_port_server.py     # COM port communication
       jlink_server.py           # JTAG/SWD debugger

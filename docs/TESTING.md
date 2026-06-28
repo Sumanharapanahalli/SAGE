@@ -34,7 +34,7 @@ SAGE uses a four-tier testing pyramid aligned with ISO 13485 software validation
 
 ```
          ┌───────────┐
-         │  IQ/OQ/PQ │  ← Formal compliance validation (medtech solution)
+         │  IQ/OQ/PQ │  ← Formal compliance validation (a regulated solution)
          ├───────────┤
          │  System   │  ← Full API lifecycle E2E (58 tests)
          ├───────────┤
@@ -56,7 +56,7 @@ Tests that connect to real external services (GitLab, Teams, Metabase, Spira). A
 Full API pipeline tests using FastAPI TestClient with real AuditLogger (SQLite in tmp_path) and mocked LLM. Verify multi-step flows like analyze → approve → audit trail.
 
 **Tier 4 — Compliance Tests** (`@pytest.mark.compliance`):
-Formal IQ/OQ/PQ tests per ISO 13485 Section 7.5.6. These live in `solutions/medtech/tests/validation/` and constitute the software validation protocol for the medical device QMS. Output of `pytest -m compliance --tb=long` serves as validation evidence.
+Formal IQ/OQ/PQ tests per ISO 13485 Section 7.5.6 live in a regulated solution's `tests/validation/` directory and constitute its software validation protocol. Output of `pytest -m compliance --tb=long` serves as validation evidence.
 
 ### Test Counts Summary
 
@@ -65,7 +65,6 @@ Formal IQ/OQ/PQ tests per ISO 13485 Section 7.5.6. These live in `solutions/medt
 | Framework (all) | `tests/` | 53 test files | `make test` |
 | — Nano-modules | `tests/modules/` | 5 test files | Subset of framework, instant |
 | — System E2E | `tests/system/` | 1 test file (58 tests) | Full API lifecycle |
-| medtech solution | `solutions/medtech/tests/` | varies | `make test-medtech` |
 | **Total** | | **53+ files** | `make test-all` |
 
 ### Coverage Targets
@@ -166,33 +165,6 @@ tests/
 └── test_skills_and_gym.py             # Skill marketplace + Agent Gym unit tests (61 tests)
 ```
 
-### medtech Solution Tests (`solutions/medtech/tests/`) — 32 tests
-
-```
-solutions/medtech/tests/
-│
-├── mcp/
-│   ├── test_serial_mcp.py         # Serial port MCP server tests
-│   ├── test_jlink_mcp.py          # J-Link MCP server tests (hardware-skippable)
-│   ├── test_metabase_mcp.py       # Metabase MCP server tests
-│   ├── test_spira_mcp.py          # Spira MCP server tests
-│   └── test_teams_mcp.py          # Teams MCP server tests
-│
-├── integration/
-│   ├── test_gitlab_integration.py   # GitLab API integration tests
-│   ├── test_teams_integration.py    # Teams Graph API integration tests
-│   ├── test_metabase_integration.py # Metabase integration tests
-│   └── test_spira_integration.py    # Spira integration tests
-│
-├── e2e/
-│   ├── test_analyze_approve_flow.py        # Analyze/approve/reject E2E
-│   ├── test_mr_workflow.py                 # MR create/review E2E
-│   └── test_monitor_to_notification_flow.py # Monitor event routing E2E
-│
-└── validation/
-    └── test_iq_oq_pq.py           # ISO 13485 IQ/OQ/PQ formal validation
-```
-
 ---
 
 ## 3. Running Tests
@@ -212,11 +184,9 @@ make venv
 
 ```bash
 make test               # Framework unit tests (tests/)
-make test-all           # Framework + medtech solution tests
+make test-all           # Framework unit tests
 make test-api           # API endpoint tests only
-make test-compliance    # Compliance/IQ/OQ/PQ tests (medtech QMS sign-off)
-make test-medtech       # medtech solution tests
-make test-medtech-team  # medtech_team solution tests
+make test-compliance    # Compliance/IQ/OQ/PQ tests (QMS sign-off)
 make test-meditation-app # meditation_app solution tests
 make test-four-in-a-line # four_in_a_line solution tests
 make test-solution PROJECT=X  # Any solution's tests
@@ -259,13 +229,9 @@ pytest -x
 pytest --durations=10
 ```
 
-### medtech Solution Tests
+### Compliance & Validation Tests
 
 ```bash
-# All medtech solution tests
-make test-medtech
-# Equivalent to: pytest solutions/medtech/tests/ -v
-
 # Compliance/validation tests only (for QMS sign-off)
 pytest -m compliance -v --tb=long
 
@@ -273,7 +239,7 @@ pytest -m compliance -v --tb=long
 pytest -m compliance --tb=long > docs/validation_report.txt
 
 # MCP tests (require fastmcp installed)
-pytest solutions/medtech/tests/mcp/ -v
+pytest -m mcp -v
 
 # Integration tests (require configured env vars — auto-skipped if absent)
 pytest -m integration -v

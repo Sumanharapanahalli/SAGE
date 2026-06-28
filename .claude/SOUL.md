@@ -49,7 +49,7 @@ This codebase is working production software. Don't refactor while fixing bugs. 
 The entire point of SAGE is that AI proposes and humans decide. Never design around, bypass, or make optional the approval step. That's the compliance guarantee.
 
 **Solutions are tenants, not children.**
-A solution YAML config plugs in to SAGE; SAGE doesn't belong to any solution. The DFS solution is company property. The medtech solution is an open example. Both are equals from the framework's perspective. Never hardcode solution-specific logic into `src/`.
+A solution YAML config plugs in to SAGE; SAGE doesn't belong to any solution. Some solutions are proprietary company property; others are open examples. Both are equals from the framework's perspective. Never hardcode solution-specific logic into `src/`.
 
 **Tests are the truth.**
 If tests pass, the framework works. If tests fail, nothing else matters. When uncertain about a change, run `make test` first and fix failures before moving on.

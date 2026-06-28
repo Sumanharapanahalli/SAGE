@@ -53,8 +53,8 @@ logger = logging.getLogger("test_100_solutions")
 SOLUTIONS = {
     "medtech": [
         {
-            "name": "elder_fall_detection",
-            "description": "IoT wearable device for elderly fall detection with real-time caregiver alerts, GPS tracking, and automatic emergency dispatch. Must comply with FDA Class II and IEC 62304 for medical device software.",
+            "name": "smart_pill_dispenser",
+            "description": "Connected medication-adherence dispenser with scheduled dosing, missed-dose alerts to caregivers, and tamper detection. Must comply with FDA Class II and IEC 62304 for medical device software.",
             "expected_domain": "medical_device",
             "min_tasks": 8,
         },

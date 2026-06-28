@@ -14,7 +14,6 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - GitHub issue and PR templates
 - Product modules: backend, firmware, hardware, mobile, ML models, infra
 - CI/CD workflows for backend, firmware, and mobile
-- Medtech DHF templates and security threat model
 
 ### Fixed
 - `GET /queue/tasks` returns 500 when no tasks exist (now returns `[]`)

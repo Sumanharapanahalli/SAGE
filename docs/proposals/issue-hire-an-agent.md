@@ -284,7 +284,7 @@ task_payloads:
 ### 3. Eval case added to `evals/`
 
 ```yaml
-# solutions/medtech_team/evals/quality_engineer.yaml
+# solutions/<your_solution>/evals/quality_engineer.yaml
 name: "QA Agent — defect triage"
 description: "Verify the QA agent classifies defects correctly"
 cases:

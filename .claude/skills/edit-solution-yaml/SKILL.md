@@ -19,7 +19,7 @@ $ARGUMENTS should be in the form: `<solution> <file> <natural-language-instructi
 Examples:
 - `meditation_app prompts add push notification context to the analyst system prompt`
 - `four_in_a_line tasks add a new task type ANALYZE_MATCHMAKING for matchmaking analysis`
-- `medtech_team project add 'ISO 27001' to compliance_standards`
+- `starter project add 'ISO 27001' to compliance_standards`
 - `my_project project set domain to fintech`
 
 ## Steps

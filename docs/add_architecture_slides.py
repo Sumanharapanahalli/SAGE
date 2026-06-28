@@ -554,7 +554,6 @@ def slide_solution_isolation(prs):
         "    .sage/               \u2190 auto-created, gitignored",
         "      audit_log.db       \u2190 proposals, approvals, audit",
         "      chroma_db/         \u2190 vector knowledge store",
-        "  medtech_team/",
         "    project.yaml  ...",
         "    .sage/               \u2190 SEPARATE, ISOLATED",
         "      audit_log.db       \u2190 different DB, different data",

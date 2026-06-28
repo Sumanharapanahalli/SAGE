@@ -116,10 +116,8 @@ Then set `provider: "claude"` in `config/config.yaml`.
 |---|---|
 | `make test` | Framework unit tests |
 | `make test-api` | API endpoint tests only |
-| `make test-all` | Framework + medtech solution tests |
+| `make test-all` | Framework unit tests |
 | `make test-solution PROJECT=X` | Any solution's tests |
-| `make test-medtech` | medtech solution tests |
-| `make test-medtech-team` | medtech_team solution tests |
 | `make test-meditation-app` | meditation_app solution tests |
 | `make test-four-in-a-line` | four_in_a_line solution tests |
 | `make test-mcp` | MCP server tests (needs fastmcp) |
@@ -278,7 +276,7 @@ If `TEMPORAL_HOST` is not set or the server is unreachable, SAGE automatically f
 
 ### J-Link Hardware Debugger
 
-Used for: flashing firmware and reading memory on embedded targets (medtech solution only).
+Used for: flashing firmware and reading memory on embedded targets (embedded solutions only).
 
 1. Download and install **J-Link Software Pack** from [SEGGER](https://www.segger.com/downloads/jlink/)
 2. Install the Python binding:

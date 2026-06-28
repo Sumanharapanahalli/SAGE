@@ -36,11 +36,10 @@ This license applies to the Sage Framework core only:
 
 EXCLUDED from this license (separate licensing applies):
 
-  solutions/     Each solution directory is independently licensed.
-                 - solutions/medtech/   — MIT (example, see solutions/medtech/LICENSE)
-                 - solutions/poseengine/ — MIT (example)
-                 - solutions/kappture/  — MIT (example)
-                 - solutions/dfs/       — PROPRIETARY (not distributed with this repo)
+  solutions/     Each solution directory is independently licensed; see the
+                 LICENSE file within each solution directory. Example solutions
+                 are MIT-licensed. Proprietary solutions are not distributed
+                 with this repository.
                  - solutions/customer_*/— PROPRIETARY (never committed here)
 
 Company-specific solutions that use this framework retain full ownership of

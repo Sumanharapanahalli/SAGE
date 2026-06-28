@@ -39,8 +39,8 @@ BUILDS_DIR = os.path.dirname(os.path.abspath(__file__))
 # ---------------------------------------------------------------------------
 SOLUTIONS = [
     # ── MEDTECH (001-010) ──
-    {"id": "001", "domain": "medtech", "name": "elder_fall_detection",
-     "description": "IoT wearable device for elderly fall detection with real-time caregiver alerts, GPS tracking, and automatic emergency dispatch. Must comply with FDA Class II and IEC 62304 for medical device software.",
+    {"id": "001", "domain": "medtech", "name": "smart_pill_dispenser",
+     "description": "Connected medication-adherence dispenser with scheduled dosing, missed-dose alerts to caregivers, and tamper detection. Must comply with FDA Class II and IEC 62304 for medical device software.",
      "compliance": ["FDA Class II", "IEC 62304", "ISO 14971", "ISO 13485"]},
     {"id": "002", "domain": "medtech", "name": "insulin_pump_controller",
      "description": "Closed-loop insulin pump controller with continuous glucose monitoring integration, predictive dosing algorithm, and mobile app for patient monitoring. FDA Class III, ISO 13485, IEC 62304.",

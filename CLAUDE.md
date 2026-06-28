@@ -74,7 +74,6 @@ solutions/              Solution configurations (NOT framework code)
     evals/              Eval YAML test suites for benchmarking
   meditation_app/       Flutter + Node.js mobile app example
   four_in_a_line/       Casual game studio example
-  medtech_team/         Regulated medical device team (embedded + web + devops)
   board_games/          Cross-platform board games platform (25+ games, AI opponents)
   automotive/           Automotive infotainment & telematics
   avionics/             Avionics software team

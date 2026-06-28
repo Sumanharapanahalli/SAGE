@@ -4,7 +4,7 @@
 # Usage:
 #   SAGE_PROJECT=starter docker-compose up --build
 #   SAGE_PROJECT=meditation_app docker-compose up --build
-#   SAGE_PROJECT=medtech_team docker-compose up --build
+#   SAGE_PROJECT=four_in_a_line docker-compose up --build
 #
 # Minimum hardware: 4-core CPU, 4 GB RAM, no GPU required (Gemini CLI mode)
 # Recommended:      8-core CPU, 16 GB RAM, NVIDIA GPU 4GB+ (local LLM mode)

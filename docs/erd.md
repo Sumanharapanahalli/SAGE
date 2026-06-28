@@ -109,7 +109,6 @@ Every solution gets its own `.sage/` directory:
 
 ```
 solutions/
-  medtech_team/
     project.yaml
     prompts.yaml
     tasks.yaml
