@@ -33,7 +33,7 @@ Why this matters: it is the foundation for 3c (onboarding creates a new solution
 New sidecar method **`solutions.list`** returns `SolutionRef[]` where each entry is:
 
 ```json
-{ "name": "medtech", "path": "/abs/path/to/solutions/medtech", "has_sage_dir": true }
+{ "name": "starter", "path": "/abs/path/to/solutions/starter", "has_sage_dir": true }
 ```
 
 Algorithm: scan `<SAGE_ROOT>/solutions/` for child directories that contain either `project.yaml` **or** `SKILL.md`. Skip dotfiles, README, and `org.yaml`. Sort alphabetically. Pure filesystem read — no LLM, no DB.

@@ -48,7 +48,7 @@ make optimize TASK="Tighten this approval-inbox component for reuse + a11y" \
 # or directly
 python -m src.core.evaluator_optimizer \
   --task "Improve the analyst prompt for fewer false positives" \
-  --context-file solutions/medtech/prompts.yaml \
+  --context-file solutions/starter/prompts.yaml \
   --optimizer claude-code --evaluator gemini \
   --max-iterations 4 --threshold 8.0
 ```
