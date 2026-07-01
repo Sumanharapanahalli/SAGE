@@ -31,10 +31,15 @@ try:
 except Exception:
     llm_gateway = None  # type: ignore
 
-_SOLUTIONS_DIR = os.path.join(
+_FRAMEWORK_SOLUTIONS_DIR = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
     "solutions",
 )
+# Honors SAGE_SOLUTIONS_DIR — the same env var project_loader.py resolves the
+# active solution against — so onboarding-generated solutions land wherever
+# solutions actually live (SOUL.md: "solutions are tenants, not children"),
+# not always inside the framework checkout's own solutions/ directory.
+_SOLUTIONS_DIR = os.environ.get("SAGE_SOLUTIONS_DIR", _FRAMEWORK_SOLUTIONS_DIR)
 
 # ---------------------------------------------------------------------------
 # Prompt templates

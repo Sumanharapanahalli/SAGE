@@ -47,3 +47,33 @@ def test_list_solutions_skips_dotfiles(tmp_path):
     (tmp_path / "solutions" / ".hidden").mkdir(parents=True)
     (tmp_path / "solutions" / ".hidden" / "project.yaml").write_text("x")
     assert list_solutions(tmp_path) == []
+
+
+def test_list_solutions_honors_sage_solutions_dir_override(tmp_path, monkeypatch):
+    """A solution mounted outside <sage_root>/solutions/ (SOUL.md 'solutions are
+    tenants') must still be discoverable — SAGE_SOLUTIONS_DIR is the same env var
+    ProjectConfig itself resolves the active solution against."""
+    sage_root = tmp_path / "framework_checkout"
+    (sage_root / "solutions" / "in_repo_only").mkdir(parents=True)
+    (sage_root / "solutions" / "in_repo_only" / "project.yaml").write_text("name: x\n")
+
+    external_dir = tmp_path / "external_solutions"
+    (external_dir / "poseengine").mkdir(parents=True)
+    (external_dir / "poseengine" / "project.yaml").write_text("name: poseengine\n")
+
+    monkeypatch.setenv("SAGE_SOLUTIONS_DIR", str(external_dir))
+    result = list_solutions(sage_root)
+
+    names = [r["name"] for r in result]
+    assert names == ["poseengine"]
+    assert "in_repo_only" not in names
+
+
+def test_list_solutions_without_override_scans_sage_root_solutions_dir(tmp_path, monkeypatch):
+    """Default behaviour (no SAGE_SOLUTIONS_DIR set) is unchanged."""
+    monkeypatch.delenv("SAGE_SOLUTIONS_DIR", raising=False)
+    (tmp_path / "solutions" / "a").mkdir(parents=True)
+    (tmp_path / "solutions" / "a" / "project.yaml").write_text("name: a\n")
+
+    names = [r["name"] for r in list_solutions(tmp_path)]
+    assert names == ["a"]

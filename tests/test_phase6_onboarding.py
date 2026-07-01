@@ -78,6 +78,30 @@ class TestOnboardingModule:
         result = _validate_yaml("name: test\nversion: '1.0'", "project.yaml")
         assert result["name"] == "test"
 
+    def test_solutions_dir_honors_sage_solutions_dir_env_var(self, monkeypatch):
+        """New solutions must land in SAGE_SOLUTIONS_DIR when set (SOUL.md:
+        solutions are tenants, not children) — not always inside the framework
+        checkout's own solutions/ directory."""
+        import importlib
+        import src.core.onboarding as ob_module
+
+        monkeypatch.setenv("SAGE_SOLUTIONS_DIR", "/external/solutions")
+        try:
+            importlib.reload(ob_module)
+            assert ob_module._SOLUTIONS_DIR == "/external/solutions"
+        finally:
+            monkeypatch.delenv("SAGE_SOLUTIONS_DIR", raising=False)
+            importlib.reload(ob_module)  # restore the default-resolved module state
+
+    def test_solutions_dir_defaults_to_framework_solutions_when_unset(self, monkeypatch):
+        import importlib
+        import src.core.onboarding as ob_module
+
+        monkeypatch.delenv("SAGE_SOLUTIONS_DIR", raising=False)
+        importlib.reload(ob_module)
+        assert ob_module._SOLUTIONS_DIR.replace("\\", "/").endswith("/solutions")
+        assert "external" not in ob_module._SOLUTIONS_DIR
+
     def test_validate_yaml_raises_on_invalid(self):
         from src.core.onboarding import _validate_yaml
         with pytest.raises(ValueError, match="project.yaml"):

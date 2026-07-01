@@ -188,6 +188,22 @@ desktop-dev:
 	@echo "Starting sage-desktop dev build (requires npm deps + Rust toolchain)..."
 	cd sage-desktop && SAGE_ROOT=$(CURDIR) npm run tauri dev
 
+# Launch desktop pre-targeted at a specific solution — including one that
+# lives outside this repo (SAGE_SOLUTIONS_DIR / SOUL.md "solutions are
+# tenants"). Skips the in-app solution picker entirely (auto-launches
+# straight into the given solution), and also makes it show up as a
+# switchable target in Settings (SAGE_SOLUTIONS_DIR = the solution's parent
+# directory). Usage:
+#   make desktop-dev-solution SOLUTION_NAME=poseengine \
+#        SOLUTION_PATH="C:/sandbox/SAGE/solutions/poseengine"
+desktop-dev-solution:
+	@echo "Starting sage-desktop targeted at solution '$(SOLUTION_NAME)' ($(SOLUTION_PATH))..."
+	cd sage-desktop && SAGE_ROOT=$(CURDIR) \
+		SAGE_SOLUTION_NAME="$(SOLUTION_NAME)" \
+		SAGE_SOLUTION_PATH="$(SOLUTION_PATH)" \
+		SAGE_SOLUTIONS_DIR="$(dir $(SOLUTION_PATH))" \
+		npm run tauri dev
+
 desktop-build:
 	@echo "Building sage-desktop release bundle..."
 	cd sage-desktop && npm run tauri build

@@ -739,12 +739,21 @@ project_config = ProjectConfig()
 
 
 def list_solutions(sage_root):
-    """Return sorted SolutionRef dicts for each valid solution under <sage_root>/solutions/.
+    """Return sorted SolutionRef dicts for each valid solution in the active
+    solutions directory.
+
+    Honors ``SAGE_SOLUTIONS_DIR`` when set — the same env var this module's
+    own ``_SOLUTIONS_DIR`` (and every ``ProjectConfig``) resolves the active
+    solution against — so solutions mounted outside the framework checkout
+    (SOUL.md: "solutions are tenants, not children") are discoverable, not
+    just ones under ``<sage_root>/solutions``. Falls back to
+    ``<sage_root>/solutions`` when unset, unchanged from prior behaviour.
 
     A valid solution is a non-dotfile directory that contains either
     ``project.yaml`` or ``SKILL.md``.
     """
-    root = Path(sage_root) / "solutions"
+    override = os.environ.get("SAGE_SOLUTIONS_DIR", "")
+    root = Path(override) if override else Path(sage_root) / "solutions"
     if not root.is_dir():
         return []
     out = []
