@@ -62,6 +62,7 @@ from handlers import (
     eval as eval_handler,
     goals,
     handshake,
+    hil,
     knowledge,
     llm,
     monitor,
@@ -117,6 +118,10 @@ def _build_dispatcher() -> Dispatcher:
     d.register("eval.list_suites", eval_handler.list_suites)
     d.register("eval.run", eval_handler.run)
     d.register("eval.history", eval_handler.history)
+    d.register("hil.status", hil.status)
+    d.register("hil.connect", hil.connect)
+    d.register("hil.run_suite", hil.run_suite)
+    d.register("hil.report", hil.report)
     d.register("approvals.list_pending", approvals.list_pending)
     d.register("approvals.get", approvals.get)
     d.register("approvals.approve", approvals.approve)

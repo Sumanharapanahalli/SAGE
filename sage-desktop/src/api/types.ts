@@ -984,3 +984,103 @@ export interface EvalHistoryResult {
   history: EvalHistoryEntry[];
   count: number;
 }
+
+// ── HIL (Hardware-in-the-Loop) ──────────────────────────────────────────
+// Scope note: HILRunner.flash_firmware() is not ported — it has no
+// endpoint in the web API either. See sidecar/handlers/hil.py's module
+// docstring. Connect is always an explicit operator action (never
+// auto-connects on page load) since it can spawn subprocesses
+// (JLinkExe/openocd) or open a real serial/CAN handle.
+
+export type HILTransportName = "mock" | "serial" | "jlink" | "can" | "openocd";
+
+export interface HILStatus {
+  connected: boolean;
+  transport: string;
+  session_id: string | null;
+  tests_run: number;
+  passed?: number;
+  failed?: number;
+  blocked?: number;
+  message?: string;
+  error?: string;
+}
+
+export interface HILConnectResult {
+  transport: string;
+  connected: boolean;
+  session_id: string;
+  message: string;
+}
+
+export interface HILTestCaseInput {
+  id: string;
+  name: string;
+  requirement_id: string;
+  description?: string;
+  procedure?: string[];
+  expected_result?: string;
+  transport?: string;
+  timeout_seconds?: number;
+}
+
+export interface HILTestResultOut {
+  test_id: string;
+  test_name: string;
+  requirement_id: string;
+  verdict: "PASS" | "FAIL" | "ERROR" | "SKIP" | "BLOCKED";
+  actual_result: string;
+  duration_seconds: number;
+  timestamp: string;
+  evidence?: Record<string, unknown>;
+  deviation_notes?: string;
+}
+
+export interface HILRunSuiteResult {
+  session_id: string;
+  transport: string;
+  total: number;
+  passed: number;
+  failed: number;
+  errors: number;
+  skipped: number;
+  blocked: number;
+  pass_rate: number;
+  results: HILTestResultOut[];
+}
+
+export interface HILReportResult {
+  report_type: string;
+  standard: string;
+  standard_full_name: string;
+  generated_at: string;
+  session_id: string;
+  transport: string;
+  evidence_sections: string[];
+  pass_criteria: string;
+  summary: {
+    total_tests: number;
+    passed: number;
+    failed: number;
+    blocked: number;
+    pass_rate: number;
+    overall_status: "PASS" | "FAIL";
+  };
+  traceability: Array<{
+    requirement_id: string;
+    test_id: string;
+    test_name: string;
+    verdict: string;
+    timestamp: string;
+    duration_seconds: number;
+    evidence_captured: boolean;
+  }>;
+  deviations: Array<{ test_id: string; notes: string }>;
+  failed_tests: Array<{
+    test_id: string;
+    test_name: string;
+    requirement_id: string;
+    actual_result: string;
+    verdict: string;
+  }>;
+}

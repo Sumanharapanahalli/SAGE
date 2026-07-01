@@ -131,4 +131,12 @@ describe("Sidebar", () => {
       "/eval",
     );
   });
+
+  it("includes the HIL entry", () => {
+    renderAt("/approvals");
+    expect(screen.getByRole("link", { name: /hil/i })).toHaveAttribute(
+      "href",
+      "/hil",
+    );
+  });
 });

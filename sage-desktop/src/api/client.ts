@@ -53,6 +53,11 @@ import type {
   GoalListParams,
   GoalUpdateParams,
   HandshakeResponse,
+  HILConnectResult,
+  HILReportResult,
+  HILRunSuiteResult,
+  HILStatus,
+  HILTestCaseInput,
   KnowledgeAddResult,
   KnowledgeDeleteResult,
   KnowledgeListResult,
@@ -552,6 +557,26 @@ export const runEval = (suite?: string) =>
 export const getEvalHistory = (suite?: string, limit = 20) =>
   call<EvalHistoryResult>("get_eval_history", { suite, limit });
 
+// ── HIL (Hardware-in-the-Loop) ──────────────────────────────────────────
+// Scope note: flash_firmware() is not exposed here — no endpoint in the
+// web API either. See types.ts's HIL section and
+// sidecar/handlers/hil.py's module docstring. hil_connect is always an
+// explicit operator action; nothing here auto-connects.
+
+export const getHilStatus = () => call<HILStatus>("hil_status");
+
+export const hilConnect = (transport?: string, config?: Record<string, unknown>) =>
+  call<HILConnectResult>("hil_connect", { transport, config });
+
+export const hilRunSuite = (
+  tests: HILTestCaseInput[],
+  transport?: string,
+  config?: Record<string, unknown>,
+) => call<HILRunSuiteResult>("hil_run_suite", { tests, transport, config });
+
+export const hilReport = (session_id: string, standard?: string) =>
+  call<HILReportResult>("hil_report", { session_id, standard });
+
 // Re-exports to reduce import boilerplate at call sites
 export type {
   Agent,
@@ -583,6 +608,11 @@ export type {
   GoalListParams,
   GoalUpdateParams,
   HandshakeResponse,
+  HILConnectResult,
+  HILReportResult,
+  HILRunSuiteResult,
+  HILStatus,
+  HILTestCaseInput,
   LlmInfo,
   LlmSwitchResult,
   McpToolsResult,

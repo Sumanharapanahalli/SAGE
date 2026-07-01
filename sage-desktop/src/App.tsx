@@ -16,6 +16,7 @@ import Constitution from "@/pages/Constitution";
 import Costs from "@/pages/Costs";
 import Eval from "@/pages/Eval";
 import Goals from "@/pages/Goals";
+import Hil from "@/pages/Hil";
 import Knowledge from "@/pages/Knowledge";
 import Monitor from "@/pages/Monitor";
 import Onboarding from "@/pages/Onboarding";
@@ -68,6 +69,7 @@ export function App() {
             <Route path="monitor" element={<Monitor />} />
             <Route path="goals" element={<Goals />} />
             <Route path="eval" element={<Eval />} />
+            <Route path="hil" element={<Hil />} />
             <Route path="settings" element={<Settings />} />
           </Route>
         </Routes>

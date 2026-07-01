@@ -868,3 +868,52 @@ relying on incidental global state.
 - Web: `useEval` +3, `Eval` page +5, Sidebar +1 nav-entry test — **273
   vitest tests total**.
 
+## Phase 5o — HIL (Hardware-in-the-Loop)
+
+Ports `GET /hil/status`, `POST /hil/connect`, `POST /hil/run-suite`,
+`GET /hil/report/{session_id}` — connect to real hardware transports
+(serial/J-Link/CAN/OpenOCD/mock), run test suites against them, and
+generate regulatory evidence reports (IEC 62304 / DO-178C / EN 50128 /
+ISO 26262 / IEC 62443). `/hil` route, `hil.{status,connect,run_suite,
+report}` RPC.
+
+**Scope, deliberately narrower than the runner class**:
+`HILRunner.flash_firmware()` exists in `src/integrations/hil_runner.py`
+but has no endpoint anywhere in the web API either — not ported here,
+for the same reason every other feature in this session mirrors the
+existing API surface rather than inventing a new one. Firmware flashing
+stays unreachable from both interfaces. Reading the runner also showed
+the real-hardware execution path (`_execute_on_hardware`) is only
+implemented for serial and CAN — J-Link/OpenOCD `connect()` runs a real
+but read-only subprocess probe, and `run_suite` against those two
+transports reports BLOCKED rather than touching hardware. The actual
+risk surface for this port is "send a test-trigger command over
+serial/CAN and read the response" — the normal, intended shape of a HIL
+test, not a uniquely dangerous action needing guardrails beyond what
+the web API itself already has (none).
+
+**Safety-by-construction, not a bolt-on**: connecting to a transport
+that can spawn a subprocess (JLinkExe/openocd) or open a real
+serial/CAN handle is always an explicit operator action — `hil.status`
+is the only auto-firing query; `connect`, `run_suite`, and `report` are
+all gated behind a button click (mutations never auto-fire under
+TanStack Query; the report query is additionally gated on a
+`reportRequested` flag set only by its own button). The transport
+selector conditionally renders only the config fields that transport
+actually uses (port/baud for serial; device/serial-number/speed for
+J-Link; interface/channel/bitrate for CAN; a single config-file path
+for OpenOCD) rather than one generic JSON blob, since — unlike
+Workflows' single opaque initial-state object — these are five
+genuinely different, well-known config shapes worth surfacing as real
+fields.
+
+### Testing delta
+- Python (sidecar): hil +12 (module-level singleton pattern like
+  workflow.py/compliance.py — `_hil_runner` reset around every test to
+  avoid cross-test leakage) — **368 sidecar tests total**.
+- Rust: `hil.rs` (4 commands), proxy-only, no new tests; `cargo check`
+  (full `desktop` feature) verifies the wiring — **26 pure-Rust tests
+  total** (unchanged).
+- Web: `useHil` +5, `Hil` page +6, Sidebar +1 nav-entry test — **285
+  vitest tests total**.
+

@@ -20,6 +20,7 @@ pub mod constitution;
 pub mod costs;
 pub mod eval;
 pub mod goals;
+pub mod hil;
 pub mod knowledge;
 pub mod monitor;
 pub mod org;
