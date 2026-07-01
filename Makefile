@@ -209,6 +209,15 @@ desktop-build:
 	@echo "Building sage-desktop release bundle..."
 	cd sage-desktop && npm run tauri build
 
+# Warm-run: pre-pay the ~31s torch/sentence-transformers import + model download
+# and populate the HuggingFace cache, so the first real desktop launch is fast.
+# Run this ONCE on a new demo machine (needs network). Afterwards launch with
+# HF_HUB_OFFLINE=1 to skip HF revalidation entirely. Set SAGE_MINIMAL=1 instead
+# to skip embeddings altogether (keyword-only Knowledge search, near-instant).
+desktop-warmup:
+	@echo "Warming embedding model cache (one-time, needs network)..."
+	$(PYTHON) -c "from src.memory.vector_store import VectorMemory; VectorMemory(); print('warm-up complete')"
+
 # Python sidecar tests (~82 tests; no Rust, no Node)
 test-desktop-sidecar:
 	cd sage-desktop/sidecar && $(abspath $(PYTEST)) tests/ -v

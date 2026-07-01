@@ -32,8 +32,16 @@ via `make desktop-dev-solution`.
   loading/`!draft` guard.
 - [ ] **T1.7 Silent-failure pages.** Backlog, Costs, Compliance, Eval, Goals, Knowledge, Onboarding,
   Collective swallow query/mutation errors. Backlog worst (failed submit just sits there).
-- [ ] **T1.8 Startup latency ~41s** (measured live). Two `VectorMemory` instances each eager-load
-  sentence-transformers. Collapse to one + lazy; document `HF_HUB_OFFLINE=1` for demo day.
+- [MITIGATED] **T1.8 Startup latency ~41s** (measured live). Diagnosis refined: the dominant cost
+  is the one-time `torch`/sentence-transformers **process import (~31s)** plus ~30 HuggingFace
+  network revalidation calls — NOT the second `VectorMemory` instance (collapsing it saves only a
+  few seconds). Demo-day guarantee is operational and zero-code-risk: **warm-run once** (pre-pays
+  the torch + model load and populates the HF cache), then run with **`HF_HUB_OFFLINE=1`** (removes
+  the ~30 network revalidations). `SAGE_MINIMAL=1` gives near-instant startup if semantic Knowledge
+  search isn't being demoed (keyword fallback). **Deferred (post-demo):** making
+  `VectorMemory.__init__` truly lazy (defer embedding load to first query/add) — a framework-wide
+  change to a widely-imported singleton; not worth the pre-demo risk for a few seconds when the
+  operational path removes the larger network cost. See pre-demo checklist below.
 
 ## Tier 2 — Product gaps ("only interface" credibility)
 
@@ -49,7 +57,8 @@ via `make desktop-dev-solution`.
 - [ ] **T2.5 Audit drill-down missing on desktop.** One exact-match filter, fixed limit 100, traces
   not clickable; sidecar handler already supports more (limit/offset/action_type/trace_id).
 - [ ] **T2.6 No `.sage` export/backup.**
-- [ ] **T2.7 Header titles missing for 10 routes** (`Header.tsx` TITLE_MAP).
+- [DONE] **T2.7 Header titles missing for 10 routes.** Added `/analyze`, `/compliance`, `/costs`,
+  `/workflows`, `/skills`, `/organization`, `/monitor`, `/goals`, `/eval`, `/hil` to `Header.tsx`.
 - [ ] **T2.8 Built-but-dead capabilities** — `useBatchApprove`, `useApproval`, `useAuditByTrace`,
   `useAuditStats` wired, unused.
 

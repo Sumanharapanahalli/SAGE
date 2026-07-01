@@ -1,6 +1,7 @@
 import { useLocation } from "react-router-dom";
 
 const TITLE_MAP: Record<string, string> = {
+  "/analyze": "Analyze",
   "/approvals": "Approvals",
   "/agents": "Agents",
   "/audit": "Audit",
@@ -12,6 +13,15 @@ const TITLE_MAP: Record<string, string> = {
   "/constitution": "Constitution",
   "/knowledge": "Knowledge",
   "/collective": "Collective Intelligence",
+  "/compliance": "Compliance",
+  "/costs": "Costs",
+  "/workflows": "Workflows",
+  "/skills": "Skills & Tools",
+  "/organization": "Organization",
+  "/monitor": "Monitor",
+  "/goals": "Goals",
+  "/eval": "Eval",
+  "/hil": "Hardware-in-the-Loop",
   "/settings": "Settings",
 };
 
