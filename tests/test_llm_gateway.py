@@ -326,3 +326,276 @@ def test_starter_solution_exists():
     for fname in ("project.yaml", "prompts.yaml", "tasks.yaml"):
         path = os.path.join(base, fname)
         assert os.path.isfile(path), f"Missing starter template file: {path}"
+
+
+# ---------------------------------------------------------------------------
+# Circuit breaker tests (Task 4)
+# ---------------------------------------------------------------------------
+
+
+def test_circuit_breaker_state_machine_transitions_with_logging(caplog):
+    """Direct unit test of CircuitBreaker: CLOSED -> OPEN -> HALF_OPEN -> CLOSED,
+    with each transition logged."""
+    import logging
+    from src.core.llm_gateway import CircuitBreaker
+
+    clock = {"t": 0.0}
+    cb = CircuitBreaker(name="test-provider", failure_threshold=3, reset_timeout=60.0,
+                        clock=lambda: clock["t"])
+
+    assert cb.state == CircuitBreaker.CLOSED
+
+    with caplog.at_level(logging.WARNING, logger="CircuitBreaker"):
+        # 2 failures — not enough to trip
+        cb.record_failure()
+        cb.record_failure()
+        assert cb.state == CircuitBreaker.CLOSED
+
+        # 3rd consecutive failure trips the breaker
+        cb.record_failure()
+        assert cb.state == CircuitBreaker.OPEN
+        assert any("CLOSED -> OPEN" in r.message for r in caplog.records)
+
+        # While OPEN and before the cooldown, requests are rejected without a probe.
+        assert cb.allow_request() is False
+
+        # Advance the clock past reset_timeout — next request is admitted as a probe.
+        clock["t"] = 61.0
+        assert cb.allow_request() is True
+        assert cb.state == CircuitBreaker.HALF_OPEN
+        assert any("OPEN -> HALF_OPEN" in r.message for r in caplog.records)
+
+        # A second concurrent caller is rejected while the probe is in flight.
+        assert cb.allow_request() is False
+
+        # The probe succeeds -> circuit closes.
+        cb.record_success()
+        assert cb.state == CircuitBreaker.CLOSED
+        assert any("HALF_OPEN -> CLOSED" in r.message for r in caplog.records)
+
+
+def test_circuit_breaker_reopens_on_half_open_probe_failure():
+    """A failed HALF_OPEN probe re-opens the circuit for another cooldown window."""
+    from src.core.llm_gateway import CircuitBreaker
+
+    clock = {"t": 0.0}
+    cb = CircuitBreaker(name="test-provider", failure_threshold=3, reset_timeout=60.0,
+                        clock=lambda: clock["t"])
+    cb.record_failure()
+    cb.record_failure()
+    cb.record_failure()
+    assert cb.state == CircuitBreaker.OPEN
+
+    clock["t"] = 61.0
+    assert cb.allow_request() is True  # admits the probe
+    assert cb.state == CircuitBreaker.HALF_OPEN
+
+    cb.record_failure()  # probe fails
+    assert cb.state == CircuitBreaker.OPEN
+    assert cb.allow_request() is False  # cooldown restarted, still rejecting
+
+
+def test_generate_opens_circuit_after_threshold_consecutive_failures():
+    """After N consecutive provider failures, generate() fails fast without
+    calling the provider again."""
+    _reset_llm_gateway_singleton()
+    from src.core.llm_gateway import LLMGateway
+    gw = LLMGateway()
+    gw._cb_failure_threshold = 3
+    gw._cb_reset_timeout = 60.0
+
+    with patch.object(gw.provider, "generate", return_value="Error: boom") as mock_gen:
+        for _ in range(3):
+            result = gw.generate("p", "s")
+            assert result.startswith("Error")
+        assert mock_gen.call_count == 3
+
+        # Circuit is now OPEN — the 4th call must fail fast without a provider call.
+        result = gw.generate("p", "s")
+        assert "circuit breaker" in result.lower() or "circuit" in result.lower()
+        assert mock_gen.call_count == 3, "provider must NOT be called while circuit is OPEN"
+    _reset_llm_gateway_singleton()
+
+
+def test_generate_circuit_recovers_after_cooldown():
+    """Once the cooldown elapses, generate() admits a probe and can close the
+    circuit again on success."""
+    _reset_llm_gateway_singleton()
+    from src.core.llm_gateway import LLMGateway
+    gw = LLMGateway()
+    gw._cb_failure_threshold = 2
+    gw._cb_reset_timeout = 30.0
+
+    with patch.object(gw.provider, "generate", return_value="Error: boom"):
+        gw.generate("p", "s")
+        gw.generate("p", "s")
+
+    provider_name = gw.provider.provider_name()
+    breaker = gw._get_circuit_breaker(provider_name)
+    assert breaker.state == "OPEN"
+
+    # Fast-forward the breaker's clock past the cooldown window.
+    breaker._opened_at -= (gw._cb_reset_timeout + 1)
+
+    with patch.object(gw.provider, "generate", return_value="recovered") as mock_gen:
+        result = gw.generate("p", "s")
+        assert result == "recovered"
+        assert mock_gen.call_count == 1
+    assert breaker.state == "CLOSED"
+    _reset_llm_gateway_singleton()
+
+
+# ---------------------------------------------------------------------------
+# Structured logging tests (Task 5)
+# ---------------------------------------------------------------------------
+
+
+def test_generate_success_emits_structured_log_record(caplog):
+    """A successful generate() call logs a record carrying the canonical
+    structured fields (event, provider, duration_ms, status) via extra=."""
+    import logging
+    from src.core.llm_gateway import LLMGateway
+    gw = LLMGateway()
+    with caplog.at_level(logging.INFO, logger="LLMGateway"), \
+         patch.object(gw.provider, "generate", return_value="OK"):
+        gw.generate("prompt", "system")
+
+    matches = [r for r in caplog.records if getattr(r, "event", None) == "generation"
+               and getattr(r, "status", None) == "completed"]
+    assert matches, "expected a structured 'generation'/'completed' log record"
+    record = matches[-1]
+    assert record.provider  # non-empty provider name attached
+    assert isinstance(record.duration_ms, int)
+    assert record.duration_ms >= 0
+
+
+def test_generate_failure_emits_structured_error_log_record(caplog):
+    """A raised provider exception logs a structured record with status='error'."""
+    import logging
+    from src.core.llm_gateway import LLMGateway
+    gw = LLMGateway()
+    with caplog.at_level(logging.ERROR, logger="LLMGateway"), \
+         patch.object(gw.provider, "generate", side_effect=RuntimeError("boom")):
+        gw._retry_max = 0  # no retries — fail fast for a deterministic single log record
+        gw.generate("prompt", "system")
+
+    matches = [r for r in caplog.records if getattr(r, "event", None) == "generation"
+               and getattr(r, "status", None) == "error"]
+    assert matches, "expected a structured 'generation'/'error' log record"
+
+
+# ---------------------------------------------------------------------------
+# Provider fallback tests (Task 18 — validation pass)
+# ---------------------------------------------------------------------------
+
+
+def _mock_provider(name, *, returns=None, raises=None):
+    """Build a mock LLMProvider whose generate() is fully mocked."""
+    provider = MagicMock()
+    provider.provider_name.return_value = name
+    if raises is not None:
+        provider.generate.side_effect = raises
+    else:
+        provider.generate.return_value = returns
+    return provider
+
+
+def test_fallback_to_secondary_when_primary_raises():
+    """When the primary provider raises, the gateway falls back to the secondary."""
+    _reset_llm_gateway_singleton()
+    from src.core.llm_gateway import LLMGateway
+    gw = LLMGateway()
+
+    primary = _mock_provider("Primary", raises=RuntimeError("primary unavailable"))
+    secondary = _mock_provider("Secondary", returns="secondary response")
+    gw.provider_pool.register("primary", primary)
+    gw.provider_pool.register("secondary", secondary)
+
+    result = gw.generate_with_fallback(
+        "test prompt", "test system", provider_names=["primary", "secondary"]
+    )
+
+    assert result == "secondary response", (
+        f"Expected fallback to secondary, got: {result!r}"
+    )
+    primary.generate.assert_called_once_with("test prompt", "test system")
+    secondary.generate.assert_called_once_with("test prompt", "test system")
+    _reset_llm_gateway_singleton()
+
+
+def test_fallback_returns_first_success_without_calling_others():
+    """A healthy primary short-circuits the chain — the secondary is never called."""
+    _reset_llm_gateway_singleton()
+    from src.core.llm_gateway import LLMGateway
+    gw = LLMGateway()
+
+    primary = _mock_provider("Primary", returns="primary response")
+    secondary = _mock_provider("Secondary", returns="secondary response")
+    gw.provider_pool.register("primary", primary)
+    gw.provider_pool.register("secondary", secondary)
+
+    result = gw.generate_with_fallback(
+        "test prompt", "test system", provider_names=["primary", "secondary"]
+    )
+
+    assert result == "primary response"
+    primary.generate.assert_called_once()
+    secondary.generate.assert_not_called()
+    _reset_llm_gateway_singleton()
+
+
+def test_all_providers_fail_raises_error_listing_all_providers():
+    """When every provider raises, LLMProviderError is raised naming all of them."""
+    _reset_llm_gateway_singleton()
+    from src.core.llm_gateway import LLMGateway, LLMProviderError
+    gw = LLMGateway()
+
+    primary = _mock_provider("Primary", raises=RuntimeError("primary boom"))
+    secondary = _mock_provider("Secondary", raises=ValueError("secondary boom"))
+    gw.provider_pool.register("primary", primary)
+    gw.provider_pool.register("secondary", secondary)
+
+    with pytest.raises(LLMProviderError) as exc_info:
+        gw.generate_with_fallback(
+            "test prompt", "test system", provider_names=["primary", "secondary"]
+        )
+
+    message = str(exc_info.value)
+    assert "primary" in message, f"Error must list the primary provider: {message!r}"
+    assert "secondary" in message, f"Error must list the secondary provider: {message!r}"
+    primary.generate.assert_called_once_with("test prompt", "test system")
+    secondary.generate.assert_called_once_with("test prompt", "test system")
+    failed_names = [name for name, _ in exc_info.value.failures]
+    assert failed_names == ["primary", "secondary"]
+    _reset_llm_gateway_singleton()
+
+
+def test_fallback_with_only_failing_primary_raises_llm_provider_error():
+    """No secondary configured: a failing primary raises LLMProviderError naming it."""
+    _reset_llm_gateway_singleton()
+    from src.core.llm_gateway import LLMGateway, LLMProviderError
+    gw = LLMGateway()
+
+    primary = _mock_provider("Primary", raises=RuntimeError("primary down"))
+    gw.provider_pool.register("primary", primary)
+
+    with pytest.raises(LLMProviderError) as exc_info:
+        gw.generate_with_fallback(
+            "test prompt", "test system", provider_names=["primary"]
+        )
+
+    assert "primary" in str(exc_info.value)
+    primary.generate.assert_called_once()
+    _reset_llm_gateway_singleton()
+
+
+def test_generate_with_fallback_no_providers_configured_raises():
+    """No providers registered and none supplied explicitly -> LLMProviderError."""
+    _reset_llm_gateway_singleton()
+    from src.core.llm_gateway import LLMGateway, LLMProviderError
+    gw = LLMGateway()
+    assert gw.provider_pool.list_providers() == []
+
+    with pytest.raises(LLMProviderError):
+        gw.generate_with_fallback("test prompt", "test system")
+    _reset_llm_gateway_singleton()

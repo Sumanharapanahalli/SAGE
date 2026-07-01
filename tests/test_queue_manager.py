@@ -352,3 +352,44 @@ def test_parallel_runner_falls_back_when_disabled():
     for task in tasks:
         assert "wave_id" not in task.metadata
     assert len(dispatch_log) == 2
+
+
+# ---------------------------------------------------------------------------
+# Structured logging tests (Task 5)
+# ---------------------------------------------------------------------------
+
+
+def test_mark_done_emits_structured_log_record(caplog):
+    """mark_done() logs a record carrying event/task_id/status/duration_ms via extra=."""
+    import logging
+    q = _make_fresh_queue()
+    task_id = q.submit("ANALYZE_LOG", {"log_entry": "error"})
+    task = q.get_next(timeout=1.0)
+    assert task is not None
+
+    with caplog.at_level(logging.INFO, logger="TaskQueue"):
+        q.mark_done(task.task_id, result={"ok": True})
+
+    matches = [r for r in caplog.records if getattr(r, "event", None) == "task_completed"]
+    assert matches, "expected a structured 'task_completed' log record"
+    record = matches[-1]
+    assert record.task_id == task.task_id
+    assert record.status == "completed"
+
+
+def test_mark_failed_emits_structured_log_record(caplog):
+    """mark_failed() logs a record carrying event/task_id/status via extra=."""
+    import logging
+    q = _make_fresh_queue()
+    task_id = q.submit("ANALYZE_LOG", {"log_entry": "error"})
+    task = q.get_next(timeout=1.0)
+    assert task is not None
+
+    with caplog.at_level(logging.ERROR, logger="TaskQueue"):
+        q.mark_failed(task.task_id, "boom")
+
+    matches = [r for r in caplog.records if getattr(r, "event", None) == "task_failed"]
+    assert matches, "expected a structured 'task_failed' log record"
+    record = matches[-1]
+    assert record.task_id == task.task_id
+    assert record.status == "failed"

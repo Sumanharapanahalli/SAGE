@@ -174,6 +174,98 @@ class TenantMiddleware(BaseHTTPMiddleware):
 app.add_middleware(TenantMiddleware)
 
 # ---------------------------------------------------------------------------
+# Request-ID Middleware (per-request UUID4 correlation)
+# ---------------------------------------------------------------------------
+
+
+class RequestIDMiddleware:
+    """
+    Assigns every incoming HTTP request a UUID4 request_id (reusing an inbound
+    X-Request-ID header ONLY when it is a valid UUID4), stores it in a context
+    var for downstream correlation, and echoes it back as X-Request-ID on the
+    response — including handled 4xx, rate-limit (429), AND true unhandled 500s.
+
+    A PURE ASGI middleware (not BaseHTTPMiddleware) is used so the ContextVar
+    set here is reliably visible to the endpoint, the LLM gateway, and the
+    audit logger — BaseHTTPMiddleware runs the downstream app in a separate
+    task where ContextVar writes don't propagate.
+
+    NOTE on 500s: as registered via ``app.add_middleware``, this middleware sits
+    INSIDE Starlette's ServerErrorMiddleware. For an unhandled exception the
+    error response is normally produced by ServerErrorMiddleware using the
+    original ``send`` — bypassing our ``send_wrapper``. To guarantee the header
+    on that path, we catch the exception here and, if the response has not
+    started, emit a 500 carrying X-Request-ID, then re-raise. ServerErrorMiddleware
+    sees the response as already started and re-raises without double-sending,
+    so its logging/handling is preserved.
+    """
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        from src.core.request_context import set_request_id, reset_request_id
+
+        # Honour a caller-supplied id for distributed tracing (validated); else
+        # generate one. Invalid/malicious header values are discarded.
+        incoming = ""
+        for name, value in scope.get("headers", []):
+            if name == b"x-request-id":
+                incoming = value.decode("latin-1")
+                break
+        request_id, token = set_request_id(incoming)
+        # Also expose on request.state for handlers that want it directly.
+        scope.setdefault("state", {})["request_id"] = request_id
+
+        rid_bytes = request_id.encode("latin-1")
+        response_started = False
+
+        async def send_wrapper(message):
+            nonlocal response_started
+            if message["type"] == "http.response.start":
+                response_started = True
+                headers = [
+                    (k, v) for (k, v) in message.get("headers", [])
+                    if k.lower() != b"x-request-id"
+                ]
+                headers.append((b"x-request-id", rid_bytes))
+                message["headers"] = headers
+            await send(message)
+
+        try:
+            await self.app(scope, receive, send_wrapper)
+        except Exception:
+            # Unhandled error → stamp the header on the 500 ourselves (see class
+            # docstring) only if nothing has been sent yet, then re-raise.
+            if not response_started:
+                await send({
+                    "type": "http.response.start",
+                    "status": 500,
+                    "headers": [
+                        (b"content-type", b"text/plain; charset=utf-8"),
+                        (b"x-request-id", rid_bytes),
+                    ],
+                })
+                await send({
+                    "type": "http.response.body",
+                    "body": b"Internal Server Error",
+                })
+            raise
+        finally:
+            # Explicitly restore the prior context value for this task.
+            reset_request_id(token)
+
+
+# Registered LAST so it is the OUTERMOST application middleware — it sets the
+# context var before any other middleware/handler runs and stamps the header
+# on every response (including 429s from RateLimitMiddleware and 500s).
+app.add_middleware(RequestIDMiddleware)
+
+# ---------------------------------------------------------------------------
 # Pydantic Request Models
 # ---------------------------------------------------------------------------
 
@@ -502,16 +594,97 @@ async def shutdown(request: Request):
     return {"shutdown": True}
 
 
+# Process start marker for uptime_seconds. Captured once at import so it tracks
+# the lifetime of this process. monotonic() is immune to wall-clock changes.
+_PROCESS_START_MONOTONIC = _time.monotonic()
+
+
+def _first_callable(obj, names):
+    """Return the result of the first existing zero-arg method in `names`.
+
+    Tolerates differing accessor names across versions of the gateway / queue /
+    vector store so a single renamed method does NOT pin a probe to its failure
+    value. Raises AttributeError only if none of the candidates exist; lets the
+    caller's try/except classify.
+    """
+    for n in names:
+        fn = getattr(obj, n, None)
+        if callable(fn):
+            return fn()
+    raise AttributeError(f"none of {names!r} found on {type(obj).__name__}")
+
+
+def _probe_llm():
+    """Return (provider:str, status:'ok'|'degraded'|'down').
+
+    Reuses the SAME provider accessor the existing `llm_provider` field used.
+    Status is derived from already-collected usage counters — no extra network
+    call, so /health stays fast (a live ping lives at GET /health/llm).
+    """
+    try:
+        llm = _get_llm_gateway()
+    except Exception as e:  # gateway itself unavailable
+        return f"error: {e}", "down"
+
+    try:
+        provider = _first_callable(llm, ("get_provider_name", "provider_name", "get_provider"))
+        provider = str(provider) if provider is not None else "unknown"
+    except Exception:
+        provider = getattr(llm, "provider", None) or "unknown"
+
+    if not provider or provider in ("None", "unknown") or provider.lower().startswith("error"):
+        return provider or "unknown", "down"
+
+    try:
+        usage = _first_callable(llm, ("get_usage", "usage", "get_stats")) or {}
+        calls = int(usage.get("calls", 0) or 0)
+        errors = int(usage.get("errors", 0) or 0)
+        if calls > 0 and (errors / calls) >= 0.5:
+            return provider, "degraded"
+        return provider, "ok"
+    except Exception:
+        return provider, "ok"
+
+
+def _probe_queue_depth():
+    try:
+        q = _get_task_queue()
+        return int(_first_callable(q, ("get_pending_count", "pending_count", "qsize", "size", "__len__")))
+    except Exception as e:
+        logger.warning("health: queue_depth unavailable: %s", e)
+        return 0
+
+
+def _probe_memory_entries():
+    """Best-effort vector-store entry count. Never raises into the handler."""
+    try:
+        from src.memory.vector_store import vector_memory  # lazy: import never breaks /health
+    except Exception as e:
+        logger.warning("health: vector store unavailable: %s", e)
+        return 0
+    try:
+        return int(_first_callable(vector_memory, ("count", "size", "num_entries", "__len__")))
+    except Exception as e:
+        logger.warning("health: memory_entries unavailable: %s", e)
+        return 0
+
+
 @app.get("/health")
 async def health():
     """
     Health check endpoint. Returns system status and configured LLM provider.
+
+    Additive fields (existing response shape preserved):
+      queue_depth     : int    — tasks currently pending in the task queue
+      llm_status      : str    — 'ok' | 'degraded' | 'down'
+      memory_entries  : int    — vector-store entry count (0 if unavailable)
+      uptime_seconds  : float  — seconds since this process started
+    Every probe is isolated so one failing dependency still yields HTTP 200.
     """
-    try:
-        llm = _get_llm_gateway()
-        provider = llm.get_provider_name()
-    except Exception as e:
-        provider = f"error: {e}"
+    provider, llm_status = _probe_llm()
+    queue_depth = _probe_queue_depth()
+    memory_entries = _probe_memory_entries()
+    uptime_seconds = round(_time.monotonic() - _PROCESS_START_MONOTONIC, 3)
 
     pc = _get_project_config()
     return {
@@ -521,6 +694,10 @@ async def health():
         "project": pc.metadata,
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "llm_provider": provider,
+        "queue_depth": queue_depth,
+        "llm_status": llm_status,
+        "memory_entries": memory_entries,
+        "uptime_seconds": uptime_seconds,
         "environment": {
             "gitlab_configured":  bool(os.environ.get("GITLAB_URL")),
             "teams_configured":   bool(os.environ.get("TEAMS_INCOMING_WEBHOOK_URL")),
@@ -812,15 +989,157 @@ async def agent_roles():
     }
 
 
+# ---------------------------------------------------------------------------
+# Per-IP Token-Bucket Rate Limiter for POST /agent/run
+# ---------------------------------------------------------------------------
+# Simple in-memory token bucket (no Redis). Capacity = api.rate_limit_per_min
+# tokens, refilled continuously at rate_limit_per_min / 60 tokens per second.
+# Each request consumes one token; when the bucket is empty the request is
+# rejected with HTTP 429 and a Retry-After header. This is layered ON TOP of
+# the app-wide RateLimitMiddleware above — it targets /agent/run specifically
+# with a much tighter budget (10/60s by default vs. 120/60s app-wide).
+# ---------------------------------------------------------------------------
+
+import math as _math
+import threading as _threading
+
+
+def _get_agent_run_rate_limit() -> int:
+    """
+    Read api.rate_limit_per_min from config.yaml. Defaults to 10 if unset
+    or unreadable. A value <= 0 disables rate limiting for /agent/run.
+    """
+    try:
+        config_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+            "config", "config.yaml",
+        )
+        import yaml as _yaml
+        with open(config_path) as f:
+            cfg = _yaml.safe_load(f) or {}
+        return int(cfg.get("api", {}).get("rate_limit_per_min", 10))
+    except Exception:
+        return 10
+
+
+class _TokenBucketLimiter:
+    """
+    Thread-safe in-memory per-IP token bucket.
+
+    capacity      : maximum burst (== requests allowed in one full window)
+    window_seconds: the period over which `capacity` tokens are refilled
+    """
+
+    def __init__(self, capacity: int, window_seconds: float = 60.0):
+        self.capacity = capacity
+        self.window_seconds = window_seconds
+        self.refill_rate = capacity / window_seconds if window_seconds > 0 else 0.0
+        # ip -> (tokens, last_refill_monotonic)
+        self._buckets: dict = {}
+        self._lock = _threading.Lock()
+
+    def configure(self, capacity: int, window_seconds: float = 60.0) -> None:
+        """Reconfigure capacity/window and clear state. Useful for tests."""
+        with self._lock:
+            self.capacity = capacity
+            self.window_seconds = window_seconds
+            self.refill_rate = capacity / window_seconds if window_seconds > 0 else 0.0
+            self._buckets.clear()
+
+    def reset(self) -> None:
+        """Drop all per-IP state. Useful for tests."""
+        with self._lock:
+            self._buckets.clear()
+
+    def check(self, key: str) -> tuple:
+        """
+        Attempt to consume one token for `key`.
+
+        Returns (allowed, retry_after_seconds). retry_after_seconds is 0 when
+        allowed, otherwise the integer number of seconds the caller should
+        wait before the next token is available.
+        """
+        if self.capacity <= 0:
+            return True, 0  # disabled
+
+        now = _time.monotonic()
+        with self._lock:
+            tokens, last = self._buckets.get(key, (float(self.capacity), now))
+            elapsed = now - last
+            tokens = min(self.capacity, tokens + elapsed * self.refill_rate)
+
+            if tokens >= 1.0:
+                self._buckets[key] = (tokens - 1.0, now)
+                return True, 0
+
+            deficit = 1.0 - tokens
+            retry_after = (
+                int(_math.ceil(deficit / self.refill_rate))
+                if self.refill_rate > 0
+                else int(self.window_seconds)
+            )
+            self._buckets[key] = (tokens, now)
+            return False, max(1, retry_after)
+
+
+# Single shared limiter instance for the /agent/run endpoint.
+_agent_run_limiter = _TokenBucketLimiter(
+    capacity=_get_agent_run_rate_limit(),
+    window_seconds=60.0,
+)
+
+
+def _client_ip(request: Request) -> str:
+    """
+    Resolve the client IP, honouring X-Forwarded-For when behind a proxy.
+    Falls back to the direct peer address, then to "unknown".
+    """
+    fwd = request.headers.get("x-forwarded-for", "")
+    if fwd:
+        return fwd.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
+
+
 @app.post("/agent/run")
-async def agent_run(req: AgentRunRequest):
-    """Run a UniversalAgent role against a task. Requires human approval after."""
+async def agent_run(req: AgentRunRequest, request: Request):
+    """Run a UniversalAgent role against a task. Requires human approval after.
+
+    Rate limited per client IP via an in-memory token bucket
+    (api.rate_limit_per_min requests per 60 seconds). Excess requests
+    receive HTTP 429 with a Retry-After header. The task description is
+    sanitized (null bytes / control chars stripped, 4000-char cap) before
+    being handed to the agent.
+    """
+    client_ip = _client_ip(request)
+    allowed, retry_after = _agent_run_limiter.check(client_ip)
+    if not allowed:
+        raise HTTPException(
+            status_code=429,
+            detail=(
+                f"Rate limit exceeded: max {_agent_run_limiter.capacity} requests "
+                f"per {int(_agent_run_limiter.window_seconds)}s per IP. "
+                f"Retry after {retry_after}s."
+            ),
+            headers={"Retry-After": str(retry_after)},
+        )
+
     from src.agents.universal import UniversalAgent
+    from src.modules.payload_validator import sanitize_task_input, ValidationError as _PayloadValidationError
+
+    # Sanitize the free-text task: strip null bytes / control characters
+    # (\x00-\x1f except tab and newline) and enforce the 4000-char limit.
+    # Disallowed characters are stripped (sanitize-and-process); only an
+    # over-length task raises -> HTTP 422.
+    try:
+        clean_task = sanitize_task_input(req.task)
+    except _PayloadValidationError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
     try:
         agent = UniversalAgent()
         result = agent.run(
             role_id=req.role_id,
-            task=req.task,
+            task=clean_task,
             context=req.context,
             actor=req.actor,
         )

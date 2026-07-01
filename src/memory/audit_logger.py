@@ -80,6 +80,7 @@ class AuditLogger:
         # Idempotent migrations for databases created before named-approvals / access-audit features
         _identity_columns = [
             ("trace_id",           "TEXT"),
+            ("request_id",         "TEXT"),    # Per-HTTP-request correlation id (UUID4)
             ("event_type",         "TEXT"),
             ("status",             "TEXT DEFAULT 'OK'"),
             ("approved_by",        "TEXT"),
@@ -203,15 +204,34 @@ class AuditLogger:
         approver_role: str = None,
         approver_email: str = None,
         approver_provider: str = None,
+        # Per-request correlation id. Defaults to the active request context
+        # (set by RequestIDMiddleware) when not passed explicitly.
+        request_id: str = None,
     ):
         """
         Log an event to the persistent audit trail.
 
         The optional approved_by / approver_* kwargs capture the identity of
         the human who approved or rejected a proposal (T1-001 Named Approvals).
+
+        The originating HTTP request_id (set by RequestIDMiddleware) is recorded
+        on every event automatically — pulled from the request context when not
+        passed explicitly — so the full proposal → approval → execution chain is
+        traceable to a single inbound request.
         """
         event_id = str(uuid.uuid4())
         timestamp = datetime.now(timezone.utc).isoformat()
+
+        if request_id is None:
+            try:
+                from src.core.request_context import get_request_id
+                request_id = get_request_id()
+            except Exception:
+                request_id = ""
+
+        metadata = dict(metadata or {})
+        if request_id and "request_id" not in metadata:
+            metadata["request_id"] = request_id
         metadata_json = json.dumps(metadata) if metadata else "{}"
 
         try:
@@ -220,12 +240,12 @@ class AuditLogger:
             cursor.execute(
                 '''
                 INSERT INTO compliance_audit_log
-                    (id, timestamp, actor, action_type, input_context, output_content,
+                    (id, timestamp, request_id, actor, action_type, input_context, output_content,
                      metadata, approved_by, approver_role, approver_email, approver_provider)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ''',
                 (
-                    event_id, timestamp, actor, action_type,
+                    event_id, timestamp, (request_id or None), actor, action_type,
                     input_context, output_content, metadata_json,
                     approved_by, approver_role, approver_email, approver_provider,
                 ),

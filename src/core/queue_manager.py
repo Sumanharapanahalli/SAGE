@@ -208,6 +208,19 @@ TASK_TIMEOUT_DEFAULTS: dict[str, int] = {
     "CODE_TASK": 600,
 }
 
+
+def _task_duration_ms(task: "Task") -> Optional[int]:
+    """Milliseconds between task.started_at and task.completed_at, or None
+    when either timestamp is missing (structured-logging helper)."""
+    if not task.started_at or not task.completed_at:
+        return None
+    try:
+        started = datetime.fromisoformat(task.started_at)
+        completed = datetime.fromisoformat(task.completed_at)
+        return int((completed - started).total_seconds() * 1000)
+    except (TypeError, ValueError):
+        return None
+
 DEFAULT_TASK_TIMEOUT = 300  # 5 minutes fallback
 
 
@@ -509,7 +522,15 @@ class TaskQueue:
                 task.completed_at = datetime.now(timezone.utc).isoformat()
                 task.result = result
                 self._db_update(task)
-                self.logger.info("Task completed: %s (id: %s)", task.task_type, task_id)
+                self.logger.info(
+                    "Task completed: %s (id: %s)", task.task_type, task_id,
+                    extra={
+                        "event": "task_completed",
+                        "task_id": task_id,
+                        "status": "completed",
+                        "duration_ms": _task_duration_ms(task),
+                    },
+                )
             else:
                 self.logger.warning("mark_done called for unknown task_id: %s", task_id)
         try:
@@ -528,7 +549,13 @@ class TaskQueue:
                 task.error_history.append(error)
                 self._db_update(task)
                 self.logger.error(
-                    "Task FAILED: %s (id: %s) — %s", task.task_type, task_id, error
+                    "Task FAILED: %s (id: %s) — %s", task.task_type, task_id, error,
+                    extra={
+                        "event": "task_failed",
+                        "task_id": task_id,
+                        "status": "failed",
+                        "duration_ms": _task_duration_ms(task),
+                    },
                 )
         try:
             self._queue.task_done()

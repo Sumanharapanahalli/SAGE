@@ -95,6 +95,80 @@ def test_health_contains_provider_info(client):
     assert "llm_provider" in data, f"Expected 'llm_provider' in health response: {data}"
 
 
+VALID_LLM_STATUSES = {"ok", "degraded", "down"}
+
+
+def test_health_single_route_not_shadowed(client):
+    """Exactly one /health route — guards against a duplicate shadowing the new fields."""
+    c, _ = client
+    from src.interface.api import app
+    paths = [r.path for r in app.routes if getattr(r, "path", None) == "/health"]
+    assert len(paths) == 1, f"expected one /health route, found {len(paths)}"
+
+
+def test_health_new_fields_present_with_correct_types(client):
+    """GET /health must additionally return queue_depth, llm_status, memory_entries,
+    uptime_seconds — without breaking the existing shape."""
+    c, _ = client
+    with patch("src.interface.api._get_llm_gateway") as mock_llm:
+        mock_llm.return_value.get_provider_name.return_value = "GeminiCLI (gemini-2.5-flash)"
+        mock_llm.return_value.get_usage.return_value = {"calls": 10, "errors": 0}
+        resp = c.get("/health")
+    body = resp.json()
+    assert isinstance(body["queue_depth"], int)
+    assert not isinstance(body["queue_depth"], bool)
+    assert isinstance(body["llm_provider"], str)
+    assert isinstance(body["llm_status"], str) and body["llm_status"] in VALID_LLM_STATUSES
+    assert isinstance(body["memory_entries"], int)
+    assert not isinstance(body["memory_entries"], bool)
+    assert isinstance(body["uptime_seconds"], float)
+    assert body["uptime_seconds"] >= 0.0
+
+
+def test_health_degraded_llm(client, monkeypatch):
+    """A high error ratio must surface as llm_status='degraded', still HTTP 200."""
+    c, _ = client
+    import src.interface.api as api
+    monkeypatch.setattr(api, "_probe_llm", lambda: ("openai", "degraded"))
+    resp = c.get("/health")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["llm_status"] == "degraded"
+    assert body["llm_provider"] == "openai"
+
+
+def test_health_unreachable_llm_gateway_returns_down_not_500(client, monkeypatch):
+    """A gateway that raises must NOT 500 — handler degrades to 'down' at HTTP 200."""
+    c, _ = client
+    import src.interface.api as api
+
+    def _broken_gateway():
+        raise ConnectionError("cannot reach LLM gateway")
+
+    monkeypatch.setattr(api, "_get_llm_gateway", _broken_gateway)
+    resp = c.get("/health")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["llm_status"] == "down"
+    assert isinstance(body["llm_provider"], str)
+
+
+def test_health_queue_probe_failure_falls_back_to_zero(client, monkeypatch):
+    """A broken task queue must not break /health — queue_depth falls back to 0."""
+    c, _ = client
+    import src.interface.api as api
+
+    def _broken_queue():
+        raise RuntimeError("queue down")
+
+    monkeypatch.setattr(api, "_get_task_queue", _broken_queue)
+    with patch("src.interface.api._get_llm_gateway") as mock_llm:
+        mock_llm.return_value.get_provider_name.return_value = "GeminiCLI"
+        resp = c.get("/health")
+    assert resp.status_code == 200
+    assert resp.json()["queue_depth"] == 0
+
+
 def test_health_shows_configured_integrations(client):
     """GET /health environment dict must show correct booleans for configured integrations."""
     c, _ = client

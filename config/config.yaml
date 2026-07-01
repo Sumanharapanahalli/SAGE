@@ -271,3 +271,12 @@ jlink:
   interface: "SWD"
   speed: 4000
   serial_number: "${JLINK_SERIAL}"
+
+# --- API Server ---
+api:
+  # Per-IP rate limit for POST /agent/run, applied via an in-memory token
+  # bucket (no Redis dependency). `rate_limit_per_min` tokens are refilled
+  # over a rolling 60-second window; each request consumes one token.
+  # Excess requests receive HTTP 429 with a Retry-After header.
+  # Set to 0 to disable rate limiting on /agent/run.
+  rate_limit_per_min: 10

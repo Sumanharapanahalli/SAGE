@@ -10,6 +10,8 @@ Supports three providers:
 Thread-locked: only ONE inference at a time (GPU safety + QMS compliance).
 """
 
+from __future__ import annotations
+
 import threading
 import subprocess
 import logging
@@ -18,6 +20,8 @@ import time
 import os
 import yaml
 from abc import ABC, abstractmethod
+from collections.abc import Iterator
+from typing import Any
 
 # ---------------------------------------------------------------------------
 # Optional Langfuse observability — graceful no-op when not configured
@@ -31,7 +35,7 @@ try:
 except Exception:
     project_config = None  # type: ignore[assignment]
 
-def _init_langfuse(cfg: dict) -> None:
+def _init_langfuse(cfg: dict[str, Any]) -> None:
     """Initialise Langfuse if enabled and credentials are available."""
     global _langfuse_client
     obs = cfg.get("observability", {})
@@ -62,7 +66,7 @@ CONFIG_PATH = os.path.join(
 )
 
 
-def _load_config():
+def _load_config() -> dict[str, Any]:
     if os.path.exists(CONFIG_PATH):
         with open(CONFIG_PATH, "r") as f:
             return yaml.safe_load(f)
@@ -79,7 +83,7 @@ def _load_config():
 # Known model limits (free tier defaults — override via config if on paid plan)
 # daily_requests = 0  means unlimited (local / self-hosted)
 # ---------------------------------------------------------------------------
-_MODEL_LIMITS: dict = {
+_MODEL_LIMITS: dict[str, dict[str, int]] = {
     # Gemini (Google free tier)
     "gemini-3.5-flash":         {"daily_requests": 500,  "context_tokens": 1_048_576},
     "gemini-3.1-flash-lite":  {"daily_requests": 1500, "context_tokens": 1_048_576},
@@ -114,11 +118,11 @@ _MODEL_LIMITS: dict = {
 # ---------------------------------------------------------------------------
 class LLMProvider(ABC):
     @abstractmethod
-    def generate(self, prompt, system_prompt):
+    def generate(self, prompt: str, system_prompt: str) -> str:
         pass
 
     @abstractmethod
-    def provider_name(self):
+    def provider_name(self) -> str:
         pass
 
 
@@ -132,14 +136,14 @@ class GeminiCLIProvider(LLMProvider):
     Requires GOOGLE_CLOUD_PROJECT env var for Workspace accounts.
     """
 
-    def __init__(self, config):
+    def __init__(self, config: dict[str, Any]) -> None:
         self.logger = logging.getLogger("GeminiCLI")
         self.model = config.get("gemini_model", "gemini-3.5-flash")
         self.timeout = config.get("gemini_timeout", config.get("timeout", 120))
         self.gemini_path = self._find_gemini()
         self.logger.info("Gemini CLI provider ready (model: %s, path: %s)", self.model, self.gemini_path)
 
-    def _find_gemini(self):
+    def _find_gemini(self) -> str | None:
         """Locate the gemini CLI executable."""
         import shutil
 
@@ -163,10 +167,10 @@ class GeminiCLIProvider(LLMProvider):
         self.logger.warning("Gemini CLI not found. Install with: npm install -g @google/gemini-cli")
         return None
 
-    def provider_name(self):
+    def provider_name(self) -> str:
         return "GeminiCLI (" + self.model + ")"
 
-    def generate(self, prompt, system_prompt):
+    def generate(self, prompt: str, system_prompt: str) -> str:
         if not self.gemini_path:
             return "Error: Gemini CLI not found. Install with: npm install -g @google/gemini-cli"
 
@@ -247,7 +251,7 @@ class LocalLlamaProvider(LLMProvider):
     Zero network calls. Maximum VRAM efficiency.
     """
 
-    def __init__(self, config):
+    def __init__(self, config: dict[str, Any]) -> None:
         self.logger = logging.getLogger("LocalLlama")
         self._model = None
 
@@ -274,10 +278,10 @@ class LocalLlamaProvider(LLMProvider):
         except Exception as e:
             self.logger.critical("Failed to load model: %s", e)
 
-    def provider_name(self):
+    def provider_name(self) -> str:
         return "LocalLlama (GGUF)"
 
-    def generate(self, prompt, system_prompt):
+    def generate(self, prompt: str, system_prompt: str) -> str:
         if self._model is None:
             return "Error: Local model not loaded."
 
@@ -314,7 +318,7 @@ class ClaudeCodeCLIProvider(LLMProvider):
     Install: npm install -g @anthropic-ai/claude-code
     """
 
-    def __init__(self, config):
+    def __init__(self, config: dict[str, Any]) -> None:
         self.logger = logging.getLogger("ClaudeCodeCLI")
         self.model = config.get("claude_model", "claude-sonnet-4-5")
         self.timeout = config.get("timeout", 120)
@@ -333,7 +337,7 @@ class ClaudeCodeCLIProvider(LLMProvider):
             self.claude_path = self._find_claude()
         self.logger.info("Claude Code CLI provider ready (model: %s, path: %s)", self.model, self.claude_path)
 
-    def _find_claude(self):
+    def _find_claude(self) -> str | None:
         import shutil
         # 1. Well-known install location (Windows Claude Code default)
         known = os.path.join(
@@ -355,10 +359,10 @@ class ClaudeCodeCLIProvider(LLMProvider):
         self.logger.warning("Claude Code CLI not found at known paths.")
         return None
 
-    def provider_name(self):
+    def provider_name(self) -> str:
         return f"ClaudeCodeCLI ({self.model})"
 
-    def generate(self, prompt, system_prompt):
+    def generate(self, prompt: str, system_prompt: str) -> str:
         if not self.claude_path:
             return "Error: Claude Code CLI not found. Install with: npm install -g @anthropic-ai/claude-code"
 
@@ -421,7 +425,7 @@ class ClaudeAPIProvider(LLMProvider):
     Install: pip install anthropic
     """
 
-    def __init__(self, config):
+    def __init__(self, config: dict[str, Any]) -> None:
         self.logger = logging.getLogger("ClaudeAPI")
         self.model = config.get("claude_model", "claude-sonnet-4-5")
         self.timeout = config.get("timeout", 120)
@@ -439,10 +443,10 @@ class ClaudeAPIProvider(LLMProvider):
         except ImportError:
             self.logger.critical("anthropic SDK not installed. Run: pip install anthropic")
 
-    def provider_name(self):
+    def provider_name(self) -> str:
         return f"Claude API ({self.model})"
 
-    def generate(self, prompt, system_prompt):
+    def generate(self, prompt: str, system_prompt: str) -> str:
         if self._client is None:
             return "Error: Claude API client not initialised. Check ANTHROPIC_API_KEY and 'pip install anthropic'."
 
@@ -472,17 +476,17 @@ class OllamaProvider(LLMProvider):
     Default model: llama3.2 (fast, 3B params, runs on CPU).
     """
 
-    def __init__(self, config):
+    def __init__(self, config: dict[str, Any]) -> None:
         self.logger = logging.getLogger("OllamaProvider")
         self.model   = config.get("ollama_model", "llama3.2")
         self.host    = config.get("ollama_host", "http://localhost:11434")
         self.timeout = config.get("timeout", 120)
         self.logger.info("Ollama provider ready (model: %s, host: %s)", self.model, self.host)
 
-    def provider_name(self):
+    def provider_name(self) -> str:
         return f"Ollama ({self.model})"
 
-    def generate(self, prompt, system_prompt):
+    def generate(self, prompt: str, system_prompt: str) -> str:
         import json as _json
         import urllib.request as _req
         import urllib.error
@@ -531,7 +535,7 @@ class GenericCLIProvider(LLMProvider):
     Examples: aider, continue, lm-studio-cli, any custom wrapper.
     """
 
-    def __init__(self, config):
+    def __init__(self, config: dict[str, Any]) -> None:
         self.logger  = logging.getLogger("GenericCLI")
         self.path    = config.get("generic_cli_path", "")
         self.args    = config.get("generic_cli_args", ["-p", "{prompt}"])
@@ -543,10 +547,10 @@ class GenericCLIProvider(LLMProvider):
         else:
             self.logger.info("Generic CLI provider: %s (model: %s)", self.path, self.model)
 
-    def provider_name(self):
+    def provider_name(self) -> str:
         return f"GenericCLI ({self.model})"
 
-    def generate(self, prompt, system_prompt):
+    def generate(self, prompt: str, system_prompt: str) -> str:
         if not self.path:
             return "Error: generic_cli_path not configured."
 
@@ -583,6 +587,144 @@ class GenericCLIProvider(LLMProvider):
 
 
 # ===========================================================================
+# Circuit Breaker (per-provider, lightweight, thread-safe)
+# ===========================================================================
+class CircuitBreaker:
+    """Lightweight per-provider circuit breaker.
+
+    Protects the gateway from hammering a provider that is failing. State
+    machine (transitions are logged at WARNING):
+
+        CLOSED    -> normal operation. Each consecutive failure increments a
+                     counter; reaching ``failure_threshold`` trips to OPEN.
+        OPEN      -> calls are rejected immediately (fail-fast) WITHOUT touching
+                     the provider. After ``reset_timeout`` seconds the next
+                     attempt is admitted as a SINGLE probe (transition to
+                     HALF_OPEN).
+        HALF_OPEN -> exactly ONE probe call is allowed through at a time.
+                     Success closes the circuit (CLOSED); failure re-opens it
+                     (OPEN) for another ``reset_timeout`` cooldown window.
+
+    Defaults match the spec: 3 consecutive failures -> open for 60 seconds.
+    The provider interface is untouched — this wraps the gateway's *call*, not
+    the provider.
+
+    Time is read through the injectable ``clock`` callable (default
+    ``time.time``) so tests can advance the cooldown window deterministically
+    without sleeping. All state is guarded by an internal ``threading.Lock``.
+    """
+
+    CLOSED = "CLOSED"
+    OPEN = "OPEN"
+    HALF_OPEN = "HALF_OPEN"
+
+    def __init__(self, name: str, failure_threshold: int = 3, reset_timeout: float = 60.0,
+                 logger: logging.Logger | None = None, clock: Any = None) -> None:
+        self.name = name
+        self.failure_threshold = max(1, int(failure_threshold))
+        self.reset_timeout = float(reset_timeout)
+        self.logger = logger or logging.getLogger("CircuitBreaker")
+        self._clock = clock or time.time
+        self._state = self.CLOSED
+        self._consecutive_failures = 0
+        self._opened_at = 0.0
+        # One-shot guard: True while a single HALF_OPEN probe is outstanding.
+        self._half_open_in_flight = False
+        self._lock = threading.Lock()
+
+    @property
+    def state(self) -> str:
+        with self._lock:
+            return self._state
+
+    def _set_state(self, new_state: str) -> None:
+        """Set state and log the transition. Caller must hold ``self._lock``."""
+        old = self._state
+        if old != new_state:
+            self._state = new_state
+            self.logger.warning(
+                "Circuit breaker '%s': %s -> %s", self.name, old, new_state
+            )
+
+    def allow_request(self) -> bool:
+        """Atomically decide admission and reserve the HALF_OPEN probe slot."""
+        with self._lock:
+            if self._state == self.OPEN:
+                if (self._clock() - self._opened_at) >= self.reset_timeout:
+                    self._set_state(self.HALF_OPEN)
+                    self._half_open_in_flight = True  # reserve the one probe slot
+                    return True
+                return False
+            if self._state == self.HALF_OPEN:
+                if self._half_open_in_flight:
+                    return False
+                self._half_open_in_flight = True
+                return True
+            # CLOSED — allow through.
+            return True
+
+    def record_success(self) -> None:
+        """Register a successful call: reset failures and close the circuit."""
+        with self._lock:
+            self._consecutive_failures = 0
+            self._half_open_in_flight = False
+            if self._state != self.CLOSED:
+                self._set_state(self.CLOSED)
+
+    def record_failure(self) -> None:
+        """Register a failed call: count it and trip the circuit if needed."""
+        with self._lock:
+            self._half_open_in_flight = False
+            if self._state == self.HALF_OPEN:
+                # Probe failed — re-open and restart the cooldown.
+                self._opened_at = self._clock()
+                self._consecutive_failures = self.failure_threshold
+                self._set_state(self.OPEN)
+                return
+            self._consecutive_failures += 1
+            if (
+                self._state == self.CLOSED
+                and self._consecutive_failures >= self.failure_threshold
+            ):
+                self._opened_at = self._clock()
+                self._set_state(self.OPEN)
+
+    def status(self) -> dict[str, Any]:
+        with self._lock:
+            remaining = 0.0
+            if self._state == self.OPEN:
+                remaining = max(0.0, self.reset_timeout - (self._clock() - self._opened_at))
+            return {
+                "name": self.name,
+                "state": self._state,
+                "consecutive_failures": self._consecutive_failures,
+                "half_open_in_flight": self._half_open_in_flight,
+                "reset_in_s": round(remaining, 1),
+            }
+
+
+# ===========================================================================
+# Fallback error
+# ===========================================================================
+class LLMProviderError(Exception):
+    """Raised when every provider in a fallback chain has failed.
+
+    Carries the per-provider failures so callers can inspect them, and renders
+    a message that names every failed provider (and its error) for logging.
+    """
+
+    def __init__(self, failures: list[tuple[str, str]]) -> None:
+        # failures: iterable of (provider_name, error_message) tuples
+        self.failures = list(failures)
+        providers = ", ".join(name for name, _ in self.failures) or "<none>"
+        details = "; ".join(f"{name}: {err}" for name, err in self.failures)
+        message = f"All LLM providers failed [{providers}]"
+        if details:
+            message += f" — {details}"
+        super().__init__(message)
+
+
+# ===========================================================================
 # Multi-LLM Provider Pool
 # ===========================================================================
 
@@ -590,21 +732,21 @@ class GenericCLIProvider(LLMProvider):
 class ProviderPool:
     """Registry of multiple LLM providers for parallel generation."""
 
-    def __init__(self):
-        self._providers: dict = {}
+    def __init__(self) -> None:
+        self._providers: dict[str, LLMProvider] = {}
         self._default: str | None = None
         self._lock = threading.Lock()
 
-    def register(self, name: str, provider) -> None:
+    def register(self, name: str, provider: LLMProvider) -> None:
         with self._lock:
             self._providers[name] = provider
             if self._default is None:
                 self._default = name
 
-    def get(self, name: str):
+    def get(self, name: str) -> LLMProvider | None:
         return self._providers.get(name)
 
-    def get_default(self):
+    def get_default(self) -> LLMProvider | None:
         if self._default:
             return self._providers.get(self._default)
         return None
@@ -626,7 +768,7 @@ class ProviderPool:
             if self._default == name:
                 self._default = next(iter(self._providers), None)
 
-    def status(self) -> dict:
+    def status(self) -> dict[str, Any]:
         return {
             "default": self._default,
             "providers": self.list_providers(),
@@ -640,7 +782,7 @@ def generate_parallel(
     *,
     strategy: str = "voting",
     provider_names: list[str] | None = None,
-) -> dict:
+) -> dict[str, Any]:
     """Run prompt across multiple providers in parallel, aggregate by strategy.
 
     Strategies:
@@ -764,11 +906,11 @@ class LLMGateway:
         response = llm_gateway.generate("Analyze this log...")
     """
 
-    _instance = None
+    _instance: LLMGateway | None = None
     _lock = threading.Lock()   # singleton creation lock only
 
     # Provider-aware concurrency limits
-    PROVIDER_CONCURRENCY = {
+    PROVIDER_CONCURRENCY: dict[str, int] = {
         "local": 1,         # Single GPU — must serialise
         "generic-cli": 1,   # Unknown CLI — conservative
         "ollama": 2,        # Ollama HTTP — moderate concurrency
@@ -777,7 +919,7 @@ class LLMGateway:
         "claude-code": 2,   # CLI tool — moderate
     }
 
-    def __new__(cls):
+    def __new__(cls) -> LLMGateway:
         if cls._instance is None:
             with cls._lock:
                 if cls._instance is None:
@@ -785,14 +927,14 @@ class LLMGateway:
                     cls._instance._initialized = False
         return cls._instance
 
-    def __init__(self):
+    def __init__(self) -> None:
         if self._initialized:
             return
         self._initialized = True
         self.logger = logging.getLogger("LLMGateway")
-        self.provider = None
+        self.provider: LLMProvider | None = None
         self.provider_pool = ProviderPool()
-        self._usage = {
+        self._usage: dict[str, Any] = {
             "calls": 0,
             "calls_today": 0,
             "estimated_tokens": 0,
@@ -800,7 +942,7 @@ class LLMGateway:
             "started_at": time.time(),
             "day_started_at": time.time(),  # resets at UTC midnight
         }
-        self._routing_stats = {"low": 0, "medium": 0, "high": 0}
+        self._routing_stats: dict[str, int] = {"low": 0, "medium": 0, "high": 0}
 
         config = _load_config()
         llm_cfg = config.get("llm", {})
@@ -847,15 +989,27 @@ class LLMGateway:
         self._retry_base_delay = float(_retry_cfg.get("base_delay", 0.5))
         self._retry_max_delay = float(_retry_cfg.get("max_delay", 8.0))
 
+        # ── Resilience: per-provider circuit breaker ─────────────────────
+        # After N consecutive failures on a provider, "open" the circuit so
+        # calls fail fast for a cooldown window instead of repeatedly hitting
+        # a dead/over-quota backend. Spec defaults: 3 failures -> open 60s.
+        # Configurable via llm.circuit_breaker; set "enabled: false" to disable.
+        _cb_cfg = llm_cfg.get("circuit_breaker", {}) if isinstance(llm_cfg, dict) else {}
+        self._cb_enabled = bool(_cb_cfg.get("enabled", True))
+        self._cb_failure_threshold = int(_cb_cfg.get("failure_threshold", 3))
+        self._cb_reset_timeout = float(_cb_cfg.get("reset_timeout", 60.0))
+        self._circuit_breakers: dict[str, CircuitBreaker] = {}
+        self._cb_registry_lock = threading.Lock()
+
     # Substrings that mark a *retryable* failure (vs a permanent one like
     # "not configured" / "not installed", which must NOT be retried).
-    _TRANSIENT_ERROR_MARKERS = (
+    _TRANSIENT_ERROR_MARKERS: tuple[str, ...] = (
         "timed out", "timeout", "rate limit", "429", "500", "502", "503", "504",
         "temporarily", "unavailable", "connection", "reset by peer", "overloaded",
         "empty output",
     )
 
-    def _is_transient_error(self, result) -> bool:
+    def _is_transient_error(self, result: object) -> bool:
         """True if a provider result represents a transient (retryable) failure."""
         if result is None:
             return True
@@ -873,7 +1027,7 @@ class LLMGateway:
         capped = min(self._retry_max_delay, self._retry_base_delay * (2 ** attempt))
         return capped * (0.5 + random.random() * 0.5)  # 50–100% jitter
 
-    def _generate_with_retry(self, prompt, system_prompt) -> str:
+    def _generate_with_retry(self, prompt: str, system_prompt: str) -> str:
         """Call the provider, retrying transient failures with backoff.
 
         Retries on a raised exception OR a returned transient-error string, up to
@@ -883,7 +1037,7 @@ class LLMGateway:
         """
         for attempt in range(self._retry_max + 1):
             try:
-                result = self.provider.generate(prompt, system_prompt)
+                result = self.provider.generate(prompt, system_prompt)  # type: ignore[union-attr]
             except Exception as e:  # noqa: BLE001 — provider may raise anything
                 if attempt < self._retry_max:
                     delay = self._retry_delay(attempt)
@@ -901,8 +1055,48 @@ class LLMGateway:
             return result
         return result  # pragma: no cover — loop always returns or raises first
 
-    def generate_stream(self, prompt, system_prompt="You are a helpful AI assistant.",
-                        trace_name: str = "llm_stream", metadata: dict = None):
+    def _is_failure_result(self, result: object) -> bool:
+        """True if a provider result counts as a circuit-breaker *failure*.
+
+        Any error result (raised exceptions are handled separately) is a
+        failure, regardless of whether it is transient or permanent: a
+        permanently-misconfigured provider should also trip the breaker so we
+        stop calling it. A None / empty / "Error..." string is a failure.
+        """
+        if result is None:
+            return True
+        if not isinstance(result, str):
+            return False
+        s = result.strip()
+        return s == "" or s.lower().startswith("error")
+
+    def _get_circuit_breaker(self, provider_name: str) -> CircuitBreaker:
+        """Return (creating if needed) the breaker for this provider name."""
+        breaker = self._circuit_breakers.get(provider_name)
+        if breaker is None:
+            with self._cb_registry_lock:
+                breaker = self._circuit_breakers.get(provider_name)
+                if breaker is None:
+                    breaker = CircuitBreaker(
+                        name=provider_name,
+                        failure_threshold=self._cb_failure_threshold,
+                        reset_timeout=self._cb_reset_timeout,
+                        logger=self.logger,
+                    )
+                    self._circuit_breakers[provider_name] = breaker
+        return breaker
+
+    def _circuit_open_message(self, provider_name: str) -> str:
+        return (
+            f"Error: Circuit breaker OPEN for provider '{provider_name}' — "
+            f"provider failed {self._cb_failure_threshold} times in a row; "
+            f"calls are blocked for up to {int(self._cb_reset_timeout)}s. "
+            f"Retry shortly."
+        )
+
+    def generate_stream(self, prompt: str, system_prompt: str = "You are a helpful AI assistant.",
+                        trace_name: str = "llm_stream", metadata: dict[str, Any] | None = None,
+                        request_id: str = "") -> Iterator[str]:
         """
         Streaming variant of generate().  Yields str chunks as they become available.
 
@@ -914,6 +1108,10 @@ class LLMGateway:
         The thread lock is held for the duration of the stream (same single-
         lane guarantee as generate()).
 
+        Args:
+            request_id: Optional per-request correlation id. Defaults to the
+                        current request context (set by RequestIDMiddleware).
+
         Yields:
             str  — incremental text chunks, never empty strings.
         """
@@ -921,10 +1119,31 @@ class LLMGateway:
             yield "Error: No LLM provider configured."
             return
 
+        if not request_id:
+            try:
+                from src.core.request_context import get_request_id
+                request_id = get_request_id()
+            except Exception:
+                request_id = ""
+
         with self._inference_semaphore:
             self.logger.debug("Streaming generation started. Provider: %s", self.provider.provider_name())
             start = time.time()
 
+            # ── Circuit breaker: fail fast if this provider's circuit is open ──
+            provider_name = self.provider.provider_name()
+            breaker = self._get_circuit_breaker(provider_name) if self._cb_enabled else None
+            if breaker is not None and not breaker.allow_request():
+                self.logger.warning(
+                    "Circuit OPEN for '%s' — rejecting stream without calling provider.",
+                    provider_name,
+                    extra={"event": "circuit_breaker", "provider": provider_name, "status": "open_rejected"},
+                )
+                self._usage["errors"] += 1
+                yield self._circuit_open_message(provider_name)
+                return
+
+            result = ""
             # Claude API supports real streaming
             if isinstance(self.provider, ClaudeAPIProvider) and self.provider._client is not None:
                 try:
@@ -942,6 +1161,8 @@ class LLMGateway:
                     result = "".join(full)
                 except Exception as e:
                     self.logger.error("Claude API stream failed: %s", e)
+                    if breaker is not None:
+                        breaker.record_failure()
                     yield f"Error: {e}"
                     return
             else:
@@ -956,16 +1177,32 @@ class LLMGateway:
                         chunk += " "
                     yield chunk
 
+            # ── Circuit breaker: record outcome ──
+            if breaker is not None:
+                if self._is_failure_result(result):
+                    breaker.record_failure()
+                else:
+                    breaker.record_success()
+
             elapsed = time.time() - start
-            self.logger.info("Streaming generation done in %.2fs", elapsed)
+            self.logger.info(
+                "Streaming generation done in %.2fs", elapsed,
+                extra={
+                    "event": "generation_stream",
+                    "provider": provider_name,
+                    "duration_ms": int(elapsed * 1000),
+                    "status": "completed",
+                    "request_id": request_id,
+                },
+            )
             self._maybe_reset_daily()
             self._usage["calls"] += 1
             self._usage["calls_today"] += 1
             self._usage["estimated_tokens"] += (len(prompt) + len(system_prompt) + len(result)) // 4
 
-    def generate(self, prompt, system_prompt="You are a helpful AI assistant.",
-                 trace_name: str = "llm_generate", metadata: dict = None,
-                 trace_id: str = "", agent_name: str = "") -> str:
+    def generate(self, prompt: str, system_prompt: str = "You are a helpful AI assistant.",
+                 trace_name: str = "llm_generate", metadata: dict[str, Any] | None = None,
+                 trace_id: str = "", agent_name: str = "", request_id: str = "") -> str:
         """Thread-safe generation. Only ONE call at a time.
 
         Args:
@@ -975,9 +1212,24 @@ class LLMGateway:
             metadata:      Extra key-value pairs attached to the Langfuse trace.
             trace_id:      Optional trace ID for cost tracking correlation.
             agent_name:    Agent role name for per-agent budget enforcement.
+            request_id:    Optional per-request correlation id. Defaults to the
+                           current request context (set by RequestIDMiddleware).
         """
         if self.provider is None:
             return "Error: No LLM provider configured."
+
+        # Resolve request_id from the active request context when not supplied.
+        if not request_id:
+            try:
+                from src.core.request_context import get_request_id
+                request_id = get_request_id()
+            except Exception:
+                request_id = ""
+
+        # Fold request_id into the observability metadata for correlation.
+        metadata = dict(metadata or {})
+        if request_id:
+            metadata.setdefault("request_id", request_id)
 
         start = time.time()
         self.logger.debug("Acquiring inference lock...")
@@ -1059,6 +1311,22 @@ class LLMGateway:
                 except Exception as _bexc:
                     self.logger.warning("Agent budget check failed (non-fatal): %s", _bexc)
 
+            # ----------------------------------------------------------------
+            # Circuit breaker: if this provider's circuit is OPEN, fail fast
+            # WITHOUT calling the provider (and without burning a retry budget).
+            # allow_request() atomically admits at most one HALF_OPEN probe.
+            # ----------------------------------------------------------------
+            provider_name = self.provider.provider_name()
+            breaker = self._get_circuit_breaker(provider_name) if self._cb_enabled else None
+            if breaker is not None and not breaker.allow_request():
+                self.logger.warning(
+                    "Circuit OPEN for '%s' — rejecting call without contacting provider.",
+                    provider_name,
+                    extra={"event": "circuit_breaker", "provider": provider_name, "status": "open_rejected"},
+                )
+                self._usage["errors"] += 1
+                return self._circuit_open_message(provider_name)
+
             # --- Langfuse trace (no-op if client not initialised) ---
             _lf_generation = None
             if _langfuse_client is not None:
@@ -1084,12 +1352,40 @@ class LLMGateway:
                 prompt_length=len(prompt),
                 system_prompt_length=len(system_prompt),
                 trace_name=trace_name,
-                trace_id=trace_id,
+                trace_id=trace_id or request_id,
             ) as _otel_span:
                 try:
-                    result = self._generate_with_retry(prompt, system_prompt)
+                    if request_id:
+                        try:
+                            _otel_span.set_attribute("llm.request_id", request_id)
+                        except Exception:
+                            pass
+                    try:
+                        result = self._generate_with_retry(prompt, system_prompt)
+                    except Exception:
+                        # A raised provider failure trips the breaker too.
+                        if breaker is not None:
+                            breaker.record_failure()
+                        raise
+
+                    # --- Circuit breaker: record success / failure outcome ---
+                    if breaker is not None:
+                        if self._is_failure_result(result):
+                            breaker.record_failure()
+                        else:
+                            breaker.record_success()
+
                     elapsed = time.time() - start
-                    self.logger.info("Generation done in %.2fs", elapsed)
+                    self.logger.info(
+                        "Generation done in %.2fs", elapsed,
+                        extra={
+                            "event": "generation",
+                            "provider": self.provider.provider_name(),
+                            "duration_ms": int(elapsed * 1000),
+                            "status": "completed",
+                            "request_id": request_id,
+                        },
+                    )
                     # Roll daily counter over at UTC midnight
                     self._maybe_reset_daily()
                     # Estimate tokens as (input + output chars) / 4
@@ -1118,7 +1414,7 @@ class LLMGateway:
                         except Exception:
                             pass
                         _model = getattr(self.provider, "model", "unknown")
-                        _ct.record_usage(_tenant, _solution, _model, input_tokens, output_tokens, trace_id)
+                        _ct.record_usage(_tenant, _solution, _model, input_tokens, output_tokens, trace_id or request_id)
                     except Exception:
                         pass  # cost tracking is non-fatal
 
@@ -1137,7 +1433,15 @@ class LLMGateway:
                     # Re-raise budget/PII errors as-is (not wrapped as "Error: ...")
                     raise
                 except Exception as e:
-                    self.logger.error("Generation failed: %s", e)
+                    self.logger.error(
+                        "Generation failed: %s", e,
+                        extra={
+                            "event": "generation",
+                            "provider": self.provider.provider_name(),
+                            "status": "error",
+                            "request_id": request_id,
+                        },
+                    )
                     self._usage["errors"] += 1
                     if _lf_generation is not None:
                         try:
@@ -1148,8 +1452,8 @@ class LLMGateway:
 
     def generate_for_task(self, task_type: str, prompt: str,
                           system_prompt: str = "You are a helpful AI assistant.",
-                          trace_name: str = "llm_generate", metadata: dict = None,
-                          trace_id: str = "") -> str:
+                          trace_name: str = "llm_generate", metadata: dict[str, Any] | None = None,
+                          trace_id: str = "", request_id: str = "") -> str:
         """
         Route to a task-specific model if task_routing is configured.
 
@@ -1159,18 +1463,21 @@ class LLMGateway:
 
         Format: "provider/model" (e.g. "ollama/llama3.2") or just "model"
         (e.g. "claude-sonnet-4-6", reuses current provider type).
+
+        request_id is propagated to the underlying generate() call (defaults
+        to the active request context, same as generate()).
         """
         config = _load_config()
         routing_cfg = config.get("llm", {}).get("task_routing", {})
 
         if not routing_cfg.get("enabled", False):
-            return self.generate(prompt, system_prompt, trace_name, metadata, trace_id)
+            return self.generate(prompt, system_prompt, trace_name, metadata, trace_id, request_id=request_id)
 
-        routes: dict = routing_cfg.get("routes", {})
+        routes: dict[str, str] = routing_cfg.get("routes", {})
         route_value: str = routes.get(task_type, "")
 
         if not route_value:
-            return self.generate(prompt, system_prompt, trace_name, metadata, trace_id)
+            return self.generate(prompt, system_prompt, trace_name, metadata, trace_id, request_id=request_id)
 
         # Parse "provider/model" or just "model"
         if "/" in route_value:
@@ -1183,7 +1490,7 @@ class LLMGateway:
         # temporarily override the model if it differs
         current_provider_name = self.provider.provider_name().lower() if self.provider else ""
         if not routed_provider or routed_provider.lower() in current_provider_name:
-            return self.generate(prompt, system_prompt, trace_name, metadata, trace_id)
+            return self.generate(prompt, system_prompt, trace_name, metadata, trace_id, request_id=request_id)
 
         # Different provider requested — build a temporary provider instance
         self.logger.info(
@@ -1194,7 +1501,7 @@ class LLMGateway:
         try:
             if routed_provider == "ollama":
                 llm_cfg["ollama_model"] = routed_model
-                tmp_provider = OllamaProvider(llm_cfg)
+                tmp_provider: LLMProvider = OllamaProvider(llm_cfg)
             elif routed_provider in ("claude", "claude-code"):
                 llm_cfg["claude_model"] = routed_model
                 tmp_provider = ClaudeCodeCLIProvider(llm_cfg)
@@ -1205,13 +1512,13 @@ class LLMGateway:
                 self.logger.warning(
                     "Task routing: unknown provider '%s' — using default", routed_provider
                 )
-                return self.generate(prompt, system_prompt, trace_name, metadata, trace_id)
+                return self.generate(prompt, system_prompt, trace_name, metadata, trace_id, request_id=request_id)
 
             # Run with the temporary provider (still under the main lock via generate())
             saved_provider = self.provider
             self.provider = tmp_provider
             try:
-                result = self.generate(prompt, system_prompt, trace_name, metadata, trace_id)
+                result = self.generate(prompt, system_prompt, trace_name, metadata, trace_id, request_id=request_id)
             finally:
                 self.provider = saved_provider
             return result
@@ -1221,7 +1528,7 @@ class LLMGateway:
                 "Task routing provider init failed (%s) — falling back to default: %s",
                 routed_provider, exc,
             )
-            return self.generate(prompt, system_prompt, trace_name, metadata, trace_id)
+            return self.generate(prompt, system_prompt, trace_name, metadata, trace_id, request_id=request_id)
 
     def generate_multi(
         self,
@@ -1230,12 +1537,54 @@ class LLMGateway:
         *,
         strategy: str = "voting",
         provider_names: list[str] | None = None,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Delegate to generate_parallel using this gateway's provider_pool."""
         return generate_parallel(
             self.provider_pool, prompt, system_prompt,
             strategy=strategy, provider_names=provider_names,
         )
+
+    def generate_with_fallback(
+        self,
+        prompt: str,
+        system_prompt: str = "You are a helpful AI assistant.",
+        *,
+        provider_names: list[str] | None = None,
+    ) -> str:
+        """Try registered providers in order; return the first success.
+
+        Falls back to the next provider whenever one *raises*. Honours the
+        single-lane inference guarantee (held across the whole chain). If every
+        provider fails, raises LLMProviderError naming all failed providers.
+
+        Args:
+            prompt:         User/task prompt.
+            system_prompt:  Role/instruction context.
+            provider_names: Explicit ordered list of pool provider keys to try.
+                            Defaults to every provider registered in the pool.
+
+        Raises:
+            LLMProviderError: when no provider yields a successful response.
+        """
+        names = provider_names or self.provider_pool.list_providers()
+        if not names:
+            raise LLMProviderError([("<none>", "no providers configured")])
+
+        failures: list[tuple[str, str]] = []
+        with self._inference_semaphore:
+            for name in names:
+                provider = self.provider_pool.get(name)
+                if provider is None:
+                    failures.append((name, "provider not registered"))
+                    continue
+                try:
+                    self.logger.debug("Fallback attempt via provider '%s'", name)
+                    return provider.generate(prompt, system_prompt)
+                except Exception as exc:  # noqa: BLE001 — provider may raise anything
+                    self.logger.warning("Provider '%s' failed: %s", name, exc)
+                    failures.append((name, str(exc)))
+
+        raise LLMProviderError(failures)
 
     def _maybe_reset_daily(self) -> None:
         """Reset calls_today when we cross a UTC midnight boundary."""
@@ -1249,12 +1598,13 @@ class LLMGateway:
             self._usage["day_started_at"] = time.time()
             self.logger.info("Daily request counter reset (new UTC day).")
 
-    def get_provider_name(self):
+    # ── Public accessors ────────────────────────────────────────────────
+    def get_provider_name(self) -> str:
         if self.provider:
             return self.provider.provider_name()
         return "None"
 
-    def get_usage(self) -> dict:
+    def get_usage(self) -> dict[str, Any]:
         """Return current session + daily usage stats."""
         import datetime as _dt
         started = _dt.datetime.fromtimestamp(
@@ -1272,14 +1622,14 @@ class LLMGateway:
             "day_started_at": day_started,
         }
 
-    def get_model_info(self) -> dict:
+    def get_model_info(self) -> dict[str, Any]:
         """Return the active model's name and known quota limits."""
         model = "unknown"
         if self.provider is not None:
             if hasattr(self.provider, "model"):
-                model = self.provider.model      # GeminiCLIProvider / ClaudeAPIProvider
-            elif hasattr(self.provider, "_model") and self.provider._model is not None:
-                model = "local"                  # LocalLlamaProvider
+                model = self.provider.model      # type: ignore[attr-defined]  # GeminiCLIProvider / ClaudeAPIProvider
+            elif hasattr(self.provider, "_model") and self.provider._model is not None:  # type: ignore[attr-defined]  # LocalLlamaProvider
+                model = "local"
         limits = _MODEL_LIMITS.get(model, {"daily_requests": 0, "context_tokens": 4096})
         return {
             "model": model,
