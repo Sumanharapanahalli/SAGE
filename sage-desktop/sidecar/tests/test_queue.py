@@ -1,4 +1,3 @@
-from unittest.mock import MagicMock
 import pytest
 
 from handlers import queue
@@ -6,11 +5,16 @@ from rpc import RpcError
 
 
 class FakeQueue:
-    def __init__(self, tasks=None, parallel_enabled=True, max_workers=4):
+    """Mirrors the REAL ``TaskQueue`` shape (src/core/queue_manager.py).
+
+    Crucially it has NO ``_config`` attribute — the live parallel config
+    lives on the ParallelTaskRunner, not on the queue. A fake that
+    fabricated ``_config`` would mask the bug where the handler reads
+    config off the wrong object.
+    """
+
+    def __init__(self, tasks=None):
         self._tasks = tasks or []
-        self._config = MagicMock()
-        self._config.parallel_enabled = parallel_enabled
-        self._config.max_workers = max_workers
 
     def get_all_tasks(self):
         return self._tasks
@@ -19,11 +23,28 @@ class FakeQueue:
         return sum(1 for t in self._tasks if t["status"] == "pending")
 
 
+class FakeParallelConfig:
+    def __init__(self, parallel_enabled=True, max_workers=4):
+        self.parallel_enabled = parallel_enabled
+        self.max_workers = max_workers
+
+
+class FakeParallelRunner:
+    """Mirrors the REAL ``ParallelTaskRunner`` shape: exposes ``.config``
+    (a ParallelConfig with ``parallel_enabled`` / ``max_workers``), the
+    same attribute path FastAPI reads at api.py:1716-1717."""
+
+    def __init__(self, parallel_enabled=True, max_workers=4):
+        self.config = FakeParallelConfig(parallel_enabled, max_workers)
+
+
 @pytest.fixture(autouse=True)
 def reset():
     queue._queue = None
+    queue._parallel_runner = None
     yield
     queue._queue = None
+    queue._parallel_runner = None
 
 
 def test_get_queue_status_counts_by_status():
@@ -34,6 +55,7 @@ def test_get_queue_status_counts_by_status():
         {"id": "4", "status": "done", "task_type": "z"},
         {"id": "5", "status": "failed", "task_type": "z"},
     ])
+    queue._parallel_runner = FakeParallelRunner(parallel_enabled=True, max_workers=4)
     result = queue.get_queue_status({})
     assert result["pending"] == 2
     assert result["in_progress"] == 1

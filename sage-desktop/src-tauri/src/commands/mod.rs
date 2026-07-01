@@ -6,6 +6,7 @@
 //! `Result<Value, DesktopError>` — `DesktopError` is `Serialize`, so
 //! structured errors propagate to the frontend as typed JSON.
 
+pub mod analyze;
 pub mod approvals;
 pub mod audit;
 pub mod agents;
@@ -14,10 +15,15 @@ pub mod llm;
 pub mod backlog;
 pub mod builds;
 pub mod collective;
+pub mod compliance;
 pub mod constitution;
+pub mod costs;
 pub mod knowledge;
+pub mod org;
 pub mod queue;
 pub mod onboarding;
+pub mod skills;
 pub mod solutions;
 pub mod switch;
+pub mod workflow;
 pub mod yaml_edit;

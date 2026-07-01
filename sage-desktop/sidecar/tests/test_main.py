@@ -70,6 +70,19 @@ def test_missing_id_returns_invalid_request():
     assert out[0]["error"]["code"] == -32600  # RPC_INVALID_REQUEST
 
 
+def test_invalid_params_shape_error_carries_the_request_id():
+    """A frame with a VALID id but non-object params must produce an error
+    response carrying that id — else the Rust client (which correlates by
+    id) can never match the error frame and hangs."""
+    for bad_params in ([1, 2], 42, "nope"):
+        line = json.dumps(
+            {"jsonrpc": "2.0", "id": "42", "method": "x", "params": bad_params}
+        )
+        out = _drive(line + "\n")
+        assert out[0]["id"] == "42", f"params={bad_params!r} -> {out[0]}"
+        assert out[0]["error"]["code"] == -32602  # RPC_INVALID_PARAMS
+
+
 def test_handler_value_error_becomes_internal_error():
     """If a handler raises a non-RpcError exception, the dispatcher wraps
     it as RPC_INTERNAL_ERROR and the loop still emits a clean response."""
@@ -116,6 +129,23 @@ def test_solutions_list_round_trip():
     assert isinstance(out[0]["result"], list)
 
 
+def test_solutions_list_works_without_sage_root_env(monkeypatch):
+    """Launched standalone (no SAGE_ROOT env), `solutions.list` must still
+    enumerate solutions by falling back to the inferred repo root — the same
+    fallback the sys.path bootstrap uses. With the bug it returns []."""
+    import os
+
+    monkeypatch.delenv("SAGE_ROOT", raising=False)
+    sage_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+    if not os.path.isdir(os.path.join(sage_root, "solutions", "starter")):
+        pytest.skip("starter solution not present on this branch")
+
+    out = _drive(_req("sl0", "solutions.list") + "\n")
+    assert "result" in out[0], f"got error: {out[0]}"
+    names = [s.get("name") for s in out[0]["result"]]
+    assert "starter" in names, f"expected inferred-root fallback to find solutions, got {names}"
+
+
 def test_solutions_get_current_without_solution_returns_null():
     out = _drive(_req("sc", "solutions.get_current") + "\n")
     assert "result" in out[0]
@@ -133,6 +163,28 @@ def test_onboarding_generate_wires_to_handler():
     assert out[0]["id"] == "o1"
     assert "error" in out[0], f"expected error, got {out[0]}"
     assert out[0]["error"]["code"] == -32602
+
+
+# ---------- queue ----------
+
+def test_queue_status_reports_real_parallel_config(tmp_path):
+    """`queue.get_status` must reflect the live ParallelTaskRunner config,
+    not the bare TaskQueue (which has no `_config`). This exercises the
+    real wiring in `_wire_handlers`; the global ParallelConfig defaults to
+    enabled / 4 workers. Asserts only the parallel fields — the global
+    sqlite-backed queue may carry leftover task counts."""
+    import os
+
+    sage_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+    solution_path = os.path.join(sage_root, "solutions", "starter")
+    if not os.path.isdir(solution_path):
+        pytest.skip("starter solution not present on this branch")
+
+    argv = ["--solution-name", "starter", "--solution-path", str(tmp_path)]
+    out = _drive(_req("q1", "queue.get_status") + "\n", argv=argv)
+    assert "result" in out[0], f"got error: {out[0]}"
+    assert out[0]["result"]["parallel_enabled"] is True
+    assert out[0]["result"]["max_workers"] == 4
 
 
 # ---------- builds ----------

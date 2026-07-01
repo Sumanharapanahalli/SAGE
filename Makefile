@@ -186,7 +186,7 @@ desktop-install:
 
 desktop-dev:
 	@echo "Starting sage-desktop dev build (requires npm deps + Rust toolchain)..."
-	cd sage-desktop && npm run tauri dev
+	cd sage-desktop && SAGE_ROOT=$(CURDIR) npm run tauri dev
 
 desktop-build:
 	@echo "Building sage-desktop release bundle..."

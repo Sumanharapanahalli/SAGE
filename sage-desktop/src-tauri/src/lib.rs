@@ -13,24 +13,120 @@ pub mod sidecar;
 #[cfg(feature = "desktop")]
 pub mod commands;
 
+use std::path::{Path, PathBuf};
+
+/// Resolve the SAGE repo root used to locate the sidecar package and to set
+/// the sidecar's working directory / `SAGE_ROOT` env.
+///
+/// Resolution order:
+/// 1. The `SAGE_ROOT` env var, when set to a non-empty value (the documented
+///    `make desktop-dev` path). This is required in dev because the dev exe
+///    lives deep under `src-tauri/target/debug/`, where exe-derivation lands
+///    on `src-tauri/target` — a directory that does not contain the sidecar
+///    package, so the sidecar spawn fails.
+/// 2. Fallback: two directories up from the executable. (Roughly correct for
+///    some packaged layouts; packaging is out of scope here.)
+/// 3. Last resort: the current directory (".").
+///
+/// Kept as a pure function (no env/filesystem access of its own) so it is
+/// compiled and unit-tested even under `--no-default-features`, where the
+/// `desktop` feature — and thus `default_sidecar_config` — is gated out.
+pub fn resolve_sage_root(exe: &Path, env: Option<String>) -> PathBuf {
+    if let Some(root) = env.filter(|s| !s.is_empty()) {
+        return PathBuf::from(root);
+    }
+    exe.parent()
+        .and_then(|p| p.parent())
+        .map(PathBuf::from)
+        .unwrap_or_else(|| PathBuf::from("."))
+}
+
+#[cfg(test)]
+mod root_tests {
+    use super::resolve_sage_root;
+    use std::path::{Path, PathBuf};
+
+    #[test]
+    fn env_set_wins_over_exe_derivation() {
+        let exe = Path::new("/some/deep/target/debug/sage-desktop");
+        let root = resolve_sage_root(exe, Some("/repo/root".to_string()));
+        assert_eq!(root, PathBuf::from("/repo/root"));
+    }
+
+    #[test]
+    fn env_unset_falls_back_to_two_up_derivation() {
+        // Mirrors the dev layout: exe two levels below the intended root.
+        let exe = Path::new("/a/b/c/sage-desktop");
+        let root = resolve_sage_root(exe, None);
+        assert_eq!(root, PathBuf::from("/a/b"));
+    }
+
+    #[test]
+    fn empty_env_treated_as_unset() {
+        let exe = Path::new("/a/b/c/sage-desktop");
+        let root = resolve_sage_root(exe, Some(String::new()));
+        assert_eq!(root, PathBuf::from("/a/b"));
+    }
+}
+
 #[cfg(feature = "desktop")]
 mod desktop_app {
     use std::path::PathBuf;
+    use std::sync::Arc;
 
-    use tauri::Manager;
+    use serde_json::json;
+    use tauri::{AppHandle, Emitter, Manager};
     use tokio::sync::RwLock;
 
-    use crate::sidecar::{Sidecar, SidecarConfig};
+    use crate::sidecar::{respawn_with_backoff, CrashHook, Sidecar, SidecarConfig};
+
+    /// Build the crash hook wired into every (re)spawn: on an unexpected
+    /// exit, emit `sidecar-status: {online:false}`, then attempt recovery
+    /// with backoff (1s/3s/9s). On success, swap the fresh `Sidecar` into
+    /// the managed `RwLock<Sidecar>` state and emit `{online:true}`; on
+    /// exhaustion, emit a final `{online:false, exhausted:true}` — the app
+    /// stays usable (every command already surfaces a recoverable
+    /// `SidecarDown`), it just needs a manual solution switch or restart.
+    ///
+    /// Scope note: the recovered sidecar is spawned WITHOUT a crash hook of
+    /// its own (single-shot recovery) — a second crash after a successful
+    /// recovery is not auto-retried. Re-arming would need a self-referential
+    /// `Arc<dyn Fn>`; not worth the complexity for a double-fault edge case.
+    fn make_crash_hook(handle: AppHandle, cfg: SidecarConfig) -> CrashHook {
+        Arc::new(move || {
+            let handle = handle.clone();
+            let cfg = cfg.clone();
+            tauri::async_runtime::spawn(async move {
+                let _ = handle.emit(
+                    "sidecar-status",
+                    json!({"online": false, "reason": "sidecar exited unexpectedly"}),
+                );
+                match respawn_with_backoff(cfg, None).await {
+                    Ok(fresh) => {
+                        if let Some(state) = handle.try_state::<RwLock<Sidecar>>() {
+                            *state.write().await = fresh;
+                        }
+                        let _ = handle.emit("sidecar-status", json!({"online": true}));
+                        tracing::info!("sidecar recovered after crash");
+                    }
+                    Err(e) => {
+                        tracing::error!("sidecar recovery exhausted: {e}");
+                        let _ = handle.emit(
+                            "sidecar-status",
+                            json!({"online": false, "reason": "recovery exhausted", "exhausted": true}),
+                        );
+                    }
+                }
+            });
+        })
+    }
 
     fn default_sidecar_config() -> SidecarConfig {
-        let sage_root = std::env::var("SAGE_ROOT")
-            .map(PathBuf::from)
-            .unwrap_or_else(|_| {
-                std::env::current_exe()
-                    .ok()
-                    .and_then(|p| p.parent().and_then(|p| p.parent()).map(PathBuf::from))
-                    .unwrap_or_else(|| PathBuf::from("."))
-            });
+        // Prefer SAGE_ROOT (set by `make desktop-dev`); fall back to deriving
+        // it from the executable path. Resolution lives in the pure,
+        // unit-tested `crate::resolve_sage_root`.
+        let exe = std::env::current_exe().unwrap_or_else(|_| PathBuf::from("."));
+        let sage_root = crate::resolve_sage_root(&exe, std::env::var("SAGE_ROOT").ok());
         let sidecar_dir = sage_root.join("sage-desktop").join("sidecar");
         let python = std::env::var("SAGE_PYTHON")
             .map(PathBuf::from)
@@ -56,18 +152,24 @@ mod desktop_app {
             .init();
 
         tauri::Builder::default()
-            .plugin(tauri_plugin_shell::init())
             .setup(|app| {
                 let cfg = default_sidecar_config();
                 let handle = app.handle().clone();
+                let hook = make_crash_hook(handle.clone(), cfg.clone());
                 tauri::async_runtime::spawn(async move {
-                    match Sidecar::spawn(cfg).await {
+                    match Sidecar::spawn_with_hook(cfg.clone(), Some(hook)).await {
                         Ok(sidecar) => {
                             handle.manage(RwLock::new(sidecar));
                             tracing::info!("sidecar online");
                         }
                         Err(e) => {
-                            tracing::error!("sidecar failed to start: {e}");
+                            // Register an offline sidecar so the State is always
+                            // managed. Without this, commands hit Tauri's opaque
+                            // unmanaged-state rejection; with it, they surface a
+                            // recoverable `SidecarDown` the UI can render, and a
+                            // later solution switch can spawn a fresh process.
+                            tracing::error!("sidecar failed to start: {e}; registering offline state");
+                            handle.manage(RwLock::new(Sidecar::offline(cfg)));
                         }
                     }
                 });
@@ -76,6 +178,25 @@ mod desktop_app {
             .invoke_handler(tauri::generate_handler![
                 crate::commands::status::handshake,
                 crate::commands::status::get_status,
+                crate::commands::analyze::analyze_run,
+                crate::commands::compliance::compliance_domains,
+                crate::commands::compliance::compliance_flags,
+                crate::commands::compliance::compliance_checklist,
+                crate::commands::compliance::compliance_gap_assessment,
+                crate::commands::costs::costs_summary,
+                crate::commands::costs::costs_daily,
+                crate::commands::costs::costs_set_budget,
+                crate::commands::org::org_get,
+                crate::commands::org::org_update,
+                crate::commands::org::org_reload,
+                crate::commands::skills::list_skills,
+                crate::commands::skills::set_skill_visibility,
+                crate::commands::skills::reload_skills,
+                crate::commands::skills::list_mcp_tools,
+                crate::commands::workflow::list_workflows,
+                crate::commands::workflow::run_workflow,
+                crate::commands::workflow::resume_workflow,
+                crate::commands::workflow::get_workflow_status,
                 crate::commands::approvals::list_pending_approvals,
                 crate::commands::approvals::get_approval,
                 crate::commands::approvals::approve_proposal,
@@ -91,6 +212,7 @@ mod desktop_app {
                 crate::commands::backlog::list_feature_requests,
                 crate::commands::backlog::submit_feature_request,
                 crate::commands::backlog::update_feature_request,
+                crate::commands::backlog::plan_feature_request,
                 crate::commands::queue::get_queue_status,
                 crate::commands::queue::list_queue_tasks,
                 crate::commands::solutions::list_solutions,

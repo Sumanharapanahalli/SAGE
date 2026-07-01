@@ -14,6 +14,7 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::process::Stdio;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 
 use serde_json::Value;
@@ -27,6 +28,13 @@ use crate::errors::DesktopError;
 use crate::rpc::{parse_response_line, RpcRequest};
 
 type PendingMap = Arc<Mutex<HashMap<String, oneshot::Sender<Result<Value, DesktopError>>>>>;
+
+/// Fired once when the sidecar exits WITHOUT going through
+/// [`Sidecar::replace_solution`] (i.e. a genuine crash, not an intentional
+/// respawn). Deliberately Tauri-free (`sidecar.rs` stays unit-testable under
+/// `--no-default-features`) — the `desktop` feature supplies the actual
+/// closure, which emits a Tauri event and drives [`respawn_with_backoff`].
+pub type CrashHook = Arc<dyn Fn() + Send + Sync>;
 
 #[derive(Clone)]
 pub struct SidecarConfig {
@@ -42,17 +50,43 @@ pub struct SidecarConfig {
     pub sage_root: PathBuf,
 }
 
-pub struct Sidecar {
+/// The live connection to a running sidecar child. Absent when the sidecar
+/// is offline (initial spawn failed) — see [`Sidecar::offline`].
+struct Connection {
     stdin: Arc<Mutex<ChildStdin>>,
     pending: PendingMap,
     child: Arc<Mutex<Child>>,
+    /// Set to `true` by [`Sidecar::replace_solution`] just before it closes
+    /// stdin, so the reader task can tell "we did this on purpose" apart
+    /// from "the child actually died" and only fire `on_crash` for the
+    /// latter.
+    shutting_down: Arc<AtomicBool>,
+}
+
+pub struct Sidecar {
+    /// `None` means the sidecar is offline: no child process is running and
+    /// every `call` returns `SidecarDown`.
+    conn: Option<Connection>,
     cfg: SidecarConfig,
+    /// Re-armed on every (re)spawn so a solution switch keeps crash recovery
+    /// live for the new child too.
+    on_crash: Option<CrashHook>,
 }
 
 impl Sidecar {
-    /// Spawn the sidecar and return a handle. The stdout reader task is
-    /// detached — it runs until the child exits.
+    /// Spawn the sidecar with no crash hook — the Phase 1 behavior every
+    /// existing caller (including all tests) still gets unchanged.
     pub async fn spawn(cfg: SidecarConfig) -> Result<Self, DesktopError> {
+        Self::spawn_with_hook(cfg, None).await
+    }
+
+    /// Spawn the sidecar and arm `on_crash` to fire if the child exits
+    /// without going through [`Sidecar::replace_solution`] first. The
+    /// stdout reader task is detached — it runs until the child exits.
+    pub async fn spawn_with_hook(
+        cfg: SidecarConfig,
+        on_crash: Option<CrashHook>,
+    ) -> Result<Self, DesktopError> {
         let mut cmd = Command::new(&cfg.python);
         // `-u` forces unbuffered stdio so we don't deadlock on flushing.
         cmd.arg("-u")
@@ -94,6 +128,9 @@ impl Sidecar {
 
         let pending: PendingMap = Arc::new(Mutex::new(HashMap::new()));
         let pending_for_reader = pending.clone();
+        let shutting_down = Arc::new(AtomicBool::new(false));
+        let shutting_down_for_reader = shutting_down.clone();
+        let on_crash_for_reader = on_crash.clone();
 
         // Detached: reads one NDJSON line at a time, routes by id.
         tokio::spawn(async move {
@@ -143,6 +180,16 @@ impl Sidecar {
                     message: "sidecar exited".into(),
                 }));
             }
+            drop(map);
+
+            // Only a genuine crash (not an intentional replace_solution
+            // shutdown) should trigger recovery.
+            if !shutting_down_for_reader.load(Ordering::SeqCst) {
+                if let Some(hook) = on_crash_for_reader {
+                    warn!("sidecar exited unexpectedly — firing crash hook");
+                    hook();
+                }
+            }
         });
 
         // Detached stderr drain (logs only).
@@ -156,11 +203,30 @@ impl Sidecar {
         }
 
         Ok(Self {
-            stdin: Arc::new(Mutex::new(stdin)),
-            pending,
-            child: Arc::new(Mutex::new(child)),
+            conn: Some(Connection {
+                stdin: Arc::new(Mutex::new(stdin)),
+                pending,
+                child: Arc::new(Mutex::new(child)),
+                shutting_down,
+            }),
             cfg,
+            on_crash,
         })
+    }
+
+    /// Construct an offline sidecar handle that owns no child process.
+    ///
+    /// Used when the initial spawn fails: the Tauri state is still registered
+    /// (so commands return a recoverable `SidecarDown` error the UI can show
+    /// instead of Tauri's opaque unmanaged-state rejection). A subsequent
+    /// `replace_solution` can spawn a fresh process and bring it back online.
+    pub fn offline(cfg: SidecarConfig) -> Self {
+        Self { conn: None, cfg, on_crash: None }
+    }
+
+    /// Whether this sidecar currently has a live child process.
+    pub fn is_online(&self) -> bool {
+        self.conn.is_some()
     }
 
     /// The config this sidecar was spawned with (name/path may be None).
@@ -181,32 +247,46 @@ impl Sidecar {
     ) -> Result<(), DesktopError> {
         use std::time::Duration as StdDuration;
 
-        // Close stdin so the sidecar's reader hits EOF and exits.
-        {
-            let mut s = self.stdin.lock().await;
-            let _ = s.shutdown().await;
-        }
-        // Wait for clean exit, force-kill on timeout.
-        {
-            let mut c = self.child.lock().await;
-            let _ = tokio::time::timeout(StdDuration::from_secs(3), c.wait()).await;
-            let _ = c.start_kill();
+        // Gracefully tear down the current child if one is running. When the
+        // sidecar is offline (`conn` is None) there is nothing to close — we
+        // proceed straight to spawning a fresh process.
+        if let Some(conn) = &self.conn {
+            // Mark this as an intentional shutdown BEFORE closing stdin, so
+            // the reader task's EOF doesn't get mistaken for a crash and
+            // fire on_crash (which would race this method's own respawn).
+            conn.shutting_down.store(true, Ordering::SeqCst);
+            // Close stdin so the sidecar's reader hits EOF and exits.
+            {
+                let mut s = conn.stdin.lock().await;
+                let _ = s.shutdown().await;
+            }
+            // Wait for clean exit, force-kill on timeout.
+            {
+                let mut c = conn.child.lock().await;
+                let _ = tokio::time::timeout(StdDuration::from_secs(3), c.wait()).await;
+                let _ = c.start_kill();
+            }
         }
 
         let mut cfg = self.cfg.clone();
         cfg.solution_name = Some(name);
         cfg.solution_path = Some(path);
-        let fresh = Self::spawn(cfg).await?;
+        // Re-arm the same crash hook for the fresh child.
+        let fresh = Self::spawn_with_hook(cfg, self.on_crash.clone()).await?;
 
-        self.stdin = fresh.stdin;
-        self.pending = fresh.pending;
-        self.child = fresh.child;
+        self.conn = fresh.conn;
         self.cfg = fresh.cfg;
         Ok(())
     }
 
     /// Send a JSON-RPC request and wait for its correlated response.
     pub async fn call(&self, method: &str, params: Value) -> Result<Value, DesktopError> {
+        // Offline sidecar: no child to talk to. Surface a recoverable error
+        // rather than panicking or blocking.
+        let conn = self.conn.as_ref().ok_or_else(|| DesktopError::SidecarDown {
+            message: "sidecar offline".into(),
+        })?;
+
         let req = RpcRequest::new(method, params);
         let id = req.id.clone();
         let line = req.to_ndjson_line().map_err(|e| DesktopError::SidecarDown {
@@ -215,12 +295,12 @@ impl Sidecar {
 
         let (tx, rx) = oneshot::channel();
         {
-            let mut map = self.pending.lock().await;
+            let mut map = conn.pending.lock().await;
             map.insert(id.clone(), tx);
         }
 
         {
-            let mut stdin = self.stdin.lock().await;
+            let mut stdin = conn.stdin.lock().await;
             stdin
                 .write_all(line.as_bytes())
                 .await
@@ -243,9 +323,11 @@ impl Sidecar {
     }
 }
 
-/// Respawn policy: 1s, 3s, 9s, then give up.
+/// Respawn policy: 1s, 3s, 9s, then give up. `on_crash` is re-armed on the
+/// freshly-spawned sidecar so a second crash can also be recovered from.
 pub async fn respawn_with_backoff(
     cfg: SidecarConfig,
+    on_crash: Option<CrashHook>,
 ) -> Result<Sidecar, DesktopError> {
     let delays = [Duration::from_secs(1), Duration::from_secs(3), Duration::from_secs(9)];
     let mut last_err = DesktopError::SidecarDown {
@@ -253,15 +335,7 @@ pub async fn respawn_with_backoff(
     };
     for delay in delays {
         sleep(delay).await;
-        match Sidecar::spawn(SidecarConfig {
-            python: cfg.python.clone(),
-            sidecar_dir: cfg.sidecar_dir.clone(),
-            solution_name: cfg.solution_name.clone(),
-            solution_path: cfg.solution_path.clone(),
-            sage_root: cfg.sage_root.clone(),
-        })
-        .await
-        {
+        match Sidecar::spawn_with_hook(cfg.clone(), on_crash.clone()).await {
             Ok(s) => return Ok(s),
             Err(e) => {
                 warn!("sidecar respawn failed after {:?}: {e}", delay);
@@ -318,6 +392,84 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn on_crash_hook_fires_when_child_dies_unexpectedly() {
+        let root = repo_root();
+        let cfg = SidecarConfig {
+            python: python_exe(),
+            sidecar_dir: root.join("sage-desktop").join("sidecar"),
+            solution_name: None,
+            solution_path: None,
+            sage_root: root,
+        };
+        let fired = Arc::new(AtomicBool::new(false));
+        let fired_clone = fired.clone();
+        let hook: CrashHook = Arc::new(move || {
+            fired_clone.store(true, Ordering::SeqCst);
+        });
+
+        let sidecar = match Sidecar::spawn_with_hook(cfg, Some(hook)).await {
+            Ok(s) => s,
+            Err(e) => {
+                eprintln!("skipping: could not spawn sidecar: {e}");
+                return;
+            }
+        };
+        // Force-kill the child directly (NOT via replace_solution) to
+        // simulate a genuine crash.
+        if let Some(conn) = &sidecar.conn {
+            let mut c = conn.child.lock().await;
+            let _ = c.start_kill();
+        }
+        // Give the detached reader task a moment to observe EOF and fire.
+        tokio::time::sleep(Duration::from_millis(500)).await;
+        assert!(
+            fired.load(Ordering::SeqCst),
+            "on_crash hook should fire after an unexpected exit"
+        );
+    }
+
+    #[tokio::test]
+    async fn on_crash_hook_does_not_fire_during_replace_solution() {
+        let root = repo_root();
+        let cfg = SidecarConfig {
+            python: python_exe(),
+            sidecar_dir: root.join("sage-desktop").join("sidecar"),
+            solution_name: None,
+            solution_path: None,
+            sage_root: root.clone(),
+        };
+        let fired = Arc::new(AtomicBool::new(false));
+        let fired_clone = fired.clone();
+        let hook: CrashHook = Arc::new(move || {
+            fired_clone.store(true, Ordering::SeqCst);
+        });
+
+        let mut sidecar = match Sidecar::spawn_with_hook(cfg, Some(hook)).await {
+            Ok(s) => s,
+            Err(e) => {
+                eprintln!("skipping: could not spawn sidecar: {e}");
+                return;
+            }
+        };
+        let swap_path = root.join("solutions").join("starter");
+        sidecar
+            .replace_solution("starter".into(), swap_path)
+            .await
+            .expect("replace_solution");
+        tokio::time::sleep(Duration::from_millis(300)).await;
+        assert!(
+            !fired.load(Ordering::SeqCst),
+            "on_crash must NOT fire for an intentional replace_solution"
+        );
+        // The fresh sidecar (with the hook re-armed) should still work.
+        let result = sidecar
+            .call("handshake", serde_json::json!({}))
+            .await
+            .expect("post-swap handshake");
+        assert!(result.get("sidecar_version").is_some());
+    }
+
+    #[tokio::test]
     async fn replace_solution_spawns_fresh_sidecar() {
         let root = repo_root();
         let sidecar_dir = root.join("sage-desktop").join("sidecar");
@@ -354,6 +506,24 @@ mod tests {
             .await
             .expect("post-swap handshake");
         assert!(result.get("sidecar_version").is_some());
+    }
+
+    #[tokio::test]
+    async fn offline_sidecar_call_returns_sidecar_down() {
+        let cfg = SidecarConfig {
+            python: PathBuf::from("python"),
+            sidecar_dir: PathBuf::from("."),
+            solution_name: None,
+            solution_path: None,
+            sage_root: PathBuf::from("."),
+        };
+        let sidecar = Sidecar::offline(cfg);
+        assert!(!sidecar.is_online());
+        let err = sidecar
+            .call("status.get", serde_json::json!({}))
+            .await
+            .expect_err("offline sidecar call should error");
+        assert!(matches!(err, DesktopError::SidecarDown { .. }));
     }
 
     #[tokio::test]

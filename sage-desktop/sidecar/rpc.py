@@ -33,13 +33,25 @@ RPC_FEATURE_REQUEST_NOT_FOUND = -32020
 
 
 class RpcError(Exception):
-    """Raised to signal an RPC-level error with a machine-readable code."""
+    """Raised to signal an RPC-level error with a machine-readable code.
 
-    def __init__(self, code: int, message: str, data: Optional[dict] = None) -> None:
+    ``request_id`` lets a parse-time error carry the originating frame's id
+    forward, so the error response can be correlated by the Rust client even
+    when the Request object was never successfully built.
+    """
+
+    def __init__(
+        self,
+        code: int,
+        message: str,
+        data: Optional[dict] = None,
+        request_id: Optional[str] = None,
+    ) -> None:
         super().__init__(message)
         self.code = code
         self.message = message
         self.data = data
+        self.request_id = request_id
 
 
 @dataclass
@@ -73,7 +85,11 @@ def parse_request(line: str) -> Request:
 
     params = obj.get("params", {})
     if not isinstance(params, dict):
-        raise RpcError(RPC_INVALID_PARAMS, "params must be an object")
+        # The id is valid here — carry it forward so the error frame can be
+        # correlated by the client (otherwise it goes out as id=null -> hang).
+        raise RpcError(
+            RPC_INVALID_PARAMS, "params must be an object", request_id=str(req_id)
+        )
 
     return Request(id=str(req_id), method=method, params=params)
 

@@ -166,7 +166,9 @@ export type FeatureRequestStatus =
   | "approved"
   | "rejected"
   | "completed"
-  | "in_progress";
+  | "in_progress"
+  | "in_planning"
+  | "github_pr";
 
 export interface FeatureRequest {
   id: string;
@@ -201,6 +203,18 @@ export interface FeatureRequestUpdate {
   action: FeatureRequestAction;
   reviewer_note?: string;
 }
+
+/** Result of backlog.plan — a SAGE-scope request opens a GitHub issue (no
+ * approval-queue proposal); a solution-scope request creates a real
+ * ProposalStore proposal (action_type "implementation_plan"). */
+export interface PlanResultGithub {
+  request_id: string;
+  status: "github_pr";
+  github_issue_url: string;
+  message: string;
+}
+
+export type PlanResult = PlanResultGithub | Proposal;
 
 // ── Solutions ─────────────────────────────────────────────────────────────
 
@@ -583,4 +597,232 @@ export interface CollectiveStats {
   contributors: Record<string, number>;
   git_available: boolean;
   repo_path: string;
+}
+
+// ── Compliance ────────────────────────────────────────────────────────────
+
+export interface ComplianceDomain {
+  domain: string;
+  standard: string;
+  description: string;
+  authority: string;
+  risk_levels: string[];
+  hil_required_for: string[];
+}
+
+export interface ComplianceDomainsResult {
+  domains: ComplianceDomain[];
+}
+
+export interface ComplianceChecklistItem {
+  id: string;
+  type: "compliance_flag" | "required_task" | "evidence_artifact";
+  level: string;
+  description: string;
+  clause: string;
+  hil_required: boolean;
+  status: string | null;
+  evidence_ref: string | null;
+  notes: string;
+}
+
+export interface ComplianceChecklist {
+  domain: string;
+  risk_level: string;
+  standard: string;
+  description: string;
+  authority: string;
+  hil_testing_required: boolean;
+  total_items: number;
+  flags: number;
+  required_tasks: number;
+  artifacts: number;
+  items: ComplianceChecklistItem[];
+}
+
+export interface ComplianceGapResult {
+  domain: string;
+  risk_level: string;
+  required_tasks: string[];
+  completed_tasks: string[];
+  missing_tasks: string[];
+  hil_tasks_missing: string[];
+  compliance_pct: number;
+  compliant: boolean;
+  blocking_gaps: string[];
+}
+
+// ── Costs (T1-004) ────────────────────────────────────────────────────────
+
+export interface CostByModel {
+  model: string;
+  calls: number;
+  cost: number;
+}
+
+export interface CostBySolution {
+  solution: string;
+  calls: number;
+  cost: number;
+}
+
+export interface CostSummary {
+  total_cost_usd: number;
+  total_calls: number;
+  total_input_tokens: number;
+  total_output_tokens: number;
+  avg_cost_per_call: number;
+  by_model: CostByModel[];
+  by_solution: CostBySolution[];
+  period_days: number;
+  tenant: string | null;
+  solution: string | null;
+}
+
+export interface CostDailyRow {
+  date: string;
+  calls: number;
+  cost_usd: number;
+}
+
+export interface CostDailyResult {
+  daily: CostDailyRow[];
+  count: number;
+  period_days: number;
+}
+
+export interface CostBudgetResult {
+  saved: boolean;
+  key: string;
+  monthly_usd: number;
+}
+
+// ── Skills & Tools ───────────────────────────────────────────────────────
+
+export type SkillVisibility = "public" | "private" | "disabled";
+
+export interface Skill {
+  name: string;
+  version: string;
+  visibility: SkillVisibility | string;
+  roles: string[];
+  runner: string;
+  description: string;
+  tools: string[];
+  prompt: string;
+  acceptance_criteria: string[];
+  certifications: string[];
+  engines: string[];
+  tags: string[];
+}
+
+export interface SkillStats {
+  total: number;
+  active: number;
+  public: number;
+  private: number;
+  disabled: number;
+  roles_covered: number;
+  runners_covered: number;
+  loaded_dirs: string[];
+}
+
+export interface SkillsListResult {
+  skills: Skill[];
+  stats: SkillStats;
+}
+
+export interface SkillVisibilitySetResult {
+  status: "updated";
+  name: string;
+  visibility: SkillVisibility | string;
+}
+
+export interface SkillsReloadResult {
+  status: "reloaded";
+  skills_loaded: number;
+  stats: SkillStats;
+}
+
+export interface McpTool {
+  name: string;
+  description: string;
+  server: string;
+}
+
+export interface McpToolsResult {
+  tools: McpTool[];
+  count: number;
+}
+
+// ── Workflows (LangGraph) ─────────────────────────────────────────────────
+// Empty list / an "error"-shaped result are the graceful-degradation path
+// when orchestration.engine != "langgraph" or the langgraph package isn't
+// installed — see src/integrations/langgraph_runner.py.
+
+export interface WorkflowSummary {
+  name: string;
+}
+
+export interface WorkflowListResult {
+  workflows: WorkflowSummary[];
+  count: number;
+}
+
+export type WorkflowRunStatus = "completed" | "awaiting_approval" | "error";
+
+export interface WorkflowRunResult {
+  run_id: string;
+  status: WorkflowRunStatus;
+  workflow_name: string;
+  result: Record<string, unknown>;
+}
+
+export interface WorkflowStatusResult {
+  run_id: string;
+  workflow_name: string;
+  status: WorkflowRunStatus;
+}
+
+// ── Organization ──────────────────────────────────────────────────────────
+// org.yaml is a SAGE_ROOT-level file (not per-solution) — identity fields
+// shape every solution's onboarding and agent context. This pass covers
+// viewing the enriched org state (incl. read-only cross-team routes) and
+// editing identity fields; channel/solution/route CRUD is a follow-up.
+
+export interface OrgKnowledgeChannel {
+  producers?: string[];
+  consumers?: string[];
+}
+
+export interface OrgRoute {
+  source: string;
+  target: string;
+}
+
+/** The `org:` section of org.yaml, as read back from disk. Only
+ * name/mission/vision/core_values are editable from this pass — other
+ * keys (root_solution, knowledge_channels) are read-only passthrough. */
+export interface OrgIdentity {
+  name?: string;
+  mission?: string;
+  vision?: string;
+  core_values?: string[];
+  root_solution?: string;
+  knowledge_channels?: Record<string, OrgKnowledgeChannel>;
+  [key: string]: unknown;
+}
+
+export interface OrgData {
+  org: OrgIdentity;
+  routes: OrgRoute[];
+}
+
+export interface OrgUpdateResult {
+  status: "saved";
+  org: OrgIdentity;
+}
+
+export interface OrgReloadResult {
+  status: "reloaded";
 }

@@ -4,6 +4,7 @@ import { NavLink } from "react-router-dom";
 import { useCurrentSolution } from "@/hooks/useSolutions";
 
 const NAV_ITEMS = [
+  { to: "/analyze", label: "Analyze" },
   { to: "/approvals", label: "Approvals" },
   { to: "/agents", label: "Agents" },
   { to: "/audit", label: "Audit" },
@@ -14,6 +15,11 @@ const NAV_ITEMS = [
   { to: "/constitution", label: "Constitution" },
   { to: "/knowledge", label: "Knowledge" },
   { to: "/collective", label: "Collective" },
+  { to: "/compliance", label: "Compliance" },
+  { to: "/costs", label: "Costs" },
+  { to: "/workflows", label: "Workflows" },
+  { to: "/skills", label: "Skills & Tools" },
+  { to: "/organization", label: "Organization" },
   { to: "/settings", label: "Settings" },
 ] as const;
 

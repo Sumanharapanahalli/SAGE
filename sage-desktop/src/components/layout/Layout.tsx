@@ -2,6 +2,7 @@ import { Outlet } from "react-router-dom";
 
 import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
+import { SidecarStatusBanner } from "./SidecarStatusBanner";
 
 export function Layout() {
   return (
@@ -9,6 +10,7 @@ export function Layout() {
       <Sidebar />
       <div className="flex flex-1 flex-col">
         <Header />
+        <SidecarStatusBanner />
         <main className="flex-1 overflow-auto p-6">
           <Outlet />
         </main>

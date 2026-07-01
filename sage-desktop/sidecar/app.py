@@ -16,15 +16,27 @@ from typing import Optional
 # Put the SAGE repo root on sys.path so `from src.core...` resolves when
 # the sidecar is spawned from arbitrary working directories (Tauri will
 # spawn from the bundle dir, not the SAGE checkout root).
-_SAGE_ROOT_ENV = os.environ.get("SAGE_ROOT")
-if _SAGE_ROOT_ENV and os.path.isdir(_SAGE_ROOT_ENV):
-    if _SAGE_ROOT_ENV not in sys.path:
-        sys.path.insert(0, _SAGE_ROOT_ENV)
-else:
-    # Fallback: infer from repo layout (sage-desktop/sidecar/app.py → repo root)
-    _inferred = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-    if os.path.isdir(os.path.join(_inferred, "src")) and _inferred not in sys.path:
-        sys.path.insert(0, _inferred)
+def _resolve_sage_root() -> Optional[str]:
+    """Resolve the SAGE repo root: the SAGE_ROOT env var when it points at a
+    real dir, otherwise infer it from the repo layout
+    (sage-desktop/sidecar/app.py → repo root). Returns None if neither yields
+    a directory that looks like a SAGE checkout (has a ``src/``).
+
+    Evaluated at runtime (not frozen at import) so handler wiring picks up the
+    same fallback the sys.path bootstrap uses even when SAGE_ROOT is unset.
+    """
+    env = os.environ.get("SAGE_ROOT")
+    if env and os.path.isdir(env):
+        return env
+    inferred = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    if os.path.isdir(os.path.join(inferred, "src")):
+        return inferred
+    return None
+
+
+_SAGE_ROOT = _resolve_sage_root()
+if _SAGE_ROOT and _SAGE_ROOT not in sys.path:
+    sys.path.insert(0, _SAGE_ROOT)
 
 from rpc import (
     RpcError,
@@ -38,19 +50,25 @@ from rpc import (
 from dispatcher import Dispatcher
 from handlers import (
     agents,
+    analyze,
     approvals,
     audit,
     backlog,
     builds,
     collective,
+    compliance,
     constitution,
+    costs,
     handshake,
     knowledge,
     llm,
     onboarding,
+    org,
     queue,
+    skills,
     solutions,
     status,
+    workflow,
     yaml_edit,
 )
 
@@ -67,6 +85,25 @@ def _configure_logging() -> None:
 def _build_dispatcher() -> Dispatcher:
     d = Dispatcher()
     d.register("handshake", handshake.handshake)
+    d.register("analyze.run", analyze.run)
+    d.register("compliance.domains", compliance.domains)
+    d.register("compliance.flags", compliance.flags)
+    d.register("compliance.checklist", compliance.checklist)
+    d.register("compliance.gap_assessment", compliance.gap_assessment)
+    d.register("costs.summary", costs.summary)
+    d.register("costs.daily", costs.daily)
+    d.register("costs.set_budget", costs.set_budget)
+    d.register("org.get", org.get)
+    d.register("org.update", org.update)
+    d.register("org.reload", org.reload)
+    d.register("skills.list", skills.list)
+    d.register("skills.set_visibility", skills.set_visibility)
+    d.register("skills.reload", skills.reload)
+    d.register("mcp.tools", skills.mcp_tools)
+    d.register("workflow.list_workflows", workflow.list_workflows)
+    d.register("workflow.run", workflow.run)
+    d.register("workflow.resume", workflow.resume)
+    d.register("workflow.status", workflow.status)
     d.register("approvals.list_pending", approvals.list_pending)
     d.register("approvals.get", approvals.get)
     d.register("approvals.approve", approvals.approve)
@@ -83,6 +120,7 @@ def _build_dispatcher() -> Dispatcher:
     d.register("backlog.list", backlog.list_feature_requests)
     d.register("backlog.submit", backlog.submit_feature_request)
     d.register("backlog.update", backlog.update_feature_request)
+    d.register("backlog.plan", backlog.plan)
     d.register("queue.get_status", queue.get_queue_status)
     d.register("queue.list_tasks", queue.list_queue_tasks)
     d.register("solutions.list", solutions.list_solutions)
@@ -136,10 +174,17 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
         from src.core.project_loader import list_solutions as _lf
 
         solutions._list_fn = _lf
-        _sr = os.environ.get("SAGE_ROOT")
+        # Share the same inferred-repo-root fallback as the sys.path bootstrap
+        # so solutions.list works even when SAGE_ROOT is unset (standalone launch).
+        _sr = _resolve_sage_root()
         solutions._sage_root = Path(_sr) if _sr else None
     except Exception as e:  # noqa: BLE001
         logging.warning("solutions.list wiring unavailable: %s", e)
+
+    # org.yaml is a SAGE_ROOT-level file (not per-solution) — wire before the
+    # solution-path guard below so org.* works in standalone mode too.
+    _org_sr = _resolve_sage_root()
+    org._sage_root = Path(_org_sr) if _org_sr else None
 
     try:
         from src.core.onboarding import generate_solution as _gs
@@ -172,6 +217,8 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
         store = ProposalStore(str(sage_dir / "proposals.db"))
         approvals._store = store
         status._store = store
+        analyze._store = store
+        backlog._proposal_store = store
     except Exception as e:  # noqa: BLE001
         logging.warning("ProposalStore unavailable: %s", e)
 
@@ -211,9 +258,12 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
         logging.warning("LLMGateway unavailable: %s", e)
 
     try:
-        from src.core.queue_manager import get_task_queue
+        from src.core.queue_manager import get_task_queue, parallel_runner
 
         queue._queue = get_task_queue(solution_name)
+        # Parallel config lives on the runner, not the bare TaskQueue —
+        # mirror api.py:1716-1717 so queue.get_status reports it correctly.
+        queue._parallel_runner = parallel_runner
     except Exception as e:  # noqa: BLE001
         logging.warning("TaskQueue unavailable: %s", e)
 
@@ -271,7 +321,10 @@ def run(stdin=None, stdout=None, argv: Optional[list[str]] = None) -> int:
             result = dispatcher.dispatch(req)
             write_ndjson_response(stdout, build_response(req.id, result))
         except RpcError as e:
-            req_id = req.id if req is not None else None
+            # If parse_request failed before building the Request, fall back to
+            # the id it preserved on the error (e.g. a params-shape violation),
+            # so the error frame still carries a correlatable id.
+            req_id = req.id if req is not None else e.request_id
             write_ndjson_response(
                 stdout, build_error(req_id, e.code, e.message, e.data)
             )

@@ -6,6 +6,10 @@ from typing import Any, Dict, List
 from rpc import RpcError, RPC_INVALID_PARAMS
 
 _queue = None
+# The live parallel config lives on the ParallelTaskRunner, NOT the bare
+# TaskQueue. Wired by app._wire_handlers to src.core.queue_manager.parallel_runner
+# — the same object FastAPI reads at api.py:1716-1717.
+_parallel_runner = None
 
 
 def _empty_status() -> Dict[str, Any]:
@@ -29,7 +33,7 @@ def get_queue_status(_params: dict) -> Dict[str, Any]:
         key = t.get("status")
         if key in status:
             status[key] += 1
-    cfg = getattr(_queue, "_config", None)
+    cfg = getattr(_parallel_runner, "config", None)
     if cfg is not None:
         status["parallel_enabled"] = bool(getattr(cfg, "parallel_enabled", False))
         status["max_workers"] = int(getattr(cfg, "max_workers", 0))

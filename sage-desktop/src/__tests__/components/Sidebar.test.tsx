@@ -62,4 +62,49 @@ describe("Sidebar", () => {
       screen.getByRole("link", { name: /collective/i }),
     ).toHaveAttribute("href", "/collective");
   });
+
+  it("includes the Analyze entry — the SURFACE -> PROPOSE trigger", () => {
+    renderAt("/approvals");
+    expect(
+      screen.getByRole("link", { name: /analyze/i }),
+    ).toHaveAttribute("href", "/analyze");
+  });
+
+  it("includes the Compliance entry (Phase 5f)", () => {
+    renderAt("/approvals");
+    expect(
+      screen.getByRole("link", { name: /compliance/i }),
+    ).toHaveAttribute("href", "/compliance");
+  });
+
+  it("includes the Costs entry", () => {
+    renderAt("/approvals");
+    expect(screen.getByRole("link", { name: /costs/i })).toHaveAttribute(
+      "href",
+      "/costs",
+    );
+  });
+
+  it("includes the Workflows entry", () => {
+    renderAt("/approvals");
+    expect(screen.getByRole("link", { name: /workflows/i })).toHaveAttribute(
+      "href",
+      "/workflows",
+    );
+  });
+
+  it("includes the Skills & Tools entry", () => {
+    renderAt("/approvals");
+    expect(screen.getByRole("link", { name: /skills/i })).toHaveAttribute(
+      "href",
+      "/skills",
+    );
+  });
+
+  it("includes the Organization entry", () => {
+    renderAt("/approvals");
+    expect(
+      screen.getByRole("link", { name: /organization/i }),
+    ).toHaveAttribute("href", "/organization");
+  });
 });

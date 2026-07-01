@@ -67,3 +67,15 @@ pub async fn update_feature_request(
         )
         .await
 }
+
+#[tauri::command]
+pub async fn plan_feature_request(
+    req_id: String,
+    sidecar: State<'_, RwLock<Sidecar>>,
+) -> Result<Value, DesktopError> {
+    sidecar
+        .read()
+        .await
+        .call("backlog.plan", json!({"req_id": req_id}))
+        .await
+}

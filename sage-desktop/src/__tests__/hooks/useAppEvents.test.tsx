@@ -70,6 +70,30 @@ describe("useAppEvents", () => {
     expect(spy).toHaveBeenCalled();
   });
 
+  it("caches sidecar-status payloads under the sidecarStatus query key", async () => {
+    const qc = new QueryClient();
+    const Wrapper = wrap(qc);
+    render(
+      <Wrapper>
+        <Probe />
+      </Wrapper>,
+    );
+
+    await waitFor(() =>
+      expect(listeners.get("sidecar-status")?.size).toBeGreaterThan(0),
+    );
+
+    const handlers = listeners.get("sidecar-status")!;
+    for (const h of handlers) {
+      h({ payload: { online: false, reason: "sidecar exited unexpectedly" } });
+    }
+
+    expect(qc.getQueryData(["sidecarStatus"])).toEqual({
+      online: false,
+      reason: "sidecar exited unexpectedly",
+    });
+  });
+
   it("unsubscribes on unmount", async () => {
     const qc = new QueryClient();
     const Wrapper = wrap(qc);

@@ -5,7 +5,9 @@ import {
   useFeatureRequests,
   useSubmitFeatureRequest,
   useUpdateFeatureRequest,
+  usePlanFeatureRequest,
 } from "@/hooks/useBacklog";
+import { approvalsKey } from "@/hooks/useApprovals";
 import { createTestQueryClient, wrapperWith } from "../helpers/queryWrapper";
 
 vi.mock("@/api/client");
@@ -60,5 +62,28 @@ describe("useUpdateFeatureRequest", () => {
     result.current.mutate({ id: "abc", action: "approve" });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["backlog"] });
+  });
+});
+
+describe("usePlanFeatureRequest", () => {
+  beforeEach(() => vi.resetAllMocks());
+
+  it("plans and invalidates both the backlog and approvals caches", async () => {
+    vi.mocked(client.planFeatureRequest).mockResolvedValue({
+      trace_id: "t1",
+      action_type: "implementation_plan",
+      risk_class: "STATEFUL",
+      status: "pending",
+    } as any);
+    const qc = createTestQueryClient();
+    const invalidateSpy = vi.spyOn(qc, "invalidateQueries");
+    const { result } = renderHook(() => usePlanFeatureRequest(), {
+      wrapper: wrapperWith(qc),
+    });
+    result.current.mutate("abc");
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(client.planFeatureRequest).toHaveBeenCalledWith("abc");
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["backlog"] });
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: approvalsKey });
   });
 });

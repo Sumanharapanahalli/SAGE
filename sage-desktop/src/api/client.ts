@@ -28,9 +28,15 @@ import type {
   CollectiveStats,
   CollectiveSyncResult,
   CollectiveValidateResult,
+  ComplianceChecklist,
+  ComplianceDomainsResult,
+  ComplianceGapResult,
   ConstitutionData,
   ConstitutionState,
   ConstitutionUpdateResult,
+  CostBudgetResult,
+  CostDailyResult,
+  CostSummary,
   DesktopError,
   FeatureRequest,
   FeatureRequestScope,
@@ -45,9 +51,17 @@ import type {
   KnowledgeStats,
   LlmInfo,
   LlmSwitchResult,
+  McpToolsResult,
+  OrgData,
+  OrgReloadResult,
+  OrgUpdateResult,
+  PlanResult,
   Proposal,
   QueueStatus,
   QueueTask,
+  SkillsListResult,
+  SkillsReloadResult,
+  SkillVisibilitySetResult,
   SolutionRef,
   StartBuildParams,
   CurrentSolution,
@@ -55,6 +69,9 @@ import type {
   OnboardingParams,
   OnboardingResult,
   StatusResponse,
+  WorkflowListResult,
+  WorkflowRunResult,
+  WorkflowStatusResult,
   YamlFileName,
   YamlReadResult,
   YamlWriteResult,
@@ -102,6 +119,36 @@ export async function call<T>(command: string, args?: unknown): Promise<T> {
 
 export const handshake = () => call<HandshakeResponse>("handshake");
 export const getStatus = () => call<StatusResponse>("get_status");
+
+// ── Analyze ───────────────────────────────────────────────────────────────
+// The desktop operator's SURFACE -> PROPOSE trigger: runs the AnalystAgent
+// against a log/signal and creates a real proposal, visible immediately in
+// Approvals (list_pending_approvals reads the same store).
+
+export const analyzeLog = (log_entry: string) =>
+  call<Proposal>("analyze_run", { log_entry });
+
+// ── Compliance ────────────────────────────────────────────────────────────
+// Assessment tooling on top of the audit RECORD already on desktop — lets a
+// compliance operator check conformance (domain checklists, gap assessment)
+// without leaving the app.
+
+export const listComplianceDomains = () =>
+  call<ComplianceDomainsResult>("compliance_domains");
+
+export const getComplianceChecklist = (domain: string, risk_level?: string) =>
+  call<ComplianceChecklist>("compliance_checklist", { domain, risk_level });
+
+export const assessComplianceGap = (
+  domain: string,
+  risk_level: string,
+  completed_tasks: string[],
+) =>
+  call<ComplianceGapResult>("compliance_gap_assessment", {
+    domain,
+    risk_level,
+    completed_tasks,
+  });
 
 // ── Approvals ─────────────────────────────────────────────────────────────
 
@@ -187,6 +234,13 @@ export const submitFeatureRequest = (req: FeatureRequestSubmit) =>
 
 export const updateFeatureRequest = (req: FeatureRequestUpdate) =>
   call<FeatureRequest>("update_feature_request", req);
+
+// The desktop PROPOSE trigger for a backlog item: SAGE-scope requests open a
+// GitHub issue (no LLM call), solution-scope requests run the PlannerAgent
+// and create a real "implementation_plan" proposal — visible immediately in
+// Approvals (list_pending_approvals reads the same store).
+export const planFeatureRequest = (req_id: string) =>
+  call<PlanResult>("plan_feature_request", { req_id });
 
 // ── Solutions ─────────────────────────────────────────────────────────────
 
@@ -354,6 +408,90 @@ export const collectiveSync = () =>
 export const collectiveStats = () =>
   call<CollectiveStats>("collective_stats");
 
+// ── Skills & Tools ─────────────────────────────────────────────────────────
+// Read-and-toggle only: list skills, toggle visibility, hot-reload from
+// disk, and browse MCP tools. Visibility/reload are framework control
+// (no HITL approval) — mirrors the web API's `/skills/visibility` and
+// `/skills/reload` docstrings.
+
+export const listSkills = (include_disabled?: boolean) =>
+  call<SkillsListResult>("list_skills", { include_disabled });
+
+export const setSkillVisibility = (name: string, visibility: string) =>
+  call<SkillVisibilitySetResult>("set_skill_visibility", { name, visibility });
+
+export const reloadSkills = () => call<SkillsReloadResult>("reload_skills");
+
+export const listMcpTools = () => call<McpToolsResult>("list_mcp_tools");
+
+// ── Costs (T1-004) ───────────────────────────────────────────────────────
+// LLM spend summary/daily breakdown and per-solution monthly budget
+// controls. Budget writes go straight to config.yaml — the operator's own
+// explicit action, not an agent proposal — mirroring api.py's
+// /costs/budget endpoint.
+
+export const getCostsSummary = (
+  tenant?: string,
+  solution?: string,
+  period_days?: number,
+) => call<CostSummary>("costs_summary", { tenant, solution, period_days });
+
+export const getCostsDaily = (
+  tenant?: string,
+  solution?: string,
+  period_days?: number,
+) => call<CostDailyResult>("costs_daily", { tenant, solution, period_days });
+
+export const setCostsBudget = (
+  monthly_usd: number,
+  tenant?: string,
+  solution?: string,
+) =>
+  call<CostBudgetResult>("costs_set_budget", {
+    monthly_usd,
+    tenant,
+    solution,
+  });
+
+// ── Workflows (LangGraph) ────────────────────────────────────────────────
+// List registered workflows for the active solution, start/resume
+// approval-gated runs, and poll status. Empty list / thrown "not found"
+// errors are the graceful-degradation path when orchestration.engine !=
+// "langgraph" or the langgraph package isn't installed.
+
+export const listWorkflows = () => call<WorkflowListResult>("list_workflows");
+
+export const runWorkflow = (
+  workflow_name: string,
+  state?: Record<string, unknown>,
+) => call<WorkflowRunResult>("run_workflow", { workflow_name, state });
+
+export const resumeWorkflow = (
+  run_id: string,
+  feedback?: Record<string, unknown>,
+) => call<WorkflowRunResult>("resume_workflow", { run_id, feedback });
+
+export const getWorkflowStatus = (run_id: string) =>
+  call<WorkflowStatusResult>("get_workflow_status", { run_id });
+
+// ── Organization ──────────────────────────────────────────────────────────
+// org.yaml is a SAGE_ROOT-level file (not per-solution) — identity fields
+// (name/mission/vision/core_values) shape every solution's onboarding and
+// agent context. Channel/solution/route CRUD is out of scope for this pass
+// (a follow-up, same shape as /org/channels, /org/solutions, /org/routes on
+// the web API); this is read (incl. read-only routes) + edit + reload.
+
+export const getOrg = () => call<OrgData>("org_get");
+
+export const updateOrg = (fields: {
+  name?: string;
+  mission?: string;
+  vision?: string;
+  core_values?: string[];
+}) => call<OrgUpdateResult>("org_update", fields);
+
+export const reloadOrg = () => call<OrgReloadResult>("org_reload");
+
 // Re-exports to reduce import boilerplate at call sites
 export type {
   Agent,
@@ -378,9 +516,17 @@ export type {
   HandshakeResponse,
   LlmInfo,
   LlmSwitchResult,
+  McpToolsResult,
+  OrgData,
+  OrgReloadResult,
+  OrgUpdateResult,
+  PlanResult,
   Proposal,
   QueueStatus,
   QueueTask,
+  SkillsListResult,
+  SkillsReloadResult,
+  SkillVisibilitySetResult,
   SolutionRef,
   StartBuildParams,
   CurrentSolution,
@@ -388,6 +534,9 @@ export type {
   OnboardingParams,
   OnboardingResult,
   StatusResponse,
+  WorkflowListResult,
+  WorkflowRunResult,
+  WorkflowStatusResult,
   YamlFileName,
   YamlReadResult,
   YamlWriteResult,

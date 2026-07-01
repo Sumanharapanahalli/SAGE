@@ -93,27 +93,36 @@ NDJSON frames — one JSON object per line. Every request has
 `{ jsonrpc: "2.0", id, method, params }`; every response is either
 `{ jsonrpc: "2.0", id, result }` or `{ jsonrpc: "2.0", id, error }`.
 
-| Method | Purpose |
-|---|---|
-| `handshake` | Sidecar version / SAGE version / solution handshake |
-| `get_status` | Health, LLM provider/model, pending-approvals count |
-| `list_pending_approvals` | Returns pending `Proposal[]` |
-| `get_approval` | Fetch one proposal by `trace_id` |
-| `approve_proposal` | Mark approved; optional `decided_by`, `feedback` |
-| `reject_proposal` | Mark rejected; optional `decided_by`, `feedback` |
-| `batch_approve` | Per-item outcome list; never aborts on one failure |
-| `list_audit_events` | Paginated audit events, filterable by `action_type` / `trace_id` |
-| `get_audit_by_trace` | All events sharing a `trace_id` |
-| `audit_stats` | Totals + `by_action_type` histogram |
-| `list_agents` | Core + custom roles with enrichment (event_count, last_active) |
-| `get_agent` | Single agent by name |
-| `llm.get_info` | Current provider name, model, and list of available providers |
-| `llm.switch` | Runtime provider/model swap (framework control — no HITL) |
-| `backlog.list` | List solution or framework feature requests, filterable by status/scope |
-| `backlog.submit` | Create a new feature request; validates priority + scope |
-| `backlog.update` | Approve / reject / complete an existing request |
-| `queue.get_status` | Pending / in-progress / done / failed / blocked counts + parallel config |
-| `queue.list_tasks` | Paginated task list (≤50 by default), optional status filter |
+**Two distinct namespaces, not one.** The frontend calls a flat-named
+Tauri **command** (`invoke("list_pending_approvals", ...)`); that Rust
+command proxies to a namespaced sidecar **RPC method**
+(`approvals.list_pending`) over the NDJSON pipe. The two names are
+usually related but never identical — the table below gives both, so
+neither layer is ambiguous.
+
+| Tauri command (React → Rust) | Sidecar RPC method (Rust → Python) | Purpose |
+|---|---|---|
+| `handshake` | `handshake` | Sidecar version / SAGE version / solution handshake |
+| `get_status` | `status.get` | Health, LLM provider/model, pending-approvals count |
+| `list_pending_approvals` | `approvals.list_pending` | Returns pending `Proposal[]` |
+| `get_approval` | `approvals.get` | Fetch one proposal by `trace_id` |
+| `approve_proposal` | `approvals.approve` | Mark approved; optional `decided_by`, `feedback` |
+| `reject_proposal` | `approvals.reject` | Mark rejected; optional `decided_by`, `feedback` |
+| `batch_approve` | `approvals.batch_approve` | Per-item outcome list; never aborts on one failure |
+| `list_audit_events` | `audit.list` | Paginated audit events, filterable by `action_type` / `trace_id` |
+| `get_audit_by_trace` | `audit.get_by_trace` | All events sharing a `trace_id` |
+| `audit_stats` | `audit.stats` | Totals + `by_action_type` histogram |
+| `list_agents` | `agents.list` | Core + custom roles with enrichment (event_count, last_active) |
+| `get_agent` | `agents.get` | Single agent by name |
+| `get_llm_info` | `llm.get_info` | Current provider name, model, and list of available providers |
+| `switch_llm` | `llm.switch` | Runtime provider/model swap (framework control — no HITL) |
+| `list_feature_requests` | `backlog.list` | List solution or framework feature requests, filterable by status/scope |
+| `submit_feature_request` | `backlog.submit` | Create a new feature request; validates priority + scope |
+| `update_feature_request` | `backlog.update` | Approve / reject / complete an existing request |
+| `get_queue_status` | `queue.get_status` | Pending / in-progress / done / failed / blocked counts + parallel config |
+| `list_queue_tasks` | `queue.list_tasks` | Paginated task list (≤50 by default), optional status filter |
+| `analyze_run` | `analyze.run` | SURFACE → PROPOSE trigger (Phase 5d) — runs AnalystAgent, creates a real proposal |
+| `switch_solution` | *(none — Rust-side action)* | Closes stdin, respawns the sidecar with `--solution-name`/`--solution-path`, re-handshakes; only the read side (`list_solutions`/`get_current_solution`) is a real RPC |
 
 ### Phase 2 methods
 
@@ -505,4 +514,229 @@ the desktop edit is the operator's own action.
 - Web: +5 `useKnowledge` hook tests, +3 `KnowledgeEntryRow`, +2
   `AddKnowledgeForm`, +2 `Knowledge` page, +1 Sidebar entry — 152
   vitest tests total.
+
+## Phase 5d — Analyze (the SURFACE -> PROPOSE trigger)
+
+Prior phases let a desktop operator DECIDE (approvals) and COMPOUND
+(knowledge, collective) but gave them no way to make an agent PROPOSE
+something in the first place — `builds.start` / `onboarding.generate`
+were the only work-creating RPCs, and neither writes to
+`ProposalStore`, so the Approvals inbox had nothing an operator could
+feed it. `analyze.run` closes that gap.
+
+Unlike the legacy web `POST /analyze` — which stashes its result in an
+in-memory `_pending_proposals` dict that only its own
+`POST /approve/{trace_id}` branch reads, a second pending-item
+mechanism disconnected from `ProposalStore` — the sidecar handler
+wraps `AnalystAgent.analyze_log()` and persists the result as a REAL
+`ProposalStore` proposal (`action_type="analysis"`,
+`risk_class=INFORMATIONAL`). It flows through the already-verified
+`approvals.list_pending` / `approve` / `reject` RPCs and the Approvals
+page with no new inbox to build. A Python exception, or the analyst's
+own `{"error": ...}` failure shape, raises `RPC_SIDECAR_ERROR` and
+creates no proposal — no partial/garbage entries.
+
+- One sidecar handler in `handlers/analyze.py`: `analyze.run`. Takes
+  `{log_entry}`, requires non-empty. `_store` (the same `ProposalStore`
+  instance `approvals.py` uses) and `_analyst_factory` (defaults to the
+  real `AnalystAgent`, overridable for tests) are injected by
+  `_wire_handlers`.
+- One Tauri command, `analyze_run` — proxy-only, same
+  `State<RwLock<Sidecar>>` read-lock pattern as every other command.
+- React: `useAnalyzeLog` mutation hook (invalidates `["approvals"]` on
+  success so the inbox refreshes immediately). The `Analyze` page is a
+  plain button + multi-line textarea — deliberately not a
+  `<form onSubmit>`, since Enter in a multi-line field should insert a
+  newline, not submit. Shows the resulting proposal's description and a
+  "View in Approvals" link on success.
+- Route `/analyze`, Sidebar "Analyze" entry (first in the nav — it's
+  the lean loop's SURFACE step, ahead of Approvals' DECIDE step),
+  Header title map updated.
+
+**Law 1 note.** `analyze.run` only *creates* a pending proposal — it
+never executes or auto-approves anything. The human still approves or
+rejects via the unchanged `approvals.*` RPCs.
+
+### Testing delta
+- Python: +7 unit tests (`handlers/analyze`) — 221 sidecar tests total.
+- Rust: proxy-only command, no new tests; `cargo check` (full
+  `desktop` feature build) verifies the wiring compiles.
+- Web: +2 `useAnalyzeLog` hook tests, +3 `Analyze` page, +1 Sidebar
+  entry — 183 vitest tests total.
+
+## Phase 5e — Crash recovery (the documented-but-dead `respawn_with_backoff`, wired)
+
+Previously: if the sidecar child process crashed mid-session (not via a
+solution switch — an actual unexpected exit), the reader task drained
+pending callers with `SidecarDown` and stopped. `respawn_with_backoff()`
+already existed (1s/3s/9s policy) but had zero callers — the app stayed
+permanently down until the operator switched solutions or restarted.
+
+- `sidecar.rs` gained a `CrashHook = Arc<dyn Fn() + Send + Sync>`,
+  deliberately Tauri-free so the module stays unit-testable under
+  `cargo test --no-default-features`. `Sidecar::spawn_with_hook(cfg,
+  Some(hook))` arms it; plain `Sidecar::spawn(cfg)` still passes `None`
+  (unchanged for every existing caller/test). The reader task fires the
+  hook exactly once, only when the child exits WITHOUT going through
+  `replace_solution` first — an `Arc<AtomicBool>` (`shutting_down`) is
+  set by `replace_solution` right before it closes stdin, so an
+  intentional solution-switch respawn is never mistaken for a crash.
+  `respawn_with_backoff` now threads the hook through so a *recovered*
+  sidecar keeps the same crash-detection wired (single-shot: a second
+  crash immediately after a successful recovery is not auto-retried —
+  re-arming would need a self-referential `Arc<dyn Fn>`, not worth it
+  for a double-fault edge case).
+- The actual Tauri wiring — `make_crash_hook(handle, cfg)` — lives only
+  in `lib.rs`'s `desktop`-feature-gated module: on crash it emits
+  `sidecar-status: {online:false, reason}`, calls
+  `respawn_with_backoff`, and on success swaps the fresh `Sidecar` into
+  the managed `RwLock<Sidecar>` state (looked up lazily via
+  `AppHandle::try_state`, so no chicken-and-egg with `handle.manage`
+  happening after `Sidecar::spawn_with_hook` returns) and emits
+  `{online:true}`. On backoff exhaustion it emits a final
+  `{online:false, exhausted:true}` — the app stays *usable* even then,
+  since every command already surfaces a recoverable `SidecarDown`; the
+  operator just needs a manual solution switch or app restart.
+- React: `useAppEvents` now also listens for `sidecar-status` and
+  writes the payload into the `["sidecarStatus"]` query-cache slot
+  (`useSidecarStatus` — a `useQuery` with `staleTime: Infinity` and no
+  real fetch, purely an event-driven cache read so any component
+  re-renders on a cache write). `SidecarStatusBanner` renders nothing
+  while online, an amber "attempting to reconnect…" banner mid-backoff,
+  and a red "restart the app or switch solutions" banner once
+  exhausted. Mounted in `Layout.tsx`, always visible above the routed
+  page content.
+
+### Testing delta
+- Rust: +3 tests in `sidecar.rs` (`on_crash_hook_fires_when_child_dies_unexpectedly`,
+  `on_crash_hook_does_not_fire_during_replace_solution`, both against a
+  REAL subprocess — force-killed directly vs. torn down via
+  `replace_solution`) — 27 pure-Rust tests total. The `lib.rs`
+  Tauri-wiring half (`make_crash_hook`, the event emission, the state
+  swap) is `desktop`-feature-gated and verified via `cargo check`
+  (compiles clean) rather than a unit test, matching this codebase's
+  established precedent for Tauri-runtime-dependent code (Phase 1's
+  `SAGE_ROOT`/spawn-failure fixes used the same split).
+- Web: +2 `useSidecarStatus`, +1 `useAppEvents` (sidecar-status
+  caching), +3 `SidecarStatusBanner` — 189 vitest tests total.
+
+## Phase 5f — Compliance (the regulated-industry persona blocker)
+
+The audit LOG (`audit.*`) was already on desktop — the tamper-evident
+record of what happened. What was missing was periodic ASSESSMENT
+tooling: domain checklists and gap analysis against IEC 62304 / 21 CFR
+Part 11 / ISO 26262 / etc. Without it, a compliance operator could store
+evidence but not check conformance — a blocker specifically for the
+regulated-industry persona `desktop-gui.md`'s own rationale cites.
+
+- Four sidecar handlers in `handlers/compliance.py`: `compliance.domains`,
+  `compliance.flags`, `compliance.checklist`, `compliance.gap_assessment`.
+  Unlike every other handler, `src.core.compliance_flags` is a pure,
+  stateless module (a static domain → requirements dict + pure
+  functions) — there is no store/instance to wire at startup, so these
+  import it directly at call time. `risk_level` defaults to `"HIGH"`
+  where the FastAPI route does the same; unknown domains raise
+  `RPC_INVALID_PARAMS` with the valid-domains list.
+- Four Tauri commands (`compliance_{domains,flags,checklist,gap_assessment}`)
+  — proxy-only, same pattern as every other command.
+- React: `useComplianceDomains` / `useComplianceChecklist` (query,
+  `enabled` gated on a non-empty domain) / `useAssessComplianceGap`
+  (mutation). The `Compliance` page: domain + risk-level selects
+  (risk levels sourced from the selected domain's own `risk_levels`),
+  the checklist's `required_task` items as checkboxes, and an "Assess
+  conformance" button that strips the `TASK-` id prefix
+  (`generate_compliance_checklist` builds ids as `f"TASK-{task}"`) back
+  to the raw task-type strings `gap_assessment` expects, then shows the
+  resulting compliance percentage and any blocking (HIL-required) gaps.
+- Route `/compliance`, Sidebar "Compliance" entry, Header title map
+  updated.
+
+**Scope note.** `compliance_flags` computes against a *caller-supplied*
+`completed_tasks` list (checked locally in the UI) — it is not wired to
+automatically infer completion from the audit log. A future pass could
+cross-reference `audit.list`/`audit.get_by_trace` to pre-check tasks the
+audit trail already shows as done; out of scope for this pass.
+
+### Testing delta
+- Python: +11 unit tests (`handlers/compliance`) — 232 sidecar tests total.
+- Rust: proxy-only commands, no new tests; `cargo check` verifies the wiring.
+- Web: +4 `useCompliance` hook tests, +2 `Compliance` page, +1 Sidebar
+  entry — 196 vitest tests total.
+
+## Phase 5g–5k — the remaining SHOULD-tier roadmap items
+
+Five more features landed together, built in parallel (five independent
+agents, each producing only its own new leaf files — handler, Rust
+command, hook, page — explicitly barred from touching the shared
+registration files: `app.py`, `lib.rs`, `commands/mod.rs`, `App.tsx`,
+`Sidebar.tsx`) and then wired into those five shared files sequentially
+by hand afterward, verified with a fresh full `make test-desktop` run
+at the end (312 sidecar / 26 Rust / 239 vitest, all green). `client.ts`
+and `types.ts` were each edited concurrently by all five agents — every
+agent re-read before writing and appended in a collision-safe spot;
+`tsc --noEmit` came out clean (only the pre-existing, unrelated
+`BuildRunDetailView.tsx` error) with no manual reconciliation needed.
+
+### Phase 5g — Costs
+`costs.{summary,daily,set_budget}` over `src.core.cost_tracker` +
+`config.yaml`'s `llm.budgets.per_solution`. Route `/costs`, page shows
+spend summary, a daily breakdown, and a budget-setting form.
+
+### Phase 5h — Workflows
+`workflow.{list_workflows,run,resume,status}` over
+`src.integrations.langgraph_runner`. Route `/workflows` — list
+available workflows, run one with an optional JSON initial-state
+textarea (client-validated), track the most recent run's status with a
+manual refresh, and resume a run paused at `awaiting_approval` with a
+JSON feedback textarea. Deliberately excludes the Mermaid-diagram
+discovery endpoints (`GET /workflows`, `GET /workflows/{solution}/{name}`
+— a separate, lower-value visualization feature).
+
+### Phase 5i — Skills & Tools
+`skills.{list,set_visibility,reload}` + `mcp.tools` (kept in the `mcp.*`
+namespace, not `skills.*`, since `mcp_registry` is a distinct singleton
+from `skill_registry` — mirrors the web API's separate `/skills` vs
+`/mcp` REST namespaces) over `src.core.skill_loader` and
+`src.integrations.mcp_registry`. Route `/skills` — list skills with
+inline visibility toggles (public/private/disabled), a reload button,
+and a read-only MCP tools list. Framework control, not HITL-gated
+(matches the web API's own "no approval needed" docstrings). Excludes
+`POST /mcp/invoke` (arbitrary tool invocation — higher risk, a
+follow-up) and the narrower `/skills/{name}`, `/skills/role/`,
+`/skills/runner/`, `/skills/search`, `/runners*` endpoints.
+
+### Phase 5j — Organization
+`org.{get,update,reload}` over org.yaml. Route `/organization` — edit
+identity fields (name/mission/vision/core_values) and view the
+cross-team routes org.yaml is enriched with, read-only. Operator's own
+direct action (same rationale as Phase 3b/5b), bypasses ProposalStore.
+**Known gap, documented in the handler's own module docstring:**
+`org.py` resolves org.yaml as `<SAGE_ROOT>/solutions/org.yaml`,
+matching the web API's *default* (`_get_solutions_dir()`) but not
+honoring a `SAGE_SOLUTIONS_DIR` env override the way the web API does —
+the sidecar has no equivalent env-var wiring today. Excludes
+channel/solution/route CRUD (`/org/channels`, `/org/solutions`,
+`/org/routes` — 5-6 more endpoints, a follow-up).
+
+### Phase 5k — Backlog planning
+Extends the *existing* `/backlog` page rather than adding a new route.
+New `backlog.plan` RPC: a SAGE-scope feature request opens a GitHub
+issue (no LLM call, matches the web API's branch exactly); a
+solution-scope request runs `PlannerAgent.create_plan()` and — like
+Phase 5d's `analyze.run` — creates a REAL `ProposalStore` proposal
+(`action_type="implementation_plan"`, `risk_class=STATEFUL`), so it
+shows up immediately in Approvals. The "Generate Plan" button lives on
+`FeatureRequestRow` (not `Backlog.tsx` itself), since each row needs
+its own independent mutation/result state.
+
+### Testing delta (all five, Phase 5g–5k combined)
+- Python: costs +26, workflow +19, skills +10, org +18, backlog +7 —
+  **312 sidecar tests total**.
+- Rust: five new proxy-only command files (`costs.rs`, `workflow.rs`,
+  `skills.rs`, `org.rs`, plus `plan_feature_request` added to the
+  existing `backlog.rs`), no new tests; `cargo check` (full `desktop`
+  feature) verifies the wiring — **26 pure-Rust tests total**
+  (unchanged; none of this phase's logic is pure-Rust-testable).
+- Web: costs +6, workflows +12, skills +9, org +8, backlog +4,
+  Sidebar +4 nav-entry tests — **239 vitest tests total**.
 
