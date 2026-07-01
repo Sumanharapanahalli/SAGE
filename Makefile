@@ -186,7 +186,7 @@ desktop-install:
 
 desktop-dev:
 	@echo "Starting sage-desktop dev build (requires npm deps + Rust toolchain)..."
-	cd sage-desktop && SAGE_ROOT=$(CURDIR) npm run tauri dev
+	cd sage-desktop && SAGE_ROOT=$(CURDIR) SAGE_PYTHON="$(abspath $(PYTHON))" npm run tauri dev
 
 # Launch desktop pre-targeted at a specific solution — including one that
 # lives outside this repo (SAGE_SOLUTIONS_DIR / SOUL.md "solutions are
@@ -199,6 +199,7 @@ desktop-dev:
 desktop-dev-solution:
 	@echo "Starting sage-desktop targeted at solution '$(SOLUTION_NAME)' ($(SOLUTION_PATH))..."
 	cd sage-desktop && SAGE_ROOT=$(CURDIR) \
+		SAGE_PYTHON="$(abspath $(PYTHON))" \
 		SAGE_SOLUTION_NAME="$(SOLUTION_NAME)" \
 		SAGE_SOLUTION_PATH="$(SOLUTION_PATH)" \
 		SAGE_SOLUTIONS_DIR="$(dir $(SOLUTION_PATH))" \

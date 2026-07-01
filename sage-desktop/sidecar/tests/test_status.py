@@ -22,9 +22,12 @@ def wired(tmp_path, monkeypatch):
         project_path=str(tmp_path / "solutions" / "test-solution"),
     )
     store = ProposalStore(str(tmp_path / "proposals.db"))
+    # Mirror the REAL LLMGateway surface: get_model_info() returns NO 'provider'
+    # key — the provider name comes from get_provider_name(). An earlier fake
+    # baked 'provider' into get_model_info(), masking the "unknown" tile bug.
     llm = SimpleNamespace(
         get_provider_name=lambda: "gemini",
-        get_model_info=lambda: {"provider": "gemini", "model": "gemini-2.0-flash"},
+        get_model_info=lambda: {"model": "gemini-2.0-flash", "unlimited": True},
     )
     monkeypatch.setattr(status, "_project", proj)
     monkeypatch.setattr(status, "_store", store)

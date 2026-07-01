@@ -31,9 +31,16 @@ def _llm_info() -> Optional[dict]:
     if _llm is None:
         return None
     try:
+        # get_model_info() carries the model + quota; the provider NAME comes
+        # from get_provider_name() (get_model_info has no 'provider' key).
         info = _llm.get_model_info()
+        provider = None
+        try:
+            provider = _llm.get_provider_name()
+        except Exception:  # noqa: BLE001
+            provider = None
         return {
-            "provider": info.get("provider"),
+            "provider": provider,
             "model": info.get("model"),
         }
     except Exception as e:  # noqa: BLE001

@@ -892,6 +892,14 @@ def generate_parallel(
 # ===========================================================================
 # LLM Gateway (Singleton + Thread Lock)
 # ===========================================================================
+
+# Provider types the runtime can switch to (matches the branches in
+# proposal_executor._execute_llm_switch). This is the canonical "what can I
+# switch to" list — distinct from ProviderPool.list_providers(), which returns
+# the providers currently *registered* for parallel multi-critic generation.
+SWITCHABLE_PROVIDERS: list[str] = ["gemini", "claude-code", "ollama", "local", "claude"]
+
+
 class LLMGateway:
     """
     Thread-safe singleton that routes LLM calls through a provider-aware

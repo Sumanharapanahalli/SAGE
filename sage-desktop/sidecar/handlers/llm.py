@@ -34,12 +34,25 @@ def _current_model(gw) -> str:
     return ""
 
 
+def _switchable_providers() -> list[str]:
+    """Canonical switchable provider list from the gateway module.
+
+    Imported lazily with a hardcoded fallback so a partial SAGE import can't
+    take the whole Settings page down.
+    """
+    try:
+        from src.core.llm_gateway import SWITCHABLE_PROVIDERS
+        return list(SWITCHABLE_PROVIDERS)
+    except Exception:  # noqa: BLE001
+        return ["gemini", "claude-code", "ollama", "local", "claude"]
+
+
 def get_llm_info(_params: dict) -> dict:
     gw = _require_gateway()
     return {
         "provider_name": gw.get_provider_name(),
         "model": _current_model(gw),
-        "available_providers": gw.list_providers(),
+        "available_providers": _switchable_providers(),
     }
 
 
