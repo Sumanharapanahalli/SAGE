@@ -39,6 +39,9 @@ import type {
   CostDailyResult,
   CostSummary,
   DesktopError,
+  EvalHistoryResult,
+  EvalRunResult,
+  EvalSuiteList,
   FeatureRequest,
   FeatureRequestScope,
   FeatureRequestStatus,
@@ -535,6 +538,20 @@ export const updateGoal = (params: GoalUpdateParams) =>
 export const deleteGoal = (goal_id: string) =>
   call<GoalDeleteResult>("delete_goal", { goal_id });
 
+// ── Eval (Agent Gym) ─────────────────────────────────────────────────────
+// Scope note: `eval_runs.db` is stored inside THIS solution's own `.sage/`
+// directory sidecar-side (per-solution isolation), diverging deliberately
+// from the web API's framework-shared resolution — see types.ts's Eval
+// section and sidecar/handlers/eval.py's module docstring.
+
+export const listEvalSuites = () => call<EvalSuiteList>("list_eval_suites");
+
+export const runEval = (suite?: string) =>
+  call<EvalRunResult>("run_eval", { suite });
+
+export const getEvalHistory = (suite?: string, limit = 20) =>
+  call<EvalHistoryResult>("get_eval_history", { suite, limit });
+
 // Re-exports to reduce import boilerplate at call sites
 export type {
   Agent,
@@ -552,6 +569,9 @@ export type {
   ConstitutionState,
   ConstitutionUpdateResult,
   DesktopError,
+  EvalHistoryResult,
+  EvalRunResult,
+  EvalSuiteList,
   FeatureRequest,
   FeatureRequestScope,
   FeatureRequestStatus,

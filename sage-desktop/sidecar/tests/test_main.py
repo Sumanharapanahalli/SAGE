@@ -205,6 +205,32 @@ def test_queue_is_wired_to_this_solutions_own_sage_dir(tmp_path):
     assert (tmp_path / ".sage" / "queue.db").is_file()
 
 
+# ---------- eval ----------
+
+def test_wiring_reloads_global_project_config_for_eval_suite_resolution(tmp_path):
+    """eval_runner._get_evals_dir() reads the framework-global
+    project_loader.project_config singleton directly, not an injectable
+    instance — unlike agents.py/status.py, which get their own
+    ProjectConfig(solution_name). Without reloading the global singleton
+    too, eval.list_suites would silently resolve whatever solution
+    SAGE_PROJECT/auto-discovery picked at import time, not this sidecar's
+    actual --solution-name. Assert the wiring side effect directly."""
+    import os
+
+    sage_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+    solution_path = os.path.join(sage_root, "solutions", "starter")
+    if not os.path.isdir(solution_path):
+        pytest.skip("starter solution not present on this branch")
+
+    argv = ["--solution-name", "starter", "--solution-path", str(tmp_path)]
+    out = _drive(_req("e1", "eval.list_suites") + "\n", argv=argv)
+    assert "result" in out[0], f"got error: {out[0]}"
+
+    from src.core.project_loader import project_config
+
+    assert project_config.project_name == "starter"
+
+
 # ---------- builds ----------
 
 def test_builds_list_round_trip():

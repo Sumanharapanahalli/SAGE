@@ -821,3 +821,50 @@ own data, since its existing test file renders it with no query client.
 - Web: `useMonitor`+`Monitor` +9, `useGoals`+`Goals` +9, `useAgents`+
   `Agents` +5, Sidebar +2 nav-entry tests — **264 vitest tests total**.
 
+## Phase 5n — Eval (Agent Gym suite runner)
+
+Ports `GET /eval/suites`, `POST /eval/run`, `GET /eval/history` — score
+agent quality against the active solution's `evals/*.yaml` catalog
+without leaving the app. `/eval` route, `eval.{list_suites,run,history}`
+RPC. HIL (Hardware-in-the-Loop) was explicitly split off, not built here
+— it connects to real physical transports (serial/J-Link/CAN/OpenOCD),
+generates regulatory evidence reports, and deserves its own deliberately
+scoped round rather than being rushed through the same pattern as a
+routine CRUD/read port.
+
+Same per-solution-isolation pattern as Phase 5l (queue) / 5m (goals):
+`EvalRunner` already accepted a `db_path` constructor arg, so
+`eval_runs.db` is wired inside this solution's own `.sage/` directory
+rather than the framework-shared `data/eval_results.db` the web API's
+global `eval_runner` singleton uses.
+
+**A real correctness bug found and fixed along the way, not just a
+scope note**: `eval_runner._get_evals_dir()` (and, it turns out,
+`langgraph_runner._get_workflows_dir()`) read the framework-*global*
+`src.core.project_loader.project_config` singleton directly — not an
+injectable instance like the `ProjectConfig(solution_name)` that
+`agents.py`/`status.py` already receive. That singleton is constructed
+at import time from `SAGE_PROJECT`/auto-discovery, never from this
+sidecar's `--solution-name`, so eval suite listing (and workflow
+listing) was silently resolving whatever solution happened to be
+auto-discovered — not necessarily the sidecar's actual active solution.
+Fixed by having `_wire_handlers` call `project_config.reload(solution_name)`
+in addition to constructing the locally-injected `ProjectConfig` — safe,
+since each sidecar process serves exactly one solution for its whole
+lifetime. This incidentally fixed workflow listing too (Phase 5h),
+which had the identical latent bug; `test_workflow.py`'s
+"no workflows loaded" test previously passed only by accident (no test
+in the suite had ever correctly reloaded the global singleton) and
+needed updating to force a known-nonexistent solution name rather than
+relying on incidental global state.
+
+### Testing delta
+- Python (sidecar): eval +11, plus 1 new end-to-end wiring test in
+  `test_main.py` proving `project_config.reload()` fires correctly —
+  **356 sidecar tests total**.
+- Rust: `eval.rs` (3 commands), proxy-only, no new tests; `cargo check`
+  (full `desktop` feature) verifies the wiring — **26 pure-Rust tests
+  total** (unchanged).
+- Web: `useEval` +3, `Eval` page +5, Sidebar +1 nav-entry test — **273
+  vitest tests total**.
+

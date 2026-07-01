@@ -26,12 +26,19 @@ from rpc import RpcError  # noqa: E402
 from src.integrations.langgraph_runner import langgraph_runner  # noqa: E402
 
 
-def test_list_workflows_degrades_gracefully_with_no_workflows_loaded():
-    # No solution is wired in this test process (no _wire_handlers call),
-    # so langgraph_runner falls back to the default project — which has no
-    # workflows/ directory. Exercises the real graceful-degradation path
-    # end-to-end, no mocking: confirms list_workflows() cleanly returns an
-    # empty result instead of raising when there's nothing to discover.
+def test_list_workflows_degrades_gracefully_with_no_workflows_loaded(monkeypatch):
+    # langgraph_runner reads the framework-global project_config singleton
+    # directly. Other tests in this same pytest process (e.g. test_main.py's
+    # sidecar wiring tests) legitimately reload it to "starter", which DOES
+    # have a workflows/ directory — so this test cannot rely on whatever
+    # project_config._name happens to be right now. Force it to a solution
+    # name guaranteed not to exist, to deterministically exercise the real
+    # graceful-degradation path (no mocking of list_workflows itself):
+    # confirms it cleanly returns an empty result instead of raising when
+    # there's nothing to discover.
+    from src.core.project_loader import project_config
+
+    monkeypatch.setattr(project_config, "_name", "no-such-solution-xyz")
     out = workflow.list_workflows({})
     assert out == {"workflows": [], "count": 0}
 

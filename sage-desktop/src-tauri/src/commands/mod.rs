@@ -18,6 +18,7 @@ pub mod collective;
 pub mod compliance;
 pub mod constitution;
 pub mod costs;
+pub mod eval;
 pub mod goals;
 pub mod knowledge;
 pub mod monitor;

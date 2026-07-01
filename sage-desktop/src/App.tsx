@@ -14,6 +14,7 @@ import Collective from "@/pages/Collective";
 import Compliance from "@/pages/Compliance";
 import Constitution from "@/pages/Constitution";
 import Costs from "@/pages/Costs";
+import Eval from "@/pages/Eval";
 import Goals from "@/pages/Goals";
 import Knowledge from "@/pages/Knowledge";
 import Monitor from "@/pages/Monitor";
@@ -66,6 +67,7 @@ export function App() {
             <Route path="organization" element={<Organization />} />
             <Route path="monitor" element={<Monitor />} />
             <Route path="goals" element={<Goals />} />
+            <Route path="eval" element={<Eval />} />
             <Route path="settings" element={<Settings />} />
           </Route>
         </Routes>

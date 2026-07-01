@@ -22,6 +22,7 @@ const NAV_ITEMS = [
   { to: "/organization", label: "Organization" },
   { to: "/monitor", label: "Monitor" },
   { to: "/goals", label: "Goals" },
+  { to: "/eval", label: "Eval" },
   { to: "/settings", label: "Settings" },
 ] as const;
 

@@ -926,3 +926,61 @@ export interface GoalListParams {
 export interface GoalDeleteResult {
   deleted: boolean;
 }
+
+// ── Eval (Agent Gym) ─────────────────────────────────────────────────────
+// Scope note: eval_runs.db lives inside this solution's own `.sage/`
+// directory (per-solution isolation), not the framework-shared
+// data/eval_results.db the web API's global eval_runner singleton uses —
+// same pattern as queue.db (Phase 5l) / goals.db (Phase 5m). See
+// `sidecar/handlers/eval.py`'s module docstring.
+
+export interface EvalSuiteList {
+  suites: string[];
+  count: number;
+}
+
+export interface EvalCaseResult {
+  case_id: string;
+  role?: string;
+  input?: string;
+  response?: string;
+  score: number;
+  passed: boolean;
+  details?: unknown;
+  error?: string;
+}
+
+export interface EvalSuiteResult {
+  suite: string;
+  name?: string;
+  total_cases: number;
+  passed_cases: number;
+  mean_score: number;
+  cases?: EvalCaseResult[];
+  error?: string;
+}
+
+export interface EvalRunResult {
+  run_id: string;
+  suite: string;
+  total_cases: number;
+  passed_cases: number;
+  failed_cases: number;
+  mean_score: number;
+  results: EvalSuiteResult[];
+}
+
+export interface EvalHistoryEntry {
+  run_id: string;
+  suite: string;
+  solution?: string;
+  started_at: string;
+  total_cases: number;
+  passed_cases: number;
+  mean_score: number;
+}
+
+export interface EvalHistoryResult {
+  history: EvalHistoryEntry[];
+  count: number;
+}

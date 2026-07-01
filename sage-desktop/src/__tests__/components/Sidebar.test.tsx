@@ -123,4 +123,12 @@ describe("Sidebar", () => {
       "/goals",
     );
   });
+
+  it("includes the Eval entry", () => {
+    renderAt("/approvals");
+    expect(screen.getByRole("link", { name: /eval/i })).toHaveAttribute(
+      "href",
+      "/eval",
+    );
+  });
 });

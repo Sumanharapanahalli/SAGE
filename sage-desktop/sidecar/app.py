@@ -59,6 +59,7 @@ from handlers import (
     compliance,
     constitution,
     costs,
+    eval as eval_handler,
     goals,
     handshake,
     knowledge,
@@ -113,6 +114,9 @@ def _build_dispatcher() -> Dispatcher:
     d.register("goals.get", goals.get)
     d.register("goals.update", goals.update)
     d.register("goals.delete", goals.delete)
+    d.register("eval.list_suites", eval_handler.list_suites)
+    d.register("eval.run", eval_handler.run)
+    d.register("eval.history", eval_handler.history)
     d.register("approvals.list_pending", approvals.list_pending)
     d.register("approvals.get", approvals.get)
     d.register("approvals.approve", approvals.approve)
@@ -257,11 +261,24 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
         logging.warning("GoalsStore unavailable: %s", e)
 
     try:
-        from src.core.project_loader import ProjectConfig
+        from src.core.eval_runner import EvalRunner
+
+        eval_handler._runner = EvalRunner(db_path=str(sage_dir / "eval_runs.db"))
+    except Exception as e:  # noqa: BLE001
+        logging.warning("EvalRunner unavailable: %s", e)
+
+    try:
+        from src.core.project_loader import ProjectConfig, project_config
 
         pc = ProjectConfig(solution_name)
         agents._project = pc
         status._project = pc
+        # eval_runner._get_evals_dir() (and TaskScheduler) read the framework
+        # *global* project_config singleton directly rather than an injected
+        # instance — reload it in place so those code paths resolve THIS
+        # solution, not whatever SAGE_PROJECT/auto-discovery picked at import
+        # time. Safe: this sidecar process serves exactly one solution.
+        project_config.reload(solution_name)
     except Exception as e:  # noqa: BLE001
         logging.warning("ProjectConfig unavailable: %s", e)
 
