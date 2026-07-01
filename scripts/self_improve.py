@@ -25,6 +25,7 @@ from __future__ import annotations
 import argparse
 import datetime
 import os
+import re
 import sys
 import time
 from pathlib import Path
@@ -475,6 +476,76 @@ TASKS: list[dict] = [
 # Runner
 # ---------------------------------------------------------------------------
 
+# Characters illegal in a Windows filename (and '/' which splits paths on any OS).
+_INVALID_FILENAME = re.compile(r'[<>:"/\\|?*\x00-\x1f]')
+
+
+def slugify(title: str, task_id: int) -> str:
+    """Build a filesystem-safe proposal filename stem.
+
+    Titles can contain '/', '>', ':' etc. (e.g. '/agent/run', 'run -> audit'),
+    which are illegal in Windows paths and previously crashed the writer.
+    """
+    base = title.lower().replace(" ", "-")
+    base = _INVALID_FILENAME.sub("-", base)       # kill illegal chars
+    base = re.sub(r"-{2,}", "-", base).strip("-")  # collapse/trim dashes
+    return f"task-{task_id:02d}-{base[:40]}"
+
+
+# Substrings that indicate a provider *usage/rate limit* or transient overload —
+# i.e. "come back later", NOT a config/permission error. Matching these (and
+# nothing else) is what makes the wait-and-retry safe: a stale-tool or
+# untrusted-workspace failure will NOT match, so we don't sleep forever on it.
+_LIMIT_MARKERS = (
+    "usage limit", "rate limit", "rate_limit", "429",
+    "too many requests", "limit reached", "quota",
+    "overloaded", "resets at", "try again later", "please wait",
+)
+
+
+def _result_error_text(result: dict) -> str:
+    """Concatenate everything the loop produced so we can scan for limit markers."""
+    parts = [str(result.get("final", "")), str(result.get("error", ""))]
+    for h in result.get("history", []):
+        parts.append(str(h.get("candidate", "")))
+        parts.append(str(h.get("feedback", "")))
+    return "\n".join(parts).lower()
+
+
+def hit_usage_limit(result: dict) -> bool:
+    """True only when the task failed *and* the failure looks like a usage limit.
+
+    A task that produced any real score (>0) clearly was not limit-blocked, so we
+    never re-run a task that already succeeded.
+    """
+    if result.get("score", 0) > 0:
+        return False
+    return any(m in _result_error_text(result) for m in _LIMIT_MARKERS)
+
+
+def proposal_is_done(out_file: Path, threshold: float) -> bool:
+    """Whether an existing proposal file counts as 'done' for --resume.
+
+    Existence alone is NOT enough: a broken run leaves score-0 / errored proposals
+    on disk (e.g. the stale-MultiEdit failures), and those must be re-run, not
+    skipped. A proposal is 'done' only if it actually converged (the evaluator
+    passed it) or its recorded score met the threshold.
+    """
+    try:
+        text = out_file.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return False
+    if re.search(r"^\*\*Converged:\*\*\s*True", text, re.MULTILINE):
+        return True
+    m = re.search(r"^\*\*Score:\*\*\s*([0-9.]+)", text, re.MULTILINE)
+    if m:
+        try:
+            return float(m.group(1)) >= threshold
+        except ValueError:
+            pass
+    return False
+
+
 def read_context(files: list[str]) -> str:
     """Read context files from the repo root, return concatenated content."""
     parts = []
@@ -495,7 +566,17 @@ def run_task(task: dict, out_dir: Path, max_iterations: int, threshold: float) -
     context = read_context(task.get("context_files", []))
 
     runner = EvaluatorOptimizerRunner({
-        "optimizer": {"provider": "claude-code", "model": "claude-sonnet-4-6", "timeout": 600},
+        # disallowed_tools is set explicitly (NOT the shared default in
+        # evaluator_optimizer.py) because that default still lists "MultiEdit",
+        # a tool the current Claude Code CLI no longer knows — which makes the CLI
+        # reject the whole call with rc=1 ("deny rule MultiEdit matches no known
+        # tool"). Keeping the optimizer write-restricted preserves the HITL
+        # guarantee (pure text proposal, never touches the repo).
+        "optimizer": {"provider": "claude-code", "model": "claude-opus-4-8", "timeout": 600,
+                      "disallowed_tools": "Write Edit NotebookEdit Bash"},
+        # Step 0(a): the EVALUATOR must NOT be the same model as the optimizer — a model
+        # grading its own output is self-grading and inflates/misjudges scores. A different
+        # (still strong) model keeps the judge independent. Opus optimizes; Sonnet evaluates.
         "evaluator": {"provider": "claude-code", "model": "claude-sonnet-4-6", "timeout": 300},
         "criteria": task["criteria"],
         "max_iterations": max_iterations,
@@ -514,7 +595,7 @@ def run_task(task: dict, out_dir: Path, max_iterations: int, threshold: float) -
     result["elapsed_s"] = round(elapsed, 1)
 
     # Write proposal to disk
-    slug = f"task-{task['id']:02d}-{task['title'].lower().replace(' ', '-')[:40]}"
+    slug = slugify(task["title"], task["id"])
     out_file = out_dir / f"{slug}.md"
     with open(out_file, "w", encoding="utf-8") as f:
         f.write(f"# Task {task['id']}: {task['title']}\n\n")
@@ -549,7 +630,7 @@ def write_summary(results: list[dict], out_dir: Path, args) -> None:
         f"**Tasks run:** {len(results)}  ",
         f"**Converged:** {converged}/{len(results)}  ",
         f"**Total time:** {total_time/60:.1f} min  ",
-        f"**Model:** Claude Sonnet 4.6 (both optimizer and evaluator)  ",
+        f"**Model:** Opus 4.8 optimizer / Sonnet 4.6 evaluator (independent judge)  ",
         f"**Max iterations:** {args.max_iterations}  ",
         f"**Threshold:** {args.threshold}  ",
         "\n> Nothing applied — all proposals require HITL approval.\n",
@@ -592,6 +673,10 @@ def main():
     ap.add_argument("--dry-run", action="store_true", help="Print plan, don't run")
     ap.add_argument("--resume", action="store_true", help="Skip tasks with existing output files")
     ap.add_argument("--out-dir", default="", help="Override output directory")
+    ap.add_argument("--limit-wait-min", type=float, default=30,
+                    help="Minutes to wait before retrying a task that hit a usage limit / overload")
+    ap.add_argument("--limit-max-retries", type=int, default=12,
+                    help="Max wait-and-retry attempts per task on usage-limit errors (0 disables)")
     args = ap.parse_args()
 
     # Select tasks
@@ -615,7 +700,7 @@ def main():
     print(f"\nSAGE Self-Improvement Runner")
     print(f"Output -> {out_dir}")
     print(f"Tasks  -> {len(tasks)}  |  max_iterations={args.max_iterations}  |  threshold={args.threshold}")
-    print(f"Model  -> Claude Sonnet 4.6 (optimizer + evaluator)\n")
+    print(f"Model  -> Opus 4.8 optimizer / Sonnet 4.6 evaluator (independent judge)\n")
 
     if args.dry_run:
         print("DRY RUN — tasks that would run:\n")
@@ -625,23 +710,41 @@ def main():
 
     results = []
     for i, task in enumerate(tasks, 1):
-        slug = f"task-{task['id']:02d}-{task['title'].lower().replace(' ', '-')[:40]}"
+        slug = slugify(task["title"], task["id"])
         out_file = out_dir / f"{slug}.md"
 
-        if args.resume and out_file.exists():
-            print(f"[{i}/{len(tasks)}] SKIP (already done): {task['title']}")
+        if args.resume and proposal_is_done(out_file, args.threshold):
+            print(f"[{i}/{len(tasks)}] SKIP (converged): {task['title']}")
             continue
 
         print(f"\n[{i}/{len(tasks)}] TASK {task['id']:02d}: {task['title']}  [{task['category']}]")
         print(f"  Context files: {', '.join(task.get('context_files', []))}")
 
         try:
-            result = run_task(task, out_dir, args.max_iterations, args.threshold)
+            # Run the task; if it fails specifically because a provider usage
+            # limit / overload was hit, wait for the window to free up and retry
+            # the same task (instead of recording a useless score-0 proposal).
+            attempt = 0
+            while True:
+                result = run_task(task, out_dir, args.max_iterations, args.threshold)
+                if hit_usage_limit(result) and attempt < args.limit_max_retries:
+                    attempt += 1
+                    resume_at = (datetime.datetime.now()
+                                 + datetime.timedelta(minutes=args.limit_wait_min)
+                                 ).strftime("%H:%M:%S")
+                    print(f"  -> USAGE LIMIT / overload detected. Waiting "
+                          f"{args.limit_wait_min:g} min (until ~{resume_at}), then retry "
+                          f"{attempt}/{args.limit_max_retries}...")
+                    time.sleep(args.limit_wait_min * 60)
+                    continue
+                break
+
             results.append(result)
             status = "CONVERGED" if result.get("converged") else "BEST"
             print(f"  -> {status}  score={result.get('score',0):.1f}  "
                   f"iters={result.get('iterations')}  "
-                  f"time={result.get('elapsed_s',0):.0f}s")
+                  f"time={result.get('elapsed_s',0):.0f}s"
+                  + (f"  (after {attempt} limit-retry)" if attempt else ""))
             print(f"  -> Proposal: {result['out_file']}")
         except KeyboardInterrupt:
             print("\n\nInterrupted by user. Writing partial summary...")
