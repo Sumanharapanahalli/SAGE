@@ -59,9 +59,11 @@ from handlers import (
     compliance,
     constitution,
     costs,
+    goals,
     handshake,
     knowledge,
     llm,
+    monitor,
     onboarding,
     org,
     queue,
@@ -104,6 +106,13 @@ def _build_dispatcher() -> Dispatcher:
     d.register("workflow.run", workflow.run)
     d.register("workflow.resume", workflow.resume)
     d.register("workflow.status", workflow.status)
+    d.register("monitor.status", monitor.status)
+    d.register("monitor.scheduler_status", monitor.scheduler_status)
+    d.register("goals.list", goals.list)
+    d.register("goals.create", goals.create)
+    d.register("goals.get", goals.get)
+    d.register("goals.update", goals.update)
+    d.register("goals.delete", goals.delete)
     d.register("approvals.list_pending", approvals.list_pending)
     d.register("approvals.get", approvals.get)
     d.register("approvals.approve", approvals.approve)
@@ -239,6 +248,13 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
         backlog._store = fr_store
     except Exception as e:  # noqa: BLE001
         logging.warning("FeatureRequestStore unavailable: %s", e)
+
+    try:
+        from src.stores.goals_store import GoalsStore
+
+        goals._store = GoalsStore(str(sage_dir / "goals.db"))
+    except Exception as e:  # noqa: BLE001
+        logging.warning("GoalsStore unavailable: %s", e)
 
     try:
         from src.core.project_loader import ProjectConfig

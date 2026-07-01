@@ -107,4 +107,20 @@ describe("Sidebar", () => {
       screen.getByRole("link", { name: /organization/i }),
     ).toHaveAttribute("href", "/organization");
   });
+
+  it("includes the Monitor entry", () => {
+    renderAt("/approvals");
+    expect(screen.getByRole("link", { name: /monitor/i })).toHaveAttribute(
+      "href",
+      "/monitor",
+    );
+  });
+
+  it("includes the Goals entry", () => {
+    renderAt("/approvals");
+    expect(screen.getByRole("link", { name: /goals/i })).toHaveAttribute(
+      "href",
+      "/goals",
+    );
+  });
 });

@@ -20,6 +20,8 @@ const NAV_ITEMS = [
   { to: "/workflows", label: "Workflows" },
   { to: "/skills", label: "Skills & Tools" },
   { to: "/organization", label: "Organization" },
+  { to: "/monitor", label: "Monitor" },
+  { to: "/goals", label: "Goals" },
   { to: "/settings", label: "Settings" },
 ] as const;
 

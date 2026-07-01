@@ -23,3 +23,15 @@ pub async fn get_agent(
         .call("agents.get", json!({ "name": name }))
         .await
 }
+
+#[tauri::command]
+pub async fn get_agent_performance(
+    sidecar: State<'_, RwLock<Sidecar>>,
+    role_key: String,
+) -> Result<Value, DesktopError> {
+    sidecar
+        .read()
+        .await
+        .call("agents.performance", json!({ "role_key": role_key }))
+        .await
+}

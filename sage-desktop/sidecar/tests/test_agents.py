@@ -133,3 +133,60 @@ def test_get_requires_name_param(project, audit_logger):
     from rpc import RpcError
     with pytest.raises(RpcError):
         agents.get_agent({})
+
+
+# ---------- performance ----------
+
+def test_performance_requires_role_key_param(project, audit_logger):
+    from rpc import RpcError
+    with pytest.raises(RpcError):
+        agents.performance({})
+
+
+def test_performance_computes_counts_and_approval_rate(project, audit_logger):
+    audit_logger.log_event(
+        actor="analyst", action_type="APPROVAL",
+        input_context="analyst proposal", output_content="approved",
+    )
+    audit_logger.log_event(
+        actor="analyst", action_type="APPROVAL",
+        input_context="analyst proposal", output_content="approved",
+    )
+    audit_logger.log_event(
+        actor="analyst", action_type="REJECTION",
+        input_context="analyst proposal", output_content="rejected",
+    )
+    # Unrelated actor row — should not match role_key filter.
+    audit_logger.log_event(
+        actor="developer", action_type="APPROVAL",
+        input_context="developer proposal", output_content="approved",
+    )
+    # human_via_chat rows are excluded even if they mention the role.
+    audit_logger.log_event(
+        actor="human_via_chat", action_type="APPROVAL",
+        input_context="analyst proposal", output_content="approved",
+    )
+
+    out = agents.performance({"role_key": "analyst"})
+    assert out["role_key"] == "analyst"
+    assert out["total_proposals"] == 3
+    assert out["approved"] == 2
+    assert out["rejected"] == 1
+    assert out["approval_rate"] == pytest.approx(66.7, abs=0.1)
+
+
+def test_performance_returns_zero_stats_with_null_rate_when_no_matching_rows(project, audit_logger):
+    out = agents.performance({"role_key": "no-such-role"})
+    assert out["total_proposals"] == 0
+    assert out["approved"] == 0
+    assert out["rejected"] == 0
+    assert out["approval_rate"] is None
+
+
+def test_performance_degrades_gracefully_when_logger_not_wired(project, monkeypatch):
+    monkeypatch.setattr(agents, "_logger", None)
+    out = agents.performance({"role_key": "analyst"})
+    assert out["total_proposals"] == 0
+    assert out["approved"] == 0
+    assert out["rejected"] == 0
+    assert out["approval_rate"] is None

@@ -107,3 +107,53 @@ def get_agent(params: dict) -> dict:
         "event_count": activity["count"],
         "last_active": activity["last_active"],
     }
+
+
+def performance(params: dict) -> dict:
+    """Approval/rejection performance stats for one agent role.
+
+    Mirrors GET /agents/{role_key}/performance in src/interface/api.py:
+    queries compliance_audit_log directly for rows where the actor isn't
+    the human-via-chat pseudo-actor and either input_context or metadata
+    mentions role_key, then classifies each row as approved/rejected by
+    action_type or output_content. Any query failure (including _logger
+    not being wired yet) degrades to an all-zero result rather than
+    raising — this is a legitimate "no data yet" outcome, not an error.
+    """
+    role_key = params.get("role_key")
+    if not role_key or not isinstance(role_key, str):
+        raise RpcError(RPC_INVALID_PARAMS, "missing or invalid 'role_key'")
+
+    try:
+        conn = sqlite3.connect(_logger.db_path)
+        try:
+            rows = conn.execute(
+                """SELECT action_type, output_content, metadata
+                   FROM compliance_audit_log
+                   WHERE actor != 'human_via_chat'
+                     AND (input_context LIKE ? OR metadata LIKE ?)
+                   ORDER BY id DESC LIMIT 200""",
+                (f"%{role_key}%", f"%{role_key}%"),
+            ).fetchall()
+        finally:
+            conn.close()
+    except Exception:  # noqa: BLE001
+        rows = []
+
+    total = len(rows)
+    approved = sum(
+        1 for r in rows
+        if "APPROVE" in (r[0] or "").upper() or "approved" in (r[1] or "").lower()
+    )
+    rejected = sum(
+        1 for r in rows
+        if "REJECT" in (r[0] or "").upper() or "rejected" in (r[1] or "").lower()
+    )
+
+    return {
+        "role_key": role_key,
+        "total_proposals": total,
+        "approved": approved,
+        "rejected": rejected,
+        "approval_rate": round(approved / total * 100, 1) if total > 0 else None,
+    }

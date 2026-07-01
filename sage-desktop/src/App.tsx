@@ -14,7 +14,9 @@ import Collective from "@/pages/Collective";
 import Compliance from "@/pages/Compliance";
 import Constitution from "@/pages/Constitution";
 import Costs from "@/pages/Costs";
+import Goals from "@/pages/Goals";
 import Knowledge from "@/pages/Knowledge";
+import Monitor from "@/pages/Monitor";
 import Onboarding from "@/pages/Onboarding";
 import Organization from "@/pages/Organization";
 import Settings from "@/pages/Settings";
@@ -62,6 +64,8 @@ export function App() {
             <Route path="workflows" element={<Workflows />} />
             <Route path="skills" element={<SkillsTools />} />
             <Route path="organization" element={<Organization />} />
+            <Route path="monitor" element={<Monitor />} />
+            <Route path="goals" element={<Goals />} />
             <Route path="settings" element={<Settings />} />
           </Route>
         </Routes>

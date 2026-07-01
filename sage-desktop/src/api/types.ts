@@ -123,6 +123,14 @@ export interface Agent {
   last_active: string | null;
 }
 
+export interface AgentPerformance {
+  role_key: string;
+  total_proposals: number;
+  approved: number;
+  rejected: number;
+  approval_rate: number | null;
+}
+
 // ── Status ────────────────────────────────────────────────────────────────
 
 export interface StatusResponse {
@@ -825,4 +833,96 @@ export interface OrgUpdateResult {
 
 export interface OrgReloadResult {
   status: "reloaded";
+}
+
+// ── Monitor ───────────────────────────────────────────────────────────────
+// Mirrors GET /monitor/status and GET /scheduler/status from
+// src/interface/api.py. Both subsystems are legitimately-often-off in the
+// desktop sidecar; the handler degrades gracefully instead of raising, so
+// these shapes are always well-formed — never an error response.
+
+/** Shape of MonitorAgent.get_status() (src/agents/monitor.py). On a
+ * construction/call failure the sidecar handler degrades to just
+ * {running: false, error}, so every field but `running` is optional. */
+export interface MonitorStatus {
+  running: boolean;
+  active_threads?: string[];
+  thread_count?: number;
+  seen_messages?: number;
+  seen_issues?: number;
+  teams_configured?: boolean;
+  metabase_configured?: boolean;
+  gitlab_configured?: boolean;
+  error?: string;
+}
+
+/** Shape of TaskScheduler.status() (src/core/task_scheduler.py). On a
+ * construction/call failure the sidecar handler degrades to exactly
+ * {running: false, error}, matching the web API's /scheduler/status. */
+export interface SchedulerStatus {
+  running: boolean;
+  scheduled_count?: number;
+  next_check_in_seconds?: number;
+  error?: string;
+}
+
+// ── Goals (OKR tracking) ─────────────────────────────────────────────────
+// Scope note: the web API's `_get_goals_store()` resolves `goals.db` next
+// to the shared audit_logger db path (framework-shared, not per-solution).
+// The desktop sidecar deliberately diverges — `goals.db` lives inside THIS
+// solution's own `.sage/` directory, matching proposals.db/audit_log.db/
+// queue.db for genuine per-solution isolation. See
+// `sidecar/handlers/goals.py`'s module docstring. The desktop is a
+// single-operator interface, so `user_id` defaults to "desktop-operator"
+// sidecar-side when omitted (mirrors approvals.py defaulting `decided_by`
+// to "human").
+
+export type GoalStatus = "on_track" | "at_risk" | "off_track" | "done";
+
+export interface GoalKeyResult {
+  text: string;
+  done?: boolean;
+  [key: string]: unknown;
+}
+
+export interface Goal {
+  id: string;
+  user_id: string;
+  solution: string;
+  title: string;
+  quarter: string;
+  status: GoalStatus | string;
+  owner: string;
+  key_results: GoalKeyResult[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface GoalCreateParams {
+  title: string;
+  quarter: string;
+  user_id?: string;
+  solution?: string;
+  status?: GoalStatus | string;
+  owner?: string;
+  key_results?: GoalKeyResult[];
+}
+
+export interface GoalUpdateParams {
+  goal_id: string;
+  title?: string;
+  quarter?: string;
+  status?: GoalStatus | string;
+  owner?: string;
+  key_results?: GoalKeyResult[];
+}
+
+export interface GoalListParams {
+  user_id?: string;
+  solution?: string;
+  quarter?: string;
+}
+
+export interface GoalDeleteResult {
+  deleted: boolean;
 }

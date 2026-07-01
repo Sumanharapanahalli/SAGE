@@ -9,6 +9,7 @@ import { invoke } from "@tauri-apps/api/core";
 
 import type {
   Agent,
+  AgentPerformance,
   ApproveBuildParams,
   AuditEvent,
   AuditListResponse,
@@ -43,6 +44,11 @@ import type {
   FeatureRequestStatus,
   FeatureRequestSubmit,
   FeatureRequestUpdate,
+  Goal,
+  GoalCreateParams,
+  GoalDeleteResult,
+  GoalListParams,
+  GoalUpdateParams,
   HandshakeResponse,
   KnowledgeAddResult,
   KnowledgeDeleteResult,
@@ -52,6 +58,7 @@ import type {
   LlmInfo,
   LlmSwitchResult,
   McpToolsResult,
+  MonitorStatus,
   OrgData,
   OrgReloadResult,
   OrgUpdateResult,
@@ -59,6 +66,7 @@ import type {
   Proposal,
   QueueStatus,
   QueueTask,
+  SchedulerStatus,
   SkillsListResult,
   SkillsReloadResult,
   SkillVisibilitySetResult,
@@ -212,6 +220,8 @@ export const auditStats = () => call<AuditStats>("audit_stats");
 
 export const listAgents = () => call<Agent[]>("list_agents");
 export const getAgent = (name: string) => call<Agent>("get_agent", { name });
+export const getAgentPerformance = (role_key: string) =>
+  call<AgentPerformance>("get_agent_performance", { role_key });
 
 // ── LLM ───────────────────────────────────────────────────────────────────
 
@@ -492,9 +502,43 @@ export const updateOrg = (fields: {
 
 export const reloadOrg = () => call<OrgReloadResult>("org_reload");
 
+// ── Monitor ───────────────────────────────────────────────────────────────
+// Read-only visibility into the MonitorAgent's polling threads and the
+// TaskScheduler's running state. Both degrade gracefully sidecar-side (see
+// handlers/monitor.py) — these calls never reject on a "not active"
+// subsystem, they resolve to a {running: false, ...} shape instead.
+
+export const getMonitorStatus = () => call<MonitorStatus>("monitor_status");
+
+export const getSchedulerStatus = () =>
+  call<SchedulerStatus>("scheduler_status");
+
+// ── Goals (OKR tracking) ──────────────────────────────────────────────────
+// Scope note: `goals.db` is stored inside THIS solution's own `.sage/`
+// directory sidecar-side (per-solution isolation), diverging deliberately
+// from the web API's framework-shared resolution — see types.ts's Goals
+// section and sidecar/handlers/goals.py's module docstring. `user_id`
+// defaults to "desktop-operator" sidecar-side when omitted.
+
+export const listGoals = (params: GoalListParams = {}) =>
+  call<Goal[]>("list_goals", params);
+
+export const createGoal = (params: GoalCreateParams) =>
+  call<Goal>("create_goal", params);
+
+export const getGoal = (goal_id: string) =>
+  call<Goal>("get_goal", { goal_id });
+
+export const updateGoal = (params: GoalUpdateParams) =>
+  call<Goal>("update_goal", params);
+
+export const deleteGoal = (goal_id: string) =>
+  call<GoalDeleteResult>("delete_goal", { goal_id });
+
 // Re-exports to reduce import boilerplate at call sites
 export type {
   Agent,
+  AgentPerformance,
   ApproveBuildParams,
   AuditEvent,
   AuditListResponse,
@@ -513,10 +557,16 @@ export type {
   FeatureRequestStatus,
   FeatureRequestSubmit,
   FeatureRequestUpdate,
+  Goal,
+  GoalCreateParams,
+  GoalDeleteResult,
+  GoalListParams,
+  GoalUpdateParams,
   HandshakeResponse,
   LlmInfo,
   LlmSwitchResult,
   McpToolsResult,
+  MonitorStatus,
   OrgData,
   OrgReloadResult,
   OrgUpdateResult,
@@ -524,6 +574,7 @@ export type {
   Proposal,
   QueueStatus,
   QueueTask,
+  SchedulerStatus,
   SkillsListResult,
   SkillsReloadResult,
   SkillVisibilitySetResult,

@@ -4,14 +4,21 @@ import type { Agent } from "@/api/types";
 
 interface Props {
   agent: Agent;
+  selected?: boolean;
+  onSelect?: (name: string) => void;
 }
 
-export function AgentCard({ agent }: Props) {
+export function AgentCard({ agent, selected, onSelect }: Props) {
   const lastActive = agent.last_active
     ? new Date(agent.last_active).toLocaleString()
     : "never";
   return (
-    <article className="rounded-lg border border-sage-100 bg-white p-4 shadow-sm">
+    <article
+      className={clsx(
+        "rounded-lg border bg-white p-4 shadow-sm",
+        selected ? "border-sage-400 ring-1 ring-sage-300" : "border-sage-100",
+      )}
+    >
       <header className="mb-2 flex items-center gap-2">
         <h3 className="text-base font-semibold text-sage-900">{agent.name}</h3>
         <span
@@ -36,6 +43,15 @@ export function AgentCard({ agent }: Props) {
           <dd className="text-sage-900">{lastActive}</dd>
         </div>
       </dl>
+      {onSelect && (
+        <button
+          type="button"
+          className="mt-3 text-xs font-medium text-sage-700 hover:underline"
+          onClick={() => onSelect(agent.name)}
+        >
+          View performance
+        </button>
+      )}
     </article>
   );
 }

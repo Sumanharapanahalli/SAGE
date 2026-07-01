@@ -770,3 +770,54 @@ desktop-only fix with zero risk to the FastAPI interface.
   solution creates that solution's own `.sage/queue.db` — **313
   sidecar tests total**.
 
+## Phase 5m — Monitor, Goals, Agent Performance (a scoped slice of the peripheral tail)
+
+Rather than build the entire "monitoring/streaming/peripheral tail" NICE
+item in one pass (it bundles ~8 unrelated subsystems), this picks the
+three that fit the desktop's existing RPC/page pattern cleanly. Deferred,
+with reasons: Eval/HIL (a whole substantial subsystem — suites, runs,
+history, HIL sessions — deserves its own round), Integrations/Connectors
+(Composio's OAuth-redirect connect flow doesn't map onto a plain
+request/response desktop RPC), Distillation (niche), Auth (already
+flagged correctly low-priority in the original review — desktop is
+single-operator), and streaming (`/logs/stream` etc — the most
+architecturally different piece; already an accepted Phase-1 limitation
+per this doc).
+
+**Monitor** (`/monitor` route, `monitor.status` + `monitor.scheduler_status`
+RPC): ports `GET /monitor/status` and `GET /scheduler/status`. Both
+degrade gracefully on any exception — mirroring the web API's own
+behavior — returning `{"running": false, "error": ...}` rather than an
+RpcError, since an idle monitor/scheduler is a normal desktop state, not
+a failure; the page renders that as a plain "Not active" line, not an
+error banner.
+
+**Goals** (`/goals` route, `goals.{list,create,get,update,delete}` RPC):
+ports the `/goals` CRUD. **Scope note, deliberate divergence from the web
+API**: the web API's `_get_goals_store()` resolves `goals.db` next to the
+shared framework-global audit-log path; the sidecar instead wires
+`goals.db` inside this solution's own `.sage/` directory, matching every
+other per-solution store (the same reasoning as Phase 5l's queue fix).
+Single-operator desktop, so `user_id` defaults to `"desktop-operator"`
+consistently across create/list so goals don't become invisible to the
+default list query (`GoalsStore.list()` filters on exact `user_id`
+equality, no "unset = match all").
+
+**Agent Performance** (extends the existing `/agents` page and
+`agents.*` RPC namespace — no new route): adds `agents.performance`,
+porting `GET /agents/{role_key}/performance`'s exact query and
+approve/reject classification over `compliance_audit_log`, including its
+graceful degrade-to-zero-stats-on-query-failure behavior. `AgentCard`
+gained an optional `onSelect`/`selected` prop rather than fetching its
+own data, since its existing test file renders it with no query client.
+
+### Testing delta
+- Python (sidecar): monitor +8, goals +19, agents +4 — **344 sidecar
+  tests total**.
+- Rust: `monitor.rs` (2 commands), `goals.rs` (5 commands), one addition
+  to the existing `agents.rs` — proxy-only, no new tests; `cargo check`
+  (full `desktop` feature) verifies the wiring — **26 pure-Rust tests
+  total** (unchanged).
+- Web: `useMonitor`+`Monitor` +9, `useGoals`+`Goals` +9, `useAgents`+
+  `Agents` +5, Sidebar +2 nav-entry tests — **264 vitest tests total**.
+
