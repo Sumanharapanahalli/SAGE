@@ -187,6 +187,24 @@ def test_queue_status_reports_real_parallel_config(tmp_path):
     assert out[0]["result"]["max_workers"] == 4
 
 
+def test_queue_is_wired_to_this_solutions_own_sage_dir(tmp_path):
+    """The queue must be genuinely per-solution-isolated, not the shared
+    framework-global _DB_PATH under a different registry key (the prior
+    bug — see tests/test_queue_manager.py for the isolation proof itself).
+    This asserts the WIRING side specifically: driving the sidecar for a
+    solution creates that solution's own .sage/queue.db, the same pattern
+    as proposals.db / audit_log.db above it in _wire_handlers.
+
+    Uses a solution-name distinct from "starter" (used by the test above)
+    — get_task_queue's registry caches by name alone, so reusing "starter"
+    here would silently return that test's already-cached TaskQueue instead
+    of exercising this test's own tmp_path wiring."""
+    argv = ["--solution-name", "queue-wiring-test", "--solution-path", str(tmp_path)]
+    out = _drive(_req("q1", "queue.get_status") + "\n", argv=argv)
+    assert "result" in out[0], f"got error: {out[0]}"
+    assert (tmp_path / ".sage" / "queue.db").is_file()
+
+
 # ---------- builds ----------
 
 def test_builds_list_round_trip():

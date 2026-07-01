@@ -393,3 +393,54 @@ def test_mark_failed_emits_structured_log_record(caplog):
     record = matches[-1]
     assert record.task_id == task.task_id
     assert record.status == "failed"
+
+
+# ---------------------------------------------------------------------------
+# get_task_queue() per-solution isolation
+#
+# TaskQueue already accepts a db_path constructor param; the bug was that
+# get_task_queue(solution_name) never passed a solution-specific one, so
+# every entry in its registry silently shared the same framework-global
+# _DB_PATH regardless of solution_name — the opposite of ProposalStore /
+# AuditLogger / FeatureRequestStore, which all take a real per-solution path.
+# ---------------------------------------------------------------------------
+
+def test_get_task_queue_uses_explicit_db_path_when_given():
+    """A caller that passes db_path gets a queue backed by THAT file, not
+    the shared framework-global _DB_PATH."""
+    from src.core import queue_manager
+
+    tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+    tmp.close()
+    # Use a name unlikely to collide with other tests sharing the module-level registry.
+    q = queue_manager.get_task_queue("iso-test-explicit-path", db_path=tmp.name)
+    assert q._db_path == tmp.name
+    assert q._db_path != queue_manager._DB_PATH
+
+
+def test_get_task_queue_without_db_path_keeps_prior_default_behavior():
+    """Backward compatibility: existing callers that only pass a name (e.g.
+    the cross-team routing path in api.py) are unaffected."""
+    from src.core import queue_manager
+
+    q = queue_manager.get_task_queue("iso-test-no-path-default")
+    assert q._db_path == queue_manager._DB_PATH
+
+
+def test_get_task_queue_different_solutions_with_explicit_paths_are_isolated():
+    """The actual bug: two different solutions, each given their own
+    db_path, must not see each other's tasks."""
+    from src.core import queue_manager
+
+    tmp_a = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+    tmp_a.close()
+    tmp_b = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+    tmp_b.close()
+
+    q_a = queue_manager.get_task_queue("iso-test-solution-a", db_path=tmp_a.name)
+    q_b = queue_manager.get_task_queue("iso-test-solution-b", db_path=tmp_b.name)
+
+    q_a.submit("ANALYZE_LOG", {"log_entry": "only in A"})
+
+    assert q_a.get_pending_count() == 1
+    assert q_b.get_pending_count() == 0

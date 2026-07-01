@@ -740,3 +740,33 @@ its own independent mutation/result state.
 - Web: costs +6, workflows +12, skills +9, org +8, backlog +4,
   Sidebar +4 nav-entry tests — **239 vitest tests total**.
 
+## Phase 5l — Queue solution-isolation (last NICE-tier item; packaging deliberately deferred)
+
+`get_task_queue(solution_name)` cached `TaskQueue` instances by name
+alone, and every instance defaulted to the shared framework-global
+`_DB_PATH` (`<repo>/data/audit_log.db`) — the opposite of
+`ProposalStore` / `AuditLogger` / `FeatureRequestStore`, which all take
+a real per-solution path. Two solutions' sidecar/web processes running
+concurrently on one host would see each other's queued tasks.
+
+`TaskQueue.__init__` already accepted a `db_path` constructor arg — the
+bug was purely that `get_task_queue` never passed one through. Added an
+optional `db_path` parameter (default `None` → unchanged behavior for
+existing callers, e.g. api.py's cross-team task-routing path, which
+intentionally wants the shared framework queue). The desktop sidecar's
+`_wire_handlers` now passes `db_path=str(sage_dir / "queue.db")`, the
+same `.sage/`-scoping pattern as everything else it wires. **Web API
+untouched** — its general queue-status endpoints read the module-level
+`task_queue` singleton directly, not `get_task_queue`, so this was a
+desktop-only fix with zero risk to the FastAPI interface.
+
+### Testing delta
+- Python (framework): +3 tests in `tests/test_queue_manager.py`
+  (`get_task_queue` — explicit db_path, no-path backward compat, and a
+  direct two-solution isolation proof: submit to A, assert B sees 0).
+- Python (sidecar): +1 end-to-end wiring test in `test_main.py`,
+  verified genuinely red-then-green by reverting the one-line fix and
+  re-running before restoring it — asserts driving the sidecar for a
+  solution creates that solution's own `.sage/queue.db` — **313
+  sidecar tests total**.
+

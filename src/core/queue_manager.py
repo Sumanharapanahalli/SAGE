@@ -1223,14 +1223,21 @@ _queue_registry: dict = {}
 _queue_registry_lock = threading.Lock()
 
 
-def get_task_queue(solution_name: str) -> TaskQueue:
+def get_task_queue(solution_name: str, db_path: Optional[str] = None) -> TaskQueue:
     """
     Return (or lazily create) a TaskQueue scoped to a specific solution.
     The active solution continues to use the module-level `task_queue` singleton.
     Other solutions get their own instances, lazily created and cached.
     Thread-safe: uses a Lock to guard the registry.
+
+    `db_path` lets a caller give this solution's queue genuine on-disk
+    isolation (e.g. `<solution_path>/.sage/queue.db`), matching how
+    ProposalStore / AuditLogger / FeatureRequestStore are already scoped.
+    Omitting it preserves the prior default: every registry entry falls
+    back to the shared framework-global `_DB_PATH` — unchanged for
+    existing callers (e.g. api.py's cross-team task routing).
     """
     with _queue_registry_lock:
         if solution_name not in _queue_registry:
-            _queue_registry[solution_name] = TaskQueue()
+            _queue_registry[solution_name] = TaskQueue(db_path=db_path or _DB_PATH)
         return _queue_registry[solution_name]

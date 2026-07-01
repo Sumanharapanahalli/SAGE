@@ -260,7 +260,11 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
     try:
         from src.core.queue_manager import get_task_queue, parallel_runner
 
-        queue._queue = get_task_queue(solution_name)
+        # A real per-solution db_path — not just a registry cache key — so
+        # this solution's queue is genuinely isolated from any other
+        # solution's sidecar/web process on the same host, matching
+        # ProposalStore / AuditLogger / FeatureRequestStore above.
+        queue._queue = get_task_queue(solution_name, db_path=str(sage_dir / "queue.db"))
         # Parallel config lives on the runner, not the bare TaskQueue —
         # mirror api.py:1716-1717 so queue.get_status reports it correctly.
         queue._parallel_runner = parallel_runner
