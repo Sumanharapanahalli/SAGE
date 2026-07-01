@@ -13,6 +13,30 @@ Project selection order (highest priority first):
 The framework has no hardcoded solution name. Solutions live in SAGE_SOLUTIONS_DIR
 (default: ./solutions/) or any external directory set via that env var.
 
+Validation
+----------
+When a solution's project.yaml / prompts.yaml / tasks.yaml (or the equivalent
+sections of a SKILL.md frontmatter) are loaded, they are checked against the
+minimal JSON Schemas defined below. Missing required fields or wrong types raise
+a clear :class:`ConfigValidationError` naming the file and the offending field —
+instead of a KeyError surfacing deep inside agent code at runtime.
+
+Boundary cases (intentional, covered by tests/test_project_loader_validation.py):
+
+* **Absent or present-but-empty files are skipped.** A missing file, or a file
+  that parses to an empty mapping / ``null`` (e.g. a `project.yaml` containing
+  only comments), yields ``{}``. ``_validate_config`` treats ``{}`` as "nothing
+  declared" and performs NO checks, so the framework's defaults and the org-level
+  task inheritance continue to work. Consequently a present-but-empty
+  ``project.yaml`` does NOT trip the ``name`` requirement — that is by design,
+  not a missed check.
+
+* **``tasks.yaml`` does not require ``task_types``.** A child solution may
+  legitimately omit it and inherit task types from a parent via the org
+  parent-chain merge (see :meth:`ProjectConfig.get_task_types`), and the loader
+  falls back to ``_DEFAULT_TASK_TYPES`` when no org is active. Marking it required
+  would turn that supported case into a spurious load-time error.
+
 Usage:
     from src.core.project_loader import project_config
 
@@ -45,6 +69,174 @@ _SOLUTIONS_DIR = os.environ.get(
     "SAGE_SOLUTIONS_DIR",
     os.path.join(_PROJECT_ROOT, "solutions")
 )
+
+
+# ---------------------------------------------------------------------------
+# Config validation — minimal JSON Schemas + a tiny dependency-free validator
+# ---------------------------------------------------------------------------
+
+class ConfigValidationError(ValueError):
+    """Raised when a solution's YAML config fails schema validation.
+
+    Carries the originating file path and the dotted field path so the error
+    is actionable for solution authors rather than an opaque KeyError raised
+    later from inside an agent.
+    """
+
+    def __init__(self, source: str, field_path: str, message: str):
+        self.source = source
+        self.field_path = field_path or "<root>"
+        super().__init__(
+            f"Invalid SAGE config in '{source}': "
+            f"field '{self.field_path}' {message}"
+        )
+
+
+# Minimal JSON-Schema subset understood by ``_validate``:
+#   type        — "object" | "array" | "string" | "number" | "integer" | "boolean"
+#   required    — list of keys that must be present on an object
+#   properties  — per-key sub-schemas (only validated when the key is present)
+#   items       — sub-schema applied to every element of an array
+# Only fields that are present are type-checked; ``required`` enforces presence.
+
+PROJECT_SCHEMA: dict = {
+    "type": "object",
+    # `name` is the single mandatory project field. The SKILL.md loader always
+    # supplies it (defaulting to ""), so this only constrains the legacy
+    # project.yaml layout — where a missing name is a genuine authoring error.
+    "required": ["name"],
+    "properties": {
+        "name":                 {"type": "string"},
+        "version":              {"type": "string"},
+        "domain":               {"type": "string"},
+        "description":          {"type": "string"},
+        "active_modules":       {"type": "array"},
+        "compliance_standards": {"type": "array"},
+        "integrations":         {"type": "array"},
+        "ui_labels":            {"type": "object"},
+        "dashboard":            {"type": "object"},
+        "agent_budgets":        {"type": "object"},
+    },
+}
+
+PROMPTS_SCHEMA: dict = {
+    "type": "object",
+    "properties": {
+        "analyst": {
+            "type": "object",
+            # If an analyst section is declared at all, it must carry a system
+            # prompt — otherwise the agent silently runs on framework defaults
+            # while appearing configured.
+            "required": ["system_prompt"],
+            "properties": {
+                "system_prompt":        {"type": "string"},
+                "user_prompt_template": {"type": "string"},
+                "output_schema":        {"type": "object"},
+            },
+        },
+        "developer": {
+            "type": "object",
+            "properties": {
+                "review_system_prompt":    {"type": "string"},
+                "mr_create_system_prompt": {"type": "string"},
+            },
+        },
+        "planner": {
+            "type": "object",
+            "properties": {"system_prompt": {"type": "string"}},
+        },
+        "monitor": {
+            "type": "object",
+            "properties": {"system_prompt": {"type": "string"}},
+        },
+        "roles": {"type": "object"},
+    },
+}
+
+TASKS_SCHEMA: dict = {
+    "type": "object",
+    # NOTE: `task_types` is intentionally NOT in `required`.
+    # A child solution may legitimately omit it and inherit task types from a
+    # parent via the org parent-chain merge (see ProjectConfig.get_task_types),
+    # and the loader falls back to _DEFAULT_TASK_TYPES when no org is active.
+    # Marking it required would convert that valid, supported case into a
+    # load-time ConfigValidationError (a regression). We still type-check it
+    # whenever it IS present: it must be an array of strings.
+    "properties": {
+        "task_types":            {"type": "array", "items": {"type": "string"}},
+        "task_descriptions":     {"type": "object"},
+        "task_hooks":            {"type": "object"},
+        "task_sandbox_policies": {"type": "object"},
+        "scheduled":             {"type": "array"},
+    },
+}
+
+_JSON_TYPES: dict = {
+    "object":  dict,
+    "array":   list,
+    "string":  str,
+    "integer": int,
+    "boolean": bool,
+}
+
+
+def _type_matches(value: Any, json_type: str) -> bool:
+    if json_type == "number":
+        return isinstance(value, (int, float)) and not isinstance(value, bool)
+    if json_type == "integer":
+        return isinstance(value, int) and not isinstance(value, bool)
+    if json_type == "boolean":
+        return isinstance(value, bool)
+    py_type = _JSON_TYPES.get(json_type)
+    return py_type is None or isinstance(value, py_type)
+
+
+def _validate(instance: Any, schema: dict, source: str, path: str = "") -> None:
+    """Validate *instance* against *schema*, raising ConfigValidationError.
+
+    A minimal JSON-Schema interpreter supporting type/required/properties/items.
+    """
+    expected_type = schema.get("type")
+    if expected_type and not _type_matches(instance, expected_type):
+        raise ConfigValidationError(
+            source, path,
+            f"must be a {expected_type}, got {type(instance).__name__}",
+        )
+
+    if expected_type == "object" and isinstance(instance, dict):
+        for key in schema.get("required", []):
+            if key not in instance:
+                raise ConfigValidationError(
+                    source, f"{path}.{key}".lstrip("."),
+                    "is required but missing",
+                )
+        for key, sub_schema in schema.get("properties", {}).items():
+            if key in instance:
+                _validate(
+                    instance[key], sub_schema, source,
+                    f"{path}.{key}".lstrip("."),
+                )
+
+    if expected_type == "array" and isinstance(instance, list):
+        item_schema = schema.get("items")
+        if item_schema:
+            for idx, item in enumerate(instance):
+                _validate(item, item_schema, source, f"{path}[{idx}]")
+
+
+def _validate_config(data: dict, schema: dict, source: str) -> dict:
+    """Validate a loaded config section, skipping empty (absent-file) dicts.
+
+    A falsy *data* (``{}`` / ``None``) means the file was missing, blank, or
+    comment-only — the loader intentionally falls back to framework defaults and
+    org inheritance in that case, so there is nothing to validate and required
+    fields are NOT enforced. This is a deliberate boundary (see module docstring)
+    and is exercised by tests/test_project_loader_validation.py. Returns *data*
+    unchanged for convenient chaining.
+    """
+    if data:
+        _validate(data, schema, source)
+    return data
 
 
 def _auto_discover_project() -> str:
@@ -228,7 +420,12 @@ class ProjectConfig:
     # ------------------------------------------------------------------
 
     def reload(self, project_name: str | None = None) -> None:
-        """Reload configuration for *project_name* (or env/default)."""
+        """Reload configuration for *project_name* (or env/default).
+
+        Each loaded config section is validated against its minimal schema.
+        A failure raises :class:`ConfigValidationError` here — at load time —
+        rather than letting a missing key surface as a KeyError inside an agent.
+        """
         self._name = (
             project_name
             or os.environ.get("SAGE_PROJECT", "")
@@ -245,15 +442,21 @@ class ProjectConfig:
                 _parse_skill_md(skill_path)
             )
             self._skill_md_path = skill_path
+            _validate_config(self._project, PROJECT_SCHEMA, skill_path)
+            _validate_config(self._prompts, PROMPTS_SCHEMA, skill_path)
+            _validate_config(self._tasks,   TASKS_SCHEMA,   skill_path)
             logger.info(
                 "SAGE project loaded from SKILL.md: '%s'  (%s)",
                 self._name, skill_path,
             )
         else:
             # Fall back to legacy 3-file layout
-            self._project = _load_yaml(os.path.join(project_dir, "project.yaml"))
-            self._prompts = _load_yaml(os.path.join(project_dir, "prompts.yaml"))
-            self._tasks   = _load_yaml(os.path.join(project_dir, "tasks.yaml"))
+            project_path = os.path.join(project_dir, "project.yaml")
+            prompts_path = os.path.join(project_dir, "prompts.yaml")
+            tasks_path   = os.path.join(project_dir, "tasks.yaml")
+            self._project = _validate_config(_load_yaml(project_path), PROJECT_SCHEMA, project_path)
+            self._prompts = _validate_config(_load_yaml(prompts_path), PROMPTS_SCHEMA, prompts_path)
+            self._tasks   = _validate_config(_load_yaml(tasks_path),   TASKS_SCHEMA,   tasks_path)
             self._skill_content = ""
             self._skill_md_path = ""
             logger.info("SAGE project loaded: '%s'  (%s)", self._name, project_dir)
@@ -403,6 +606,9 @@ class ProjectConfig:
         returns the merged task types from the full parent chain (root → child),
         so child solutions inherit task types declared in parent solutions.
         Falls back to the solution's own tasks.yaml when no org is active.
+
+        Because inheritance / framework defaults legitimately cover a tasks.yaml
+        that omits ``task_types``, TASKS_SCHEMA does NOT mark it required.
         """
         ol = _get_org_loader()
         if ol.org_name and self._name:

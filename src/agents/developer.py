@@ -89,6 +89,29 @@ class DeveloperAgent:
             self._audit_logger = audit_logger
         return self._audit_logger
 
+    def _emit_agent_error(self, task_id: str, exc: Exception, trace_id: str) -> dict:
+        """Emit a structured agent_error event to the audit logger on failure."""
+        event = {
+            "event": "agent_error",
+            "agent": "DeveloperAgent",
+            "task_id": task_id,
+            "error_type": type(exc).__name__,
+            "message": str(exc),
+            "trace_id": trace_id,
+        }
+        try:
+            self.audit.log_event(
+                actor="DeveloperAgent",
+                action_type="agent_error",
+                input_context=str(task_id)[:500],
+                output_content=json.dumps(event),
+                metadata=event,
+            )
+        except Exception:
+            # Never let error reporting mask the original failure.
+            self.logger.critical("Failed to emit agent_error event: %s", json.dumps(event))
+        return event
+
     # -----------------------------------------------------------------------
     # ReAct Loop (Reason + Act multi-step reasoning)
     # -----------------------------------------------------------------------
@@ -138,7 +161,9 @@ class DeveloperAgent:
             _repo_map = generate_repo_map(_PROJECT_ROOT, max_files=40)
             system_prompt = system_prompt + "\n\n" + _repo_map
         except Exception as _rme:
-            self.logger.debug("Repo map unavailable: %s", _rme)
+            # Repo map is an optional augmentation — record the failure as a
+            # structured event but continue with the un-augmented prompt.
+            self._emit_agent_error(task_id=task[:200], exc=_rme, trace_id=str(uuid.uuid4()))
 
         history: list[str] = [f"Task: {task}"]
 

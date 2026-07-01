@@ -1,5 +1,6 @@
 import json
 import logging
+import uuid
 from typing import Dict, Any, Tuple
 from src.core.llm_gateway import llm_gateway
 from src.core.project_loader import project_config
@@ -9,6 +10,29 @@ from src.memory.audit_logger import audit_logger
 class AnalystAgent:
     def __init__(self):
         self.logger = logging.getLogger("AnalystAgent")
+
+    def _emit_agent_error(self, task_id: str, exc: Exception, trace_id: str) -> Dict[str, Any]:
+        """Emit a structured agent_error event to the audit logger on failure."""
+        event = {
+            "event": "agent_error",
+            "agent": "AnalystAgent",
+            "task_id": task_id,
+            "error_type": type(exc).__name__,
+            "message": str(exc),
+            "trace_id": trace_id,
+        }
+        try:
+            audit_logger.log_event(
+                actor="AnalystAgent",
+                action_type="agent_error",
+                input_context=str(task_id)[:500],
+                output_content=json.dumps(event),
+                metadata=event,
+            )
+        except Exception:
+            # Never let error reporting mask the original failure.
+            self.logger.critical("Failed to emit agent_error event: %s", json.dumps(event))
+        return event
 
     def analyze_log(self, log_entry: str) -> Dict[str, Any]:
         """
@@ -51,7 +75,7 @@ class AnalystAgent:
                 "raw_output": response_text
             }
         except Exception as e:
-            self.logger.error(f"Analysis failed: {e}")
+            self._emit_agent_error(task_id=log_entry[:200], exc=e, trace_id=str(uuid.uuid4()))
             return {"error": str(e)}
 
         # 4. Compliance Audit

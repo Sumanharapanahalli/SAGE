@@ -17,6 +17,7 @@ Usage:
 
 import json
 import logging
+import uuid
 from typing import Optional
 
 
@@ -36,13 +37,51 @@ class UniversalAgent:
     def __init__(self):
         self.logger = logging.getLogger("UniversalAgent")
 
+    @staticmethod
+    def _new_trace_id() -> str:
+        """Best-effort trace id, falling back to a uuid when the module is unavailable."""
+        try:
+            from src.modules.trace_id import new as generate_trace_id
+            return generate_trace_id()
+        except Exception:
+            return str(uuid.uuid4())
+
+    def _emit_agent_error(self, agent: str, task_id: str, exc: Exception, trace_id: str) -> dict:
+        """Emit a structured agent_error event to the audit logger on failure."""
+        event = {
+            "event": "agent_error",
+            "agent": agent or "UniversalAgent",
+            "task_id": task_id,
+            "error_type": type(exc).__name__,
+            "message": str(exc),
+            "trace_id": trace_id,
+        }
+        try:
+            from src.memory.audit_logger import audit_logger
+            audit_logger.log_event(
+                actor=event["agent"],
+                action_type="agent_error",
+                input_context=str(task_id)[:500],
+                output_content=json.dumps(event),
+                metadata=event,
+            )
+        except Exception:
+            # Never let error reporting mask the original failure.
+            self.logger.critical("Failed to emit agent_error event: %s", json.dumps(event))
+        return event
+
     def get_roles(self) -> dict:
         """Return all roles defined in the current solution's prompts.yaml."""
         try:
             from src.core.project_loader import project_config
             return project_config.get_prompts().get("roles", {})
         except Exception as e:
-            self.logger.error("Could not load roles: %s", e)
+            self._emit_agent_error(
+                agent="UniversalAgent",
+                task_id="get_roles",
+                exc=e,
+                trace_id=self._new_trace_id(),
+            )
             return {}
 
     def run(
@@ -178,7 +217,7 @@ confidence: HIGH, MEDIUM, or LOW based on available information
                 }),
             )
         except Exception as e:
-            self.logger.warning("Audit log failed: %s", e)
+            self._emit_agent_error(agent=role_id, task_id=trace_id, exc=e, trace_id=trace_id)
 
         return result
 
