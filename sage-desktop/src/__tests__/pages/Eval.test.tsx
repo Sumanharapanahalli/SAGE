@@ -100,4 +100,16 @@ describe("Eval page", () => {
       expect(screen.getByText(/boom/i)).toBeInTheDocument(),
     );
   });
+
+  it("shows an error banner when the history query fails", async () => {
+    vi.mocked(client.listEvalSuites).mockResolvedValue({ suites: [], count: 0 });
+    vi.mocked(client.getEvalHistory).mockRejectedValue({
+      kind: "SidecarDown",
+      detail: { message: "history boom" },
+    });
+    renderPage();
+    await waitFor(() =>
+      expect(screen.getByRole("alert")).toHaveTextContent(/history boom/i),
+    );
+  });
 });

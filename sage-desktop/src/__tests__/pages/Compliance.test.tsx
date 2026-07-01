@@ -122,4 +122,25 @@ describe("Compliance page", () => {
       expect(screen.getByText(/100/)).toBeInTheDocument(),
     );
   });
+
+  it("shows an error banner when the domains query fails", async () => {
+    vi.mocked(client.listComplianceDomains).mockRejectedValue({
+      kind: "SidecarDown",
+      detail: { message: "domains boom" },
+    });
+    renderPage();
+
+    await waitFor(() =>
+      expect(screen.getByRole("alert")).toHaveTextContent(/domains boom/i),
+    );
+  });
+
+  it("shows a loading indicator while domains load", () => {
+    vi.mocked(client.listComplianceDomains).mockReturnValue(
+      new Promise(() => {}),
+    );
+    renderPage();
+
+    expect(screen.getByText(/loading domains/i)).toBeInTheDocument();
+  });
 });

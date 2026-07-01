@@ -129,8 +129,8 @@ export function BuildRunDetailView({
 
       {showApprovalControls && (
         <div className="rounded border border-sage-100 bg-white p-4">
-          <label className="block">
-            <span className="block text-sm font-medium" htmlFor="build-feedback">
+          <label className="block" htmlFor="build-feedback">
+            <span className="block text-sm font-medium">
               Feedback (optional)
             </span>
             <textarea

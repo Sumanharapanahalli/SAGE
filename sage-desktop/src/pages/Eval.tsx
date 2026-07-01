@@ -70,6 +70,7 @@ export default function Eval() {
 
       <div className="rounded border border-sage-100 bg-white p-4">
         <div className="text-sm font-medium mb-2">History</div>
+        <ErrorBanner error={history.error ?? null} />
         {history.data && history.data.history.length === 0 && (
           <div className="text-sm text-slate-500">No runs yet.</div>
         )}

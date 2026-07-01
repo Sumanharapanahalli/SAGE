@@ -1,19 +1,25 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("@/api/client", () => ({
-  collectiveListLearnings: vi.fn(),
-  collectiveSearchLearnings: vi.fn(),
-  collectiveStats: vi.fn(),
-  collectiveListHelpRequests: vi.fn(),
-  collectivePublishLearning: vi.fn(),
-  collectiveValidateLearning: vi.fn(),
-  collectiveCreateHelpRequest: vi.fn(),
-  collectiveClaimHelpRequest: vi.fn(),
-  collectiveRespondToHelpRequest: vi.fn(),
-  collectiveCloseHelpRequest: vi.fn(),
-  collectiveSync: vi.fn(),
-}));
+// importOriginal keeps the real `toDesktopError` — a bare factory would
+// auto-mock it and break the mutation ErrorBanner (established gotcha).
+vi.mock("@/api/client", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/api/client")>();
+  return {
+    ...actual,
+    collectiveListLearnings: vi.fn(),
+    collectiveSearchLearnings: vi.fn(),
+    collectiveStats: vi.fn(),
+    collectiveListHelpRequests: vi.fn(),
+    collectivePublishLearning: vi.fn(),
+    collectiveValidateLearning: vi.fn(),
+    collectiveCreateHelpRequest: vi.fn(),
+    collectiveClaimHelpRequest: vi.fn(),
+    collectiveRespondToHelpRequest: vi.fn(),
+    collectiveCloseHelpRequest: vi.fn(),
+    collectiveSync: vi.fn(),
+  };
+});
 
 import * as client from "@/api/client";
 import Collective from "@/pages/Collective";
@@ -43,6 +49,26 @@ const LEARNING = {
   created_at: "",
   updated_at: "",
   source_task_id: "",
+};
+
+const HELP_OPEN = {
+  id: "hr-1",
+  title: "I2C help",
+  requester_agent: "dev",
+  requester_solution: "auto",
+  status: "open" as const,
+  urgency: "high" as const,
+  required_expertise: ["i2c"],
+  context: "",
+  created_at: "",
+  claimed_by: null,
+  responses: [],
+  resolved_at: null,
+};
+
+const SIDECAR_DOWN = {
+  kind: "SidecarDown",
+  detail: { message: "sidecar gone" },
 };
 
 describe("Collective page", () => {
@@ -135,5 +161,105 @@ describe("Collective page", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: /help requests/i }));
     await waitFor(() => expect(screen.getByText("I2C help")).toBeInTheDocument());
+  });
+
+  it("surfaces an error when the help request query fails", async () => {
+    vi.mocked(client.collectiveStats).mockResolvedValue(STATS_ONLINE);
+    vi.mocked(client.collectiveListLearnings).mockResolvedValue({
+      entries: [],
+      total: 0,
+      limit: 50,
+      offset: 0,
+    });
+    vi.mocked(client.collectiveListHelpRequests).mockRejectedValue(
+      SIDECAR_DOWN,
+    );
+    const Wrapper = wrapperWith(createTestQueryClient());
+    render(
+      <Wrapper>
+        <Collective />
+      </Wrapper>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: /help requests/i }));
+    await waitFor(() =>
+      expect(screen.getByRole("alert")).toBeInTheDocument(),
+    );
+  });
+
+  it("shows an empty state when there are no help requests", async () => {
+    vi.mocked(client.collectiveStats).mockResolvedValue(STATS_ONLINE);
+    vi.mocked(client.collectiveListLearnings).mockResolvedValue({
+      entries: [],
+      total: 0,
+      limit: 50,
+      offset: 0,
+    });
+    vi.mocked(client.collectiveListHelpRequests).mockResolvedValue({
+      entries: [],
+      count: 0,
+    });
+    const Wrapper = wrapperWith(createTestQueryClient());
+    render(
+      <Wrapper>
+        <Collective />
+      </Wrapper>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: /help requests/i }));
+    await waitFor(() =>
+      expect(screen.getByText(/no open help requests/i)).toBeInTheDocument(),
+    );
+  });
+
+  it("guards the Stats tab with an error instead of a blank when stats fail", async () => {
+    vi.mocked(client.collectiveStats).mockRejectedValue(SIDECAR_DOWN);
+    vi.mocked(client.collectiveListLearnings).mockResolvedValue({
+      entries: [],
+      total: 0,
+      limit: 50,
+      offset: 0,
+    });
+    vi.mocked(client.collectiveListHelpRequests).mockResolvedValue({
+      entries: [],
+      count: 0,
+    });
+    const Wrapper = wrapperWith(createTestQueryClient());
+    render(
+      <Wrapper>
+        <Collective />
+      </Wrapper>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: /^stats$/i }));
+    await waitFor(() =>
+      expect(screen.getByRole("alert")).toBeInTheDocument(),
+    );
+  });
+
+  it("surfaces an error when claiming a help request fails", async () => {
+    vi.mocked(client.collectiveStats).mockResolvedValue(STATS_ONLINE);
+    vi.mocked(client.collectiveListLearnings).mockResolvedValue({
+      entries: [],
+      total: 0,
+      limit: 50,
+      offset: 0,
+    });
+    vi.mocked(client.collectiveListHelpRequests).mockResolvedValue({
+      entries: [HELP_OPEN],
+      count: 1,
+    });
+    vi.mocked(client.collectiveClaimHelpRequest).mockRejectedValue(
+      SIDECAR_DOWN,
+    );
+    const Wrapper = wrapperWith(createTestQueryClient());
+    render(
+      <Wrapper>
+        <Collective />
+      </Wrapper>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: /help requests/i }));
+    await screen.findByText("I2C help");
+    fireEvent.click(screen.getByRole("button", { name: /^claim$/i }));
+    await waitFor(() =>
+      expect(screen.getByRole("alert")).toBeInTheDocument(),
+    );
   });
 });

@@ -55,6 +55,9 @@ export default function Costs() {
         </select>
       </label>
 
+      <ErrorBanner error={summary.error ?? null} />
+      <ErrorBanner error={daily.error ?? null} />
+
       {summary.data && (
         <div className="rounded border border-sage-100 bg-white p-4">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

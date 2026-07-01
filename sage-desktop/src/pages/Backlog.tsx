@@ -5,6 +5,8 @@ import {
   useUpdateFeatureRequest,
 } from "@/hooks/useBacklog";
 import { FeatureRequestRow } from "@/components/domain/FeatureRequestRow";
+import { ErrorBanner } from "@/components/layout/ErrorBanner";
+import { toDesktopError } from "@/api/client";
 import type { FeatureRequestAction, FeatureRequestScope } from "@/api/types";
 
 export default function Backlog() {
@@ -14,6 +16,9 @@ export default function Backlog() {
   const update = useUpdateFeatureRequest();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+
+  const submitError = submit.error ? toDesktopError(submit.error) : null;
+  const updateError = update.error ? toDesktopError(update.error) : null;
 
   const handleAction = (id: string, action: FeatureRequestAction) => {
     update.mutate({ id, action });
@@ -74,9 +79,12 @@ export default function Backlog() {
         >
           {submit.isPending ? "Submitting…" : "Submit"}
         </button>
+        <ErrorBanner error={submitError} />
       </form>
 
       <div className="space-y-3">
+        <ErrorBanner error={list.error ?? null} />
+        <ErrorBanner error={updateError} />
         {list.isLoading && <p>Loading…</p>}
         {list.isSuccess && list.data.length === 0 && (
           <p className="text-sm text-gray-500">No feature requests.</p>

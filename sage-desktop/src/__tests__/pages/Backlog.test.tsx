@@ -7,7 +7,20 @@ import * as client from "@/api/client";
 import { createTestQueryClient } from "../helpers/queryWrapper";
 import Backlog from "@/pages/Backlog";
 
-vi.mock("@/api/client");
+// CRITICAL: mock with a factory that preserves the real module — a bare
+// vi.mock("@/api/client") auto-mocks every export including the pure
+// toDesktopError() helper, silently turning it into a stub that returns
+// undefined and breaking the error-banner assertions below.
+vi.mock("@/api/client", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/api/client")>();
+  return {
+    ...actual,
+    listFeatureRequests: vi.fn(),
+    submitFeatureRequest: vi.fn(),
+    updateFeatureRequest: vi.fn(),
+    planFeatureRequest: vi.fn(),
+  };
+});
 
 describe("Backlog page", () => {
   it("renders feature request list", async () => {
@@ -123,5 +136,42 @@ describe("Backlog page", () => {
     );
     await waitFor(() => expect(screen.getByText("Already planned")).toBeInTheDocument());
     expect(screen.queryByRole("button", { name: /generate plan/i })).not.toBeInTheDocument();
+  });
+
+  it("shows an error banner when the feature request list query fails", async () => {
+    vi.mocked(client.listFeatureRequests).mockRejectedValue({
+      kind: "SolutionUnavailable",
+      detail: { message: "no solution loaded" },
+    });
+    render(
+      <QueryClientProvider client={createTestQueryClient()}>
+        <MemoryRouter>
+          <Backlog />
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+    const alert = await screen.findByRole("alert");
+    expect(alert).toBeInTheDocument();
+    expect(alert).toHaveTextContent(/no solution loaded/i);
+  });
+
+  it("shows an error banner when submitting a feature request fails", async () => {
+    vi.mocked(client.listFeatureRequests).mockResolvedValue([]);
+    vi.mocked(client.submitFeatureRequest).mockRejectedValue({
+      kind: "InvalidParams",
+      detail: { message: "title is required" },
+    });
+    render(
+      <QueryClientProvider client={createTestQueryClient()}>
+        <MemoryRouter>
+          <Backlog />
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+    await userEvent.type(screen.getByLabelText(/title/i), "new item");
+    await userEvent.click(screen.getByRole("button", { name: /submit/i }));
+    const alert = await screen.findByRole("alert");
+    expect(alert).toBeInTheDocument();
+    expect(screen.getByText(/InvalidParams/i)).toBeInTheDocument();
   });
 });

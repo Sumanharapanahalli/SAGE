@@ -50,6 +50,31 @@ describe("Knowledge page", () => {
     expect(screen.getByText(/Showing 1–2 of 2/)).toBeInTheDocument();
   });
 
+  it("shows an alert when deleting an entry fails", async () => {
+    vi.mocked(client.knowledgeStats).mockResolvedValue(STATS_FULL);
+    vi.mocked(client.knowledgeList).mockResolvedValue(LIST_TWO);
+    vi.mocked(client.knowledgeDelete).mockRejectedValue({
+      kind: "Other",
+      detail: { code: -32000, message: "delete boom" },
+    });
+    const Wrapper = wrapperWith(createTestQueryClient());
+    render(
+      <Wrapper>
+        <Knowledge />
+      </Wrapper>,
+    );
+
+    await waitFor(() =>
+      expect(screen.getByText("first entry")).toBeInTheDocument(),
+    );
+    fireEvent.click(screen.getByRole("button", { name: /delete entry u1/i }));
+    fireEvent.click(screen.getByRole("button", { name: /^confirm$/i }));
+
+    await waitFor(() =>
+      expect(screen.getByRole("alert")).toHaveTextContent(/delete boom/i),
+    );
+  });
+
   it("shows minimal banner on the search tab when backend is minimal", async () => {
     vi.mocked(client.knowledgeStats).mockResolvedValue({
       ...STATS_FULL,

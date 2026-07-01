@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 
 import { OnboardingWizard } from "@/components/domain/OnboardingWizard";
+import { ErrorBanner } from "@/components/layout/ErrorBanner";
 import { useOnboardingGenerate } from "@/hooks/useOnboarding";
 import { useSwitchSolution } from "@/hooks/useSolutions";
 
@@ -17,6 +18,9 @@ export default function Onboarding() {
         project.yaml, prompts.yaml, and tasks.yaml for you. You can switch
         to the new solution immediately after it's created.
       </p>
+      {/* A failed solution switch (sidecar respawn) is otherwise silent — the
+          wizard keeps showing the created-result view. Surface it here. */}
+      <ErrorBanner error={swap.error} />
       <OnboardingWizard
         isPending={gen.isPending}
         error={gen.error ?? null}

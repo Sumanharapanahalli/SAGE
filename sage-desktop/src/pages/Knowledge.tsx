@@ -149,6 +149,14 @@ export default function Knowledge() {
               Could not load entries: {errorMessage(list.error!)}
             </div>
           )}
+          {del.isError && (
+            <div
+              role="alert"
+              className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-900"
+            >
+              Could not delete entry: {errorMessage(del.error!)}
+            </div>
+          )}
           {list.data && list.data.entries.length === 0 && !list.isLoading && (
             <p className="text-sm text-slate-500">No entries on this page.</p>
           )}

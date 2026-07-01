@@ -1,7 +1,9 @@
 import { useState } from "react";
 
+import { toDesktopError } from "@/api/client";
 import type { DesktopError } from "@/api/types";
 import { CollectiveStats } from "@/components/domain/CollectiveStats";
+import { ErrorBanner } from "@/components/layout/ErrorBanner";
 import { CreateHelpRequestForm } from "@/components/domain/CreateHelpRequestForm";
 import { HelpRequestCard } from "@/components/domain/HelpRequestCard";
 import { LearningRow } from "@/components/domain/LearningRow";
@@ -50,6 +52,15 @@ export default function Collective() {
   const sync = useCollectiveSync();
 
   const gitAvailable = stats.data?.git_available ?? false;
+
+  // Mutation errors are otherwise silent — a failed validate/claim/respond/
+  // close just does nothing. Surface them next to the action they belong to.
+  const validateError = validate.error ? toDesktopError(validate.error) : null;
+  const helpMutationError =
+    (claim.error && toDesktopError(claim.error)) ||
+    (respond.error && toDesktopError(respond.error)) ||
+    (close.error && toDesktopError(close.error)) ||
+    null;
 
   return (
     <div className="mx-auto max-w-6xl space-y-4 p-6">
@@ -123,6 +134,7 @@ export default function Collective() {
               {errorMessage(learnings.error as DesktopError)}
             </div>
           )}
+          <ErrorBanner error={validateError} />
           {learnings.data?.entries.map((l) => (
             <LearningRow
               key={l.id}
@@ -160,6 +172,7 @@ export default function Collective() {
 
       {tab === "help" && (
         <section className="space-y-3">
+          <ErrorBanner error={helpMutationError} />
           <div className="flex gap-2">
             {(["open", "closed"] as const).map((s) => (
               <button
@@ -176,6 +189,15 @@ export default function Collective() {
               </button>
             ))}
           </div>
+          {help.isLoading && (
+            <div className="text-sm text-slate-500">Loading…</div>
+          )}
+          {help.isError && <ErrorBanner error={help.error} />}
+          {help.data && help.data.entries.length === 0 && (
+            <div className="rounded border border-slate-200 bg-white p-6 text-center text-sm text-slate-500">
+              No {helpStatus} help requests.
+            </div>
+          )}
           {help.data?.entries.map((r) => (
             <HelpRequestCard
               key={r.id}
@@ -208,7 +230,15 @@ export default function Collective() {
         </section>
       )}
 
-      {tab === "stats" && stats.data && <CollectiveStats stats={stats.data} />}
+      {tab === "stats" && (
+        <section className="space-y-3">
+          {stats.isLoading && (
+            <div className="text-sm text-slate-500">Loading…</div>
+          )}
+          {stats.isError && <ErrorBanner error={stats.error} />}
+          {stats.data && <CollectiveStats stats={stats.data} />}
+        </section>
+      )}
     </div>
   );
 }

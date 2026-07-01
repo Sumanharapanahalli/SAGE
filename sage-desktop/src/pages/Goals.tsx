@@ -2,6 +2,7 @@ import { useState } from "react";
 import {
   useGoals,
   useCreateGoal,
+  useUpdateGoal,
   useDeleteGoal,
 } from "@/hooks/useGoals";
 import { ErrorBanner } from "@/components/layout/ErrorBanner";
@@ -13,12 +14,14 @@ const STATUS_OPTIONS: GoalStatus[] = ["on_track", "at_risk", "off_track", "done"
 export default function Goals() {
   const list = useGoals();
   const create = useCreateGoal();
+  const update = useUpdateGoal();
   const del = useDeleteGoal();
 
   const [title, setTitle] = useState("");
   const [quarter, setQuarter] = useState("");
   const [owner, setOwner] = useState("");
   const [status, setStatus] = useState<GoalStatus>("on_track");
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +39,8 @@ export default function Goals() {
     );
   };
 
-  const error = create.error ? toDesktopError(create.error) : null;
+  const createError = create.error ? toDesktopError(create.error) : null;
+  const deleteError = del.error ? toDesktopError(del.error) : null;
 
   return (
     <div className="p-6 space-y-4">
@@ -92,10 +96,12 @@ export default function Goals() {
         </button>
       </form>
 
-      <ErrorBanner error={error} />
+      <ErrorBanner error={createError} />
 
       <div className="space-y-3">
         {list.isLoading && <p>Loading…</p>}
+        <ErrorBanner error={list.error} />
+        <ErrorBanner error={deleteError} />
         {list.isSuccess && list.data.length === 0 && (
           <p className="text-sm text-gray-500">No goals yet.</p>
         )}
@@ -112,14 +118,56 @@ export default function Goals() {
                 {goal.key_results.length === 1 ? "" : "s"}
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => del.mutate(goal.id)}
-              disabled={del.isPending}
-              className="rounded border border-red-200 px-3 py-1.5 text-sm text-red-700 hover:bg-red-50 disabled:opacity-50"
-            >
-              Delete
-            </button>
+            <div className="flex items-center gap-2">
+              <select
+                aria-label={`status for ${goal.title}`}
+                className="rounded border border-gray-300 p-1.5 text-sm"
+                value={goal.status}
+                disabled={update.isPending}
+                onChange={(e) =>
+                  update.mutate({
+                    goal_id: goal.id,
+                    status: e.target.value as GoalStatus,
+                  })
+                }
+              >
+                {STATUS_OPTIONS.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+              {confirmingId === goal.id ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      del.mutate(goal.id);
+                      setConfirmingId(null);
+                    }}
+                    disabled={del.isPending}
+                    className="rounded border border-red-300 px-3 py-1.5 text-sm text-red-700 hover:bg-red-50 disabled:opacity-50"
+                  >
+                    Confirm
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmingId(null)}
+                    className="rounded border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setConfirmingId(goal.id)}
+                  className="rounded border border-red-200 px-3 py-1.5 text-sm text-red-700 hover:bg-red-50"
+                >
+                  Delete
+                </button>
+              )}
+            </div>
           </div>
         ))}
       </div>

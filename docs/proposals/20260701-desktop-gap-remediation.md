@@ -30,8 +30,13 @@ via `make desktop-dev-solution`.
   the sidebar shows a red pending-count badge on the Approvals entry.
 - [DONE] **T1.6 Constitution page spins forever on error.** Error branch now precedes the
   loading/`!draft` guard.
-- [ ] **T1.7 Silent-failure pages.** Backlog, Costs, Compliance, Eval, Goals, Knowledge, Onboarding,
-  Collective swallow query/mutation errors. Backlog worst (failed submit just sits there).
+- [DONE] **T1.7 Silent-failure pages.** All eight now surface query/mutation errors via `ErrorBanner`
+  (+ loading/empty states where missing): Backlog (list/submit/update), Costs (summary/daily),
+  Compliance (domains/checklist + loading), Eval (history), Goals (list/delete), Knowledge (delete),
+  Onboarding (solution-switch), Collective (help query loading/error/empty + claim/respond/close +
+  stats-tab guard). Built by four parallel subagents on disjoint files, each TDD (red→green); full
+  desktop suite 321 tests green, whole project typechecks clean. Collective's `window.prompt` and
+  hardcoded actor identities left for T3.8.
 - [MITIGATED] **T1.8 Startup latency ~41s** (measured live). Diagnosis refined: the dominant cost
   is the one-time `torch`/sentence-transformers **process import (~31s)** plus ~30 HuggingFace
   network revalidation calls — NOT the second `VectorMemory` instance (collapsing it saves only a
@@ -50,8 +55,8 @@ via `make desktop-dev-solution`.
   monitor + scheduler + worker together in the normal process.
 - [ ] **T2.2 Inbox doesn't notify.** Poll-only UI; only push event is crash status. Operator never
   learns a new proposal landed.
-- [ ] **T2.3 Goals can't be marked done.** `useUpdateGoal` + Rust command wired; `Goals.tsx` imports
-  only list/create/delete.
+- [DONE] **T2.3 Goals can't be marked done.** `Goals.tsx` now wires `useUpdateGoal` — a per-goal
+  status `<select>` moves a goal across its statuses; also added a two-step delete confirm.
 - [ ] **T2.4 Cost recorded per trace but invisible.** `llm_costs.trace_id` populated; nothing joins
   cost to a proposal in any UI.
 - [ ] **T2.5 Audit drill-down missing on desktop.** One exact-match filter, fixed limit 100, traces

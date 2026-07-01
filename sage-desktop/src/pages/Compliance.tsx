@@ -61,6 +61,12 @@ export default function Compliance() {
     <div className="p-6 space-y-4">
       <h2 className="font-semibold text-lg">Compliance</h2>
 
+      {domains.isLoading && (
+        <div className="text-sm text-slate-500">Loading domains…</div>
+      )}
+
+      <ErrorBanner error={domains.error ?? checklist.error ?? null} />
+
       <div className="flex gap-3">
         <label className="block">
           <span className="block text-sm font-medium">Domain</span>

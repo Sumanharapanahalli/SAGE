@@ -92,6 +92,19 @@ describe("Costs page", () => {
     );
   });
 
+  it("shows an error banner when the cost summary query fails", async () => {
+    vi.mocked(client.getCostsSummary).mockRejectedValue({
+      kind: "SolutionUnavailable",
+      detail: { message: "no solution loaded" },
+    });
+    vi.mocked(client.getCostsDaily).mockResolvedValue(DAILY);
+    renderPage();
+
+    const alert = await screen.findByRole("alert");
+    expect(alert).toBeInTheDocument();
+    expect(alert).toHaveTextContent(/no solution loaded/i);
+  });
+
   it("shows an error banner when the budget mutation fails", async () => {
     vi.mocked(client.getCostsSummary).mockResolvedValue(SUMMARY);
     vi.mocked(client.getCostsDaily).mockResolvedValue(DAILY);
