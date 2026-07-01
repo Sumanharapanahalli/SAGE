@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { CheckCircle, XCircle, AlertTriangle, Clock, ChevronDown, ChevronUp } from 'lucide-react'
 import RiskBadge, { RISK_CONFIG } from '../ui/RiskBadge'
+import CopyButton from '../ui/CopyButton'
 import { formatRelativeTime } from '../../lib/date'
 
 interface Proposal {
@@ -94,9 +95,12 @@ export default function ProposalCard({ proposal, onApprove, onReject }: Proposal
       </div>
 
       {expanded && diff && (
-        <pre className="mt-3 text-xs bg-gray-900 text-gray-100 rounded p-3 overflow-x-auto max-h-64 overflow-y-auto">
-          {diff}
-        </pre>
+        <div className="relative group mt-3">
+          <CopyButton text={diff} />
+          <pre className="text-xs bg-gray-900 text-gray-100 rounded p-3 overflow-x-auto max-h-64 overflow-y-auto">
+            {diff}
+          </pre>
+        </div>
       )}
 
       {isDestructive && (

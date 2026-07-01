@@ -214,6 +214,7 @@ export default function Header({ onOpenPalette }: HeaderProps) {
       <button
         onClick={() => openChat()}
         title="SAGE Chat (Ctrl+J)"
+        aria-label="Open SAGE Chat"
         className="flex items-center gap-1 text-xs px-2 py-1 transition-colors shrink-0"
         style={{
           color: panelState !== 'closed' ? '#3b82f6' : '#52525b',

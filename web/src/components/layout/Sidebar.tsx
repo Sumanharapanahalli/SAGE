@@ -192,6 +192,7 @@ function SolutionRail({ onOpenWizard }: { onOpenWizard: () => void }) {
         <Tooltip text="Browse all solutions">
           <button
             onClick={() => setPickerOpen(true)}
+            aria-label="Browse all solutions"
             style={{ width: '28px', height: '28px', color: '#334155', background: 'none',
                      border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center',
                      justifyContent: 'center', marginBottom: '4px' }}
@@ -212,6 +213,7 @@ function SolutionRail({ onOpenWizard }: { onOpenWizard: () => void }) {
         <Tooltip text="View organization graph">
           <button
             onClick={() => navigate('/org-graph')}
+            aria-label="View organization graph"
             style={{ width: '32px', height: '32px', color: '#334155', background: 'none',
                      border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >

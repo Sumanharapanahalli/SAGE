@@ -1,5 +1,6 @@
 import type { AuditEntry } from '../../api/client'
 import { X } from 'lucide-react'
+import CodeBlock from '../ui/CodeBlock'
 
 interface Props { entry: AuditEntry; onClose: () => void }
 
@@ -21,16 +22,16 @@ export default function TraceDetailModal({ entry, onClose }: Props) {
           </div>
           <div>
             <div className="text-xs font-semibold text-gray-500 uppercase mb-1">Input Context</div>
-            <pre className="text-xs bg-gray-50 border rounded-lg p-3 overflow-x-auto whitespace-pre-wrap">{entry.input_context}</pre>
+            <CodeBlock className="whitespace-pre-wrap">{entry.input_context}</CodeBlock>
           </div>
           <div>
             <div className="text-xs font-semibold text-gray-500 uppercase mb-1">Output Content</div>
-            <pre className="text-xs bg-gray-50 border rounded-lg p-3 overflow-x-auto whitespace-pre-wrap">{entry.output_content}</pre>
+            <CodeBlock className="whitespace-pre-wrap">{entry.output_content}</CodeBlock>
           </div>
           {entry.metadata && (
             <div>
               <div className="text-xs font-semibold text-gray-500 uppercase mb-1">Metadata</div>
-              <pre className="text-xs bg-gray-50 border rounded-lg p-3 overflow-x-auto whitespace-pre-wrap">{entry.metadata}</pre>
+              <CodeBlock className="whitespace-pre-wrap">{entry.metadata}</CodeBlock>
             </div>
           )}
         </div>
