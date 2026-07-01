@@ -5,9 +5,13 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@/api/client", () => ({
   getCurrentSolution: vi.fn().mockResolvedValue(null),
+  listPendingApprovals: vi.fn().mockResolvedValue([]),
 }));
 
+import * as client from "@/api/client";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { findByTestId } from "@testing-library/react";
+import type { Proposal } from "@/api/types";
 
 function renderAt(path: string) {
   const qc = new QueryClient({
@@ -21,6 +25,26 @@ function renderAt(path: string) {
     </QueryClientProvider>,
   );
 }
+
+const fakeProposal = (trace_id: string): Proposal => ({
+  trace_id,
+  created_at: "2026-04-16T10:00:00Z",
+  action_type: "yaml_edit",
+  risk_class: "STATEFUL",
+  reversible: true,
+  proposed_by: "analyst",
+  description: "d",
+  payload: {},
+  status: "pending",
+  decided_by: null,
+  decided_at: null,
+  feedback: null,
+  expires_at: null,
+  required_role: null,
+  approved_by: null,
+  approver_role: null,
+  approver_email: null,
+});
 
 describe("Sidebar", () => {
   it("renders the four Phase 1 nav entries", () => {
@@ -138,5 +162,21 @@ describe("Sidebar", () => {
       "href",
       "/hil",
     );
+  });
+
+  it("shows a pending-approvals badge with the count", async () => {
+    vi.mocked(client.listPendingApprovals).mockResolvedValueOnce([
+      fakeProposal("a"),
+      fakeProposal("b"),
+      fakeProposal("c"),
+    ]);
+    const { container } = renderAt("/status");
+    const badge = await findByTestId(container as HTMLElement, "pending-badge");
+    expect(badge).toHaveTextContent("3");
+  });
+
+  it("hides the badge when nothing is pending", () => {
+    renderAt("/approvals");
+    expect(screen.queryByTestId("pending-badge")).not.toBeInTheDocument();
   });
 });

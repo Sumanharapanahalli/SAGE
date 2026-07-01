@@ -45,12 +45,8 @@ export default function Constitution() {
     return JSON.stringify(draft) !== JSON.stringify(loaded);
   }, [loaded, draft]);
 
-  if (query.isLoading || !draft) {
-    return (
-      <div className="p-6 text-sm text-slate-600">Loading constitution…</div>
-    );
-  }
-
+  // Error must be checked BEFORE the loading/!draft guard: on failure draft
+  // stays null, so a loading-first check would spin forever.
   if (query.isError) {
     return (
       <div
@@ -59,6 +55,12 @@ export default function Constitution() {
       >
         Could not load constitution: {errorMessage(query.error!)}
       </div>
+    );
+  }
+
+  if (query.isLoading || !draft) {
+    return (
+      <div className="p-6 text-sm text-slate-600">Loading constitution…</div>
     );
   }
 

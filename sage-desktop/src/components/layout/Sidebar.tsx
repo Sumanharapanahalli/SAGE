@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import { NavLink } from "react-router-dom";
 
+import { useApprovals } from "@/hooks/useApprovals";
 import { useCurrentSolution } from "@/hooks/useSolutions";
 
 const NAV_ITEMS = [
@@ -29,9 +30,11 @@ const NAV_ITEMS = [
 
 export function Sidebar() {
   const { data: current } = useCurrentSolution();
+  const { data: pending } = useApprovals();
+  const pendingCount = pending?.length ?? 0;
   const label = current?.name ?? "none";
   return (
-    <nav className="flex w-56 shrink-0 flex-col border-r border-sage-100 bg-sage-50 p-4">
+    <nav className="flex w-56 shrink-0 flex-col overflow-y-auto border-r border-sage-100 bg-sage-50 p-4">
       <div className="mb-6 text-xl font-semibold text-sage-700">SAGE</div>
       <ul className="flex flex-col gap-1">
         {NAV_ITEMS.map((item) => (
@@ -40,14 +43,22 @@ export function Sidebar() {
               to={item.to}
               className={({ isActive }) =>
                 clsx(
-                  "block rounded px-3 py-2 text-sm transition-colors",
+                  "flex items-center rounded px-3 py-2 text-sm transition-colors",
                   isActive
                     ? "bg-sage-500 text-white"
                     : "text-sage-900 hover:bg-sage-100",
                 )
               }
             >
-              {item.label}
+              <span>{item.label}</span>
+              {item.to === "/approvals" && pendingCount > 0 && (
+                <span
+                  data-testid="pending-badge"
+                  className="ml-auto rounded-full bg-red-600 px-2 py-0.5 text-xs font-semibold text-white"
+                >
+                  {pendingCount}
+                </span>
+              )}
             </NavLink>
           </li>
         ))}

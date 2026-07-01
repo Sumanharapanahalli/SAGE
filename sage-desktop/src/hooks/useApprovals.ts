@@ -25,6 +25,9 @@ export function useApprovals() {
   return useQuery<Proposal[], DesktopError>({
     queryKey: approvalsKey,
     queryFn: () => listPendingApprovals(),
+    // Poll so a proposal created elsewhere (Analyze, an agent) surfaces in the
+    // inbox and the sidebar badge without a manual navigate/refresh.
+    refetchInterval: 5000,
   });
 }
 

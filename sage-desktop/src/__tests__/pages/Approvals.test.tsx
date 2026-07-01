@@ -84,4 +84,41 @@ describe("Approvals page", () => {
       undefined,
     );
   });
+
+  it("passes rejection feedback through to rejectProposal", async () => {
+    vi.mocked(client.listPendingApprovals).mockResolvedValue([p1]);
+    vi.mocked(client.rejectProposal).mockResolvedValue({
+      ...p1,
+      status: "rejected",
+    });
+    render(<Approvals />, { wrapper: wrapperWith(createTestQueryClient()) });
+    await waitFor(() => screen.getByText(/edit prompts\.yaml/));
+    await userEvent.click(screen.getByRole("button", { name: /^reject$/i }));
+    await userEvent.type(
+      screen.getByPlaceholderText(/why.*reject/i),
+      "too risky",
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: /confirm rejection/i }),
+    );
+    expect(client.rejectProposal).toHaveBeenCalledWith(
+      "t-1",
+      undefined,
+      "too risky",
+    );
+  });
+
+  it("shows a success confirmation after a decision", async () => {
+    vi.mocked(client.listPendingApprovals).mockResolvedValue([p1]);
+    vi.mocked(client.approveProposal).mockResolvedValue({
+      ...p1,
+      status: "approved",
+    });
+    render(<Approvals />, { wrapper: wrapperWith(createTestQueryClient()) });
+    await waitFor(() => screen.getByText(/edit prompts\.yaml/));
+    await userEvent.click(screen.getByRole("button", { name: /approve/i }));
+    await waitFor(() =>
+      expect(screen.getByText(/approved/i)).toBeInTheDocument(),
+    );
+  });
 });

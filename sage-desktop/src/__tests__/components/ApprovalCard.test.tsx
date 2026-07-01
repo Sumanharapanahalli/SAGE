@@ -52,7 +52,7 @@ describe("ApprovalCard", () => {
     expect(onApprove).toHaveBeenCalledWith("t-1");
   });
 
-  it("calls onReject when Reject is clicked", async () => {
+  it("reject is a two-step flow that captures feedback", async () => {
     const onReject = vi.fn();
     render(
       <ApprovalCard
@@ -61,8 +61,45 @@ describe("ApprovalCard", () => {
         onReject={onReject}
       />,
     );
-    await userEvent.click(screen.getByRole("button", { name: /reject/i }));
-    expect(onReject).toHaveBeenCalledWith("t-1");
+    // First click reveals the feedback textarea; it does NOT reject immediately.
+    await userEvent.click(screen.getByRole("button", { name: /^reject$/i }));
+    expect(onReject).not.toHaveBeenCalled();
+
+    const box = screen.getByPlaceholderText(/why.*reject/i);
+    await userEvent.type(box, "prompt is too vague");
+    await userEvent.click(
+      screen.getByRole("button", { name: /confirm rejection/i }),
+    );
+    expect(onReject).toHaveBeenCalledWith("t-1", "prompt is too vague");
+  });
+
+  it("allows rejection with no feedback text", async () => {
+    const onReject = vi.fn();
+    render(
+      <ApprovalCard proposal={base} onApprove={() => {}} onReject={onReject} />,
+    );
+    await userEvent.click(screen.getByRole("button", { name: /^reject$/i }));
+    await userEvent.click(
+      screen.getByRole("button", { name: /confirm rejection/i }),
+    );
+    expect(onReject).toHaveBeenCalledWith("t-1", "");
+  });
+
+  it("shows the proposal payload so the decision is not made blind", async () => {
+    render(
+      <ApprovalCard proposal={base} onApprove={() => {}} onReject={() => {}} />,
+    );
+    // The payload (path: prompts.yaml) must be reachable in the DOM — assert
+    // the unique JSON line so we don't collide with the description text.
+    await userEvent.click(screen.getByText(/details|payload/i));
+    expect(screen.getByText(/"path": "prompts\.yaml"/)).toBeInTheDocument();
+  });
+
+  it("surfaces whether the action is reversible", () => {
+    render(
+      <ApprovalCard proposal={base} onApprove={() => {}} onReject={() => {}} />,
+    );
+    expect(screen.getByText(/reversible/i)).toBeInTheDocument();
   });
 
   it("disables buttons when isPending", () => {
@@ -75,6 +112,6 @@ describe("ApprovalCard", () => {
       />,
     );
     expect(screen.getByRole("button", { name: /approve/i })).toBeDisabled();
-    expect(screen.getByRole("button", { name: /reject/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /^reject$/i })).toBeDisabled();
   });
 });

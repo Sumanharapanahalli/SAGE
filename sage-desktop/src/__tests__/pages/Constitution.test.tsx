@@ -40,6 +40,25 @@ const STATE = {
 describe("Constitution page", () => {
   beforeEach(() => vi.clearAllMocks());
 
+  it("shows an error (not an endless spinner) when the load fails", async () => {
+    vi.mocked(client.constitutionGet).mockRejectedValue({
+      kind: "SidecarDown",
+      detail: { message: "dead" },
+    });
+    const Wrapper = wrapperWith(createTestQueryClient());
+    render(
+      <Wrapper>
+        <Constitution />
+      </Wrapper>,
+    );
+    await waitFor(() =>
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        /could not load constitution/i,
+      ),
+    );
+    expect(screen.queryByText(/loading constitution/i)).not.toBeInTheDocument();
+  });
+
   it("loads the constitution and renders editors, preamble, and meta", async () => {
     vi.mocked(client.constitutionGet).mockResolvedValue(STATE);
     const Wrapper = wrapperWith(createTestQueryClient());

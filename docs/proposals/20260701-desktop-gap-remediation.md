@@ -22,13 +22,14 @@ via `make desktop-dev-solution`.
   corrected to the real surface.
 - [DONE] **T1.3 `SAGE_PYTHON` never set by Makefile.** Both `desktop-dev` and `desktop-dev-solution`
   now export `SAGE_PYTHON=$(abspath $(PYTHON))` so the sidecar always spawns the venv interpreter.
-- [ ] **T1.4 Approvals card decides blind.** No payload viewer (approve a `yaml_edit` without seeing
-  the YAML) and no rejection-feedback box (Phase 5 compounding signal unreachable). Hooks + RPC
-  already support both.
-- [ ] **T1.5 New proposals not discoverable.** Approvals doesn't poll; no sidebar pending badge; no
-  success toast on approve/reject.
-- [ ] **T1.6 Constitution page spins forever on error** — error branch is dead code (loading check
-  precedes error check).
+- [DONE] **T1.4 Approvals card decides blind.** `ApprovalCard` now shows an expandable payload
+  viewer (`<details>` + `<pre>` JSON), a Reversible/Irreversible badge, and a two-step reject that
+  captures optional feedback (`onReject(trace_id, feedback)`); the page forwards feedback to the RPC
+  and shows a success confirmation after each decision.
+- [DONE] **T1.5 New proposals not discoverable.** `useApprovals` polls (`refetchInterval: 5000`);
+  the sidebar shows a red pending-count badge on the Approvals entry.
+- [DONE] **T1.6 Constitution page spins forever on error.** Error branch now precedes the
+  loading/`!draft` guard.
 - [ ] **T1.7 Silent-failure pages.** Backlog, Costs, Compliance, Eval, Goals, Knowledge, Onboarding,
   Collective swallow query/mutation errors. Backlog worst (failed submit just sits there).
 - [ ] **T1.8 Startup latency ~41s** (measured live). Two `VectorMemory` instances each eager-load
