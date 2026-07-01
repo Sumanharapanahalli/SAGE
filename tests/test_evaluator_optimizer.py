@@ -67,6 +67,38 @@ def test_max_iterations_returns_best_candidate():
     assert r["final"] == "solution v2"           # the iteration that scored 7
 
 
+# --- Step 0(b): robust evaluator parsing — an unparseable response must NOT be
+#     silently treated as a genuine 0.0 (the bug behind this session's flat 0.0s). ---
+
+def test_parse_evaluation_distinguishes_genuine_zero_from_parse_failure():
+    # A real {"score": 0} is a genuine judgement and parses cleanly.
+    good = EvaluatorOptimizerRunner._parse_evaluation('{"score": 0, "pass": false, "feedback": "bad"}')
+    assert good["parse_ok"] is True
+    assert good["score"] == 0.0
+    # Prose / non-JSON / a swallowed CLI error must be flagged, NOT reported as a real 0.0.
+    bad = EvaluatorOptimizerRunner._parse_evaluation('the model wrote prose and emitted no JSON')
+    assert bad["parse_ok"] is False
+
+
+def test_best_candidate_ignores_unparseable_evaluations():
+    # iter1 genuinely scores 5; iters 2-3 are unparseable. The best-candidate verdict
+    # must be the real 5, never a swallowed 0.0 from the unparseable iterations.
+    ev = MockEvaluator(['{"score": 5, "pass": false, "feedback": "ok"}',
+                        'garbage, not json at all'])
+    r = _run(MockOptimizer(), ev, max_iterations=3)
+    assert r["converged"] is False
+    assert r["score"] == 5
+    assert r["final"] == "solution v1"
+
+
+def test_all_unparseable_evaluations_flagged_not_genuine_zero():
+    ev = MockEvaluator(['no json here, evaluator failed'])
+    r = _run(MockOptimizer(), ev, max_iterations=2)
+    assert r["converged"] is False
+    # Must be flagged as an evaluator failure, not presented as a genuine 0.0 verdict.
+    assert r.get("evaluator_unparseable") is True
+
+
 def test_optimizer_receives_evaluator_feedback():
     opt = MockOptimizer()
     ev = MockEvaluator(['{"score": 5, "pass": false, "feedback": "ADDRESS_THIS_POINT"}',

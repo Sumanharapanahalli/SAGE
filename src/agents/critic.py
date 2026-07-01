@@ -597,6 +597,26 @@ class CriticAgent:
     # N-critic review (any number of providers)
     # ------------------------------------------------------------------
 
+    @staticmethod
+    def _robust_aggregate(scored: dict, weights: dict | None = None) -> int:
+        """Weighted-median aggregate of critic scores.
+
+        Robust to a single rogue/extreme valid score (breakdown point ~50% by weight),
+        unlike the weighted MEAN — which any outlier (a hallucinated 0 or 100) drags. This
+        is the Phase-1a referee fix: one bad critic can no longer swing the verdict.
+        """
+        if not scored:
+            return 0
+        weights = weights or {}
+        pairs = sorted((float(s), float(weights.get(n, 1.0))) for n, s in scored.items())
+        half = sum(w for _, w in pairs) / 2.0
+        cum = 0.0
+        for value, w in pairs:
+            cum += w
+            if cum >= half:
+                return int(round(value))
+        return int(round(pairs[-1][0]))
+
     def multi_critic_review(
         self,
         review_type: str,
@@ -692,18 +712,17 @@ class CriticAgent:
         if not scored:
             scored = {"primary": reviews.get("primary", {}).get("score", 0)}
 
-        weight_sum = 0
-        weighted_total = 0
-        for name, score in scored.items():
+        weights = {}
+        for name in scored:
             if "human_expert" in name:
-                w = 2.0  # Human expert opinion weighted highest
+                weights[name] = 2.0  # Human expert opinion weighted highest
             elif name == "primary":
-                w = 1.5
+                weights[name] = 1.5
             else:
-                w = 1.0
-            weighted_total += score * w
-            weight_sum += w
-        final_score = int(weighted_total / max(weight_sum, 1))
+                weights[name] = 1.0
+        # Robust weighted-MEDIAN aggregation (Phase 1a): one rogue/extreme critic can no
+        # longer drag the verdict the way the prior weighted mean did.
+        final_score = self._robust_aggregate(scored, weights)
 
         # 5. Merge all flaws
         all_flaws = []

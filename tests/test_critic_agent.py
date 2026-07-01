@@ -644,3 +644,22 @@ class TestReviewPlanMulti:
         )
         assert result["score"] == 0
         assert "error" in result
+
+
+# --- Phase 1a: robust (weighted-median) critic aggregation — one rogue/extreme
+#     valid score must not drag the verdict the way the old weighted mean did. ---
+
+def test_robust_aggregate_resists_single_rogue_critic_score():
+    from src.agents.critic import CriticAgent
+    scored = {"primary": 80, "gemini": 82, "ollama": 78, "rogue": 0}
+    weights = {"primary": 1.5, "gemini": 1.0, "ollama": 1.0, "rogue": 1.0}
+    agg = CriticAgent._robust_aggregate(scored, weights)
+    assert agg >= 75   # the old weighted mean would crater to ~62
+
+
+def test_robust_aggregate_matches_consensus_when_critics_agree():
+    from src.agents.critic import CriticAgent
+    scored = {"primary": 80, "gemini": 82, "ollama": 78}
+    weights = {"primary": 1.5, "gemini": 1.0, "ollama": 1.0}
+    agg = CriticAgent._robust_aggregate(scored, weights)
+    assert 78 <= agg <= 82

@@ -200,6 +200,27 @@ class EvaluatorOptimizerRunner:
         m = re.match(r"^\s*```[a-zA-Z0-9_-]*\n(.*)\n```\s*$", text, re.DOTALL)
         return m.group(1) if m else text
 
+    @staticmethod
+    def _parse_evaluation(raw: str) -> dict:
+        """Parse an evaluator JSON response into {parse_ok, score, passed, feedback}.
+
+        Crucially distinguishes a GENUINE low score (valid JSON with a numeric score,
+        even 0) from an UNPARSEABLE response (prose, empty, or a swallowed CLI error). The
+        latter must never masquerade as a real 0.0 — that misread is what produced this
+        session's flat-0.0 runs (the evaluator was overloaded/unavailable, not harsh)."""
+        parsed = _extract_json(raw)
+        if not isinstance(parsed, dict) or "score" not in parsed:
+            return {"parse_ok": False, "score": 0.0, "passed": False,
+                    "feedback": "(evaluator output unparseable — no JSON score)"}
+        try:
+            score = float(parsed.get("score", 0))
+        except (ValueError, TypeError):
+            return {"parse_ok": False, "score": 0.0, "passed": False,
+                    "feedback": "(evaluator score was non-numeric)"}
+        return {"parse_ok": True, "score": score,
+                "passed": bool(parsed.get("pass", False)),
+                "feedback": str(parsed.get("feedback", "") or "")}
+
     # -- the loop -----------------------------------------------------------
     def run(self, task: str, context: str = "") -> dict:
         if self.optimizer is None or self.evaluator is None:
@@ -222,18 +243,15 @@ class EvaluatorOptimizerRunner:
                 logger.warning("iter %d: optimizer returned empty/error, retrying once", i)
                 candidate = self._strip_fences((self.optimizer.generate(opt_prompt, OPTIMIZER_SYSTEM) or "").strip())
 
-            # EVALUATE (Gemini)
+            # EVALUATE — parse robustly: an unparseable response is FLAGGED, not a silent 0.0.
             eval_raw = self.evaluator.generate(self._evaluator_prompt(task, candidate), EVALUATOR_SYSTEM)
-            parsed = _extract_json(eval_raw) or {}
-            try:
-                score = float(parsed.get("score", 0))
-            except (ValueError, TypeError):
-                score = 0.0
-            passed = bool(parsed.get("pass", False)) or score >= self.score_threshold
-            feedback = str(parsed.get("feedback", "") or ("(no parseable feedback)" if not parsed else ""))
+            ev = self._parse_evaluation(eval_raw)
+            score = ev["score"]
+            passed = ev["parse_ok"] and (ev["passed"] or score >= self.score_threshold)
+            feedback = ev["feedback"]
 
             history.append({"iteration": i, "candidate": candidate, "score": score,
-                            "passed": passed, "feedback": feedback})
+                            "passed": passed, "feedback": feedback, "parse_ok": ev["parse_ok"]})
             logger.info("iter %d/%d: score=%.1f passed=%s", i, self.max_iterations, score, passed)
 
             if passed:
@@ -241,12 +259,22 @@ class EvaluatorOptimizerRunner:
                         "score": score, "history": history,
                         "note": "Evaluator passed the solution. Submit `final` to the HITL approval gate."}
 
-        # no convergence — return the best-scoring candidate
-        best = max(history, key=lambda h: h["score"]) if history else {"candidate": candidate, "score": score}
-        return {"converged": False, "iterations": len(history), "final": best["candidate"],
-                "score": best["score"], "history": history,
-                "note": "Hit max_iterations without a pass; returning the best-scoring candidate. "
-                        "Submit `final` to the HITL approval gate (a human decides)."}
+        # no convergence — return the best-scoring candidate among PARSEABLE evaluations.
+        # A parse-failure iteration carries a swallowed 0.0; it must not be mistaken for a
+        # genuine low score nor win the best-candidate selection.
+        parsed_iters = [h for h in history if h.get("parse_ok")]
+        if parsed_iters:
+            best = max(parsed_iters, key=lambda h: h["score"])
+            return {"converged": False, "iterations": len(history), "final": best["candidate"],
+                    "score": best["score"], "history": history,
+                    "note": "Hit max_iterations without a pass; returning the best-scoring candidate. "
+                            "Submit `final` to the HITL approval gate (a human decides)."}
+        # Every iteration's evaluation was unparseable — surface that; do NOT report a genuine 0.0.
+        return {"converged": False, "iterations": len(history),
+                "final": (history[-1]["candidate"] if history else candidate),
+                "score": 0.0, "evaluator_unparseable": True, "history": history,
+                "note": "Evaluator output was unparseable on every iteration — the score is NOT a "
+                        "genuine 0.0. Check the evaluator model/provider before trusting this result."}
 
 
 def run_loop(task: str, context: str = "", **config) -> dict:
