@@ -112,6 +112,23 @@ class EvaluatorOptimizerRunner:
         self.optimizer = self.config.get("optimizer_provider") or self._build(opt_cfg)
         self.evaluator = self.config.get("evaluator_provider") or self._build(self.config.get("evaluator", {}))
 
+        # Evaluator pool (game-theory proposal, Step 0(c)): route scoring through
+        # an N-provider panel + robust median instead of one judge, so a single
+        # overloaded/hallucinating evaluator can't singlehandedly tank or inflate
+        # a candidate's score. Defaults to the single `evaluator` above (pool of
+        # one) — existing single-evaluator callers are unaffected.
+        pool_providers = self.config.get("evaluator_pool_providers")
+        if pool_providers:
+            self.evaluators = list(pool_providers)
+        elif self.config.get("evaluator_pool"):
+            self.evaluators = [e for e in
+                                (self._build(cfg) for cfg in self.config["evaluator_pool"])
+                                if e is not None]
+        elif self.evaluator is not None:
+            self.evaluators = [self.evaluator]
+        else:
+            self.evaluators = []
+
     # -- provider building (mirrors DualLLMRunner._build_provider) ----------
     @staticmethod
     def _default_build_provider(cfg: dict):
@@ -180,7 +197,8 @@ class EvaluatorOptimizerRunner:
                 "specific, checkable requirements a solution must meet, each phrased so it "
                 "can be objectively verified. Output ONLY the rubric as plain text."
             )
-            rubric = (self.evaluator.generate(prompt, "You are a meticulous test-rubric author. "
+            lead_evaluator = self.evaluators[0] if self.evaluators else self.evaluator
+            rubric = (lead_evaluator.generate(prompt, "You are a meticulous test-rubric author. "
                                               "Output only the rubric, no preamble.") or "").strip()
             rubric = self._strip_fences(rubric)
             if rubric and len(rubric) > 20:
@@ -221,10 +239,59 @@ class EvaluatorOptimizerRunner:
                 "passed": bool(parsed.get("pass", False)),
                 "feedback": str(parsed.get("feedback", "") or "")}
 
+    @staticmethod
+    def _weighted_median(values: list) -> float:
+        """Weighted median of equally-weighted floats — same robustness property
+        as CriticAgent._robust_aggregate (breakdown point ~50%, unlike a mean's
+        0), reimplemented locally to preserve this loop's 0-10 float precision
+        (that method rounds to int, tuned for multi_critic_review's 0-100 scale)."""
+        s = sorted(values)
+        n = len(s)
+        mid = n // 2
+        if n % 2 == 1:
+            return s[mid]
+        return (s[mid - 1] + s[mid]) / 2.0
+
+    def _evaluate_candidate(self, task: str, candidate: str) -> dict:
+        """Evaluate a candidate against self.evaluators. With one evaluator
+        (the default), behavior is identical to a single-judge call. With a
+        pool of several, every provider is queried independently and scores
+        are aggregated via robust median — Step 0(c) of the game-theory
+        proposal: one hallucinating/overloaded evaluator can no longer
+        singlehandedly tank or inflate a candidate's score."""
+        prompt = self._evaluator_prompt(task, candidate)
+
+        if len(self.evaluators) <= 1:
+            evaluator = self.evaluators[0] if self.evaluators else None
+            raw = evaluator.generate(prompt, EVALUATOR_SYSTEM) if evaluator else ""
+            return self._parse_evaluation(raw)
+
+        scores = []
+        feedbacks = []
+        for provider in self.evaluators:
+            raw = provider.generate(prompt, EVALUATOR_SYSTEM)
+            ev = self._parse_evaluation(raw)
+            if ev["parse_ok"]:
+                scores.append(ev["score"])
+                if ev["feedback"]:
+                    feedbacks.append(ev["feedback"])
+
+        if not scores:
+            return {"parse_ok": False, "score": 0.0, "passed": False,
+                    "feedback": "(every evaluator-pool provider returned unparseable output)"}
+
+        median_score = self._weighted_median(scores)
+        return {
+            "parse_ok": True,
+            "score": median_score,
+            "passed": median_score >= self.score_threshold,
+            "feedback": " | ".join(feedbacks),
+        }
+
     # -- the loop -----------------------------------------------------------
     def run(self, task: str, context: str = "") -> dict:
-        if self.optimizer is None or self.evaluator is None:
-            return {"error": "optimizer and evaluator providers must both be available",
+        if self.optimizer is None or not self.evaluators:
+            return {"error": "optimizer and at least one evaluator provider must be available",
                     "converged": False, "iterations": 0, "history": []}
 
         # sharpen the bar once, up front, so every iteration is judged the same way
@@ -244,8 +311,8 @@ class EvaluatorOptimizerRunner:
                 candidate = self._strip_fences((self.optimizer.generate(opt_prompt, OPTIMIZER_SYSTEM) or "").strip())
 
             # EVALUATE — parse robustly: an unparseable response is FLAGGED, not a silent 0.0.
-            eval_raw = self.evaluator.generate(self._evaluator_prompt(task, candidate), EVALUATOR_SYSTEM)
-            ev = self._parse_evaluation(eval_raw)
+            # With a pool, scores are aggregated via robust median (Step 0(c)).
+            ev = self._evaluate_candidate(task, candidate)
             score = ev["score"]
             passed = ev["parse_ok"] and (ev["passed"] or score >= self.score_threshold)
             feedback = ev["feedback"]

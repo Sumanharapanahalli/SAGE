@@ -189,17 +189,31 @@ prioritization is `product_owner.prioritize_stories`, §4.8.)*
 
 ## 6. Prioritization & phasing (re-anchored)
 
-- **Step 0 — fix the misconfiguration (near-free; this is what actually broke).**
+- **[DONE] Step 0 — fix the misconfiguration (near-free; this is what actually broke).**
   (a) Set the evaluator to a **different model** than the optimizer (stop self-grading;
   house default Claude/Gemini). (b) Make evaluator/critic JSON parsing **robust** so an
   unparseable response is a flagged retry, **not a silent 0.0** (`evaluator_optimizer.py:227-231`,
-  `critic.py`). (c) Route self-improvement scoring through the existing N-provider
-  `multi_critic_review` (1 judge → N). No new mechanisms.
-- **Phase 1a — robust referee (true S/Lo, no new data).**
+  `critic.py`). (c) [DONE] Route self-improvement scoring through an N-provider panel + robust
+  median (1 judge → N) — `EvaluatorOptimizerRunner.evaluator_pool_providers`/`evaluator_pool`
+  config, aggregated via a local float-preserving weighted-median (not `CriticAgent._robust_aggregate`
+  directly — that helper rounds to int, tuned for `multi_critic_review`'s 0-100 scale; this loop
+  needs 0-10 float precision). Backward compatible: a pool of one (the default) is byte-identical
+  to the prior single-evaluator behavior. No new mechanisms.
+- **[DONE] Phase 1a — robust referee (true S/Lo, no new data).**
   Swap `multi_critic_review`'s weighted **mean → median/trimmed-mean** (`critic.py:706`) +
-  diversity lenses; commit the Stackelberg rubric in `review_with_loop`. Targets **both** referee
-  paths (single-judge loop *and* panel) — label which each fix touches so a builder doesn't
-  harden the panel and leave the loop's lone judge unchanged.
+  diversity lenses; commit the Stackelberg rubric in `review_with_loop` (`CriticAgent._generate_review_rubric`,
+  mirrors `evaluator_optimizer._generate_rubric` — generated once before the loop, injected into
+  every iteration's review context, degrades to no-rubric on any failure rather than blocking).
+  Targets **both** referee paths (single-judge loop *and* panel) — done for both.
+  **Diversity lenses** (multiple distinct review angles, not just multiple providers on the same
+  prompt) remain unbuilt — not part of the S/Lo slice; would need its own scoping.
+  **Also fixed while grounding this phase**: the Agent Gym's `GymDB` default `db_path` wrote to
+  framework root (`<project_root>/.gym_data.db`) instead of the active solution's `.sage/`
+  directory — the exact prerequisite §7 flags as blocking before any rating-reuse mechanism
+  (tournaments, PSRO) is safe to build. Now resolves via `ProjectConfig.sage_data_dir`, the same
+  single-source-of-truth every other per-solution store uses. `gym.py`'s route handlers are
+  unchanged (still use the global `agent_gym` singleton) — only where its data physically lives
+  changed.
 - **Phase 1b — calibration (deferred, M/Md+).**
   Proper-scoring-rule calibration of critic confidence against accumulated **resolved human
   verdicts + CI pass/fail**. Gated on a sufficient label corpus.

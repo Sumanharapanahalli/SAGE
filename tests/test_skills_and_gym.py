@@ -503,6 +503,37 @@ class TestSkillRunnerIntegration(unittest.TestCase):
 # 5. Agent Gym Tests
 # ===========================================================================
 
+class TestGymDBDataIsolation(unittest.TestCase):
+    """GymDB's no-arg default must resolve under the active solution's
+    .sage/ directory, not framework root — SOUL.md's hard data-isolation
+    rule, flagged as a blocking prerequisite in the game-theory proposal
+    (docs/proposals/20260630-game-theory-for-sage/PROPOSAL.md §7) before any
+    rating-reuse mechanism (tournaments, PSRO) can be safely built."""
+
+    def test_default_db_path_resolves_under_active_solutions_sage_dir(self):
+        from src.core.agent_gym import GymDB
+        from src.core.project_loader import project_config
+
+        db = GymDB()
+        expected = os.path.join(project_config.sage_data_dir, "gym_data.db")
+        self.assertEqual(db.db_path, expected)
+
+    def test_default_db_path_is_not_framework_root(self):
+        from src.core.agent_gym import GymDB
+        db = GymDB()
+        framework_root_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            ".gym_data.db",
+        )
+        self.assertNotEqual(db.db_path, framework_root_path)
+
+    def test_explicit_db_path_still_overrides_the_default(self):
+        from src.core.agent_gym import GymDB
+        explicit = os.path.join(tempfile.mkdtemp(), "explicit_gym.db")
+        db = GymDB(db_path=explicit)
+        self.assertEqual(db.db_path, explicit)
+
+
 class TestAgentGym(unittest.TestCase):
     """Test the self-play training engine."""
 

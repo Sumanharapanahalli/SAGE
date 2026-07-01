@@ -385,6 +385,31 @@ class CriticAgent:
     # Builder↔Critic loop
     # ------------------------------------------------------------------
 
+    def _generate_review_rubric(self, review_fn: str, description: str) -> str:
+        """Ask the LLM to expand the terse description into a concrete,
+        checkable rubric BEFORE the review loop starts — a Stackelberg
+        commitment (game-theory proposal, Phase 1a): the SAME fixed bar
+        judges every iteration, instead of the standard implicitly drifting
+        call-to-call. Mirrors evaluator_optimizer._generate_rubric. Falls
+        back to no rubric on any failure — never blocks the loop."""
+        try:
+            prompt = (
+                f"WHAT THE {review_fn.upper()} MUST SATISFY:\n{description}\n\n"
+                "Expand this into a concrete scoring rubric: a short numbered list of "
+                "specific, checkable requirements, each phrased so it can be "
+                "objectively verified. Output ONLY the rubric as plain text."
+            )
+            rubric = (self.llm.generate(
+                prompt,
+                "You are a meticulous test-rubric author. Output only the rubric, no preamble.",
+                trace_name="critic.generate_rubric",
+            ) or "").strip()
+            if rubric and len(rubric) > 20:
+                return rubric
+        except Exception as exc:
+            self.logger.warning("Rubric generation failed, proceeding without it: %s", exc)
+        return ""
+
     def review_with_loop(
         self,
         review_fn: str,
@@ -393,6 +418,7 @@ class CriticAgent:
         revise_fn=None,
         threshold: int = 70,
         max_iterations: int = 3,
+        generate_rubric: bool = True,
     ) -> Dict[str, Any]:
         """
         Run a Builder↔Critic loop: review → revise → re-review until
@@ -406,6 +432,11 @@ class CriticAgent:
                        If None, loop returns after first review.
             threshold: Minimum score to pass (default 70).
             max_iterations: Maximum revision rounds (default 3).
+            generate_rubric: Commit a sharpened rubric before the loop starts
+                       (Phase 1a hardening); every iteration is judged
+                       against the same fixed bar. Set False to skip the
+                       extra LLM call (e.g. tests with fixed response
+                       sequences).
 
         Returns:
             Dict with final review, revision history, and pass/fail status.
@@ -419,14 +450,18 @@ class CriticAgent:
         if reviewer is None:
             return {"error": f"Unknown review type: {review_fn}", "score": 0}
 
+        committed_rubric = self._generate_review_rubric(review_fn, description) if generate_rubric else ""
+
         history = []
         current_artifact = artifact
 
         for iteration in range(1, max_iterations + 1):
-            # Build context from prior iterations
+            # Build context from the committed rubric (if any) + prior iterations
             context = ""
+            if committed_rubric:
+                context += f"Committed rubric (judge every iteration against this fixed bar):\n{committed_rubric}\n\n"
             if history:
-                context = "Prior critic feedback (address these):\n" + json.dumps(
+                context += "Prior critic feedback (address these):\n" + json.dumps(
                     [{"iteration": h["iteration"], "score": h["score"],
                       "flaws": h.get("flaws", []), "issues": h.get("issues", [])}
                      for h in history],

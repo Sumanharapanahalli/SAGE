@@ -186,3 +186,66 @@ def test_sandbox_hardening_applied_to_built_optimizer():
     assert "Write" in captured.get("disallowed_tools", "")
     assert "Edit" in captured.get("disallowed_tools", "")
     assert captured.get("cwd")            # a throwaway sandbox cwd was assigned
+
+
+# ---------------------------------------------------------------------------
+# Evaluator pool (game-theory proposal, Step 0(c)): route scoring through an
+# N-provider panel + robust median instead of a single judge, so one
+# overloaded/hallucinating evaluator can't singlehandedly tank or inflate a
+# candidate's score — the same Phase-1a robustness property multi_critic_review
+# already has, applied to this loop's single-judge evaluate step.
+# ---------------------------------------------------------------------------
+
+def test_evaluator_pool_of_one_behaves_like_default_single_evaluator():
+    ev = MockEvaluator(['{"score": 9, "pass": true, "feedback": ""}'])
+    r = _run(MockOptimizer(), None, evaluator_pool_providers=[ev])
+    assert r["converged"] is True
+    assert r["score"] == 9.0
+
+
+def test_evaluator_pool_aggregates_via_median_not_mean():
+    # scores [3, 8, 9]: mean=6.67 (would fail an 8.0 threshold), median=8 (passes)
+    providers = [
+        MockEvaluator(['{"score": 3, "pass": false, "feedback": "harsh outlier"}']),
+        MockEvaluator(['{"score": 8, "pass": true, "feedback": ""}']),
+        MockEvaluator(['{"score": 9, "pass": true, "feedback": ""}']),
+    ]
+    r = _run(MockOptimizer(), None, evaluator_pool_providers=providers,
+             max_iterations=1, score_threshold=8.0)
+    assert r["score"] == 8.0
+    assert r["converged"] is True
+
+
+def test_evaluator_pool_ignores_unparseable_responses_from_individual_providers():
+    providers = [
+        MockEvaluator(["not json at all"]),
+        MockEvaluator(['{"score": 9, "pass": true, "feedback": ""}']),
+        MockEvaluator(['{"score": 9, "pass": true, "feedback": ""}']),
+    ]
+    r = _run(MockOptimizer(), None, evaluator_pool_providers=providers,
+             max_iterations=1, score_threshold=8.0)
+    # aggregated over the 2 valid scores only — the garbage response doesn't drag it to 0
+    assert r["score"] == 9.0
+    assert r["converged"] is True
+
+
+def test_evaluator_pool_all_unparseable_flags_evaluator_unparseable():
+    providers = [
+        MockEvaluator(["garbage"]),
+        MockEvaluator(["also garbage"]),
+    ]
+    r = _run(MockOptimizer(), None, evaluator_pool_providers=providers, max_iterations=1)
+    assert r["converged"] is False
+    assert r.get("evaluator_unparseable") is True
+    assert r["score"] == 0.0
+
+
+def test_evaluator_pool_merges_feedback_from_all_providers_that_failed():
+    providers = [
+        MockEvaluator(['{"score": 3, "pass": false, "feedback": "fix the naming"}']),
+        MockEvaluator(['{"score": 4, "pass": false, "feedback": "add error handling"}']),
+    ]
+    r = _run(MockOptimizer(), None, evaluator_pool_providers=providers,
+             max_iterations=1, score_threshold=8.0)
+    assert "fix the naming" in r["history"][0]["feedback"]
+    assert "add error handling" in r["history"][0]["feedback"]

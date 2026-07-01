@@ -186,10 +186,12 @@ class GymDB:
 
     def __init__(self, db_path: str = ""):
         if not db_path:
-            db_path = os.path.join(
-                os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-                ".gym_data.db",
-            )
+            # Per-solution isolation (SOUL.md hard rule): the active
+            # solution's .sage/ directory, never framework root. Uses the
+            # same single-source-of-truth ProjectConfig.sage_data_dir every
+            # other per-solution store resolves through.
+            from src.core.project_loader import project_config
+            db_path = os.path.join(project_config.sage_data_dir, "gym_data.db")
         self.db_path = db_path
         self._lock = threading.Lock()
         self._init_db()

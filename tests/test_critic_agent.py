@@ -175,6 +175,7 @@ class TestReviewWithLoop:
                 review_fn="plan", artifact=[], description="test",
                 threshold=70, max_iterations=3,
                 revise_fn=lambda artifact, feedback: artifact,
+                generate_rubric=False,
             )
             assert result["iterations"] == 2
             assert result["final_score"] == 75
@@ -205,6 +206,7 @@ class TestReviewWithLoop:
             critic.review_with_loop(
                 review_fn="plan", artifact=["original"], description="test",
                 threshold=70, max_iterations=3, revise_fn=revise_fn,
+                generate_rubric=False,
             )
             revise_fn.assert_called_once()
 
@@ -227,6 +229,55 @@ class TestReviewWithLoop:
                 review_fn="plan", artifact=[], description="test", threshold=70
             )
             mock_vm.add_feedback.assert_called_once()
+
+    def test_rubric_is_generated_and_fed_into_every_iteration(self):
+        # first LLM call is the rubric request; it must flow into the review
+        # call's context on every subsequent iteration (Stackelberg commitment
+        # — Phase 1a of the game-theory proposal).
+        rubric_text = "1. must be correct\n2. must be clear"
+        critic = _fresh_critic()
+        captured_prompts = []
+
+        def fake_generate(user_prompt, system_prompt, **kwargs):
+            captured_prompts.append(user_prompt)
+            if len(captured_prompts) == 1:
+                return rubric_text
+            return _mock_llm_response(score=85)
+
+        critic._llm_gateway.generate.side_effect = fake_generate
+        with patch.object(critic, "_store_feedback"):
+            result = critic.review_with_loop(
+                review_fn="plan", artifact=[], description="test", threshold=70
+            )
+        assert result["passed"] is True
+        assert "scoring rubric" in captured_prompts[0]
+        assert "Committed rubric" in captured_prompts[1]
+        assert rubric_text in captured_prompts[1]
+
+    def test_generate_rubric_false_skips_the_extra_call(self):
+        critic = _fresh_critic()
+        critic._llm_gateway.generate.return_value = _mock_llm_response(score=85)
+        with patch.object(critic, "_store_feedback"):
+            critic.review_with_loop(
+                review_fn="plan", artifact=[], description="test", threshold=70,
+                generate_rubric=False,
+            )
+        assert critic._llm_gateway.generate.call_count == 1
+
+    def test_rubric_generation_failure_does_not_block_the_loop(self):
+        critic = _fresh_critic()
+
+        def fake_generate(user_prompt, system_prompt, **kwargs):
+            if "scoring rubric" in user_prompt:
+                raise RuntimeError("evaluator unavailable")
+            return _mock_llm_response(score=85)
+
+        critic._llm_gateway.generate.side_effect = fake_generate
+        with patch.object(critic, "_store_feedback"):
+            result = critic.review_with_loop(
+                review_fn="plan", artifact=[], description="test", threshold=70
+            )
+        assert result["passed"] is True
 
     def test_returns_error_for_unknown_review_type(self):
         critic = _fresh_critic()
@@ -260,6 +311,7 @@ class TestReviewWithLoop:
                 review_fn="plan", artifact=[], description="test",
                 threshold=70, max_iterations=3,
                 revise_fn=lambda a, f: a,
+                generate_rubric=False,
             )
             assert len(result["history"]) == 3
             assert result["history"][0]["score"] == 40
@@ -407,6 +459,7 @@ class TestReviewWithLoopEdgeCases:
                 review_fn="plan", artifact=[], description="test",
                 threshold=100, max_iterations=2,
                 revise_fn=lambda a, f: a,
+                generate_rubric=False,
             )
             assert result["passed"] is False
             assert result["final_score"] == 99
