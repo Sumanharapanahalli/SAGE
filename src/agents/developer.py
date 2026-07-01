@@ -13,6 +13,7 @@ Integrates with:
 import json
 import logging
 import os
+import subprocess
 import uuid
 from typing import Optional
 
@@ -21,10 +22,9 @@ import yaml
 
 logger = logging.getLogger(__name__)
 
-CONFIG_PATH = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-    "config", "config.yaml",
-)
+_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+CONFIG_PATH = os.path.join(_ROOT, "config", "config.yaml")
 
 
 def _load_config() -> dict:
@@ -573,7 +573,13 @@ class DeveloperAgent:
             "stages": stages,
         }
 
-    def propose_code_patch(self, file_path: str, error_description: str, current_code: str) -> dict:
+    def propose_code_patch(
+        self,
+        file_path: str,
+        error_description: str,
+        current_code: str,
+        beam_width: int = 1,
+    ) -> dict:
         """
         Uses the LLM to propose a code patch for a given error/issue.
 
@@ -581,6 +587,12 @@ class DeveloperAgent:
             file_path:         Path of the file to patch (context only, not read from disk)
             error_description: Description of the bug or required change
             current_code:      The current source code content
+            beam_width:        If > 1, generates `beam_width` candidate patches and picks
+                               the best via best-of-N + refutation (game-theory Phase 2):
+                               each candidate is applied and test-run in its own isolated
+                               git worktree (WorktreeManager); a patch that fails to apply
+                               is disqualified outright. Default 1 preserves the original
+                               single-shot behaviour byte-for-byte.
 
         Returns:
             dict with 'patch' (unified diff format), 'explanation', and 'trace_id'.
@@ -605,19 +617,12 @@ class DeveloperAgent:
             "Provide the fix as a unified diff JSON:"
         )
 
-        response_text = self.llm.generate(user_prompt, system_prompt)
-
-        try:
-            response_text = response_text.replace("```json", "").replace("```", "").strip()
-            patch_result = json.loads(response_text)
-        except json.JSONDecodeError:
-            self.logger.error("LLM did not return valid JSON for patch proposal.")
-            patch_result = {
-                "patch": "",
-                "explanation": "AI output parsing failed.",
-                "confidence": "low",
-                "raw_output": response_text,
-            }
+        if beam_width <= 1:
+            patch_result = self._generate_patch_once(user_prompt, system_prompt)
+        else:
+            patch_result = self._propose_patch_via_beam_search(
+                user_prompt, system_prompt, file_path, error_description, beam_width
+            )
 
         # Audit log
         trace_id = self.audit.log_event(
@@ -632,6 +637,130 @@ class DeveloperAgent:
         patch_result["file_path"] = file_path
         self.logger.info("Patch proposed for %s (confidence: %s, trace: %s)", file_path, patch_result.get("confidence"), trace_id)
         return patch_result
+
+    def _generate_patch_once(self, user_prompt: str, system_prompt: str) -> dict:
+        """Single LLM call → parse strict-JSON patch proposal."""
+        response_text = self.llm.generate(user_prompt, system_prompt)
+        try:
+            response_text = response_text.replace("```json", "").replace("```", "").strip()
+            return json.loads(response_text)
+        except json.JSONDecodeError:
+            self.logger.error("LLM did not return valid JSON for patch proposal.")
+            return {
+                "patch": "",
+                "explanation": "AI output parsing failed.",
+                "confidence": "low",
+                "raw_output": response_text,
+            }
+
+    def _propose_patch_via_beam_search(
+        self,
+        user_prompt: str,
+        system_prompt: str,
+        file_path: str,
+        error_description: str,
+        beam_width: int,
+    ) -> dict:
+        """Generate `beam_width` candidate patches; verify + score each; return the winner.
+
+        Game-theory Phase 2 ("Best-of-N + refutation, run in a worktree"): reuses
+        PlanSelector's existing N-generate→score→rank→select engine. The critic
+        combines a real refutation signal (does the patch apply + do tests pass in
+        an isolated WorktreeManager worktree?) with CriticAgent.multi_critic_review's
+        LLM code-quality score — a patch that fails to apply is disqualified outright,
+        regardless of how the LLM rates it.
+        """
+        from src.core.plan_selector import get_plan_selector
+        from src.core.worktree_manager import WorktreeManager
+        from src.agents.critic import critic_agent
+
+        candidates_scored = {"n": 0}
+
+        def _generator(ctx: str) -> dict:
+            return self._generate_patch_once(f"{user_prompt}\n\n{ctx}", system_prompt)
+
+        def _critic(patch: dict) -> dict:
+            candidates_scored["n"] += 1
+            wt_mgr = WorktreeManager()
+            wt_trace_id = uuid.uuid4().hex
+            wt_path = wt_mgr.create(wt_trace_id)
+            try:
+                applied, apply_msg = self._apply_patch_in_worktree(wt_path, patch.get("patch", ""))
+                patch["_verification"] = {"applied": applied, "tests_passed": None}
+                if not applied:
+                    return {"score": 0.0, "feedback": f"Disqualified — patch does not apply: {apply_msg}"}
+
+                tests_passed, test_output = self._run_tests_in_worktree(wt_path)
+                patch["_verification"]["tests_passed"] = tests_passed
+
+                review = critic_agent.multi_critic_review("code", patch.get("patch", ""), error_description)
+                llm_score = review.get("score", 0)
+                final = llm_score if tests_passed else llm_score * 0.3
+                feedback = f"{review.get('summary', '')} | tests {'passed' if tests_passed else 'FAILED'}: {test_output[:300]}"
+                return {"score": final / 100.0, "feedback": feedback}
+            finally:
+                wt_mgr.remove(wt_trace_id)
+
+        result = get_plan_selector().select(
+            generator=_generator,
+            critic=_critic,
+            beam_width=beam_width,
+            apply_reflection=False,  # avoid a surprise extra worktree-verification pass
+        )
+
+        best = result.candidates[result.selected_index] if result.candidates else None
+        if not best or not best.plan:
+            return {"patch": "", "explanation": "All candidates failed to generate.", "confidence": "low"}
+
+        winner = best.plan
+        verification = winner.pop("_verification", {"applied": False, "tests_passed": None})
+        verification["candidates_scored"] = candidates_scored["n"]
+        verification["winning_score"] = best.score
+        winner["verification"] = verification
+        return winner
+
+    def _apply_patch_in_worktree(self, wt_path: str, patch_text: str) -> tuple:
+        """Attempt to apply a unified-diff patch inside an isolated worktree.
+
+        Tries both -p1 (standard a/ b/ prefixed diffs) and -p0 (bare paths) since
+        LLM-generated diffs vary in header format. Returns (applied, message).
+        """
+        if not patch_text or not patch_text.strip():
+            return False, "empty patch"
+
+        patch_file = os.path.join(wt_path, ".sage_candidate.patch")
+        with open(patch_file, "w", encoding="utf-8", newline="\n") as f:
+            f.write(patch_text)
+
+        try:
+            last_err = ""
+            for p_level in ("-p1", "-p0"):
+                result = subprocess.run(
+                    ["git", "apply", p_level, patch_file],
+                    cwd=wt_path, capture_output=True, text=True, timeout=15,
+                )
+                if result.returncode == 0:
+                    return True, "applied cleanly"
+                last_err = result.stderr
+            return False, f"patch did not apply (tried -p1, -p0): {last_err[-500:]}"
+        finally:
+            if os.path.exists(patch_file):
+                os.remove(patch_file)
+
+    def _run_tests_in_worktree(self, wt_path: str) -> tuple:
+        """Run the framework test suite inside an isolated worktree. Returns (passed, output)."""
+        venv_python = os.path.join(_ROOT, ".venv", "Scripts", "python")
+        if not os.path.exists(venv_python):
+            venv_python = os.path.join(_ROOT, ".venv", "bin", "python")
+        try:
+            result = subprocess.run(
+                [venv_python, "-m", "pytest", "tests/", "-x", "-q", "--tb=short"],
+                capture_output=True, text=True, timeout=180, cwd=wt_path,
+            )
+            ok = result.returncode == 0
+            return ok, (result.stdout + result.stderr)[-3000:]
+        except subprocess.TimeoutExpired:
+            return False, "TIMEOUT: tests took too long"
 
     def add_mr_comment(self, project_id: int, mr_iid: int, comment: str) -> dict:
         """

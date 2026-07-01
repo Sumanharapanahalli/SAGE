@@ -9,6 +9,7 @@ import json
 import os
 import re
 import sqlite3
+import subprocess
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -347,6 +348,205 @@ def test_propose_code_patch_creates_audit_record(tmp_audit_db):
 
     rows = _query_audit(tmp_audit_db.db_path, action_type="CODE_PATCH_PROPOSAL")
     assert len(rows) >= 1, "Expected CODE_PATCH_PROPOSAL record in audit log."
+
+
+def test_propose_code_patch_beam_width_1_is_single_shot(tmp_audit_db):
+    """beam_width=1 (default) must not touch WorktreeManager at all."""
+    with patch.dict(os.environ, {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"}), \
+         patch("src.core.llm_gateway.LLMGateway.generate", return_value=PATCH_JSON) as mock_gen, \
+         patch("src.core.worktree_manager.WorktreeManager") as mock_wtm:
+        from src.agents.developer import DeveloperAgent
+        agent = DeveloperAgent()
+        agent._audit_logger = tmp_audit_db
+        result = agent.propose_code_patch(
+            file_path="src/uart_driver.c",
+            error_description="Buffer overflow",
+            current_code="#define UART_BUF_SIZE 256\n",
+        )
+
+    assert mock_gen.call_count == 1
+    mock_wtm.assert_not_called()
+    assert result["patch"].startswith("--- a/file.c")
+
+
+# ---------------------------------------------------------------------------
+# propose_code_patch(beam_width=N) — best-of-N + worktree refutation
+# (game-theory Phase 2)
+# ---------------------------------------------------------------------------
+
+def _patch_json(marker, confidence="medium"):
+    return json.dumps({
+        "patch": f"--- a/f.c\n+++ b/f.c\n@@ -1 +1 @@\n-old\n+{marker}\n",
+        "explanation": f"variant {marker}",
+        "confidence": confidence,
+    })
+
+
+class TestProposeCodePatchBeamSearch:
+    def _agent(self, tmp_audit_db):
+        from src.agents.developer import DeveloperAgent
+        agent = DeveloperAgent()
+        agent._audit_logger = tmp_audit_db
+        return agent
+
+    def test_generates_n_candidates_and_worktree_lifecycle_runs_for_each(self, tmp_audit_db):
+        agent = self._agent(tmp_audit_db)
+        with patch.dict(os.environ, {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"}), \
+             patch("src.core.llm_gateway.LLMGateway.generate", side_effect=[
+                 _patch_json("A"), _patch_json("B"), _patch_json("C"),
+             ]), \
+             patch("src.core.worktree_manager.WorktreeManager") as mock_wtm_cls, \
+             patch.object(agent, "_apply_patch_in_worktree", return_value=(True, "applied cleanly")), \
+             patch.object(agent, "_run_tests_in_worktree", return_value=(True, "PASS")), \
+             patch("src.agents.critic.critic_agent") as mock_critic:
+            mock_wtm = MagicMock()
+            mock_wtm.create.return_value = "/fake/wt/path"
+            mock_wtm_cls.return_value = mock_wtm
+            mock_critic.multi_critic_review.side_effect = [
+                {"score": 40, "summary": "meh"},
+                {"score": 95, "summary": "great"},
+                {"score": 60, "summary": "ok"},
+            ]
+
+            result = agent.propose_code_patch(
+                file_path="src/uart_driver.c",
+                error_description="Buffer overflow",
+                current_code="#define UART_BUF_SIZE 256\n",
+                beam_width=3,
+            )
+
+        assert mock_wtm.create.call_count == 3
+        assert mock_wtm.remove.call_count == 3  # cleanup always happens
+        assert "variant B" in result["explanation"]  # highest-scored candidate wins
+        assert result["verification"]["applied"] is True
+        assert result["verification"]["tests_passed"] is True
+        assert result["verification"]["candidates_scored"] == 3
+
+    def test_candidate_that_fails_to_apply_is_disqualified(self, tmp_audit_db):
+        agent = self._agent(tmp_audit_db)
+        with patch.dict(os.environ, {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"}), \
+             patch("src.core.llm_gateway.LLMGateway.generate", side_effect=[
+                 _patch_json("BAD"), _patch_json("GOOD"),
+             ]), \
+             patch("src.core.worktree_manager.WorktreeManager") as mock_wtm_cls, \
+             patch.object(agent, "_apply_patch_in_worktree", side_effect=[
+                 (False, "patch did not apply"), (True, "applied cleanly"),
+             ]), \
+             patch.object(agent, "_run_tests_in_worktree", return_value=(True, "PASS")), \
+             patch("src.agents.critic.critic_agent") as mock_critic:
+            mock_wtm = MagicMock()
+            mock_wtm.create.return_value = "/fake/wt/path"
+            mock_wtm_cls.return_value = mock_wtm
+            # Even if the LLM critic somehow rates the un-applyable patch highly,
+            # a failed git apply must force it out of contention.
+            mock_critic.multi_critic_review.side_effect = [
+                {"score": 99, "summary": "looks great"},
+                {"score": 50, "summary": "ok"},
+            ]
+
+            result = agent.propose_code_patch(
+                file_path="src/uart_driver.c",
+                error_description="Buffer overflow",
+                current_code="#define UART_BUF_SIZE 256\n",
+                beam_width=2,
+            )
+
+        assert "variant GOOD" in result["explanation"]
+        assert result["verification"]["applied"] is True
+
+    def test_worktree_removed_even_when_test_run_raises(self, tmp_audit_db):
+        agent = self._agent(tmp_audit_db)
+        with patch.dict(os.environ, {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"}), \
+             patch("src.core.llm_gateway.LLMGateway.generate", side_effect=[_patch_json("A"), _patch_json("B")]), \
+             patch("src.core.worktree_manager.WorktreeManager") as mock_wtm_cls, \
+             patch.object(agent, "_apply_patch_in_worktree", return_value=(True, "applied cleanly")), \
+             patch.object(agent, "_run_tests_in_worktree", side_effect=RuntimeError("boom")), \
+             patch("src.agents.critic.critic_agent") as mock_critic:
+            mock_wtm = MagicMock()
+            mock_wtm.create.return_value = "/fake/wt/path"
+            mock_wtm_cls.return_value = mock_wtm
+            mock_critic.multi_critic_review.return_value = {"score": 50, "summary": "ok"}
+
+            agent.propose_code_patch(
+                file_path="src/uart_driver.c",
+                error_description="Buffer overflow",
+                current_code="#define UART_BUF_SIZE 256\n",
+                beam_width=2,
+            )
+
+        assert mock_wtm.remove.call_count == 2  # cleanup happens despite the exception
+
+
+class TestApplyPatchInWorktree:
+    def test_empty_patch_is_rejected_without_touching_subprocess(self, tmp_path, tmp_audit_db):
+        agent = TestProposeCodePatchBeamSearch()._agent(tmp_audit_db)
+        with patch("src.agents.developer.subprocess.run") as mock_run:
+            applied, msg = agent._apply_patch_in_worktree(str(tmp_path), "   ")
+        assert applied is False
+        assert "empty patch" in msg
+        mock_run.assert_not_called()
+
+    def test_succeeds_on_p1_without_trying_p0(self, tmp_path, tmp_audit_db):
+        agent = TestProposeCodePatchBeamSearch()._agent(tmp_audit_db)
+        with patch("src.agents.developer.subprocess.run") as mock_run:
+            mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
+            applied, msg = agent._apply_patch_in_worktree(str(tmp_path), "--- a/f\n+++ b/f\n")
+        assert applied is True
+        assert mock_run.call_count == 1
+        assert mock_run.call_args[0][0][2] == "-p1"
+
+    def test_falls_back_to_p0_when_p1_fails(self, tmp_path, tmp_audit_db):
+        agent = TestProposeCodePatchBeamSearch()._agent(tmp_audit_db)
+        with patch("src.agents.developer.subprocess.run") as mock_run:
+            mock_run.side_effect = [
+                MagicMock(returncode=1, stdout="", stderr="p1 failed"),
+                MagicMock(returncode=0, stdout="", stderr=""),
+            ]
+            applied, msg = agent._apply_patch_in_worktree(str(tmp_path), "--- f\n+++ f\n")
+        assert applied is True
+        assert mock_run.call_count == 2
+
+    def test_disqualified_when_both_p_levels_fail(self, tmp_path, tmp_audit_db):
+        agent = TestProposeCodePatchBeamSearch()._agent(tmp_audit_db)
+        with patch("src.agents.developer.subprocess.run") as mock_run:
+            mock_run.return_value = MagicMock(returncode=1, stdout="", stderr="corrupt hunk")
+            applied, msg = agent._apply_patch_in_worktree(str(tmp_path), "not a real diff")
+        assert applied is False
+        assert "corrupt hunk" in msg
+
+    def test_cleans_up_scratch_patch_file_on_disk(self, tmp_path, tmp_audit_db):
+        agent = TestProposeCodePatchBeamSearch()._agent(tmp_audit_db)
+        with patch("src.agents.developer.subprocess.run") as mock_run:
+            mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
+            agent._apply_patch_in_worktree(str(tmp_path), "--- a/f\n+++ b/f\n")
+        assert not os.path.exists(os.path.join(str(tmp_path), ".sage_candidate.patch"))
+
+
+class TestRunTestsInWorktree:
+    def test_returns_true_on_zero_returncode(self, tmp_path, tmp_audit_db):
+        agent = TestProposeCodePatchBeamSearch()._agent(tmp_audit_db)
+        with patch("src.agents.developer.subprocess.run") as mock_run:
+            mock_run.return_value = MagicMock(returncode=0, stdout="5 passed", stderr="")
+            ok, output = agent._run_tests_in_worktree(str(tmp_path))
+        assert ok is True
+        assert "5 passed" in output
+        assert mock_run.call_args.kwargs["cwd"] == str(tmp_path)
+
+    def test_returns_false_on_nonzero_returncode(self, tmp_path, tmp_audit_db):
+        agent = TestProposeCodePatchBeamSearch()._agent(tmp_audit_db)
+        with patch("src.agents.developer.subprocess.run") as mock_run:
+            mock_run.return_value = MagicMock(returncode=1, stdout="", stderr="1 failed")
+            ok, output = agent._run_tests_in_worktree(str(tmp_path))
+        assert ok is False
+        assert "1 failed" in output
+
+    def test_handles_timeout_gracefully(self, tmp_path, tmp_audit_db):
+        agent = TestProposeCodePatchBeamSearch()._agent(tmp_audit_db)
+        with patch("src.agents.developer.subprocess.run") as mock_run:
+            mock_run.side_effect = subprocess.TimeoutExpired(cmd="pytest", timeout=180)
+            ok, output = agent._run_tests_in_worktree(str(tmp_path))
+        assert ok is False
+        assert "TIMEOUT" in output
 
 
 def test_add_mr_comment_posts_to_gitlab(tmp_audit_db, mock_gitlab_responses):

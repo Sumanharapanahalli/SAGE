@@ -114,8 +114,8 @@ Legend — **Effort:** S/M/L · **Risk:** Lo/Md/Hi · **Reuse:** existing code t
 
 | Capability | Mechanism | How it improves | Effort/Risk/Reuse |
 |---|---|---|---|
-| `implement_step` (single candidate) | **Best-of-N, pairwise-judged, aggregated by Bradley–Terry / Copeland** | Higher quality via competition. *Reuse the pairwise-judge pattern from `critic`/`evaluator_optimizer`; the tournament plumbing is net-new (the gym has no agent-vs-agent code)* | M/Md |
-| Verification of generated code | **Refutation game** (prover vs. adversarial test-writer) run in a real **execution venue** | Builds in atomic verification (Law 5) — *actually run*, not just LLM-scored | M/Md · **WorktreeManager + CI** |
+| `implement_step` (single candidate) | [DONE, scoped-down] **Best-of-N, cardinal-scored via `PlanSelector` + `multi_critic_review`** | Higher quality via competition. *Built without Bradley–Terry/Copeland or new tournament plumbing — see Phase 2 note in §6* | S/Md — landed |
+| Verification of generated code | [DONE, scoped-down] **Refutation via git-stash-isolated re-run**, not a real execution venue | Builds in atomic verification (Law 5) — *actually run*, not just LLM-scored. *Explicit user tradeoff: no WorktreeManager, no `_ROOT` refactor — see §6* | S/Md — landed |
 | Skill growth over time | **Self-play + PSRO / double-oracle** | Coder trains vs. a Nash meta-strategy of opponents; resists farming one weak opponent (Nash averaging on the rating side) | L/Hi · gym extension (re-scope DB to `.sage/` — see §7) |
 
 ### 4.4 Critic — `review_*`, `review_with_loop`, `multi_critic_review`, `request/submit_human_review`
@@ -138,7 +138,7 @@ Legend — **Effort:** S/M/L · **Risk:** Lo/Md/Hi · **Reuse:** existing code t
 | `review_merge_request` | **Adversarial review game** + **inspection game** (random deep audits) | Higher review quality; random audits deter low-effort MRs without auditing all | M/Md |
 | `add_mr_comment` | **Cheap talk / signaling** (Crawford–Sobel) | Models the author↔reviewer channel — when does a comment credibly convey quality vs. cost-free talk | S/Lo |
 | `list_open_mrs` | Audit **population** for the inspection game | Allocate random deep audits proportional to risk across the open set | S/Lo |
-| `propose_code_patch` | **Best-of-N + refutation**, run in a worktree | Patch quality + verification | M/Md · WorktreeManager + CI |
+| `propose_code_patch` | [DONE] **Best-of-N + refutation**, run in a real `WorktreeManager` worktree (`git apply` + full test run) | Patch quality + verification | M/Md · WorktreeManager + CI — landed |
 | `get_pipeline_status` | **Objective referee / Goodhart anchor** | CI pass/fail grounds the LLM judge; trust the LLM only on what CI *can't* check (design, security reasoning) | S/Lo — *load-bearing for §6/§8* |
 
 ### 4.6 Monitor — `start/stop`, `get_status`, `register_callback`
@@ -153,7 +153,7 @@ Legend — **Effort:** S/M/L · **Risk:** Lo/Md/Hi · **Reuse:** existing code t
 
 | Capability | Mechanism | How it improves | Effort/Risk/Reuse |
 |---|---|---|---|
-| `create_plan` (one `llm.generate`) | **Judge panel of N divergent plans → score → synthesize** | Robust plans; best ideas grafted from runners-up. *The N-generate→score→rank→select core already exists* | M/Md · **wire in `PlanSelector`** |
+| `create_plan` (one `llm.generate`) | [DONE] **Judge panel of N divergent plans → score → synthesize**, wired via `PlanSelector` + `multi_critic_review` | Robust plans; best ideas grafted from runners-up. *The N-generate→score→rank→select core already existed — this was wiring, not new mechanism* | S/Lo — landed |
 | Planning under uncertainty | **Minimax / robust optimization** | Picks the least-bad plan in the worst case — fits regulated-industry risk | M/Md |
 | `plan_and_execute` wave scheduling | **Team formation + Shapley credit (Monte-Carlo, offline)** | Better team assembly; *cheap online default = per-agent EMA success already tracked by AdaptiveRouter* | L/Hi |
 | Backlog ordering under budget | **Budgeted knapsack (value-per-cost)** — NOT an "auction" (no bidders/private values/payments) | Orders work by value-per-cost | S/Lo |
@@ -217,9 +217,47 @@ prioritization is `product_owner.prioritize_stories`, §4.8.)*
 - **Phase 1b — calibration (deferred, M/Md+).**
   Proper-scoring-rule calibration of critic confidence against accumulated **resolved human
   verdicts + CI pass/fail**. Gated on a sufficient label corpus.
-- **Phase 2 — competition.** Best-of-N tournaments (Bradley–Terry/Copeland) for
-  `Coder.implement_step`, `Developer.propose_code_patch`, `Planner.create_plan` (wire `PlanSelector`);
-  Condorcet ranking lives here.
+- **[DONE] Phase 2 — competition.**
+  All three items landed, but on a materially cheaper mechanism than originally scoped: **cardinal
+  scoring via the existing `PlanSelector` (N-generate→score→rank→select, Phase 1's beam-search engine)
+  + `CriticAgent.multi_critic_review` (Phase 1a's robust weighted-median panel)** — not a new
+  Bradley–Terry/Copeland pairwise-tournament module. Grounding (advisor-reviewed) showed
+  `PlanSelector`'s generic `select(generator, critic, beam_width)` contract already covers all three
+  agents' needs; building net-new O(N²) pairwise-judge infrastructure alongside it would have been
+  exactly the kind of "build ahead of need" this proposal explicitly rejects elsewhere (§6 Phase 1b/4).
+  Condorcet/Copeland ranking remains unbuilt — no evidence yet that cardinal (median) scoring is
+  failing on code/plan candidates the way it was failing on critic panels pre-Phase-1a.
+  - **`Planner.create_plan(beam_width=N)`** — `src/agents/planner.py`. Generates N candidate plans,
+    scores each via `multi_critic_review("plan", ...)` (normalized to 0–1), picks the best.
+    `beam_width=1` (default) is byte-identical to the original single-shot path.
+  - **`Developer.propose_code_patch(beam_width=N)`** — `src/agents/developer.py`. Generates N
+    candidate patches (pure text, no filesystem writes), verifies each in a real isolated
+    `WorktreeManager` worktree (`git apply -p1`/`-p0`, then a full `pytest tests/` run) — a patch
+    that fails to apply is disqualified outright regardless of LLM score; a patch whose tests fail
+    is heavily penalized (0.3×) rather than zeroed, since a failing test may be pre-existing/unrelated.
+    Worktrees are always cleaned up (`finally`-guarded). This is the one piece built exactly as
+    originally scoped ("Best-of-N + refutation, run in a worktree") since `propose_code_patch` never
+    writes to the main tree, so worktree isolation was cheap.
+  - **`Coder.implement_step(beam_width=N)`** — `src/agents/coder.py` — **scoped down by explicit user
+    decision**, not built as originally envisioned. The real cost/risk profile only became clear
+    during grounding: unlike the other two (cheap pure-text candidates), `implement_step` runs a full
+    ReAct loop per candidate (up to ~12 LLM steps, real file writes via a module-level `_ROOT`
+    constant used across 6 tool methods) — true `WorktreeManager` isolation would have required
+    refactoring `_ROOT` to an instance attribute across all 6 methods plus N parallel worktree-isolated
+    ReAct runs, a materially larger and riskier change to the code-writing agent's core I/O path than
+    "wire `PlanSelector` in" as originally scoped. Surfaced back to the user as its own go/no-go
+    (not re-litigating the original "build all of Phase 2" approval — correcting the scope estimate
+    it was made on); the user chose the scoped-down variant. **What shipped instead**: N *sequential*
+    ReAct-loop attempts in the *main* working tree, isolated between attempts via `git stash push -u`
+    (candidate) → `git stash apply` (winner only) → `git stash drop` (every candidate, resolved to its
+    live `stash@{n}` ref at drop-time since indices shift after each drop). Falls back to single-shot
+    if the working tree isn't clean at call time (best-of-N needs a clean baseline to safely isolate
+    candidates) — refuses to co-mingle a candidate's stash with pre-existing uncommitted work rather
+    than silently risking it. Known tradeoff, accepted by the user: no true per-candidate parallelism,
+    and a real (if small) window per candidate where its writes sit in the main tree before being
+    stashed. No `_ROOT` refactor was needed or done.
+  - No shared "tournament.py" primitive was built. All three reuse `PlanSelector` + `CriticAgent`
+    directly; there was no duplicated selection logic to factor out.
 - **Phase 3 — spend scarce resources well.** Contextual-bandit router (add model dim + HITL reward);
   VoI escalation for `request_human_review`; budget-charged priority in the scheduler.
 - **Phase 4 — research-grade.** Multi-agent debate for high-stakes approvals; Monte-Carlo Shapley;

@@ -75,7 +75,12 @@ class PlannerAgent:
         "DOCUMENT": "Update documentation or comments",
     }
 
-    def create_plan(self, description: str, override_task_types: dict | None = None) -> list[dict]:
+    def create_plan(
+        self,
+        description: str,
+        override_task_types: dict | None = None,
+        beam_width: int = 1,
+    ) -> list[dict]:
         """
         Uses the LLM to decompose a complex task into ordered subtasks.
 
@@ -84,6 +89,11 @@ class PlannerAgent:
             override_task_types: Optional dict of {TYPE: description} to use instead of
                                  the active solution's task types. Pass
                                  PlannerAgent.FRAMEWORK_TASK_TYPES for sage-scope items.
+            beam_width:          If > 1, generates `beam_width` candidate plans and
+                                 selects the best-scoring one via PlanSelector +
+                                 CriticAgent.multi_critic_review (game-theory Phase 2:
+                                 judge panel of divergent plans). Default 1 preserves
+                                 the original single-shot behaviour byte-for-byte.
 
         Returns:
             List of subtask dicts, each with 'task_type', 'payload', and
@@ -130,8 +140,21 @@ class PlannerAgent:
             "  - If the task cannot be mapped to supported types, return []."
         )
 
-        user_prompt = f"Task: {description}\n\nGenerate the execution plan as a JSON array:"
+        base_user_prompt = f"Task: {description}\n\nGenerate the execution plan as a JSON array:"
 
+        if beam_width <= 1:
+            validated = self._generate_and_validate_plan(base_user_prompt, system_prompt, valid_types)
+            self.logger.info("Plan created: %d step(s).", len(validated))
+            return validated
+
+        return self._create_plan_via_beam_search(
+            description, base_user_prompt, system_prompt, valid_types, beam_width
+        )
+
+    def _generate_and_validate_plan(
+        self, user_prompt: str, system_prompt: str, valid_types: set
+    ) -> list[dict]:
+        """Single LLM call → parse JSON array → validate/filter steps against valid_types."""
         response_text = self.llm.generate(user_prompt, system_prompt)
 
         try:
@@ -148,20 +171,59 @@ class PlannerAgent:
             self.logger.error("Plan parsing failed: %s | Raw: %s", exc, response_text[:300])
             return []
 
-        # Validate and filter steps — use override_task_types when provided
-        effective_valid_types = valid_types  # already set above from override or project config
         validated = []
         for step in plan:
             task_type = step.get("task_type", "").upper()
-            if task_type not in effective_valid_types:
+            if task_type not in valid_types:
                 self.logger.warning("Planner emitted unknown task_type '%s' — skipping.", task_type)
                 continue
             if not isinstance(step.get("payload"), dict):
                 step["payload"] = {}  # default to empty payload rather than skipping
             step["task_type"] = task_type
             validated.append(step)
+        return validated
 
-        self.logger.info("Plan created: %d step(s).", len(validated))
+    def _create_plan_via_beam_search(
+        self,
+        description: str,
+        base_user_prompt: str,
+        system_prompt: str,
+        valid_types: set,
+        beam_width: int,
+    ) -> list[dict]:
+        """Generate `beam_width` candidate plans, score each via CriticAgent, pick the best.
+
+        Game-theory Phase 2: a judge panel of divergent plans beats a single
+        cold-start plan. Reuses PlanSelector's existing N-generate→score→rank→select
+        engine (Phase 1's beam search) and CriticAgent.multi_critic_review (Phase 1a's
+        robust weighted-median aggregation across providers) rather than inventing new
+        selection machinery.
+        """
+        from src.core.plan_selector import get_plan_selector
+        from src.agents.critic import critic_agent
+
+        def _generator(ctx: str) -> list[dict]:
+            return self._generate_and_validate_plan(f"{base_user_prompt}\n\n{ctx}", system_prompt, valid_types)
+
+        def _critic(plan: list[dict]) -> dict:
+            review = critic_agent.multi_critic_review("plan", plan, description)
+            return {
+                "score": review.get("score", 0) / 100.0,
+                "feedback": review.get("summary", ""),
+            }
+
+        result = get_plan_selector().select(
+            generator=_generator,
+            critic=_critic,
+            beam_width=beam_width,
+        )
+
+        best = result.candidates[result.selected_index] if result.candidates else None
+        validated = best.plan if best and best.plan else []
+        self.logger.info(
+            "Plan created via beam_width=%d selection: %d step(s), score=%.2f",
+            beam_width, len(validated), result.selected_score,
+        )
         return validated
 
     def plan_and_execute(self, description: str, priority: int = 5) -> dict:

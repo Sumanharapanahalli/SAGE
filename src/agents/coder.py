@@ -14,6 +14,7 @@ import json
 import logging
 import os
 import subprocess
+from typing import Optional
 
 logger = logging.getLogger("CodingAgent")
 
@@ -240,7 +241,7 @@ class CodingAgent:
     # Public entry point
     # -----------------------------------------------------------------------
 
-    def implement_step(self, step: dict, plan_trace_id: str = "") -> dict:
+    def implement_step(self, step: dict, plan_trace_id: str = "", beam_width: int = 1) -> dict:
         """
         Implement a single plan step. Returns a dict suitable for creating
         a code_diff ProposalStore entry.
@@ -248,6 +249,16 @@ class CodingAgent:
         Args:
             step:           A plan step dict with task_type, description, payload.
             plan_trace_id:  The parent plan's trace_id for correlation.
+            beam_width:     If > 1, runs `beam_width` sequential ReAct-loop attempts
+                            in the MAIN working tree, isolating each attempt from the
+                            next via `git stash` (game-theory Phase 2, scoped-down
+                            variant — no WorktreeManager, no per-candidate parallelism;
+                            see docs/proposals/20260630-game-theory-for-sage). The
+                            best-scoring candidate's changes are restored; the rest
+                            are dropped. Falls back to single-shot if the working tree
+                            isn't clean at call time (best-of-N requires a clean
+                            baseline to safely isolate candidates). Default 1
+                            preserves the original single-shot behaviour byte-for-byte.
 
         Returns:
             dict with: summary, diff, written_files, test_result
@@ -262,6 +273,23 @@ class CodingAgent:
 
         logger.info("CodingAgent: implementing '%s'", description[:80])
 
+        if beam_width > 1 and not self._working_tree_is_clean():
+            logger.warning(
+                "implement_step: beam_width=%d requested but working tree is not "
+                "clean — falling back to single-shot (best-of-N needs a clean "
+                "baseline to safely isolate candidates).", beam_width,
+            )
+            result = self._implement_step_once(task, plan_trace_id, step)
+            result["beam_search_skipped_reason"] = "working tree not clean"
+            return result
+
+        if beam_width <= 1:
+            return self._implement_step_once(task, plan_trace_id, step)
+
+        return self._implement_step_via_beam_search(task, plan_trace_id, step, beam_width)
+
+    def _implement_step_once(self, task: str, plan_trace_id: str, step: dict) -> dict:
+        """Single ReAct-loop attempt against the current working tree."""
         summary, written_files = self._react_loop(task)
         diff = self._tool_git_diff()
         test_result = self._tool_run_tests("framework")
@@ -280,6 +308,145 @@ class CodingAgent:
             "plan_trace_id": plan_trace_id,
             "step":          step,
         }
+
+    def _implement_step_via_beam_search(
+        self, task: str, plan_trace_id: str, step: dict, beam_width: int
+    ) -> dict:
+        """Run `beam_width` sequential ReAct-loop attempts, isolated via git stash.
+
+        Game-theory Phase 2 (scoped-down): reuses PlanSelector's existing
+        N-generate→score→rank→select engine, same as the Planner and Developer
+        Phase 2 wiring. Unlike those two (pure-text, no filesystem writes), each
+        candidate here writes real files to the MAIN working tree — so between
+        attempts the candidate's changes are stashed to restore a clean baseline
+        for the next attempt. The winning candidate's stash is re-applied at the
+        end; every other candidate's stash is dropped (discarded).
+        """
+        from src.core.plan_selector import get_plan_selector
+        from src.agents.critic import critic_agent
+
+        candidates_scored = {"n": 0}
+
+        def _generator(ctx: str) -> dict:
+            summary, written_files = self._react_loop(f"{task}\n\n{ctx}")
+            diff = self._tool_git_diff()
+            test_result = self._tool_run_tests("framework")
+            stash_sha = self._stash_candidate()
+            return {
+                "summary": summary,
+                "written_files": written_files,
+                "diff": diff,
+                "test_result": test_result,
+                "tests_passed": "PASS" in test_result,
+                "stash_sha": stash_sha,
+            }
+
+        def _critic(candidate: dict) -> dict:
+            candidates_scored["n"] += 1
+            diff = candidate.get("diff", "")
+            if not diff.strip() or diff == "(no changes detected)":
+                return {"score": 0.0, "feedback": "no changes produced"}
+            review = critic_agent.multi_critic_review("code", diff, task)
+            llm_score = review.get("score", 0)
+            final = llm_score if candidate.get("tests_passed") else llm_score * 0.3
+            return {"score": final / 100.0, "feedback": review.get("summary", "")}
+
+        result = get_plan_selector().select(
+            generator=_generator,
+            critic=_critic,
+            beam_width=beam_width,
+            apply_reflection=False,  # avoid a surprise extra stash-isolated ReAct pass
+        )
+
+        candidates = [c.plan for c in result.candidates if c.plan]
+        best = result.candidates[result.selected_index].plan if result.candidates else None
+
+        # Restore the winner, discard every other candidate's stash.
+        for c in candidates:
+            sha = c.get("stash_sha")
+            if not sha:
+                continue
+            if c is best:
+                self._apply_stash(sha)
+            self._drop_stash(sha)
+
+        if not best:
+            best = {"summary": "All candidates failed.", "written_files": [],
+                    "diff": "(no changes detected)", "test_result": "", "tests_passed": False}
+
+        return {
+            "summary":       best.get("summary", ""),
+            "diff":          best.get("diff", ""),
+            "written_files": best.get("written_files", []),
+            "test_result":   best.get("test_result", ""),
+            "tests_passed":  best.get("tests_passed", False),
+            "plan_trace_id": plan_trace_id,
+            "step":          step,
+            "verification": {
+                "candidates_scored": candidates_scored["n"],
+                "winning_score": result.selected_score,
+            },
+        }
+
+    # -----------------------------------------------------------------------
+    # git-stash candidate isolation (scoped-down best-of-N — no WorktreeManager)
+    # -----------------------------------------------------------------------
+
+    def _working_tree_is_clean(self) -> bool:
+        try:
+            result = subprocess.run(
+                ["git", "status", "--porcelain"],
+                cwd=_ROOT, capture_output=True, text=True, timeout=10,
+            )
+            return result.returncode == 0 and not result.stdout.strip()
+        except Exception as exc:
+            logger.warning("git status check failed: %s", exc)
+            return False
+
+    def _stash_candidate(self) -> Optional[str]:
+        """Stash all current changes (tracked + untracked) and return the stash SHA, or None if there was nothing to stash."""
+        try:
+            result = subprocess.run(
+                ["git", "stash", "push", "-u", "-m", "sage-candidate"],
+                cwd=_ROOT, capture_output=True, text=True, timeout=15,
+            )
+            if result.returncode != 0 or "No local changes to save" in (result.stdout + result.stderr):
+                return None
+            sha_result = subprocess.run(
+                ["git", "rev-parse", "stash@{0}"],
+                cwd=_ROOT, capture_output=True, text=True, timeout=10,
+            )
+            return sha_result.stdout.strip() if sha_result.returncode == 0 else None
+        except Exception as exc:
+            logger.warning("git stash push failed: %s", exc)
+            return None
+
+    def _apply_stash(self, sha: str) -> None:
+        try:
+            subprocess.run(
+                ["git", "stash", "apply", sha],
+                cwd=_ROOT, capture_output=True, text=True, timeout=15,
+            )
+        except Exception as exc:
+            logger.warning("git stash apply %s failed: %s", sha, exc)
+
+    def _drop_stash(self, sha: str) -> None:
+        """Resolve *sha* to its current stash@{n} ref and drop it (indices shift after every drop, so this is re-resolved each call rather than cached)."""
+        try:
+            list_result = subprocess.run(
+                ["git", "stash", "list", "--format=%H %gd"],
+                cwd=_ROOT, capture_output=True, text=True, timeout=10,
+            )
+            for line in list_result.stdout.splitlines():
+                parts = line.split(" ", 1)
+                if len(parts) == 2 and parts[0] == sha:
+                    subprocess.run(
+                        ["git", "stash", "drop", parts[1]],
+                        cwd=_ROOT, capture_output=True, text=True, timeout=10,
+                    )
+                    return
+        except Exception as exc:
+            logger.warning("git stash drop %s failed: %s", sha, exc)
 
 
 # Global singleton
