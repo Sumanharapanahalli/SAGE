@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import userEvent from "@testing-library/user-event";
+import { describe, expect, it, vi } from "vitest";
 
 import { AuditTable } from "@/components/domain/AuditTable";
 import type { AuditEvent } from "@/api/types";
@@ -54,5 +55,19 @@ describe("AuditTable", () => {
   it("shows an empty-state message for zero events", () => {
     render(<AuditTable events={[]} />);
     expect(screen.getByText(/no audit events/i)).toBeInTheDocument();
+  });
+
+  it("makes a non-null trace clickable when onTraceClick is provided", async () => {
+    const onTraceClick = vi.fn();
+    render(<AuditTable events={rows} onTraceClick={onTraceClick} />);
+    await userEvent.click(screen.getByRole("button", { name: "t-1" }));
+    expect(onTraceClick).toHaveBeenCalledWith("t-1");
+  });
+
+  it("does not render a trace button for a null trace_id", () => {
+    const onTraceClick = vi.fn();
+    render(<AuditTable events={rows} onTraceClick={onTraceClick} />);
+    // Only the one non-null trace ("t-1") is a button.
+    expect(screen.getAllByRole("button")).toHaveLength(1);
   });
 });

@@ -2,9 +2,10 @@ import type { AuditEvent } from "@/api/types";
 
 interface Props {
   events: AuditEvent[];
+  onTraceClick?: (trace_id: string) => void;
 }
 
-export function AuditTable({ events }: Props) {
+export function AuditTable({ events, onTraceClick }: Props) {
   if (events.length === 0) {
     return (
       <div className="rounded border border-sage-100 bg-white p-6 text-center text-sm text-slate-500">
@@ -31,7 +32,21 @@ export function AuditTable({ events }: Props) {
             <td className="px-3 py-2">{e.actor}</td>
             <td className="px-3 py-2">{e.action_type}</td>
             <td className="px-3 py-2 font-mono text-xs text-slate-500">
-              {e.trace_id ?? "—"}
+              {e.trace_id ? (
+                onTraceClick ? (
+                  <button
+                    type="button"
+                    onClick={() => onTraceClick(e.trace_id!)}
+                    className="text-sage-600 underline-offset-2 hover:underline"
+                  >
+                    {e.trace_id}
+                  </button>
+                ) : (
+                  e.trace_id
+                )
+              ) : (
+                "—"
+              )}
             </td>
           </tr>
         ))}

@@ -59,8 +59,12 @@ via `make desktop-dev-solution`.
   status `<select>` moves a goal across its statuses; also added a two-step delete confirm.
 - [ ] **T2.4 Cost recorded per trace but invisible.** `llm_costs.trace_id` populated; nothing joins
   cost to a proposal in any UI.
-- [ ] **T2.5 Audit drill-down missing on desktop.** One exact-match filter, fixed limit 100, traces
-  not clickable; sidecar handler already supports more (limit/offset/action_type/trace_id).
+- [DONE] **T2.5 Audit drill-down.** Audit page now has: an action-type **dropdown** populated from
+  `audit_stats.by_action_type` (replaces the insider-knowledge free-text field), **pagination**
+  (limit/offset + total, Prev/Next), and **clickable trace IDs** that open a new `AuditTraceDetail`
+  panel showing every event for that trace in chronological order (input/output/status/approver) —
+  the compliance "show me the whole decision" story. Wires the previously-dead `useAuditByTrace`
+  hook (part of T2.8). No sidecar change — the handler already supported all of it.
 - [ ] **T2.6 No `.sage` export/backup.**
 - [DONE] **T2.7 Header titles missing for 10 routes.** Added `/analyze`, `/compliance`, `/costs`,
   `/workflows`, `/skills`, `/organization`, `/monitor`, `/goals`, `/eval`, `/hil` to `Header.tsx`.
