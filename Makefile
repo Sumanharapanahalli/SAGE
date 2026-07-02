@@ -200,6 +200,7 @@ desktop-dev-solution:
 	@echo "Starting sage-desktop targeted at solution '$(SOLUTION_NAME)' ($(SOLUTION_PATH))..."
 	cd sage-desktop && SAGE_ROOT=$(CURDIR) \
 		SAGE_PYTHON="$(abspath $(PYTHON))" \
+		SAGE_PROJECT="$(SOLUTION_NAME)" \
 		SAGE_SOLUTION_NAME="$(SOLUTION_NAME)" \
 		SAGE_SOLUTION_PATH="$(SOLUTION_PATH)" \
 		SAGE_SOLUTIONS_DIR="$(dir $(SOLUTION_PATH))" \

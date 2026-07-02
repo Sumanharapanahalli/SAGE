@@ -85,6 +85,21 @@ via `make desktop-dev-solution`.
 
 ---
 
+## Launch hardening (found during the pre-demo dry run, 2026-07-02)
+
+- [DONE] **Auto-discovery crash on a malformed sibling solution.** When `SAGE_SOLUTIONS_DIR`
+  points at a multi-solution dir (e.g. the sandbox's ~24 solutions) and `SAGE_PROJECT` is unset,
+  the import-time `project_config = ProjectConfig()` singleton auto-discovers the *first alphabetical*
+  solution — `asmoke_test`, whose `tasks.yaml` has `task_types` as a dict (must be an array) — and
+  raises `ConfigValidationError` at import, zombie-ing the sidecar before `_wire_handlers` can reload
+  the intended solution. Fixed for the demo by having `desktop-dev-solution` also export
+  `SAGE_PROJECT=$(SOLUTION_NAME)`, so the singleton loads the target solution directly. Verified via a
+  headless sidecar round-trip (handshake + 6 RPCs) against poseengine — all green, `llm.get_info` and
+  the Status provider tile confirmed working against the real gateway.
+- **Deferred (framework robustness):** make `ProjectConfig` auto-discovery skip-and-continue past a
+  malformed solution instead of crashing the whole app. Broader change (touches the module singleton +
+  discovery loop), own tests; not demo-blocking now that the launch target pins `SAGE_PROJECT`.
+
 ## Pre-demo checklist (demo machine)
 
 1. Warm-run once (populates HF cache, runs `.sage` migrations, creates `.collective`).
