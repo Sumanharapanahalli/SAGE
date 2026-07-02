@@ -4,13 +4,14 @@ import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@/api/client", () => ({
-  getCurrentSolution: vi.fn().mockResolvedValue(null),
+  getCurrentSolution: vi
+    .fn()
+    .mockResolvedValue({ name: "starter", path: "/solutions/starter" }),
   listPendingApprovals: vi.fn().mockResolvedValue([]),
 }));
 
 import * as client from "@/api/client";
 import { Sidebar } from "@/components/layout/Sidebar";
-import { findByTestId } from "@testing-library/react";
 import type { Proposal } from "@/api/types";
 
 function renderAt(path: string) {
@@ -47,118 +48,122 @@ const fakeProposal = (trace_id: string): Proposal => ({
 });
 
 describe("Sidebar", () => {
-  it("renders the four Phase 1 nav entries", () => {
+  it("renders the four Phase 1 nav entries", async () => {
     renderAt("/approvals");
-    expect(screen.getByRole("link", { name: /approvals/i })).toBeInTheDocument();
+    expect(await screen.findByRole("link", { name: /approvals/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /agents/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /audit/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /status/i })).toBeInTheDocument();
   });
 
-  it("marks the active route with aria-current=page", () => {
+  it("marks the active route with aria-current=page", async () => {
     renderAt("/audit");
-    const link = screen.getByRole("link", { name: /audit/i });
+    const link = await screen.findByRole("link", { name: /audit/i });
     expect(link).toHaveAttribute("aria-current", "page");
   });
 
-  it("renders a solution footer", () => {
+  it("renders the solution switcher", async () => {
     renderAt("/approvals");
-    expect(screen.getByTestId("sidebar-solution")).toHaveTextContent(/solution/i);
+    expect(await screen.findByTestId("sidebar-solution")).toHaveTextContent(/solution/i);
   });
 
-  it("includes the Constitution entry (Phase 5b)", () => {
+  it("the solution switcher links to /home", async () => {
+    renderAt("/approvals");
+    expect(await screen.findByTestId("sidebar-solution")).toHaveAttribute("href", "/home");
+  });
+
+  it("includes the Constitution entry (Phase 5b)", async () => {
     renderAt("/approvals");
     expect(
-      screen.getByRole("link", { name: /constitution/i }),
+      await screen.findByRole("link", { name: /constitution/i }),
     ).toHaveAttribute("href", "/constitution");
   });
 
-  it("includes the Knowledge entry (Phase 5c)", () => {
+  it("includes the Knowledge entry (Phase 5c)", async () => {
     renderAt("/approvals");
     expect(
-      screen.getByRole("link", { name: /knowledge/i }),
+      await screen.findByRole("link", { name: /knowledge/i }),
     ).toHaveAttribute("href", "/knowledge");
   });
 
-  it("includes the Collective entry (Phase 5a)", () => {
+  it("includes the Collective entry (Phase 5a)", async () => {
     renderAt("/approvals");
     expect(
-      screen.getByRole("link", { name: /collective/i }),
+      await screen.findByRole("link", { name: /collective/i }),
     ).toHaveAttribute("href", "/collective");
   });
 
-  it("includes the Analyze entry — the SURFACE -> PROPOSE trigger", () => {
+  it("includes the Analyze entry — the SURFACE -> PROPOSE trigger", async () => {
     renderAt("/approvals");
     expect(
-      screen.getByRole("link", { name: /analyze/i }),
+      await screen.findByRole("link", { name: /analyze/i }),
     ).toHaveAttribute("href", "/analyze");
   });
 
-  it("includes the Compliance entry (Phase 5f)", () => {
+  it("includes the Compliance entry (Phase 5f)", async () => {
     renderAt("/approvals");
     expect(
-      screen.getByRole("link", { name: /compliance/i }),
+      await screen.findByRole("link", { name: /compliance/i }),
     ).toHaveAttribute("href", "/compliance");
   });
 
-  it("includes the Costs entry", () => {
+  it("includes the Costs entry", async () => {
     renderAt("/approvals");
-    expect(screen.getByRole("link", { name: /costs/i })).toHaveAttribute(
+    expect(await screen.findByRole("link", { name: /costs/i })).toHaveAttribute(
       "href",
       "/costs",
     );
   });
 
-  it("includes the Workflows entry", () => {
+  it("includes the Workflows entry", async () => {
     renderAt("/approvals");
-    expect(screen.getByRole("link", { name: /workflows/i })).toHaveAttribute(
-      "href",
-      "/workflows",
-    );
+    expect(
+      await screen.findByRole("link", { name: /workflows/i }),
+    ).toHaveAttribute("href", "/workflows");
   });
 
-  it("includes the Skills & Tools entry", () => {
+  it("includes the Skills & Tools entry", async () => {
     renderAt("/approvals");
-    expect(screen.getByRole("link", { name: /skills/i })).toHaveAttribute(
+    expect(await screen.findByRole("link", { name: /skills/i })).toHaveAttribute(
       "href",
       "/skills",
     );
   });
 
-  it("includes the Organization entry", () => {
+  it("includes the Organization entry", async () => {
     renderAt("/approvals");
     expect(
-      screen.getByRole("link", { name: /organization/i }),
+      await screen.findByRole("link", { name: /organization/i }),
     ).toHaveAttribute("href", "/organization");
   });
 
-  it("includes the Monitor entry", () => {
+  it("includes the Monitor entry", async () => {
     renderAt("/approvals");
-    expect(screen.getByRole("link", { name: /monitor/i })).toHaveAttribute(
+    expect(await screen.findByRole("link", { name: /monitor/i })).toHaveAttribute(
       "href",
       "/monitor",
     );
   });
 
-  it("includes the Goals entry", () => {
+  it("includes the Goals entry", async () => {
     renderAt("/approvals");
-    expect(screen.getByRole("link", { name: /goals/i })).toHaveAttribute(
+    expect(await screen.findByRole("link", { name: /goals/i })).toHaveAttribute(
       "href",
       "/goals",
     );
   });
 
-  it("includes the Eval entry", () => {
+  it("includes the Eval entry", async () => {
     renderAt("/approvals");
-    expect(screen.getByRole("link", { name: /eval/i })).toHaveAttribute(
+    expect(await screen.findByRole("link", { name: /eval/i })).toHaveAttribute(
       "href",
       "/eval",
     );
   });
 
-  it("includes the HIL entry", () => {
+  it("includes the HIL entry", async () => {
     renderAt("/approvals");
-    expect(screen.getByRole("link", { name: /hil/i })).toHaveAttribute(
+    expect(await screen.findByRole("link", { name: /hil/i })).toHaveAttribute(
       "href",
       "/hil",
     );
@@ -170,13 +175,30 @@ describe("Sidebar", () => {
       fakeProposal("b"),
       fakeProposal("c"),
     ]);
-    const { container } = renderAt("/status");
-    const badge = await findByTestId(container as HTMLElement, "pending-badge");
+    renderAt("/status");
+    const badge = await screen.findByTestId("pending-badge");
     expect(badge).toHaveTextContent("3");
   });
 
-  it("hides the badge when nothing is pending", () => {
+  it("hides the badge when nothing is pending", async () => {
     renderAt("/approvals");
+    await screen.findByRole("link", { name: /approvals/i });
     expect(screen.queryByTestId("pending-badge")).not.toBeInTheDocument();
+  });
+
+  it("hides solution-scoped nav links when no solution is loaded", async () => {
+    vi.mocked(client.getCurrentSolution).mockResolvedValueOnce(null);
+    renderAt("/home");
+    await screen.findByText(/pick a solution/i);
+    expect(screen.queryByRole("link", { name: /^approvals$/i })).not.toBeInTheDocument();
+  });
+
+  it("always shows + New solution regardless of solution state", async () => {
+    vi.mocked(client.getCurrentSolution).mockResolvedValueOnce(null);
+    renderAt("/home");
+    await screen.findByText(/pick a solution/i);
+    expect(
+      screen.getByRole("link", { name: /new solution/i }),
+    ).toHaveAttribute("href", "/onboarding");
   });
 });
