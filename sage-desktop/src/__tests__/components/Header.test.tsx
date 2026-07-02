@@ -25,6 +25,7 @@ describe("Header", () => {
 
   it.each([
     ["/analyze", /analyze/i],
+    ["/home", /solutions/i],
     ["/compliance", /compliance/i],
     ["/costs", /costs/i],
     ["/workflows", /workflows/i],
