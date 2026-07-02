@@ -268,6 +268,11 @@ impl Sidecar {
             }
         }
 
+        // The old child (if any) is now dead — reflect that immediately so a
+        // failed respawn below can't leave is_online() reporting a stale,
+        // already-exited process as still connected.
+        self.conn = None;
+
         let mut cfg = self.cfg.clone();
         cfg.solution_name = Some(name);
         cfg.solution_path = Some(path);
@@ -506,6 +511,40 @@ mod tests {
             .await
             .expect("post-swap handshake");
         assert!(result.get("sidecar_version").is_some());
+    }
+
+    #[tokio::test]
+    async fn replace_solution_resets_conn_on_spawn_failure() {
+        let root = repo_root();
+        let sidecar_dir = root.join("sage-desktop").join("sidecar");
+        let cfg = SidecarConfig {
+            python: python_exe(),
+            sidecar_dir,
+            solution_name: None,
+            solution_path: None,
+            sage_root: root.clone(),
+        };
+        let mut sidecar = match Sidecar::spawn(cfg).await {
+            Ok(s) => s,
+            Err(e) => {
+                eprintln!("skipping: could not spawn sidecar: {e}");
+                return;
+            }
+        };
+        assert!(sidecar.is_online());
+
+        // Point at a nonexistent interpreter so the respawn inside
+        // replace_solution fails deterministically.
+        sidecar.cfg.python = PathBuf::from("this-binary-does-not-exist-xyz-12345");
+        let swap_path = root.join("solutions").join("starter");
+        let result = sidecar.replace_solution("starter".into(), swap_path).await;
+
+        assert!(result.is_err(), "spawn with a bad interpreter must fail");
+        assert!(
+            !sidecar.is_online(),
+            "a failed respawn must leave the sidecar reporting offline, \
+             not pointing at the old (already-torn-down) connection"
+        );
     }
 
     #[tokio::test]
