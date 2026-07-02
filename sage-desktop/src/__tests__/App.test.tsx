@@ -39,7 +39,9 @@ vi.mock("@/api/client", () => ({
   }),
   listQueueTasks: vi.fn().mockResolvedValue([]),
   listSolutions: vi.fn().mockResolvedValue([]),
-  getCurrentSolution: vi.fn().mockResolvedValue(null),
+  getCurrentSolution: vi
+    .fn()
+    .mockResolvedValue({ name: "starter", path: "/solutions/starter" }),
   switchSolution: vi.fn(),
   onboardingGenerate: vi.fn(),
   startBuild: vi.fn(),
@@ -59,12 +61,24 @@ vi.mock("@tauri-apps/api/event", () => ({
   listen: vi.fn().mockResolvedValue(() => {}),
 }));
 
-import { App } from "@/App";
+import * as client from "@/api/client";
+import { App, queryClient } from "@/App";
 
 describe("App routing", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // App's QueryClient is a module-level singleton — clear cached data
+    // (e.g. current-solution, staleTime: Infinity) so each test's mock
+    // scenario actually takes effect instead of reusing a prior render's
+    // cached result.
+    queryClient.clear();
+  });
 
-  it("redirects / to /approvals", async () => {
+  it("redirects / to /approvals when a solution is already active", async () => {
+    vi.mocked(client.getCurrentSolution).mockResolvedValue({
+      name: "starter",
+      path: "/solutions/starter",
+    });
     render(
       <MemoryRouter initialEntries={["/"]}>
         <App />
@@ -72,6 +86,30 @@ describe("App routing", () => {
     );
     await waitFor(() =>
       expect(screen.getByRole("heading")).toHaveTextContent(/approvals/i),
+    );
+  });
+
+  it("redirects / to /home when no solution is active", async () => {
+    vi.mocked(client.getCurrentSolution).mockResolvedValue(null);
+    render(
+      <MemoryRouter initialEntries={["/"]}>
+        <App />
+      </MemoryRouter>,
+    );
+    await waitFor(() =>
+      expect(screen.getByRole("heading")).toHaveTextContent(/solutions/i),
+    );
+  });
+
+  it("redirects a solution-scoped route to /home when no solution is active", async () => {
+    vi.mocked(client.getCurrentSolution).mockResolvedValue(null);
+    render(
+      <MemoryRouter initialEntries={["/audit"]}>
+        <App />
+      </MemoryRouter>,
+    );
+    await waitFor(() =>
+      expect(screen.getByRole("heading")).toHaveTextContent(/solutions/i),
     );
   });
 
@@ -107,6 +145,40 @@ describe("App routing", () => {
       expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
         /builds/i,
       ),
+    );
+  });
+
+  it("renders Home without redirecting away when a solution is already active", async () => {
+    vi.mocked(client.getCurrentSolution).mockResolvedValue({
+      name: "starter",
+      path: "/solutions/starter",
+    });
+    render(
+      <MemoryRouter initialEntries={["/home"]}>
+        <App />
+      </MemoryRouter>,
+    );
+    await waitFor(() =>
+      expect(screen.getByRole("heading")).toHaveTextContent(/solutions/i),
+    );
+    await new Promise((r) => setTimeout(r, 50));
+    expect(screen.getByRole("heading")).toHaveTextContent(/solutions/i);
+  });
+
+  it("renders Onboarding without a solution loaded", async () => {
+    vi.mocked(client.getCurrentSolution).mockResolvedValue(null);
+    render(
+      <MemoryRouter initialEntries={["/onboarding"]}>
+        <App />
+      </MemoryRouter>,
+    );
+    // Onboarding.tsx has its own in-page <h2>, alongside Header's <h1> — both
+    // read "New solution", so disambiguate with level (same pattern as the
+    // Builds route test above).
+    await waitFor(() =>
+      expect(
+        screen.getByRole("heading", { level: 1 }),
+      ).toHaveTextContent(/new solution/i),
     );
   });
 });
