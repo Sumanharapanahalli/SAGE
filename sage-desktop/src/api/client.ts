@@ -67,6 +67,9 @@ import type {
   LlmSwitchResult,
   McpToolsResult,
   MonitorStatus,
+  ApprovedProposal,
+  Job,
+  Operator,
   OrgData,
   OrgReloadResult,
   OrgUpdateResult,
@@ -179,11 +182,21 @@ export const approveProposal = (
   decided_by?: string,
   feedback?: string,
 ) =>
-  call<Proposal>("approve_proposal", {
+  call<ApprovedProposal>("approve_proposal", {
     trace_id,
     decided_by,
     feedback,
   });
+
+// --- Operator identity (the audit signer) ---
+export const getOperator = () => call<Operator>("get_operator", {});
+export const setOperator = (name: string, email?: string) =>
+  call<Operator>("set_operator", { name, email });
+
+// --- Background jobs (approved implementation_plan / code_diff execution) ---
+export const getJobStatus = (job_id: string) =>
+  call<Job>("job_status", { job_id });
+export const listJobs = () => call<{ jobs: Job[] }>("list_jobs", {});
 
 export const rejectProposal = (
   trace_id: string,
@@ -617,6 +630,9 @@ export type {
   LlmSwitchResult,
   McpToolsResult,
   MonitorStatus,
+  ApprovedProposal,
+  Job,
+  Operator,
   OrgData,
   OrgReloadResult,
   OrgUpdateResult,

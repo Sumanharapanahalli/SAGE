@@ -16,15 +16,23 @@ from __future__ import annotations
 import logging
 from typing import Optional
 
+import jobs
 from rpc import RpcError, RPC_INVALID_PARAMS
 from errors import ProposalNotFound, ProposalExpired, AlreadyDecided
 from handlers import operator
 
 logger = logging.getLogger("sidecar.approvals")
 
+# Multi-minute LLM work — must not run inside the serial dispatch loop or every
+# other RPC (including the 5s status polls) stalls behind it. Mirrors
+# api.py:1396.
+_BACKGROUND_TYPES = {"implementation_plan", "code_diff"}
+
 # Injected by __main__.py at startup. Tests monkey-patch these.
 _store = None  # type: Optional[object]
 _logger = None  # type: Optional[object]  # AuditLogger
+# Path to the DB holding feature_requests (same file as the audit log).
+_feature_db_path = None  # type: Optional[str]
 
 # Indirected so tests can substitute an identity without touching operator._path.
 _operator = operator.current
@@ -32,6 +40,83 @@ _operator = operator.current
 # Lazily constructed so an unavailable vector store never blocks a decision.
 _analyst_factory = None
 _long_term_memory_factory = None
+
+# Lazily imported: proposal_executor pulls in the coder/planner agents, and a
+# desktop running in minimal mode should still be able to READ the queue.
+_executor_factory = None
+_revert_factory = None
+
+
+def _get_executor():
+    if _executor_factory is not None:
+        return _executor_factory()
+    from src.core.proposal_executor import execute_approved_proposal
+
+    return execute_approved_proposal
+
+
+def _get_revert():
+    if _revert_factory is not None:
+        return _revert_factory()
+    from src.core.proposal_executor import _revert_code_diff
+
+    return _revert_code_diff
+
+
+def _advance_linked_feature_request(proposal) -> None:
+    """Move the backlog item this plan came from to in_progress.
+
+    Mirrors api.py:1407-1417. Without it, desktop's OWN backlog.plan loop
+    dead-ends: the operator approves the plan and the feature request sits at
+    "in_planning" forever, with no way to advance it from the desktop app.
+    """
+    if _feature_db_path is None:
+        return
+    import sqlite3
+    from datetime import datetime, timezone
+
+    try:
+        conn = sqlite3.connect(_feature_db_path)
+        conn.execute(
+            "UPDATE feature_requests SET status='in_progress', updated_at=? "
+            "WHERE plan_trace_id=?",
+            (datetime.now(timezone.utc).isoformat(), proposal.trace_id),
+        )
+        conn.commit()
+        conn.close()
+    except Exception as e:  # noqa: BLE001
+        logger.warning(
+            "could not advance feature request for trace_id=%s: %s", proposal.trace_id, e
+        )
+
+
+def _execute(proposal) -> dict:
+    """Run the approved proposal's executor.
+
+    This is the step that was missing entirely: approving flipped a status
+    column and stopped. No task was queued, no code was written — the framework's
+    central vertical slice (SURFACE -> PROPOSE -> DECIDE -> EXECUTE) terminated
+    one step early on desktop.
+
+    An execution failure NEVER un-approves the proposal. The human made that
+    decision; silently reverting it would be worse than a surfaced failure. The
+    outcome rides back on the approve response so the UI can show it.
+    """
+    try:
+        executor = _get_executor()
+    except Exception as e:  # noqa: BLE001
+        logger.error("proposal executor unavailable: %s", e)
+        return {"state": "failed", "error": f"executor unavailable: {e}"}
+
+    if proposal.action_type in _BACKGROUND_TYPES:
+        job_id = jobs.submit(
+            proposal.action_type,
+            executor(proposal),
+            label=proposal.description,
+        )
+        return {"state": "running", "job_id": job_id}
+
+    return jobs.run_now(executor(proposal))
 
 
 def _get_analyst():
@@ -183,7 +268,11 @@ def approve(params: dict) -> dict:
     except ValueError as e:
         raise _translate_value_error(trace_id, e, store) from e
     _audit("PROPOSAL_APPROVED", p, feedback)
-    return p.model_dump(mode="json")
+    _advance_linked_feature_request(p)
+
+    out = p.model_dump(mode="json")
+    out["execution"] = _execute(p)
+    return out
 
 
 def reject(params: dict) -> dict:
@@ -197,6 +286,21 @@ def reject(params: dict) -> dict:
         raise _translate_value_error(trace_id, e, store) from e
     _audit("PROPOSAL_REJECTED", p, feedback)
     _compound(p, feedback)
+
+    # The agent already wrote its edits to disk before proposing them. Without
+    # this, "reject" leaves the change in place — the exact opposite of a gate.
+    if p.action_type == "code_diff":
+        try:
+            outcome = jobs.run_now(_get_revert()(p))
+            if outcome["state"] == "failed":
+                logger.error(
+                    "code_diff revert FAILED for %s — the working tree may still "
+                    "contain the rejected changes: %s",
+                    p.trace_id, outcome.get("error"),
+                )
+        except Exception as e:  # noqa: BLE001
+            logger.error("code_diff revert unavailable for %s: %s", p.trace_id, e)
+
     return p.model_dump(mode="json")
 
 

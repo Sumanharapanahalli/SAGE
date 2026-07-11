@@ -47,6 +47,7 @@ from rpc import (
     write_ndjson_response,
     RPC_INTERNAL_ERROR,
 )
+import jobs
 from dispatcher import Dispatcher
 from handlers import (
     agents,
@@ -128,6 +129,9 @@ def _build_dispatcher() -> Dispatcher:
     d.register("approvals.approve", approvals.approve)
     d.register("approvals.reject", approvals.reject)
     d.register("approvals.batch_approve", approvals.batch_approve)
+    # Background execution of approved implementation_plan / code_diff proposals.
+    d.register("jobs.status", jobs.rpc_status)
+    d.register("jobs.list", jobs.rpc_list)
     d.register("audit.list", audit.list_events)
     d.register("audit.get_by_trace", audit.get_by_trace)
     d.register("audit.stats", audit.stats)
@@ -303,6 +307,9 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
         fr_store = FeatureRequestStore(str(sage_dir / "audit_log.db"))
         fr_store.init_schema()
         backlog._store = fr_store
+        # Approving an implementation_plan advances the backlog item it came
+        # from; without this desktop's own plan loop dead-ends at "in_planning".
+        approvals._feature_db_path = str(sage_dir / "audit_log.db")
     except Exception as e:  # noqa: BLE001
         logging.warning("FeatureRequestStore unavailable: %s", e)
 

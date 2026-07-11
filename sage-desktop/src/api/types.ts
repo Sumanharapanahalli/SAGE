@@ -47,6 +47,42 @@ export type ProposalStatus =
   | "rejected"
   | "expired";
 
+/** The desktop's audit signer. `provider` is always "desktop-operator" — never
+ *  "oidc": physical access to the machine is the trust boundary, and the record
+ *  must not overclaim (21 CFR Part 11 §11.50 yes, §11.100 no). */
+export interface Operator {
+  name: string;
+  email: string;
+  provider: string;
+}
+
+export type JobState = "queued" | "running" | "succeeded" | "failed";
+
+/** Background execution of an approved implementation_plan / code_diff. */
+export interface Job {
+  job_id: string;
+  kind: string;
+  label: string;
+  state: JobState;
+  result: unknown | null;
+  error: string | null;
+}
+
+/** The outcome of running an approved proposal's executor. Fast action types
+ *  carry the result inline; the multi-minute ones return a job_id to poll. */
+export interface ExecutionOutcome {
+  state: JobState;
+  job_id?: string;
+  result?: unknown;
+  error?: string;
+}
+
+/** An approve response: the proposal, plus what its execution actually did.
+ *  Before this existed, approval flipped a status column and stopped. */
+export interface ApprovedProposal extends Proposal {
+  execution?: ExecutionOutcome;
+}
+
 export interface Proposal {
   trace_id: string;
   created_at: string;

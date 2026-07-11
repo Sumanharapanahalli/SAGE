@@ -73,16 +73,22 @@ describe("ApprovalCard", () => {
     expect(onReject).toHaveBeenCalledWith("t-1", "prompt is too vague");
   });
 
-  it("allows rejection with no feedback text", async () => {
+  it("blocks rejection until feedback is given — it is the training signal", async () => {
+    // Previously this asserted the opposite (rejection with an empty comment).
+    // That was only harmless because the feedback went nowhere: desktop's reject
+    // was a bare SQL UPDATE. Now it feeds vector memory (Law 3 / Phase 5), a
+    // rejection with no reasoning teaches the system nothing, and web hard-gates
+    // this button for the same reason.
     const onReject = vi.fn();
     render(
       <ApprovalCard proposal={base} onApprove={() => {}} onReject={onReject} />,
     );
     await userEvent.click(screen.getByRole("button", { name: /^reject$/i }));
-    await userEvent.click(
-      screen.getByRole("button", { name: /confirm rejection/i }),
-    );
-    expect(onReject).toHaveBeenCalledWith("t-1", "");
+
+    const confirm = screen.getByRole("button", { name: /confirm rejection/i });
+    expect(confirm).toBeDisabled();
+    await userEvent.click(confirm);
+    expect(onReject).not.toHaveBeenCalled();
   });
 
   it("shows the proposal payload so the decision is not made blind", async () => {

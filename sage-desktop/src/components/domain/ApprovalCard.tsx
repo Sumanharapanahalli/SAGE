@@ -2,6 +2,7 @@ import clsx from "clsx";
 import { useState } from "react";
 
 import type { Proposal, RiskClass } from "@/api/types";
+import { DiffView } from "./DiffView";
 
 interface Props {
   proposal: Proposal;
@@ -29,6 +30,11 @@ export function ApprovalCard({
 
   const payloadJson = JSON.stringify(proposal.payload ?? {}, null, 2);
   const hasPayload = proposal.payload && Object.keys(proposal.payload).length > 0;
+
+  // A code_diff rendered as escaped JSON is not reviewable, and reviewing is the
+  // entire point of the gate. Render it as a diff.
+  const p = (proposal.payload ?? {}) as Record<string, unknown>;
+  const isCodeDiff = proposal.action_type === "code_diff" && typeof p.diff === "string";
 
   return (
     <article className="rounded-lg border border-sage-100 bg-white p-4 shadow-sm">
@@ -65,10 +71,20 @@ export function ApprovalCard({
         {new Date(proposal.created_at).toLocaleString()}
       </div>
 
+      {isCodeDiff && (
+        <DiffView
+          diff={p.diff as string}
+          summary={typeof p.summary === "string" ? p.summary : undefined}
+          writtenFiles={Array.isArray(p.written_files) ? (p.written_files as string[]) : undefined}
+          testsPassed={typeof p.tests_passed === "boolean" ? p.tests_passed : null}
+          testResult={typeof p.test_result === "string" ? p.test_result : undefined}
+        />
+      )}
+
       {hasPayload && (
         <details className="mb-3 rounded border border-sage-100 bg-sage-50/50">
           <summary className="cursor-pointer select-none px-3 py-1.5 text-xs font-medium text-sage-700">
-            Payload / details
+            {isCodeDiff ? "Raw payload" : "Payload / details"}
           </summary>
           <pre className="max-h-80 overflow-auto border-t border-sage-100 px-3 py-2 text-xs text-slate-700">
             {payloadJson}
