@@ -81,7 +81,7 @@ export function ApprovalCard({
           <textarea
             value={feedback}
             onChange={(e) => setFeedback(e.target.value)}
-            placeholder="Why are you rejecting this? (optional, but feeds the compounding-memory signal)"
+            placeholder="Why are you rejecting this? Your reasoning is written to the vector store and retrieved on future analyses."
             rows={3}
             className="w-full rounded border border-sage-200 px-2 py-1.5 text-sm focus:border-sage-500 focus:outline-none"
           />
@@ -89,7 +89,8 @@ export function ApprovalCard({
             <button
               type="button"
               onClick={() => onReject(proposal.trace_id, feedback)}
-              disabled={isPending}
+              disabled={isPending || !feedback.trim()}
+              title={!feedback.trim() ? "Feedback is required — it is the training signal" : undefined}
               className="rounded bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
             >
               Confirm rejection

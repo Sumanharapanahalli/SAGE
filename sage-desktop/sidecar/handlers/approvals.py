@@ -29,6 +29,65 @@ _logger = None  # type: Optional[object]  # AuditLogger
 # Indirected so tests can substitute an identity without touching operator._path.
 _operator = operator.current
 
+# Lazily constructed so an unavailable vector store never blocks a decision.
+_analyst_factory = None
+_long_term_memory_factory = None
+
+
+def _get_analyst():
+    if _analyst_factory is not None:
+        return _analyst_factory()
+    from src.agents.analyst import AnalystAgent
+
+    return AnalystAgent()
+
+
+def _get_long_term_memory():
+    if _long_term_memory_factory is not None:
+        return _long_term_memory_factory()
+    from src.memory.long_term_memory import long_term_memory
+
+    return long_term_memory
+
+
+def _compound(proposal, feedback: str) -> None:
+    """Phase 5 — feed the human's correction back into the vector store.
+
+    SOUL.md is explicit: "Never short-circuit Phase 5 (feedback ingestion).
+    Every rejection is a learning opportunity." Desktop's reject was a bare SQL
+    UPDATE, so an operator could correct the same wrong analysis a hundred times
+    and the hundred-and-first would be just as wrong.
+
+    Non-critical by design: compounding memory must never cost us a decision the
+    human already made, so failures are logged and swallowed (mirroring
+    api.py:1547).
+    """
+    if not feedback:
+        return  # No correction was given. Do not invent a lesson from silence.
+
+    try:
+        if proposal.action_type == "analysis":
+            payload = proposal.payload or {}
+            # The lesson needs BOTH the AI's original guess and the human's
+            # correction — a correction without the thing it corrects is noise.
+            _get_analyst().learn_from_feedback(
+                log_entry=payload.get("log_entry", proposal.description),
+                human_comment=feedback,
+                original_analysis=payload.get("analysis", {}),
+            )
+        else:
+            _get_long_term_memory().remember(
+                f"Rejected {proposal.action_type}: {feedback}",
+                user_id=_operator()["name"],
+                metadata={"trace_id": proposal.trace_id,
+                          "action_type": proposal.action_type},
+            )
+    except Exception as e:  # noqa: BLE001
+        logger.error(
+            "compounding-memory write failed for %s (decision stands): %s",
+            proposal.trace_id, e,
+        )
+
 
 def _require_store():
     if _store is None:
@@ -137,6 +196,7 @@ def reject(params: dict) -> dict:
     except ValueError as e:
         raise _translate_value_error(trace_id, e, store) from e
     _audit("PROPOSAL_REJECTED", p, feedback)
+    _compound(p, feedback)
     return p.model_dump(mode="json")
 
 

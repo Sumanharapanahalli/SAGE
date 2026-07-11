@@ -62,6 +62,12 @@ def run(params: dict) -> dict:
 
     from src.core.proposal_store import RiskClass
 
+    # Adopt the analyst's audit trace_id rather than minting a fresh one, so the
+    # id the operator sees on the proposal actually resolves in
+    # audit.get_by_trace. Without this the only trace_id desktop ever displayed
+    # was the one that could not be audited.
+    trace_id = analysis.get("trace_id") if isinstance(analysis, dict) else None
+
     proposal = store.create(
         action_type="analysis",
         risk_class=RiskClass.INFORMATIONAL,
@@ -69,5 +75,6 @@ def run(params: dict) -> dict:
         description=f"[{severity}] {summary}",
         reversible=True,
         proposed_by="desktop-operator",
+        trace_id=trace_id,
     )
     return proposal.model_dump(mode="json")

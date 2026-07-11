@@ -175,8 +175,17 @@ class ProposalStore:
         reversible: bool = True,
         proposed_by: str = "system",
         required_role: Optional[str] = None,
+        trace_id: Optional[str] = None,
     ) -> Proposal:
-        """Create and persist a new pending proposal."""
+        """Create and persist a new pending proposal.
+
+        ``trace_id`` lets the caller adopt an EXISTING correlation id — the one
+        the agent already wrote its audit events under. Without it the store
+        mints a fresh uuid4, so the trace_id shown to the operator resolves to
+        zero events in the audit log and the proposal is untraceable back to the
+        reasoning that produced it. Defaults to None (mint one) so every
+        existing caller is unaffected.
+        """
         expiry_mins = _EXPIRY_MINUTES.get(risk_class)
         if expiry_mins is not None:
             expires_at = (
@@ -185,7 +194,7 @@ class ProposalStore:
         else:
             expires_at = None
 
-        proposal = Proposal(
+        fields = dict(
             action_type   = action_type,
             risk_class    = risk_class,
             reversible    = reversible,
@@ -195,6 +204,9 @@ class ProposalStore:
             expires_at    = expires_at,
             required_role = required_role,
         )
+        if trace_id:
+            fields["trace_id"] = trace_id
+        proposal = Proposal(**fields)
 
         conn = self._conn()
         conn.execute(
