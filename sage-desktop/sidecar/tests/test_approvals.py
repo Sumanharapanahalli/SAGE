@@ -96,9 +96,13 @@ def test_get_requires_trace_id_param(store):
 
 def test_approve_marks_proposal_as_approved(store):
     p = _make_proposal(store)
-    out = ap.approve({"trace_id": p.trace_id, "decided_by": "alice"})
+    out = ap.approve({"trace_id": p.trace_id})
     assert out["status"] == "approved"
-    assert out["decided_by"] == "alice"
+    # The signer is resolved sidecar-side from operator.yaml, NOT taken from
+    # the RPC params. A renderer-supplied `decided_by` would be a forgeable
+    # signature on a 21 CFR Part 11 record, so it is deliberately ignored.
+    # (Unset identity falls back to "operator" rather than losing the decision.)
+    assert out["decided_by"] == "operator"
 
 
 def test_approve_passes_feedback_through(store):

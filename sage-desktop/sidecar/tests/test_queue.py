@@ -48,19 +48,25 @@ def reset():
 
 
 def test_get_queue_status_counts_by_status():
+    # Statuses must be the literal values TaskStatus emits. The previous
+    # version of this test fabricated {"status": "done"} — a string the
+    # framework never produces — which is precisely why the handler's matching
+    # "done" key went unnoticed while the UI's Done tile stayed at 0.
     queue._queue = FakeQueue(tasks=[
         {"id": "1", "status": "pending", "task_type": "x"},
         {"id": "2", "status": "pending", "task_type": "x"},
         {"id": "3", "status": "in_progress", "task_type": "y"},
-        {"id": "4", "status": "done", "task_type": "z"},
+        {"id": "4", "status": "completed", "task_type": "z"},
         {"id": "5", "status": "failed", "task_type": "z"},
+        {"id": "6", "status": "cancelled", "task_type": "z"},
     ])
     queue._parallel_runner = FakeParallelRunner(parallel_enabled=True, max_workers=4)
     result = queue.get_queue_status({})
     assert result["pending"] == 2
     assert result["in_progress"] == 1
-    assert result["done"] == 1
+    assert result["completed"] == 1
     assert result["failed"] == 1
+    assert result["cancelled"] == 1
     assert result["blocked"] == 0
     assert result["parallel_enabled"] is True
     assert result["max_workers"] == 4
@@ -72,9 +78,10 @@ def test_get_queue_status_when_unavailable_returns_zeros():
     assert result == {
         "pending": 0,
         "in_progress": 0,
-        "done": 0,
+        "completed": 0,
         "failed": 0,
         "blocked": 0,
+        "cancelled": 0,
         "parallel_enabled": False,
         "max_workers": 0,
     }

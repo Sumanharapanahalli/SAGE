@@ -13,12 +13,17 @@ _parallel_runner = None
 
 
 def _empty_status() -> Dict[str, Any]:
+    # Keys MUST match TaskStatus's values verbatim. get_queue_status() counts
+    # with `if key in status`, so a key the framework never emits ("done") is
+    # not a cosmetic mislabel — it silently drops every finished task and pins
+    # the UI's Done tile to 0 forever.
     return {
         "pending": 0,
         "in_progress": 0,
-        "done": 0,
+        "completed": 0,
         "failed": 0,
         "blocked": 0,
+        "cancelled": 0,
         "parallel_enabled": False,
         "max_workers": 0,
     }

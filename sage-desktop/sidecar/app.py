@@ -67,6 +67,7 @@ from handlers import (
     llm,
     monitor,
     onboarding,
+    operator,
     org,
     queue,
     skills,
@@ -132,6 +133,11 @@ def _build_dispatcher() -> Dispatcher:
     d.register("audit.stats", audit.stats)
     d.register("agents.list", agents.list_agents)
     d.register("agents.get", agents.get_agent)
+    # Built and tested, but never registered until now — the Rust layer and the
+    # Agents page have always called it, and always got -32601 back.
+    d.register("agents.performance", agents.performance)
+    d.register("operator.get", operator.get)
+    d.register("operator.set", operator.set)
     d.register("status.get", status.get_status)
     d.register("llm.get_info", llm.get_llm_info)
     d.register("llm.switch", llm.switch_llm)
@@ -172,6 +178,41 @@ def _build_dispatcher() -> Dispatcher:
     d.register("collective.sync", collective.sync)
     d.register("collective.stats", collective.stats)
     return d
+
+
+def _bootstrap_env(solution_name: str, solution_path: Optional[Path]) -> None:
+    """Export SAGE_PROJECT / SAGE_SOLUTIONS_DIR *before* any ``src.`` import.
+
+    This is the root fix for a whole class of bug that has been patched three
+    times downstream (Phases 5l, 5n, 5p) and kept reappearing.
+
+    Framework globals — ``audit_logger.DB_PATH``, ``vector_memory``,
+    ``project_config`` — resolve their solution from these env vars **at import
+    time**. The Rust shell never exported them, so they silently bound to the
+    framework root while ``_wire_handlers`` pointed each *handler* at
+    ``<solution>/.sage/``.
+
+    The consequence was not a cosmetic path mismatch. Every agent (analyst,
+    developer, planner, monitor, build_orchestrator) writes its audit events
+    through the *global* logger, while the audit handler reads the *injected*
+    one. Read path never equalled write path, so in desktop-only operation the
+    audit log — the compliance record, and per SOUL.md the training signal —
+    was permanently empty.
+
+    Setting these here rather than in ``sidecar.rs`` means the invariant holds
+    for every launch path: the Tauri shell, ``python -m sidecar``, and the
+    tests.
+    """
+    if not solution_name or solution_path is None:
+        # Minimal mode: no solution active. Do not invent one — the framework
+        # fallback path is correct in that case.
+        return
+    os.environ["SAGE_PROJECT"] = solution_name
+    # The framework resolves <SAGE_SOLUTIONS_DIR>/<SAGE_PROJECT>/.sage/, so the
+    # solutions dir is the solution's PARENT. This is also what lets a solution
+    # mounted outside the repo resolve correctly (SOUL.md: "solutions are
+    # tenants, not children").
+    os.environ["SAGE_SOLUTIONS_DIR"] = str(solution_path.parent)
 
 
 def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
@@ -240,12 +281,19 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
     except Exception as e:  # noqa: BLE001
         logging.warning("ProposalStore unavailable: %s", e)
 
+    # Operator identity — the signer on every approval decision. Wired before
+    # the audit logger so a logger failure can't leave approvals unsigned.
+    operator._path = sage_dir / "operator.yaml"
+
     try:
         from src.memory.audit_logger import AuditLogger
 
         audit_logger = AuditLogger(db_path=str(sage_dir / "audit_log.db"))
         audit._logger = audit_logger
         agents._logger = audit_logger
+        # Without this the HITL gate leaves no compliance record at all, while
+        # Approvals.tsx tells the operator that it does.
+        approvals._logger = audit_logger
     except Exception as e:  # noqa: BLE001
         logging.warning("AuditLogger unavailable: %s", e)
 
@@ -346,6 +394,10 @@ def run(stdin=None, stdout=None, argv: Optional[list[str]] = None) -> int:
     _configure_logging()
     args = _parse_args(argv if argv is not None else sys.argv[1:])
     solution_path = Path(args.solution_path) if args.solution_path else None
+
+    # MUST precede _wire_handlers — that is where the first `src.` import
+    # happens, and the framework's globals freeze their DB paths at import.
+    _bootstrap_env(args.solution_name, solution_path)
 
     dispatcher = _build_dispatcher()
     _wire_handlers(args.solution_name, solution_path)

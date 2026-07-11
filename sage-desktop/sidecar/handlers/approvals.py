@@ -4,22 +4,70 @@ Translates ProposalStore's generic ValueError into the domain-specific
 RpcError subclasses from errors.py so the Rust side can render typed
 banners ("already decided", "expired", "not found") instead of a single
 opaque failure message.
+
+Every decision is written to the audit log with a signer, mirroring
+api.py's approve/reject endpoints. This is not optional decoration: the HITL
+approval gate IS the product (Law 1), and a gate that leaves no record is
+indistinguishable from no gate at all. Approvals.tsx tells the operator the
+decision is recorded — this is what makes that true.
 """
 from __future__ import annotations
 
+import logging
 from typing import Optional
 
 from rpc import RpcError, RPC_INVALID_PARAMS
 from errors import ProposalNotFound, ProposalExpired, AlreadyDecided
+from handlers import operator
 
-# Injected by __main__.py at startup. Tests monkey-patch this.
+logger = logging.getLogger("sidecar.approvals")
+
+# Injected by __main__.py at startup. Tests monkey-patch these.
 _store = None  # type: Optional[object]
+_logger = None  # type: Optional[object]  # AuditLogger
+
+# Indirected so tests can substitute an identity without touching operator._path.
+_operator = operator.current
 
 
 def _require_store():
     if _store is None:
         raise RpcError(RPC_INVALID_PARAMS, "proposal store not initialized")
     return _store
+
+
+def _audit(action_type: str, proposal, feedback: str = "") -> None:
+    """Write the signed decision record. Mirrors api.py:1426-1436.
+
+    Never raises: an audit failure must not lose a decision the human already
+    made. It is logged loudly instead — a silent swallow here is exactly how
+    the missing-audit defect went unnoticed.
+    """
+    if _logger is None:
+        logger.error(
+            "AUDIT GAP: no audit logger wired — decision on %s was NOT recorded",
+            proposal.trace_id,
+        )
+        return
+    ident = _operator()
+    try:
+        _logger.log_event(
+            actor=ident["name"],
+            action_type=action_type,
+            input_context=f"trace_id={proposal.trace_id} action={proposal.action_type}",
+            output_content=feedback,
+            metadata={
+                "trace_id": proposal.trace_id,
+                "risk_class": getattr(proposal.risk_class, "value", str(proposal.risk_class)),
+                "action_type": proposal.action_type,
+            },
+            approved_by=ident["name"],
+            approver_role="operator",
+            approver_email=ident["email"],
+            approver_provider=ident["provider"],
+        )
+    except Exception as e:  # noqa: BLE001
+        logger.error("audit log failed for %s: %s", proposal.trace_id, e)
 
 
 def _require_trace_id(params: dict) -> str:
@@ -67,24 +115,28 @@ def get(params: dict) -> dict:
 def approve(params: dict) -> dict:
     store = _require_store()
     trace_id = _require_trace_id(params)
-    decided_by = params.get("decided_by", "human")
     feedback = params.get("feedback", "")
+    # The signer is resolved sidecar-side. `decided_by` is deliberately NOT
+    # read from params: a renderer-supplied signer is a forgeable signature.
+    decided_by = _operator()["name"]
     try:
         p = store.approve(trace_id, decided_by=decided_by, feedback=feedback)
     except ValueError as e:
         raise _translate_value_error(trace_id, e, store) from e
+    _audit("PROPOSAL_APPROVED", p, feedback)
     return p.model_dump(mode="json")
 
 
 def reject(params: dict) -> dict:
     store = _require_store()
     trace_id = _require_trace_id(params)
-    decided_by = params.get("decided_by", "human")
     feedback = params.get("feedback", "")
+    decided_by = _operator()["name"]
     try:
         p = store.reject(trace_id, decided_by=decided_by, feedback=feedback)
     except ValueError as e:
         raise _translate_value_error(trace_id, e, store) from e
+    _audit("PROPOSAL_REJECTED", p, feedback)
     return p.model_dump(mode="json")
 
 
@@ -99,7 +151,7 @@ def batch_approve(params: dict) -> dict:
     trace_ids = params.get("trace_ids", [])
     if not isinstance(trace_ids, list):
         raise RpcError(RPC_INVALID_PARAMS, "'trace_ids' must be a list")
-    decided_by = params.get("decided_by", "human")
+    decided_by = _operator()["name"]
     feedback = params.get("feedback", "")
 
     results = []
@@ -113,6 +165,7 @@ def batch_approve(params: dict) -> dict:
             continue
         try:
             p = store.approve(trace_id, decided_by=decided_by, feedback=feedback)
+            _audit("PROPOSAL_APPROVED", p, feedback)
             results.append({"trace_id": trace_id, "ok": True, "proposal": p.model_dump(mode="json")})
         except ValueError as e:
             err = _translate_value_error(trace_id, e, store)
