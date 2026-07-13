@@ -1,3 +1,4 @@
+from tests.route_paths import route_paths
 import pytest
 from unittest.mock import MagicMock
 
@@ -51,5 +52,5 @@ def test_wave_1_tasks_depend_on_wave_0():
 
 def test_subtasks_endpoint_exists():
     from src.interface.api import app
-    routes = [r.path for r in app.routes]
+    routes = route_paths(app)
     assert "/tasks/{task_id}/subtasks" in routes

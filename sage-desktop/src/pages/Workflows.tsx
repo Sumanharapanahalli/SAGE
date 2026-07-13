@@ -58,12 +58,24 @@ export default function Workflows() {
 
   // The most recently started/resumed run — resume.data (if a resume has
   // happened) supersedes run.data (the initial start).
-  const activeRun = resume.data ?? run.data ?? null;
+  const baseRun = resume.data ?? run.data ?? null;
 
   // Manual refresh only — enabled is always false so this never auto-fires;
   // the "Refresh status" button calls refetch() directly (TanStack Query
   // runs the queryFn on refetch() regardless of `enabled`).
-  const statusQuery = useWorkflowStatus(activeRun?.run_id ?? "", false);
+  const statusQuery = useWorkflowStatus(baseRun?.run_id ?? "", false);
+
+  // Fold a refreshed status back into the active run. Without this, `activeRun` only ever
+  // changed when a run/resume MUTATION resolved, so "Refresh status" updated the small
+  // "Last checked" badge while the approval panel below — gated on
+  // `activeRun.status === "awaiting_approval"` — kept rendering the stale status forever.
+  // The gate would not appear when a run reached awaiting_approval, and would not clear
+  // once it completed. Guarded on run_id so a stale response for a previous run can't
+  // overwrite the current one.
+  const activeRun =
+    baseRun && statusQuery.data && statusQuery.data.run_id === baseRun.run_id
+      ? { ...baseRun, ...statusQuery.data }
+      : baseRun;
 
   const listError = workflows.error ? toDesktopError(workflows.error) : null;
   const runError = run.error ? toDesktopError(run.error) : null;

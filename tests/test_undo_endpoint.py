@@ -1,3 +1,4 @@
+from tests.route_paths import route_paths
 from fastapi.testclient import TestClient
 
 
@@ -30,5 +31,5 @@ def test_undo_pending_proposal_returns_409():
 
 def test_undo_endpoint_exists():
     from src.interface.api import app
-    routes = [r.path for r in app.routes]
+    routes = route_paths(app)
     assert "/proposals/{trace_id}/undo" in routes

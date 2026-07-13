@@ -1,3 +1,4 @@
+from tests.route_paths import route_paths
 import os
 import pytest
 from unittest.mock import MagicMock
@@ -34,5 +35,5 @@ def test_sync_skips_binary_files(tmp_path):
 
 def test_knowledge_sync_endpoint_exists():
     from src.interface.api import app
-    routes = [r.path for r in app.routes]
+    routes = route_paths(app)
     assert "/knowledge/sync" in routes

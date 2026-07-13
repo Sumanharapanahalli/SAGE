@@ -1,11 +1,12 @@
 # tests/test_agent_endpoints.py
+from tests.route_paths import route_paths
 from fastapi.testclient import TestClient
 from unittest.mock import patch
 
 
 def test_analyze_jd_endpoint_exists():
     from src.interface.api import app
-    routes = [r.path for r in app.routes]
+    routes = route_paths(app)
     assert "/agents/analyze-jd" in routes
 
 
@@ -41,7 +42,7 @@ def test_analyze_jd_returns_422_on_empty_jd():
 
 def test_performance_endpoint_exists():
     from src.interface.api import app
-    routes = [r.path for r in app.routes]
+    routes = route_paths(app)
     assert any("/agents/{" in r for r in routes)
 
 

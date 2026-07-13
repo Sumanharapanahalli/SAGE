@@ -1,4 +1,5 @@
 """Tests for OpenShell runner integration."""
+from tests.route_paths import route_paths
 import os
 import pytest
 from unittest.mock import patch, MagicMock
@@ -83,5 +84,5 @@ def test_get_openshell_runner_returns_singleton():
 def test_sandbox_status_endpoint_exists():
     """GET /sandbox/status endpoint must be registered."""
     from src.interface.api import app
-    routes = [r.path for r in app.routes]
+    routes = route_paths(app)
     assert "/sandbox/status" in routes

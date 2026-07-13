@@ -165,10 +165,16 @@ class Constitution:
             for c in self.constraints:
                 sections.append(f"- {c}")
 
-        # Voice
+        # Voice. validate() gates new writes, but a constitution.yaml already on disk is
+        # loaded WITHOUT validation — so render defensively rather than raise: this
+        # preamble is injected into every agent's system prompt, and a malformed field
+        # must degrade the prompt, never take the agent down.
         if self.voice:
-            tone = self.voice.get("tone", "")
-            avoid = self.voice.get("avoid", [])
+            if isinstance(self.voice, dict):
+                tone = self.voice.get("tone", "")
+                avoid = self.voice.get("avoid", []) or []
+            else:
+                tone, avoid = str(self.voice), []
             if tone:
                 sections.append(f"\n### Communication Style\nTone: {tone}")
             if avoid:
@@ -362,6 +368,15 @@ class Constitution:
         seen_ids: set[str] = set()
 
         for i, p in enumerate(self.principles):
+            # A principle must be a mapping. Without this guard a malformed entry (e.g. a
+            # bare string) reaches p.get() and raises AttributeError, which surfaces to the
+            # operator as an opaque "internal error" instead of a validation failure — and
+            # validate() is exactly the gate that must REJECT a bad agent-proposed edit
+            # rather than crash on it.
+            if not isinstance(p, dict):
+                errors.append(f"Principle {i}: must be an object with 'id' and 'text', "
+                              f"got {type(p).__name__}")
+                continue
             if "id" not in p:
                 errors.append(f"Principle {i}: missing 'id' field")
             if "text" not in p:
@@ -374,6 +389,17 @@ class Constitution:
                 errors.append(f"Principle {i}: duplicate id '{pid}'")
             if pid:
                 seen_ids.add(pid)
+
+        # `voice` is consumed as a mapping by build_prompt_preamble() (.get("tone")/
+        # .get("avoid")). It was never validated, so a scalar here passed the gate and
+        # then raised AttributeError downstream — and because build_prompt_preamble()
+        # feeds inject_into_prompt(), that crash lands in EVERY agent call for the
+        # solution, not just the Constitution page. Reject it at the gate instead.
+        if self.voice and not isinstance(self.voice, dict):
+            errors.append(
+                f"voice: must be an object with 'tone' and/or 'avoid', "
+                f"got {type(self.voice).__name__}"
+            )
 
         return errors
 

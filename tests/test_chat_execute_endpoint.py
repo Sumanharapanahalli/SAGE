@@ -1,4 +1,5 @@
 # tests/test_chat_execute_endpoint.py
+from tests.route_paths import route_paths
 from fastapi.testclient import TestClient
 
 
@@ -25,7 +26,7 @@ def test_execute_approve_unknown_trace_returns_404():
 
 def test_execute_endpoint_exists():
     from src.interface.api import app
-    routes = [r.path for r in app.routes]
+    routes = route_paths(app)
     assert "/chat/execute" in routes
 
 
