@@ -2670,13 +2670,13 @@ class BuildOrchestrator:
             # README
             readme_path = os.path.join(workspace, "README.md")
             if not os.path.exists(readme_path):
-                with open(readme_path, "w") as f:
+                with open(readme_path, "w", encoding="utf-8") as f:
                     f.write(f"# {run['solution_name']}\n\n{run['product_description']}\n")
 
             # AGENTS.md — record of which agents built what
             agents_path = os.path.join(workspace, "AGENTS.md")
             if not os.path.exists(agents_path):
-                with open(agents_path, "w") as f:
+                with open(agents_path, "w", encoding="utf-8") as f:
                     f.write(f"# Build Agents — {run['solution_name']}\n\n")
                     f.write(f"Build started: {run['created_at']}\n\n")
                     f.write("## Tasks\n\n")

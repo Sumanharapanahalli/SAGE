@@ -174,7 +174,7 @@ class OpenShellRunner:
             if ssh_config_result.returncode != 0:
                 raise RuntimeError(f"SSH config failed: {ssh_config_result.stderr}")
 
-            with open(ssh_config_file, "w") as f:
+            with open(ssh_config_file, "w", encoding="utf-8") as f:
                 f.write(ssh_config_result.stdout)
 
             yield SandboxHandle(name=safe_name, ssh_config_path=ssh_config_file)

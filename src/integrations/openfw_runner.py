@@ -125,7 +125,7 @@ class OpenFWRunner(BaseRunner):
         for file_info in parsed.get("files", []):
             fpath = os.path.join(workspace, file_info["path"])
             os.makedirs(os.path.dirname(fpath) or workspace, exist_ok=True)
-            with open(fpath, "w") as f:
+            with open(fpath, "w", encoding="utf-8") as f:
                 f.write(file_info["content"])
 
         # 2. Run cppcheck MISRA static analysis

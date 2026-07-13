@@ -496,7 +496,12 @@ class BaseRunner(ABC):
         for block in code_blocks:
             fpath = os.path.join(workspace, block["filename"])
             os.makedirs(os.path.dirname(fpath) or workspace, exist_ok=True)
-            with open(fpath, "w") as f:
+            # encoding="utf-8" is not optional: this writes LLM-generated code, which
+            # routinely contains non-Latin-1 characters (arrows, box-drawing, emoji, smart
+            # quotes). Python defaults to the locale encoding — cp1252 on Windows — so a
+            # single "→" raised UnicodeEncodeError and took down the whole training session
+            # ("'charmap' codec can't encode character '→'"), losing all its work.
+            with open(fpath, "w", encoding="utf-8") as f:
                 f.write(block["code"])
             written.append(fpath)
         return written

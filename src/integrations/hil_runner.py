@@ -274,7 +274,7 @@ class HILRunner:
                 f"exit\n"
             )
             script_path = "/tmp/sage_jlink_flash.jlink"
-            with open(script_path, "w") as f:
+            with open(script_path, "w", encoding="utf-8") as f:
                 f.write(jlink_cmd)
             cmd = [
                 "JLinkExe",
