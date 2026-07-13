@@ -16,6 +16,21 @@
 PROJECT       ?= iot_medical
 SOLUTIONS_DIR ?= solutions
 PORT          ?= 8000
+
+# Tauri shells out to `cargo`, so cargo must be on the PATH of the npm process — not
+# just on the PATH of whatever shell you typed `make` into. rustup does not reliably add
+# ~/.cargo/bin to the persisted Windows PATH, so `make desktop-dev` works from Git Bash
+# (whose profile adds it) and dies from PowerShell with:
+#     failed to run 'cargo metadata' ... program not found
+# Prepend the standard rustup bin dir ourselves so the desktop targets are independent of
+# the user's shell configuration. PATH separator differs by platform (';' on Windows).
+ifeq ($(OS),Windows_NT)
+  CARGO_BIN ?= $(subst \,/,$(USERPROFILE))/.cargo/bin
+  PATH_SEP  := ;
+else
+  CARGO_BIN ?= $(HOME)/.cargo/bin
+  PATH_SEP  := :
+endif
 HOST          ?= 0.0.0.0
 
 # Detect venv Python (works on Windows bash / Linux / macOS)
@@ -192,6 +207,7 @@ desktop-install:
 # target works from PowerShell, cmd, and bash alike.
 desktop-dev: export SAGE_ROOT := $(CURDIR)
 desktop-dev: export SAGE_PYTHON := $(abspath $(PYTHON))
+desktop-dev: export PATH := $(CARGO_BIN)$(PATH_SEP)$(PATH)
 desktop-dev:
 	@echo "Starting sage-desktop dev build (requires npm deps + Rust toolchain)..."
 	cd sage-desktop && npm run tauri dev
@@ -210,10 +226,12 @@ desktop-dev-solution: export SAGE_PROJECT := $(SOLUTION_NAME)
 desktop-dev-solution: export SAGE_SOLUTION_NAME := $(SOLUTION_NAME)
 desktop-dev-solution: export SAGE_SOLUTION_PATH := $(SOLUTION_PATH)
 desktop-dev-solution: export SAGE_SOLUTIONS_DIR := $(dir $(SOLUTION_PATH))
+desktop-dev-solution: export PATH := $(CARGO_BIN)$(PATH_SEP)$(PATH)
 desktop-dev-solution:
 	@echo "Starting sage-desktop targeted at solution '$(SOLUTION_NAME)' ($(SOLUTION_PATH))..."
 	cd sage-desktop && npm run tauri dev
 
+desktop-build: export PATH := $(CARGO_BIN)$(PATH_SEP)$(PATH)
 desktop-build:
 	@echo "Building sage-desktop release bundle..."
 	cd sage-desktop && npm run tauri build
