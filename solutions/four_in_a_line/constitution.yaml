@@ -4,8 +4,7 @@ principles:
   text: Never bypass the human approval gate
   weight: 1.0
 constraints:
-- id: no-net
-  text: No network calls from the game loop
+- No network calls from the game loop
 voice:
   tone: Terse, factual
   avoid:

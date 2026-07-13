@@ -204,6 +204,18 @@ class Constitution:
         violations = []
         desc_lower = action_description.lower()
         for constraint in self.constraints:
+            # A constraint is documented as a plain string. A malformed entry (e.g. a dict)
+            # reaches _extract_constraint_keywords() -> .lower() and raises AttributeError,
+            # which surfaces as an opaque "internal error" from the RPC. check_action is a
+            # SAFETY gate — it decides whether an agent action violates a hard constraint —
+            # so a bad entry must never make it crash open or crash shut silently. Skip it
+            # loudly; validate() rejects it at the write gate.
+            if not isinstance(constraint, str):
+                self.logger.warning(
+                    "constitution: ignoring malformed constraint (expected a string, got %s): %r",
+                    type(constraint).__name__, constraint,
+                )
+                continue
             # Extract key phrases from constraint for matching
             keywords = self._extract_constraint_keywords(constraint)
             if all(kw in desc_lower for kw in keywords):
@@ -400,6 +412,15 @@ class Constitution:
                 f"voice: must be an object with 'tone' and/or 'avoid', "
                 f"got {type(self.voice).__name__}"
             )
+
+        # Constraints are documented (and consumed by check_action) as plain strings. This
+        # was never validated, so a dict-shaped entry saved cleanly and then crashed the
+        # check_action safety gate at read time with an opaque "internal error".
+        for i, c in enumerate(self.constraints):
+            if not isinstance(c, str):
+                errors.append(
+                    f"Constraint {i}: must be a string, got {type(c).__name__}"
+                )
 
         return errors
 

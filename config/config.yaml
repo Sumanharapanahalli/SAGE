@@ -22,7 +22,23 @@ llm:
   # --- Gemini CLI Settings (provider = "gemini") ---
   gemini_model: "gemini-2.5-flash"      # Model hint (CLI may override)
   timeout: 500                           # Shared timeout for all providers (seconds)
-  gemini_timeout: 30                     # Gemini-specific fast-fail timeout (seconds)
+  # Gemini CLI latency scales super-linearly with prompt size — measured on this repo:
+  # 5KB->7s, 20KB->17s, 50KB->142s. A 30s "fast-fail" is BELOW the real cost of a normal
+  # critic prompt (code + criteria routinely exceeds 20KB), so Gemini was silently timing
+  # out and dropping out of the critic panel — leaving a single-critic review that looked
+  # like a panel. Fast-fail must sit above the honest p99, not below the median.
+  gemini_timeout: 300                    # Gemini-specific timeout (seconds)
+
+  # --- Local critic (Ollama) — the third, free voice on the critic panel ---
+  # A cross-VENDOR panel is the point: Claude is the primary and Gemini the second judge,
+  # so a local model is the only independent third opinion — and being free, it can grade
+  # EVERY candidate, which is what makes an always-on panel affordable.
+  # Must be a FAST, NON-THINKING model: a reasoning model (e.g. qwen3.6:27b) emits a long
+  # "Thinking..." preamble that both blows the timeout and breaks JSON score parsing.
+  # Empty = no local critic (the panel degrades to Claude + Gemini, and says so).
+  critic_ollama_model: "qwen2.5-coder:7b"
+  ollama_host: "http://localhost:11434"
+  ollama_timeout: 300
 
   # --- Claude Code CLI Settings (provider = "claude-code") ---
   claude_model: "claude-sonnet-4-6"

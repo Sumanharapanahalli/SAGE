@@ -706,6 +706,16 @@ class CriticAgent:
             if pool.get("gemini"):
                 pool_names = pool.list_providers() if not provider_names else provider_names
 
+        # Same for a local Ollama critic (Qwen). A cross-VENDOR panel is the whole point:
+        # the primary is Claude and the auto-registered judge was Gemini, so without this
+        # there was no third, independent voice — and no free one. A local model costs
+        # nothing per call, so it can grade every candidate, which is what makes an
+        # always-on panel affordable.
+        if "ollama" not in pool_names:
+            self._ensure_ollama_registered(pool)
+            if pool.get("ollama"):
+                pool_names = pool.list_providers() if not provider_names else provider_names
+
         # 3. Call primary + all pool providers in parallel
         def _call_primary():
             return ("primary", self._get_single_review(review_type, artifact, description, context))
@@ -882,13 +892,54 @@ class CriticAgent:
             from src.core.llm_gateway import GeminiCLIProvider, _load_config
             cfg = _load_config()
             llm_cfg = cfg.get("llm", {})
-            gemini_timeout = llm_cfg.get("gemini_timeout", llm_cfg.get("timeout", 30))
+            # 300s, not 30s: a critic prompt (artifact + criteria) routinely exceeds 20KB,
+            # and Gemini's latency is super-linear in prompt size. At 30s it timed out and
+            # silently left the pool, degrading an N-critic panel to a single critic.
+            gemini_timeout = llm_cfg.get("gemini_timeout", llm_cfg.get("timeout", 300))
             temp = GeminiCLIProvider({"gemini_model": "gemini-2.5-flash", "gemini_timeout": gemini_timeout})
             if temp.gemini_path:
                 pool.register("gemini", temp)
                 self.logger.info("Auto-registered Gemini as critic provider")
         except Exception as exc:
             self.logger.debug("Gemini auto-register failed: %s", exc)
+
+    def _ensure_ollama_registered(self, pool) -> None:
+        """Auto-discover and register a local Ollama critic (e.g. Qwen), if one is serving.
+
+        Probed against the Ollama HTTP API rather than assumed: registering a provider that
+        is not actually running would add a critic that times out on every call, silently
+        shrinking the panel back to one judge — the exact failure the 30s gemini_timeout
+        caused. A critic that cannot answer must never be counted as a critic.
+        """
+        if pool.get("ollama"):
+            return
+        try:
+            from src.core.llm_gateway import OllamaProvider, _load_config
+
+            cfg = _load_config()
+            llm_cfg = cfg.get("llm", {})
+            model = llm_cfg.get("critic_ollama_model", llm_cfg.get("ollama_model", ""))
+            if not model:
+                return
+
+            import json as _json
+            import urllib.request
+
+            host = llm_cfg.get("ollama_host", "http://localhost:11434")
+            with urllib.request.urlopen(f"{host}/api/tags", timeout=5) as resp:
+                served = {m.get("name", "") for m in _json.load(resp).get("models", [])}
+            if model not in served:
+                self.logger.info(
+                    "Ollama critic '%s' not served by %s — skipping (available: %s)",
+                    model, host, ", ".join(sorted(served)) or "none",
+                )
+                return
+
+            timeout = int(llm_cfg.get("ollama_timeout", llm_cfg.get("timeout", 300)))
+            pool.register("ollama", OllamaProvider({"ollama_model": model, "timeout": timeout}))
+            self.logger.info("Auto-registered Ollama (%s) as critic provider", model)
+        except Exception as exc:  # noqa: BLE001
+            self.logger.debug("Ollama auto-register failed: %s", exc)
 
     def _parse_critic_json(
         self, response_text: str, meta: dict

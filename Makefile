@@ -129,6 +129,18 @@ ui:
 test:
 	$(PYTEST) tests/ -m unit -v
 
+# SYSTEM evidence gate — "can a person actually use SAGE right now?"
+# `make test` passes on a tree where the app cannot even start: unit tests import modules,
+# they never open the product. This boots the sidecar, calls every RPC the UI calls,
+# compiles the app, builds the frontend, and checks the critic panel has >1 voice.
+# Run this before claiming anything works.  (verify-fast skips the ~2min Rust compile.)
+verify: export PATH := $(CARGO_BIN)$(PATH_SEP)$(PATH)
+verify:
+	$(PYTHON) scripts/verify_system.py
+
+verify-fast:
+	$(PYTHON) scripts/verify_system.py --fast
+
 test-unit: test
 
 test-api:
