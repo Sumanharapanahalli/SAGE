@@ -184,9 +184,17 @@ desktop-install:
 	@echo "Installing sage-desktop npm deps..."
 	cd sage-desktop && npm install
 
+# Env is passed via make's target-specific `export`, NOT a `VAR=value cmd` prefix.
+# That prefix is POSIX-shell syntax: when make resolves its shell to cmd.exe (the
+# default on Windows when sh isn't picked up), it fails with
+# "'SAGE_ROOT' is not recognized as an internal or external command".
+# `export` puts the variable in the recipe's environment via make itself, so the
+# target works from PowerShell, cmd, and bash alike.
+desktop-dev: export SAGE_ROOT := $(CURDIR)
+desktop-dev: export SAGE_PYTHON := $(abspath $(PYTHON))
 desktop-dev:
 	@echo "Starting sage-desktop dev build (requires npm deps + Rust toolchain)..."
-	cd sage-desktop && SAGE_ROOT=$(CURDIR) SAGE_PYTHON="$(abspath $(PYTHON))" npm run tauri dev
+	cd sage-desktop && npm run tauri dev
 
 # Launch desktop pre-targeted at a specific solution — including one that
 # lives outside this repo (SAGE_SOLUTIONS_DIR / SOUL.md "solutions are
@@ -196,15 +204,15 @@ desktop-dev:
 # directory). Usage:
 #   make desktop-dev-solution SOLUTION_NAME=poseengine \
 #        SOLUTION_PATH="C:/sandbox/SAGE/solutions/poseengine"
+desktop-dev-solution: export SAGE_ROOT := $(CURDIR)
+desktop-dev-solution: export SAGE_PYTHON := $(abspath $(PYTHON))
+desktop-dev-solution: export SAGE_PROJECT := $(SOLUTION_NAME)
+desktop-dev-solution: export SAGE_SOLUTION_NAME := $(SOLUTION_NAME)
+desktop-dev-solution: export SAGE_SOLUTION_PATH := $(SOLUTION_PATH)
+desktop-dev-solution: export SAGE_SOLUTIONS_DIR := $(dir $(SOLUTION_PATH))
 desktop-dev-solution:
 	@echo "Starting sage-desktop targeted at solution '$(SOLUTION_NAME)' ($(SOLUTION_PATH))..."
-	cd sage-desktop && SAGE_ROOT=$(CURDIR) \
-		SAGE_PYTHON="$(abspath $(PYTHON))" \
-		SAGE_PROJECT="$(SOLUTION_NAME)" \
-		SAGE_SOLUTION_NAME="$(SOLUTION_NAME)" \
-		SAGE_SOLUTION_PATH="$(SOLUTION_PATH)" \
-		SAGE_SOLUTIONS_DIR="$(dir $(SOLUTION_PATH))" \
-		npm run tauri dev
+	cd sage-desktop && npm run tauri dev
 
 desktop-build:
 	@echo "Building sage-desktop release bundle..."
