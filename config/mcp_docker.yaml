@@ -1,0 +1,53 @@
+# Docker-hosted MCP tools for SAGE agents.
+#
+# Every tool runs in a container: nothing is installed on the host, and a tool sees only
+# what its image and the mounts below give it. Images come from Docker's official MCP
+# catalog (the `mcp/*` namespace) — proven servers, not ones we wrote.
+#
+# Tools are exposed to agents as `<server>.<tool>` (e.g. `fetch.fetch`) and are registered
+# into the existing mcp_registry, so agents, the ReAct loop and the desktop `mcp.tools` RPC
+# all see them with no change.
+#
+# SECURITY DEFAULTS — these are deliberate, do not relax them casually:
+#   network: none   Denied by default. Only a server whose entire purpose is the network
+#                   (fetch) gets it. A code-analysis tool with network access is an
+#                   exfiltration path.
+#   mounts          Bind mounts are READ-ONLY unless read_only: false is stated. A tool that
+#                   can write to your repo can rewrite your repo.
+#
+# Discover more servers: https://hub.docker.com/u/mcp
+#
+#   python -c "from src.integrations.mcp_docker import docker_mcp; print(docker_mcp.list_tools())"
+
+servers:
+  # Fetch a URL and return it as markdown. The one server that legitimately needs the net.
+  fetch:
+    image: mcp/fetch
+    network: bridge
+    timeout: 120
+    enabled: true
+
+  # Read-only view of THIS repo, for agents that need to read code they are reasoning about.
+  # Read-only on purpose: SAGE's Law 1 is that agents propose and humans decide — a tool that
+  # can write to the working tree hands an agent the ability to bypass the approval gate.
+  filesystem:
+    image: mcp/filesystem
+    args: ["/workspace"]
+    network: none
+    timeout: 120
+    enabled: false            # enable once you have pulled mcp/filesystem
+    mounts:
+      - source: "${SAGE_ROOT}"
+        target: /workspace
+        read_only: true
+
+  # Git history/blame/log over the same read-only mount.
+  git:
+    image: mcp/git
+    network: none
+    timeout: 120
+    enabled: false            # enable once you have pulled mcp/git
+    mounts:
+      - source: "${SAGE_ROOT}"
+        target: /workspace
+        read_only: true

@@ -18,6 +18,13 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+# Keep the suite independent of ambient host state. MCPRegistry can load tools from Docker
+# containers (config/mcp_docker.yaml), so without this the set of registered tools — and
+# therefore assertions about it — would depend on whether the developer happens to have
+# Docker Desktop running. The same commit would then pass on CI and fail on a laptop.
+# The container source has its own explicitly Docker-gated tests in tests/test_mcp_docker.py.
+os.environ.setdefault("SAGE_MCP_DOCKER", "0")
+
 # ---------------------------------------------------------------------------
 # Sample log entries used across multiple test files
 # ---------------------------------------------------------------------------

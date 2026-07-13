@@ -113,6 +113,28 @@ class MCPRegistry:
                     continue
                 self._load_server(sol_dir, filename)
 
+        # 3. Docker-hosted MCP servers (config/mcp_docker.yaml). Real MCP over stdio,
+        #    each tool inside its own container: nothing installed on the host, and the
+        #    tool sees only what its image and mounts allow. Registered here rather than
+        #    in each caller so agents, the ReAct loop and the desktop `mcp.tools` RPC all
+        #    pick them up unchanged.
+        #    Never fatal: if Docker is down the local tools must still work, and a tool we
+        #    cannot actually run must not be advertised — an agent would plan around it.
+        #    SAGE_MCP_DOCKER=0 disables the source outright. The test suite sets it (see
+        #    tests/conftest.py): without it, the registry's contents would depend on whether
+        #    the host's Docker daemon happens to be running, so the same commit would pass on
+        #    one machine and fail on another. Tests are the truth — they must not depend on
+        #    ambient host state.
+        if os.environ.get("SAGE_MCP_DOCKER", "1") != "0":
+            try:
+                from src.integrations.mcp_docker import docker_mcp
+
+                n_docker = docker_mcp.register_into(self)
+                if n_docker:
+                    logger.info("MCPRegistry: +%d Docker-hosted MCP tool(s)", n_docker)
+            except Exception as e:  # noqa: BLE001
+                logger.debug("Docker MCP tools unavailable: %s", e)
+
         logger.info(
             "MCPRegistry loaded %d tool(s) from %d server(s) [solution: %s]",
             len(self._tool_map), len(self._servers), solution,

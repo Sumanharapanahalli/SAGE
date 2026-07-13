@@ -34,10 +34,18 @@ class TestMCPRegistry:
         return MCPRegistry()
 
     def test_list_tools_empty_when_no_servers_dir(self):
-        """list_tools() must return [] when no mcp_servers directory exists."""
+        """list_tools() must return [] when no mcp_servers directory exists.
+
+        The Docker-hosted MCP source is patched out deliberately. The registry now loads
+        tools from module servers AND from containers (config/mcp_docker.yaml), so without
+        this the assertion would depend on whether the host's Docker daemon happens to be
+        running — passing on CI and failing on a developer's machine. This test is about
+        MODULE discovery; the container source has its own tests in test_mcp_docker.py.
+        """
         reg = self._fresh_registry()
         with patch.object(reg, "_get_solution_mcp_dir", return_value="/nonexistent/path"), \
-             patch.object(reg, "_get_framework_mcp_dir", return_value="/nonexistent/fw"):
+             patch.object(reg, "_get_framework_mcp_dir", return_value="/nonexistent/fw"), \
+             patch("src.integrations.mcp_docker.docker_mcp.register_into", return_value=0):
             tools = reg.list_tools()
         assert isinstance(tools, list)
         assert len(tools) == 0
