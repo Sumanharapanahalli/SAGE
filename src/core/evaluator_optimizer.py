@@ -46,6 +46,7 @@ import json
 import logging
 import re
 import tempfile
+import time
 from typing import Callable, Optional
 
 logger = logging.getLogger("EvaluatorOptimizer")
@@ -95,6 +96,8 @@ class EvaluatorOptimizerRunner:
         self.rubric = self.criteria  # may be sharpened in run()
         self.generate_rubric = self.config.get("generate_rubric", True)
         self.sandbox = self.config.get("sandbox", True)
+        self.evaluator_retries = int(self.config.get("evaluator_retries", 2))
+        self.evaluator_retry_backoff = float(self.config.get("evaluator_retry_backoff", 5.0))
         self._build = build_provider or self._default_build_provider
 
         # HARDENING — keep the human-in-the-loop guarantee. The optimizer is the
@@ -263,8 +266,22 @@ class EvaluatorOptimizerRunner:
 
         if len(self.evaluators) <= 1:
             evaluator = self.evaluators[0] if self.evaluators else None
-            raw = evaluator.generate(prompt, EVALUATOR_SYSTEM) if evaluator else ""
-            return self._parse_evaluation(raw)
+            if evaluator is None:
+                return self._parse_evaluation("")
+            ev = self._parse_evaluation(evaluator.generate(prompt, EVALUATOR_SYSTEM))
+            # A CLI evaluator times out or returns prose under transient overload; that
+            # is indistinguishable at this layer from a genuinely bad candidate unless we
+            # retry. Without this, one overloaded-provider window sinks a whole run to a
+            # phantom 0.0 (observed: 3/3 iterations of a task lost to 300s timeouts) —
+            # the failure that motivated dropping the cross-vendor judge entirely.
+            for attempt in range(self.evaluator_retries):
+                if ev["parse_ok"]:
+                    break
+                logger.warning("evaluator unparseable/timed out — retry %d/%d",
+                               attempt + 1, self.evaluator_retries)
+                time.sleep(self.evaluator_retry_backoff * (2 ** attempt))
+                ev = self._parse_evaluation(evaluator.generate(prompt, EVALUATOR_SYSTEM))
+            return ev
 
         scores = []
         feedbacks = []

@@ -2,8 +2,8 @@
 """
 SAGE Self-Improvement Runner
 =============================
-Runs the EvaluatorOptimizer loop (Claude as BOTH optimizer and evaluator)
-across a catalogue of improvement tasks, producing HITL-gated proposals.
+Runs the EvaluatorOptimizer loop (Claude optimizes, Gemini evaluates) across a
+catalogue of improvement tasks, producing HITL-gated proposals.
 
 Nothing is applied automatically — every output is a proposal that a human
 must review and approve through the SAGE approval gate.
@@ -575,9 +575,16 @@ def run_task(task: dict, out_dir: Path, max_iterations: int, threshold: float) -
         "optimizer": {"provider": "claude-code", "model": "claude-opus-4-8", "timeout": 600,
                       "disallowed_tools": "Write Edit NotebookEdit Bash"},
         # Step 0(a): the EVALUATOR must NOT be the same model as the optimizer — a model
-        # grading its own output is self-grading and inflates/misjudges scores. A different
-        # (still strong) model keeps the judge independent. Opus optimizes; Sonnet evaluates.
-        "evaluator": {"provider": "claude-code", "model": "claude-sonnet-4-6", "timeout": 300},
+        # grading its own output is self-grading and inflates/misjudges scores. Gemini is a
+        # different VENDOR, not just a different checkpoint: it shares no weights, training
+        # data, or refusal/verbosity biases with the optimizer, so it cannot pattern-match
+        # its own house style as "good". Claude optimizes; Gemini holds the bar.
+        # 900s, not 300s: Gemini CLI latency scales super-linearly with prompt size
+        # (measured: 5KB->7s, 20KB->17s, 50KB->142s), and optimizer candidates here run
+        # 10-35KB. 300s put real evaluations inside the timeout margin.
+        "evaluator": {"provider": "gemini", "model": "gemini-3.5-flash", "timeout": 900},
+        # Survive a transient Gemini overload rather than recording a phantom 0.0.
+        "evaluator_retries": 2,
         "criteria": task["criteria"],
         "max_iterations": max_iterations,
         "score_threshold": threshold,
@@ -609,10 +616,21 @@ def run_task(task: dict, out_dir: Path, max_iterations: int, threshold: float) -
         f.write(f"## Criteria\n\n{task['criteria']}\n\n")
         f.write("## Proposal (submit to HITL approval gate)\n\n")
         f.write(result.get("final") or "(no output)")
-        f.write("\n\n---\n\n## Iteration History\n\n")
+        # Full review transcript: Gemini's critique and Claude's response to it, per
+        # iteration, untruncated. This is the artifact a human reads to judge how well
+        # the optimizer is actually doing — a 200-char feedback snippet with no sight of
+        # the candidate it produced cannot answer that, so nothing here is elided.
+        f.write("\n\n---\n\n## Review Transcript (Gemini critiques → Claude revises)\n\n")
         for h in result.get("history", []):
-            f.write(f"**Iter {h['iteration']}** — score {h['score']:.1f} pass={h['passed']}  \n")
-            f.write(f"Feedback: {h['feedback'][:200]}  \n\n")
+            verdict = "PASS" if h["passed"] else "REJECTED"
+            f.write(f"### Iteration {h['iteration']} — Gemini scored {h['score']:.1f}/10 → {verdict}\n\n")
+            if not h.get("parse_ok", True):
+                f.write("> **Evaluator output was unparseable** (Gemini overloaded or "
+                        "unavailable). This is NOT a genuine 0.0 — re-run this task.\n\n")
+            f.write("**Gemini's comments:**\n\n")
+            f.write(f"{h['feedback'] or '(passed with no further comment)'}\n\n")
+            f.write("**Claude's work at this iteration:**\n\n")
+            f.write(f"```\n{h['candidate']}\n```\n\n")
 
     result["out_file"] = str(out_file)
     return result
@@ -630,7 +648,7 @@ def write_summary(results: list[dict], out_dir: Path, args) -> None:
         f"**Tasks run:** {len(results)}  ",
         f"**Converged:** {converged}/{len(results)}  ",
         f"**Total time:** {total_time/60:.1f} min  ",
-        f"**Model:** Opus 4.8 optimizer / Sonnet 4.6 evaluator (independent judge)  ",
+        f"**Model:** Claude Opus 4.8 optimizer / Gemini 3.5 Flash evaluator (cross-vendor judge)  ",
         f"**Max iterations:** {args.max_iterations}  ",
         f"**Threshold:** {args.threshold}  ",
         "\n> Nothing applied — all proposals require HITL approval.\n",
@@ -700,7 +718,7 @@ def main():
     print(f"\nSAGE Self-Improvement Runner")
     print(f"Output -> {out_dir}")
     print(f"Tasks  -> {len(tasks)}  |  max_iterations={args.max_iterations}  |  threshold={args.threshold}")
-    print(f"Model  -> Opus 4.8 optimizer / Sonnet 4.6 evaluator (independent judge)\n")
+    print(f"Model  -> Claude Opus 4.8 optimizer / Gemini 3.5 Flash evaluator (cross-vendor judge)\n")
 
     if args.dry_run:
         print("DRY RUN — tasks that would run:\n")
