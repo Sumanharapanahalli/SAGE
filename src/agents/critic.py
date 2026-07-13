@@ -753,9 +753,35 @@ class CriticAgent:
                     }
 
         # 4. Aggregate scores (primary 1.5x, human_expert 2.0x weight)
-        scored = {n: r.get("score", 0) for n, r in reviews.items() if "error" not in r}
+        #
+        # A critic that could not ANSWER is not a critic scoring zero. _parse_critic_json
+        # returns {"score": 0, "llm_parse_error": True} when a provider times out, is
+        # overloaded, or emits prose instead of JSON — and that 0 was aggregated as a genuine
+        # verdict. Observed live in a gym session: {gemini: 0, primary: 35, ollama: 61} —
+        # Gemini had not judged the work worthless, it had failed to respond.
+        #
+        # Scoped honestly: with ONE non-answer the weighted median absorbs the phantom, so
+        # that case is a REPORTING bug (a 0 shown that nobody voted). With TWO, the phantoms
+        # out-weigh the single critic that actually spoke and the median lands on 0 — failing
+        # work that was rated 70. A panel is only robust to failures it does not COUNT.
+        scored = {
+            n: r.get("score", 0)
+            for n, r in reviews.items()
+            if "error" not in r and not r.get("llm_parse_error")
+        }
         if not scored:
-            scored = {"primary": reviews.get("primary", {}).get("score", 0)}
+            # Every critic failed. Fall back to the primary's score ONLY if the primary
+            # itself actually answered — otherwise this is a panel-wide outage, and
+            # reporting 0 would again invent a verdict nobody reached.
+            primary = reviews.get("primary", {})
+            if primary and not primary.get("llm_parse_error") and "error" not in primary:
+                scored = {"primary": primary.get("score", 0)}
+            else:
+                self.logger.warning(
+                    "every critic failed to return a parseable score — reporting an "
+                    "unscored review rather than a phantom 0"
+                )
+                scored = {}
 
         weights = {}
         for name in scored:
@@ -799,13 +825,24 @@ class CriticAgent:
                         seen.add(item)
             return merged
 
-        provider_scores = {n: r.get("score", 0) for n, r in reviews.items()}
+        # Report a non-answer as "failed", never as a 0 — a reader (or the gym, or the
+        # optimizer) cannot otherwise tell a critic that judged the work worthless from one
+        # that never ran.
+        provider_scores = {
+            n: ("failed" if (r.get("llm_parse_error") or "error" in r) else r.get("score", 0))
+            for n, r in reviews.items()
+        }
         summary_parts = ", ".join(f"{n}={s}" for n, s in provider_scores.items())
 
         result = {
             "score": final_score,
             "provider_scores": provider_scores,
             "providers_used": list(reviews.keys()),
+            # Which critics actually returned a parseable verdict, and whether ANY did.
+            # `score` is meaningless when the panel is unscored; consumers must check this
+            # rather than trust a 0.
+            "providers_scored": sorted(scored),
+            "panel_unscored": not scored,
             "flaws": all_flaws,
             "suggestions": _merge_key("suggestions"),
             "missing": _merge_key("missing"),
