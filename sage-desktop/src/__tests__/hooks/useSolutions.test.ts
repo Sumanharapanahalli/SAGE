@@ -5,13 +5,18 @@ vi.mock("@/api/client", () => ({
   listSolutions: vi.fn(),
   getCurrentSolution: vi.fn(),
   switchSolution: vi.fn(),
+  unloadSolution: vi.fn(),
+  removeSolution: vi.fn(),
 }));
 
 import * as client from "@/api/client";
 import {
+  solutionsKey,
   useCurrentSolution,
+  useRemoveSolution,
   useSolutions,
   useSwitchSolution,
+  useUnloadSolution,
 } from "@/hooks/useSolutions";
 import {
   createTestQueryClient,
@@ -101,5 +106,97 @@ describe("useSwitchSolution", () => {
     result.current.mutate({ name: "ghost", path: "/abs/ghost" });
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(result.current.error?.kind).toBe("SolutionNotFound");
+  });
+});
+
+describe("useUnloadSolution", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    localStorage.clear();
+  });
+
+  it("unloads, forgets the remembered solution, and invalidates the cache", async () => {
+    localStorage.setItem(
+      "sage-desktop:last-solution",
+      JSON.stringify({ name: "yoga", path: "/abs/yoga" }),
+    );
+    vi.mocked(client.unloadSolution).mockResolvedValue({
+      name: null,
+      path: null,
+    });
+    const qc = createTestQueryClient();
+    const spy = vi.spyOn(qc, "invalidateQueries");
+
+    const { result } = renderHook(() => useUnloadSolution(), {
+      wrapper: wrapperWith(qc),
+    });
+    result.current.mutate();
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(client.unloadSolution).toHaveBeenCalled();
+    // Otherwise Home would immediately auto-reopen what we just unloaded.
+    expect(localStorage.getItem("sage-desktop:last-solution")).toBeNull();
+    expect(spy).toHaveBeenCalled();
+  });
+
+  it("keeps the remembered solution when the unload fails", async () => {
+    localStorage.setItem(
+      "sage-desktop:last-solution",
+      JSON.stringify({ name: "yoga", path: "/abs/yoga" }),
+    );
+    vi.mocked(client.unloadSolution).mockRejectedValue({
+      kind: "SidecarDown",
+      detail: { message: "dead" },
+    });
+    const { result } = renderHook(() => useUnloadSolution(), {
+      wrapper: wrapperWith(createTestQueryClient()),
+    });
+    result.current.mutate();
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(localStorage.getItem("sage-desktop:last-solution")).not.toBeNull();
+  });
+});
+
+describe("useRemoveSolution", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("defaults to archive mode", async () => {
+    vi.mocked(client.removeSolution).mockResolvedValue({
+      name: "yoga",
+      mode: "archive",
+      path: "/abs/yoga",
+      archived_to: "/abs/.archive/yoga-20260713T000000Z",
+    });
+    const { result } = renderHook(() => useRemoveSolution(), {
+      wrapper: wrapperWith(createTestQueryClient()),
+    });
+    result.current.mutate({ name: "yoga" });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(client.removeSolution).toHaveBeenCalledWith(
+      "yoga",
+      "archive",
+      undefined,
+    );
+  });
+
+  it("passes the typed confirmation through for a delete", async () => {
+    vi.mocked(client.removeSolution).mockResolvedValue({
+      name: "yoga",
+      mode: "delete",
+      path: "/abs/yoga",
+    });
+    const qc = createTestQueryClient();
+    const spy = vi.spyOn(qc, "invalidateQueries");
+    const { result } = renderHook(() => useRemoveSolution(), {
+      wrapper: wrapperWith(qc),
+    });
+    result.current.mutate({ name: "yoga", mode: "delete", confirm: "yoga" });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(client.removeSolution).toHaveBeenCalledWith(
+      "yoga",
+      "delete",
+      "yoga",
+    );
+    expect(spy).toHaveBeenCalledWith({ queryKey: solutionsKey });
   });
 });

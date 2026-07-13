@@ -278,6 +278,22 @@ export interface SwitchSolutionResult {
   path: string;
 }
 
+/** Payload of `unload_solution` — both fields are null (no solution active). */
+export interface UnloadSolutionResult {
+  name: null;
+  path: null;
+}
+
+export type RemoveSolutionMode = "archive" | "delete";
+
+export interface RemoveSolutionResult {
+  name: string;
+  mode: RemoveSolutionMode;
+  path: string;
+  /** Only present for mode "archive". */
+  archived_to?: string;
+}
+
 // ── Queue ─────────────────────────────────────────────────────────────────
 
 export interface QueueStatus {

@@ -8,6 +8,8 @@ vi.mock("@/api/client", () => ({
   listSolutions: vi.fn(),
   getCurrentSolution: vi.fn(),
   switchSolution: vi.fn(),
+  unloadSolution: vi.fn(),
+  removeSolution: vi.fn(),
 }));
 
 import * as client from "@/api/client";
@@ -149,6 +151,74 @@ describe("Home page", () => {
     render(<Home />, { wrapper: routerWrapper() });
     await waitFor(() =>
       expect(screen.getByRole("alert")).toHaveTextContent(/sidecar/i),
+    );
+  });
+
+  it("archives a solution from the picker without switching to it", async () => {
+    vi.mocked(client.getCurrentSolution).mockResolvedValue(null);
+    vi.mocked(client.listSolutions).mockResolvedValue([sol("poseengine")]);
+    vi.mocked(client.removeSolution).mockResolvedValue({
+      name: "poseengine",
+      mode: "archive",
+      path: "/solutions/poseengine",
+      archived_to: "/solutions/.archive/poseengine-20260713T000000Z",
+    });
+    render(<Home />, { wrapper: routerWrapper() });
+    await waitFor(() => screen.getByText("poseengine"));
+
+    await userEvent.click(
+      screen.getByRole("button", { name: /remove poseengine/i }),
+    );
+    expect(screen.getByTestId("remove-solution-dialog")).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: /^archive$/i }));
+
+    await waitFor(() =>
+      expect(client.removeSolution).toHaveBeenCalledWith(
+        "poseengine",
+        "archive",
+        undefined,
+      ),
+    );
+    // Removing must never load the solution.
+    expect(client.switchSolution).not.toHaveBeenCalled();
+    await waitFor(() =>
+      expect(
+        screen.queryByTestId("remove-solution-dialog"),
+      ).not.toBeInTheDocument(),
+    );
+  });
+
+  it("requires a typed confirmation before deleting from disk", async () => {
+    vi.mocked(client.getCurrentSolution).mockResolvedValue(null);
+    vi.mocked(client.listSolutions).mockResolvedValue([sol("poseengine")]);
+    render(<Home />, { wrapper: routerWrapper() });
+    await waitFor(() => screen.getByText("poseengine"));
+
+    await userEvent.click(
+      screen.getByRole("button", { name: /remove poseengine/i }),
+    );
+    await userEvent.click(
+      screen.getByRole("radio", { name: /delete permanently/i }),
+    );
+    expect(
+      screen.getByRole("button", { name: /delete permanently/i }),
+    ).toBeDisabled();
+    expect(client.removeSolution).not.toHaveBeenCalled();
+
+    await userEvent.type(
+      screen.getByLabelText(/type the solution name/i),
+      "poseengine",
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: /delete permanently/i }),
+    );
+    await waitFor(() =>
+      expect(client.removeSolution).toHaveBeenCalledWith(
+        "poseengine",
+        "delete",
+        "poseengine",
+      ),
     );
   });
 

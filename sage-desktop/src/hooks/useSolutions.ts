@@ -7,13 +7,19 @@ import {
 import {
   getCurrentSolution,
   listSolutions,
+  removeSolution,
   switchSolution,
+  unloadSolution,
 } from "@/api/client";
+import { clearLastSolution } from "@/lib/lastSolution";
 import type {
   CurrentSolution,
   DesktopError,
+  RemoveSolutionMode,
+  RemoveSolutionResult,
   SolutionRef,
   SwitchSolutionResult,
+  UnloadSolutionResult,
 } from "@/api/types";
 
 export const solutionsKey = ["solutions"] as const;
@@ -55,6 +61,49 @@ export function useSwitchSolution() {
     mutationFn: (v) => switchSolution(v.name, v.path),
     onSuccess: () => {
       qc.invalidateQueries();
+    },
+  });
+}
+
+/**
+ * Unload the active solution — the sidecar respawns with no solution and the
+ * app falls back to the picker. Nothing on disk is touched.
+ *
+ * `clearLastSolution()` runs FIRST: Home auto-reopens `getLastSolution()` on
+ * mount, so leaving it set would instantly re-switch into the solution the
+ * operator just closed.
+ */
+export function useUnloadSolution() {
+  const qc = useQueryClient();
+  return useMutation<UnloadSolutionResult, DesktopError, void>({
+    mutationFn: () => unloadSolution(),
+    onSuccess: () => {
+      clearLastSolution();
+      qc.invalidateQueries();
+    },
+  });
+}
+
+export interface RemoveVars {
+  name: string;
+  mode?: RemoveSolutionMode;
+  /** Required (and must equal `name`) when mode is "delete". */
+  confirm?: string;
+}
+
+/**
+ * Deregister a solution. Archive by default (reversible); "delete" is a real
+ * rmtree and the sidecar refuses it unless `confirm === name`.
+ *
+ * Only offered for solutions that are NOT active — the running sidecar holds
+ * the active solution's `.sage/` SQLite files open.
+ */
+export function useRemoveSolution() {
+  const qc = useQueryClient();
+  return useMutation<RemoveSolutionResult, DesktopError, RemoveVars>({
+    mutationFn: (v) => removeSolution(v.name, v.mode ?? "archive", v.confirm),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: solutionsKey });
     },
   });
 }

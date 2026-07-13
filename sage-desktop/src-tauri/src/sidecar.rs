@@ -245,6 +245,27 @@ impl Sidecar {
         name: String,
         path: PathBuf,
     ) -> Result<(), DesktopError> {
+        self.respawn(Some(name), Some(path)).await
+    }
+
+    /// Gracefully shut down the current sidecar and respawn with *no* solution.
+    ///
+    /// The operator's "close this solution" action: the fresh sidecar runs in
+    /// minimal mode (`handshake` still answers, `solutions.list` still works),
+    /// releasing every `.sage/` SQLite handle the previous child held, and the
+    /// UI falls back to the picker. Framework control — executes immediately
+    /// (SOUL.md Law 1), no proposal queue.
+    pub async fn unload_solution(&mut self) -> Result<(), DesktopError> {
+        self.respawn(None, None).await
+    }
+
+    /// Tear down the current child (if any) and spawn a fresh one with the
+    /// given solution override. `None`/`None` means minimal mode.
+    async fn respawn(
+        &mut self,
+        name: Option<String>,
+        path: Option<PathBuf>,
+    ) -> Result<(), DesktopError> {
         use std::time::Duration as StdDuration;
 
         // Gracefully tear down the current child if one is running. When the
@@ -274,8 +295,8 @@ impl Sidecar {
         self.conn = None;
 
         let mut cfg = self.cfg.clone();
-        cfg.solution_name = Some(name);
-        cfg.solution_path = Some(path);
+        cfg.solution_name = name;
+        cfg.solution_path = path;
         // Re-arm the same crash hook for the fresh child.
         let fresh = Self::spawn_with_hook(cfg, self.on_crash.clone()).await?;
 

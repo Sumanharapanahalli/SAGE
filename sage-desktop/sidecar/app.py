@@ -153,6 +153,9 @@ def _build_dispatcher() -> Dispatcher:
     d.register("queue.list_tasks", queue.list_queue_tasks)
     d.register("solutions.list", solutions.list_solutions)
     d.register("solutions.get_current", solutions.get_current)
+    # Deregister a solution (archive by default, opt-in on-disk delete).
+    # Framework control — executes immediately, no proposal queue (Law 1).
+    d.register("solutions.remove", solutions.remove)
     d.register("onboarding.generate", onboarding.generate)
     d.register("builds.start", builds.start)
     d.register("builds.list", builds.list_runs)

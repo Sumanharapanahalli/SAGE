@@ -34,3 +34,30 @@ pub async fn switch_solution(
     let _ = app.emit("solution-switched", payload.clone());
     Ok(payload)
 }
+
+/// Unload the active solution: respawn the sidecar with no solution at all.
+///
+/// This is the operator's "close / return to the picker" action. It is
+/// framework control, not an agent proposal — it executes immediately
+/// (SOUL.md Law 1). Nothing on disk is touched: the solution's `.sage/`
+/// data and source stay exactly where they are, only the running process
+/// stops holding them open.
+#[tauri::command]
+pub async fn unload_solution(
+    sidecar: State<'_, RwLock<Sidecar>>,
+    app: AppHandle,
+) -> Result<Value, DesktopError> {
+    {
+        let mut guard = sidecar.write().await;
+        guard.unload_solution().await?;
+        // Same health gate as switch_solution: confirm the fresh (minimal-mode)
+        // sidecar answers before releasing the write lock.
+        guard.call("handshake", json!({})).await?;
+    }
+
+    // Reuse `solution-switched` with a null name — every listener already
+    // treats it as "the active solution changed, drop all caches".
+    let payload = json!({ "name": Value::Null, "path": Value::Null });
+    let _ = app.emit("solution-switched", payload.clone());
+    Ok(payload)
+}

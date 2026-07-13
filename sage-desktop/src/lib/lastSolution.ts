@@ -24,6 +24,18 @@ export function getLastSolution(): LastSolution | null {
   }
 }
 
+/**
+ * Forget the last-used solution so Home stops auto-reopening it.
+ * Called on unload — otherwise closing a solution would immediately reopen it.
+ */
+export function clearLastSolution(): void {
+  try {
+    localStorage.removeItem(KEY);
+  } catch {
+    // Same rationale as setLastSolution: auto-reopen is a nicety, not critical.
+  }
+}
+
 /** Remember a solution as the one to auto-reopen on next launch. */
 export function setLastSolution(solution: LastSolution): void {
   try {

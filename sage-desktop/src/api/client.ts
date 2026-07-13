@@ -85,6 +85,9 @@ import type {
   StartBuildParams,
   CurrentSolution,
   SwitchSolutionResult,
+  UnloadSolutionResult,
+  RemoveSolutionMode,
+  RemoveSolutionResult,
   OnboardingParams,
   OnboardingResult,
   StatusResponse,
@@ -282,6 +285,25 @@ export const getCurrentSolution = () =>
 
 export const switchSolution = (name: string, path: string) =>
   call<SwitchSolutionResult>("switch_solution", { name, path });
+
+/**
+ * Close the active solution: the sidecar respawns with no solution, releasing
+ * every `.sage/` handle. Nothing on disk is touched. The UI returns to the
+ * picker. Framework control — immediate, no approval queue.
+ */
+export const unloadSolution = () =>
+  call<UnloadSolutionResult>("unload_solution");
+
+/**
+ * Deregister a solution. Default `mode: "archive"` moves the directory into
+ * `<solutions_dir>/.archive/` — reversible, no source code destroyed.
+ * `mode: "delete"` really does rmtree it and requires `confirm === name`.
+ */
+export const removeSolution = (
+  name: string,
+  mode: RemoveSolutionMode = "archive",
+  confirm?: string,
+) => call<RemoveSolutionResult>("remove_solution", { name, mode, confirm });
 
 // ── Onboarding ────────────────────────────────────────────────────────────
 
@@ -648,6 +670,9 @@ export type {
   StartBuildParams,
   CurrentSolution,
   SwitchSolutionResult,
+  UnloadSolutionResult,
+  RemoveSolutionMode,
+  RemoveSolutionResult,
   OnboardingParams,
   OnboardingResult,
   StatusResponse,

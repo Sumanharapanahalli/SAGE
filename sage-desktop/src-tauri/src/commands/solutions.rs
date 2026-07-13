@@ -31,3 +31,29 @@ pub async fn get_current_solution(
         .call("solutions.get_current", json!({}))
         .await
 }
+
+/// Deregister a solution. `mode` is `"archive"` (default — moves the directory
+/// into `<solutions_dir>/.archive/`, nothing is destroyed) or `"delete"`, which
+/// requires `confirm == name` and is gated behind a typed confirmation in the
+/// UI. The sidecar refuses any path outside the solutions dir, and refuses the
+/// currently-active solution.
+#[tauri::command]
+pub async fn remove_solution(
+    name: String,
+    mode: Option<String>,
+    confirm: Option<String>,
+    sidecar: State<'_, RwLock<Sidecar>>,
+) -> Result<Value, DesktopError> {
+    sidecar
+        .read()
+        .await
+        .call(
+            "solutions.remove",
+            json!({
+                "name": name,
+                "mode": mode.unwrap_or_else(|| "archive".to_string()),
+                "confirm": confirm,
+            }),
+        )
+        .await
+}
