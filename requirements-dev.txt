@@ -1,0 +1,16 @@
+# Test-only dependencies.
+#
+# These were previously typed by hand into the CI workflow ("pip install pytest
+# pytest-asyncio"), so a test that needed anything else failed at COLLECTION — and pytest
+# exits 2 on a collection error, taking the whole run down. tests/test_project_loader_properties.py
+# imports `hypothesis`, which was declared nowhere: CI had been red on every commit, and
+# locally the module was simply passed to --ignore, which hid both the missing dependency AND
+# a real bug the property test had already found.
+#
+# Declaring them here means CI and a developer's machine install the same set.
+#
+#   pip install -r requirements.txt -r requirements-dev.txt
+
+pytest>=8.0
+pytest-asyncio>=0.23
+hypothesis>=6.100          # property-based tests (tests/test_project_loader_properties.py)

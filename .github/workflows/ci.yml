@@ -26,7 +26,10 @@ jobs:
           python -m venv .venv
           source .venv/bin/activate
           pip install -r requirements.txt
-          pip install pytest pytest-asyncio
+          # Test deps are DECLARED (requirements-dev.txt), not hand-typed here. When they
+          # were listed inline, a test importing anything else — hypothesis — died at
+          # collection, and pytest exits 2 on a collection error, so the entire run failed.
+          pip install -r requirements-dev.txt
 
       - name: Run backend tests
         run: |

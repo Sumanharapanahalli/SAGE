@@ -505,7 +505,11 @@ class ProjectConfig:
         """Rich project metadata dict (safe to serialise to JSON)."""
         return {
             "project":             self._name,
-            "name":                self._project.get("name", self._name),
+            # `or`, not get(..., default): dict.get only falls back when the key is ABSENT,
+            # so a present-but-empty `name: ""` returned "" — and that empty string then
+            # became the solution's display name and flowed into derived identifiers. An
+            # empty name is as unusable as a missing one; fall back to the directory name.
+            "name":                self._project.get("name") or self._name,
             "version":             self._project.get("version", "1.0.0"),
             "description":         self._project.get("description", ""),
             "domain":              self._project.get("domain", "general"),
