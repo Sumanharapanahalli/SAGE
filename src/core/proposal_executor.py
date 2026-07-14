@@ -350,8 +350,22 @@ async def _execute_code_diff(proposal: Proposal):
         logger.debug("Worktree lookup failed, using repo root: %s", _wt_exc)
 
     try:
-        # Stage all changes
-        subprocess.run(["git", "add", "-A"], cwd=root, check=True, timeout=10)
+        # Stage ONLY the files the agent wrote — never `git add -A`, which would sweep the
+        # operator's unrelated dirty files into the AI's commit (mis-attributing their work
+        # to the agent and burying it in an "approved" commit). Fall back to -A only if the
+        # proposal recorded no file list, since a commit needs something staged.
+        if files:
+            staged = False
+            for rel in files:
+                if not rel:
+                    continue
+                r = subprocess.run(["git", "add", "--", rel], cwd=root, timeout=10)
+                staged = staged or r.returncode == 0
+            if not staged:
+                return {"committed": False,
+                        "reason": "none of the recorded written_files could be staged"}
+        else:
+            subprocess.run(["git", "add", "-A"], cwd=root, check=True, timeout=10)
 
         # Commit
         commit_msg = (
@@ -376,19 +390,72 @@ async def _execute_code_diff(proposal: Proposal):
 
 async def _revert_code_diff(proposal: Proposal):
     """
-    Called when a code_diff proposal is rejected.
-    Reverts all uncommitted changes so the working tree is clean.
+    Called when a code_diff proposal is rejected (or an approval is undone).
+
+    Reverts ONLY the files this proposal's agent wrote, recorded in
+    payload["written_files"]. It MUST NOT touch anything else.
+
+    The previous implementation ran ``git checkout -- .`` + ``git clean -fd`` at the repo
+    ROOT, which discards every uncommitted edit in the tree and — via ``clean -fd`` —
+    deletes every untracked file and directory, unrecoverably (clean bypasses the reflog).
+    A single Reject click could therefore destroy an operator's unrelated in-progress work
+    and any untracked solution data. That is the single most dangerous action a routine UI
+    button reached; it is replaced with a per-file revert scoped to what the agent changed.
     """
     import subprocess
+
     root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    # If the change was isolated in a worktree, revert THERE, not in the main tree.
     try:
-        subprocess.run(["git", "checkout", "--", "."], cwd=root, check=True, timeout=10)
-        subprocess.run(["git", "clean", "-fd"], cwd=root, check=True, timeout=10)
-        logger.info("code_diff reverted: trace_id=%s", proposal.trace_id)
-        return {"reverted": True}
-    except subprocess.CalledProcessError as exc:
-        logger.error("git revert failed: %s", exc)
-        return {"reverted": False, "reason": str(exc)}
+        from src.core.worktree_manager import WorktreeManager
+
+        _wt_path = WorktreeManager().get_path(proposal.trace_id)
+        if _wt_path:
+            root = _wt_path
+    except Exception:  # noqa: BLE001
+        pass
+
+    files = proposal.payload.get("written_files", []) or []
+    if not files:
+        # Nothing recorded to revert. Do NOT fall back to a tree-wide wipe — that is exactly
+        # the destructive behaviour being removed. Report it so the operator can act.
+        logger.warning("code_diff reject: no written_files recorded for %s — "
+                       "nothing reverted (the agent's changes, if any, remain in the tree)",
+                       proposal.trace_id)
+        return {"reverted": False, "reason": "no written_files recorded; "
+                "nothing reverted to avoid a tree-wide wipe", "files": []}
+
+    root_abs = os.path.abspath(root)
+    reverted, skipped = [], []
+    for rel in files:
+        if not rel:
+            continue
+        target = os.path.abspath(os.path.join(root, rel))
+        # Refuse any path that escapes the repo/worktree root (path-traversal / absolute leak).
+        if os.path.commonpath([root_abs, target]) != root_abs:
+            logger.error("code_diff reject: refusing path outside root: %s", rel)
+            skipped.append(rel)
+            continue
+        try:
+            existed = subprocess.run(
+                ["git", "cat-file", "-e", f"HEAD:{rel}"],
+                cwd=root, capture_output=True, timeout=10,
+            ).returncode == 0
+            if existed:
+                # The agent modified a tracked file — restore its committed version.
+                subprocess.run(["git", "checkout", "HEAD", "--", rel],
+                               cwd=root, check=True, timeout=10)
+            elif os.path.isfile(target):
+                # The agent created a new file — remove just that one file.
+                os.remove(target)
+            reverted.append(rel)
+        except (subprocess.CalledProcessError, OSError) as exc:
+            logger.error("code_diff reject: could not revert %s: %s", rel, exc)
+            skipped.append(rel)
+
+    logger.info("code_diff reverted %d/%d file(s): trace_id=%s",
+                len(reverted), len(files), proposal.trace_id)
+    return {"reverted": not skipped, "files": reverted, "skipped": skipped}
 
 
 async def _execute_collective_publish(proposal: Proposal):
