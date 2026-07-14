@@ -28,8 +28,12 @@ class CodingAgent:
     proposes the resulting diff for director approval.
     """
 
-    def __init__(self):
+    def __init__(self, root: str = None):
         self._llm = None
+        # The write/read/exec root. Defaults to the SAGE checkout for existing callers, but
+        # the Merge-Gate runner injects the MR's isolated WORKTREE so the agent writes into
+        # the branch — not the live tree (the old behaviour, gap B6, committed nothing).
+        self.root = root or _ROOT
 
     @property
     def llm(self):
@@ -45,7 +49,7 @@ class CodingAgent:
     def _tool_read_file(self, path: str) -> str:
         """Read a file from the SAGE codebase. Path is relative to project root."""
         try:
-            full = os.path.join(_ROOT, path)
+            full = os.path.join(self.root, path)
             with open(full, encoding="utf-8", errors="replace") as f:
                 content = f.read()
             # Truncate very large files
@@ -60,7 +64,7 @@ class CodingAgent:
     def _tool_write_file(self, path: str, content: str) -> str:
         """Write content to a file in the SAGE codebase. Creates parent dirs if needed."""
         try:
-            full = os.path.join(_ROOT, path)
+            full = os.path.join(self.root, path)
             os.makedirs(os.path.dirname(full), exist_ok=True)
             with open(full, "w", encoding="utf-8") as f:
                 f.write(content)
@@ -71,7 +75,7 @@ class CodingAgent:
     def _tool_list_dir(self, path: str = "") -> str:
         """List files and directories at path (relative to project root)."""
         try:
-            full = os.path.join(_ROOT, path) if path else _ROOT
+            full = os.path.join(self.root, path) if path else self.root
             entries = []
             for name in sorted(os.listdir(full)):
                 item = os.path.join(full, name)
@@ -83,7 +87,7 @@ class CodingAgent:
     def _tool_search_code(self, pattern: str, path: str = "src") -> str:
         """Search code with grep. pattern is a regex, path is relative to project root."""
         try:
-            full_path = os.path.join(_ROOT, path)
+            full_path = os.path.join(self.root, path)
             result = subprocess.run(
                 ["grep", "-rn", "--include=*.py", "--include=*.ts", "--include=*.tsx",
                  "-m", "30", pattern, full_path],
@@ -91,7 +95,7 @@ class CodingAgent:
             )
             out = result.stdout[:3000]
             # Make paths relative
-            out = out.replace(_ROOT + os.sep, "").replace(_ROOT + "/", "")
+            out = out.replace(self.root + os.sep, "").replace(self.root + "/", "")
             return out or "(no matches)"
         except Exception as exc:
             return f"ERROR searching: {exc}"
@@ -103,19 +107,19 @@ class CodingAgent:
                 result = subprocess.run(
                     ["npm", "run", "build"],
                     capture_output=True, text=True, timeout=120,
-                    cwd=os.path.join(_ROOT, "web"),
+                    cwd=os.path.join(self.root, "web"),
                 )
                 ok = result.returncode == 0
                 out = (result.stdout + result.stderr)[-2000:]
                 return f"{'PASS' if ok else 'FAIL'} (returncode={result.returncode})\n{out}"
             else:
-                venv_python = os.path.join(_ROOT, ".venv", "Scripts", "python")
+                venv_python = os.path.join(self.root, ".venv", "Scripts", "python")
                 if not os.path.exists(venv_python):
-                    venv_python = os.path.join(_ROOT, ".venv", "bin", "python")
+                    venv_python = os.path.join(self.root, ".venv", "bin", "python")
                 result = subprocess.run(
                     [venv_python, "-m", "pytest", "tests/", "-x", "-q", "--tb=short"],
                     capture_output=True, text=True, timeout=180,
-                    cwd=_ROOT,
+                    cwd=self.root,
                 )
                 ok = result.returncode == 0
                 out = (result.stdout + result.stderr)[-3000:]
@@ -130,14 +134,14 @@ class CodingAgent:
         try:
             result = subprocess.run(
                 ["git", "diff", "HEAD"],
-                capture_output=True, text=True, timeout=10, cwd=_ROOT,
+                capture_output=True, text=True, timeout=10, cwd=self.root,
             )
             diff = result.stdout or ""
             if not diff.strip():
                 # Also check staged
                 result2 = subprocess.run(
                     ["git", "diff", "--cached"],
-                    capture_output=True, text=True, timeout=10, cwd=_ROOT,
+                    capture_output=True, text=True, timeout=10, cwd=self.root,
                 )
                 diff = result2.stdout or ""
             return diff[:6000] if diff.strip() else "(no changes detected)"
@@ -396,7 +400,7 @@ class CodingAgent:
         try:
             result = subprocess.run(
                 ["git", "status", "--porcelain"],
-                cwd=_ROOT, capture_output=True, text=True, timeout=10,
+                cwd=self.root, capture_output=True, text=True, timeout=10,
             )
             return result.returncode == 0 and not result.stdout.strip()
         except Exception as exc:
@@ -408,13 +412,13 @@ class CodingAgent:
         try:
             result = subprocess.run(
                 ["git", "stash", "push", "-u", "-m", "sage-candidate"],
-                cwd=_ROOT, capture_output=True, text=True, timeout=15,
+                cwd=self.root, capture_output=True, text=True, timeout=15,
             )
             if result.returncode != 0 or "No local changes to save" in (result.stdout + result.stderr):
                 return None
             sha_result = subprocess.run(
                 ["git", "rev-parse", "stash@{0}"],
-                cwd=_ROOT, capture_output=True, text=True, timeout=10,
+                cwd=self.root, capture_output=True, text=True, timeout=10,
             )
             return sha_result.stdout.strip() if sha_result.returncode == 0 else None
         except Exception as exc:
@@ -425,7 +429,7 @@ class CodingAgent:
         try:
             subprocess.run(
                 ["git", "stash", "apply", sha],
-                cwd=_ROOT, capture_output=True, text=True, timeout=15,
+                cwd=self.root, capture_output=True, text=True, timeout=15,
             )
         except Exception as exc:
             logger.warning("git stash apply %s failed: %s", sha, exc)
@@ -435,14 +439,14 @@ class CodingAgent:
         try:
             list_result = subprocess.run(
                 ["git", "stash", "list", "--format=%H %gd"],
-                cwd=_ROOT, capture_output=True, text=True, timeout=10,
+                cwd=self.root, capture_output=True, text=True, timeout=10,
             )
             for line in list_result.stdout.splitlines():
                 parts = line.split(" ", 1)
                 if len(parts) == 2 and parts[0] == sha:
                     subprocess.run(
                         ["git", "stash", "drop", parts[1]],
-                        cwd=_ROOT, capture_output=True, text=True, timeout=10,
+                        cwd=self.root, capture_output=True, text=True, timeout=10,
                     )
                     return
         except Exception as exc:

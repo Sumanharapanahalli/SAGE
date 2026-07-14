@@ -94,7 +94,7 @@ sage-desktop/           Third interface: Tauri + Python sidecar via stdin/stdout
 ### What to Never Do
 
 - Never commit proprietary solutions to this repo — mount via `SAGE_SOLUTIONS_DIR`
-- Never bypass HITL approval for agent proposals (`yaml_edit`, `implementation_plan`, `code_diff`)
+- Never bypass HITL approval for non-code agent proposals (`yaml_edit`, `knowledge_delete`, `agent_hire`). For CODE, the gate is the Merge Request, not the individual change — agents own the branch; the human approves the MR that merges to `main` (Merge-Gate Governance; see SOUL.md Law 1a and `docs/superpowers/specs/2026-07-14-merge-gate-governance-design.md`)
 - Never short-circuit feedback ingestion (Phase 5) — every rejection teaches
 - Never hardcode solution names in `src/` — framework is domain-blind
 - Never use `print()` — use `self.logger` or `logging.getLogger()`
@@ -124,7 +124,8 @@ Providers: `gemini` (default), `claude-code`, `ollama`, `local`, `claude` (API k
 | Tier | Operations | Behavior |
 |---|---|---|
 | **Framework Control** | `/config/switch`, `/llm/switch`, `/config/modules` | **Executes immediately** |
-| **Agent Proposals** | `yaml_edit`, `implementation_plan`, `code_diff`, `agent_hire` | **Requires human approval** |
+| **Agent Proposals (non-code)** | `yaml_edit`, `knowledge_delete`, `agent_hire` | **Requires human approval** |
+| **Code changes** | agent branch → evidence gate → **MR** | **Human approves the MR** (merge to `main`); agents own the branch (Merge-Gate Governance) |
 
 The approval inbox (`/approvals`) should only contain agent proposals, never routine framework operations.
 

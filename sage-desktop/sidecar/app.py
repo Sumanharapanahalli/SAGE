@@ -67,6 +67,7 @@ from handlers import (
     hil,
     knowledge,
     knowledgesync,
+    mergegate,
     llm,
     logs,
     monitor,
@@ -209,6 +210,10 @@ def _build_dispatcher() -> Dispatcher:
     # existed and none were wired — the component was imported by no page, and the Rust
     # command wasn't even declared in commands/mod.rs, so it never compiled.
     d.register("knowledge.sync", knowledgesync.sync)
+    # Merge-Gate Governance: human approves the MR, agents own the branch.
+    d.register("mergegate.start", mergegate.start)
+    d.register("mergegate.status", mergegate.status)
+    d.register("mergegate.list", mergegate.list_mrs)
     d.register("collective.list_learnings", collective.list_learnings)
     d.register("collective.get_learning", collective.get_learning)
     d.register("collective.search_learnings", collective.search_learnings)
@@ -457,6 +462,25 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
         knowledgesync._solution_path = solution_path
     except Exception as e:  # noqa: BLE001
         logging.warning("VectorMemory unavailable: %s", e)
+
+    try:
+        # Merge-Gate runner + store for this solution. build_default_runner wires the
+        # worktree, coding agent, evidence gate, GitHub adapter, and signed-audit merge.
+        from src.core.mr_runner import build_default_runner
+
+        operator_name = "operator"
+        try:
+            import yaml as _yaml
+            op_file = sage_dir / "operator.yaml"
+            if op_file.exists():
+                operator_name = (_yaml.safe_load(op_file.read_text(encoding="utf-8"))
+                                 or {}).get("name") or "operator"
+        except Exception:  # noqa: BLE001
+            pass
+        mergegate._runner, mergegate._store = build_default_runner(
+            str(solution_path), operator=operator_name)
+    except Exception as e:  # noqa: BLE001
+        logging.warning("Merge-Gate unavailable: %s", e)
 
     try:
         from src.core.collective_memory import get_collective_memory
