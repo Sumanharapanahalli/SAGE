@@ -9,7 +9,10 @@ const NAV_ITEMS = [
   { to: "/approvals", label: "Approvals" },
   { to: "/agents", label: "Agents" },
   { to: "/audit", label: "Audit" },
+  { to: "/activity", label: "Activity" },
+  { to: "/regulatory", label: "Regulatory" },
   { to: "/status", label: "Status" },
+  { to: "/queue", label: "Queue" },
   { to: "/builds", label: "Builds" },
   { to: "/backlog", label: "Backlog" },
   { to: "/yaml", label: "YAML" },
@@ -25,6 +28,7 @@ const NAV_ITEMS = [
   { to: "/goals", label: "Goals" },
   { to: "/eval", label: "Eval" },
   { to: "/hil", label: "HIL" },
+  { to: "/console", label: "Console" },
   { to: "/settings", label: "Settings" },
 ] as const;
 

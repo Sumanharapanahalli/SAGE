@@ -29,3 +29,32 @@ pub async fn list_queue_tasks(
         )
         .await
 }
+
+/// Cancel a queued/blocked/running task.
+///
+/// Framework control (Law 1) — the operator's own action on their own tooling,
+/// so it executes immediately and never enters the proposal queue.
+#[tauri::command]
+pub async fn cancel_queue_task(
+    task_id: String,
+    sidecar: State<'_, RwLock<Sidecar>>,
+) -> Result<Value, DesktopError> {
+    sidecar
+        .read()
+        .await
+        .call("queue.cancel", json!({ "task_id": task_id }))
+        .await
+}
+
+/// Re-queue a failed/cancelled/blocked task. Framework control — immediate.
+#[tauri::command]
+pub async fn retry_queue_task(
+    task_id: String,
+    sidecar: State<'_, RwLock<Sidecar>>,
+) -> Result<Value, DesktopError> {
+    sidecar
+        .read()
+        .await
+        .call("queue.retry", json!({ "task_id": task_id }))
+        .await
+}

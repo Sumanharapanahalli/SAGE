@@ -284,3 +284,134 @@ def test_sidecar_wires_up_stores_when_solution_path_given(tmp_path):
     out = _drive(_req("1", "approvals.list_pending") + "\n", argv=argv)
     assert "result" in out[0], f"got error: {out[0]}"
     assert isinstance(out[0]["result"], list)
+
+
+# ---------- registration: builds.reject / queue.cancel / queue.retry ----------
+#
+# This repo has a history of handlers that were written, tested, and never
+# registered — dead code that looks like a feature. These assert the wire is
+# actually connected.
+
+@pytest.mark.parametrize("method", ["builds.reject", "queue.cancel", "queue.retry"])
+def test_operator_recovery_rpcs_are_registered_in_the_dispatcher(method):
+    assert method in sidecar_app._build_dispatcher().methods()
+
+
+def test_builds_reject_round_trip_over_real_ndjson(monkeypatch):
+    """Drive builds.reject through the real dispatcher and assert the operator's
+    reasoning reaches BOTH the audit log and the vector store (Phase 5)."""
+    import src.integrations.build_orchestrator as bo_mod
+
+    import handlers.builds as builds
+
+    audited: list = []
+    remembered: list = []
+
+    class _Audit:
+        def log_event(self, **kw):
+            audited.append(kw)
+
+    class _Memory:
+        def remember(self, text, user_id=None, metadata=None):
+            remembered.append(text)
+
+    class _Orch:
+        def __init__(self):
+            self.state = "awaiting_build"
+
+        def get_status(self, run_id):
+            return {"run_id": run_id, "state": self.state}
+
+        def reject(self, run_id, feedback=""):
+            self.state = "rejected"
+            return {"run_id": run_id, "state": "rejected", "error": None}
+
+    # run() → _wire_handlers() re-imports the orchestrator singleton and
+    # overwrites builds._orch, so patching the handler attribute alone would be
+    # undone before the request is ever dispatched. Patch the source.
+    monkeypatch.setattr(bo_mod, "build_orchestrator", _Orch())
+    monkeypatch.setattr(builds, "_logger", _Audit())
+    monkeypatch.setattr(builds, "_long_term_memory_factory", lambda: _Memory())
+    monkeypatch.setattr(
+        builds, "_operator",
+        lambda: {"name": "Ada", "email": "ada@example.com", "provider": "local"},
+    )
+
+    out = _drive(
+        _req("b1", "builds.reject", {"run_id": "r1", "feedback": "no tests in the plan"})
+        + "\n"
+    )
+    assert "error" not in out[0], out[0]
+    assert out[0]["result"]["state"] == "rejected"
+    assert audited[0]["action_type"] == "BUILD_STAGE_REJECTED"
+    assert audited[0]["actor"] == "Ada"
+    assert "no tests in the plan" in remembered[0]
+
+
+def test_builds_reject_on_a_run_not_at_a_gate_returns_invalid_params(monkeypatch):
+    import src.integrations.build_orchestrator as bo_mod
+
+    monkeypatch.setattr(
+        bo_mod, "build_orchestrator",
+        type("O", (), {
+            "get_status": lambda self, r: {"state": "building"},
+            "reject": lambda self, r, f="": {},
+        })(),
+    )
+    out = _drive(_req("b2", "builds.reject", {"run_id": "r1", "feedback": "x"}) + "\n")
+    assert out[0]["error"]["code"] == -32602
+
+
+def test_queue_cancel_and_retry_round_trip_over_real_ndjson(monkeypatch):
+    """Cancel then retry a real Task through a real TaskQueue, over NDJSON."""
+    import handlers.queue as queue_handler
+
+    class _Audit:
+        def __init__(self):
+            self.events = []
+
+        def log_event(self, **kw):
+            self.events.append(kw)
+
+    audit = _Audit()
+
+    class _Q:
+        """Records the transitions the real TaskQueue makes."""
+
+        def __init__(self):
+            self.status = "pending"
+
+        def get_all_tasks(self):
+            return [{"task_id": "t1", "status": self.status, "task_type": "ANALYZE_LOG"}]
+
+        def cancel_task(self, task_id):
+            if task_id != "t1":
+                return {"cancelled": False, "reason": "not_found"}
+            self.status = "cancelled"
+            return {"cancelled": True, "status": "cancelled", "was_running": False}
+
+        def requeue_task(self, task_id):
+            if task_id != "t1":
+                return {"requeued": False, "reason": "not_found"}
+            self.status = "pending"
+            return {"requeued": True, "status": "pending"}
+
+    q = _Q()
+    monkeypatch.setattr(queue_handler, "_queue", q)
+    monkeypatch.setattr(queue_handler, "_logger", audit)
+    monkeypatch.setattr(
+        queue_handler, "_operator",
+        lambda: {"name": "Ada", "email": "ada@example.com", "provider": "local"},
+    )
+
+    out = _drive(
+        _req("q1", "queue.cancel", {"task_id": "t1"}) + "\n"
+        + _req("q2", "queue.list_tasks", {}) + "\n"
+        + _req("q3", "queue.retry", {"task_id": "t1"}) + "\n"
+        + _req("q4", "queue.cancel", {"task_id": "ghost"}) + "\n"
+    )
+    assert out[0]["result"]["cancelled"] is True
+    assert out[1]["result"][0]["status"] == "cancelled"
+    assert out[2]["result"]["requeued"] is True
+    assert out[3]["error"]["code"] == -32602  # unknown task
+    assert [e["action_type"] for e in audit.events] == ["TASK_CANCELLED", "TASK_RETRIED"]

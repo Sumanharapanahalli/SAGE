@@ -50,6 +50,7 @@ from rpc import (
 import jobs
 from dispatcher import Dispatcher
 from handlers import (
+    activity,
     agents,
     analyze,
     approvals,
@@ -65,12 +66,15 @@ from handlers import (
     handshake,
     hil,
     knowledge,
+    knowledgesync,
     llm,
+    logs,
     monitor,
     onboarding,
     operator,
     org,
     queue,
+    regulatory,
     skills,
     solutions,
     status,
@@ -86,6 +90,14 @@ def _configure_logging() -> None:
         level=logging.INFO,
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
     )
+    # Additive: also mirror every record into the Live Console ring buffer so
+    # `logs.tail` has something to serve. The desktop operator has no terminal,
+    # so the stderr handler above is invisible to them — this buffer is their
+    # only view of framework tracebacks. Installed here (before _wire_handlers)
+    # so wiring-time warnings ("VectorMemory unavailable: ...") are captured.
+    # DequeLogHandler writes to no stream at all, so stdout (the NDJSON
+    # protocol channel) stays clean.
+    logs.install()
 
 
 def _build_dispatcher() -> Dispatcher:
@@ -132,6 +144,17 @@ def _build_dispatcher() -> Dispatcher:
     # Background execution of approved implementation_plan / code_diff proposals.
     d.register("jobs.status", jobs.rpc_status)
     d.register("jobs.list", jobs.rpc_list)
+    # Triage feed over the audit log (server-side classification + search).
+    # Distinct from audit.list, which is the exact-match evidence table.
+    d.register("activity.list", activity.list_events)
+    # Multi-standard regulatory framework (traceability + submission roadmap) —
+    # distinct from compliance.*, which wraps the 5 bundled engineering domains.
+    d.register("regulatory.standards", regulatory.standards)
+    d.register("regulatory.standard", regulatory.standard)
+    d.register("regulatory.checklist", regulatory.checklist)
+    d.register("regulatory.assess", regulatory.assess)
+    d.register("regulatory.gap_analysis", regulatory.gap_analysis)
+    d.register("regulatory.roadmap", regulatory.roadmap)
     d.register("audit.list", audit.list_events)
     d.register("audit.get_by_trace", audit.get_by_trace)
     d.register("audit.stats", audit.stats)
@@ -143,6 +166,8 @@ def _build_dispatcher() -> Dispatcher:
     d.register("operator.get", operator.get)
     d.register("operator.set", operator.set)
     d.register("status.get", status.get_status)
+    # Live Console — polled tail of the sidecar's own logging ring buffer.
+    d.register("logs.tail", logs.tail)
     d.register("llm.get_info", llm.get_llm_info)
     d.register("llm.switch", llm.switch_llm)
     d.register("backlog.list", backlog.list_feature_requests)
@@ -151,6 +176,11 @@ def _build_dispatcher() -> Dispatcher:
     d.register("backlog.plan", backlog.plan)
     d.register("queue.get_status", queue.get_queue_status)
     d.register("queue.list_tasks", queue.list_queue_tasks)
+    # Operator recovery for a wedged task. Framework control — executes
+    # immediately, no proposal queue (Law 1). Without these the queue was
+    # observable but not recoverable from the desktop.
+    d.register("queue.cancel", queue.cancel_task)
+    d.register("queue.retry", queue.retry_task)
     d.register("solutions.list", solutions.list_solutions)
     d.register("solutions.get_current", solutions.get_current)
     # Deregister a solution (archive by default, opt-in on-disk delete).
@@ -161,6 +191,9 @@ def _build_dispatcher() -> Dispatcher:
     d.register("builds.list", builds.list_runs)
     d.register("builds.get", builds.get)
     d.register("builds.approve", builds.approve_stage)
+    # The other half of the gate: a gate you can only say YES to is not a gate.
+    # Records a signed rejection AND compounds the feedback into vector memory.
+    d.register("builds.reject", builds.reject)
     d.register("yaml.read", yaml_edit.read)
     d.register("yaml.write", yaml_edit.write)
     d.register("constitution.get", constitution.get)
@@ -172,6 +205,10 @@ def _build_dispatcher() -> Dispatcher:
     d.register("knowledge.add", knowledge.add)
     d.register("knowledge.delete", knowledge.delete)
     d.register("knowledge.stats", knowledge.stats)
+    # Bulk import: knowledgesync.py, its Rust command, its hook and its component all
+    # existed and none were wired — the component was imported by no page, and the Rust
+    # command wasn't even declared in commands/mod.rs, so it never compiled.
+    d.register("knowledge.sync", knowledgesync.sync)
     d.register("collective.list_learnings", collective.list_learnings)
     d.register("collective.get_learning", collective.get_learning)
     d.register("collective.search_learnings", collective.search_learnings)
@@ -298,9 +335,22 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
         audit_logger = AuditLogger(db_path=str(sage_dir / "audit_log.db"))
         audit._logger = audit_logger
         agents._logger = audit_logger
+        # A bulk knowledge import mutates the solution's vector memory — it must leave a
+        # compliance record like every other write.
+        knowledgesync._logger = audit_logger
+        # The triage feed reads the same DB (raw SQL against db_path); without
+        # this injection activity.list raises "audit logger not initialized".
+        activity._logger = audit_logger
         # Without this the HITL gate leaves no compliance record at all, while
         # Approvals.tsx tells the operator that it does.
         approvals._logger = audit_logger
+        # A build rejection signed by the human who made it — the orchestrator's
+        # own audit row records actor="BuildOrchestrator", i.e. the system, not
+        # the decider.
+        builds._logger = audit_logger
+        # Operator cancel/retry are framework control (no HITL) but are still
+        # real events in the compliance record.
+        queue._logger = audit_logger
     except Exception as e:  # noqa: BLE001
         logging.warning("AuditLogger unavailable: %s", e)
 
@@ -381,6 +431,12 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
 
         knowledge._vm = VectorMemory(explicit_solution=solution_name)
         knowledge._solution_name = solution_name
+        # knowledge.sync needs the SAME vector store, plus the solution root it defaults to
+        # importing, plus the audit logger. Registering the RPC without this injection would
+        # have produced a handler that is reachable and fails on every call.
+        knowledgesync._vm = knowledge._vm
+        knowledgesync._solution_name = solution_name
+        knowledgesync._solution_path = solution_path
     except Exception as e:  # noqa: BLE001
         logging.warning("VectorMemory unavailable: %s", e)
 

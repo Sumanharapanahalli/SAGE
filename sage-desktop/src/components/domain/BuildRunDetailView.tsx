@@ -4,6 +4,7 @@ import type {
   ApproveBuildParams,
   BuildRunDetail,
   DesktopError,
+  RejectBuildParams,
 } from "@/api/types";
 
 interface Props {
@@ -11,6 +12,9 @@ interface Props {
   isApproving: boolean;
   approveError: DesktopError | null;
   onApprove: (p: ApproveBuildParams) => void;
+  isRejecting: boolean;
+  rejectError: DesktopError | null;
+  onReject: (p: RejectBuildParams) => void;
 }
 
 function approveLabel(state: string): string | null {
@@ -19,11 +23,15 @@ function approveLabel(state: string): string | null {
   return null;
 }
 
-function errorMessage(error: DesktopError): string {
+function rejectLabel(state: string): string {
+  return state === "awaiting_plan" ? "Reject plan" : "Reject build";
+}
+
+function errorMessage(error: DesktopError, verb: string): string {
   if (error.kind === "InvalidParams" || error.kind === "SidecarDown") {
     return `${error.kind}: ${error.detail.message}`;
   }
-  return `Approval failed (${error.kind}).`;
+  return `${verb} failed (${error.kind}).`;
 }
 
 export function BuildRunDetailView({
@@ -31,11 +39,15 @@ export function BuildRunDetailView({
   isApproving,
   approveError,
   onApprove,
+  isRejecting,
+  rejectError,
+  onReject,
 }: Props) {
   const [feedback, setFeedback] = useState("");
   const label = approveLabel(detail.state);
   const showApprovalControls = label !== null;
   const trimmedFeedback = feedback.trim();
+  const busy = isApproving || isRejecting;
 
   return (
     <div className="space-y-4">
@@ -131,7 +143,7 @@ export function BuildRunDetailView({
         <div className="rounded border border-sage-100 bg-white p-4">
           <label className="block" htmlFor="build-feedback">
             <span className="block text-sm font-medium">
-              Feedback (optional)
+              Feedback / rejection reason
             </span>
             <textarea
               id="build-feedback"
@@ -139,20 +151,33 @@ export function BuildRunDetailView({
               rows={2}
               value={feedback}
               onChange={(e) => setFeedback(e.target.value)}
+              placeholder="Why is this plan/build wrong? A reason here is what teaches the next run."
             />
           </label>
+          <p className="mt-1 text-xs text-slate-500">
+            Optional — but a rejection reason is fed back into vector memory, so
+            the next proposal is better. Silence teaches nothing.
+          </p>
           {approveError && (
             <div
               role="alert"
               className="mt-2 rounded border border-red-200 bg-red-50 p-2 text-xs text-red-900"
             >
-              {errorMessage(approveError)}
+              {errorMessage(approveError, "Approval")}
+            </div>
+          )}
+          {rejectError && (
+            <div
+              role="alert"
+              className="mt-2 rounded border border-red-200 bg-red-50 p-2 text-xs text-red-900"
+            >
+              {errorMessage(rejectError, "Rejection")}
             </div>
           )}
           <div className="mt-3 flex gap-2">
             <button
               type="button"
-              disabled={isApproving}
+              disabled={busy}
               className="rounded bg-sage-600 px-4 py-2 text-sm text-white hover:bg-sage-700 disabled:opacity-50"
               onClick={() =>
                 onApprove({
@@ -166,17 +191,16 @@ export function BuildRunDetailView({
             </button>
             <button
               type="button"
-              disabled={isApproving}
+              disabled={busy}
               className="rounded border border-red-400 px-4 py-2 text-sm text-red-700 hover:bg-red-50 disabled:opacity-50"
               onClick={() =>
-                onApprove({
+                onReject({
                   run_id: detail.run_id,
-                  approved: false,
                   feedback: trimmedFeedback,
                 })
               }
             >
-              Reject
+              {isRejecting ? "Rejecting…" : rejectLabel(detail.state)}
             </button>
           </div>
         </div>

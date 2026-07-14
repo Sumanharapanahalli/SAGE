@@ -78,3 +78,28 @@ pub async fn approve_build_stage(
         )
         .await
 }
+
+/// Reject the stage the run is currently gated on, with the operator's reason.
+///
+/// The other half of the HITL gate. The sidecar records a signed rejection and
+/// compounds the feedback into vector memory (Phase 5 — "every rejection
+/// teaches"), which is why this is its own RPC rather than an `approved: false`
+/// flag on the approve call.
+#[tauri::command]
+pub async fn reject_build_stage(
+    run_id: String,
+    feedback: Option<String>,
+    sidecar: State<'_, RwLock<Sidecar>>,
+) -> Result<Value, DesktopError> {
+    sidecar
+        .read()
+        .await
+        .call(
+            "builds.reject",
+            json!({
+                "run_id": run_id,
+                "feedback": feedback.unwrap_or_default(),
+            }),
+        )
+        .await
+}

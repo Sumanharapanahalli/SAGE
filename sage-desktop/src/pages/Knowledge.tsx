@@ -4,6 +4,7 @@ import type { DesktopError } from "@/api/types";
 import { AddKnowledgeForm } from "@/components/domain/AddKnowledgeForm";
 import { KnowledgeEntryRow } from "@/components/domain/KnowledgeEntryRow";
 import { KnowledgeSearchResults } from "@/components/domain/KnowledgeSearchResults";
+import { KnowledgeSync } from "@/components/domain/KnowledgeSync";
 import {
   useAddKnowledge,
   useDeleteKnowledge,
@@ -247,6 +248,8 @@ export default function Knowledge() {
         error={add.error ? errorMessage(add.error) : null}
         onSubmit={(text, metadata) => add.mutate({ text, metadata })}
       />
+
+      <KnowledgeSync />
     </div>
   );
 }

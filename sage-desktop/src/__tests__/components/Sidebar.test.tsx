@@ -169,6 +169,20 @@ describe("Sidebar", () => {
     );
   });
 
+  it("includes the Activity entry (triage feed)", async () => {
+    renderAt("/approvals");
+    expect(
+      await screen.findByRole("link", { name: /activity/i }),
+    ).toHaveAttribute("href", "/activity");
+  });
+
+  it("includes the Regulatory entry (multi-standard traceability)", async () => {
+    renderAt("/approvals");
+    expect(
+      await screen.findByRole("link", { name: /regulatory/i }),
+    ).toHaveAttribute("href", "/regulatory");
+  });
+
   it("shows a pending-approvals badge with the count", async () => {
     vi.mocked(client.listPendingApprovals).mockResolvedValueOnce([
       fakeProposal("a"),

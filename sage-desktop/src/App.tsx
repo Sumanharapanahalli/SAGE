@@ -6,6 +6,7 @@ import { Layout } from "@/components/layout/Layout";
 import { RequireSolution } from "@/components/layout/RequireSolution";
 import { useAppEvents } from "@/hooks/useAppEvents";
 import { useCurrentSolution } from "@/hooks/useSolutions";
+import Activity from "@/pages/Activity";
 import Analyze from "@/pages/Analyze";
 import { Agents } from "@/pages/Agents";
 import { Approvals } from "@/pages/Approvals";
@@ -14,6 +15,7 @@ import Backlog from "@/pages/Backlog";
 import Builds from "@/pages/Builds";
 import Collective from "@/pages/Collective";
 import Compliance from "@/pages/Compliance";
+import Console from "@/pages/Console";
 import Constitution from "@/pages/Constitution";
 import Costs from "@/pages/Costs";
 import Eval from "@/pages/Eval";
@@ -24,6 +26,8 @@ import Knowledge from "@/pages/Knowledge";
 import Monitor from "@/pages/Monitor";
 import Onboarding from "@/pages/Onboarding";
 import Organization from "@/pages/Organization";
+import Queue from "@/pages/Queue";
+import Regulatory from "@/pages/Regulatory";
 import Settings from "@/pages/Settings";
 import SkillsTools from "@/pages/SkillsTools";
 import { Status } from "@/pages/Status";
@@ -77,7 +81,10 @@ export function App() {
               <Route path="approvals" element={<Approvals />} />
               <Route path="agents" element={<Agents />} />
               <Route path="audit" element={<Audit />} />
+              <Route path="activity" element={<Activity />} />
+              <Route path="regulatory" element={<Regulatory />} />
               <Route path="status" element={<Status />} />
+              <Route path="queue" element={<Queue />} />
               <Route path="backlog" element={<Backlog />} />
               <Route path="builds" element={<Builds />} />
               <Route path="yaml" element={<YamlEdit />} />
@@ -92,6 +99,7 @@ export function App() {
               <Route path="goals" element={<Goals />} />
               <Route path="eval" element={<Eval />} />
               <Route path="hil" element={<Hil />} />
+              <Route path="console" element={<Console />} />
             </Route>
           </Route>
         </Routes>

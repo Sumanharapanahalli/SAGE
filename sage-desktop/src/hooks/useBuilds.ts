@@ -6,6 +6,7 @@ import type {
   BuildRunDetail,
   BuildRunSummary,
   DesktopError,
+  RejectBuildParams,
   StartBuildParams,
 } from "@/api/types";
 
@@ -62,6 +63,22 @@ export function useApproveBuildStage() {
   const qc = useQueryClient();
   return useMutation<BuildRunDetail, DesktopError, ApproveBuildParams>({
     mutationFn: (p) => client.approveBuildStage(p),
+    onSuccess: (_data, variables) => {
+      qc.invalidateQueries({ queryKey: buildsKey });
+      qc.invalidateQueries({ queryKey: buildKey(variables.run_id) });
+    },
+  });
+}
+
+/**
+ * Reject the gated stage with the operator's reason. Separate mutation from
+ * approve so the UI can show its own pending/error state on the Reject button
+ * — and so the reason reaches the sidecar's Phase 5 compounding path.
+ */
+export function useRejectBuildStage() {
+  const qc = useQueryClient();
+  return useMutation<BuildRunDetail, DesktopError, RejectBuildParams>({
+    mutationFn: (p) => client.rejectBuildStage(p),
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: buildsKey });
       qc.invalidateQueries({ queryKey: buildKey(variables.run_id) });

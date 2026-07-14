@@ -35,6 +35,8 @@ describe("Header", () => {
     ["/goals", /goals/i],
     ["/eval", /eval/i],
     ["/hil", /hardware-in-the-loop/i],
+    ["/activity", /activity/i],
+    ["/regulatory", /regulatory/i],
   ])("shows a real title for %s (not the generic fallback)", (path, re) => {
     renderAt(path);
     const heading = screen.getByRole("heading");

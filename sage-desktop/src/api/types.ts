@@ -296,25 +296,58 @@ export interface RemoveSolutionResult {
 
 // ── Queue ─────────────────────────────────────────────────────────────────
 
+/**
+ * Mirrors queue.get_status. The keys are the literal values TaskStatus emits —
+ * `completed`, not `done`. The old `done` field never existed on the wire, so
+ * the Status tile that read it rendered nothing; the sidecar handler already
+ * carries a comment about exactly this trap.
+ */
 export interface QueueStatus {
   pending: number;
   in_progress: number;
-  done: number;
+  completed: number;
   failed: number;
   blocked: number;
+  cancelled: number;
   parallel_enabled: boolean;
   max_workers: number;
 }
 
+/**
+ * Mirrors `Task.to_dict()` in src/core/queue_manager.py.
+ *
+ * The identifier is `task_id`, not `id` — the old `id` field never existed on
+ * the wire, which went unnoticed only because nothing had ever needed to
+ * address an individual task. Cancel/retry do.
+ */
 export interface QueueTask {
-  id: string;
+  task_id: string;
   task_type: string;
   status: string;
   priority?: number;
   created_at?: string;
   started_at?: string;
   completed_at?: string;
-  error?: string;
+  error?: string | null;
+  retry_count?: number;
+  max_retries?: number;
+  depends_on?: string[];
+}
+
+/** Result of queue.cancel — `was_running` distinguishes a task that was stopped
+ * before dispatch from one merely tombstoned while its worker kept running. */
+export interface QueueCancelResult {
+  cancelled: boolean;
+  status: string;
+  was_running: boolean;
+  task?: QueueTask;
+}
+
+/** Result of queue.retry. */
+export interface QueueRetryResult {
+  requeued: boolean;
+  status: string;
+  task?: QueueTask;
 }
 
 // ── Build pipeline ────────────────────────────────────────────────────────
@@ -394,6 +427,13 @@ export interface BuildRunDetail {
 export interface ApproveBuildParams {
   run_id: string;
   approved: boolean;
+  feedback?: string;
+}
+
+/** Reject the stage the run is gated on. Feedback is optional (a decision is
+ * valid without a reason) but it is what feeds vector memory — Phase 5. */
+export interface RejectBuildParams {
+  run_id: string;
   feedback?: string;
 }
 
@@ -1135,4 +1175,181 @@ export interface HILReportResult {
     actual_result: string;
     verdict: string;
   }>;
+}
+
+// ── Live Console (logs) ───────────────────────────────────────────────────
+// Mirrors GET /logs/stream (SSE) from src/interface/api.py. The sidecar's
+// NDJSON channel is strictly one-request/one-response, so it cannot stream:
+// the desktop polls `logs.tail` with an `after_seq` cursor instead. Same
+// records, same page controls. See sidecar/handlers/logs.py.
+
+/** One record from the sidecar's `logging` output (handlers/logs.py). */
+export interface LogEntry {
+  /** Monotonic cursor id — unique per record for the life of the process. */
+  seq: number;
+  /** ISO-8601 UTC timestamp of `LogRecord.created`. */
+  ts: string;
+  /** Python level name: DEBUG | INFO | WARNING | ERROR | CRITICAL. */
+  level: string;
+  /** Logger name, e.g. "src.agents.analyst". */
+  name: string;
+  /** Formatted message; includes the traceback for `logging.exception`. */
+  message: string;
+}
+
+export interface LogTailResult {
+  /** Records with `seq > after_seq`, oldest first, capped at `limit`. */
+  entries: LogEntry[];
+  /** Cursor to send as the next poll's `after_seq`. Echoes `after_seq` when
+   * nothing new arrived, so an idle poll is a no-op. */
+  last_seq: number;
+  /** Records currently held in the sidecar's ring buffer. */
+  buffered: number;
+  /** Ring buffer capacity (drop-oldest beyond this). */
+  capacity: number;
+  /** False if the buffer handler was never attached — the page would then
+   * stay empty forever, and that is a bug, not an idle system. */
+  installed: boolean;
+}
+
+// ── Activity ──────────────────────────────────────────────────────────────
+// The triage feed over the audit log. Distinct from Audit (the exact-match
+// evidence table): the category is computed sidecar-side, so totals and
+// pagination stay correct across the whole log, not just the current page.
+
+export type ActivityCategory = "tasks" | "proposals" | "llm" | "errors";
+
+export interface ActivityEvent {
+  id: string;
+  timestamp: string;
+  trace_id: string | null;
+  event_type: string | null;
+  status: string | null;
+  actor: string;
+  action_type: string;
+  input_context: string | null;
+  output_content: string | null;
+  metadata: Record<string, unknown>;
+  category: ActivityCategory;
+}
+
+export interface ActivityListResponse {
+  total: number;
+  limit: number;
+  offset: number;
+  category: string;
+  query: string;
+  events: ActivityEvent[];
+}
+
+// ── Regulatory ────────────────────────────────────────────────────────────
+// Multi-standard regulatory framework (FDA / EU / UK / IEC / ISO / DO-178C …)
+// over src/core/regulatory_compliance.py — traceability + submission roadmap.
+// Distinct from Compliance, which wraps the 5 bundled engineering domains.
+
+export interface RegulatoryStandard {
+  id: string;
+  name: string;
+  region: string;
+  category: string;
+  reference: string;
+  requirements: string[];
+  required_artifacts: string[];
+}
+
+export interface RegulatoryStandardsResult {
+  standards: RegulatoryStandard[];
+  total: number;
+}
+
+export interface ProductProfile {
+  product_name: string;
+  product_type?: string;
+  risk_class?: string;
+  target_regions: string[];
+  uses_ai_ml?: boolean;
+  existing_artifacts: string[];
+  [key: string]: unknown;
+}
+
+export interface RegulatoryStandardAssessment {
+  standard_id: string;
+  standard_name: string;
+  region: string;
+  compliance_score: number;
+  met_requirements: string[];
+  gaps: string[];
+  required_artifacts: string[];
+  met_artifacts: string[];
+  missing_artifacts: string[];
+}
+
+export interface RegulatoryAssessResult {
+  product_name: string;
+  assessments: Record<string, RegulatoryStandardAssessment>;
+  overall_score: number;
+  standards_assessed: number;
+  assessed_at: string;
+}
+
+export interface RegulatoryGap {
+  requirement: string;
+  status: "met" | "partial" | "missing";
+  remediation: string;
+  priority: "high" | "medium";
+}
+
+export interface RegulatoryGapAnalysis {
+  standard_id: string;
+  standard_name: string;
+  gaps: RegulatoryGap[];
+  generated_at: string;
+}
+
+export interface RegulatoryChecklistItem {
+  id: string;
+  requirement: string;
+  description: string;
+  evidence_needed: string[];
+  checked: boolean;
+}
+
+export interface RegulatoryChecklist {
+  standard_id: string;
+  standard_name: string;
+  items: RegulatoryChecklistItem[];
+  generated_at: string;
+}
+
+export interface RegulatoryRoadmapPhase {
+  phase_name: string;
+  description: string;
+  standards: string[];
+  deliverables: string[];
+  estimated_weeks: number;
+}
+
+export interface RegulatoryRoadmap {
+  product_name: string;
+  target_regions: string[];
+  phases: RegulatoryRoadmapPhase[];
+  total_estimated_weeks: number;
+  generated_at: string;
+}
+
+/** Result of a bulk knowledge import (`knowledge.sync`). Shape mirrors the sidecar's
+ *  knowledgesync.sync(): _scan() stats merged with the chunk count from sync_directory. */
+export interface KnowledgeSyncFileError {
+  file: string;
+  error: string;
+}
+
+export interface KnowledgeSyncResult {
+  directory: string;
+  solution: string;
+  chunks_added: number;
+  files_scanned: number;
+  files_indexed: number;
+  skipped: number;
+  errors: KnowledgeSyncFileError[];
 }

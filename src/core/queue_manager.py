@@ -616,6 +616,103 @@ class TaskQueue:
         self._queue.put((task.priority, task.created_at, task))
         return True
 
+    def cancel_task(self, task_id: str) -> dict:
+        """Operator cancel — move a non-terminal task to CANCELLED.
+
+        Distinct from ``retry_task``/``mark_failed``, which are the worker's
+        automatic lifecycle transitions. This is a human decision and is
+        therefore unconditional for any non-terminal task.
+
+        Semantics (deliberately narrow — no cooperative cancellation exists in
+        the framework, and this does not invent one):
+          pending / blocked  → status flips to CANCELLED and is persisted.
+                               ``_restore_pending_tasks`` only ever restores
+                               pending/in_progress, so the task is gone for good
+                               across restarts.
+          in_progress        → recorded as cancelled, but a worker thread already
+                               running it is NOT killed. It runs to its own
+                               completion or timeout.
+          terminal states    → refused; there is nothing to cancel.
+
+        Caveat, stated plainly rather than papered over: this is a state
+        transition, not an interrupt. In a process that runs a TaskWorker, an
+        already-enqueued tuple can still be dequeued by ``get_next``. The desktop
+        sidecar (the only caller) starts no worker, so nothing dispatches from
+        its queue — making a durable status flip the whole job. Making cancel a
+        true interrupt would mean changing the worker's dispatch path, which is
+        another subsystem's contract.
+
+        Returns a dict with ``cancelled`` (bool) and the task's status.
+        """
+        with self._lock:
+            task = self._tasks.get(task_id)
+            if task is None:
+                return {"cancelled": False, "reason": "not_found"}
+            if task.status in (
+                TaskStatus.COMPLETED, TaskStatus.FAILED, TaskStatus.CANCELLED,
+            ):
+                return {
+                    "cancelled": False,
+                    "reason": "terminal",
+                    "status": task.status,
+                }
+            was_running = task.status == TaskStatus.IN_PROGRESS
+            task.status = TaskStatus.CANCELLED
+            task.completed_at = datetime.now(timezone.utc).isoformat()
+            task.error = "Cancelled by operator"
+            self._db_update(task)
+            self.logger.info(
+                "Task CANCELLED by operator: %s (id: %s, was_running=%s)",
+                task.task_type, task_id, was_running,
+            )
+            return {
+                "cancelled": True,
+                "status": task.status,
+                "was_running": was_running,
+                "task": task.to_dict(),
+            }
+
+    def requeue_task(self, task_id: str) -> dict:
+        """Operator retry — put a terminal-but-unfinished task back to PENDING.
+
+        Deliberately NOT ``retry_task``: that is the worker's automatic retry
+        and it (a) refuses non-transient errors, (b) refuses once max_retries is
+        spent, and (c) ``time.sleep``s an exponential backoff. All three are
+        wrong for an explicit human action issued from a UI — the operator is
+        the authority, and the call must return immediately.
+
+        Eligible: failed, cancelled, blocked. Refused: pending / in_progress
+        (already live) and completed (nothing to retry).
+        """
+        with self._lock:
+            task = self._tasks.get(task_id)
+            if task is None:
+                return {"requeued": False, "reason": "not_found"}
+            if task.status not in (
+                TaskStatus.FAILED, TaskStatus.CANCELLED, TaskStatus.BLOCKED,
+            ):
+                return {
+                    "requeued": False,
+                    "reason": "not_retryable",
+                    "status": task.status,
+                }
+
+            task.retry_count += 1
+            task.status = TaskStatus.PENDING
+            task.started_at = None
+            task.completed_at = None
+            task.last_error = task.error
+            task.error = None
+            self._db_update(task)
+            snapshot = task.to_dict()
+
+        self._queue.put((task.priority, task.created_at, task))
+        self.logger.info(
+            "Task REQUEUED by operator: %s (id: %s, attempt %d)",
+            task.task_type, task_id, task.retry_count,
+        )
+        return {"requeued": True, "status": TaskStatus.PENDING, "task": snapshot}
+
     def get_blocked_dependents(self, failed_task_id: str) -> List[str]:
         """Find all tasks that depend on the failed task and block them."""
         blocked_ids = []

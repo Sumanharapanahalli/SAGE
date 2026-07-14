@@ -34,7 +34,7 @@ vi.mock("@/api/client", () => ({
   submitFeatureRequest: vi.fn(),
   updateFeatureRequest: vi.fn(),
   getQueueStatus: vi.fn().mockResolvedValue({
-    pending: 0, in_progress: 0, done: 0, failed: 0, blocked: 0,
+    pending: 0, in_progress: 0, completed: 0, failed: 0, blocked: 0, cancelled: 0,
     parallel_enabled: false, max_workers: 0,
   }),
   listQueueTasks: vi.fn().mockResolvedValue([]),

@@ -7,6 +7,7 @@ import {
   useApproveBuildStage,
   useBuild,
   useBuilds,
+  useRejectBuildStage,
   useStartBuild,
 } from "@/hooks/useBuilds";
 
@@ -18,6 +19,7 @@ export default function Builds() {
   const detail = useBuild(selectedId ?? undefined);
   const start = useStartBuild();
   const approve = useApproveBuildStage();
+  const reject = useRejectBuildStage();
 
   return (
     <div className="mx-auto max-w-6xl space-y-4 p-6">
@@ -84,6 +86,9 @@ export default function Builds() {
                 isApproving={approve.isPending}
                 approveError={approve.error ?? null}
                 onApprove={(p) => approve.mutate(p)}
+                isRejecting={reject.isPending}
+                rejectError={reject.error ?? null}
+                onReject={(p) => reject.mutate(p)}
               />
             ) : (
               <div className="rounded border border-red-200 bg-red-50 p-4 text-sm text-red-900">

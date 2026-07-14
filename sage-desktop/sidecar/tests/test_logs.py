@@ -164,3 +164,58 @@ def test_tail_tolerates_none_params():
     _log("x")
     out = logs.tail(None)
     assert len(out["entries"]) == 1
+
+
+def test_logs_tail_is_registered():
+    """An unregistered handler is dead code — the UI would get -32601."""
+    import app
+
+    d = app._build_dispatcher()
+    assert "logs.tail" in d._handlers
+
+
+def test_configure_logging_installs_the_buffer_handler():
+    """Nothing else writes to the ring buffer — if app never installs the
+    handler, /console renders an empty console forever."""
+    import app
+
+    logs.uninstall()
+    assert logs.tail({})["installed"] is False
+    app._configure_logging()
+    assert logs.tail({})["installed"] is True
+
+
+def test_logs_tail_round_trips_through_the_real_ndjson_dispatcher():
+    """End-to-end over the actual event loop: a framework log record emitted
+    into the root logger comes back out of the `logs.tail` RPC on stdout."""
+    import json
+
+    import app
+
+    app._configure_logging()  # installs the DequeLogHandler (idempotent)
+    logging.getLogger().setLevel(logging.INFO)
+    logging.getLogger("src.agents.analyst").warning("gateway timeout")
+
+    # limit=500: _wire_handlers itself logs, and the default limit (200) would
+    # eventually push the seeded record out of the returned window.
+    stdin = io.StringIO(
+        json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": 7,
+                "method": "logs.tail",
+                "params": {"limit": 500},
+            }
+        )
+        + "\n"
+    )
+    stdout = io.StringIO()
+    assert app.run(stdin=stdin, stdout=stdout, argv=[]) == 0
+
+    frame = json.loads(stdout.getvalue().strip())
+    assert str(frame["id"]) == "7"  # rpc.py normalizes request ids to str
+    assert "error" not in frame
+    messages = [e["message"] for e in frame["result"]["entries"]]
+    assert "gateway timeout" in messages
+    assert frame["result"]["installed"] is True
+    assert frame["result"]["last_seq"] >= 1

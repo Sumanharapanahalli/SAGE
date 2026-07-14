@@ -40,7 +40,7 @@ describe("Status page", () => {
       pending_approvals: 3,
     });
     vi.mocked(client.getQueueStatus).mockResolvedValue({
-      pending: 0, in_progress: 0, done: 0, failed: 0, blocked: 0,
+      pending: 0, in_progress: 0, completed: 0, failed: 0, blocked: 0, cancelled: 0,
       parallel_enabled: false, max_workers: 0,
     });
     render(<Status />, { wrapper: routerWrapper() });
@@ -58,7 +58,7 @@ describe("Status page", () => {
       pending_approvals: 2,
     });
     vi.mocked(client.getQueueStatus).mockResolvedValue({
-      pending: 0, in_progress: 0, done: 0, failed: 0, blocked: 0,
+      pending: 0, in_progress: 0, completed: 0, failed: 0, blocked: 0, cancelled: 0,
       parallel_enabled: false, max_workers: 0,
     });
     render(<Status />, { wrapper: routerWrapper() });
@@ -72,7 +72,7 @@ describe("Status page", () => {
       detail: { message: "stream closed" },
     });
     vi.mocked(client.getQueueStatus).mockResolvedValue({
-      pending: 0, in_progress: 0, done: 0, failed: 0, blocked: 0,
+      pending: 0, in_progress: 0, completed: 0, failed: 0, blocked: 0, cancelled: 0,
       parallel_enabled: false, max_workers: 0,
     });
     render(<Status />, { wrapper: routerWrapper() });

@@ -8,6 +8,9 @@
 import { invoke } from "@tauri-apps/api/core";
 
 import type {
+  ActivityCategory,
+  ActivityEvent,
+  ActivityListResponse,
   Agent,
   AgentPerformance,
   ApproveBuildParams,
@@ -62,9 +65,12 @@ import type {
   KnowledgeDeleteResult,
   KnowledgeListResult,
   KnowledgeSearchResult,
+  KnowledgeSyncResult,
   KnowledgeStats,
   LlmInfo,
   LlmSwitchResult,
+  LogEntry,
+  LogTailResult,
   McpToolsResult,
   MonitorStatus,
   ApprovedProposal,
@@ -74,9 +80,22 @@ import type {
   OrgReloadResult,
   OrgUpdateResult,
   PlanResult,
+  ProductProfile,
   Proposal,
+  QueueCancelResult,
+  QueueRetryResult,
   QueueStatus,
   QueueTask,
+  RegulatoryAssessResult,
+  RegulatoryChecklist,
+  RegulatoryGap,
+  RegulatoryGapAnalysis,
+  RegulatoryRoadmap,
+  RegulatoryRoadmapPhase,
+  RegulatoryStandard,
+  RegulatoryStandardAssessment,
+  RegulatoryStandardsResult,
+  RejectBuildParams,
   SchedulerStatus,
   SkillsListResult,
   SkillsReloadResult,
@@ -240,6 +259,55 @@ export const getAuditByTrace = (trace_id: string) =>
 
 export const auditStats = () => call<AuditStats>("audit_stats");
 
+// ── Activity ──────────────────────────────────────────────────────────────
+// The triage feed: "show me everything that FAILED". Classification and
+// free-text search run sidecar-side, so totals/pagination stay correct.
+
+export interface ListActivityParams {
+  limit?: number;
+  offset?: number;
+  category?: ActivityCategory | "all";
+  query?: string;
+}
+
+export const listActivity = (params: ListActivityParams = {}) =>
+  call<ActivityListResponse>("list_activity", params);
+
+// ── Regulatory ────────────────────────────────────────────────────────────
+// Multi-standard regulatory framework: standards registry, per-standard
+// checklist, product assessment with artifact gaps, and a phased submission
+// roadmap (IEC 62304 / 21 CFR Part 11 / EU MDR / DO-178C …).
+
+export const regulatoryStandards = () =>
+  call<RegulatoryStandardsResult>("regulatory_standards");
+
+export const regulatoryStandard = (standard_id: string) =>
+  call<RegulatoryStandard>("regulatory_standard", { standard_id });
+
+export const regulatoryChecklist = (standard_id: string) =>
+  call<RegulatoryChecklist>("regulatory_checklist", { standard_id });
+
+export const regulatoryAssess = (
+  product: ProductProfile,
+  standard_ids?: string[],
+) =>
+  call<RegulatoryAssessResult>("regulatory_assess", {
+    product,
+    standard_ids: standard_ids ?? null,
+  });
+
+export const regulatoryGapAnalysis = (
+  product: ProductProfile,
+  standard_id: string,
+) =>
+  call<RegulatoryGapAnalysis>("regulatory_gap_analysis", {
+    product,
+    standard_id,
+  });
+
+export const regulatoryRoadmap = (product: ProductProfile) =>
+  call<RegulatoryRoadmap>("regulatory_roadmap", { product });
+
 // ── Agents ────────────────────────────────────────────────────────────────
 
 export const listAgents = () => call<Agent[]>("list_agents");
@@ -323,6 +391,15 @@ export const getBuild = (run_id: string) =>
 export const approveBuildStage = (params: ApproveBuildParams) =>
   call<BuildRunDetail>("approve_build_stage", params);
 
+/**
+ * Reject the stage the run is gated on. Its own RPC (not `approved: false`)
+ * because the sidecar signs the rejection with the operator's identity AND
+ * compounds the feedback into vector memory — Phase 5, "every rejection
+ * teaches". A gate you can only say YES to is not a gate.
+ */
+export const rejectBuildStage = (params: RejectBuildParams) =>
+  call<BuildRunDetail>("reject_build_stage", params);
+
 // ── YAML authoring ────────────────────────────────────────────────────────
 
 export const readYaml = (file: YamlFileName) =>
@@ -361,6 +438,9 @@ export const knowledgeList = (params: { limit?: number; offset?: number } = {}) 
 export const knowledgeSearch = (query: string, top_k?: number) =>
   call<KnowledgeSearchResult>("knowledge_search", { query, top_k });
 
+export const knowledgeSync = (directory?: string) =>
+  call<KnowledgeSyncResult>("knowledge_sync", { directory });
+
 export const knowledgeAdd = (text: string, metadata?: Record<string, unknown>) =>
   call<KnowledgeAddResult>("knowledge_add", { text, metadata });
 
@@ -372,6 +452,19 @@ export const knowledgeStats = () => call<KnowledgeStats>("knowledge_stats");
 // ── Queue ─────────────────────────────────────────────────────────────────
 
 export const getQueueStatus = () => call<QueueStatus>("get_queue_status");
+
+/**
+ * Cancel a queued/blocked/running task. Framework control (Law 1) — the
+ * operator's own action, executed immediately, never queued for approval.
+ * `was_running: true` means the task was tombstoned but its worker thread was
+ * NOT killed (the queue has no cooperative cancellation).
+ */
+export const cancelQueueTask = (task_id: string) =>
+  call<QueueCancelResult>("cancel_queue_task", { task_id });
+
+/** Re-queue a failed/cancelled/blocked task. Framework control — immediate. */
+export const retryQueueTask = (task_id: string) =>
+  call<QueueRetryResult>("retry_queue_task", { task_id });
 
 export const listQueueTasks = (
   params: { status?: string; limit?: number } = {},
@@ -612,8 +705,20 @@ export const hilRunSuite = (
 export const hilReport = (session_id: string, standard?: string) =>
   call<HILReportResult>("hil_report", { session_id, standard });
 
+// ── Live Console (logs) ──────────────────────────────────────────────────
+// The sidecar cannot stream (one-request/one-response NDJSON), so the web
+// UI's SSE log stream becomes a cursor poll here. Pass back the `last_seq`
+// from the previous response as `after_seq`; the sidecar clamps `limit` to
+// [1, 500]. See useLogs.ts for the polling loop.
+
+export const tailLogs = (after_seq = 0, limit?: number) =>
+  call<LogTailResult>("logs_tail", { after_seq, limit });
+
 // Re-exports to reduce import boilerplate at call sites
 export type {
+  ActivityCategory,
+  ActivityEvent,
+  ActivityListResponse,
   Agent,
   AgentPerformance,
   ApproveBuildParams,
@@ -650,6 +755,8 @@ export type {
   HILTestCaseInput,
   LlmInfo,
   LlmSwitchResult,
+  LogEntry,
+  LogTailResult,
   McpToolsResult,
   MonitorStatus,
   ApprovedProposal,
@@ -659,9 +766,22 @@ export type {
   OrgReloadResult,
   OrgUpdateResult,
   PlanResult,
+  ProductProfile,
   Proposal,
+  QueueCancelResult,
+  QueueRetryResult,
   QueueStatus,
   QueueTask,
+  RegulatoryAssessResult,
+  RegulatoryChecklist,
+  RegulatoryGap,
+  RegulatoryGapAnalysis,
+  RegulatoryRoadmap,
+  RegulatoryRoadmapPhase,
+  RegulatoryStandard,
+  RegulatoryStandardAssessment,
+  RegulatoryStandardsResult,
+  RejectBuildParams,
   SchedulerStatus,
   SkillsListResult,
   SkillsReloadResult,
