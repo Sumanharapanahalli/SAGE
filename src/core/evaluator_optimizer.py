@@ -255,6 +255,33 @@ class EvaluatorOptimizerRunner:
             return s[mid]
         return (s[mid - 1] + s[mid]) / 2.0
 
+    def _oversize_guard(self, prompt: str) -> Optional[dict]:
+        """Refuse an evaluator prompt that is too large to be judged, instead of hanging.
+
+        CLI evaluator latency is super-linear in prompt size (measured for Gemini on this
+        repo: 5KB->7s, 20KB->17s, 50KB->142s). A task scoped as "add response models to
+        EVERY endpoint" of a 232KB file produced 34KB candidates, whose evaluator prompt
+        blew a 900s timeout on every attempt AND every retry — the run burned five hours and
+        returned nothing.
+
+        Timing out is not just slow, it is *dishonest*: it lands as a phantom 0.0 that reads
+        as "the optimizer produced garbage" when in truth the judge never ran. Fail fast and
+        say WHY, so the answer is "re-scope the task", not "the model is bad".
+        """
+        limit = int(self.config.get("max_evaluator_prompt_chars", 40_000))
+        if limit <= 0 or len(prompt) <= limit:
+            return None
+        msg = (
+            f"candidate is too large to evaluate: the evaluator prompt is "
+            f"{len(prompt) // 1024}KB (limit {limit // 1024}KB). CLI evaluators scale "
+            f"super-linearly with prompt size and will time out rather than answer. "
+            f"Scope the task to a smaller unit of work, or raise "
+            f"max_evaluator_prompt_chars if your evaluator can genuinely take it."
+        )
+        logger.error("%s", msg)
+        return {"parse_ok": False, "score": 0.0, "passed": False,
+                "oversize": True, "feedback": f"(NOT SCORED — {msg})"}
+
     def _evaluate_candidate(self, task: str, candidate: str) -> dict:
         """Evaluate a candidate against self.evaluators. With one evaluator
         (the default), behavior is identical to a single-judge call. With a
@@ -263,6 +290,13 @@ class EvaluatorOptimizerRunner:
         proposal: one hallucinating/overloaded evaluator can no longer
         singlehandedly tank or inflate a candidate's score."""
         prompt = self._evaluator_prompt(task, candidate)
+
+        # Check BEFORE calling anyone, and before the retry loop: retrying a prompt that is
+        # too big to answer just multiplies the wasted wall-clock (3 iterations x 3 attempts
+        # x a 900s timeout = the five hours this run threw away).
+        oversize = self._oversize_guard(prompt)
+        if oversize is not None:
+            return oversize
 
         if len(self.evaluators) <= 1:
             evaluator = self.evaluators[0] if self.evaluators else None
@@ -330,6 +364,20 @@ class EvaluatorOptimizerRunner:
             # EVALUATE — parse robustly: an unparseable response is FLAGGED, not a silent 0.0.
             # With a pool, scores are aggregated via robust median (Step 0(c)).
             ev = self._evaluate_candidate(task, candidate)
+
+            # An oversize candidate will not get smaller by iterating — the optimizer is
+            # doing exactly what the task asked. Stop now and tell the human to re-scope,
+            # rather than grinding through every iteration to arrive at a phantom 0.0.
+            if ev.get("oversize"):
+                history.append({"iteration": i, "candidate": candidate, "score": 0.0,
+                                "passed": False, "feedback": ev["feedback"], "parse_ok": False})
+                return {"converged": False, "iterations": i, "final": candidate,
+                        "score": 0.0, "oversize": True, "history": history,
+                        "error": ev["feedback"],
+                        "note": "The candidate is too large for the evaluator to judge. This "
+                                "is NOT a quality score — the judge never ran. Re-scope the "
+                                "task to a smaller unit of work."}
+
             score = ev["score"]
             passed = ev["parse_ok"] and (ev["passed"] or score >= self.score_threshold)
             feedback = ev["feedback"]

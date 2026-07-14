@@ -20,6 +20,7 @@ Exit code 0 = usable. Non-zero = a real operator is blocked. No model opinions i
 
     python scripts/verify_system.py            # full gate
     python scripts/verify_system.py --fast     # skip the Rust compile (~1-2 min)
+    python scripts/verify_system.py --json     # machine-readable output for CI
 """
 from __future__ import annotations
 
@@ -38,12 +39,14 @@ if not PYTHON.exists():
     PYTHON = ROOT / ".venv" / "bin" / "python"
 
 RESULTS: list[tuple[str, bool, str]] = []
+_JSON_MODE = False
 
 
 def check(name: str, passed: bool, detail: str = "") -> bool:
     RESULTS.append((name, passed, detail))
-    print(f"  [{'PASS' if passed else 'FAIL'}] {name}" + (f" — {detail}" if detail else ""),
-          flush=True)
+    if not _JSON_MODE:
+        print(f"  [{'PASS' if passed else 'FAIL'}] {name}" + (f" — {detail}" if detail else ""),
+              flush=True)
     return passed
 
 
@@ -222,31 +225,52 @@ def gate_critic_panel() -> bool:
 
 
 def main() -> int:
+    global _JSON_MODE
+
     ap = argparse.ArgumentParser(description="SAGE system-level evidence gate")
     ap.add_argument("--solution", default="four_in_a_line")
     ap.add_argument("--fast", action="store_true", help="skip the Rust compile")
+    ap.add_argument("--json", action="store_true", dest="json_out",
+                    help="print results as JSON to stdout (for CI)")
     args = ap.parse_args()
 
-    print("=" * 72)
-    print("SAGE SYSTEM EVIDENCE GATE — can a person actually use this right now?")
-    print("=" * 72, flush=True)
+    _JSON_MODE = args.json_out
+
+    if not _JSON_MODE:
+        print("=" * 72)
+        print("SAGE SYSTEM EVIDENCE GATE — can a person actually use this right now?")
+        print("=" * 72, flush=True)
     t0 = time.time()
 
-    print("\n[1/6] backend")
+    if not _JSON_MODE:
+        print("\n[1/6] backend")
     if gate_sidecar_boots(args.solution):
         gate_rpcs_answer(args.solution)
 
-    print("\n[2/6] the app a human opens")
+    if not _JSON_MODE:
+        print("\n[2/6] the app a human opens")
     gate_app_compiles(args.fast)
     gate_frontend_builds()
     gate_launcher_portable()
 
-    print("\n[3/6] the critic panel")
+    if not _JSON_MODE:
+        print("\n[3/6] the critic panel")
     gate_critic_panel()
 
     failed = [n for n, ok, _ in RESULTS if not ok]
+    passed_count = len(RESULTS) - len(failed)
+
+    if _JSON_MODE:
+        payload = {
+            "gates": [{"name": n, "passed": ok, "detail": d} for n, ok, d in RESULTS],
+            "passed": passed_count,
+            "total": len(RESULTS),
+        }
+        print(json.dumps(payload))
+        return 0 if not failed else 1
+
     print("\n" + "=" * 72)
-    print(f"{len(RESULTS) - len(failed)}/{len(RESULTS)} gates passed in {time.time() - t0:.0f}s")
+    print(f"{passed_count}/{len(RESULTS)} gates passed in {time.time() - t0:.0f}s")
     if failed:
         print("\nBLOCKED — a real operator hits these:")
         for n, ok, d in RESULTS:
