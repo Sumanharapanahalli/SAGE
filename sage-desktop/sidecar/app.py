@@ -315,6 +315,7 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
         return
 
     try:
+        from src.core import proposal_store as _ps_mod
         from src.core.proposal_store import ProposalStore
 
         store = ProposalStore(str(sage_dir / "proposals.db"))
@@ -322,6 +323,14 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
         status._store = store
         analyze._store = store
         backlog._proposal_store = store
+        # Make the executor's follow-up proposals land in the SAME store the inbox reads.
+        # proposal_executor creates the code_diff review proposal for an approved plan's
+        # DEVELOP step via get_proposal_store(), whose lazy global otherwise resolves to
+        # audit_logger.db_path (<solution>/.sage/audit_log.db) — a DIFFERENT file than the
+        # inbox's proposals.db. That stranded every AI-written code change with an
+        # un-approvable, invisible HITL gate on the desktop. Pinning the global here (the
+        # web API, which never runs _wire_handlers, keeps its own resolution) unifies them.
+        _ps_mod._proposal_store = store
     except Exception as e:  # noqa: BLE001
         logging.warning("ProposalStore unavailable: %s", e)
 
@@ -414,6 +423,15 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
         # Parallel config lives on the runner, not the bare TaskQueue —
         # mirror api.py:1716-1717 so queue.get_status reports it correctly.
         queue._parallel_runner = parallel_runner
+        # proposal_executor._execute_implementation_plan submits a plan's non-DEVELOP steps
+        # through the module-global `task_queue`, whose _DB_PATH is <repo>/data/audit_log.db
+        # and ignores the active solution — so approving a plan queued tasks into a hidden
+        # framework DB the desktop Queue page never reads. Pin the global to THIS solution's
+        # queue so those tasks land where the operator can see them. (NOTE: the sidecar still
+        # runs no TaskWorker, so queued tasks are now VISIBLE but not yet executed — a
+        # desktop worker is a separate, tracked gap.)
+        import src.core.queue_manager as _qm
+        _qm.task_queue = queue._queue
     except Exception as e:  # noqa: BLE001
         logging.warning("TaskQueue unavailable: %s", e)
 
