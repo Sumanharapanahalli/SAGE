@@ -73,7 +73,18 @@ export function ErrorBanner({ error }: Props) {
       className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900"
     >
       <div className="font-semibold">{title}</div>
-      <div className="mt-0.5 text-red-800/80">{detail}</div>
+      {/* The detail is often a RAW developer string — a live run showed
+          "Cannot read properties of undefined (reading 'invoke')" rendered straight at the
+          operator. Keep it (it is what makes a bug reportable) but demote it behind a
+          disclosure, and drop the /80 opacity: red-800 at 80% on red-50 fails WCAG AA. */}
+      {detail && (
+        <details className="mt-1">
+          <summary className="cursor-pointer text-xs text-red-800 hover:underline">
+            Technical details
+          </summary>
+          <div className="mt-1 break-all font-mono text-xs text-red-900">{detail}</div>
+        </details>
+      )}
     </div>
   );
 }

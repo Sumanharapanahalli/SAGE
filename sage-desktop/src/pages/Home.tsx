@@ -78,29 +78,41 @@ export default function Home() {
     );
   }
 
+  const loadError =
+    solutions.error ??
+    (switchSolution.error ? toDesktopError(switchSolution.error) : null);
+  // The list could not be loaded at all. Distinct from "loaded, and it is empty".
+  const listUnavailable = Boolean(solutions.error) || !solutions.data;
+
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-4 p-6">
-      <ErrorBanner
-        error={
-          solutions.error ??
-          (switchSolution.error ? toDesktopError(switchSolution.error) : null)
-        }
-      />
+      <ErrorBanner error={loadError} />
 
       <input
         type="text"
         value={filter}
         onChange={(e) => setFilter(e.target.value)}
         placeholder="Filter solutions…"
-        className="w-full rounded border border-sage-100 px-3 py-2 text-sm"
+        className="w-full rounded border border-sage-300 px-3 py-2 text-sm placeholder:text-slate-700"
       />
 
       {solutions.isLoading ? (
-        <p className="text-sm text-slate-500">Loading solutions…</p>
-      ) : filtered.length === 0 ? (
-        <div className="rounded border border-sage-100 bg-white p-6 text-center text-sm text-slate-500">
-          {solutions.data?.length === 0
-            ? "No solutions found."
+        <div aria-busy="true" aria-live="polite" className="flex flex-col gap-2">
+          <span className="sr-only">Loading solutions…</span>
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="h-14 animate-pulse rounded border border-sage-300 bg-sage-100"
+            />
+          ))}
+        </div>
+      ) : listUnavailable ? null /* the ErrorBanner above already says why; an empty-state
+            next to a connection error is contradictory — a live run showed "Sidecar
+            disconnected" and "No solutions match your filter." stacked together. */
+      : filtered.length === 0 ? (
+        <div className="rounded border border-sage-100 bg-white p-6 text-center text-sm text-slate-700">
+          {solutions.data.length === 0
+            ? "No solutions yet — create one to get started."
             : "No solutions match your filter."}
         </div>
       ) : (
@@ -115,7 +127,7 @@ export default function Home() {
                   className="flex flex-1 flex-col items-start rounded border border-sage-100 bg-white p-3 text-left hover:border-sage-300 hover:bg-sage-50 disabled:opacity-50"
                 >
                   <span className="font-medium text-sage-900">{s.name}</span>
-                  <span className="text-xs text-slate-500">{s.path}</span>
+                  <span className="text-xs text-slate-600">{s.path}</span>
                   {s.has_sage_dir && (
                     <span className="mt-1 inline-block rounded bg-sage-100 px-1.5 py-0.5 text-[11px] text-sage-700">
                       has data
@@ -148,9 +160,12 @@ export default function Home() {
         </ul>
       )}
 
+      {/* A solid primary button. A DASHED border reads as a dropzone or a placeholder, not
+          as the main call to action on the page whose whole job is picking or creating a
+          solution. */}
       <Link
         to="/onboarding"
-        className="block rounded border border-dashed border-sage-400 px-3 py-2 text-center text-sm text-sage-700 hover:bg-sage-100"
+        className="inline-flex w-fit items-center rounded bg-sage-700 px-4 py-2 text-sm font-medium text-white hover:bg-sage-800"
       >
         + New solution
       </Link>

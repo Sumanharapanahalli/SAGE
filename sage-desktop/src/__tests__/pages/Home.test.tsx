@@ -61,7 +61,7 @@ describe("Home page", () => {
     vi.mocked(client.listSolutions).mockResolvedValue([]);
     render(<Home />, { wrapper: routerWrapper() });
     await waitFor(() =>
-      expect(screen.getByText(/no solutions found/i)).toBeInTheDocument(),
+      expect(screen.getByText(/no solutions yet/i)).toBeInTheDocument(),
     );
   });
 

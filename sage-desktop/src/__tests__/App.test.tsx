@@ -85,7 +85,7 @@ describe("App routing", () => {
       </MemoryRouter>,
     );
     await waitFor(() =>
-      expect(screen.getByRole("heading")).toHaveTextContent(/approvals/i),
+      expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(/approvals/i),
     );
   });
 
@@ -97,7 +97,7 @@ describe("App routing", () => {
       </MemoryRouter>,
     );
     await waitFor(() =>
-      expect(screen.getByRole("heading")).toHaveTextContent(/solutions/i),
+      expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(/solutions/i),
     );
   });
 
@@ -109,7 +109,7 @@ describe("App routing", () => {
       </MemoryRouter>,
     );
     await waitFor(() =>
-      expect(screen.getByRole("heading")).toHaveTextContent(/solutions/i),
+      expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(/solutions/i),
     );
   });
 
@@ -120,7 +120,7 @@ describe("App routing", () => {
       </MemoryRouter>,
     );
     await waitFor(() =>
-      expect(screen.getByRole("heading")).toHaveTextContent(/audit/i),
+      expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(/audit/i),
     );
   });
 
@@ -131,7 +131,7 @@ describe("App routing", () => {
       </MemoryRouter>,
     );
     await waitFor(() =>
-      expect(screen.getByRole("heading")).toHaveTextContent(/status/i),
+      expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(/status/i),
     );
   });
 
@@ -159,10 +159,10 @@ describe("App routing", () => {
       </MemoryRouter>,
     );
     await waitFor(() =>
-      expect(screen.getByRole("heading")).toHaveTextContent(/solutions/i),
+      expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(/solutions/i),
     );
     await new Promise((r) => setTimeout(r, 50));
-    expect(screen.getByRole("heading")).toHaveTextContent(/solutions/i);
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(/solutions/i);
   });
 
   it("renders Onboarding without a solution loaded", async () => {

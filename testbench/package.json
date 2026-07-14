@@ -1,0 +1,16 @@
+{
+  "name": "testbench",
+  "version": "1.0.0",
+  "description": "A config-driven, pluggable test bench. A solution declares **what** to test in a\r `testbench.yaml`; the bench runs the declared suites via pluggable **drivers** and\r produces one report. Works across project types — **web/API, mobile, or embedded**.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "playwright": "^1.61.1"
+  }
+}

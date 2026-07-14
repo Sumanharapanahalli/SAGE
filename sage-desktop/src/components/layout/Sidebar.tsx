@@ -47,7 +47,7 @@ export function Sidebar() {
         data-testid="sidebar-solution"
         className="mb-4 block rounded border border-sage-200 bg-white px-3 py-2 text-xs hover:border-sage-400 hover:bg-sage-50"
       >
-        <div className="uppercase tracking-wide text-sage-500">Solution</div>
+        <div className="uppercase tracking-wide text-sage-700">Solution</div>
         <div
           className="mt-0.5 truncate font-medium text-sage-900"
           title={current?.name ?? "none"}
@@ -86,14 +86,9 @@ export function Sidebar() {
         </ul>
       )}
 
-      <div className="mt-auto pt-4">
-        <NavLink
-          to="/onboarding"
-          className="block rounded border border-dashed border-sage-400 px-3 py-2 text-center text-sm text-sage-700 hover:bg-sage-100"
-        >
-          + New solution
-        </NavLink>
-      </div>
+      {/* "+ New solution" deliberately does NOT live here. It is the primary action of the
+          solution picker (Home), and rendering it in both places put the same call to action
+          on screen twice whenever the picker was open. */}
     </nav>
   );
 }

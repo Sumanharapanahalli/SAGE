@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 
@@ -207,12 +207,16 @@ describe("Sidebar", () => {
     expect(screen.queryByRole("link", { name: /^approvals$/i })).not.toBeInTheDocument();
   });
 
-  it("always shows + New solution regardless of solution state", async () => {
+  it("does NOT duplicate + New solution — that action belongs to the picker", async () => {
+    // It used to render here as well as on Home, putting the same call to action on screen
+    // twice whenever the picker was open (and styled with a dashed border, which reads as a
+    // dropzone rather than a primary action). Home owns it now.
     vi.mocked(client.getCurrentSolution).mockResolvedValueOnce(null);
     renderAt("/home");
     await screen.findByText(/pick a solution/i);
+    const sidebar = screen.getByRole("navigation");
     expect(
-      screen.getByRole("link", { name: /new solution/i }),
-    ).toHaveAttribute("href", "/onboarding");
+      within(sidebar).queryByRole("link", { name: /new solution/i }),
+    ).not.toBeInTheDocument();
   });
 });
