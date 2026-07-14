@@ -177,6 +177,34 @@ def gate_frontend_builds() -> bool:
     return check("frontend builds (vite build)", ok, "" if ok else out.strip()[-100:])
 
 
+# --------------------------------------------------------------- 4b. the Rust tests actually run
+def gate_rust_tests(fast: bool) -> bool:
+    """`cargo test --lib --no-default-features` — the ONLY correct invocation on Windows.
+
+    This gate exists because of a false conclusion, not a bug. Every attempt ran
+    `cargo test --features desktop`, which pulls in Tauri and therefore WebView2; the test
+    binary then dies at load with STATUS_ENTRYPOINT_NOT_FOUND. From that we concluded three
+    separate times that "the Rust layer cannot be tested here" — and shipped a Tauri command
+    (solution remove) that was broken in a way these tests exist to catch.
+
+    Cargo.toml:33 documents the right flags, and `make test-desktop-rs` already used them.
+    Nobody ran it. Pinning it into the gate means the excuse cannot come back.
+    """
+    if fast:
+        return check("Rust tests (cargo test)", True, "SKIPPED (--fast)")
+    cargo = Path(os.environ.get("USERPROFILE", os.path.expanduser("~"))) / ".cargo" / "bin"
+    old = os.environ.get("PATH", "")
+    os.environ["PATH"] = f"{cargo}{os.pathsep}{old}"
+    try:
+        rc, out = _run(["cargo", "test", "--lib", "--no-default-features"],
+                       ROOT / "sage-desktop" / "src-tauri", timeout=900)
+    finally:
+        os.environ["PATH"] = old
+    passed = [l for l in out.splitlines() if l.startswith("test result:")]
+    return check("Rust tests (cargo test)", rc == 0,
+                 passed[0][:60] if passed else f"rc={rc}")
+
+
 # ------------------------------------------------------------ 5. the launcher is shell-agnostic
 def gate_launcher_portable() -> bool:
     """The recipe must not use POSIX `VAR=value cmd` prefixes — they die under cmd.exe,
@@ -250,6 +278,7 @@ def main() -> int:
     if not _JSON_MODE:
         print("\n[2/6] the app a human opens")
     gate_app_compiles(args.fast)
+    gate_rust_tests(args.fast)
     gate_frontend_builds()
     gate_launcher_portable()
 
