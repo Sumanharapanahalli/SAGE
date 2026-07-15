@@ -247,3 +247,12 @@ def test_react_loop_tool_descriptions_survive_a_docless_tool():
         doc = (fn.__doc__ or "").strip()
         lines.append(f"  - {name}({params}): {doc.splitlines()[0] if doc else name}")
     assert any("docless" in l for l in lines)
+
+
+def test_isolated_coder_flag_gates_mcp_tools():
+    """An injected root means worktree isolation — MCP tools (which ignore self.root and
+    would write outside the branch) must be excluded. The first dogfood leaked into the live
+    checkout because they weren't."""
+    from src.agents.coder import CodingAgent
+    assert CodingAgent(root="/tmp/wt")._isolated is True
+    assert CodingAgent()._isolated is False

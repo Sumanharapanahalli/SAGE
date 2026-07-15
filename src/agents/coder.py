@@ -34,6 +34,9 @@ class CodingAgent:
         # the Merge-Gate runner injects the MR's isolated WORKTREE so the agent writes into
         # the branch — not the live tree (the old behaviour, gap B6, committed nothing).
         self.root = root or _ROOT
+        # Isolated mode: a root was explicitly injected (worktree). In this mode the agent
+        # must not load MCP tools, which ignore self.root and would write outside the branch.
+        self._isolated = root is not None
 
     @property
     def llm(self):
@@ -165,13 +168,18 @@ class CodingAgent:
             "git_diff":     self._tool_git_diff,
         }
 
-        # Merge MCP tools exported in React-compatible format (best-effort)
-        try:
-            from src.integrations.mcp_registry import mcp_registry
-            mcp_tools = mcp_registry.as_react_tools()
-            tools.update(mcp_tools)
-        except Exception:
-            pass  # MCP tools are supplementary
+        # Merge MCP tools exported in React-compatible format (best-effort).
+        # NOT in isolated mode: MCP tools resolve paths against the framework repo, not the
+        # agent's injected root, so they would write OUTSIDE the worktree — which is exactly
+        # how the first Merge-Gate dogfood leaked a change into the live checkout instead of
+        # the branch. When the coder is confined to a worktree, use ONLY the built-in tools,
+        # every one of which honours self.root.
+        if not self._isolated:
+            try:
+                from src.integrations.mcp_registry import mcp_registry
+                tools.update(mcp_registry.as_react_tools())
+            except Exception:
+                pass  # MCP tools are supplementary
 
         def _describe(name, fn) -> str:
             # Robust against tools that lack a docstring or a __code__ (MCP/wrapped
