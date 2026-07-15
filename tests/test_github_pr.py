@@ -252,15 +252,17 @@ class TestGetComments:
     def test_parses_comments_array_with_created_at(self):
         payload = {
             "comments": [
-                {"author": {"login": "carol"}, "body": "first", "createdAt": "2026-01-01T00:00:00Z"},
-                {"author": {"login": "dan"}, "body": "second", "createdAt": "2026-01-02T00:00:00Z"},
+                {"id": "IC_1", "author": {"login": "carol"}, "body": "first",
+                 "createdAt": "2026-01-01T00:00:00Z"},
+                {"id": "IC_2", "author": {"login": "dan"}, "body": "second",
+                 "createdAt": "2026-01-02T00:00:00Z"},
             ]
         }
         runner = FakeRunner(default=(0, json.dumps(payload), ""))
         out = _pr(runner).get_comments(9)
         assert out == [
-            {"author": "carol", "body": "first", "created": "2026-01-01T00:00:00Z"},
-            {"author": "dan", "body": "second", "created": "2026-01-02T00:00:00Z"},
+            {"id": "IC_1", "author": "carol", "body": "first", "created": "2026-01-01T00:00:00Z"},
+            {"id": "IC_2", "author": "dan", "body": "second", "created": "2026-01-02T00:00:00Z"},
         ]
         call = runner.call_with("pr", "view")
         argv = call["argv"]

@@ -286,7 +286,11 @@ class GitHubPR:
         return parsed
 
     def get_comments(self, number: int) -> list:
-        """Return ``[{"author", "body", "created"}, ...]`` (empty on failure)."""
+        """Return ``[{"id", "author", "body", "created"}, ...]`` (empty on failure).
+
+        ``id`` is GitHub's stable comment id — the watcher keys idempotent
+        comment handling on it (react to each human comment exactly once).
+        """
         rc, out, err = self._run(
             [self._gh, "pr", "view", str(number), "--json", "comments"]
         )
@@ -309,6 +313,7 @@ class GitHubPR:
             author = item.get("author") or {}
             login = author.get("login", "") if isinstance(author, dict) else ""
             parsed.append({
+                "id": str(item.get("id", "") or ""),
                 "author": str(login or ""),
                 "body": str(item.get("body", "") or ""),
                 "created": str(item.get("createdAt", "") or ""),
