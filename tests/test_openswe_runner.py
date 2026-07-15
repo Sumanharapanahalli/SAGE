@@ -710,9 +710,16 @@ STATUS: DONE"""
 class TestExternalSWEEdgeCases:
     def test_timeout_returns_none(self):
         """_try_external_swe() returns None on timeout."""
+        import socket
+
         runner = _fresh_runner()
-        runner._openswe_url = "http://10.255.255.1:9999"  # Non-routable → timeout
-        result = runner._try_external_swe({"description": "test"}, "", None)
+        runner._openswe_url = "http://example.invalid:9999"
+        # Mock the HTTP call to time out immediately. The previous version pointed
+        # at a non-routable IP and relied on a real 300s connect timeout, which
+        # blew past pytest-timeout (120s) and failed the whole unit-test job. The
+        # runner catches any exception from urlopen and returns None.
+        with patch("urllib.request.urlopen", side_effect=socket.timeout("timed out")):
+            result = runner._try_external_swe({"description": "test"}, "", None)
         assert result is None
 
 
