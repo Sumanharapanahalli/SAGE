@@ -14,11 +14,10 @@ Supported document types:
 Output: Markdown (suitable for conversion to PDF via pandoc or similar).
 """
 
-import json
 import logging
 import os
 from datetime import datetime, timezone
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +51,9 @@ class DocumentGenerator:
             project_info: optional dict with intended_use, safety_class, etc.
         """
         info = project_info or {}
-        doc = self._header("Software Requirements Specification (SRS)", "IEC 62304 §5.2")
+        doc = self._header(
+            "Software Requirements Specification (SRS)", "IEC 62304 §5.2"
+        )
 
         doc += "## 1. Purpose and Scope\n\n"
         doc += f"**Intended Use:** {info.get('intended_use', 'TBD')}  \n"
@@ -98,7 +99,9 @@ class DocumentGenerator:
 
         return doc
 
-    def generate_risk_management(self, risks: List[dict], project_info: dict = None) -> str:
+    def generate_risk_management(
+        self, risks: List[dict], project_info: dict = None
+    ) -> str:
         """
         Generate Risk Management File per ISO 14971.
 
@@ -111,7 +114,9 @@ class DocumentGenerator:
 
         doc += "## 1. Risk Management Plan\n\n"
         doc += f"**Risk Acceptability Criteria:** {info.get('risk_criteria', 'ALARP (As Low As Reasonably Practicable)')}\n"
-        doc += f"**Risk Assessment Method:** {info.get('risk_method', 'FMEA + FTA')}\n\n"
+        doc += (
+            f"**Risk Assessment Method:** {info.get('risk_method', 'FMEA + FTA')}\n\n"
+        )
 
         doc += "## 2. Risk Analysis\n\n"
         doc += "| ID | Hazard | Severity | Probability | Risk Level | Mitigation | Residual Risk |\n"
@@ -126,7 +131,9 @@ class DocumentGenerator:
         doc += "\n"
 
         # Statistics
-        high_risks = [r for r in risks if r.get("risk_level", "").upper() in ("HIGH", "CRITICAL")]
+        high_risks = [
+            r for r in risks if r.get("risk_level", "").upper() in ("HIGH", "CRITICAL")
+        ]
         doc += "## 3. Risk Summary\n\n"
         doc += f"- **Total hazards identified:** {len(risks)}\n"
         doc += f"- **High/Critical risks:** {len(high_risks)}\n"
@@ -156,12 +163,18 @@ class DocumentGenerator:
         doc += "| ID | Level | Title | Status | Traces To | Traced From |\n"
         doc += "|---|---|---|---|---|---|\n"
         for item in trace_data:
-            traces_to = ", ".join(
-                f"{t.get('target_id', '')}" for t in item.get("traces_to", [])
-            ) or "—"
-            traced_from = ", ".join(
-                f"{t.get('source_id', '')}" for t in item.get("traced_from", [])
-            ) or "—"
+            traces_to = (
+                ", ".join(
+                    f"{t.get('target_id', '')}" for t in item.get("traces_to", [])
+                )
+                or "—"
+            )
+            traced_from = (
+                ", ".join(
+                    f"{t.get('source_id', '')}" for t in item.get("traced_from", [])
+                )
+                or "—"
+            )
             doc += (
                 f"| {item.get('id', 'N/A')} | {item.get('level', 'N/A')} | "
                 f"{item.get('title', 'N/A')} | {item.get('status', 'N/A')} | "
@@ -188,7 +201,9 @@ class DocumentGenerator:
 
         return doc
 
-    def generate_vv_plan(self, requirements: List[dict], project_info: dict = None) -> str:
+    def generate_vv_plan(
+        self, requirements: List[dict], project_info: dict = None
+    ) -> str:
         """
         Generate Verification & Validation Plan per IEC 62304 §5.5/5.7.
         """
@@ -213,7 +228,9 @@ class DocumentGenerator:
         doc += "| Acceptance Test | User requirements met | Product Owner |\n\n"
 
         doc += "## 2. Requirements Coverage Plan\n\n"
-        doc += "| Requirement ID | Title | Verification Method | Test Level | Status |\n"
+        doc += (
+            "| Requirement ID | Title | Verification Method | Test Level | Status |\n"
+        )
         doc += "|---|---|---|---|---|\n"
         for r in requirements:
             doc += (
@@ -262,7 +279,9 @@ class DocumentGenerator:
 
         doc += "## 2. SOUP Risk Assessment\n\n"
         doc += "Each SOUP component is assessed for:\n"
-        doc += "- **Functional risk**: Could a SOUP failure cause a hazardous situation?\n"
+        doc += (
+            "- **Functional risk**: Could a SOUP failure cause a hazardous situation?\n"
+        )
         doc += "- **Cybersecurity risk**: Does it introduce attack surface?\n"
         doc += "- **License compliance**: Is the license compatible with product distribution?\n\n"
 

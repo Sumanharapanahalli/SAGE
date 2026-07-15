@@ -6,7 +6,7 @@ per the January 2026 guidance (media/109618).
 """
 
 import logging
-from typing import Dict, List, Optional
+from typing import Dict, List
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
@@ -18,6 +18,7 @@ router = APIRouter(prefix="/cds", tags=["CDS Compliance"])
 # ---------------------------------------------------------------------------
 # Request / Response Models
 # ---------------------------------------------------------------------------
+
 
 class DataSourceModel(BaseModel):
     name: str
@@ -133,8 +134,10 @@ class CompliancePackageRequest(BaseModel):
 # Helper
 # ---------------------------------------------------------------------------
 
+
 def _get_framework():
     from src.core.cds_compliance import cds_compliance
+
     return cds_compliance
 
 
@@ -145,6 +148,7 @@ def _sources_to_dicts(sources: List[DataSourceModel]) -> List[Dict]:
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
+
 
 @router.post("/classify")
 async def classify_function(req: ClassifyFunctionRequest):

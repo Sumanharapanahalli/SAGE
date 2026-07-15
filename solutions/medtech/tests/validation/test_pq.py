@@ -17,6 +17,7 @@ class TestTraceabilityPerformance:
     @pytest.fixture(autouse=True)
     def setup(self, tmp_path):
         from src.core.traceability import TraceabilityMatrix, TraceLevel
+
         self.tm = TraceabilityMatrix(db_path=str(tmp_path / "pq_trace.db"))
         self.TraceLevel = TraceLevel
 
@@ -37,8 +38,14 @@ class TestTraceabilityPerformance:
 
     def test_bulk_link_creation(self):
         """Create 100 trace links in under 3 seconds."""
-        reqs = [self.tm.add_item(level=self.TraceLevel.SOFTWARE_REQ, title=f"R-{i}") for i in range(100)]
-        tests = [self.tm.add_item(level=self.TraceLevel.UNIT_TEST, title=f"T-{i}") for i in range(100)]
+        reqs = [
+            self.tm.add_item(level=self.TraceLevel.SOFTWARE_REQ, title=f"R-{i}")
+            for i in range(100)
+        ]
+        tests = [
+            self.tm.add_item(level=self.TraceLevel.UNIT_TEST, title=f"T-{i}")
+            for i in range(100)
+        ]
 
         start = time.monotonic()
         for r, t in zip(reqs, tests):
@@ -78,17 +85,21 @@ class TestAuditIntegrityPerformance:
     @pytest.fixture(autouse=True)
     def setup(self, tmp_path):
         from src.core.audit_integrity import AuditIntegrityManager
+
         self.mgr = AuditIntegrityManager(db_path=str(tmp_path / "pq_audit.db"))
 
     def test_chain_append_throughput(self):
         """Append 500 entries in under 10 seconds."""
         start = time.monotonic()
         for i in range(500):
-            self.mgr.append_entry(f"PQ-EVT-{i:04d}", {
-                "action": "test_operation",
-                "actor": "pq_test",
-                "detail": f"Performance test entry {i}",
-            })
+            self.mgr.append_entry(
+                f"PQ-EVT-{i:04d}",
+                {
+                    "action": "test_operation",
+                    "actor": "pq_test",
+                    "detail": f"Performance test entry {i}",
+                },
+            )
         elapsed = time.monotonic() - start
         assert elapsed < 10.0, f"500 entries took {elapsed:.1f}s (limit: 10s)"
 
@@ -102,7 +113,9 @@ class TestAuditIntegrityPerformance:
         elapsed = time.monotonic() - start
         assert result["valid"] is True
         assert result["verified_entries"] == 500
-        assert elapsed < 5.0, f"Verification of 500 entries took {elapsed:.1f}s (limit: 5s)"
+        assert elapsed < 5.0, (
+            f"Verification of 500 entries took {elapsed:.1f}s (limit: 5s)"
+        )
 
 
 class TestChangeControlPerformance:
@@ -111,6 +124,7 @@ class TestChangeControlPerformance:
     @pytest.fixture(autouse=True)
     def setup(self, tmp_path):
         from src.core.change_control import ChangeControlManager
+
         self.ccm = ChangeControlManager(db_path=str(tmp_path / "pq_change.db"))
 
     def test_bulk_request_creation(self):
@@ -133,7 +147,9 @@ class TestChangeControlPerformance:
     def test_metrics_with_large_dataset(self):
         """Metrics calculation for 100 CRs in under 1 second."""
         for i in range(100):
-            self.ccm.create_request(f"CR-{i}", f"Desc {i}", "corrective", "high", "test")
+            self.ccm.create_request(
+                f"CR-{i}", f"Desc {i}", "corrective", "high", "test"
+            )
 
         start = time.monotonic()
         metrics = self.ccm.get_metrics()
@@ -148,15 +164,22 @@ class TestDocumentGenerationPerformance:
     @pytest.fixture(autouse=True)
     def setup(self):
         from src.core.doc_generator import DocumentGenerator
+
         self.gen = DocumentGenerator(project_name="medtech_pq", version="1.0")
 
     def test_srs_with_500_requirements(self):
         """Generate SRS with 500 requirements in under 2 seconds."""
         reqs = [
-            {"id": f"REQ-{i:04d}", "type": "functional", "title": f"Requirement {i}",
-             "description": f"Description for requirement {i}",
-             "acceptance_criteria": [f"AC-{i}-1", f"AC-{i}-2"],
-             "priority": "high", "verification_method": "test", "status": "approved"}
+            {
+                "id": f"REQ-{i:04d}",
+                "type": "functional",
+                "title": f"Requirement {i}",
+                "description": f"Description for requirement {i}",
+                "acceptance_criteria": [f"AC-{i}-1", f"AC-{i}-2"],
+                "priority": "high",
+                "verification_method": "test",
+                "status": "approved",
+            }
             for i in range(500)
         ]
         start = time.monotonic()
@@ -169,10 +192,16 @@ class TestDocumentGenerationPerformance:
     def test_rtm_with_1000_items(self):
         """Generate RTM with 1000 items in under 3 seconds."""
         data = [
-            {"id": f"ITEM-{i:04d}", "level": "software_requirement", "title": f"Item {i}",
-             "status": "active",
-             "traces_to": [{"target_id": f"ITEM-{i+500:04d}"}] if i < 500 else [],
-             "traced_from": [{"source_id": f"ITEM-{i-500:04d}"}] if i >= 500 else []}
+            {
+                "id": f"ITEM-{i:04d}",
+                "level": "software_requirement",
+                "title": f"Item {i}",
+                "status": "active",
+                "traces_to": [{"target_id": f"ITEM-{i + 500:04d}"}] if i < 500 else [],
+                "traced_from": [{"source_id": f"ITEM-{i - 500:04d}"}]
+                if i >= 500
+                else [],
+            }
             for i in range(1000)
         ]
         start = time.monotonic()

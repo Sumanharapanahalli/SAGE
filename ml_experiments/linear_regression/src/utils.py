@@ -34,14 +34,10 @@ def r2_score(y_true: np.ndarray, y_pred: np.ndarray) -> float:
 
 def mape(y_true: np.ndarray, y_pred: np.ndarray, eps: float = 1e-8) -> float:
     """Mean Absolute Percentage Error (%). Avoid division by zero via eps."""
-    return float(
-        np.mean(np.abs((y_true - y_pred) / (np.abs(y_true) + eps))) * 100
-    )
+    return float(np.mean(np.abs((y_true - y_pred) / (np.abs(y_true) + eps))) * 100)
 
 
-def evaluate_regression(
-    y_true: np.ndarray, y_pred: np.ndarray
-) -> Dict[str, float]:
+def evaluate_regression(y_true: np.ndarray, y_pred: np.ndarray) -> Dict[str, float]:
     """Full metric suite for a regression prediction."""
     return {
         "rmse": rmse(y_true, y_pred),

@@ -22,11 +22,9 @@ Architecture:
 
 from __future__ import annotations
 
-import argparse
 import re
 import struct
 import subprocess
-import sys
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -38,31 +36,32 @@ import serial
 # ---------------------------------------------------------------------------
 # Configuration — override via pytest CLI args or environment
 # ---------------------------------------------------------------------------
-OPENOCD_BIN    = "openocd"
-OPENOCD_CFG    = ["-f", "interface/stlink.cfg", "-f", "target/stm32wbx.cfg"]
-GDB_BIN        = "arm-none-eabi-gdb"
-HIL_ELF        = Path("build/sage_hil_tests.elf")
+OPENOCD_BIN = "openocd"
+OPENOCD_CFG = ["-f", "interface/stlink.cfg", "-f", "target/stm32wbx.cfg"]
+GDB_BIN = "arm-none-eabi-gdb"
+HIL_ELF = Path("build/sage_hil_tests.elf")
 
 # RAM addresses must match linker script / hil_config.h
-HIL_RESULT_ADDR         = 0x20000000
-HIL_RESULT_STRUCT_SIZE  = 5 * 4   # 5 × uint32_t
+HIL_RESULT_ADDR = 0x20000000
+HIL_RESULT_STRUCT_SIZE = 5 * 4  # 5 × uint32_t
 
 MAGIC_PASS = 0xCAFEBEEF
 MAGIC_FAIL = 0xDEADC0DE
 
-UART_BAUDRATE   = 115200
-UART_TIMEOUT_S  = 120.0   # max runtime for full HIL suite
+UART_BAUDRATE = 115200
+UART_TIMEOUT_S = 120.0  # max runtime for full HIL suite
 HIL_DONE_PREFIX = "HIL_DONE:"
+
 
 # ---------------------------------------------------------------------------
 # Data structures
 # ---------------------------------------------------------------------------
 @dataclass
 class HILResultBlock:
-    magic:             int = 0
-    suite_pass_mask:   int = 0
-    suite_fail_mask:   int = 0
-    total_assertions:  int = 0
+    magic: int = 0
+    suite_pass_mask: int = 0
+    suite_fail_mask: int = 0
+    total_assertions: int = 0
     failed_assertions: int = 0
 
     @classmethod
@@ -84,22 +83,22 @@ class HILResultBlock:
 @dataclass
 class SensorSample:
     timestamp_ms: int
-    accel_x_mg:   int
-    accel_y_mg:   int
-    accel_z_mg:   int
-    gyro_x_mdps:  int
-    gyro_y_mdps:  int
-    gyro_z_mdps:  int
-    pressure_pa:  int
-    temp_cdeg:    int
+    accel_x_mg: int
+    accel_y_mg: int
+    accel_z_mg: int
+    gyro_x_mdps: int
+    gyro_y_mdps: int
+    gyro_z_mdps: int
+    pressure_pa: int
+    temp_cdeg: int
 
 
 @dataclass
 class HILTestSession:
-    result_block:   Optional[HILResultBlock] = None
-    uart_log:       list[str]                = field(default_factory=list)
-    elapsed_s:      float                    = 0.0
-    flash_success:  bool                     = False
+    result_block: Optional[HILResultBlock] = None
+    uart_log: list[str] = field(default_factory=list)
+    elapsed_s: float = 0.0
+    flash_success: bool = False
 
 
 # ---------------------------------------------------------------------------
@@ -134,11 +133,16 @@ class OpenOCDClient:
     def read_memory(self, address: int, length: int) -> bytes:
         """Read `length` bytes from target RAM via GDB mi."""
         gdb_cmd = [
-            GDB_BIN, "--batch", "--quiet",
-            "-ex", f"target extended-remote {self._host}:{4444}",
-            "-ex", f"dump binary memory /tmp/hil_result.bin "
-                   f"0x{address:08x} 0x{address + length:08x}",
-            "-ex", "detach",
+            GDB_BIN,
+            "--batch",
+            "--quiet",
+            "-ex",
+            f"target extended-remote {self._host}:{4444}",
+            "-ex",
+            f"dump binary memory /tmp/hil_result.bin "
+            f"0x{address:08x} 0x{address + length:08x}",
+            "-ex",
+            "detach",
             str(HIL_ELF),
         ]
         result = subprocess.run(gdb_cmd, capture_output=True, timeout=15)
@@ -148,19 +152,24 @@ class OpenOCDClient:
 
     def flash_and_run(self) -> None:
         """Flash HIL firmware and release reset."""
-        cmd = [OPENOCD_BIN] + OPENOCD_CFG + [
-            "-c", f"program {HIL_ELF} verify reset exit"
-        ]
+        cmd = (
+            [OPENOCD_BIN] + OPENOCD_CFG + ["-c", f"program {HIL_ELF} verify reset exit"]
+        )
         result = subprocess.run(cmd, capture_output=True, timeout=60)
         if result.returncode != 0:
             raise RuntimeError(f"Flash failed:\n{result.stderr.decode()}")
 
     def halt_target(self) -> None:
         cmd = [
-            GDB_BIN, "--batch", "--quiet",
-            "-ex", f"target extended-remote {self._host}:{4444}",
-            "-ex", "monitor halt",
-            "-ex", "detach",
+            GDB_BIN,
+            "--batch",
+            "--quiet",
+            "-ex",
+            f"target extended-remote {self._host}:{4444}",
+            "-ex",
+            "monitor halt",
+            "-ex",
+            "detach",
             str(HIL_ELF),
         ]
         subprocess.run(cmd, capture_output=True, timeout=10)
@@ -173,7 +182,7 @@ class UARTReader:
     """Reads semihosting output from UART until HIL_DONE line or timeout."""
 
     def __init__(self, port: str, baudrate: int = UART_BAUDRATE):
-        self._port     = port
+        self._port = port
         self._baudrate = baudrate
         self._ser: Optional[serial.Serial] = None
 
@@ -212,12 +221,20 @@ class UARTReader:
 # pytest fixtures
 # ---------------------------------------------------------------------------
 def pytest_addoption(parser: pytest.Parser) -> None:
-    parser.addoption("--target-port", default="/dev/ttyUSB0",
-                     help="Serial port connected to DUT UART")
-    parser.addoption("--no-flash", action="store_true", default=False,
-                     help="Skip firmware flashing (already programmed)")
-    parser.addoption("--openocd-host", default="127.0.0.1",
-                     help="OpenOCD host (default 127.0.0.1)")
+    parser.addoption(
+        "--target-port",
+        default="/dev/ttyUSB0",
+        help="Serial port connected to DUT UART",
+    )
+    parser.addoption(
+        "--no-flash",
+        action="store_true",
+        default=False,
+        help="Skip firmware flashing (already programmed)",
+    )
+    parser.addoption(
+        "--openocd-host", default="127.0.0.1", help="OpenOCD host (default 127.0.0.1)"
+    )
 
 
 @pytest.fixture(scope="session")
@@ -243,7 +260,7 @@ def hil_session(
         openocd.flash_and_run()
         session.flash_success = True
     else:
-        session.flash_success = True   # assumed
+        session.flash_success = True  # assumed
 
     # Collect UART output
     reader = UARTReader(port)
@@ -318,34 +335,22 @@ class TestSensorCalibration:
         return None
 
     def test_imu_accel_offset_x(self, hil_session: HILTestSession) -> None:
-        val = self._extract_value(
-            hil_session.uart_log,
-            r"accel_offset_x_mg=(-?\d+)"
-        )
+        val = self._extract_value(hil_session.uart_log, r"accel_offset_x_mg=(-?\d+)")
         assert val is not None, "accel_offset_x not found in UART log"
         assert abs(val) <= 90, f"Accel X offset {val} mg exceeds ±90 mg"
 
     def test_imu_accel_offset_y(self, hil_session: HILTestSession) -> None:
-        val = self._extract_value(
-            hil_session.uart_log,
-            r"accel_offset_y_mg=(-?\d+)"
-        )
+        val = self._extract_value(hil_session.uart_log, r"accel_offset_y_mg=(-?\d+)")
         assert val is not None, "accel_offset_y not found in UART log"
         assert abs(val) <= 90, f"Accel Y offset {val} mg exceeds ±90 mg"
 
     def test_gyro_zero_rate_x(self, hil_session: HILTestSession) -> None:
-        val = self._extract_value(
-            hil_session.uart_log,
-            r"gyro_offset_x_mdps=(-?\d+)"
-        )
+        val = self._extract_value(hil_session.uart_log, r"gyro_offset_x_mdps=(-?\d+)")
         assert val is not None, "gyro_offset_x not found in UART log"
         assert abs(val) <= 50000, f"Gyro X zero-rate {val} mdps exceeds ±50 dps"
 
     def test_barometer_pressure_sea_level(self, hil_session: HILTestSession) -> None:
-        val = self._extract_value(
-            hil_session.uart_log,
-            r"pressure_pa=(\d+)"
-        )
+        val = self._extract_value(hil_session.uart_log, r"pressure_pa=(\d+)")
         assert val is not None, "pressure_pa not found in UART log"
         assert abs(val - 101325) <= 5000, (
             f"Pressure {val} Pa, expected 101325 ± 5000 Pa"

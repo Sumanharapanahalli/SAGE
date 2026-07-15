@@ -1,4 +1,5 @@
 """POST /data_transformation — request models, response models, and route handler."""
+
 from __future__ import annotations
 
 import logging
@@ -28,6 +29,7 @@ _MAX_PAYLOAD_KEYS = 500
 # Request / response models
 # ---------------------------------------------------------------------------
 
+
 class TransformStep(BaseModel):
     operation: str = Field(
         ...,
@@ -45,9 +47,7 @@ class TransformStep(BaseModel):
     def operation_must_be_known(cls, v: str) -> str:
         known = available_operations()
         if v not in known:
-            raise ValueError(
-                f"Unknown operation '{v}'. Available: {known}"
-            )
+            raise ValueError(f"Unknown operation '{v}'. Available: {known}")
         return v
 
 
@@ -103,13 +103,17 @@ class ErrorDetail(BaseModel):
 # Route
 # ---------------------------------------------------------------------------
 
+
 @router.post(
     "/data_transformation",
     response_model=DataTransformationResponse,
     status_code=status.HTTP_200_OK,
     summary="Transform a JSON payload through a declarative pipeline.",
     responses={
-        400: {"model": ErrorDetail, "description": "Validation or transformation error"},
+        400: {
+            "model": ErrorDetail,
+            "description": "Validation or transformation error",
+        },
         422: {"description": "Request body schema violation"},
         500: {"model": ErrorDetail, "description": "Unexpected server error"},
     },
@@ -133,10 +137,16 @@ async def data_transformation(
     - ``regex_replace`` — apply a regex substitution to a string field
     """
     request_id = body.request_id or str(uuid.uuid4())
-    client_ip = getattr(request.client, "host", "unknown") if request.client else "unknown"
+    client_ip = (
+        getattr(request.client, "host", "unknown") if request.client else "unknown"
+    )
     logger.info(
         "data_transformation started",
-        extra={"request_id": request_id, "client_ip": client_ip, "steps": len(body.pipeline)},
+        extra={
+            "request_id": request_id,
+            "client_ip": client_ip,
+            "steps": len(body.pipeline),
+        },
     )
 
     t0 = time.perf_counter()
@@ -163,7 +173,7 @@ async def data_transformation(
                 detail=str(exc),
             ).model_dump(),
         )
-    except Exception as exc:  # noqa: BLE001
+    except Exception:  # noqa: BLE001
         duration_ms = round((time.perf_counter() - t0) * 1000, 3)
         logger.exception(
             "data_transformation unexpected error",

@@ -24,7 +24,6 @@ import logging
 import os
 import threading
 from datetime import datetime, timezone
-from typing import Any
 
 import yaml
 
@@ -89,8 +88,7 @@ class Constitution:
     @property
     def is_empty(self) -> bool:
         return not self._data or (
-            not self._data.get("principles")
-            and not self._data.get("constraints")
+            not self._data.get("principles") and not self._data.get("constraints")
         )
 
     @property
@@ -138,7 +136,9 @@ class Constitution:
 
     def get_principles_by_priority(self) -> list[dict]:
         with self._lock:
-            return sorted(self.principles, key=lambda p: p.get("weight", 0), reverse=True)
+            return sorted(
+                self.principles, key=lambda p: p.get("weight", 0), reverse=True
+            )
 
     # ------------------------------------------------------------------
     # Prompt injection
@@ -213,7 +213,8 @@ class Constitution:
             if not isinstance(constraint, str):
                 self.logger.warning(
                     "constitution: ignoring malformed constraint (expected a string, got %s): %r",
-                    type(constraint).__name__, constraint,
+                    type(constraint).__name__,
+                    constraint,
                 )
                 continue
             # Extract key phrases from constraint for matching
@@ -233,15 +234,38 @@ class Constitution:
         keywords = []
         # Extract /path/ patterns
         import re
-        paths = re.findall(r'/\w+/', lower)
+
+        paths = re.findall(r"/\w+/", lower)
         keywords.extend(paths)
         # If we found paths, that's enough for matching
         if keywords:
             return keywords
         # Otherwise use significant words (skip common ones)
-        skip = {"never", "always", "must", "should", "all", "any", "the",
-                "a", "an", "in", "on", "be", "is", "are", "not", "no",
-                "without", "with", "to", "of", "for", "and", "or"}
+        skip = {
+            "never",
+            "always",
+            "must",
+            "should",
+            "all",
+            "any",
+            "the",
+            "a",
+            "an",
+            "in",
+            "on",
+            "be",
+            "is",
+            "are",
+            "not",
+            "no",
+            "without",
+            "with",
+            "to",
+            "of",
+            "for",
+            "and",
+            "or",
+        }
         words = [w for w in lower.split() if w not in skip and len(w) > 2]
         return words[:3]  # top 3 significant words
 
@@ -338,20 +362,33 @@ class Constitution:
 
             # Append to version history
             history = self._data.setdefault("_history", [])
-            history.append({
-                "version": meta["version"],
-                "changed_by": changed_by,
-                "timestamp": meta["last_updated"],
-            })
+            history.append(
+                {
+                    "version": meta["version"],
+                    "changed_by": changed_by,
+                    "timestamp": meta["last_updated"],
+                }
+            )
 
             # Ensure directory exists
             os.makedirs(os.path.dirname(self._path), exist_ok=True)
 
             with open(self._path, "w", encoding="utf-8") as fh:
-                yaml.dump(self._data, fh, default_flow_style=False, allow_unicode=True, sort_keys=False)
+                yaml.dump(
+                    self._data,
+                    fh,
+                    default_flow_style=False,
+                    allow_unicode=True,
+                    sort_keys=False,
+                )
 
             self._dirty = False
-            logger.info("Constitution saved: v%d by %s at %s", meta["version"], changed_by, self._path)
+            logger.info(
+                "Constitution saved: v%d by %s at %s",
+                meta["version"],
+                changed_by,
+                self._path,
+            )
 
     def reload(self) -> None:
         """Reload constitution from disk."""
@@ -386,8 +423,10 @@ class Constitution:
             # validate() is exactly the gate that must REJECT a bad agent-proposed edit
             # rather than crash on it.
             if not isinstance(p, dict):
-                errors.append(f"Principle {i}: must be an object with 'id' and 'text', "
-                              f"got {type(p).__name__}")
+                errors.append(
+                    f"Principle {i}: must be an object with 'id' and 'text', "
+                    f"got {type(p).__name__}"
+                )
                 continue
             if "id" not in p:
                 errors.append(f"Principle {i}: missing 'id' field")
@@ -395,7 +434,9 @@ class Constitution:
                 errors.append(f"Principle {i}: missing 'text' field")
             weight = p.get("weight", 0.5)
             if not (0.0 <= weight <= 1.0):
-                errors.append(f"Principle {i} ('{p.get('id', '?')}'): weight {weight} out of range [0, 1]")
+                errors.append(
+                    f"Principle {i} ('{p.get('id', '?')}'): weight {weight} out of range [0, 1]"
+                )
             pid = p.get("id", "")
             if pid in seen_ids:
                 errors.append(f"Principle {i}: duplicate id '{pid}'")

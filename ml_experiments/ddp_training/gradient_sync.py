@@ -34,7 +34,10 @@ logger = logging.getLogger(__name__)
 
 # ─── 1. AllReduce helper ──────────────────────────────────────────────────────
 
-def allreduce_tensor(tensor: torch.Tensor, op: dist.ReduceOp = dist.ReduceOp.SUM) -> torch.Tensor:
+
+def allreduce_tensor(
+    tensor: torch.Tensor, op: dist.ReduceOp = dist.ReduceOp.SUM
+) -> torch.Tensor:
     """
     Blocking AllReduce across all ranks.
     Returns the reduced result on every rank.
@@ -44,19 +47,23 @@ def allreduce_tensor(tensor: torch.Tensor, op: dist.ReduceOp = dist.ReduceOp.SUM
     """
     if not dist.is_initialized():
         return tensor
-    handle = dist.all_reduce(tensor, op=op, async_op=False)
+    dist.all_reduce(tensor, op=op, async_op=False)
     return tensor
 
 
 def allreduce_scalar(value: float, op: dist.ReduceOp = dist.ReduceOp.SUM) -> float:
     """Convenience wrapper — reduces a Python float across all ranks."""
-    t = torch.tensor(value, dtype=torch.float64,
-                     device="cuda" if torch.cuda.is_available() else "cpu")
+    t = torch.tensor(
+        value,
+        dtype=torch.float64,
+        device="cuda" if torch.cuda.is_available() else "cpu",
+    )
     allreduce_tensor(t, op)
     return t.item()
 
 
 # ─── 2. Gradient norm monitor ────────────────────────────────────────────────
+
 
 class GradSyncMonitor:
     """
@@ -73,11 +80,11 @@ class GradSyncMonitor:
     """
 
     def __init__(self, model: nn.Module, log_every: int = 100, rank: int = 0) -> None:
-        self._rank     = rank
+        self._rank = rank
         self._log_every = log_every
-        self._step     = 0
+        self._step = 0
         self._norms: Dict[str, List[float]] = {}
-        self._handles  = []
+        self._handles = []
 
         for name, param in model.named_parameters():
             if param.requires_grad:
@@ -88,6 +95,7 @@ class GradSyncMonitor:
     def _make_hook(self, name: str):
         def hook(grad: torch.Tensor) -> None:
             self._norms[name].append(grad.detach().norm().item())
+
         return hook
 
     def step(self) -> None:
@@ -99,13 +107,13 @@ class GradSyncMonitor:
             return None
 
         stats = {
-            name: round(sum(vs) / len(vs), 6)
-            for name, vs in self._norms.items()
-            if vs
+            name: round(sum(vs) / len(vs), 6) for name, vs in self._norms.items() if vs
         }
         total_norm = sum(stats.values()) ** 0.5
-        logger.info(f"[GradSync step={self._step}] total_norm={total_norm:.4f}  "
-                    f"layers={len(stats)}")
+        logger.info(
+            f"[GradSync step={self._step}] total_norm={total_norm:.4f}  "
+            f"layers={len(stats)}"
+        )
 
         # Warn on anomalies
         for name, norm in stats.items():
@@ -129,6 +137,7 @@ class GradSyncMonitor:
 
 
 # ─── 3. PowerSGD gradient compression ────────────────────────────────────────
+
 
 class GradCompressor:
     """
@@ -188,6 +197,7 @@ class GradCompressor:
 
 # ─── 4. Gradient bucket inspector (debug) ────────────────────────────────────
 
+
 def register_bucket_logging_hook(
     ddp_model: nn.parallel.DistributedDataParallel,
     rank: int = 0,
@@ -203,8 +213,10 @@ def register_bucket_logging_hook(
 
     def _logging_hook(state, bucket):
         tensors = bucket.gradients()
-        total   = sum(t.numel() * t.element_size() for t in tensors)
-        logger.debug(f"Gradient bucket: {len(tensors)} tensors  size={total / 1024:.1f} KB")
+        total = sum(t.numel() * t.element_size() for t in tensors)
+        logger.debug(
+            f"Gradient bucket: {len(tensors)} tensors  size={total / 1024:.1f} KB"
+        )
         return dist.all_reduce(bucket.buffer(), async_op=True).get_future()
 
     ddp_model.register_comm_hook(None, _logging_hook)

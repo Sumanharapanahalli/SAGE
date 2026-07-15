@@ -33,22 +33,30 @@ from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
 
-_SAFE_SOLUTION_NAME = re.compile(r'^[a-zA-Z0-9_-]{1,64}$')
+_SAFE_SOLUTION_NAME = re.compile(r"^[a-zA-Z0-9_-]{1,64}$")
 
 # ---------------------------------------------------------------------------
 # Sub-routers
 # ---------------------------------------------------------------------------
-from src.interface.routes.data_transformation import router as _data_transformation_router  # noqa: E402
+from src.interface.routes.data_transformation import (  # noqa: E402
+    router as _data_transformation_router,
+)  # noqa: E402
 from src.interface.routes.voice_data import router as _voice_data_router  # noqa: E402
 from src.interface.routes.gym import router as _gym_router  # noqa: E402
 from src.interface.routes.research import router as _research_router  # noqa: E402
 from src.interface.routes.critic import router as _critic_router  # noqa: E402
 from src.interface.routes.product_owner import router as _product_owner_router  # noqa: E402
 from src.interface.routes.cds_compliance import router as _cds_compliance_router  # noqa: E402
-from src.interface.routes.regulatory_compliance import router as _regulatory_compliance_router  # noqa: E402
+from src.interface.routes.regulatory_compliance import (  # noqa: E402
+    router as _regulatory_compliance_router,
+)  # noqa: E402
 from src.interface.routes.functional_safety import router as _functional_safety_router  # noqa: E402
-from src.interface.routes.compliance_engineering import router as _compliance_engineering_router  # noqa: E402
-from src.interface.routes.collective_intelligence import router as _collective_intelligence_router  # noqa: E402
+from src.interface.routes.compliance_engineering import (  # noqa: E402
+    router as _compliance_engineering_router,
+)  # noqa: E402
+from src.interface.routes.collective_intelligence import (  # noqa: E402
+    router as _collective_intelligence_router,
+)  # noqa: E402
 from src.interface.routes.orchestrator import router as _orchestrator_router  # noqa: E402
 from src.interface.routes.constitution import router as _constitution_router  # noqa: E402
 
@@ -56,6 +64,7 @@ from src.interface.routes.constitution import router as _constitution_router  # 
 try:
     from src.core.org_loader import reload_org_loader
 except Exception:  # pragma: no cover
+
     def reload_org_loader():  # type: ignore
         pass
 
@@ -79,10 +88,11 @@ app.add_middleware(
 # Rate Limiting Middleware
 # ---------------------------------------------------------------------------
 
-from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.requests import Request as StarletteRequest
-import time as _time
-import collections as _collections
+from starlette.middleware.base import BaseHTTPMiddleware  # noqa: E402
+from starlette.requests import Request as StarletteRequest  # noqa: E402
+import time as _time  # noqa: E402
+import collections as _collections  # noqa: E402
+
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
     """
@@ -91,7 +101,9 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     Default: 120 requests per minute for write endpoints, 300 for reads.
     """
 
-    def __init__(self, app, write_limit: int = 120, read_limit: int = 300, window: int = 60):
+    def __init__(
+        self, app, write_limit: int = 120, read_limit: int = 300, window: int = 60
+    ):
         super().__init__(app)
         self._write_limit = write_limit
         self._read_limit = read_limit
@@ -115,6 +127,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
         if len(self._hits[client_ip]) >= limit:
             from starlette.responses import JSONResponse
+
             return JSONResponse(
                 status_code=429,
                 content={"detail": "Rate limit exceeded. Try again later."},
@@ -162,10 +175,12 @@ class TenantMiddleware(BaseHTTPMiddleware):
     This runs before every request, enabling tenant-scoped vector store
     and audit log queries downstream.
     """
+
     async def dispatch(self, request: StarletteRequest, call_next):
         tenant = request.headers.get("X-SAGE-Tenant", "").strip()
         if tenant:
             from src.core.tenant import set_tenant
+
             set_tenant(tenant)
         response = await call_next(request)
         return response
@@ -229,7 +244,8 @@ class RequestIDMiddleware:
             if message["type"] == "http.response.start":
                 response_started = True
                 headers = [
-                    (k, v) for (k, v) in message.get("headers", [])
+                    (k, v)
+                    for (k, v) in message.get("headers", [])
                     if k.lower() != b"x-request-id"
                 ]
                 headers.append((b"x-request-id", rid_bytes))
@@ -242,18 +258,22 @@ class RequestIDMiddleware:
             # Unhandled error → stamp the header on the 500 ourselves (see class
             # docstring) only if nothing has been sent yet, then re-raise.
             if not response_started:
-                await send({
-                    "type": "http.response.start",
-                    "status": 500,
-                    "headers": [
-                        (b"content-type", b"text/plain; charset=utf-8"),
-                        (b"x-request-id", rid_bytes),
-                    ],
-                })
-                await send({
-                    "type": "http.response.body",
-                    "body": b"Internal Server Error",
-                })
+                await send(
+                    {
+                        "type": "http.response.start",
+                        "status": 500,
+                        "headers": [
+                            (b"content-type", b"text/plain; charset=utf-8"),
+                            (b"x-request-id", rid_bytes),
+                        ],
+                    }
+                )
+                await send(
+                    {
+                        "type": "http.response.body",
+                        "body": b"Internal Server Error",
+                    }
+                )
             raise
         finally:
             # Explicitly restore the prior context value for this task.
@@ -268,6 +288,7 @@ app.add_middleware(RequestIDMiddleware)
 # ---------------------------------------------------------------------------
 # Pydantic Request Models
 # ---------------------------------------------------------------------------
+
 
 class AnalyzeRequest(BaseModel):
     log_entry: str
@@ -296,12 +317,12 @@ class AgentRunRequest(BaseModel):
 
 
 class AgentHireRequest(BaseModel):
-    role_id: str           # snake_case unique key, e.g. "security_reviewer"
-    name: str              # Display name, e.g. "Security Reviewer"
-    description: str       # One-line description
-    icon: str = "🤖"       # Emoji icon
-    system_prompt: str     # Full system prompt for this role
-    task_types: List[str] = []   # Optional task type IDs to add to tasks.yaml
+    role_id: str  # snake_case unique key, e.g. "security_reviewer"
+    name: str  # Display name, e.g. "Security Reviewer"
+    description: str  # One-line description
+    icon: str = "🤖"  # Emoji icon
+    system_prompt: str  # Full system prompt for this role
+    task_types: List[str] = []  # Optional task type IDs to add to tasks.yaml
 
 
 class AgentAnalyzeJDRequest(BaseModel):
@@ -314,24 +335,26 @@ class FeatureRequestCreate(BaseModel):
     module_name: str = "General"
     title: str
     description: str
-    priority: str = "medium"       # low / medium / high / critical
+    priority: str = "medium"  # low / medium / high / critical
     requested_by: str = "anonymous"
-    scope: str = "solution"        # "solution" = build in your app | "sage" = improve the framework
+    scope: str = (
+        "solution"  # "solution" = build in your app | "sage" = improve the framework
+    )
 
 
 class FeatureRequestUpdate(BaseModel):
-    action: str                    # approve / reject / complete
+    action: str  # approve / reject / complete
     reviewer_note: str = ""
 
 
 class ApproveProposalRequest(BaseModel):
     decided_by: str = "human"
-    feedback: str = ""             # Optional approval note
+    feedback: str = ""  # Optional approval note
 
 
 class RejectProposalRequest(BaseModel):
     decided_by: str = "human"
-    feedback: str = ""             # Required for DESTRUCTIVE proposals
+    feedback: str = ""  # Required for DESTRUCTIVE proposals
 
 
 class ChatRequest(BaseModel):
@@ -352,11 +375,11 @@ class ChatExecuteRequest(BaseModel):
 
 class BuildStartRequest(BaseModel):
     product_description: str = Field(..., min_length=10, max_length=10000)
-    solution_name: str = Field("", max_length=64, pattern=r'^[a-zA-Z0-9_-]*$')
+    solution_name: str = Field("", max_length=64, pattern=r"^[a-zA-Z0-9_-]*$")
     repo_url: str = ""
     workspace_dir: str = ""
     critic_threshold: int = Field(70, ge=0, le=100)
-    hitl_level: str = Field("standard", pattern=r'^(minimal|standard|strict)$')
+    hitl_level: str = Field("standard", pattern=r"^(minimal|standard|strict)$")
 
 
 class BuildApproveRequest(BaseModel):
@@ -372,66 +395,81 @@ class ScanFolderRequest(BaseModel):
 
 class RefineRequest(BaseModel):
     solution_name: str
-    current_files: dict[str, str]  # {"project.yaml": str, "prompts.yaml": str, "tasks.yaml": str}
+    current_files: dict[
+        str, str
+    ]  # {"project.yaml": str, "prompts.yaml": str, "tasks.yaml": str}
     feedback: str
 
 
 class SaveSolutionRequest(BaseModel):
     solution_name: str
-    files: dict[str, str]  # {"project.yaml": str, "prompts.yaml": str, "tasks.yaml": str}
+    files: dict[
+        str, str
+    ]  # {"project.yaml": str, "prompts.yaml": str, "tasks.yaml": str}
 
 
 # ---------------------------------------------------------------------------
 # Lazy singleton accessors
 # ---------------------------------------------------------------------------
 
+
 def _get_analyst():
     from src.agents.analyst import analyst_agent
+
     return analyst_agent
 
 
 def _get_developer():
     from src.agents.developer import developer_agent
+
     return developer_agent
 
 
 def _get_monitor():
     from src.agents.monitor import monitor_agent
+
     return monitor_agent
 
 
 def _get_audit_logger():
     from src.memory.audit_logger import audit_logger
+
     return audit_logger
 
 
 def _get_task_queue():
     from src.core.queue_manager import task_queue
+
     return task_queue
 
 
 def _get_proposal_store():
     from src.core.proposal_store import get_proposal_store
+
     return get_proposal_store()
 
 
 def _get_llm_gateway():
     from src.core.llm_gateway import llm_gateway
+
     return llm_gateway
 
 
 def _get_project_config():
     from src.core.project_loader import project_config
+
     return project_config
 
 
 def _get_planner():
     from src.agents.planner import planner_agent
+
     return planner_agent
 
 
 def _get_db_path() -> str:
     from src.memory.audit_logger import audit_logger
+
     return audit_logger.db_path
 
 
@@ -444,16 +482,19 @@ def _get_active_solution() -> str:
 
 def _get_build_orchestrator():
     from src.integrations.build_orchestrator import build_orchestrator
+
     return build_orchestrator
 
 
 _task_scheduler = None
+
 
 def _get_task_scheduler():
     global _task_scheduler
     if _task_scheduler is None:
         from src.core.task_scheduler import TaskScheduler
         from src.core.project_loader import project_config
+
         _task_scheduler = TaskScheduler(
             queue_manager=_get_task_queue(),
             project_config=project_config,
@@ -466,12 +507,19 @@ def _get_task_scheduler():
 # RBAC helpers — role-based approval enforcement
 # ---------------------------------------------------------------------------
 
+
 def _get_required_role(action_type: str) -> Optional[str]:
     """Look up the required role for an action_type from config.yaml."""
     try:
         import yaml
-        config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(
-            os.path.abspath(__file__)))), "config", "config.yaml")
+
+        config_path = os.path.join(
+            os.path.dirname(
+                os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            ),
+            "config",
+            "config.yaml",
+        )
         with open(config_path) as f:
             cfg = yaml.safe_load(f) or {}
         return cfg.get("approval_roles", {}).get(action_type)
@@ -489,8 +537,14 @@ def _check_approver_permission(action_type: str, decided_by: str) -> tuple[bool,
     """
     try:
         import yaml
-        config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(
-            os.path.abspath(__file__)))), "config", "config.yaml")
+
+        config_path = os.path.join(
+            os.path.dirname(
+                os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            ),
+            "config",
+            "config.yaml",
+        )
         with open(config_path) as f:
             cfg = yaml.safe_load(f) or {}
         required_role = cfg.get("approval_roles", {}).get(action_type)
@@ -507,7 +561,10 @@ def _check_approver_permission(action_type: str, decided_by: str) -> tuple[bool,
                 return True, ""
         if decided_by in allowed_list:
             return True, ""
-        return False, f"Action '{action_type}' requires role '{required_role}'. '{decided_by}' is not authorised."
+        return (
+            False,
+            f"Action '{action_type}' requires role '{required_role}'. '{decided_by}' is not authorised.",
+        )
     except Exception:
         return True, ""  # fail open if config unreadable
 
@@ -516,8 +573,10 @@ def _check_approver_permission(action_type: str, decided_by: str) -> tuple[bool,
 # Feature request DB initialisation (called at startup)
 # ---------------------------------------------------------------------------
 
+
 def _init_feature_requests_table():
     from src.core.feature_request_store import FeatureRequestStore
+
     try:
         FeatureRequestStore(_get_db_path()).init_schema()
         logger.info("Feature requests table ready.")
@@ -526,7 +585,7 @@ def _init_feature_requests_table():
 
 
 # Register lifespan after all helpers are defined
-from contextlib import asynccontextmanager
+
 
 @asynccontextmanager
 async def _lifespan(_app: FastAPI):
@@ -541,12 +600,14 @@ async def _lifespan(_app: FastAPI):
     try:
         from src.core.api_keys import _ensure_table as _ensure_api_keys
         from src.core.rbac import _ensure_table as _ensure_user_roles
+
         _ensure_api_keys()
         _ensure_user_roles()
         logger.info("Auth tables ready.")
     except Exception as exc:
         logger.warning("Auth table init skipped: %s", exc)
     yield
+
 
 app.router.lifespan_context = _lifespan
 
@@ -569,6 +630,7 @@ async def shutdown(request: Request):
     """
     from src.core.auth import get_current_user as _get_current_user
     from src.core.rbac import require_role as _require_role, Role as _Role
+
     user = await _get_current_user(request)
     await _require_role(_Role.ADMIN)(user)
     import threading
@@ -577,17 +639,22 @@ async def shutdown(request: Request):
     def _do_shutdown():
         # Kill the Vite dev server on port 5173
         try:
-            result = subprocess.run(
-                ["powershell", "-NonInteractive", "-Command",
-                 "Get-NetTCPConnection -LocalPort 5173 -ErrorAction SilentlyContinue "
-                 "| Select-Object -ExpandProperty OwningProcess "
-                 "| ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue }"],
+            subprocess.run(
+                [
+                    "powershell",
+                    "-NonInteractive",
+                    "-Command",
+                    "Get-NetTCPConnection -LocalPort 5173 -ErrorAction SilentlyContinue "
+                    "| Select-Object -ExpandProperty OwningProcess "
+                    "| ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue }",
+                ],
                 timeout=5,
             )
         except Exception:
             pass
         # Exit the backend process itself
         import os
+
         os._exit(0)
 
     threading.Timer(0.3, _do_shutdown).start()
@@ -627,12 +694,18 @@ def _probe_llm():
         return f"error: {e}", "down"
 
     try:
-        provider = _first_callable(llm, ("get_provider_name", "provider_name", "get_provider"))
+        provider = _first_callable(
+            llm, ("get_provider_name", "provider_name", "get_provider")
+        )
         provider = str(provider) if provider is not None else "unknown"
     except Exception:
         provider = getattr(llm, "provider", None) or "unknown"
 
-    if not provider or provider in ("None", "unknown") or provider.lower().startswith("error"):
+    if (
+        not provider
+        or provider in ("None", "unknown")
+        or provider.lower().startswith("error")
+    ):
         return provider or "unknown", "down"
 
     try:
@@ -649,7 +722,11 @@ def _probe_llm():
 def _probe_queue_depth():
     try:
         q = _get_task_queue()
-        return int(_first_callable(q, ("get_pending_count", "pending_count", "qsize", "size", "__len__")))
+        return int(
+            _first_callable(
+                q, ("get_pending_count", "pending_count", "qsize", "size", "__len__")
+            )
+        )
     except Exception as e:
         logger.warning("health: queue_depth unavailable: %s", e)
         return 0
@@ -658,12 +735,16 @@ def _probe_queue_depth():
 def _probe_memory_entries():
     """Best-effort vector-store entry count. Never raises into the handler."""
     try:
-        from src.memory.vector_store import vector_memory  # lazy: import never breaks /health
+        from src.memory.vector_store import (
+            vector_memory,
+        )  # lazy: import never breaks /health
     except Exception as e:
         logger.warning("health: vector store unavailable: %s", e)
         return 0
     try:
-        return int(_first_callable(vector_memory, ("count", "size", "num_entries", "__len__")))
+        return int(
+            _first_callable(vector_memory, ("count", "size", "num_entries", "__len__"))
+        )
     except Exception as e:
         logger.warning("health: memory_entries unavailable: %s", e)
         return 0
@@ -699,10 +780,10 @@ async def health():
         "memory_entries": memory_entries,
         "uptime_seconds": uptime_seconds,
         "environment": {
-            "gitlab_configured":  bool(os.environ.get("GITLAB_URL")),
-            "teams_configured":   bool(os.environ.get("TEAMS_INCOMING_WEBHOOK_URL")),
+            "gitlab_configured": bool(os.environ.get("GITLAB_URL")),
+            "teams_configured": bool(os.environ.get("TEAMS_INCOMING_WEBHOOK_URL")),
             "metabase_configured": bool(os.environ.get("METABASE_URL")),
-            "spira_configured":   bool(os.environ.get("SPIRA_URL")),
+            "spira_configured": bool(os.environ.get("SPIRA_URL")),
         },
     }
 
@@ -715,6 +796,7 @@ async def health_llm():
     This is the Paperclip-style heartbeat: proves the LLM is alive, not just configured.
     """
     import time
+
     llm = _get_llm_gateway()
     provider = "unknown"
     try:
@@ -732,18 +814,18 @@ async def health_llm():
         latency_ms = int((time.monotonic() - start) * 1000)
         connected = bool(response and len(response.strip()) > 0)
         return {
-            "connected":   connected,
-            "provider":    provider,
-            "latency_ms":  latency_ms,
-            "detail":      "ok" if connected else "empty response",
+            "connected": connected,
+            "provider": provider,
+            "latency_ms": latency_ms,
+            "detail": "ok" if connected else "empty response",
         }
     except Exception as exc:
         latency_ms = int((time.monotonic() - start) * 1000)
         return {
-            "connected":  False,
-            "provider":   provider,
+            "connected": False,
+            "provider": provider,
             "latency_ms": latency_ms,
-            "detail":     str(exc)[:200],
+            "detail": str(exc)[:200],
         }
 
 
@@ -768,8 +850,12 @@ async def list_projects():
     from src.core.project_loader import _SOLUTIONS_DIR
     import os as _os
     import yaml as _yaml
+
     if not _os.path.isdir(_SOLUTIONS_DIR):
-        return {"projects": [], "active": _get_project_config().metadata.get("project", "")}
+        return {
+            "projects": [],
+            "active": _get_project_config().metadata.get("project", ""),
+        }
     projects = []
     for name in sorted(_os.listdir(_SOLUTIONS_DIR)):
         proj_yaml = _os.path.join(_SOLUTIONS_DIR, name, "project.yaml")
@@ -777,18 +863,29 @@ async def list_projects():
             try:
                 with open(proj_yaml, "r") as fh:
                     meta = _yaml.safe_load(fh) or {}
-                projects.append({
-                    "id": name,
-                    "name": meta.get("name", name),
-                    "domain": meta.get("domain", "general"),
-                    "version": meta.get("version", "1.0.0"),
-                    "description": str(meta.get("description", "")).strip(),
-                    "active_modules": meta.get("active_modules", []),
-                    "theme": meta.get("theme", {}),
-                })
+                projects.append(
+                    {
+                        "id": name,
+                        "name": meta.get("name", name),
+                        "domain": meta.get("domain", "general"),
+                        "version": meta.get("version", "1.0.0"),
+                        "description": str(meta.get("description", "")).strip(),
+                        "active_modules": meta.get("active_modules", []),
+                        "theme": meta.get("theme", {}),
+                    }
+                )
             except Exception:
-                projects.append({"id": name, "name": name, "domain": "general",
-                                  "version": "1.0.0", "description": "", "active_modules": [], "theme": {}})
+                projects.append(
+                    {
+                        "id": name,
+                        "name": name,
+                        "domain": "general",
+                        "version": "1.0.0",
+                        "description": "",
+                        "active_modules": [],
+                        "theme": {},
+                    }
+                )
     active = _get_project_config().metadata.get("project", "")
     return {"projects": projects, "active": active}
 
@@ -810,18 +907,21 @@ async def switch_project(req: SwitchProjectRequest):
     """
     from src.core.project_loader import _SOLUTIONS_DIR, project_config as _pc
     import os as _os
+
     proj_dir = _os.path.join(_SOLUTIONS_DIR, req.project)
     if not _os.path.isdir(proj_dir):
-        raise HTTPException(status_code=404, detail=f"Solution '{req.project}' not found in {_SOLUTIONS_DIR}")
+        raise HTTPException(
+            status_code=404,
+            detail=f"Solution '{req.project}' not found in {_SOLUTIONS_DIR}",
+        )
     current_project = _get_project_config().project_name
     _pc.reload(req.project)
     logger.info("Solution switched: %s → %s", current_project, req.project)
     return {
-        "status":           "switched",
+        "status": "switched",
         "previous_project": current_project,
-        "project":          req.project,
+        "project": req.project,
     }
-
 
 
 @app.post("/config/modules")
@@ -831,13 +931,14 @@ async def set_modules(req: SetModulesRequest):
     Framework control operations bypass the proposal queue.
     """
     from src.core.project_loader import project_config as _pc
+
     current_modules = _get_project_config().metadata.get("active_modules", [])
     _pc.set_active_modules(req.modules)
     logger.info("Modules updated: %s → %s", current_modules, req.modules)
     return {
-        "status":           "updated",
+        "status": "updated",
         "previous_modules": current_modules,
-        "active_modules":   req.modules,
+        "active_modules": req.modules,
     }
 
 
@@ -849,14 +950,26 @@ async def read_yaml_file(file_name: str):
     """
     allowed = {"project", "prompts", "tasks"}
     if file_name not in allowed:
-        raise HTTPException(status_code=400, detail=f"file_name must be one of: {sorted(allowed)}")
+        raise HTTPException(
+            status_code=400, detail=f"file_name must be one of: {sorted(allowed)}"
+        )
     from src.core.project_loader import project_config, _SOLUTIONS_DIR
-    path = os.path.join(_SOLUTIONS_DIR, project_config.project_name, f"{file_name}.yaml")
+
+    path = os.path.join(
+        _SOLUTIONS_DIR, project_config.project_name, f"{file_name}.yaml"
+    )
     if not os.path.isfile(path):
-        raise HTTPException(status_code=404, detail=f"{file_name}.yaml not found for solution '{project_config.project_name}'")
+        raise HTTPException(
+            status_code=404,
+            detail=f"{file_name}.yaml not found for solution '{project_config.project_name}'",
+        )
     with open(path, "r", encoding="utf-8") as fh:
         content = fh.read()
-    return {"file": file_name, "solution": project_config.project_name, "content": content}
+    return {
+        "file": file_name,
+        "solution": project_config.project_name,
+        "content": content,
+    }
 
 
 class YamlWriteRequest(BaseModel):
@@ -870,45 +983,54 @@ async def write_yaml_file(file_name: str, req: YamlWriteRequest):
     Returns a STATEFUL proposal with a diff — actual write happens on POST /approve/{trace_id}.
     """
     import yaml as _yaml
+
     allowed = {"project", "prompts", "tasks"}
     if file_name not in allowed:
-        raise HTTPException(status_code=400, detail=f"file_name must be one of: {sorted(allowed)}")
+        raise HTTPException(
+            status_code=400, detail=f"file_name must be one of: {sorted(allowed)}"
+        )
     try:
         _yaml.safe_load(req.content)
     except _yaml.YAMLError as e:
         raise HTTPException(status_code=422, detail=f"Invalid YAML: {e}")
     from src.core.project_loader import project_config, _SOLUTIONS_DIR
     from src.core.proposal_store import RiskClass
-    path = os.path.join(_SOLUTIONS_DIR, project_config.project_name, f"{file_name}.yaml")
+
+    path = os.path.join(
+        _SOLUTIONS_DIR, project_config.project_name, f"{file_name}.yaml"
+    )
     if not os.path.isfile(path):
-        raise HTTPException(status_code=404, detail=f"{file_name}.yaml not found for solution '{project_config.project_name}'")
+        raise HTTPException(
+            status_code=404,
+            detail=f"{file_name}.yaml not found for solution '{project_config.project_name}'",
+        )
     with open(path, "r", encoding="utf-8") as fh:
         current = fh.read()
     # Simple line-count diff summary
     old_lines = current.splitlines()
     new_lines = req.content.splitlines()
-    diff_summary = f"+{len([l for l in new_lines if l not in old_lines])} / -{len([l for l in old_lines if l not in new_lines])} lines"
+    diff_summary = f"+{len([l for l in new_lines if l not in old_lines])} / -{len([l for l in old_lines if l not in new_lines])} lines"  # noqa: E741
     store = _get_proposal_store()
     proposal = store.create(
-        action_type   = "yaml_edit",
-        risk_class    = RiskClass.STATEFUL,
-        payload       = {
-            "file":     file_name,
-            "content":  req.content,
+        action_type="yaml_edit",
+        risk_class=RiskClass.STATEFUL,
+        payload={
+            "file": file_name,
+            "content": req.content,
             "solution": project_config.project_name,
             "previous_content": current,
         },
-        description   = f"Edit {file_name}.yaml ({diff_summary})",
-        reversible    = True,
-        proposed_by   = "user",
-        required_role = _get_required_role("yaml_edit"),
+        description=f"Edit {file_name}.yaml ({diff_summary})",
+        reversible=True,
+        proposed_by="user",
+        required_role=_get_required_role("yaml_edit"),
     )
     return {
-        "status":      "pending_approval",
-        "trace_id":    proposal.trace_id,
+        "status": "pending_approval",
+        "trace_id": proposal.trace_id,
         "description": proposal.description,
         "diff_summary": diff_summary,
-        "message":     "Review the change and POST /approve/{trace_id} to apply.",
+        "message": "Review the change and POST /approve/{trace_id} to apply.",
     }
 
 
@@ -919,11 +1041,12 @@ async def read_skill_md():
     Returns 404 if the solution does not use SKILL.md format.
     """
     from src.core.project_loader import project_config
+
     path = project_config.skill_md_path
     if not path or not os.path.isfile(path):
         raise HTTPException(
             status_code=404,
-            detail=f"SKILL.md not found for solution '{project_config.project_name}'"
+            detail=f"SKILL.md not found for solution '{project_config.project_name}'",
         )
     with open(path, "r", encoding="utf-8") as fh:
         content = fh.read()
@@ -943,6 +1066,7 @@ async def write_skill_md(req: SkillWriteRequest):
     YAML changes because the file is version-controlled alongside the solution.
     """
     from src.core.project_loader import project_config, _SOLUTIONS_DIR
+
     path = os.path.join(_SOLUTIONS_DIR, project_config.project_name, "SKILL.md")
     with open(path, "w", encoding="utf-8") as fh:
         fh.write(req.content)
@@ -959,8 +1083,14 @@ async def get_approval_roles():
     """Return configured approval roles and who belongs to each."""
     try:
         import yaml
-        config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(
-            os.path.abspath(__file__)))), "config", "config.yaml")
+
+        config_path = os.path.join(
+            os.path.dirname(
+                os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            ),
+            "config",
+            "config.yaml",
+        )
         with open(config_path) as f:
             cfg = yaml.safe_load(f) or {}
         return {
@@ -975,14 +1105,15 @@ async def get_approval_roles():
 async def agent_roles():
     """List all UniversalAgent roles defined in the current solution's prompts.yaml."""
     from src.core.project_loader import project_config
+
     roles_cfg = project_config.get_prompts().get("roles", {})
     return {
         "roles": [
             {
-                "id":          role_id,
-                "name":        cfg.get("name", role_id),
+                "id": role_id,
+                "name": cfg.get("name", role_id),
                 "description": cfg.get("description", ""),
-                "icon":        cfg.get("icon", "🤖"),
+                "icon": cfg.get("icon", "🤖"),
             }
             for role_id, cfg in roles_cfg.items()
         ]
@@ -1000,8 +1131,8 @@ async def agent_roles():
 # with a much tighter budget (10/60s by default vs. 120/60s app-wide).
 # ---------------------------------------------------------------------------
 
-import math as _math
-import threading as _threading
+import math as _math  # noqa: E402
+import threading as _threading  # noqa: E402
 
 
 def _get_agent_run_rate_limit() -> int:
@@ -1011,10 +1142,14 @@ def _get_agent_run_rate_limit() -> int:
     """
     try:
         config_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-            "config", "config.yaml",
+            os.path.dirname(
+                os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            ),
+            "config",
+            "config.yaml",
         )
         import yaml as _yaml
+
         with open(config_path) as f:
             cfg = _yaml.safe_load(f) or {}
         return int(cfg.get("api", {}).get("rate_limit_per_min", 10))
@@ -1124,7 +1259,10 @@ async def agent_run(req: AgentRunRequest, request: Request):
         )
 
     from src.agents.universal import UniversalAgent
-    from src.modules.payload_validator import sanitize_task_input, ValidationError as _PayloadValidationError
+    from src.modules.payload_validator import (
+        sanitize_task_input,
+        ValidationError as _PayloadValidationError,
+    )
 
     # Sanitize the free-text task: strip null bytes / control characters
     # (\x00-\x1f except tab and newline) and enforce the 4000-char limit.
@@ -1161,10 +1299,10 @@ async def agents_hire(req: AgentHireRequest):
     from src.core.proposal_store import RiskClass
 
     # Validate role_id format
-    if not re.match(r'^[a-z][a-z0-9_]{1,49}$', req.role_id):
+    if not re.match(r"^[a-z][a-z0-9_]{1,49}$", req.role_id):
         raise HTTPException(
             status_code=400,
-            detail="role_id must be lowercase snake_case, 2-50 chars, starting with a letter."
+            detail="role_id must be lowercase snake_case, 2-50 chars, starting with a letter.",
         )
 
     # Check for duplicate role
@@ -1172,33 +1310,33 @@ async def agents_hire(req: AgentHireRequest):
     if req.role_id in roles_cfg:
         raise HTTPException(
             status_code=409,
-            detail=f"Role '{req.role_id}' already exists in this solution."
+            detail=f"Role '{req.role_id}' already exists in this solution.",
         )
 
     store = _get_proposal_store()
     proposal = store.create(
-        action_type   = "agent_hire",
-        risk_class    = RiskClass.STATEFUL,
-        payload       = {
-            "role_id":       req.role_id,
-            "name":          req.name,
-            "description":   req.description,
-            "icon":          req.icon,
+        action_type="agent_hire",
+        risk_class=RiskClass.STATEFUL,
+        payload={
+            "role_id": req.role_id,
+            "name": req.name,
+            "description": req.description,
+            "icon": req.icon,
             "system_prompt": req.system_prompt,
-            "task_types":    req.task_types,
-            "solution":      _get_project_config().project_name,
+            "task_types": req.task_types,
+            "solution": _get_project_config().project_name,
         },
-        description   = f"Hire new agent role: {req.icon} {req.name} ({req.role_id})",
-        reversible    = True,
-        proposed_by   = "user",
-        required_role = _get_required_role("agent_hire"),
+        description=f"Hire new agent role: {req.icon} {req.name} ({req.role_id})",
+        reversible=True,
+        proposed_by="user",
+        required_role=_get_required_role("agent_hire"),
     )
     return {
-        "status":      "pending_approval",
-        "trace_id":    proposal.trace_id,
+        "status": "pending_approval",
+        "trace_id": proposal.trace_id,
         "description": proposal.description,
-        "expires_at":  proposal.expires_at.isoformat() if proposal.expires_at else None,
-        "message":     "POST /approve/{trace_id} to add this role to prompts.yaml + tasks.yaml.",
+        "expires_at": proposal.expires_at.isoformat() if proposal.expires_at else None,
+        "message": "POST /approve/{trace_id} to add this role to prompts.yaml + tasks.yaml.",
     }
 
 
@@ -1212,11 +1350,16 @@ async def agents_analyze_jd(req: AgentAnalyzeJDRequest):
         raise HTTPException(status_code=422, detail="jd_text must not be empty")
     try:
         from src.core.agent_factory import jd_to_role_config
+
         ctx = req.solution_context or ""
         if not ctx:
             try:
                 pc = _get_project_config()
-                ctx = getattr(pc, "domain", None) or getattr(pc, "project_name", None) or ""
+                ctx = (
+                    getattr(pc, "domain", None)
+                    or getattr(pc, "project_name", None)
+                    or ""
+                )
             except Exception:
                 pass
         config = jd_to_role_config(req.jd_text, solution_context=ctx)
@@ -1253,8 +1396,16 @@ async def agent_performance(role_key: str):
         rows = []
 
     total = len(rows)
-    approved = sum(1 for r in rows if "APPROVE" in (r[0] or "").upper() or "approved" in (r[1] or "").lower())
-    rejected = sum(1 for r in rows if "REJECT" in (r[0] or "").upper() or "rejected" in (r[1] or "").lower())
+    approved = sum(
+        1
+        for r in rows
+        if "APPROVE" in (r[0] or "").upper() or "approved" in (r[1] or "").lower()
+    )
+    rejected = sum(
+        1
+        for r in rows
+        if "REJECT" in (r[0] or "").upper() or "rejected" in (r[1] or "").lower()
+    )
 
     return {
         "role_key": role_key,
@@ -1297,7 +1448,10 @@ async def analyze(request: AnalyzeRequest):
             # Notify Teams for approval (best-effort)
             try:
                 from src.interface.teams_bot import teams_bot
-                teams_bot.send_approval_request(trace_id, result, "http://localhost:8000")
+
+                teams_bot.send_approval_request(
+                    trace_id, result, "http://localhost:8000"
+                )
             except Exception:
                 pass
 
@@ -1350,29 +1504,50 @@ async def approve_batch(body: BatchApproveRequest):
     Returns per-proposal results.
     """
     from src.core.proposal_executor import execute_approved_proposal
+
     store = _get_proposal_store()
     results = []
     for trace_id in body.trace_ids:
         proposal = store.get(trace_id)
         if not proposal or proposal.status != "pending":
-            results.append({"trace_id": trace_id, "status": "skipped", "reason": "not found or not pending"})
+            results.append(
+                {
+                    "trace_id": trace_id,
+                    "status": "skipped",
+                    "reason": "not found or not pending",
+                }
+            )
             continue
-        allowed, reason = _check_approver_permission(proposal.action_type, body.decided_by)
+        allowed, reason = _check_approver_permission(
+            proposal.action_type, body.decided_by
+        )
         if not allowed:
-            results.append({"trace_id": trace_id, "status": "forbidden", "reason": reason})
+            results.append(
+                {"trace_id": trace_id, "status": "forbidden", "reason": reason}
+            )
             continue
         try:
-            approved = store.approve(trace_id, decided_by=body.decided_by, feedback=body.feedback)
+            approved = store.approve(
+                trace_id, decided_by=body.decided_by, feedback=body.feedback
+            )
             result = await execute_approved_proposal(approved)
-            results.append({"trace_id": trace_id, "status": "approved", "result": result})
+            results.append(
+                {"trace_id": trace_id, "status": "approved", "result": result}
+            )
         except Exception as exc:
-            results.append({"trace_id": trace_id, "status": "error", "reason": str(exc)})
+            results.append(
+                {"trace_id": trace_id, "status": "error", "reason": str(exc)}
+            )
     return {"results": results, "count": len(results)}
 
 
 @app.post("/approve/{trace_id}")
-async def approve(trace_id: str, request: Request, body: ApproveProposalRequest = ApproveProposalRequest(),
-                  background_tasks: BackgroundTasks = BackgroundTasks()):
+async def approve(
+    trace_id: str,
+    request: Request,
+    body: ApproveProposalRequest = ApproveProposalRequest(),
+    background_tasks: BackgroundTasks = BackgroundTasks(),
+):
     """
     Approve a pending proposal.
 
@@ -1384,8 +1559,11 @@ async def approve(trace_id: str, request: Request, body: ApproveProposalRequest 
         trace_id: The trace ID from a previous proposal response.
     """
     from src.modules.trace_id import is_valid as _is_valid_trace
+
     if not _is_valid_trace(trace_id):
-        raise HTTPException(status_code=400, detail="Invalid trace_id format — must be a valid UUID.")
+        raise HTTPException(
+            status_code=400, detail="Invalid trace_id format — must be a valid UUID."
+        )
     from src.core.proposal_executor import execute_approved_proposal
     from src.core.auth import optional_auth as _optional_auth
 
@@ -1400,10 +1578,14 @@ async def approve(trace_id: str, request: Request, body: ApproveProposalRequest 
     proposal = store.get(trace_id)
     if proposal and proposal.status == "pending":
         # Role-based approval check
-        allowed, reason = _check_approver_permission(proposal.action_type, body.decided_by)
+        allowed, reason = _check_approver_permission(
+            proposal.action_type, body.decided_by
+        )
         if not allowed:
             raise HTTPException(status_code=403, detail=reason)
-        approved = store.approve(trace_id, decided_by=body.decided_by, feedback=body.feedback, user=auth_user)
+        approved = store.approve(
+            trace_id, decided_by=body.decided_by, feedback=body.feedback, user=auth_user
+        )
 
         # Auto-update linked feature_request to in_progress
         try:
@@ -1416,7 +1598,11 @@ async def approve(trace_id: str, request: Request, body: ApproveProposalRequest 
             _conn.commit()
             _conn.close()
         except Exception as _e:
-            logger.warning("Could not auto-update feature request for trace_id=%s: %s", trace_id, _e)
+            logger.warning(
+                "Could not auto-update feature request for trace_id=%s: %s",
+                trace_id,
+                _e,
+            )
 
         if approved.action_type in _BACKGROUND_TYPES:
             # Fire-and-forget: return immediately, run execution in background
@@ -1428,22 +1614,30 @@ async def approve(trace_id: str, request: Request, body: ApproveProposalRequest 
                         action_type="PROPOSAL_APPROVED",
                         input_context=f"trace_id={trace_id} action={approved.action_type}",
                         output_content=json.dumps(result),
-                        metadata={"trace_id": trace_id, "risk_class": approved.risk_class.value},
+                        metadata={
+                            "trace_id": trace_id,
+                            "risk_class": approved.risk_class.value,
+                        },
                         approved_by=auth_user.name if auth_user else body.decided_by,
                         approver_role=auth_user.role if auth_user else "",
                         approver_email=auth_user.email if auth_user else "",
                         approver_provider=auth_user.provider if auth_user else "",
                     )
                 except Exception as exc:
-                    logger.error("Background execution failed for %s: %s", trace_id, exc)
+                    logger.error(
+                        "Background execution failed for %s: %s", trace_id, exc
+                    )
 
             import asyncio
+
             asyncio.ensure_future(_bg_exec())
             return {
                 "status": "approved",
                 "trace_id": trace_id,
                 "action_type": approved.action_type,
-                "result": {"message": "Execution started in background. Check Dashboard for code_diff proposals."},
+                "result": {
+                    "message": "Execution started in background. Check Dashboard for code_diff proposals."
+                },
             }
 
         # Execute the action synchronously (fast actions)
@@ -1451,7 +1645,9 @@ async def approve(trace_id: str, request: Request, body: ApproveProposalRequest 
             result = await execute_approved_proposal(approved)
         except Exception as exc:
             logger.error("Proposal execution failed after approval: %s", exc)
-            raise HTTPException(status_code=500, detail=f"Proposal approved but execution failed: {exc}")
+            raise HTTPException(
+                status_code=500, detail=f"Proposal approved but execution failed: {exc}"
+            )
         # Audit the approval
         try:
             _get_audit_logger().log_event(
@@ -1459,7 +1655,10 @@ async def approve(trace_id: str, request: Request, body: ApproveProposalRequest 
                 action_type="PROPOSAL_APPROVED",
                 input_context=f"trace_id={trace_id} action={approved.action_type}",
                 output_content=json.dumps(result),
-                metadata={"trace_id": trace_id, "risk_class": approved.risk_class.value},
+                metadata={
+                    "trace_id": trace_id,
+                    "risk_class": approved.risk_class.value,
+                },
                 approved_by=auth_user.name if auth_user else body.decided_by,
                 approver_role=auth_user.role if auth_user else "",
                 approver_email=auth_user.email if auth_user else "",
@@ -1476,7 +1675,10 @@ async def approve(trace_id: str, request: Request, body: ApproveProposalRequest 
 
     # --- Fallback: legacy in-memory analysis proposals ---
     if trace_id not in _pending_proposals:
-        raise HTTPException(status_code=404, detail=f"Trace ID '{trace_id}' not found or already processed.")
+        raise HTTPException(
+            status_code=404,
+            detail=f"Trace ID '{trace_id}' not found or already processed.",
+        )
 
     proposal_entry = _pending_proposals[trace_id]
     proposal_entry["status"] = "approved"
@@ -1512,8 +1714,11 @@ async def reject(trace_id: str, http_request: Request, request: RejectRequest):
     Request body: {"feedback": "The real root cause is..."}
     """
     from src.modules.trace_id import is_valid as _is_valid_trace
+
     if not _is_valid_trace(trace_id):
-        raise HTTPException(status_code=400, detail="Invalid trace_id format — must be a valid UUID.")
+        raise HTTPException(
+            status_code=400, detail="Invalid trace_id format — must be a valid UUID."
+        )
     from src.core.auth import optional_auth as _optional_auth
 
     # Capture identity when auth is enabled (transparent when auth.enabled: false)
@@ -1523,14 +1728,19 @@ async def reject(trace_id: str, http_request: Request, request: RejectRequest):
     store = _get_proposal_store()
     proposal = store.get(trace_id)
     if proposal and proposal.status == "pending":
-        rejected = store.reject(trace_id, decided_by="human", feedback=request.feedback, user=auth_user)
+        rejected = store.reject(
+            trace_id, decided_by="human", feedback=request.feedback, user=auth_user
+        )
         try:
             _get_audit_logger().log_event(
                 actor="human",
                 action_type="PROPOSAL_REJECTED",
                 input_context=f"trace_id={trace_id} action={proposal.action_type}",
                 output_content=request.feedback,
-                metadata={"trace_id": trace_id, "risk_class": proposal.risk_class.value},
+                metadata={
+                    "trace_id": trace_id,
+                    "risk_class": proposal.risk_class.value,
+                },
                 approved_by=auth_user.name if auth_user else "human",
                 approver_role=auth_user.role if auth_user else "",
                 approver_email=auth_user.email if auth_user else "",
@@ -1542,10 +1752,14 @@ async def reject(trace_id: str, http_request: Request, request: RejectRequest):
         if request.feedback:
             try:
                 from src.memory.long_term_memory import long_term_memory
+
                 long_term_memory.remember(
                     f"Rejected {proposal.action_type}: {request.feedback}",
                     user_id=auth_user.name if auth_user else "human",
-                    metadata={"trace_id": trace_id, "action_type": proposal.action_type},
+                    metadata={
+                        "trace_id": trace_id,
+                        "action_type": proposal.action_type,
+                    },
                 )
             except Exception:
                 pass  # long-term memory is non-critical
@@ -1554,6 +1768,7 @@ async def reject(trace_id: str, http_request: Request, request: RejectRequest):
             try:
                 from src.core.proposal_executor import _revert_code_diff
                 import asyncio
+
                 asyncio.create_task(_revert_code_diff(rejected))
             except Exception as _rev_exc:
                 logger.warning("code_diff revert failed: %s", _rev_exc)
@@ -1565,7 +1780,10 @@ async def reject(trace_id: str, http_request: Request, request: RejectRequest):
 
     # --- Fallback: legacy in-memory analysis proposals ---
     if trace_id not in _pending_proposals:
-        raise HTTPException(status_code=404, detail=f"Trace ID '{trace_id}' not found or already processed.")
+        raise HTTPException(
+            status_code=404,
+            detail=f"Trace ID '{trace_id}' not found or already processed.",
+        )
 
     proposal_entry = _pending_proposals[trace_id]
     proposal_entry["status"] = "rejected"
@@ -1600,11 +1818,14 @@ async def undo_proposal(trace_id: str):
     if proposal is None:
         raise HTTPException(status_code=404, detail=f"Proposal '{trace_id}' not found.")
     if proposal.status == "pending":
-        raise HTTPException(status_code=409, detail="Cannot undo a pending proposal. Reject it instead.")
+        raise HTTPException(
+            status_code=409, detail="Cannot undo a pending proposal. Reject it instead."
+        )
     if proposal.action_type == "code_diff":
         try:
             from src.core.proposal_executor import _revert_code_diff
             import asyncio
+
             asyncio.ensure_future(_revert_code_diff(proposal))
             _get_audit_logger().log_event(
                 actor="human",
@@ -1613,11 +1834,19 @@ async def undo_proposal(trace_id: str):
                 output_content="Undo requested for approved code_diff",
                 metadata={"trace_id": trace_id},
             )
-            return {"status": "undo_triggered", "trace_id": trace_id, "action_type": proposal.action_type}
+            return {
+                "status": "undo_triggered",
+                "trace_id": trace_id,
+                "action_type": proposal.action_type,
+            }
         except Exception as exc:
             logger.error("Undo failed: %s", exc)
             raise HTTPException(status_code=500, detail=str(exc))
-    return {"status": "not_undoable", "trace_id": trace_id, "reason": f"{proposal.action_type} is not reversible via undo."}
+    return {
+        "status": "not_undoable",
+        "trace_id": trace_id,
+        "reason": f"{proposal.action_type} is not reversible via undo.",
+    }
 
 
 @app.get("/audit")
@@ -1633,6 +1862,7 @@ async def get_audit(limit: int = 50, offset: int = 0):
 
     try:
         import sqlite3
+
         audit = _get_audit_logger()
         conn = sqlite3.connect(audit.db_path)
         conn.row_factory = sqlite3.Row
@@ -1642,7 +1872,9 @@ async def get_audit(limit: int = 50, offset: int = 0):
             (limit, offset),
         )
         rows = [dict(r) for r in cursor.fetchall()]
-        total = cursor.execute("SELECT COUNT(*) FROM compliance_audit_log").fetchone()[0]
+        total = cursor.execute("SELECT COUNT(*) FROM compliance_audit_log").fetchone()[
+            0
+        ]
         conn.close()
 
         return {
@@ -1679,6 +1911,7 @@ async def create_mr(request: MRCreateRequest):
         # Notify Teams channel about new MR (best-effort)
         try:
             from src.interface.teams_bot import teams_bot
+
             teams_bot.send_mr_created(
                 mr_url=result.get("web_url", ""),
                 issue_title=result.get("title", f"Issue #{request.issue_iid}"),
@@ -1778,6 +2011,7 @@ async def teams_webhook(request: Request):
 # n8n Webhook Receiver (Phase 2)
 # ---------------------------------------------------------------------------
 
+
 @app.post("/webhook/n8n")
 async def n8n_webhook(request: Request):
     """
@@ -1802,8 +2036,10 @@ async def n8n_webhook(request: Request):
     secret = os.environ.get("N8N_WEBHOOK_SECRET", "").encode()
     if secret:
         sig_header = request.headers.get("X-SAGE-Signature", "")
-        raw_body   = await request.body()
-        expected   = "sha256=" + hmac_lib.new(secret, raw_body, hashlib.sha256).hexdigest()
+        raw_body = await request.body()
+        expected = (
+            "sha256=" + hmac_lib.new(secret, raw_body, hashlib.sha256).hexdigest()
+        )
         if not hmac_lib.compare_digest(sig_header, expected):
             raise HTTPException(status_code=401, detail="Invalid webhook signature")
         body = json.loads(raw_body)
@@ -1811,22 +2047,22 @@ async def n8n_webhook(request: Request):
         body = await request.json()
 
     event_type = body.get("event_type", "")
-    payload    = body.get("payload", {})
-    source     = body.get("source", "n8n")
-    priority   = int(body.get("priority", 5))
+    payload = body.get("payload", {})
+    source = body.get("source", "n8n")
+    priority = int(body.get("priority", 5))
 
     if not event_type:
         raise HTTPException(status_code=400, detail="event_type is required")
 
     # Map n8n event types to SAGE task types
     _EVENT_TO_TASK = {
-        "log_alert":    "ANALYZE_LOG",
-        "code_review":  "REVIEW_MR",
-        "create_mr":    "CREATE_MR",
-        "monitor":      "MONITOR_CHECK",
-        "plan":         "PLAN_TASK",
-        "workflow":     "WORKFLOW",
-        "code_task":    "CODE_TASK",
+        "log_alert": "ANALYZE_LOG",
+        "code_review": "REVIEW_MR",
+        "create_mr": "CREATE_MR",
+        "monitor": "MONITOR_CHECK",
+        "plan": "PLAN_TASK",
+        "workflow": "WORKFLOW",
+        "code_task": "CODE_TASK",
     }
 
     task_type = _EVENT_TO_TASK.get(event_type, event_type.upper())
@@ -1935,13 +2171,13 @@ async def get_task_subtasks(task_id: str):
     """Return all tasks that were spawned as subtasks of task_id."""
     try:
         qm = _get_task_queue()
-        all_tasks = qm.get_all_tasks()   # returns list of dicts
+        all_tasks = qm.get_all_tasks()  # returns list of dicts
         children = [
             {
-                "task_id":    t["task_id"],
-                "task_type":  t["task_type"],
-                "status":     t["status"],
-                "wave":       (t.get("metadata") or {}).get("wave", 0),
+                "task_id": t["task_id"],
+                "task_type": t["task_type"],
+                "status": t["status"],
+                "wave": (t.get("metadata") or {}).get("wave", 0),
                 "depends_on": t.get("depends_on", []),
             }
             for t in all_tasks
@@ -1963,8 +2199,8 @@ async def submit_task(request: Request):
     if not task_type:
         raise HTTPException(status_code=400, detail="task_type is required")
 
-    payload    = body.get("payload", {})
-    priority   = int(body.get("priority", 5))
+    payload = body.get("payload", {})
+    priority = int(body.get("priority", 5))
     target_sol = body.get("target_solution", "").strip() or None
     source_sol = body.get("source_solution", "").strip() or None
 
@@ -1974,6 +2210,7 @@ async def submit_task(request: Request):
     if target_sol:
         # Resolve solutions dir live so env-var overrides (e.g. in tests) are respected
         from src.core.project_loader import _PROJECT_ROOT as _proj_root
+
         _sols_dir = os.environ.get(
             "SAGE_SOLUTIONS_DIR",
             os.path.join(_proj_root, "solutions"),
@@ -1989,10 +2226,14 @@ async def submit_task(request: Request):
 
         # Validate target exists on disk
         if not os.path.isdir(os.path.join(_sols_dir, target_sol)):
-            raise HTTPException(status_code=404, detail=f"target_solution '{target_sol}' not found")
+            raise HTTPException(
+                status_code=404, detail=f"target_solution '{target_sol}' not found"
+            )
 
         # Validate routing permission
-        if _org_loader.org_name and not _org_loader.is_route_allowed(source_sol, target_sol):
+        if _org_loader.org_name and not _org_loader.is_route_allowed(
+            source_sol, target_sol
+        ):
             raise HTTPException(
                 status_code=403,
                 detail=f"solution '{source_sol}' is not permitted to route tasks to '{target_sol}'",
@@ -2000,16 +2241,24 @@ async def submit_task(request: Request):
 
         queue = get_task_queue(target_sol)
         task_id = queue.submit(
-            task_type, payload,
+            task_type,
+            payload,
             priority=priority,
             source="cross_team_route",
             metadata={"source_solution": source_sol, "target_solution": target_sol},
         )
         return {"task_id": task_id, "target_solution": target_sol, "status": "queued"}
     else:
-        task_id = _default_queue.submit(task_type, payload, priority=priority, source="api")
+        task_id = _default_queue.submit(
+            task_type, payload, priority=priority, source="api"
+        )
         from src.core.project_loader import project_config as _pc
-        return {"task_id": task_id, "target_solution": _pc.project_name, "status": "queued"}
+
+        return {
+            "task_id": task_id,
+            "target_solution": _pc.project_name,
+            "status": "queued",
+        }
 
 
 @app.get("/queue/status")
@@ -2027,6 +2276,7 @@ async def get_queue_status():
     """
     try:
         from src.core.queue_manager import task_queue, parallel_runner
+
         return {
             "pending_count": task_queue.get_pending_count(),
             "parallel_mode": parallel_runner.parallel_active,
@@ -2055,6 +2305,7 @@ async def set_queue_config(max_workers: int = 4, parallel_enabled: bool = True):
     """
     try:
         from src.core.queue_manager import parallel_runner
+
         parallel_runner.config.max_workers = max_workers
         parallel_runner.config.parallel_enabled = parallel_enabled
         logger.info(
@@ -2126,7 +2377,9 @@ async def developer_propose_patch(request: Request):
     error_description = body.get("error_description", "")
     current_code = body.get("current_code", "")
     if not file_path or not error_description:
-        raise HTTPException(status_code=422, detail="file_path and error_description are required")
+        raise HTTPException(
+            status_code=422, detail="file_path and error_description are required"
+        )
     try:
         dev = _get_developer()
         result = dev.propose_code_patch(file_path, error_description, current_code)
@@ -2148,7 +2401,9 @@ async def mr_add_comment(request: Request):
     mr_iid = body.get("mr_iid")
     comment = body.get("comment", "")
     if not project_id or not mr_iid or not comment:
-        raise HTTPException(status_code=422, detail="project_id, mr_iid, and comment are required")
+        raise HTTPException(
+            status_code=422, detail="project_id, mr_iid, and comment are required"
+        )
     try:
         dev = _get_developer()
         result = dev.add_mr_comment(int(project_id), int(mr_iid), comment)
@@ -2175,6 +2430,7 @@ async def planner_plan_status(request: Request):
         raise HTTPException(status_code=422, detail="task_ids list is required")
     try:
         from src.agents.planner import planner_agent
+
         return {"statuses": planner_agent.get_plan_status(task_ids)}
     except Exception as e:
         logger.error("Plan status error: %s", e)
@@ -2184,6 +2440,7 @@ async def planner_plan_status(request: Request):
 # ---------------------------------------------------------------------------
 # Module Improvement / Feature Request Endpoints
 # ---------------------------------------------------------------------------
+
 
 @app.post("/feedback/feature-request")
 async def submit_feature_request(request: FeatureRequestCreate):
@@ -2220,8 +2477,12 @@ async def submit_feature_request(request: FeatureRequestCreate):
             action_type="FEATURE_REQUEST_SUBMITTED",
             input_context=f"scope={request.scope} module={request.module_id} title={request.title}",
             output_content=request.description,
-            metadata={"request_id": fr.id, "module_id": request.module_id,
-                      "priority": request.priority, "scope": request.scope},
+            metadata={
+                "request_id": fr.id,
+                "module_id": request.module_id,
+                "priority": request.priority,
+                "scope": request.scope,
+            },
         )
     except Exception as e:
         logger.warning("Audit log failed for feature request: %s", e)
@@ -2237,7 +2498,7 @@ async def submit_feature_request(request: FeatureRequestCreate):
 async def list_feature_requests(
     module_id: Optional[str] = None,
     status: Optional[str] = None,
-    scope: Optional[str] = None,   # "solution" | "sage"
+    scope: Optional[str] = None,  # "solution" | "sage"
 ):
     """
     List feature requests, optionally filtered by module_id, status, or scope.
@@ -2245,6 +2506,7 @@ async def list_feature_requests(
     scope="sage"     returns SAGE framework improvement ideas.
     """
     from src.core.feature_request_store import FeatureRequestStore
+
     try:
         store = FeatureRequestStore(_get_db_path())
         rows = [fr.to_dict() for fr in store.list(status=status, scope=scope)]
@@ -2280,13 +2542,14 @@ async def generate_plan_for_request(req_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-    scope = req.get('scope', 'solution')
+    scope = req.get("scope", "solution")
     now = datetime.now(timezone.utc).isoformat()
 
     # SAGE framework improvements go through GitHub PRs, not the internal approval queue.
     if scope == "sage":
         import urllib.parse
         from src.core.config_loader import load_config as _load_cfg
+
         _cfg = _load_cfg()
         github_repo = (
             _cfg.get("github", {}).get("repo_url", "").rstrip("/")
@@ -2311,10 +2574,10 @@ async def generate_plan_for_request(req_id: str):
         except Exception as e:
             logger.warning("DB update failed for github_pr status: %s", e)
         return {
-            "request_id":       req_id,
-            "status":           "github_pr",
+            "request_id": req_id,
+            "status": "github_pr",
             "github_issue_url": github_url,
-            "message":          "SAGE framework improvements are contributed via GitHub. Use the link to open an issue or PR.",
+            "message": "SAGE framework improvements are contributed via GitHub. Use the link to open an issue or PR.",
         }
 
     # Solution-scope: run planner and create a HITL approval proposal as normal.
@@ -2333,9 +2596,13 @@ async def generate_plan_for_request(req_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
     if not steps:
-        raise HTTPException(status_code=422, detail="LLM could not produce an executable plan. Try rephrasing the description.")
+        raise HTTPException(
+            status_code=422,
+            detail="LLM could not produce an executable plan. Try rephrasing the description.",
+        )
 
     from src.core.proposal_store import RiskClass
+
     store = _get_proposal_store()
     proposal = store.create(
         action_type="implementation_plan",
@@ -2366,10 +2633,10 @@ async def generate_plan_for_request(req_id: str):
 
     return {
         "request_id": req_id,
-        "status":     "in_planning",
-        "trace_id":   proposal.trace_id,
+        "status": "in_planning",
+        "trace_id": proposal.trace_id,
         "step_count": len(steps),
-        "plan":       steps,
+        "plan": steps,
     }
 
 
@@ -2388,7 +2655,9 @@ async def update_feature_request(req_id: str, body: FeatureRequestUpdate):
         store = FeatureRequestStore(_get_db_path())
         fr = store.update(req_id, action=action, reviewer_note=body.reviewer_note)
     except KeyError:
-        raise HTTPException(status_code=404, detail=f"feature request not found: {req_id}")
+        raise HTTPException(
+            status_code=404, detail=f"feature request not found: {req_id}"
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -2411,6 +2680,7 @@ async def update_feature_request(req_id: str, body: FeatureRequestUpdate):
 # LLM Management Endpoints
 # ===========================================================================
 
+
 @app.get("/llm/status")
 async def llm_status():
     """
@@ -2426,9 +2696,11 @@ async def llm_status():
 
     # --- PII filter status ---
     import yaml as _yaml
+
     _config_path = os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-        "config", "config.yaml",
+        "config",
+        "config.yaml",
     )
     _full_cfg: dict = {}
     try:
@@ -2452,18 +2724,21 @@ async def llm_status():
             "errors": usage["errors"],
         },
         "config": {
-            "minimal_mode": bool(os.environ.get("SAGE_MINIMAL", "") in ("1", "true", "yes")),
-            "project": _get_project_config().project_name or os.environ.get("SAGE_PROJECT", ""),
+            "minimal_mode": bool(
+                os.environ.get("SAGE_MINIMAL", "") in ("1", "true", "yes")
+            ),
+            "project": _get_project_config().project_name
+            or os.environ.get("SAGE_PROJECT", ""),
         },
         "pii_filter": {
-            "enabled":          _pii_cfg.get("enabled", False),
-            "mode":             _pii_cfg.get("mode", "redact"),
-            "entities":         _pii_cfg.get("entities", []),
+            "enabled": _pii_cfg.get("enabled", False),
+            "mode": _pii_cfg.get("mode", "redact"),
+            "entities": _pii_cfg.get("entities", []),
             "fail_on_detection": _pii_cfg.get("fail_on_detection", False),
         },
         "data_residency": {
             "enabled": _dr_cfg.get("enabled", False),
-            "region":  _dr_cfg.get("region", "us"),
+            "region": _dr_cfg.get("region", "us"),
         },
     }
 
@@ -2472,18 +2747,21 @@ async def llm_status():
 async def llm_routing_stats():
     """Return complexity-based routing statistics."""
     from src.core.llm_gateway import llm_gateway
+
     stats = getattr(llm_gateway, "_routing_stats", {"low": 0, "medium": 0, "high": 0})
     total = sum(stats.values())
     return {
         "routing_stats": stats,
         "total_classified": total,
-        "distribution": {k: round(v / total * 100, 1) if total > 0 else 0 for k, v in stats.items()},
+        "distribution": {
+            k: round(v / total * 100, 1) if total > 0 else 0 for k, v in stats.items()
+        },
     }
 
 
 class LLMSwitchRequest(BaseModel):
-    provider: str   # "gemini" | "local" | "claude-code" | "claude"
-    model: Optional[str] = None   # gemini model name, GGUF path, or claude model name
+    provider: str  # "gemini" | "local" | "claude-code" | "claude"
+    model: Optional[str] = None  # gemini model name, GGUF path, or claude model name
     api_key: Optional[str] = None  # Anthropic API key (claude only, stored in env)
     claude_path: Optional[str] = None  # Custom path to claude.exe (claude-code only)
     save_as_default: bool = False  # If True, persist selection to config.yaml
@@ -2497,17 +2775,22 @@ async def llm_switch(req: LLMSwitchRequest):
     """
     from types import SimpleNamespace
     from src.core.proposal_executor import _execute_llm_switch as _do_llm_switch
+
     allowed = ("gemini", "local", "claude-code", "claude", "ollama", "generic-cli")
     if req.provider not in allowed:
-        raise HTTPException(status_code=400, detail=f"provider must be one of: {allowed}")
+        raise HTTPException(
+            status_code=400, detail=f"provider must be one of: {allowed}"
+        )
     current_provider = _get_llm_gateway().get_provider_name()
-    fake = SimpleNamespace(payload={
-        "provider":        req.provider,
-        "model":           req.model,
-        "api_key":         req.api_key,
-        "claude_path":     req.claude_path,
-        "save_as_default": req.save_as_default,
-    })
+    fake = SimpleNamespace(
+        payload={
+            "provider": req.provider,
+            "model": req.model,
+            "api_key": req.api_key,
+            "claude_path": req.claude_path,
+            "save_as_default": req.save_as_default,
+        }
+    )
     result = await _do_llm_switch(fake)
     logger.info("LLM switched: %s → %s", current_provider, req.provider)
     return {"status": "switched", "previous_provider": current_provider, **result}
@@ -2517,6 +2800,7 @@ async def llm_switch(req: LLMSwitchRequest):
 # MCP Registry endpoints (Phase 1.5)
 # ---------------------------------------------------------------------------
 
+
 @app.get("/mcp/tools")
 async def mcp_list_tools():
     """
@@ -2524,6 +2808,7 @@ async def mcp_list_tools():
     Discovers tools from solutions/<name>/mcp_servers/*.py.
     """
     from src.integrations.mcp_registry import mcp_registry
+
     tools = mcp_registry.list_tools()
     return {"tools": tools, "count": len(tools)}
 
@@ -2537,13 +2822,14 @@ async def mcp_invoke_tool(request: Request):
     """
     body = await request.json()
     tool_name = body.get("tool_name", "")
-    args      = body.get("args", {})
-    trace_id  = body.get("trace_id")
+    args = body.get("args", {})
+    trace_id = body.get("trace_id")
 
     if not tool_name:
         raise HTTPException(status_code=400, detail="tool_name is required")
 
     from src.integrations.mcp_registry import mcp_registry
+
     result = mcp_registry.invoke(tool_name, args, trace_id=trace_id)
 
     if "error" in result:
@@ -2556,14 +2842,18 @@ async def mcp_invoke_tool(request: Request):
 # Workflow Diagram Endpoints — visual Mermaid diagrams for all solutions
 # ---------------------------------------------------------------------------
 
+
 def _build_mermaid_from_source(source: str) -> str:
     """
     Fallback: parse a LangGraph workflow Python source file and build a
     Mermaid flowchart string from add_node / add_edge / set_entry_point calls.
     """
     import re
+
     nodes = re.findall(r'graph\.add_node\(["\'](\w+)["\']', source)
-    raw_edges = re.findall(r'graph\.add_edge\(["\'](\w+)["\'],\s*["\'](\w+)["\']', source)
+    raw_edges = re.findall(
+        r'graph\.add_edge\(["\'](\w+)["\'],\s*["\'](\w+)["\']', source
+    )
     entry = re.findall(r'graph\.set_entry_point\(["\'](\w+)["\']', source)
     # END edges
     end_edges = re.findall(r'graph\.add_edge\(["\'](\w+)["\'],\s*END\b', source)
@@ -2589,10 +2879,15 @@ def _build_mermaid_from_source(source: str) -> str:
 def _get_solutions_dir() -> str:
     try:
         from src.core.project_loader import _SOLUTIONS_DIR
+
         return _SOLUTIONS_DIR
     except Exception:
-        return os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(
-            os.path.abspath(__file__)))), "solutions")
+        return os.path.join(
+            os.path.dirname(
+                os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            ),
+            "solutions",
+        )
 
 
 def _discover_all_workflow_diagrams() -> list:
@@ -2619,6 +2914,7 @@ def _discover_all_workflow_diagrams() -> list:
         yaml_diagram_override = None
         try:
             import yaml
+
             with open(project_yaml_path) as f:
                 pdata = yaml.safe_load(f) or {}
             yaml_diagram_override = pdata.get("workflow_diagram")
@@ -2684,23 +2980,27 @@ def _discover_all_workflow_diagrams() -> list:
             # Count nodes from Mermaid string if not already set
             if node_count == 0:
                 import re
-                node_count = len(re.findall(r'\b\w+\[', mermaid_diagram))
+
+                node_count = len(re.findall(r"\b\w+\[", mermaid_diagram))
 
             # Extract description from module docstring
             import re
+
             description = ""
             docmatch = re.match(r'"""(.*?)"""', source, re.DOTALL)
             if docmatch:
                 first_line = docmatch.group(1).strip().split("\n")[0].strip()
                 description = first_line[:200] if first_line else ""
 
-            results.append({
-                "solution": solution_name,
-                "workflow_name": workflow_name,
-                "mermaid_diagram": mermaid_diagram,
-                "node_count": node_count,
-                "description": description,
-            })
+            results.append(
+                {
+                    "solution": solution_name,
+                    "workflow_name": workflow_name,
+                    "mermaid_diagram": mermaid_diagram,
+                    "node_count": node_count,
+                    "description": description,
+                }
+            )
 
     return results
 
@@ -2737,13 +3037,16 @@ async def get_workflow_diagram(solution: str, workflow_name: str):
     except HTTPException:
         raise
     except Exception as exc:
-        logger.error("Failed to get workflow diagram %s/%s: %s", solution, workflow_name, exc)
+        logger.error(
+            "Failed to get workflow diagram %s/%s: %s", solution, workflow_name, exc
+        )
         raise HTTPException(status_code=500, detail=str(exc))
 
 
 # ---------------------------------------------------------------------------
 # LangGraph Workflow Endpoints (Phase 3)
 # ---------------------------------------------------------------------------
+
 
 @app.get("/workflow/list")
 async def workflow_list():
@@ -2753,6 +3056,7 @@ async def workflow_list():
     is not installed.
     """
     from src.integrations.langgraph_runner import langgraph_runner
+
     workflows = langgraph_runner.list_workflows()
     return {"workflows": workflows, "count": len(workflows)}
 
@@ -2773,6 +3077,7 @@ async def workflow_run(request: Request):
         raise HTTPException(status_code=400, detail="workflow_name is required")
 
     from src.integrations.langgraph_runner import langgraph_runner
+
     result = langgraph_runner.run(workflow_name, initial_state)
 
     if "error" in result:
@@ -2789,13 +3094,14 @@ async def workflow_resume(request: Request):
     Feedback dict is merged into graph state (e.g. {"approved": true, "comment": "LGTM"}).
     """
     body = await request.json()
-    run_id  = body.get("run_id", "")
+    run_id = body.get("run_id", "")
     feedback = body.get("feedback", {})
 
     if not run_id:
         raise HTTPException(status_code=400, detail="run_id is required")
 
     from src.integrations.langgraph_runner import langgraph_runner
+
     result = langgraph_runner.resume(run_id, feedback)
 
     if "error" in result:
@@ -2808,6 +3114,7 @@ async def workflow_resume(request: Request):
 async def workflow_status(run_id: str):
     """Get current status of a workflow run by run_id."""
     from src.integrations.langgraph_runner import langgraph_runner
+
     result = langgraph_runner.get_status(run_id)
 
     if "error" in result:
@@ -2819,6 +3126,7 @@ async def workflow_status(run_id: str):
 # ---------------------------------------------------------------------------
 # Build Orchestrator Endpoints — 0→1→N pipeline with Critic Agent
 # ---------------------------------------------------------------------------
+
 
 @app.post("/build/start")
 async def build_start(req: BuildStartRequest):
@@ -2907,6 +3215,7 @@ async def build_runs():
 async def build_roles():
     """List all hireable agent roles with skills, tools, and MCP capabilities."""
     from src.integrations.build_orchestrator import get_hireable_roles
+
     roles = get_hireable_roles()
     return {"roles": roles, "count": len(roles)}
 
@@ -2924,6 +3233,7 @@ async def dual_llm_stats():
     try:
         from src.integrations.dual_llm_runner import DualLLMRunner
         import yaml as _yaml
+
         _cfg_path = os.path.join("config", "config.yaml")
         _raw_cfg = {}
         if os.path.exists(_cfg_path):
@@ -2931,7 +3241,9 @@ async def dual_llm_stats():
                 _raw_cfg = _yaml.safe_load(_f) or {}
         strategy_cfg = _raw_cfg.get("llm_strategy", {})
         pc = _get_project_config()
-        runner = DualLLMRunner(strategy_cfg, solution_name=pc.project_name if pc else "starter")
+        runner = DualLLMRunner(
+            strategy_cfg, solution_name=pc.project_name if pc else "starter"
+        )
         return runner.get_stats()
     except Exception as e:
         return {"error": str(e), "stats": {}}
@@ -2944,10 +3256,12 @@ async def dual_llm_stats():
 # Skills Marketplace Endpoints
 # ---------------------------------------------------------------------------
 
+
 @app.get("/skills")
 async def list_skills(include_disabled: bool = False):
     """List all registered skills with visibility filtering."""
     from src.core.skill_loader import skill_registry
+
     skills = skill_registry.list_all(include_disabled=include_disabled)
     return {
         "skills": [s.to_dict() for s in skills],
@@ -2959,6 +3273,7 @@ async def list_skills(include_disabled: bool = False):
 async def get_skill(name: str):
     """Get a specific skill by name."""
     from src.core.skill_loader import skill_registry
+
     skill = skill_registry.get_including_disabled(name)
     if not skill:
         return {"error": f"Skill '{name}' not found"}
@@ -2969,6 +3284,7 @@ async def get_skill(name: str):
 async def skills_for_role(role: str):
     """Get all active skills for an agent role."""
     from src.core.skill_loader import skill_registry
+
     skills = skill_registry.get_for_role(role)
     return {"role": role, "skills": [s.to_dict() for s in skills], "count": len(skills)}
 
@@ -2977,8 +3293,13 @@ async def skills_for_role(role: str):
 async def skills_for_runner(runner: str):
     """Get all active skills for a runner."""
     from src.core.skill_loader import skill_registry
+
     skills = skill_registry.get_for_runner(runner)
-    return {"runner": runner, "skills": [s.to_dict() for s in skills], "count": len(skills)}
+    return {
+        "runner": runner,
+        "skills": [s.to_dict() for s in skills],
+        "count": len(skills),
+    }
 
 
 class SkillVisibilityRequest(BaseModel):
@@ -2990,6 +3311,7 @@ class SkillVisibilityRequest(BaseModel):
 async def set_skill_visibility(req: SkillVisibilityRequest):
     """Change a skill's visibility tier. Framework control — no approval needed."""
     from src.core.skill_loader import skill_registry
+
     if req.visibility not in {"public", "private", "disabled"}:
         return {"error": f"Invalid visibility: {req.visibility}"}
     ok = skill_registry.set_visibility(req.name, req.visibility)
@@ -3002,28 +3324,40 @@ async def set_skill_visibility(req: SkillVisibilityRequest):
 async def reload_skills():
     """Hot-reload all skills from disk. Framework control — no approval needed."""
     from src.core.skill_loader import skill_registry
+
     count = skill_registry.reload()
-    return {"status": "reloaded", "skills_loaded": count, "stats": skill_registry.stats()}
+    return {
+        "status": "reloaded",
+        "skills_loaded": count,
+        "stats": skill_registry.stats(),
+    }
 
 
 @app.get("/skills/search")
 async def search_skills(q: str = ""):
     """Search skills by name, description, or keywords."""
     from src.core.skill_loader import skill_registry
+
     if not q:
         return {"error": "query parameter 'q' is required"}
     results = skill_registry.search(q)
-    return {"query": q, "results": [s.to_dict() for s in results], "count": len(results)}
+    return {
+        "query": q,
+        "results": [s.to_dict() for s in results],
+        "count": len(results),
+    }
 
 
 # ---------------------------------------------------------------------------
 # Runners Endpoints
 # ---------------------------------------------------------------------------
 
+
 @app.get("/runners")
 async def list_runners():
     """List all registered domain runners and their capabilities."""
     from src.integrations.base_runner import list_runners as _list_runners
+
     runners = _list_runners()
     return {"runners": runners, "count": len(runners)}
 
@@ -3032,6 +3366,7 @@ async def list_runners():
 async def runner_skills(name: str):
     """Get skills registered for a specific runner."""
     from src.integrations.base_runner import get_runner_by_name
+
     runner = get_runner_by_name(name)
     if not runner:
         return {"error": f"Runner '{name}' not found"}
@@ -3051,6 +3386,7 @@ async def runner_skills(name: str):
 # ---------------------------------------------------------------------------
 # SWE Agent Endpoint — open-swe pattern
 # ---------------------------------------------------------------------------
+
 
 class SWETaskRequest(BaseModel):
     task: str
@@ -3108,6 +3444,7 @@ async def swe_task(req: SWETaskRequest):
 # Code Agent Endpoints (Phase 4 — AutoGen + sandbox)
 # ---------------------------------------------------------------------------
 
+
 @app.post("/code/plan")
 async def code_plan(request: Request):
     """
@@ -3125,6 +3462,7 @@ async def code_plan(request: Request):
         raise HTTPException(status_code=400, detail="task is required")
 
     from src.integrations.autogen_runner import autogen_runner
+
     result = autogen_runner.plan(task, trace_id=trace_id)
 
     if "error" in result:
@@ -3142,13 +3480,14 @@ async def code_approve(request: Request):
     Body: { "run_id": str, "comment": str (optional) }
     """
     body = await request.json()
-    run_id  = body.get("run_id", "")
+    run_id = body.get("run_id", "")
     comment = body.get("comment", "")
 
     if not run_id:
         raise HTTPException(status_code=400, detail="run_id is required")
 
     from src.integrations.autogen_runner import autogen_runner
+
     result = autogen_runner.approve(run_id, comment=comment)
 
     if "error" in result:
@@ -3172,6 +3511,7 @@ async def code_execute(request: Request):
         raise HTTPException(status_code=400, detail="run_id is required")
 
     from src.integrations.autogen_runner import autogen_runner
+
     result = autogen_runner.execute(run_id)
 
     if "error" in result:
@@ -3184,6 +3524,7 @@ async def code_execute(request: Request):
 async def code_status(run_id: str):
     """Get current status of a code run by run_id."""
     from src.integrations.autogen_runner import autogen_runner
+
     result = autogen_runner.get_status(run_id)
 
     if "error" in result:
@@ -3196,9 +3537,11 @@ async def code_status(run_id: str):
 # Real-time SSE Streaming Endpoints (Phase 5)
 # ---------------------------------------------------------------------------
 
+
 def _sse_event(data: dict) -> str:
     """Format a dict as a Server-Sent Events data line."""
     import json
+
     return f"data: {json.dumps(data)}\n\n"
 
 
@@ -3216,7 +3559,7 @@ async def analyze_stream(request: Request):
       {"type": "error",  "content": "..."}   — terminal error
     """
     body = await request.json()
-    log_entry    = body.get("log_entry", "")
+    log_entry = body.get("log_entry", "")
     system_prompt = body.get(
         "system_prompt",
         "You are a precise analyst. Identify the root cause, risk level, and next steps.",
@@ -3226,6 +3569,7 @@ async def analyze_stream(request: Request):
         raise HTTPException(status_code=400, detail="log_entry is required")
 
     import uuid as _uuid
+
     trace_id = str(_uuid.uuid4())
 
     async def _event_stream():
@@ -3269,7 +3613,7 @@ async def analyze_stream(request: Request):
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
-            "X-Accel-Buffering": "no",    # disable nginx buffering
+            "X-Accel-Buffering": "no",  # disable nginx buffering
         },
     )
 
@@ -3292,6 +3636,7 @@ async def agent_stream(request: Request):
         raise HTTPException(status_code=400, detail="role and task are required")
 
     import uuid as _uuid
+
     trace_id = str(_uuid.uuid4())
 
     async def _agent_event_stream():
@@ -3309,7 +3654,9 @@ async def agent_stream(request: Request):
                 f"You are an expert {role} agent. Complete the task concisely.",
             )
         except Exception:
-            system_prompt = f"You are an expert {role} agent. Complete the task concisely."
+            system_prompt = (
+                f"You are an expert {role} agent. Complete the task concisely."
+            )
 
         prompt = task
         if context:
@@ -3358,9 +3705,9 @@ async def agent_stream(request: Request):
 # Live Log Streaming — makes CLI/agent activity visible in the Web UI
 # ---------------------------------------------------------------------------
 
-import asyncio
-import queue as _queue
-import threading
+import asyncio  # noqa: E402
+import queue as _queue  # noqa: E402
+import threading  # noqa: E402
 
 _ORG_YAML_LOCK = threading.Lock()
 
@@ -3370,6 +3717,7 @@ class _SSELogHandler(logging.Handler):
     Logging handler that pushes every log record into a per-connection queue.
     The queue is attached to a GET /logs/stream SSE connection.
     """
+
     _listeners: list["_SSELogHandler"] = []
     _lock = threading.Lock()
 
@@ -3382,12 +3730,16 @@ class _SSELogHandler(logging.Handler):
     def emit(self, record: logging.LogRecord):
         try:
             msg = self.format(record)
-            self.q.put_nowait({
-                "level":   record.levelname,
-                "name":    record.name,
-                "message": msg,
-                "ts":      datetime.fromtimestamp(record.created, tz=timezone.utc).isoformat(),
-            })
+            self.q.put_nowait(
+                {
+                    "level": record.levelname,
+                    "name": record.name,
+                    "message": msg,
+                    "ts": datetime.fromtimestamp(
+                        record.created, tz=timezone.utc
+                    ).isoformat(),
+                }
+            )
         except _queue.Full:
             pass  # drop oldest if consumer is slow
 
@@ -3422,7 +3774,11 @@ async def logs_stream():
     async def _generator():
         try:
             # Send a heartbeat immediately so the browser knows we're connected
-            yield "data: {\"level\":\"INFO\",\"name\":\"sage\",\"message\":\"Live console connected.\",\"ts\":\"" + datetime.now(timezone.utc).isoformat() + "\"}\n\n"
+            yield (
+                'data: {"level":"INFO","name":"sage","message":"Live console connected.","ts":"'
+                + datetime.now(timezone.utc).isoformat()
+                + '"}\n\n'
+            )
             while True:
                 try:
                     record = handler.q.get(timeout=0.5)
@@ -3441,7 +3797,7 @@ async def logs_stream():
         _generator(),
         media_type="text/event-stream",
         headers={
-            "Cache-Control":    "no-cache",
+            "Cache-Control": "no-cache",
             "X-Accel-Buffering": "no",
         },
     )
@@ -3460,10 +3816,26 @@ ORG_TEMPLATES = [
         "compliance_standards": [],
         "icon": "⚙️",
         "roles": [
-            {"key": "analyst",   "name": "Signal Analyst",  "description": "Triage logs and errors"},
-            {"key": "developer", "name": "Code Reviewer",   "description": "Review MRs and code changes"},
-            {"key": "planner",   "name": "Task Planner",    "description": "Decompose complex requests"},
-            {"key": "monitor",   "name": "Monitor",         "description": "Watch systems and alert"},
+            {
+                "key": "analyst",
+                "name": "Signal Analyst",
+                "description": "Triage logs and errors",
+            },
+            {
+                "key": "developer",
+                "name": "Code Reviewer",
+                "description": "Review MRs and code changes",
+            },
+            {
+                "key": "planner",
+                "name": "Task Planner",
+                "description": "Decompose complex requests",
+            },
+            {
+                "key": "monitor",
+                "name": "Monitor",
+                "description": "Watch systems and alert",
+            },
         ],
     },
     {
@@ -3474,13 +3846,41 @@ ORG_TEMPLATES = [
         "compliance_standards": ["ISO 13485", "IEC 62304", "ISO 14971"],
         "icon": "🏥",
         "roles": [
-            {"key": "regulatory_affairs_lead", "name": "Regulatory Affairs Lead",  "description": "FDA/CE submissions and DHF"},
-            {"key": "biomedical_engineer",      "name": "Biomedical Engineer",      "description": "Class II/III device hardware/firmware"},
-            {"key": "software_qa_engineer",     "name": "Software QA Engineer",     "description": "IEC 62304 V&V, traceability"},
-            {"key": "clinical_specialist",      "name": "Clinical Specialist",      "description": "CER, post-market surveillance"},
-            {"key": "quality_management_lead",  "name": "Quality Management Lead",  "description": "CAPA, audits, nonconformance"},
-            {"key": "embedded_firmware_dev",    "name": "Embedded Firmware Dev",    "description": "Safety-critical C/C++ for medical hardware"},
-            {"key": "cybersecurity_analyst",    "name": "Cybersecurity Analyst",    "description": "FDA cybersecurity guidance"},
+            {
+                "key": "regulatory_affairs_lead",
+                "name": "Regulatory Affairs Lead",
+                "description": "FDA/CE submissions and DHF",
+            },
+            {
+                "key": "biomedical_engineer",
+                "name": "Biomedical Engineer",
+                "description": "Class II/III device hardware/firmware",
+            },
+            {
+                "key": "software_qa_engineer",
+                "name": "Software QA Engineer",
+                "description": "IEC 62304 V&V, traceability",
+            },
+            {
+                "key": "clinical_specialist",
+                "name": "Clinical Specialist",
+                "description": "CER, post-market surveillance",
+            },
+            {
+                "key": "quality_management_lead",
+                "name": "Quality Management Lead",
+                "description": "CAPA, audits, nonconformance",
+            },
+            {
+                "key": "embedded_firmware_dev",
+                "name": "Embedded Firmware Dev",
+                "description": "Safety-critical C/C++ for medical hardware",
+            },
+            {
+                "key": "cybersecurity_analyst",
+                "name": "Cybersecurity Analyst",
+                "description": "FDA cybersecurity guidance",
+            },
         ],
     },
     {
@@ -3491,13 +3891,41 @@ ORG_TEMPLATES = [
         "compliance_standards": ["ISO 26262", "UN ECE WP.29", "ISO/SAE 21434"],
         "icon": "🚗",
         "roles": [
-            {"key": "hmi_engineer",               "name": "HMI Engineer",               "description": "IVI UI/UX, AUTOSAR HMI"},
-            {"key": "telematics_engineer",         "name": "Telematics Engineer",         "description": "V2X, CAN/LIN, OBD-II"},
-            {"key": "adas_engineer",               "name": "ADAS Engineer",               "description": "Sensor fusion, ISO 26262 ASIL"},
-            {"key": "functional_safety_engineer",  "name": "Functional Safety Engineer",  "description": "FTA/FMEA, ASIL decomposition"},
-            {"key": "connectivity_engineer",       "name": "Connectivity Engineer",       "description": "4G/5G, OTA updates"},
-            {"key": "audio_video_engineer",        "name": "Audio/Video Engineer",        "description": "Codec, media framework"},
-            {"key": "cybersecurity_engineer",      "name": "Cybersecurity Engineer",      "description": "TARA, HSM, secure boot"},
+            {
+                "key": "hmi_engineer",
+                "name": "HMI Engineer",
+                "description": "IVI UI/UX, AUTOSAR HMI",
+            },
+            {
+                "key": "telematics_engineer",
+                "name": "Telematics Engineer",
+                "description": "V2X, CAN/LIN, OBD-II",
+            },
+            {
+                "key": "adas_engineer",
+                "name": "ADAS Engineer",
+                "description": "Sensor fusion, ISO 26262 ASIL",
+            },
+            {
+                "key": "functional_safety_engineer",
+                "name": "Functional Safety Engineer",
+                "description": "FTA/FMEA, ASIL decomposition",
+            },
+            {
+                "key": "connectivity_engineer",
+                "name": "Connectivity Engineer",
+                "description": "4G/5G, OTA updates",
+            },
+            {
+                "key": "audio_video_engineer",
+                "name": "Audio/Video Engineer",
+                "description": "Codec, media framework",
+            },
+            {
+                "key": "cybersecurity_engineer",
+                "name": "Cybersecurity Engineer",
+                "description": "TARA, HSM, secure boot",
+            },
         ],
     },
     {
@@ -3505,16 +3933,48 @@ ORG_TEMPLATES = [
         "name": "Mobile App Development",
         "description": "iOS, Android, Flutter engineers with QA, DevOps, and App Store specialist",
         "role_count": 7,
-        "compliance_standards": ["Apple App Store Guidelines", "Google Play Policy", "GDPR"],
+        "compliance_standards": [
+            "Apple App Store Guidelines",
+            "Google Play Policy",
+            "GDPR",
+        ],
         "icon": "📱",
         "roles": [
-            {"key": "ios_engineer",               "name": "iOS Engineer",               "description": "Swift/SwiftUI, App Store"},
-            {"key": "android_engineer",           "name": "Android Engineer",           "description": "Kotlin/Jetpack, Google Play"},
-            {"key": "flutter_engineer",           "name": "Flutter Engineer",           "description": "Dart/Flutter cross-platform"},
-            {"key": "mobile_qa_engineer",         "name": "Mobile QA Engineer",         "description": "Device farm, UI automation"},
-            {"key": "mobile_devops_engineer",     "name": "Mobile DevOps",              "description": "Fastlane, CI/CD, signing"},
-            {"key": "mobile_performance_engineer","name": "Performance Engineer",       "description": "Memory, battery, network"},
-            {"key": "app_store_specialist",       "name": "App Store Specialist",       "description": "ASO, review management"},
+            {
+                "key": "ios_engineer",
+                "name": "iOS Engineer",
+                "description": "Swift/SwiftUI, App Store",
+            },
+            {
+                "key": "android_engineer",
+                "name": "Android Engineer",
+                "description": "Kotlin/Jetpack, Google Play",
+            },
+            {
+                "key": "flutter_engineer",
+                "name": "Flutter Engineer",
+                "description": "Dart/Flutter cross-platform",
+            },
+            {
+                "key": "mobile_qa_engineer",
+                "name": "Mobile QA Engineer",
+                "description": "Device farm, UI automation",
+            },
+            {
+                "key": "mobile_devops_engineer",
+                "name": "Mobile DevOps",
+                "description": "Fastlane, CI/CD, signing",
+            },
+            {
+                "key": "mobile_performance_engineer",
+                "name": "Performance Engineer",
+                "description": "Memory, battery, network",
+            },
+            {
+                "key": "app_store_specialist",
+                "name": "App Store Specialist",
+                "description": "ASO, review management",
+            },
         ],
     },
     {
@@ -3525,13 +3985,41 @@ ORG_TEMPLATES = [
         "compliance_standards": ["EN 50128", "EN 50129", "EN 50126"],
         "icon": "🚂",
         "roles": [
-            {"key": "signalling_engineer",         "name": "Signalling Engineer",         "description": "ETCS/ERTMS, interlocking, SIL"},
-            {"key": "traction_engineer",           "name": "Traction Engineer",           "description": "Propulsion, energy recovery"},
-            {"key": "onboard_systems_engineer",    "name": "Onboard Systems Engineer",    "description": "TCMS, door systems, PIS"},
-            {"key": "safety_assurance_engineer",   "name": "Safety Assurance Engineer",   "description": "RAMS, HAZOP, safety case"},
-            {"key": "communications_engineer",     "name": "Communications Engineer",     "description": "GSM-R/FRMCS, train radio"},
-            {"key": "maintenance_engineer",        "name": "Maintenance Engineer",        "description": "CBM, fault codes, SCADA"},
-            {"key": "test_verification_engineer",  "name": "Test & Verification Engineer","description": "HIL/SIL, test specifications"},
+            {
+                "key": "signalling_engineer",
+                "name": "Signalling Engineer",
+                "description": "ETCS/ERTMS, interlocking, SIL",
+            },
+            {
+                "key": "traction_engineer",
+                "name": "Traction Engineer",
+                "description": "Propulsion, energy recovery",
+            },
+            {
+                "key": "onboard_systems_engineer",
+                "name": "Onboard Systems Engineer",
+                "description": "TCMS, door systems, PIS",
+            },
+            {
+                "key": "safety_assurance_engineer",
+                "name": "Safety Assurance Engineer",
+                "description": "RAMS, HAZOP, safety case",
+            },
+            {
+                "key": "communications_engineer",
+                "name": "Communications Engineer",
+                "description": "GSM-R/FRMCS, train radio",
+            },
+            {
+                "key": "maintenance_engineer",
+                "name": "Maintenance Engineer",
+                "description": "CBM, fault codes, SCADA",
+            },
+            {
+                "key": "test_verification_engineer",
+                "name": "Test & Verification Engineer",
+                "description": "HIL/SIL, test specifications",
+            },
         ],
     },
     {
@@ -3542,13 +4030,41 @@ ORG_TEMPLATES = [
         "compliance_standards": ["DO-178C", "DO-254", "ARP4754A", "FAA Part 25"],
         "icon": "✈️",
         "roles": [
-            {"key": "avionics_software_engineer", "name": "Avionics Software Engineer", "description": "DO-178C DAL, ARINC 653"},
-            {"key": "systems_engineer",           "name": "Systems Engineer",           "description": "ARP4754A, FHA/PSSA/SSA"},
-            {"key": "flight_test_engineer",       "name": "Flight Test Engineer",       "description": "Flight data analysis, PIREP"},
-            {"key": "airworthiness_engineer",     "name": "Airworthiness Engineer",     "description": "FAA Part 25, EASA CS-25, STC"},
-            {"key": "navigation_engineer",        "name": "Navigation Engineer",        "description": "ILS/VOR/GNSS, FMS"},
-            {"key": "certification_specialist",   "name": "Certification Specialist",   "description": "DER coordination, compliance matrix"},
-            {"key": "hardware_design_assurance",  "name": "Hardware Design Assurance",  "description": "DO-254, FPGA/ASIC review"},
+            {
+                "key": "avionics_software_engineer",
+                "name": "Avionics Software Engineer",
+                "description": "DO-178C DAL, ARINC 653",
+            },
+            {
+                "key": "systems_engineer",
+                "name": "Systems Engineer",
+                "description": "ARP4754A, FHA/PSSA/SSA",
+            },
+            {
+                "key": "flight_test_engineer",
+                "name": "Flight Test Engineer",
+                "description": "Flight data analysis, PIREP",
+            },
+            {
+                "key": "airworthiness_engineer",
+                "name": "Airworthiness Engineer",
+                "description": "FAA Part 25, EASA CS-25, STC",
+            },
+            {
+                "key": "navigation_engineer",
+                "name": "Navigation Engineer",
+                "description": "ILS/VOR/GNSS, FMS",
+            },
+            {
+                "key": "certification_specialist",
+                "name": "Certification Specialist",
+                "description": "DER coordination, compliance matrix",
+            },
+            {
+                "key": "hardware_design_assurance",
+                "name": "Hardware Design Assurance",
+                "description": "DO-254, FPGA/ASIC review",
+            },
         ],
     },
 ]
@@ -3573,12 +4089,12 @@ async def onboarding_generate(request: Request):
     status = "created" | "exists"
     """
     body = await request.json()
-    description      = body.get("description", "").strip()
-    solution_name    = body.get("solution_name", "").strip()
-    compliance       = body.get("compliance_standards", [])
-    integrations     = body.get("integrations", ["gitlab"])
-    parent_solution  = body.get("parent_solution", "").strip()
-    org_name         = body.get("org_name", "").strip()
+    description = body.get("description", "").strip()
+    solution_name = body.get("solution_name", "").strip()
+    compliance = body.get("compliance_standards", [])
+    integrations = body.get("integrations", ["gitlab"])
+    parent_solution = body.get("parent_solution", "").strip()
+    org_name = body.get("org_name", "").strip()
 
     if not description:
         raise HTTPException(status_code=400, detail="description is required")
@@ -3603,6 +4119,7 @@ async def onboarding_generate(request: Request):
 
     try:
         from src.core.onboarding import generate_solution
+
         result = generate_solution(
             description=description,
             solution_name=solution_name,
@@ -3627,6 +4144,7 @@ async def onboarding_session_create():
     Returns: {session_id, state, messages: [{role, content, ts}]}
     """
     from src.core.onboarding_session import create_session
+
     session = create_session()
     return session.to_dict()
 
@@ -3639,6 +4157,7 @@ async def onboarding_session_message(session_id: str, request: Request):
     Returns: {reply, state, info, session_id}
     """
     from src.core.onboarding_session import send_message
+
     body = await request.json()
     user_msg = body.get("message", "").strip()
     if not user_msg:
@@ -3657,6 +4176,7 @@ async def onboarding_session_generate(session_id: str):
     Returns: {trace_id, description, solution_name, state}
     """
     from src.core.onboarding_session import request_generate
+
     result = request_generate(session_id)
     if "error" in result:
         raise HTTPException(status_code=400, detail=result["error"])
@@ -3667,6 +4187,7 @@ async def onboarding_session_generate(session_id: str):
 async def onboarding_session_get(session_id: str):
     """Get the current state of an onboarding session."""
     from src.core.onboarding_session import get_session
+
     session = get_session(session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="Session not found or expired.")
@@ -3686,6 +4207,7 @@ async def onboarding_templates():
     These are the bundled solutions in the solutions/ directory.
     """
     from src.core.project_loader import _SOLUTIONS_DIR
+
     templates = []
     try:
         for name in sorted(os.listdir(_SOLUTIONS_DIR)):
@@ -3693,14 +4215,17 @@ async def onboarding_templates():
             if os.path.isfile(project_file):
                 try:
                     import yaml as _yaml
+
                     with open(project_file) as f:
                         proj = _yaml.safe_load(f) or {}
-                    templates.append({
-                        "solution_name": name,
-                        "display_name":  proj.get("name", name),
-                        "domain":        proj.get("domain", name),
-                        "description":   proj.get("description", ""),
-                    })
+                    templates.append(
+                        {
+                            "solution_name": name,
+                            "display_name": proj.get("name", name),
+                            "domain": proj.get("domain", name),
+                            "description": proj.get("description", ""),
+                        }
+                    )
                 except Exception:
                     templates.append({"solution_name": name})
     except Exception as e:
@@ -3719,6 +4244,7 @@ async def onboarding_analyze(request: Request):
     """
     body = await request.json()
     from src.core.onboarding_analyzer import OnboardingAnalyzer
+
     analyzer = OnboardingAnalyzer()
 
     text = body.get("text", "")
@@ -3746,10 +4272,22 @@ async def onboarding_scan_folder(req: ScanFolderRequest):
         scanner = FolderScanner()
         folder_content = scanner.scan(req.folder_path)
     except FileNotFoundError:
-        raise HTTPException(400, detail={"error": "folder_not_found", "message": f"Folder not found: {req.folder_path}"})
+        raise HTTPException(
+            400,
+            detail={
+                "error": "folder_not_found",
+                "message": f"Folder not found: {req.folder_path}",
+            },
+        )
 
     if not folder_content.strip():
-        raise HTTPException(400, detail={"error": "folder_empty", "message": "No readable files found in this folder."})
+        raise HTTPException(
+            400,
+            detail={
+                "error": "folder_empty",
+                "message": "No readable files found in this folder.",
+            },
+        )
 
     org_context = _load_org_context()
 
@@ -3772,7 +4310,10 @@ async def onboarding_scan_folder(req: ScanFolderRequest):
         raw = llm.generate(system_prompt=system_prompt, user_prompt=user_prompt)
     except Exception as exc:
         logger.error("LLM error in scan-folder: %s", exc)
-        raise HTTPException(503, detail={"error": "llm_unavailable", "message": "Could not reach the LLM."})
+        raise HTTPException(
+            503,
+            detail={"error": "llm_unavailable", "message": "Could not reach the LLM."},
+        )
 
     files, summary = _parse_generated_files(raw)
 
@@ -3803,7 +4344,7 @@ async def onboarding_refine(req: RefineRequest):
     user_prompt_parts.append(f"Solution name: {req.solution_name}")
     user_prompt_parts.append(f"Feedback: {req.feedback}")
     user_prompt_parts.append(
-        f"\nCurrent YAML files:\n"
+        "\nCurrent YAML files:\n"
         + "\n---\n".join(f"# {k}\n{v}" for k, v in req.current_files.items())
     )
     user_prompt = "\n\n".join(user_prompt_parts)
@@ -3813,7 +4354,10 @@ async def onboarding_refine(req: RefineRequest):
         raw = llm.generate(system_prompt=system_prompt, user_prompt=user_prompt)
     except Exception as exc:
         logger.error("LLM error in refine: %s", exc)
-        raise HTTPException(503, detail={"error": "llm_unavailable", "message": "Could not reach the LLM."})
+        raise HTTPException(
+            503,
+            detail={"error": "llm_unavailable", "message": "Could not reach the LLM."},
+        )
 
     files, summary = _parse_generated_files(raw)
 
@@ -3832,13 +4376,23 @@ async def onboarding_refine(req: RefineRequest):
 async def onboarding_save_solution(req: SaveSolutionRequest):
     """Write generated YAML files to disk under SAGE_SOLUTIONS_DIR/<solution_name>/."""
     if not _SAFE_SOLUTION_NAME.match(req.solution_name):
-        raise HTTPException(400, detail={"error": "invalid_solution_name",
-                                         "message": "solution_name must be 1-64 alphanumeric characters, underscores, or hyphens."})
+        raise HTTPException(
+            400,
+            detail={
+                "error": "invalid_solution_name",
+                "message": "solution_name must be 1-64 alphanumeric characters, underscores, or hyphens.",
+            },
+        )
     solution_dir = os.path.join(_get_solutions_dir(), req.solution_name)
     solutions_root = os.path.realpath(_get_solutions_dir())
     if not os.path.realpath(solution_dir).startswith(solutions_root + os.sep):
-        raise HTTPException(400, detail={"error": "invalid_solution_name",
-                                         "message": "Resolved path escapes solutions directory."})
+        raise HTTPException(
+            400,
+            detail={
+                "error": "invalid_solution_name",
+                "message": "Resolved path escapes solutions directory.",
+            },
+        )
     os.makedirs(solution_dir, exist_ok=True)
     for filename, content in req.files.items():
         if filename not in {"project.yaml", "prompts.yaml", "tasks.yaml"}:
@@ -3859,6 +4413,7 @@ async def onboarding_save_solution(req: SaveSolutionRequest):
 # Knowledge Base CRUD (Phase 7)
 # ---------------------------------------------------------------------------
 
+
 @app.get("/knowledge/entries")
 async def knowledge_list(limit: int = 50):
     """
@@ -3866,17 +4421,22 @@ async def knowledge_list(limit: int = 50):
     Returns [{id, text, metadata}, ...].
     """
     from src.memory.vector_store import vector_memory
+
     return {"entries": vector_memory.list_entries(limit=limit), "count": limit}
 
 
-def _write_to_channel_collection(db_path: str, collection_name: str, text: str, metadata: dict):
+def _write_to_channel_collection(
+    db_path: str, collection_name: str, text: str, metadata: dict
+):
     """Write a knowledge entry to a shared channel chroma collection. Non-fatal on error."""
     try:
         import importlib.util
+
         if importlib.util.find_spec("chromadb") is None:
             return
         import chromadb
         import uuid as _uuid
+
         _client = chromadb.PersistentClient(path=db_path)
         _col = _client.get_or_create_collection(collection_name)
         _col.add(documents=[text], metadatas=[metadata or {}], ids=[str(_uuid.uuid4())])
@@ -3895,13 +4455,16 @@ async def knowledge_add(request: Request):
     body = await request.json()
     text = (body.get("text") or body.get("content") or "").strip()
     if not text:
-        raise HTTPException(status_code=400, detail="text is required (also accepts 'content')")
+        raise HTTPException(
+            status_code=400, detail="text is required (also accepts 'content')"
+        )
     metadata = body.get("metadata", {})
 
     # --- Org channel write (optional) ---
     channel = body.get("channel", "").strip() if body else ""
     if channel:
         from src.core.org_loader import org_loader as _org_loader
+
         _active_sol = _get_active_solution()
         _col_name = _org_loader.get_producer_channel_name(_active_sol, channel)
         if _col_name is None:
@@ -3912,27 +4475,29 @@ async def knowledge_add(request: Request):
         _channel_db = _org_loader.get_channel_db_path()
         if _channel_db:
             import os as _os
+
             _os.makedirs(_channel_db, exist_ok=True)
             _write_to_channel_collection(_channel_db, _col_name, text, metadata)
     # --- end channel write ---
 
     from src.core.proposal_store import RiskClass
+
     preview = text[:120] + ("..." if len(text) > 120 else "")
     store = _get_proposal_store()
     proposal = store.create(
-        action_type   = "knowledge_add",
-        risk_class    = RiskClass.STATEFUL,
-        payload       = {"text": text, "metadata": metadata},
-        description   = f"Add knowledge entry: \"{preview}\"",
-        reversible    = True,
-        proposed_by   = "user",
-        required_role = _get_required_role("knowledge_add"),
+        action_type="knowledge_add",
+        risk_class=RiskClass.STATEFUL,
+        payload={"text": text, "metadata": metadata},
+        description=f'Add knowledge entry: "{preview}"',
+        reversible=True,
+        proposed_by="user",
+        required_role=_get_required_role("knowledge_add"),
     )
     return {
-        "status":   "pending_approval",
+        "status": "pending_approval",
         "trace_id": proposal.trace_id,
-        "preview":  preview,
-        "message":  "POST /approve/{trace_id} to add to knowledge base.",
+        "preview": preview,
+        "message": "POST /approve/{trace_id} to add to knowledge base.",
     }
 
 
@@ -3944,6 +4509,7 @@ async def knowledge_delete(entry_id: str, note: str = ""):
     """
     from src.memory.vector_store import vector_memory
     from src.core.proposal_store import RiskClass
+
     # Verify entry exists before proposing
     entries = vector_memory.list_entries(limit=1000)
     found = next((e for e in entries if str(e.get("id")) == entry_id), None)
@@ -3952,19 +4518,19 @@ async def knowledge_delete(entry_id: str, note: str = ""):
     preview = str(found.get("text", ""))[:80]
     store = _get_proposal_store()
     proposal = store.create(
-        action_type   = "knowledge_delete",
-        risk_class    = RiskClass.DESTRUCTIVE,
-        payload       = {"entry_id": entry_id, "preview": preview},
-        description   = f"DELETE knowledge entry {entry_id}: \"{preview}\"",
-        reversible    = False,
-        proposed_by   = "user",
-        required_role = _get_required_role("knowledge_delete"),
+        action_type="knowledge_delete",
+        risk_class=RiskClass.DESTRUCTIVE,
+        payload={"entry_id": entry_id, "preview": preview},
+        description=f'DELETE knowledge entry {entry_id}: "{preview}"',
+        reversible=False,
+        proposed_by="user",
+        required_role=_get_required_role("knowledge_delete"),
     )
     return {
-        "status":      "pending_approval",
-        "trace_id":    proposal.trace_id,
+        "status": "pending_approval",
+        "trace_id": proposal.trace_id,
         "description": proposal.description,
-        "warning":     "This action is IRREVERSIBLE. POST /approve/{trace_id} with a note to confirm.",
+        "warning": "This action is IRREVERSIBLE. POST /approve/{trace_id} with a note to confirm.",
     }
 
 
@@ -3980,22 +4546,23 @@ async def knowledge_import(request: Request):
     if not isinstance(entries, list) or not entries:
         raise HTTPException(status_code=400, detail="entries must be a non-empty list")
     from src.core.proposal_store import RiskClass
+
     sample = entries[0].get("text", "")[:80] if entries else ""
     store = _get_proposal_store()
     proposal = store.create(
-        action_type   = "knowledge_import",
-        risk_class    = RiskClass.STATEFUL,
-        payload       = {"entries": entries},
-        description   = f"Bulk import {len(entries)} knowledge entries (sample: \"{sample}\")",
-        reversible    = True,
-        proposed_by   = "user",
-        required_role = _get_required_role("knowledge_import"),
+        action_type="knowledge_import",
+        risk_class=RiskClass.STATEFUL,
+        payload={"entries": entries},
+        description=f'Bulk import {len(entries)} knowledge entries (sample: "{sample}")',
+        reversible=True,
+        proposed_by="user",
+        required_role=_get_required_role("knowledge_import"),
     )
     return {
-        "status":   "pending_approval",
+        "status": "pending_approval",
         "trace_id": proposal.trace_id,
-        "count":    len(entries),
-        "sample":   sample,
+        "count": len(entries),
+        "sample": sample,
     }
 
 
@@ -4007,7 +4574,7 @@ async def knowledge_search(request: Request):
     """
     body = await request.json()
     query = body.get("query", "").strip()
-    k     = min(int(body.get("k", 5)), 20)
+    k = min(int(body.get("k", 5)), 20)
     org_filter = body.get("org_filter", False)
     if not query:
         raise HTTPException(status_code=400, detail="query is required")
@@ -4016,15 +4583,19 @@ async def knowledge_search(request: Request):
         # Org-aware search scoped to the active solution tenant
         from src.memory.vector_store import org_aware_query
         from src.core.project_loader import project_config
-        results = org_aware_query(query, solution_name=project_config.project_name, limit=k)
+
+        results = org_aware_query(
+            query, solution_name=project_config.project_name, limit=k
+        )
     else:
         from src.memory.vector_store import vector_memory
+
         results = vector_memory.search(query, k=k)
     return {"results": results, "count": len(results), "query": query}
 
 
 class KnowledgeSyncRequest(BaseModel):
-    directory: str = ""   # default: active solution dir
+    directory: str = ""  # default: active solution dir
 
 
 @app.post("/knowledge/sync")
@@ -4051,6 +4622,7 @@ async def trigger_knowledge_sync(req: KnowledgeSyncRequest = KnowledgeSyncReques
 # Slack Two-Way Approval (Phase 8)
 # ---------------------------------------------------------------------------
 
+
 @app.post("/slack/send-proposal")
 async def slack_send_proposal(request: Request):
     """
@@ -4058,21 +4630,24 @@ async def slack_send_proposal(request: Request):
     Body: { "trace_id": str, "summary": str, "action_type": str, "actor": str }
     """
     body = await request.json()
-    trace_id    = body.get("trace_id", "")
-    summary     = body.get("summary", "").strip()
+    trace_id = body.get("trace_id", "")
+    summary = body.get("summary", "").strip()
     action_type = body.get("action_type", "PROPOSE")
-    actor       = body.get("actor", "SAGE Agent")
+    actor = body.get("actor", "SAGE Agent")
 
     if not trace_id or not summary:
         raise HTTPException(status_code=400, detail="trace_id and summary are required")
 
     from src.integrations.slack_approver import send_proposal
-    result = send_proposal({
-        "trace_id":    trace_id,
-        "summary":     summary,
-        "action_type": action_type,
-        "actor":       actor,
-    })
+
+    result = send_proposal(
+        {
+            "trace_id": trace_id,
+            "summary": summary,
+            "action_type": action_type,
+            "actor": actor,
+        }
+    )
     return result
 
 
@@ -4085,7 +4660,10 @@ async def slack_webhook(request: Request):
 
     Slack sends: application/x-www-form-urlencoded with 'payload' field.
     """
-    from src.integrations.slack_approver import verify_slack_signature, parse_action_payload
+    from src.integrations.slack_approver import (
+        verify_slack_signature,
+        parse_action_payload,
+    )
 
     body = await request.body()
     timestamp = request.headers.get("X-Slack-Request-Timestamp", "")
@@ -4097,6 +4675,7 @@ async def slack_webhook(request: Request):
     # Slack sends form-encoded payload
     try:
         from urllib.parse import parse_qs
+
         form = parse_qs(body.decode("utf-8"))
         payload_str = form.get("payload", ["{}"])[0]
     except Exception:
@@ -4105,7 +4684,7 @@ async def slack_webhook(request: Request):
     action = parse_action_payload(payload_str)
     trace_id = action.get("trace_id", "")
     decision = action.get("decision", "")
-    user     = action.get("user", "slack_user")
+    user = action.get("user", "slack_user")
 
     if not trace_id or decision not in ("approved", "rejected"):
         raise HTTPException(status_code=400, detail="Invalid action payload")
@@ -4131,10 +4710,12 @@ async def slack_webhook(request: Request):
 # Evaluation & Benchmarking (Phase 9)
 # ---------------------------------------------------------------------------
 
+
 @app.get("/eval/suites")
 async def eval_list_suites():
     """List available eval suites for the active solution."""
     from src.core.eval_runner import eval_runner
+
     suites = eval_runner.list_suites()
     return {"suites": suites, "count": len(suites)}
 
@@ -4150,6 +4731,7 @@ async def eval_run(request: Request):
     suite = body.get("suite")
 
     from src.core.eval_runner import eval_runner
+
     result = eval_runner.run(suite=suite)
 
     if "error" in result:
@@ -4162,6 +4744,7 @@ async def eval_run(request: Request):
 async def eval_history(suite: str = None, limit: int = 20):
     """Return historical eval run summaries for trend tracking."""
     from src.core.eval_runner import eval_runner
+
     history = eval_runner.get_history(suite=suite, limit=limit)
     return {"history": history, "count": len(history)}
 
@@ -4169,6 +4752,7 @@ async def eval_history(suite: str = None, limit: int = 20):
 # ---------------------------------------------------------------------------
 # Temporal Durable Workflows (Phase 11)
 # ---------------------------------------------------------------------------
+
 
 @app.post("/temporal/workflow/start")
 async def temporal_start(request: Request):
@@ -4180,17 +4764,20 @@ async def temporal_start(request: Request):
     """
     body = await request.json()
     workflow_name = body.get("workflow_name", "")
-    args          = body.get("args", {})
-    workflow_id   = body.get("workflow_id")
+    args = body.get("args", {})
+    workflow_id = body.get("workflow_id")
 
     if not workflow_name:
         raise HTTPException(status_code=400, detail="workflow_name is required")
 
     from src.integrations.temporal_runner import temporal_runner
+
     result = temporal_runner.start(workflow_name, args=args, workflow_id=workflow_id)
 
     if result.get("status") == "error" and not result.get("fallback"):
-        raise HTTPException(status_code=500, detail=result.get("reason", "Unknown error"))
+        raise HTTPException(
+            status_code=500, detail=result.get("reason", "Unknown error")
+        )
 
     return result
 
@@ -4199,6 +4786,7 @@ async def temporal_start(request: Request):
 async def temporal_status(workflow_id: str):
     """Get the current status of a Temporal workflow run."""
     from src.integrations.temporal_runner import temporal_runner
+
     result = temporal_runner.get_status(workflow_id)
 
     if "error" in result:
@@ -4211,12 +4799,17 @@ async def temporal_status(workflow_id: str):
 async def temporal_list():
     """List all workflow runs tracked in this process session."""
     from src.integrations.temporal_runner import temporal_runner
-    return {"runs": temporal_runner.list_runs(), "count": len(temporal_runner.list_runs())}
+
+    return {
+        "runs": temporal_runner.list_runs(),
+        "count": len(temporal_runner.list_runs()),
+    }
 
 
 # ---------------------------------------------------------------------------
 # Multi-Tenant Context (Phase 10)
 # ---------------------------------------------------------------------------
+
 
 @app.get("/tenant/context")
 async def tenant_context(request: Request):
@@ -4225,9 +4818,10 @@ async def tenant_context(request: Request):
     Pass X-SAGE-Tenant header to override the default (active solution name).
     """
     from src.core.tenant import get_tenant_id, tenant_scoped_collection
+
     tenant = await get_tenant_id(request)
     return {
-        "tenant_id":  tenant,
+        "tenant_id": tenant,
         "collection": tenant_scoped_collection(),
         "header_set": "X-SAGE-Tenant" in request.headers,
     }
@@ -4237,9 +4831,10 @@ async def tenant_context(request: Request):
 # Composio integration endpoints
 # ---------------------------------------------------------------------------
 
+
 class ComposioConnectRequest(BaseModel):
-    app: str                    # e.g. "github", "jira", "slack"
-    redirect_url: str = ""      # Optional URL to redirect after OAuth
+    app: str  # e.g. "github", "jira", "slack"
+    redirect_url: str = ""  # Optional URL to redirect after OAuth
 
 
 @app.get("/integrations/composio/status")
@@ -4248,6 +4843,7 @@ async def composio_status():
     Returns Composio availability and list of connected apps.
     """
     from src.integrations.composio_tools import is_available, list_connected_apps
+
     available = is_available()
     connected = list_connected_apps() if available else []
     return {
@@ -4271,7 +4867,7 @@ async def composio_connect(req: ComposioConnectRequest):
     if not is_available():
         raise HTTPException(
             status_code=503,
-            detail="Composio unavailable. Install composio-langchain and set COMPOSIO_API_KEY."
+            detail="Composio unavailable. Install composio-langchain and set COMPOSIO_API_KEY.",
         )
 
     redirect = req.redirect_url or None
@@ -4280,7 +4876,7 @@ async def composio_connect(req: ComposioConnectRequest):
         raise HTTPException(
             status_code=400,
             detail=f"Could not get connection URL for '{req.app}'. "
-                   "Ensure the app name is valid and your API key has permission."
+            "Ensure the app name is valid and your API key has permission.",
         )
 
     store = get_proposal_store()
@@ -4299,7 +4895,7 @@ async def composio_connect(req: ComposioConnectRequest):
         "app": req.app,
         "connection_url": url,
         "message": f"Visit the connection_url to authorise {req.app}. "
-                   "Then approve this proposal to register the integration.",
+        "Then approve this proposal to register the integration.",
     }
 
 
@@ -4309,16 +4905,28 @@ async def composio_tools_list():
     List tools loaded for the active solution's composio:* integrations.
     """
     from src.core.project_loader import project_config
+
     integrations = project_config.metadata.get("integrations", [])
-    composio_apps = [i[len("composio:"):] for i in integrations if i.startswith("composio:")]
+    composio_apps = [
+        i[len("composio:") :] for i in integrations if i.startswith("composio:")
+    ]
 
     if not composio_apps:
-        return {"tools": [], "apps": [], "message": "No composio:* entries in project.yaml integrations."}
+        return {
+            "tools": [],
+            "apps": [],
+            "message": "No composio:* entries in project.yaml integrations.",
+        }
 
     from src.integrations.composio_tools import get_composio_tools, is_available
+
     if not is_available():
-        return {"tools": [], "apps": composio_apps, "available": False,
-                "message": "Composio unavailable — install composio-langchain and set COMPOSIO_API_KEY."}
+        return {
+            "tools": [],
+            "apps": composio_apps,
+            "available": False,
+            "message": "Composio unavailable — install composio-langchain and set COMPOSIO_API_KEY.",
+        }
 
     tool_dict = get_composio_tools(composio_apps)
     return {
@@ -4339,37 +4947,48 @@ async def langchain_tools_list():
     Reads the integrations list from project.yaml and loads matching tool loaders.
     """
     from src.core.project_loader import project_config
+
     try:
         from src.integrations.langchain_tools import get_tools_for_solution
+
         tool_dict = get_tools_for_solution(project_config.project_name)
         return {
             "solution": project_config.project_name,
             "tools": [
-                {"name": name, "description": getattr(t, "description", str(type(t).__name__))}
+                {
+                    "name": name,
+                    "description": getattr(t, "description", str(type(t).__name__)),
+                }
                 for name, t in tool_dict.items()
             ],
             "count": len(tool_dict),
         }
     except Exception as e:
         logger.warning("LangChain tools listing failed: %s", e)
-        return {"solution": project_config.project_name, "tools": [], "count": 0, "error": str(e)}
+        return {
+            "solution": project_config.project_name,
+            "tools": [],
+            "count": 0,
+            "error": str(e),
+        }
 
 
 # ---------------------------------------------------------------------------
 # Authentication & Access Control (T1-001)
 # ---------------------------------------------------------------------------
 
+
 class CreateApiKeyRequest(BaseModel):
-    name:     str
-    email:    str
+    name: str
+    email: str
     solution: str = ""
-    role:     str = "operator"
+    role: str = "operator"
 
 
 class AssignRoleRequest(BaseModel):
-    email:    str
+    email: str
     solution: str = ""
-    role:     str
+    role: str
 
 
 @app.get("/auth/me")
@@ -4380,12 +4999,13 @@ async def auth_me(request: Request):
     Useful for the UI to know who is authenticated and what role they have.
     """
     from src.core.auth import get_current_user as _get_current_user
+
     user = await _get_current_user(request)
     return {
-        "sub":      user.sub,
-        "email":    user.email,
-        "name":     user.name,
-        "role":     user.role,
+        "sub": user.sub,
+        "email": user.email,
+        "name": user.name,
+        "role": user.role,
         "provider": user.provider,
     }
 
@@ -4397,14 +5017,15 @@ async def create_api_key_endpoint(req: CreateApiKeyRequest, request: Request):
     Returns { id, key, name } — key is shown once, store it securely.
     """
     from src.core.auth import get_current_user as _get_current_user
-    from src.core.rbac import require_role, Role
     from src.core.api_keys import create_api_key
-    from fastapi import Depends
 
     user = await _get_current_user(request)
     from src.core.rbac import _ROLE_RANK
+
     if _ROLE_RANK.get(user.role, 0) < _ROLE_RANK.get("admin", 3):
-        raise HTTPException(status_code=403, detail="ADMIN role required to create API keys.")
+        raise HTTPException(
+            status_code=403, detail="ADMIN role required to create API keys."
+        )
 
     solution = req.solution or _get_active_solution()
     plain_key, key_id = create_api_key(
@@ -4449,7 +5070,9 @@ async def revoke_api_key_endpoint(key_id: str, request: Request):
 
     revoked = revoke_api_key(key_id, revoked_by=user.email or user.name)
     if not revoked:
-        raise HTTPException(status_code=404, detail=f"API key '{key_id}' not found or already revoked.")
+        raise HTTPException(
+            status_code=404, detail=f"API key '{key_id}' not found or already revoked."
+        )
     return {"revoked": True, "id": key_id}
 
 
@@ -4481,16 +5104,30 @@ async def assign_role_endpoint(req: AssignRoleRequest, request: Request):
     try:
         role_enum = Role(req.role)
     except ValueError:
-        raise HTTPException(status_code=400, detail=f"Invalid role '{req.role}'. Valid: viewer, operator, approver, admin.")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid role '{req.role}'. Valid: viewer, operator, approver, admin.",
+        )
 
     solution = req.solution or _get_active_solution()
-    assign_role(email=req.email, solution=solution, role=role_enum, granted_by=user.email or user.name)
-    return {"assigned": True, "email": req.email, "solution": solution, "role": req.role}
+    assign_role(
+        email=req.email,
+        solution=solution,
+        role=role_enum,
+        granted_by=user.email or user.name,
+    )
+    return {
+        "assigned": True,
+        "email": req.email,
+        "solution": solution,
+        "role": req.role,
+    }
 
 
 # ===========================================================================
 # Cost Tracking Endpoints (T1-004)
 # ===========================================================================
+
 
 class BudgetSetRequest(BaseModel):
     tenant: Optional[str] = None
@@ -4514,7 +5151,10 @@ async def costs_summary(
     """
     try:
         from src.core import cost_tracker
-        return cost_tracker.get_summary(tenant=tenant, solution=solution, period_days=period_days)
+
+        return cost_tracker.get_summary(
+            tenant=tenant, solution=solution, period_days=period_days
+        )
     except Exception as e:
         logger.error("costs/summary failed: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
@@ -4536,7 +5176,10 @@ async def costs_daily(
     """
     try:
         from src.core import cost_tracker
-        rows = cost_tracker.get_daily(tenant=tenant, solution=solution, period_days=period_days)
+
+        rows = cost_tracker.get_daily(
+            tenant=tenant, solution=solution, period_days=period_days
+        )
         return {"daily": rows, "count": len(rows), "period_days": period_days}
     except Exception as e:
         logger.error("costs/daily failed: %s", e)
@@ -4553,7 +5196,8 @@ async def costs_set_budget(req: BudgetSetRequest):
 
     config_path = os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-        "config", "config.yaml",
+        "config",
+        "config.yaml",
     )
     try:
         with open(config_path, "r") as f:
@@ -4584,16 +5228,19 @@ async def costs_set_budget(req: BudgetSetRequest):
 # SAGE Intelligence (SLM) Endpoints
 # ===========================================================================
 
+
 @app.get("/sage/status")
 async def sage_intelligence_status():
     """Return SAGEIntelligence SLM configuration and availability."""
     try:
         from src.core.sage_intelligence import SAGEIntelligence
+
         si = SAGEIntelligence()
         available = False
         if si.enabled:
             try:
                 import urllib.request
+
                 urllib.request.urlopen(f"{si.host}/api/tags", timeout=2)
                 available = True
             except Exception:
@@ -4616,6 +5263,7 @@ async def sage_ask(question: str):
     """Answer a question about the SAGE framework using the SLM."""
     try:
         from src.core.sage_intelligence import SAGEIntelligence
+
         si = SAGEIntelligence()
         answer = si.answer_framework_question(question)
         return {"question": question, "answer": answer, "slm_used": si.enabled}
@@ -4633,6 +5281,7 @@ async def sage_intent(req: IntentRequest):
     """Convert natural language user input into a structured SAGE API call."""
     try:
         from src.core.sage_intelligence import SAGEIntelligence
+
         si = SAGEIntelligence()
         ctx = req.solution_context or {}
         if not ctx:
@@ -4640,7 +5289,10 @@ async def sage_intent(req: IntentRequest):
             ctx = {"task_types": pc.get_task_types() if pc else []}
         result = si.convert_to_api_call(req.input, ctx)
         if result is None:
-            return {"success": False, "message": "SAGEIntelligence not enabled or SLM unavailable."}
+            return {
+                "success": False,
+                "message": "SAGEIntelligence not enabled or SLM unavailable.",
+            }
         return {"success": True, "api_call": result}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -4651,6 +5303,7 @@ async def sage_lint_yaml(file_name: str, content: str):
     """Lint a SAGE YAML configuration file for common mistakes."""
     try:
         from src.core.sage_intelligence import SAGEIntelligence
+
         si = SAGEIntelligence()
         errors = si.lint_yaml(file_name, content)
         return {"file": file_name, "errors": errors, "valid": len(errors) == 0}
@@ -4662,12 +5315,14 @@ async def sage_lint_yaml(file_name: str, content: str):
 # Dual LLM / Teacher-Student Endpoints
 # ===========================================================================
 
+
 @app.get("/llm/dual-status")
 async def dual_llm_status():
     """Return teacher-student LLM configuration for the active solution."""
     try:
         from src.integrations.dual_llm_runner import DualLLMRunner
         import yaml as _yaml
+
         pc = _get_project_config()
         solution = pc.project_name if pc else "starter"
         # Load llm_strategy from config.yaml if present
@@ -4697,10 +5352,17 @@ async def distillation_stats(solution: str):
     """Return distillation statistics for a solution."""
     try:
         base = os.path.join("data", "distillation", solution)
-        result = {"solution": solution, "comparisons": 0, "escalations": 0, "observations": 0}
-        for fname, key in [("comparisons.jsonl", "comparisons"),
-                           ("escalations.jsonl", "escalations"),
-                           ("shadow_observations.jsonl", "observations")]:
+        result = {
+            "solution": solution,
+            "comparisons": 0,
+            "escalations": 0,
+            "observations": 0,
+        }
+        for fname, key in [
+            ("comparisons.jsonl", "comparisons"),
+            ("escalations.jsonl", "escalations"),
+            ("shadow_observations.jsonl", "observations"),
+        ]:
             path = os.path.join(base, fname)
             if os.path.exists(path):
                 with open(path) as f:
@@ -4715,6 +5377,7 @@ async def distillation_comparisons(solution: str, limit: int = 20):
     """Return recent teacher-student comparison records."""
     try:
         import json as _json
+
         path = os.path.join("data", "distillation", solution, "comparisons.jsonl")
         if not os.path.exists(path):
             return {"comparisons": [], "total": 0}
@@ -4739,6 +5402,7 @@ async def distillation_export(solution: str, fmt: str = "alpaca"):
     try:
         from src.integrations.dual_llm_runner import DualLLMRunner
         import yaml as _yaml
+
         _cfg_path = os.path.join("config", "config.yaml")
         _raw_cfg = {}
         if os.path.exists(_cfg_path):
@@ -4756,6 +5420,7 @@ async def distillation_export(solution: str, fmt: str = "alpaca"):
 # Agent Status Endpoint
 # ===========================================================================
 
+
 @app.get("/agents/status")
 async def agents_status():
     """
@@ -4768,7 +5433,7 @@ async def agents_status():
         import time
 
         pc = _gpc()
-        prompts = pc.metadata.get("roles", {}) if pc else {}
+        pc.metadata.get("roles", {}) if pc else {}
         audit = AuditLogger()
 
         # Query last 100 audit entries to derive per-role stats
@@ -4783,8 +5448,15 @@ async def agents_status():
             if not actor:
                 continue
             if actor not in role_stats:
-                role_stats[actor] = {"last_task": None, "last_ts": None, "count_today": 0}
-            if role_stats[actor]["last_ts"] is None or ts > role_stats[actor]["last_ts"]:
+                role_stats[actor] = {
+                    "last_task": None,
+                    "last_ts": None,
+                    "count_today": 0,
+                }
+            if (
+                role_stats[actor]["last_ts"] is None
+                or ts > role_stats[actor]["last_ts"]
+            ):
                 role_stats[actor]["last_task"] = action
                 role_stats[actor]["last_ts"] = ts
             if ts.startswith(today_start):
@@ -4792,8 +5464,12 @@ async def agents_status():
 
         # Build response — include all prompts.yaml roles plus known base agents
         known_roles = [
-            "AnalystAgent", "DeveloperAgent", "PlannerAgent",
-            "MonitorAgent", "UniversalAgent", "SWEAgent",
+            "AnalystAgent",
+            "DeveloperAgent",
+            "PlannerAgent",
+            "MonitorAgent",
+            "UniversalAgent",
+            "SWEAgent",
         ]
         result = []
         for role in known_roles:
@@ -4804,26 +5480,35 @@ async def agents_status():
             if last_ts:
                 try:
                     from datetime import datetime, timezone
+
                     last_dt = datetime.fromisoformat(last_ts.replace("Z", "+00:00"))
                     age_secs = (datetime.now(timezone.utc) - last_dt).total_seconds()
                     if age_secs < 300:
                         status = "active"
                 except Exception:
                     pass
-            result.append({
-                "role": role,
-                "status": status,
-                "last_task": stats.get("last_task"),
-                "task_count_today": stats.get("count_today", 0),
-            })
+            result.append(
+                {
+                    "role": role,
+                    "status": status,
+                    "last_task": stats.get("last_task"),
+                    "task_count_today": stats.get("count_today", 0),
+                }
+            )
         return result
     except Exception as e:
         logger.error("agents/status error: %s", e)
         # Return static fallback — OrgChart page handles this gracefully
         return [
             {"role": r, "status": "idle", "last_task": None, "task_count_today": 0}
-            for r in ["AnalystAgent", "DeveloperAgent", "PlannerAgent",
-                      "MonitorAgent", "UniversalAgent", "SWEAgent"]
+            for r in [
+                "AnalystAgent",
+                "DeveloperAgent",
+                "PlannerAgent",
+                "MonitorAgent",
+                "UniversalAgent",
+                "SWEAgent",
+            ]
         ]
 
 
@@ -4835,14 +5520,14 @@ async def get_active_agents():
     """
     try:
         qm = _get_task_queue()
-        all_tasks = qm.get_all_tasks()   # returns list of dicts
+        all_tasks = qm.get_all_tasks()  # returns list of dicts
         active = [
             {
-                "task_id":    t["task_id"],
-                "task_type":  t["task_type"],
-                "status":     t["status"],
+                "task_id": t["task_id"],
+                "task_type": t["task_type"],
+                "status": t["status"],
                 "started_at": t.get("started_at"),
-                "source":     t.get("source", ""),
+                "source": t.get("source", ""),
             }
             for t in all_tasks
             if t["status"] in ("in_progress", "pending")
@@ -4857,11 +5542,13 @@ async def get_active_agents():
 # HIL (Hardware-in-the-Loop) Testing Endpoints
 # ==============================================================================
 
+
 @app.get("/hil/status")
 async def hil_status():
     """Return HIL runner connection status and last session info."""
     try:
         from src.integrations.hil_runner import _hil_runner
+
         if _hil_runner is None:
             return {
                 "connected": False,
@@ -4885,22 +5572,29 @@ async def hil_connect(request: Request):
       config    : dict — transport-specific config (port, baud_rate, device, speed, ...)
     """
     try:
-        body = await request.json() if request.headers.get("content-type", "").startswith("application/json") else {}
+        body = (
+            await request.json()
+            if request.headers.get("content-type", "").startswith("application/json")
+            else {}
+        )
         transport = body.get("transport", "mock")
-        config    = body.get("config", {})
+        config = body.get("config", {})
     except Exception:
         transport = "mock"
-        config    = {}
+        config = {}
 
     try:
         from src.integrations.hil_runner import get_hil_runner
-        runner    = get_hil_runner(transport=transport, config=config)
+
+        runner = get_hil_runner(transport=transport, config=config)
         connected = runner.connect()
         return {
-            "transport":  transport,
-            "connected":  connected,
+            "transport": transport,
+            "connected": connected,
             "session_id": runner.session_id,
-            "message": "Connected" if connected else f"Could not connect to {transport} hardware — operating in degraded mode",
+            "message": "Connected"
+            if connected
+            else f"Could not connect to {transport} hardware — operating in degraded mode",
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -4919,18 +5613,25 @@ async def hil_run_suite(request: Request):
       config    : dict        — transport config (optional)
     """
     try:
-        body      = await request.json()
+        body = await request.json()
         tests_raw = body.get("tests", [])
         transport = body.get("transport", "mock")
-        config    = body.get("config", {})
+        config = body.get("config", {})
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Invalid request body: {e}")
 
     if not tests_raw:
-        raise HTTPException(status_code=400, detail="'tests' list is required and must not be empty")
+        raise HTTPException(
+            status_code=400, detail="'tests' list is required and must not be empty"
+        )
 
     try:
-        from src.integrations.hil_runner import get_hil_runner, HILTestCase, HILTransport
+        from src.integrations.hil_runner import (
+            get_hil_runner,
+            HILTestCase,
+            HILTransport,
+        )
+
         runner = get_hil_runner(transport=transport, config=config)
         if not runner._connected:
             runner.connect()
@@ -4942,16 +5643,18 @@ async def hil_run_suite(request: Request):
                 t_enum = HILTransport(transport_str.lower())
             except ValueError:
                 t_enum = HILTransport.MOCK
-            test_cases.append(HILTestCase(
-                id=item.get("id", "TC-UNKNOWN"),
-                name=item.get("name", "Unnamed test"),
-                requirement_id=item.get("requirement_id", "REQ-UNKNOWN"),
-                description=item.get("description", ""),
-                procedure=item.get("procedure", []),
-                expected_result=item.get("expected_result", ""),
-                transport=t_enum,
-                timeout_seconds=item.get("timeout_seconds", 30),
-            ))
+            test_cases.append(
+                HILTestCase(
+                    id=item.get("id", "TC-UNKNOWN"),
+                    name=item.get("name", "Unnamed test"),
+                    requirement_id=item.get("requirement_id", "REQ-UNKNOWN"),
+                    description=item.get("description", ""),
+                    procedure=item.get("procedure", []),
+                    expected_result=item.get("expected_result", ""),
+                    transport=t_enum,
+                    timeout_seconds=item.get("timeout_seconds", 30),
+                )
+            )
 
         results = runner.run_suite(test_cases)
         return results
@@ -4969,6 +5672,7 @@ async def hil_report(session_id: str, standard: str = "IEC62304"):
     """
     try:
         from src.integrations.hil_runner import _hil_runner
+
         if _hil_runner is None or _hil_runner.session_id != session_id:
             raise HTTPException(
                 status_code=404,
@@ -4986,21 +5690,25 @@ async def hil_report(session_id: str, standard: str = "IEC62304"):
 # Compliance Flags Endpoints
 # ==============================================================================
 
+
 @app.get("/compliance/domains")
 async def compliance_domains():
     """List all supported compliance domains and their risk levels."""
     try:
         from src.core.compliance_flags import COMPLIANCE_FLAGS
+
         result = []
         for domain, entry in COMPLIANCE_FLAGS.items():
-            result.append({
-                "domain":           domain,
-                "standard":         entry.get("standard", ""),
-                "description":      entry.get("description", ""),
-                "authority":        entry.get("authority", ""),
-                "risk_levels":      entry.get("risk_levels", []),
-                "hil_required_for": entry.get("hil_required_for", []),
-            })
+            result.append(
+                {
+                    "domain": domain,
+                    "standard": entry.get("standard", ""),
+                    "description": entry.get("description", ""),
+                    "authority": entry.get("authority", ""),
+                    "risk_levels": entry.get("risk_levels", []),
+                    "hil_required_for": entry.get("hil_required_for", []),
+                }
+            )
         return {"domains": result}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -5021,23 +5729,24 @@ async def compliance_flags_endpoint(domain: str, risk_level: str = "HIGH"):
             COMPLIANCE_FLAGS,
             list_domains,
         )
+
         if domain.lower() not in COMPLIANCE_FLAGS:
             raise HTTPException(
                 status_code=404,
                 detail=f"Unknown domain '{domain}'. Valid domains: {list_domains()}",
             )
-        flags     = get_required_flags(domain, risk_level)
+        flags = get_required_flags(domain, risk_level)
         hil_tests = get_hil_required_tests(domain, risk_level)
-        entry     = COMPLIANCE_FLAGS[domain.lower()]
+        entry = COMPLIANCE_FLAGS[domain.lower()]
         return {
-            "domain":                domain,
-            "risk_level":            risk_level.upper(),
-            "standard":              entry.get("standard", ""),
-            "description":           entry.get("description", ""),
-            "authority":             entry.get("authority", ""),
-            "flags":                 flags,
+            "domain": domain,
+            "risk_level": risk_level.upper(),
+            "standard": entry.get("standard", ""),
+            "description": entry.get("description", ""),
+            "authority": entry.get("authority", ""),
+            "flags": flags,
             "hil_required_flag_ids": hil_tests,
-            "total_flags":           len(flags),
+            "total_flags": len(flags),
         }
     except HTTPException:
         raise
@@ -5057,7 +5766,12 @@ async def compliance_checklist_endpoint(domain: str, risk_level: str = "HIGH"):
     Each item has a null status field ready for audit population.
     """
     try:
-        from src.core.compliance_flags import generate_compliance_checklist, COMPLIANCE_FLAGS, list_domains
+        from src.core.compliance_flags import (
+            generate_compliance_checklist,
+            COMPLIANCE_FLAGS,
+            list_domains,
+        )
+
         if domain.lower() not in COMPLIANCE_FLAGS:
             raise HTTPException(
                 status_code=404,
@@ -5084,20 +5798,29 @@ async def compliance_gap_assessment(request: Request):
     Returns missing tasks, HIL gaps, and overall compliance percentage.
     """
     try:
-        body            = await request.json()
-        domain          = body.get("domain", "")
-        risk_level      = body.get("risk_level", "")
+        body = await request.json()
+        domain = body.get("domain", "")
+        risk_level = body.get("risk_level", "")
         completed_tasks = body.get("completed_tasks", [])
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Invalid request body: {e}")
 
     if not domain or not risk_level:
-        raise HTTPException(status_code=400, detail="'domain' and 'risk_level' are required")
+        raise HTTPException(
+            status_code=400, detail="'domain' and 'risk_level' are required"
+        )
 
     try:
-        from src.core.compliance_flags import assess_compliance_gap, COMPLIANCE_FLAGS, list_domains
+        from src.core.compliance_flags import (
+            assess_compliance_gap,
+            COMPLIANCE_FLAGS,
+            list_domains,
+        )
+
         if domain.lower() not in COMPLIANCE_FLAGS:
-            raise HTTPException(status_code=404, detail=f"Unknown domain. Valid: {list_domains()}")
+            raise HTTPException(
+                status_code=404, detail=f"Unknown domain. Valid: {list_domains()}"
+            )
         result = assess_compliance_gap(domain, risk_level, completed_tasks)
         return result
     except HTTPException:
@@ -5110,12 +5833,16 @@ async def compliance_gap_assessment(request: Request):
 # Repo Map — codebase symbol graph for agent context and UI display
 # ---------------------------------------------------------------------------
 
+
 @app.get("/repo/map")
 async def get_repo_map(max_files: int = 50):
     """Return a Markdown repo map of the active project for debugging/UI display."""
     try:
         from src.core.repo_map import generate_repo_map
-        root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+        root = os.path.dirname(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        )
         return {"map": generate_repo_map(root, max_files=max_files)}
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
@@ -5125,14 +5852,17 @@ async def get_repo_map(max_files: int = 50):
 # Organization endpoints — org.yaml CRUD
 # ============================================================
 
+
 def _get_org_yaml_path() -> str:
     """Path to org.yaml in SAGE_SOLUTIONS_DIR root."""
     import os as _os
+
     return _os.path.join(_get_solutions_dir(), "org.yaml")
 
 
 def _read_org_yaml() -> dict:
     import yaml as _yaml
+
     path = _get_org_yaml_path()
     if not os.path.exists(path):
         return {}
@@ -5142,6 +5872,7 @@ def _read_org_yaml() -> dict:
 
 def _write_org_yaml(data: dict) -> None:
     import yaml as _yaml
+
     path = _get_org_yaml_path()
     with open(path, "w", encoding="utf-8") as f:
         _yaml.dump(data, f, default_flow_style=False, allow_unicode=True)
@@ -5170,6 +5901,7 @@ def _parse_generated_files(raw: str) -> tuple:
     import json as _json
     import re as _re
     import yaml as _yaml
+
     text = raw.strip()
     fence_match = _re.search(r"```(?:\w+)?\n([\s\S]*?)```", text)
     if fence_match:
@@ -5177,10 +5909,24 @@ def _parse_generated_files(raw: str) -> tuple:
     try:
         files = _json.loads(text)
         if not isinstance(files, dict):
-            files = {"project.yaml": text, "prompts.yaml": "roles: {}", "tasks.yaml": "task_types: []"}
+            files = {
+                "project.yaml": text,
+                "prompts.yaml": "roles: {}",
+                "tasks.yaml": "task_types: []",
+            }
     except Exception:
-        files = {"project.yaml": text, "prompts.yaml": "roles: {}", "tasks.yaml": "task_types: []"}
-    summary = {"name": "", "description": "", "task_types": [], "compliance_standards": [], "integrations": []}
+        files = {
+            "project.yaml": text,
+            "prompts.yaml": "roles: {}",
+            "tasks.yaml": "task_types: []",
+        }
+    summary = {
+        "name": "",
+        "description": "",
+        "task_types": [],
+        "compliance_standards": [],
+        "integrations": [],
+    }
     try:
         proj = _yaml.safe_load(files.get("project.yaml", "")) or {}
         summary["name"] = proj.get("name", "")
@@ -5190,10 +5936,12 @@ def _parse_generated_files(raw: str) -> tuple:
         tasks_raw = _yaml.safe_load(files.get("tasks.yaml", "")) or {}
         for tt in tasks_raw.get("task_types", []):
             if isinstance(tt, dict):
-                summary["task_types"].append({
-                    "name": tt.get("name", ""),
-                    "description": tt.get("description", ""),
-                })
+                summary["task_types"].append(
+                    {
+                        "name": tt.get("name", ""),
+                        "description": tt.get("description", ""),
+                    }
+                )
     except Exception:
         pass
     return files, summary
@@ -5210,6 +5958,7 @@ class OrgUpdateRequest(BaseModel):
 async def org_get():
     """Return org.yaml content enriched with cross_team_routes from all solutions."""
     from src.core.org_loader import org_loader as _ol
+
     data = _read_org_yaml()
     data["routes"] = _ol.get_all_routes()
     return data
@@ -5267,6 +6016,7 @@ async def org_update(req: OrgUpdateRequest):
 async def org_reload():
     """Re-read org.yaml and refresh the OrgLoader singleton."""
     from src.core.org_loader import reload_org_loader
+
     reload_org_loader()
     return {"status": "reloaded"}
 
@@ -5285,6 +6035,7 @@ async def org_channels_create(request: Request):
     }
     _write_org_yaml(data)
     from src.core.org_loader import reload_org_loader
+
     reload_org_loader()
     return {"status": "created", "channel": name}
 
@@ -5299,6 +6050,7 @@ async def org_channels_delete(name: str):
     del channels[name]
     _write_org_yaml(data)
     from src.core.org_loader import reload_org_loader
+
     reload_org_loader()
     return {"status": "deleted", "channel": name}
 
@@ -5306,7 +6058,9 @@ async def org_channels_delete(name: str):
 @app.post("/org/solutions")
 async def org_solutions_add(request: Request):
     """Add parent: to a solution's project.yaml. Body: {solution, parent}"""
-    import yaml as _yaml, os as _os
+    import yaml as _yaml
+    import os as _os
+
     body = await request.json()
     solution = body.get("solution", "").strip()
     parent = body.get("parent", "").strip()
@@ -5322,6 +6076,7 @@ async def org_solutions_add(request: Request):
     with open(proj_path, "w", encoding="utf-8") as f:
         _yaml.dump(proj, f, default_flow_style=False, allow_unicode=True)
     from src.core.org_loader import reload_org_loader
+
     reload_org_loader()
     return {"status": "added", "solution": solution, "parent": parent}
 
@@ -5329,7 +6084,9 @@ async def org_solutions_add(request: Request):
 @app.delete("/org/solutions/{name}")
 async def org_solutions_remove(name: str):
     """Remove parent: from a solution's project.yaml."""
-    import yaml as _yaml, os as _os
+    import yaml as _yaml
+    import os as _os
+
     sols_dir = _get_solutions_dir()
     proj_path = _os.path.join(sols_dir, name, "project.yaml")
     if not _os.path.exists(proj_path):
@@ -5340,6 +6097,7 @@ async def org_solutions_remove(name: str):
     with open(proj_path, "w", encoding="utf-8") as f:
         _yaml.dump(proj, f, default_flow_style=False, allow_unicode=True)
     from src.core.org_loader import reload_org_loader
+
     reload_org_loader()
     return {"status": "removed", "solution": name}
 
@@ -5347,7 +6105,9 @@ async def org_solutions_remove(name: str):
 @app.post("/org/routes")
 async def org_routes_add(request: Request):
     """Add cross_team_route to a solution's project.yaml. Body: {solution, target}"""
-    import yaml as _yaml, os as _os
+    import yaml as _yaml
+    import os as _os
+
     body = await request.json()
     solution = body.get("solution", "").strip()
     target = body.get("target", "").strip()
@@ -5366,6 +6126,7 @@ async def org_routes_add(request: Request):
     with open(proj_path, "w", encoding="utf-8") as f:
         _yaml.dump(proj, f, default_flow_style=False, allow_unicode=True)
     from src.core.org_loader import reload_org_loader
+
     reload_org_loader()
     return {"status": "added", "solution": solution, "target": target}
 
@@ -5373,7 +6134,9 @@ async def org_routes_add(request: Request):
 @app.delete("/org/routes")
 async def org_routes_delete(request: Request):
     """Remove cross_team_route. Body: {solution, target}"""
-    import yaml as _yaml, os as _os
+    import yaml as _yaml
+    import os as _os
+
     body = await request.json()
     solution = body.get("solution", "").strip()
     target = body.get("target", "").strip()
@@ -5391,6 +6154,7 @@ async def org_routes_delete(request: Request):
     with open(proj_path, "w", encoding="utf-8") as f:
         _yaml.dump(proj, f, default_flow_style=False, allow_unicode=True)
     from src.core.org_loader import reload_org_loader
+
     reload_org_loader()
     return {"status": "removed", "solution": solution, "target": target}
 
@@ -5399,14 +6163,15 @@ async def org_routes_delete(request: Request):
 # Solution branding (direct write — framework control operation, no approval)
 # ---------------------------------------------------------------------------
 
+
 class BrandingRequest(BaseModel):
     display_name: Optional[str] = None
-    icon_name:    Optional[str] = None
-    accent:       Optional[str] = None
-    sidebar_bg:   Optional[str] = None
+    icon_name: Optional[str] = None
+    accent: Optional[str] = None
+    sidebar_bg: Optional[str] = None
     sidebar_text: Optional[str] = None
-    badge_bg:     Optional[str] = None
-    badge_text:   Optional[str] = None
+    badge_bg: Optional[str] = None
+    badge_text: Optional[str] = None
 
 
 @app.patch("/config/project/theme")
@@ -5416,6 +6181,7 @@ async def patch_project_theme(req: BrandingRequest):
     """
     import yaml as _yaml
     from src.core.project_loader import project_config, _SOLUTIONS_DIR
+
     path = os.path.join(_SOLUTIONS_DIR, project_config.project_name, "project.yaml")
     if not os.path.isfile(path):
         raise HTTPException(status_code=404, detail="project.yaml not found")
@@ -5429,20 +6195,29 @@ async def patch_project_theme(req: BrandingRequest):
 
     # Build / update theme block
     theme = data.get("theme") or {}
-    if req.icon_name    is not None: theme["icon_name"]    = req.icon_name
-    if req.accent       is not None: theme["accent"]       = req.accent
-    if req.sidebar_bg   is not None: theme["sidebar_bg"]   = req.sidebar_bg
-    if req.sidebar_text is not None: theme["sidebar_text"] = req.sidebar_text
-    if req.badge_bg     is not None: theme["badge_bg"]     = req.badge_bg
-    if req.badge_text   is not None: theme["badge_text"]   = req.badge_text
+    if req.icon_name is not None:
+        theme["icon_name"] = req.icon_name
+    if req.accent is not None:
+        theme["accent"] = req.accent
+    if req.sidebar_bg is not None:
+        theme["sidebar_bg"] = req.sidebar_bg
+    if req.sidebar_text is not None:
+        theme["sidebar_text"] = req.sidebar_text
+    if req.badge_bg is not None:
+        theme["badge_bg"] = req.badge_bg
+    if req.badge_text is not None:
+        theme["badge_text"] = req.badge_text
     data["theme"] = theme
 
     with open(path, "w", encoding="utf-8") as fh:
-        _yaml.dump(data, fh, allow_unicode=True, default_flow_style=False, sort_keys=False)
+        _yaml.dump(
+            data, fh, allow_unicode=True, default_flow_style=False, sort_keys=False
+        )
 
     # Reload project config so the change is reflected immediately
     try:
         from src.core.project_loader import load_project
+
         load_project(project_config.project_name)
     except Exception:
         pass  # not fatal — next reload will pick it up
@@ -5454,15 +6229,17 @@ async def patch_project_theme(req: BrandingRequest):
 # Dev users (dev-mode identity roster)
 # ---------------------------------------------------------------------------
 
+
 @app.get("/config/dev-users")
 async def get_dev_users():
     """Return dev-mode user roster from config/dev_users.yaml.
     Returns empty list if file does not exist — graceful degradation.
     """
     import yaml as _yaml
+
     path = os.environ.get(
         "SAGE_DEV_USERS_PATH",
-        os.path.join(os.path.dirname(__file__), "..", "..", "config", "dev_users.yaml")
+        os.path.join(os.path.dirname(__file__), "..", "..", "config", "dev_users.yaml"),
     )
     path = os.path.normpath(path)
     if not os.path.exists(path):
@@ -5476,11 +6253,13 @@ async def get_dev_users():
 # OpenShell Sandbox — availability and version info
 # ---------------------------------------------------------------------------
 
+
 @app.get("/sandbox/status")
 async def get_sandbox_status():
     """Returns OpenShell sandbox availability and version info."""
     try:
         from src.integrations.openshell_runner import get_openshell_runner
+
         return get_openshell_runner().status()
     except Exception as exc:
         return {"available": False, "error": str(exc)}
@@ -5490,15 +6269,17 @@ async def get_sandbox_status():
 # Chat — contextual LLM conversation per user session (P5-ChatPanel)
 # ---------------------------------------------------------------------------
 
+
 @app.post("/chat")
 async def chat(req: ChatRequest):
     """Non-streaming contextual chat. Routes through LLM classifier, returns action or answer."""
     from src.core.project_loader import project_config
     from src.core.chat_router import route as chat_route
     from src.memory.audit_logger import audit_logger
-    import json as _json
 
-    solution = req.solution or (project_config.project_name if project_config else "sage")
+    solution = req.solution or (
+        project_config.project_name if project_config else "sage"
+    )
     session_id = req.session_id or str(uuid.uuid4())
 
     domain = ""
@@ -5518,15 +6299,22 @@ async def chat(req: ChatRequest):
 
     # Save user message
     audit_logger.save_chat_message(
-        user_id=req.user_id, session_id=session_id, solution=solution,
-        role="user", content=req.message, page_context=req.page_context,
+        user_id=req.user_id,
+        session_id=session_id,
+        solution=solution,
+        role="user",
+        content=req.message,
+        page_context=req.page_context,
         message_type="user",
     )
 
     # Route through LLM classifier
     result = chat_route(
-        message=req.message, solution=solution, domain=domain,
-        page_context=req.page_context or "", history_text=history_text,
+        message=req.message,
+        solution=solution,
+        domain=domain,
+        page_context=req.page_context or "",
+        history_text=history_text,
     )
 
     response_type = result.get("type", "answer")
@@ -5540,22 +6328,40 @@ async def chat(req: ChatRequest):
         if action_name == "query_knowledge":
             try:
                 from src.memory.vector_store import vector_memory
+
                 hits = vector_memory.search(params.get("query", req.message), k=3)
-                knowledge_text = "\n".join(h.get("content", "") for h in hits) if hits else "No results found."
+                knowledge_text = (
+                    "\n".join(h.get("content", "") for h in hits)
+                    if hits
+                    else "No results found."
+                )
                 reply = f"From the knowledge base:\n\n{knowledge_text}"
             except Exception as exc:
                 reply = f"Knowledge search unavailable: {exc}"
             message_id = audit_logger.save_chat_message(
-                user_id=req.user_id, session_id=session_id, solution=solution,
-                role="assistant", content=reply, page_context=req.page_context,
+                user_id=req.user_id,
+                session_id=session_id,
+                solution=solution,
+                role="assistant",
+                content=reply,
+                page_context=req.page_context,
                 message_type="answer",
             )
-            return {"response_type": "answer", "reply": reply, "session_id": session_id, "message_id": message_id}
+            return {
+                "response_type": "answer",
+                "reply": reply,
+                "session_id": session_id,
+                "message_id": message_id,
+            }
 
         # All other actions: return as action_proposed
         message_id = audit_logger.save_chat_message(
-            user_id=req.user_id, session_id=session_id, solution=solution,
-            role="assistant", content=confirmation_prompt, page_context=req.page_context,
+            user_id=req.user_id,
+            session_id=session_id,
+            solution=solution,
+            role="assistant",
+            content=confirmation_prompt,
+            page_context=req.page_context,
             message_type="action_proposed",
             metadata={"action": action_name, "params": params},
         )
@@ -5571,11 +6377,20 @@ async def chat(req: ChatRequest):
     # Plain answer
     reply = result.get("reply", "")
     message_id = audit_logger.save_chat_message(
-        user_id=req.user_id, session_id=session_id, solution=solution,
-        role="assistant", content=reply, page_context=req.page_context,
+        user_id=req.user_id,
+        session_id=session_id,
+        solution=solution,
+        role="assistant",
+        content=reply,
+        page_context=req.page_context,
         message_type="answer",
     )
-    return {"response_type": "answer", "reply": reply, "session_id": session_id, "message_id": message_id}
+    return {
+        "response_type": "answer",
+        "reply": reply,
+        "session_id": session_id,
+        "message_id": message_id,
+    }
 
 
 @app.post("/chat/execute")
@@ -5584,22 +6399,31 @@ async def chat_execute(req: ChatExecuteRequest):
     from src.core.project_loader import project_config
     from src.memory.audit_logger import audit_logger
 
-    solution = req.solution or (project_config.project_name if project_config else "sage")
+    solution = req.solution or (
+        project_config.project_name if project_config else "sage"
+    )
     session_id = req.session_id or str(uuid.uuid4())
     action = req.action
     params = req.params
 
     SUPPORTED_ACTIONS = {
-        "approve_proposal", "reject_proposal", "undo_proposal",
-        "submit_task", "propose_yaml_edit",
+        "approve_proposal",
+        "reject_proposal",
+        "undo_proposal",
+        "submit_task",
+        "propose_yaml_edit",
     }
     if action not in SUPPORTED_ACTIONS:
         raise HTTPException(status_code=400, detail=f"Unsupported action: {action}")
 
     # Log confirmation
     audit_logger.save_chat_message(
-        user_id=req.user_id, session_id=session_id, solution=solution,
-        role="user", content=f"[Confirmed: {action}]", page_context=None,
+        user_id=req.user_id,
+        session_id=session_id,
+        solution=solution,
+        role="user",
+        content=f"[Confirmed: {action}]",
+        page_context=None,
         message_type="action_confirmed",
         metadata={"action": action, "params": params},
     )
@@ -5613,10 +6437,13 @@ async def chat_execute(req: ChatExecuteRequest):
             store = _get_proposal_store()
             proposal = store.get(trace_id)
             if proposal is None:
-                raise HTTPException(status_code=404, detail=f"Proposal '{trace_id}' not found.")
+                raise HTTPException(
+                    status_code=404, detail=f"Proposal '{trace_id}' not found."
+                )
             store.approve(trace_id)
             from src.core.proposal_executor import execute_approved_proposal
             import asyncio
+
             asyncio.ensure_future(execute_approved_proposal(proposal))
             result_msg = f"Proposal {trace_id} approved."
             result_data = {"trace_id": trace_id}
@@ -5627,7 +6454,9 @@ async def chat_execute(req: ChatExecuteRequest):
             store = _get_proposal_store()
             proposal = store.get(trace_id)
             if proposal is None:
-                raise HTTPException(status_code=404, detail=f"Proposal '{trace_id}' not found.")
+                raise HTTPException(
+                    status_code=404, detail=f"Proposal '{trace_id}' not found."
+                )
             store.reject(trace_id, reason)
             result_msg = f"Proposal {trace_id} rejected."
             result_data = {"trace_id": trace_id}
@@ -5637,24 +6466,30 @@ async def chat_execute(req: ChatExecuteRequest):
             store = _get_proposal_store()
             proposal = store.get(trace_id)
             if proposal is None:
-                raise HTTPException(status_code=404, detail=f"Proposal '{trace_id}' not found.")
+                raise HTTPException(
+                    status_code=404, detail=f"Proposal '{trace_id}' not found."
+                )
             if proposal.action_type == "code_diff":
                 from src.core.proposal_executor import _revert_code_diff
                 import asyncio
+
                 asyncio.ensure_future(_revert_code_diff(proposal))
                 result_msg = f"Undo triggered for proposal {trace_id}."
                 result_data = {"trace_id": trace_id}
             else:
                 raise HTTPException(
                     status_code=400,
-                    detail=f"Undo is only supported for code_diff proposals (got '{proposal.action_type}')."
+                    detail=f"Undo is only supported for code_diff proposals (got '{proposal.action_type}').",
                 )
 
         elif action == "submit_task":
             from src.core.queue_manager import task_queue
+
             task_type = params.get("task_type", "")
             payload = params.get("payload", {})
-            task_id = task_queue.submit(task_type=task_type, payload=payload, source="chat")
+            task_id = task_queue.submit(
+                task_type=task_type, payload=payload, source="chat"
+            )
             result_msg = f"Task {task_id} ({task_type}) queued."
             result_data = {"task_id": task_id}
 
@@ -5663,6 +6498,7 @@ async def chat_execute(req: ChatExecuteRequest):
             change_desc = params.get("change_description", "")
             store = _get_proposal_store()
             from src.core.proposal_store import RiskClass
+
             p = store.create(
                 action_type="yaml_edit",
                 risk_class=RiskClass.STATEFUL,
@@ -5681,8 +6517,12 @@ async def chat_execute(req: ChatExecuteRequest):
 
     # Write execution result to chat history
     audit_logger.save_chat_message(
-        user_id=req.user_id, session_id=session_id, solution=solution,
-        role="assistant", content=result_msg, page_context=None,
+        user_id=req.user_id,
+        session_id=session_id,
+        solution=solution,
+        role="assistant",
+        content=result_msg,
+        page_context=None,
         message_type="action_executed",
         metadata={"action": action, **result_data},
     )
@@ -5693,7 +6533,12 @@ async def chat_execute(req: ChatExecuteRequest):
         action_type=f"CHAT_EXECUTE_{action.upper()}",
         input_context=f"session={session_id} user={req.user_id}",
         output_content=result_msg,
-        metadata={"action": action, "params": params, "session_id": session_id, **result_data},
+        metadata={
+            "action": action,
+            "params": params,
+            "session_id": session_id,
+            **result_data,
+        },
     )
 
     return {"status": "success", "message": result_msg, "result": result_data}
@@ -5705,11 +6550,17 @@ async def chat_cancel(req: ChatExecuteRequest):
     from src.core.project_loader import project_config
     from src.memory.audit_logger import audit_logger
 
-    solution = req.solution or (project_config.project_name if project_config else "sage")
+    solution = req.solution or (
+        project_config.project_name if project_config else "sage"
+    )
     session_id = req.session_id or str(uuid.uuid4())
     audit_logger.save_chat_message(
-        user_id=req.user_id, session_id=session_id, solution=solution,
-        role="user", content=f"[Cancelled: {req.action}]", page_context=None,
+        user_id=req.user_id,
+        session_id=session_id,
+        solution=solution,
+        role="user",
+        content=f"[Cancelled: {req.action}]",
+        page_context=None,
         message_type="action_cancelled",
         metadata={"action": req.action, "params": req.params},
     )
@@ -5778,6 +6629,7 @@ async def get_conversation(conv_id: str):
     conv = _get_chat_store().get(conv_id)
     if conv is None:
         from fastapi import HTTPException
+
         raise HTTPException(status_code=404, detail="Conversation not found")
     return conv
 
@@ -5787,6 +6639,7 @@ async def update_conversation(conv_id: str, req: ConversationUpdate):
     result = _get_chat_store().update(conv_id, title=req.title, messages=req.messages)
     if result is None:
         from fastapi import HTTPException
+
         raise HTTPException(status_code=404, detail="Conversation not found")
     return result
 
@@ -5796,6 +6649,7 @@ async def delete_conversation(conv_id: str):
     if _get_chat_store().delete(conv_id):
         return {"deleted": True}
     from fastapi import HTTPException
+
     raise HTTPException(status_code=404, detail="Conversation not found")
 
 
@@ -5833,16 +6687,19 @@ class GoalUpdate(BaseModel):
 
 @app.get("/goals")
 async def list_goals(user_id: str, solution: str = "", quarter: str = ""):
-    return _get_goals_store().list(
-        user_id, solution, quarter=quarter or None
-    )
+    return _get_goals_store().list(user_id, solution, quarter=quarter or None)
 
 
 @app.post("/goals")
 async def create_goal(req: GoalCreate):
     return _get_goals_store().create(
-        req.user_id, req.solution, req.title,
-        req.quarter, req.status, req.owner, req.key_results,
+        req.user_id,
+        req.solution,
+        req.title,
+        req.quarter,
+        req.status,
+        req.owner,
+        req.key_results,
     )
 
 
@@ -5851,6 +6708,7 @@ async def get_goal(goal_id: str):
     goal = _get_goals_store().get(goal_id)
     if goal is None:
         from fastapi import HTTPException
+
         raise HTTPException(status_code=404, detail="Goal not found")
     return goal
 
@@ -5861,6 +6719,7 @@ async def update_goal(goal_id: str, req: GoalUpdate):
     result = _get_goals_store().update(goal_id, **kwargs)
     if result is None:
         from fastapi import HTTPException
+
         raise HTTPException(status_code=404, detail="Goal not found")
     return result
 
@@ -5870,6 +6729,7 @@ async def delete_goal(goal_id: str):
     if _get_goals_store().delete(goal_id):
         return {"deleted": True}
     from fastapi import HTTPException
+
     raise HTTPException(status_code=404, detail="Goal not found")
 
 
@@ -5882,6 +6742,7 @@ async def delete_goal(goal_id: str):
 async def list_connectors():
     """List available connector types."""
     from src.connectors import connector_registry
+
     return {"connectors": connector_registry.get_info()}
 
 
@@ -5893,19 +6754,24 @@ class ConnectorConfigRequest(BaseModel):
 async def configure_connector(connector_type: str, req: ConnectorConfigRequest):
     """Create and configure a connector instance."""
     from src.connectors import connector_registry
+
     try:
         c = connector_registry.create(connector_type)
         ok = c.connect(req.config)
         return {"type": connector_type, "connected": ok}
     except KeyError:
         from fastapi import HTTPException
-        raise HTTPException(status_code=404, detail=f"Unknown connector type: {connector_type}")
+
+        raise HTTPException(
+            status_code=404, detail=f"Unknown connector type: {connector_type}"
+        )
 
 
 @app.post("/connectors/{connector_type}/sync")
 async def sync_connector(connector_type: str, req: ConnectorConfigRequest):
     """Configure and sync a connector."""
     from src.connectors import connector_registry
+
     try:
         c = connector_registry.create(connector_type)
         if not c.connect(req.config):
@@ -5914,4 +6780,7 @@ async def sync_connector(connector_type: str, req: ConnectorConfigRequest):
         return {"type": connector_type, **result}
     except KeyError:
         from fastapi import HTTPException
-        raise HTTPException(status_code=404, detail=f"Unknown connector type: {connector_type}")
+
+        raise HTTPException(
+            status_code=404, detail=f"Unknown connector type: {connector_type}"
+        )

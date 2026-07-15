@@ -12,9 +12,8 @@ and adds higher-level aggregation and enforcement.
 
 import logging
 import threading
-import time
 from collections import defaultdict
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -25,18 +24,21 @@ logger = logging.getLogger(__name__)
 # Budget Config
 # ──────────────────────────────────────────────────────────────────────
 
+
 @dataclass
 class BudgetConfig:
     """Budget limits for a scope (build, agent, or global)."""
-    max_tokens: int = 0          # 0 = unlimited
-    max_cost_usd: float = 0.0   # 0 = unlimited
+
+    max_tokens: int = 0  # 0 = unlimited
+    max_cost_usd: float = 0.0  # 0 = unlimited
     warn_threshold: float = 0.8  # emit warning at 80%
-    hard_stop: bool = True       # stop execution when exceeded
+    hard_stop: bool = True  # stop execution when exceeded
 
 
 @dataclass
 class UsageRecord:
     """Accumulated usage for a scope."""
+
     input_tokens: int = 0
     output_tokens: int = 0
     total_tokens: int = 0
@@ -58,6 +60,7 @@ class UsageRecord:
 # ──────────────────────────────────────────────────────────────────────
 # BudgetManager
 # ──────────────────────────────────────────────────────────────────────
+
 
 class BudgetManager:
     """Tracks and enforces token/cost budgets across scopes."""
@@ -124,12 +127,12 @@ class BudgetManager:
             usage = self._usage.get(scope, UsageRecord())
 
         token_util = (
-            usage.total_tokens / config.max_tokens
-            if config.max_tokens > 0 else 0.0
+            usage.total_tokens / config.max_tokens if config.max_tokens > 0 else 0.0
         )
         cost_util = (
             usage.estimated_cost_usd / config.max_cost_usd
-            if config.max_cost_usd > 0 else 0.0
+            if config.max_cost_usd > 0
+            else 0.0
         )
         utilization = max(token_util, cost_util)
 
@@ -204,35 +207,46 @@ class BudgetManager:
             return  # no budget set
 
         token_util = (
-            usage.total_tokens / config.max_tokens
-            if config.max_tokens > 0 else 0.0
+            usage.total_tokens / config.max_tokens if config.max_tokens > 0 else 0.0
         )
         cost_util = (
             usage.estimated_cost_usd / config.max_cost_usd
-            if config.max_cost_usd > 0 else 0.0
+            if config.max_cost_usd > 0
+            else 0.0
         )
         utilization = max(token_util, cost_util)
 
         try:
             from src.core.event_bus import get_event_bus
+
             bus = get_event_bus()
 
             if utilization >= 1.0:
-                bus.publish("budget.exceeded", {
-                    "scope": scope,
-                    "utilization": round(utilization, 4),
-                    "usage": usage.to_dict(),
-                }, source="budget_manager")
-                logger.warning("Budget exceeded for scope=%s util=%.2f", scope, utilization)
+                bus.publish(
+                    "budget.exceeded",
+                    {
+                        "scope": scope,
+                        "utilization": round(utilization, 4),
+                        "usage": usage.to_dict(),
+                    },
+                    source="budget_manager",
+                )
+                logger.warning(
+                    "Budget exceeded for scope=%s util=%.2f", scope, utilization
+                )
             elif utilization >= config.warn_threshold:
                 warn_key = f"{scope}:{int(utilization * 10)}"
                 if warn_key not in self._warnings_sent:
                     self._warnings_sent.add(warn_key)
-                    bus.publish("budget.warning", {
-                        "scope": scope,
-                        "utilization": round(utilization, 4),
-                        "threshold": config.warn_threshold,
-                    }, source="budget_manager")
+                    bus.publish(
+                        "budget.warning",
+                        {
+                            "scope": scope,
+                            "utilization": round(utilization, 4),
+                            "threshold": config.warn_threshold,
+                        },
+                        source="budget_manager",
+                    )
         except Exception:
             pass  # event bus is optional
 
@@ -240,13 +254,18 @@ class BudgetManager:
         """Emit usage event."""
         try:
             from src.core.event_bus import get_event_bus
+
             bus = get_event_bus()
-            bus.publish("budget.usage", {
-                "scope": scope,
-                "total_tokens": usage.total_tokens,
-                "cost_usd": round(usage.estimated_cost_usd, 6),
-                "call_count": usage.call_count,
-            }, source="budget_manager")
+            bus.publish(
+                "budget.usage",
+                {
+                    "scope": scope,
+                    "total_tokens": usage.total_tokens,
+                    "cost_usd": round(usage.estimated_cost_usd, 6),
+                    "call_count": usage.call_count,
+                },
+                source="budget_manager",
+            )
         except Exception:
             pass
 
@@ -255,9 +274,12 @@ class BudgetManager:
         """Estimate cost in USD."""
         try:
             from src.core.cost_tracker import COST_PER_1K_TOKENS
+
             rates = COST_PER_1K_TOKENS.get(model, COST_PER_1K_TOKENS["default"])
-            return (input_tokens / 1000 * rates["input"] +
-                    output_tokens / 1000 * rates["output"])
+            return (
+                input_tokens / 1000 * rates["input"]
+                + output_tokens / 1000 * rates["output"]
+            )
         except Exception:
             return (input_tokens + output_tokens) / 1000 * 0.002  # fallback
 

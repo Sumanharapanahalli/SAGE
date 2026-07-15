@@ -4,13 +4,12 @@ services/gps_store.py — Lightweight GPS history persistence (SQLite).
 Production replacement: use the gps_history table in PostgreSQL (defined in
 db/models.py) with the pgcrypto-encrypted lat/lon columns.
 """
+
 from __future__ import annotations
 
 import logging
 import sqlite3
-import time
 from dataclasses import dataclass
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 

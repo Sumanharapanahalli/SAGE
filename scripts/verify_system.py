@@ -22,6 +22,7 @@ Exit code 0 = usable. Non-zero = a real operator is blocked. No model opinions i
     python scripts/verify_system.py --fast     # skip the Rust compile (~1-2 min)
     python scripts/verify_system.py --json     # machine-readable output for CI
 """
+
 from __future__ import annotations
 
 import argparse
@@ -45,15 +46,24 @@ _JSON_MODE = False
 def check(name: str, passed: bool, detail: str = "") -> bool:
     RESULTS.append((name, passed, detail))
     if not _JSON_MODE:
-        print(f"  [{'PASS' if passed else 'FAIL'}] {name}" + (f" — {detail}" if detail else ""),
-              flush=True)
+        print(
+            f"  [{'PASS' if passed else 'FAIL'}] {name}"
+            + (f" — {detail}" if detail else ""),
+            flush=True,
+        )
     return passed
 
 
 def _run(cmd: list[str], cwd: Path, timeout: int) -> tuple[int, str]:
     try:
-        p = subprocess.run(cmd, cwd=str(cwd), capture_output=True, text=True,
-                           timeout=timeout, errors="replace")
+        p = subprocess.run(
+            cmd,
+            cwd=str(cwd),
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            errors="replace",
+        )
         return p.returncode, (p.stdout or "") + (p.stderr or "")
     except subprocess.TimeoutExpired:
         return 124, f"timed out after {timeout}s"
@@ -76,15 +86,19 @@ def gate_sidecar_boots(solution: str) -> bool:
     req = json.dumps({"jsonrpc": "2.0", "id": "1", "method": "handshake", "params": {}})
     out = io.StringIO()
     try:
-        sidecar_app.run(stdin=io.StringIO(req + "\n"), stdout=out,
-                        argv=["--solution-name", solution, "--solution-path", str(sol_path)])
+        sidecar_app.run(
+            stdin=io.StringIO(req + "\n"),
+            stdout=out,
+            argv=["--solution-name", solution, "--solution-path", str(sol_path)],
+        )
     except Exception as e:  # noqa: BLE001
         return check("sidecar boots", False, str(e)[:120])
 
     line = out.getvalue().strip().splitlines()
     ok = bool(line) and "result" in json.loads(line[0])
-    return check("sidecar boots + handshakes", ok,
-                 "" if ok else "no handshake response")
+    return check(
+        "sidecar boots + handshakes", ok, "" if ok else "no handshake response"
+    )
 
 
 # ------------------------------------------------------- 2. every RPC the UI calls answers
@@ -96,30 +110,56 @@ def gate_rpcs_answer(solution: str) -> bool:
 
     src = (ROOT / "sage-desktop" / "sidecar" / "app.py").read_text(encoding="utf-8")
     methods = sorted(set(re.findall(r'd\.register\("([^"]+)"', src)))
-    mutating = re.compile(r"\.(approve|reject|batch_approve|delete|write|update|set|add|create|"
-                          r"publish|validate|claim|respond|close|sync|switch|start|run|"
-                          r"run_suite|generate|connect|reload|set_visibility|plan|submit|remove|"
-                          r"unload)")
+    mutating = re.compile(
+        r"\.(approve|reject|batch_approve|delete|write|update|set|add|create|"
+        r"publish|validate|claim|respond|close|sync|switch|start|run|"
+        r"run_suite|generate|connect|reload|set_visibility|plan|submit|remove|"
+        r"unload)"
+    )
     params = {
-        "audit.get_by_trace": {"trace_id": "none"}, "approvals.get": {"trace_id": "none"},
-        "agents.get": {"name": "analyst"}, "agents.performance": {"role_key": "analyst"},
-        "goals.get": {"goal_id": 1}, "knowledge.search": {"query": "x", "top_k": 1},
-        "knowledge.list": {"limit": 5}, "collective.get_learning": {"id": "none"},
-        "collective.search_learnings": {"query": "x"}, "compliance.flags": {"domain": "medtech"},
+        "audit.get_by_trace": {"trace_id": "none"},
+        "approvals.get": {"trace_id": "none"},
+        "agents.get": {"name": "analyst"},
+        "agents.performance": {"role_key": "analyst"},
+        "goals.get": {"goal_id": 1},
+        "knowledge.search": {"query": "x", "top_k": 1},
+        "knowledge.list": {"limit": 5},
+        "collective.get_learning": {"id": "none"},
+        "collective.search_learnings": {"query": "x"},
+        "compliance.flags": {"domain": "medtech"},
         "compliance.checklist": {"domain": "medtech"},
         "compliance.gap_assessment": {"domain": "medtech", "risk_level": "class_b"},
-        "yaml.read": {"file": "project"}, "constitution.check_action": {"action_description": "x"},
-        "builds.get": {"run_id": "none"}, "jobs.status": {"job_id": "none"},
-        "workflow.status": {"run_id": "none"}, "hil.report": {"session_id": "none"},
+        "yaml.read": {"file": "project"},
+        "constitution.check_action": {"action_description": "x"},
+        "builds.get": {"run_id": "none"},
+        "jobs.status": {"job_id": "none"},
+        "workflow.status": {"run_id": "none"},
+        "hil.report": {"session_id": "none"},
     }
     reads = [m for m in methods if not mutating.search(m)]
 
-    calls = [json.dumps({"jsonrpc": "2.0", "id": str(i + 1), "method": m,
-                         "params": params.get(m, {})}) for i, m in enumerate(reads)]
+    calls = [
+        json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": str(i + 1),
+                "method": m,
+                "params": params.get(m, {}),
+            }
+        )
+        for i, m in enumerate(reads)
+    ]
     out = io.StringIO()
-    sidecar_app.run(stdin=io.StringIO("\n".join(calls) + "\n"), stdout=out,
-                    argv=["--solution-name", solution,
-                          "--solution-path", str(ROOT / "solutions" / solution)])
+    sidecar_app.run(
+        stdin=io.StringIO("\n".join(calls) + "\n"),
+        stdout=out,
+        argv=[
+            "--solution-name",
+            solution,
+            "--solution-path",
+            str(ROOT / "solutions" / solution),
+        ],
+    )
 
     resp = {}
     for line in out.getvalue().splitlines():
@@ -143,8 +183,11 @@ def gate_rpcs_answer(solution: str) -> bool:
                 broken.append(f"{m}: {code} {str(r['error'].get('message'))[:50]}")
 
     ok = not broken
-    return check(f"desktop RPCs answer ({len(reads) - len(broken)}/{len(reads)})", ok,
-                 "; ".join(broken[:3]) if broken else "")
+    return check(
+        f"desktop RPCs answer ({len(reads) - len(broken)}/{len(reads)})",
+        ok,
+        "; ".join(broken[:3]) if broken else "",
+    )
 
 
 # ------------------------------------------------------------- 3. the app actually compiles
@@ -153,26 +196,36 @@ def gate_app_compiles(fast: bool) -> bool:
     Makefile/PATH breakage that 3265 green unit tests sailed straight past."""
     if fast:
         return check("app compiles (cargo check)", True, "SKIPPED (--fast)")
-    cargo = Path(os.environ.get("USERPROFILE", os.path.expanduser("~"))) / ".cargo" / "bin"
+    cargo = (
+        Path(os.environ.get("USERPROFILE", os.path.expanduser("~"))) / ".cargo" / "bin"
+    )
     env_path = f"{cargo}{os.pathsep}{os.environ.get('PATH', '')}"
     old = os.environ.get("PATH", "")
     os.environ["PATH"] = env_path
     try:
-        rc, out = _run(["cargo", "check", "--no-default-features", "--features", "desktop"],
-                       ROOT / "sage-desktop" / "src-tauri", timeout=900)
+        rc, out = _run(
+            ["cargo", "check", "--no-default-features", "--features", "desktop"],
+            ROOT / "sage-desktop" / "src-tauri",
+            timeout=900,
+        )
     finally:
         os.environ["PATH"] = old
     ok = rc == 0
-    tail = [l for l in out.splitlines() if l.strip()][-1:] if not ok else []
-    return check("app compiles (cargo check)", ok, (tail[0][:100] if tail else f"rc={rc}"))
+    tail = [l for l in out.splitlines() if l.strip()][-1:] if not ok else []  # noqa: E741
+    return check(
+        "app compiles (cargo check)", ok, (tail[0][:100] if tail else f"rc={rc}")
+    )
 
 
 # --------------------------------------------------------------------- 4. the frontend builds
 def gate_frontend_builds() -> bool:
     # npx is a .cmd shim on Windows; subprocess without an extension raises WinError 2.
     npx = "npx.cmd" if os.name == "nt" else "npx"
-    rc, out = _run([npx, "vite", "build", "--logLevel", "error"],
-                   ROOT / "sage-desktop", timeout=600)
+    rc, out = _run(
+        [npx, "vite", "build", "--logLevel", "error"],
+        ROOT / "sage-desktop",
+        timeout=600,
+    )
     ok = rc == 0
     return check("frontend builds (vite build)", ok, "" if ok else out.strip()[-100:])
 
@@ -192,17 +245,23 @@ def gate_rust_tests(fast: bool) -> bool:
     """
     if fast:
         return check("Rust tests (cargo test)", True, "SKIPPED (--fast)")
-    cargo = Path(os.environ.get("USERPROFILE", os.path.expanduser("~"))) / ".cargo" / "bin"
+    cargo = (
+        Path(os.environ.get("USERPROFILE", os.path.expanduser("~"))) / ".cargo" / "bin"
+    )
     old = os.environ.get("PATH", "")
     os.environ["PATH"] = f"{cargo}{os.pathsep}{old}"
     try:
-        rc, out = _run(["cargo", "test", "--lib", "--no-default-features"],
-                       ROOT / "sage-desktop" / "src-tauri", timeout=900)
+        rc, out = _run(
+            ["cargo", "test", "--lib", "--no-default-features"],
+            ROOT / "sage-desktop" / "src-tauri",
+            timeout=900,
+        )
     finally:
         os.environ["PATH"] = old
-    passed = [l for l in out.splitlines() if l.startswith("test result:")]
-    return check("Rust tests (cargo test)", rc == 0,
-                 passed[0][:60] if passed else f"rc={rc}")
+    passed = [l for l in out.splitlines() if l.startswith("test result:")]  # noqa: E741
+    return check(
+        "Rust tests (cargo test)", rc == 0, passed[0][:60] if passed else f"rc={rc}"
+    )
 
 
 # ------------------------------------------------------------ 5. the launcher is shell-agnostic
@@ -213,12 +272,19 @@ def gate_launcher_portable() -> bool:
     rc, out = _run(["make", "-n", "desktop-dev"], ROOT, timeout=60)
     if rc != 0:
         return check("launcher is shell-agnostic", False, f"make -n failed: {out[:80]}")
-    bad = [l for l in out.splitlines()
-           if l.strip().startswith(("SAGE_", "cd ")) and "=" in l.split("&&")[-1][:40]
-           and "npm" in l]
+    bad = [
+        l
+        for l in out.splitlines()  # noqa: E741
+        if l.strip().startswith(("SAGE_", "cd "))
+        and "=" in l.split("&&")[-1][:40]
+        and "npm" in l
+    ]
     ok = not bad
-    return check("launcher is shell-agnostic (no POSIX env prefix)", ok,
-                 bad[0][:80] if bad else "")
+    return check(
+        "launcher is shell-agnostic (no POSIX env prefix)",
+        ok,
+        bad[0][:80] if bad else "",
+    )
 
 
 # ------------------------------------------------------------------- 6. the critic panel is real
@@ -240,14 +306,18 @@ def gate_critic_panel() -> bool:
     served = set()
     try:
         import urllib.request
+
         host = llm.get("ollama_host", "http://localhost:11434")
         with urllib.request.urlopen(f"{host}/api/tags", timeout=5) as r:
             served = {m.get("name", "") for m in json.load(r).get("models", [])}
     except Exception:  # noqa: BLE001
         pass
     ok_local = bool(local) and local in served
-    check("local critic (Ollama) is served", ok_local,
-          f"{local or '(unset)'}" + ("" if ok_local else " — not served; panel degrades"))
+    check(
+        "local critic (Ollama) is served",
+        ok_local,
+        f"{local or '(unset)'}" + ("" if ok_local else " — not served; panel degrades"),
+    )
 
     return ok_timeout and ok_local
 
@@ -258,8 +328,12 @@ def main() -> int:
     ap = argparse.ArgumentParser(description="SAGE system-level evidence gate")
     ap.add_argument("--solution", default="four_in_a_line")
     ap.add_argument("--fast", action="store_true", help="skip the Rust compile")
-    ap.add_argument("--json", action="store_true", dest="json_out",
-                    help="print results as JSON to stdout (for CI)")
+    ap.add_argument(
+        "--json",
+        action="store_true",
+        dest="json_out",
+        help="print results as JSON to stdout (for CI)",
+    )
     args = ap.parse_args()
 
     _JSON_MODE = args.json_out
@@ -307,7 +381,9 @@ def main() -> int:
                 print(f"  - {n}" + (f" ({d})" if d else ""))
         print("\nSAGE is NOT usable. Do not declare it working.")
         return 1
-    print("\nSAGE is usable: the sidecar answers, the app compiles and builds, the launcher")
+    print(
+        "\nSAGE is usable: the sidecar answers, the app compiles and builds, the launcher"
+    )
     print("works from any shell, and the critic panel has more than one voice.")
     return 0
 

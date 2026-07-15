@@ -7,11 +7,9 @@ Receives events via Microsoft Graph API subscriptions.
 Uses adaptive cards for rich formatting and action buttons.
 """
 
-import json
 import logging
 import os
 from datetime import datetime, timezone
-from typing import List, Optional
 
 import requests
 import yaml
@@ -20,7 +18,8 @@ logger = logging.getLogger(__name__)
 
 CONFIG_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-    "config", "config.yaml",
+    "config",
+    "config.yaml",
 )
 
 
@@ -49,11 +48,15 @@ class TeamsBot:
 
         self.webhook_url = os.environ.get(
             "TEAMS_INCOMING_WEBHOOK_URL",
-            str(teams_cfg.get("webhook_url", "")).replace("${TEAMS_INCOMING_WEBHOOK_URL}", ""),
+            str(teams_cfg.get("webhook_url", "")).replace(
+                "${TEAMS_INCOMING_WEBHOOK_URL}", ""
+            ),
         )
 
         if not self.webhook_url:
-            self.logger.warning("TEAMS_INCOMING_WEBHOOK_URL not set. Teams notifications will fail.")
+            self.logger.warning(
+                "TEAMS_INCOMING_WEBHOOK_URL not set. Teams notifications will fail."
+            )
 
     # -----------------------------------------------------------------------
     # Public Notification Methods
@@ -82,7 +85,7 @@ class TeamsBot:
             "LOW": "28A745",
             "UNKNOWN": "6C757D",
         }
-        color = severity_colors.get(severity.upper(), "6C757D")
+        severity_colors.get(severity.upper(), "6C757D")
 
         body_items = [
             {
@@ -92,7 +95,12 @@ class TeamsBot:
                     {"title": "Root Cause", "value": root_cause},
                     {"title": "Recommended Action", "value": action},
                     {"title": "Trace ID", "value": trace_id},
-                    {"title": "Timestamp", "value": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")},
+                    {
+                        "title": "Timestamp",
+                        "value": datetime.now(timezone.utc).strftime(
+                            "%Y-%m-%d %H:%M:%S UTC"
+                        ),
+                    },
                 ],
             }
         ]
@@ -122,7 +130,12 @@ class TeamsBot:
                     {"title": "Issue", "value": issue_title},
                     {"title": "MR URL", "value": mr_url},
                     {"title": "Created by", "value": "SAGE[ai] Developer Agent"},
-                    {"title": "Timestamp", "value": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")},
+                    {
+                        "title": "Timestamp",
+                        "value": datetime.now(timezone.utc).strftime(
+                            "%Y-%m-%d %H:%M:%S UTC"
+                        ),
+                    },
                 ],
             }
         ]
@@ -160,14 +173,16 @@ class TeamsBot:
             "error": "D13438",
             "critical": "8B0000",
         }
-        color = severity_colors.get(severity.lower(), "D13438")
+        severity_colors.get(severity.lower(), "D13438")
 
         body_items = [
             {
                 "type": "TextBlock",
                 "text": error,
                 "wrap": True,
-                "color": "Attention" if severity in ("error", "critical") else "Default",
+                "color": "Attention"
+                if severity in ("error", "critical")
+                else "Default",
             },
             {
                 "type": "TextBlock",
@@ -184,7 +199,9 @@ class TeamsBot:
 
         return self._post_to_webhook(card)
 
-    def send_approval_request(self, trace_id: str, proposal: dict, callback_url: str) -> dict:
+    def send_approval_request(
+        self, trace_id: str, proposal: dict, callback_url: str
+    ) -> dict:
         """
         Sends an actionable approval request card to the Teams channel.
         Includes Approve/Reject action buttons pointing to the callback URL.
@@ -197,8 +214,15 @@ class TeamsBot:
         Returns:
             dict with 'status' or 'error'.
         """
-        summary = proposal.get("summary", proposal.get("root_cause_hypothesis", "See details"))
-        action = proposal.get("recommended_action", proposal.get("suggestions", ["See details"])[0] if proposal.get("suggestions") else "Manual review")
+        summary = proposal.get(
+            "summary", proposal.get("root_cause_hypothesis", "See details")
+        )
+        action = proposal.get(
+            "recommended_action",
+            proposal.get("suggestions", ["See details"])[0]
+            if proposal.get("suggestions")
+            else "Manual review",
+        )
 
         body_items = [
             {
@@ -213,7 +237,12 @@ class TeamsBot:
                     {"title": "Trace ID", "value": trace_id},
                     {"title": "Summary", "value": summary},
                     {"title": "Proposed Action", "value": action},
-                    {"title": "Requested at", "value": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")},
+                    {
+                        "title": "Requested at",
+                        "value": datetime.now(timezone.utc).strftime(
+                            "%Y-%m-%d %H:%M:%S UTC"
+                        ),
+                    },
                 ],
             },
             {
@@ -251,7 +280,9 @@ class TeamsBot:
     # Internal Helpers
     # -----------------------------------------------------------------------
 
-    def _build_adaptive_card(self, title: str, body_items: list, actions: list = None) -> dict:
+    def _build_adaptive_card(
+        self, title: str, body_items: list, actions: list = None
+    ) -> dict:
         """
         Builds a Teams Adaptive Card JSON payload.
 
@@ -315,7 +346,9 @@ class TeamsBot:
                 timeout=15,
             )
             resp.raise_for_status()
-            self.logger.info("Teams notification sent successfully (HTTP %d).", resp.status_code)
+            self.logger.info(
+                "Teams notification sent successfully (HTTP %d).", resp.status_code
+            )
             return {"status": "sent", "http_status": resp.status_code}
         except requests.RequestException as e:
             self.logger.error("Teams webhook POST failed: %s", e)

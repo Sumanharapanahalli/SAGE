@@ -4,6 +4,7 @@ Unlike every other handler, compliance_flags.py is a pure, stateless
 module (a static domain -> requirements dict + pure functions) — there is
 no store/instance to wire at startup, so these handlers import it directly.
 """
+
 from __future__ import annotations
 
 import pytest
@@ -56,11 +57,13 @@ def test_checklist_rejects_unknown_domain():
 
 
 def test_gap_assessment_returns_missing_and_percentage():
-    out = compliance.gap_assessment({
-        "domain": "medtech",
-        "risk_level": "CLASS_C",
-        "completed_tasks": [],
-    })
+    out = compliance.gap_assessment(
+        {
+            "domain": "medtech",
+            "risk_level": "CLASS_C",
+            "completed_tasks": [],
+        }
+    )
     assert isinstance(out, dict)
 
 
@@ -71,11 +74,13 @@ def test_gap_assessment_requires_domain_and_risk_level():
 
 def test_gap_assessment_rejects_unknown_domain():
     with pytest.raises(RpcError):
-        compliance.gap_assessment({
-            "domain": "not-a-real-domain",
-            "risk_level": "HIGH",
-            "completed_tasks": [],
-        })
+        compliance.gap_assessment(
+            {
+                "domain": "not-a-real-domain",
+                "risk_level": "HIGH",
+                "completed_tasks": [],
+            }
+        )
 
 
 def test_gap_assessment_defaults_completed_tasks_to_empty_list():

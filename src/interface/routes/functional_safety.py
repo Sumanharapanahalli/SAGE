@@ -63,6 +63,7 @@ class SafetyAnalysisRequest(BaseModel):
 
 def _get_engine():
     from src.core.functional_safety import functional_safety
+
     return functional_safety
 
 
@@ -103,4 +104,5 @@ async def full_safety_analysis(req: SafetyAnalysisRequest):
 @router.get("/hardware-tools")
 async def get_hardware_tools():
     from src.mcp_servers.hardware_tools import list_hardware_tools
+
     return list_hardware_tools()

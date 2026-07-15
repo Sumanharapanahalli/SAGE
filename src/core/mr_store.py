@@ -31,7 +31,15 @@ MR_STATES = ["coding", "gating", "review", "reworking", "approved", "merged", "f
 # id / work_item / branch / created_at (immutable) and updated_at (auto-bumped).
 # `branch` is updatable so the caller can set it to the worktree's actual branch name
 # (`proposal/<mr_id[:8]>`, derived from the id that create() generates) after creation.
-_UPDATABLE_FIELDS = {"branch", "state", "pr_number", "pr_url", "evidence", "merged_sha", "error"}
+_UPDATABLE_FIELDS = {
+    "branch",
+    "state",
+    "pr_number",
+    "pr_url",
+    "evidence",
+    "merged_sha",
+    "error",
+}
 
 
 class MRStore:
@@ -109,8 +117,19 @@ class MRStore:
                    (id, work_item, branch, state, pr_number, pr_url,
                     evidence, merged_sha, error, created_at, updated_at)
                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                (mr_id, work_item, branch, "coding", None, None,
-                 "{}", None, None, now, now),
+                (
+                    mr_id,
+                    work_item,
+                    branch,
+                    "coding",
+                    None,
+                    None,
+                    "{}",
+                    None,
+                    None,
+                    now,
+                    now,
+                ),
             )
             conn.commit()
         finally:

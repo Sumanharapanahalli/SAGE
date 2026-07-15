@@ -16,15 +16,11 @@ Following TDD principles with comprehensive test coverage.
 """
 
 import pytest
-import json
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 from src.core.systems_engineering import (
     SystemsEngineeringFramework,
     SystemRequirement,
     RequirementType,
-    SystemInterface,
-    SystemArchitecture,
-    systems_engineering
 )
 
 
@@ -82,28 +78,30 @@ class TestSystemsEngineeringFramework:
                     "title": "User Registration",
                     "description": "As a user, I want to register with email and password",
                     "persona": "fitness_enthusiast",
-                    "priority": "Must Have"
+                    "priority": "Must Have",
                 },
                 {
                     "id": "US002",
                     "title": "Track Workouts",
                     "description": "As a user, I want to log my workouts",
                     "persona": "fitness_enthusiast",
-                    "priority": "Must Have"
-                }
+                    "priority": "Must Have",
+                },
             ],
             "success_metrics": ["User retention > 80%", "App rating > 4.5"],
             "technical_constraints": ["Mobile first", "Offline capable"],
-            "business_constraints": ["Launch in 6 months"]
+            "business_constraints": ["Launch in 6 months"],
         }
 
     # -----------------------------------------------------------------------
     # Requirements Derivation Tests
     # -----------------------------------------------------------------------
 
-    def test_derive_system_requirements_success(self, framework, mock_llm_response, sample_backlog):
+    def test_derive_system_requirements_success(
+        self, framework, mock_llm_response, sample_backlog
+    ):
         """Test successful requirements derivation from product backlog."""
-        with patch.object(framework.llm, 'generate', return_value=mock_llm_response):
+        with patch.object(framework.llm, "generate", return_value=mock_llm_response):
             requirements = framework.derive_system_requirements(sample_backlog)
 
             assert len(requirements) == 2
@@ -112,16 +110,18 @@ class TestSystemsEngineeringFramework:
             assert requirements[0].source_story_id == "US001"
             assert requirements[1].type == RequirementType.PERFORMANCE
 
-    def test_derive_system_requirements_malformed_response(self, framework, sample_backlog):
+    def test_derive_system_requirements_malformed_response(
+        self, framework, sample_backlog
+    ):
         """Test handling of malformed LLM response."""
-        with patch.object(framework.llm, 'generate', return_value="Invalid JSON"):
+        with patch.object(framework.llm, "generate", return_value="Invalid JSON"):
             requirements = framework.derive_system_requirements(sample_backlog)
             assert requirements == []
 
     def test_derive_system_requirements_empty_backlog(self, framework):
         """Test requirements derivation with empty backlog."""
         empty_backlog = {"user_stories": []}
-        with patch.object(framework.llm, 'generate', return_value="[]"):
+        with patch.object(framework.llm, "generate", return_value="[]"):
             requirements = framework.derive_system_requirements(empty_backlog)
             assert requirements == []
 
@@ -133,10 +133,18 @@ class TestSystemsEngineeringFramework:
         """Test successful system architecture design."""
         requirements = [
             SystemRequirement(
-                id="REQ-001", type=RequirementType.FUNCTIONAL, title="Auth",
-                description="Authentication", rationale="Security", acceptance_criteria=[],
-                source_story_id="US001", priority="High", verification_method="test",
-                verification_criteria=[], allocated_to="Auth Service", status="proposed"
+                id="REQ-001",
+                type=RequirementType.FUNCTIONAL,
+                title="Auth",
+                description="Authentication",
+                rationale="Security",
+                acceptance_criteria=[],
+                source_story_id="US001",
+                priority="High",
+                verification_method="test",
+                verification_criteria=[],
+                allocated_to="Auth Service",
+                status="proposed",
             )
         ]
 
@@ -174,8 +182,10 @@ class TestSystemsEngineeringFramework:
             "architectural_decisions": []
         }"""
 
-        with patch.object(framework.llm, 'generate', return_value=arch_response):
-            architecture = framework.design_system_architecture(requirements, sample_backlog)
+        with patch.object(framework.llm, "generate", return_value=arch_response):
+            architecture = framework.design_system_architecture(
+                requirements, sample_backlog
+            )
 
             assert architecture["system_name"] == "Fitness Tracker App"
             assert architecture["architecture_pattern"] == "microservices"
@@ -190,25 +200,27 @@ class TestSystemsEngineeringFramework:
         """Test successful system risk assessment."""
         requirements = [
             SystemRequirement(
-                id="REQ-001", type=RequirementType.SECURITY, title="Data Protection",
-                description="Encrypt user data", rationale="Privacy", acceptance_criteria=[],
-                source_story_id="US001", priority="High", verification_method="test",
-                verification_criteria=[], allocated_to="Security Service", status="proposed"
+                id="REQ-001",
+                type=RequirementType.SECURITY,
+                title="Data Protection",
+                description="Encrypt user data",
+                rationale="Privacy",
+                acceptance_criteria=[],
+                source_story_id="US001",
+                priority="High",
+                verification_method="test",
+                verification_criteria=[],
+                allocated_to="Security Service",
+                status="proposed",
             )
         ]
 
         architecture = {
             "architecture_pattern": "microservices",
             "subsystems": [
-                {
-                    "name": "Security Service",
-                    "description": "Data protection subsystem"
-                }
+                {"name": "Security Service", "description": "Data protection subsystem"}
             ],
-            "technology_stack": {
-                "encryption": ["AES-256"],
-                "frameworks": ["Express"]
-            }
+            "technology_stack": {"encryption": ["AES-256"], "frameworks": ["Express"]},
         }
 
         risk_response = """[
@@ -225,7 +237,7 @@ class TestSystemsEngineeringFramework:
             }
         ]"""
 
-        with patch.object(framework.llm, 'generate', return_value=risk_response):
+        with patch.object(framework.llm, "generate", return_value=risk_response):
             risks = framework.assess_system_risks(architecture, requirements)
 
             assert len(risks) == 1
@@ -241,12 +253,18 @@ class TestSystemsEngineeringFramework:
         """Test successful verification matrix creation."""
         requirements = [
             SystemRequirement(
-                id="REQ-001", type=RequirementType.FUNCTIONAL, title="Login",
-                description="User login functionality", rationale="Access control",
-                acceptance_criteria=["Valid login succeeds"], source_story_id="US001",
-                priority="High", verification_method="test",
+                id="REQ-001",
+                type=RequirementType.FUNCTIONAL,
+                title="Login",
+                description="User login functionality",
+                rationale="Access control",
+                acceptance_criteria=["Valid login succeeds"],
+                source_story_id="US001",
+                priority="High",
+                verification_method="test",
                 verification_criteria=["Automated login tests pass"],
-                allocated_to="Auth Service", status="proposed"
+                allocated_to="Auth Service",
+                status="proposed",
             )
         ]
 
@@ -255,7 +273,7 @@ class TestSystemsEngineeringFramework:
                 {
                     "name": "Auth Service",
                     "description": "Authentication subsystem",
-                    "allocated_requirements": ["REQ-001"]
+                    "allocated_requirements": ["REQ-001"],
                 }
             ]
         }
@@ -265,7 +283,11 @@ class TestSystemsEngineeringFramework:
         assert len(matrix) == 1
         assert matrix[0]["requirement_id"] == "REQ-001"
         assert matrix[0]["verification_method"] == "test"
-        assert matrix[0]["verification_level"] in ["system_test", "component_test", "integration_test"]
+        assert matrix[0]["verification_level"] in [
+            "system_test",
+            "component_test",
+            "integration_test",
+        ]
 
     # -----------------------------------------------------------------------
     # Regulatory Traceability Matrix Tests
@@ -275,10 +297,18 @@ class TestSystemsEngineeringFramework:
         """Test generation of all 4 regulatory traceability matrices."""
         requirements = [
             SystemRequirement(
-                id="REQ-001", type=RequirementType.FUNCTIONAL, title="Login",
-                description="User login", rationale="Security", acceptance_criteria=[],
-                source_story_id="US001", priority="High", verification_method="test",
-                verification_criteria=[], allocated_to="Auth Service", status="proposed"
+                id="REQ-001",
+                type=RequirementType.FUNCTIONAL,
+                title="Login",
+                description="User login",
+                rationale="Security",
+                acceptance_criteria=[],
+                source_story_id="US001",
+                priority="High",
+                verification_method="test",
+                verification_criteria=[],
+                allocated_to="Auth Service",
+                status="proposed",
             )
         ]
 
@@ -287,7 +317,7 @@ class TestSystemsEngineeringFramework:
                 {
                     "name": "Auth Service",
                     "description": "Authentication and authorization subsystem",
-                    "allocated_requirements": ["REQ-001"]
+                    "allocated_requirements": ["REQ-001"],
                 }
             ]
         }
@@ -296,7 +326,7 @@ class TestSystemsEngineeringFramework:
             {
                 "requirement_id": "REQ-001",
                 "test_id": "test_001",
-                "verification_method": "automated_test"
+                "verification_method": "automated_test",
             }
         ]
 
@@ -322,15 +352,37 @@ class TestSystemsEngineeringFramework:
         """Test compliance summary calculation with traceability percentages."""
         requirements = [
             SystemRequirement(
-                id="REQ-001", type=RequirementType.FUNCTIONAL, title="Login",
-                description="User login", rationale="Security", acceptance_criteria=[],
-                source_story_id="US001", priority="High", verification_method="test",
-                verification_criteria=[], allocated_to="Auth Service", status="proposed"
+                id="REQ-001",
+                type=RequirementType.FUNCTIONAL,
+                title="Login",
+                description="User login",
+                rationale="Security",
+                acceptance_criteria=[],
+                source_story_id="US001",
+                priority="High",
+                verification_method="test",
+                verification_criteria=[],
+                allocated_to="Auth Service",
+                status="proposed",
             )
         ]
 
-        architecture = {"subsystems": [{"name": "Auth Service", "description": "Authentication subsystem", "allocated_requirements": ["REQ-001"]}]}
-        verification_matrix = [{"requirement_id": "REQ-001", "test_id": "test_001", "verification_method": "test"}]
+        architecture = {
+            "subsystems": [
+                {
+                    "name": "Auth Service",
+                    "description": "Authentication subsystem",
+                    "allocated_requirements": ["REQ-001"],
+                }
+            ]
+        }
+        verification_matrix = [
+            {
+                "requirement_id": "REQ-001",
+                "test_id": "test_001",
+                "verification_method": "test",
+            }
+        ]
 
         matrices = framework.generate_traceability_matrices(
             sample_backlog, requirements, architecture, verification_matrix
@@ -343,7 +395,9 @@ class TestSystemsEngineeringFramework:
 
         # Should have reasonable traceability since we have some coverage
         readiness = compliance["regulatory_readiness"]
-        assert readiness["overall_traceability"] >= 70  # Adjusted based on implementation
+        assert (
+            readiness["overall_traceability"] >= 70
+        )  # Adjusted based on implementation
 
     # -----------------------------------------------------------------------
     # Regulatory Document Generation Tests
@@ -353,22 +407,30 @@ class TestSystemsEngineeringFramework:
         """Test generation of all regulatory documents."""
         requirements = [
             SystemRequirement(
-                id="REQ-001", type=RequirementType.FUNCTIONAL, title="Login",
-                description="User login", rationale="Security", acceptance_criteria=[],
-                source_story_id="US001", priority="High", verification_method="test",
-                verification_criteria=[], allocated_to="Auth Service", status="proposed"
+                id="REQ-001",
+                type=RequirementType.FUNCTIONAL,
+                title="Login",
+                description="User login",
+                rationale="Security",
+                acceptance_criteria=[],
+                source_story_id="US001",
+                priority="High",
+                verification_method="test",
+                verification_criteria=[],
+                allocated_to="Auth Service",
+                status="proposed",
             )
         ]
 
         architecture = {
             "system_name": "Fitness Tracker",
-            "technology_stack": {"frameworks": ["React", "Node.js"]}
+            "technology_stack": {"frameworks": ["React", "Node.js"]},
         }
 
         traceability_matrices = {
             "user_needs_to_requirements": [],
             "design_to_verification": [],
-            "verification_to_validation": []
+            "verification_to_validation": [],
         }
 
         documents = framework.generate_regulatory_documents(
@@ -400,7 +462,7 @@ class TestSystemsEngineeringFramework:
             "justification": "Enhanced security requested by users",
             "affected_requirements": ["REQ-001", "REQ-015"],
             "priority": "medium",
-            "submitter": "product_manager"
+            "submitter": "product_manager",
         }
 
         result = framework.initiate_change_request(change_request)
@@ -418,20 +480,38 @@ class TestSystemsEngineeringFramework:
 
         requirements = [
             SystemRequirement(
-                id="REQ-001", type=RequirementType.FUNCTIONAL, title="Password Auth",
-                description="Password authentication", rationale="Security", acceptance_criteria=[],
-                source_story_id="US001", priority="High", verification_method="test",
-                verification_criteria=[], allocated_to="Auth Service", status="approved"
+                id="REQ-001",
+                type=RequirementType.FUNCTIONAL,
+                title="Password Auth",
+                description="Password authentication",
+                rationale="Security",
+                acceptance_criteria=[],
+                source_story_id="US001",
+                priority="High",
+                verification_method="test",
+                verification_criteria=[],
+                allocated_to="Auth Service",
+                status="approved",
             ),
             SystemRequirement(
-                id="REQ-002", type=RequirementType.PERFORMANCE, title="Login Speed",
-                description="Login within 2 seconds", rationale="UX", acceptance_criteria=[],
-                source_story_id="US001", priority="Medium", verification_method="test",
-                verification_criteria=[], allocated_to="Auth Service", status="approved"
-            )
+                id="REQ-002",
+                type=RequirementType.PERFORMANCE,
+                title="Login Speed",
+                description="Login within 2 seconds",
+                rationale="UX",
+                acceptance_criteria=[],
+                source_story_id="US001",
+                priority="Medium",
+                verification_method="test",
+                verification_criteria=[],
+                allocated_to="Auth Service",
+                status="approved",
+            ),
         ]
 
-        impact = framework.assess_change_impact(change_id, affected_requirements, requirements)
+        impact = framework.assess_change_impact(
+            change_id, affected_requirements, requirements
+        )
 
         assert impact["change_id"] == change_id
         assert impact["impact_level"] in ["low", "medium", "high"]
@@ -446,20 +526,25 @@ class TestSystemsEngineeringFramework:
         approval_record = {
             "approver": "system_architect",
             "approval_date": "2024-04-02T10:00:00Z",
-            "conditions": ["Complete regression testing", "Update documentation"]
+            "conditions": ["Complete regression testing", "Update documentation"],
         }
 
         execution_plan = {
             "requirements_updates": [
-                {"requirement_id": "REQ-001", "new_description": "Support password and biometric auth"}
+                {
+                    "requirement_id": "REQ-001",
+                    "new_description": "Support password and biometric auth",
+                }
             ],
             "verification_updates": [
                 {"requirement_id": "REQ-001", "additional_tests": ["biometric_test"]}
             ],
-            "documentation_updates": ["SRS", "Test Plan"]
+            "documentation_updates": ["SRS", "Test Plan"],
         }
 
-        result = framework.execute_approved_change(change_id, approval_record, execution_plan)
+        result = framework.execute_approved_change(
+            change_id, approval_record, execution_plan
+        )
 
         assert result["change_id"] == change_id
         assert result["execution_status"] == "completed"
@@ -491,10 +576,10 @@ class TestSystemsEngineeringFramework:
             "document_id": "SRS-v2.0",
             "required_signers": [
                 {"role": "system_architect", "name": "John Smith"},
-                {"role": "quality_assurance", "name": "Jane Doe"}
+                {"role": "quality_assurance", "name": "Jane Doe"},
             ],
             "signature_reason": "Approval of updated requirements",
-            "compliance_standard": "21_CFR_Part_11"
+            "compliance_standard": "21_CFR_Part_11",
         }
 
         workflow = framework.create_signature_workflow(signature_request)
@@ -514,7 +599,7 @@ class TestSystemsEngineeringFramework:
             "password": "secure_password_hash",
             "signature_meaning": "I approve this document",
             "timestamp": "2024-04-02T10:00:00Z",
-            "ip_address": "192.168.1.100"
+            "ip_address": "192.168.1.100",
         }
 
         result = framework.apply_electronic_signature(workflow_id, signature_data)
@@ -522,7 +607,7 @@ class TestSystemsEngineeringFramework:
         assert result["signature_id"].startswith("ESIG-")
         assert result["status"] == "signature_applied"
         assert result["signer"] == "john.smith@company.com"
-        assert result["compliant"] == True
+        assert result["compliant"]
         assert "audit_record" in result
 
     def test_validate_signature_integrity(self, framework):
@@ -564,10 +649,18 @@ class TestSystemsEngineeringFramework:
         """Test generation of comprehensive V&V protocol."""
         requirements = [
             SystemRequirement(
-                id="REQ-001", type=RequirementType.FUNCTIONAL, title="Login",
-                description="User authentication", rationale="Security", acceptance_criteria=[],
-                source_story_id="US001", priority="High", verification_method="test",
-                verification_criteria=["Automated login test passes"], allocated_to="Auth Service", status="approved"
+                id="REQ-001",
+                type=RequirementType.FUNCTIONAL,
+                title="Login",
+                description="User authentication",
+                rationale="Security",
+                acceptance_criteria=[],
+                source_story_id="US001",
+                priority="High",
+                verification_method="test",
+                verification_criteria=["Automated login test passes"],
+                allocated_to="Auth Service",
+                status="approved",
             )
         ]
 
@@ -577,11 +670,13 @@ class TestSystemsEngineeringFramework:
                 "title": "Authentication Bypass",
                 "severity": "high",
                 "probability": "low",
-                "mitigation_requirements": ["REQ-001"]
+                "mitigation_requirements": ["REQ-001"],
             }
         ]
 
-        protocol = framework.generate_vv_protocol(sample_backlog, requirements, risk_analysis)
+        protocol = framework.generate_vv_protocol(
+            sample_backlog, requirements, risk_analysis
+        )
 
         assert protocol["protocol_id"].startswith("VVP-")
         assert protocol["standard_compliance"] == "IEC_62304"
@@ -595,11 +690,18 @@ class TestSystemsEngineeringFramework:
         """Test generation of detailed verification procedures."""
         requirements = [
             SystemRequirement(
-                id="REQ-001", type=RequirementType.FUNCTIONAL, title="Login",
-                description="Authenticate with email/password", rationale="Security",
+                id="REQ-001",
+                type=RequirementType.FUNCTIONAL,
+                title="Login",
+                description="Authenticate with email/password",
+                rationale="Security",
                 acceptance_criteria=["Valid login succeeds", "Invalid login fails"],
-                source_story_id="US001", priority="High", verification_method="test",
-                verification_criteria=["All test cases pass"], allocated_to="Auth Service", status="approved"
+                source_story_id="US001",
+                priority="High",
+                verification_method="test",
+                verification_criteria=["All test cases pass"],
+                allocated_to="Auth Service",
+                status="approved",
             )
         ]
 
@@ -619,7 +721,9 @@ class TestSystemsEngineeringFramework:
         user_stories = sample_backlog["user_stories"]
         success_metrics = sample_backlog["success_metrics"]
 
-        procedures = framework.generate_validation_procedures(user_stories, success_metrics)
+        procedures = framework.generate_validation_procedures(
+            user_stories, success_metrics
+        )
 
         assert len(procedures) >= len(user_stories)
         procedure = procedures[0]
@@ -634,10 +738,18 @@ class TestSystemsEngineeringFramework:
         """Test V&V protocol properly integrates risk-based testing."""
         high_risk_requirements = [
             SystemRequirement(
-                id="REQ-SEC-001", type=RequirementType.SECURITY, title="Data Encryption",
-                description="Encrypt sensitive data", rationale="Privacy", acceptance_criteria=[],
-                source_story_id="US001", priority="Critical", verification_method="test",
-                verification_criteria=[], allocated_to="Security Service", status="approved"
+                id="REQ-SEC-001",
+                type=RequirementType.SECURITY,
+                title="Data Encryption",
+                description="Encrypt sensitive data",
+                rationale="Privacy",
+                acceptance_criteria=[],
+                source_story_id="US001",
+                priority="Critical",
+                verification_method="test",
+                verification_criteria=[],
+                allocated_to="Security Service",
+                status="approved",
             )
         ]
 
@@ -647,15 +759,19 @@ class TestSystemsEngineeringFramework:
                 "severity": "high",
                 "probability": "medium",
                 "mitigation_requirements": ["REQ-SEC-001"],
-                "residual_risk": "low"
+                "residual_risk": "low",
             }
         ]
 
-        protocol = framework.generate_vv_protocol({}, high_risk_requirements, risk_analysis)
+        protocol = framework.generate_vv_protocol(
+            {}, high_risk_requirements, risk_analysis
+        )
 
         # High-risk requirements should get enhanced testing
         verification_procs = protocol["verification_procedures"]
-        sec_proc = next(p for p in verification_procs if p["requirement_id"] == "REQ-SEC-001")
+        sec_proc = next(
+            p for p in verification_procs if p["requirement_id"] == "REQ-SEC-001"
+        )
         assert sec_proc["test_intensity"] == "enhanced"
         assert len(sec_proc["test_steps"]) >= 5  # More thorough testing
         assert "penetration_testing" in sec_proc["test_methods"]
@@ -677,16 +793,16 @@ class TestIntegrationWorkflows:
                     "title": "Patient Monitoring",
                     "description": "As a clinician, I want to monitor patient vitals",
                     "persona": "clinician",
-                    "priority": "Must Have"
+                    "priority": "Must Have",
                 }
             ],
             "success_metrics": ["99.9% uptime", "Sub-second response"],
             "technical_constraints": ["FDA compliance"],
-            "business_constraints": ["6 month timeline"]
+            "business_constraints": ["6 month timeline"],
         }
 
         # Mock LLM responses for the full workflow
-        with patch.object(framework.llm, 'generate') as mock_generate:
+        with patch.object(framework.llm, "generate") as mock_generate:
             # Mock requirements response
             mock_generate.return_value = """[{
                 "id": "REQ-001",
@@ -719,7 +835,9 @@ class TestIntegrationWorkflows:
                 "architectural_decisions": []
             }"""
 
-            architecture = framework.design_system_architecture(requirements, sample_backlog)
+            architecture = framework.design_system_architecture(
+                requirements, sample_backlog
+            )
             assert architecture["system_name"] == "Medical Device Controller"
 
             # Step 3: Assess risks
@@ -738,7 +856,9 @@ class TestIntegrationWorkflows:
             assert len(risks) == 1
 
             # Step 4: Create verification matrix
-            verification_matrix = framework.create_verification_matrix(requirements, architecture)
+            verification_matrix = framework.create_verification_matrix(
+                requirements, architecture
+            )
             assert len(verification_matrix) == 1
 
             # Step 5: Generate traceability matrices
@@ -746,7 +866,12 @@ class TestIntegrationWorkflows:
                 sample_backlog, requirements, architecture, verification_matrix
             )
             assert "compliance_summary" in matrices
-            assert matrices["compliance_summary"]["regulatory_readiness"]["overall_traceability"] > 0
+            assert (
+                matrices["compliance_summary"]["regulatory_readiness"][
+                    "overall_traceability"
+                ]
+                > 0
+            )
 
             # Step 6: Generate regulatory documents
             documents = framework.generate_regulatory_documents(
@@ -755,7 +880,9 @@ class TestIntegrationWorkflows:
             assert len(documents) == 5  # All required documents generated
 
             # Step 7: Generate V&V protocol
-            vv_protocol = framework.generate_vv_protocol(sample_backlog, requirements, risks)
+            vv_protocol = framework.generate_vv_protocol(
+                sample_backlog, requirements, risks
+            )
             assert vv_protocol["standard_compliance"] == "IEC_62304"
             assert len(vv_protocol["verification_procedures"]) >= 1
 
@@ -769,9 +896,9 @@ class TestIntegrationWorkflows:
 
         # Would implement full regulatory workflow test here
         # For now, verify the framework has all required methods
-        assert hasattr(framework, 'derive_system_requirements')
-        assert hasattr(framework, 'generate_traceability_matrices')
-        assert hasattr(framework, 'generate_regulatory_documents')
-        assert hasattr(framework, 'initiate_change_request')  # To be implemented
-        assert hasattr(framework, 'create_signature_workflow')  # To be implemented
-        assert hasattr(framework, 'generate_vv_protocol')  # To be implemented
+        assert hasattr(framework, "derive_system_requirements")
+        assert hasattr(framework, "generate_traceability_matrices")
+        assert hasattr(framework, "generate_regulatory_documents")
+        assert hasattr(framework, "initiate_change_request")  # To be implemented
+        assert hasattr(framework, "create_signature_workflow")  # To be implemented
+        assert hasattr(framework, "generate_vv_protocol")  # To be implemented

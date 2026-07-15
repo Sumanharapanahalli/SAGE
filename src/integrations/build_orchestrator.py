@@ -43,6 +43,7 @@ logger = logging.getLogger("BuildOrchestrator")
 # Adaptive Agent Router — Q-Learning inspired (ruflo pattern)
 # ---------------------------------------------------------------------------
 
+
 class AdaptiveRouter:
     """Q-Learning inspired agent router. Learns which agent handles which task best.
 
@@ -59,8 +60,10 @@ class AdaptiveRouter:
     LEARNING_RATE = 0.3
 
     def __init__(self):
-        self._scores: dict[str, dict[str, float]] = {}   # task_type -> {agent_role: score}
-        self._counts: dict[str, dict[str, int]] = {}     # task_type -> {agent_role: count}
+        self._scores: dict[
+            str, dict[str, float]
+        ] = {}  # task_type -> {agent_role: score}
+        self._counts: dict[str, dict[str, int]] = {}  # task_type -> {agent_role: count}
         self._lock = threading.Lock()
 
     def route(self, task_type: str) -> str:
@@ -96,7 +99,9 @@ class AdaptiveRouter:
                 return best_role
             return default
 
-    def record(self, task_type: str, agent_role: str, success: bool, quality_score: float = 0.0):
+    def record(
+        self, task_type: str, agent_role: str, success: bool, quality_score: float = 0.0
+    ):
         """Update routing scores after task completion.
 
         Uses an exponential moving average so recent results are weighted
@@ -109,7 +114,9 @@ class AdaptiveRouter:
             quality_score: Optional quality score (0.0-1.0) from critic or other evaluator.
         """
         # Combine success flag and quality into a single reward signal
-        reward = (1.0 if success else 0.0) * 0.5 + min(max(quality_score, 0.0), 1.0) * 0.5
+        reward = (1.0 if success else 0.0) * 0.5 + min(
+            max(quality_score, 0.0), 1.0
+        ) * 0.5
 
         with self._lock:
             if task_type not in self._scores:
@@ -204,53 +211,53 @@ adaptive_router = AdaptiveRouter()
 # ---------------------------------------------------------------------------
 BUILD_TASK_TYPES = {
     # --- Architecture & System Design ---
-    "ARCHITECTURE":      "High-level system architecture, component interaction, technology stack selection",
-    "SYSTEM_DESIGN":     "Detailed system design, subsystem boundaries, interface specifications",
-    "REQUIREMENTS":      "Requirements analysis, decomposition, and traceability matrix",
-    "SUBSYSTEM_DESIGN":  "Individual subsystem design, internal architecture, APIs",
-    "INTERFACE_DESIGN":  "Interface definition between components, protocols, data formats",
+    "ARCHITECTURE": "High-level system architecture, component interaction, technology stack selection",
+    "SYSTEM_DESIGN": "Detailed system design, subsystem boundaries, interface specifications",
+    "REQUIREMENTS": "Requirements analysis, decomposition, and traceability matrix",
+    "SUBSYSTEM_DESIGN": "Individual subsystem design, internal architecture, APIs",
+    "INTERFACE_DESIGN": "Interface definition between components, protocols, data formats",
     "TECHNOLOGY_SELECTION": "Technology stack evaluation, tool selection, dependency analysis",
     # --- Software ---
-    "BACKEND":   "Build backend service, API endpoints, business logic",
-    "FRONTEND":  "Build frontend UI components, pages, routing",
-    "TESTS":     "Write unit tests, integration tests, e2e tests",
-    "INFRA":     "Infrastructure setup: Docker, CI/CD, deployment configs",
-    "DOCS":      "Documentation: README, API docs, architecture docs",
-    "DATABASE":  "Database schema, migrations, seed data",
-    "API":       "API design, OpenAPI spec, endpoint contracts",
-    "CONFIG":    "Configuration files, environment setup, tooling",
-    "AGENTIC":   "Design and implement an agentic AI pattern (specify which pattern from the registry)",
+    "BACKEND": "Build backend service, API endpoints, business logic",
+    "FRONTEND": "Build frontend UI components, pages, routing",
+    "TESTS": "Write unit tests, integration tests, e2e tests",
+    "INFRA": "Infrastructure setup: Docker, CI/CD, deployment configs",
+    "DOCS": "Documentation: README, API docs, architecture docs",
+    "DATABASE": "Database schema, migrations, seed data",
+    "API": "API design, OpenAPI spec, endpoint contracts",
+    "CONFIG": "Configuration files, environment setup, tooling",
+    "AGENTIC": "Design and implement an agentic AI pattern (specify which pattern from the registry)",
     # --- Hardware / Embedded / Mechanical ---
-    "FIRMWARE":     "Firmware source code, HAL drivers, RTOS tasks, cross-compilation configs",
+    "FIRMWARE": "Firmware source code, HAL drivers, RTOS tasks, cross-compilation configs",
     "HARDWARE_SIM": "Hardware simulation models (SPICE, Verilog, VHDL, SystemC), test benches",
-    "PCB_DESIGN":   "PCB schematic capture, layout, BOM generation, DRC rules",
-    "MECHANICAL":   "CAD models (STEP/STL), tolerance analysis, assembly instructions",
-    "SAFETY":       "Safety analysis: FMEA, fault trees, hazard analysis (ISO 26262 / ISO 14971)",
-    "COMPLIANCE":   "Regulatory compliance artifacts: DHF, risk matrix, traceability matrix, V&V protocols",
+    "PCB_DESIGN": "PCB schematic capture, layout, BOM generation, DRC rules",
+    "MECHANICAL": "CAD models (STEP/STL), tolerance analysis, assembly instructions",
+    "SAFETY": "Safety analysis: FMEA, fault trees, hazard analysis (ISO 26262 / ISO 14971)",
+    "COMPLIANCE": "Regulatory compliance artifacts: DHF, risk matrix, traceability matrix, V&V protocols",
     "EMBEDDED_TEST": "Hardware-in-the-loop (HIL) test specs, firmware unit tests, integration test harnesses",
     # --- Quality & Testing ---
-    "QA":           "Quality assurance test planning, test case design, test execution reports",
-    "SYSTEM_TEST":  "System-level integration testing, end-to-end test suites, performance testing",
+    "QA": "Quality assurance test planning, test case design, test execution reports",
+    "SYSTEM_TEST": "System-level integration testing, end-to-end test suites, performance testing",
     # --- Business & Strategy ---
     "BUSINESS_ANALYSIS": "Business requirements, user stories, process flows, ROI analysis",
-    "MARKET_RESEARCH":   "Market analysis, competitor research, positioning, go-to-market strategy",
-    "FINANCIAL":         "Financial model, pricing strategy, cost analysis, budget planning",
-    "PRODUCT_MGMT":      "Product requirements doc, roadmap, prioritization, success metrics",
+    "MARKET_RESEARCH": "Market analysis, competitor research, positioning, go-to-market strategy",
+    "FINANCIAL": "Financial model, pricing strategy, cost analysis, budget planning",
+    "PRODUCT_MGMT": "Product requirements doc, roadmap, prioritization, success metrics",
     # --- Regulatory & Legal ---
-    "REGULATORY":   "Regulatory submission artifacts, audit preparation, standards mapping",
-    "LEGAL":        "Terms of service, privacy policy, licensing, IP review",
+    "REGULATORY": "Regulatory submission artifacts, audit preparation, standards mapping",
+    "LEGAL": "Terms of service, privacy policy, licensing, IP review",
     # --- Design & UX ---
-    "UX_DESIGN":    "User research, wireframes, interaction design, accessibility audit",
+    "UX_DESIGN": "User research, wireframes, interaction design, accessibility audit",
     # --- Infrastructure & Operations ---
-    "DEVOPS":       "CI/CD pipelines, monitoring setup, alerting, SRE runbooks",
-    "OPERATIONS":   "Operational runbooks, SLA definitions, incident response, capacity planning",
+    "DEVOPS": "CI/CD pipelines, monitoring setup, alerting, SRE runbooks",
+    "OPERATIONS": "Operational runbooks, SLA definitions, incident response, capacity planning",
     # --- Content & Localization ---
-    "TRAINING":       "User guides, training materials, onboarding docs, video scripts",
-    "LOCALIZATION":   "i18n/l10n setup, translation configs, locale-specific content",
+    "TRAINING": "User guides, training materials, onboarding docs, video scripts",
+    "LOCALIZATION": "i18n/l10n setup, translation configs, locale-specific content",
     # --- Cross-Cutting ---
-    "SECURITY":  "Security review, threat model, penetration test plan, SBOM",
-    "DATA":      "Data pipeline, ETL jobs, data model, analytics schema",
-    "ML_MODEL":  "ML model training pipeline, evaluation, deployment artifacts",
+    "SECURITY": "Security review, threat model, penetration test plan, SBOM",
+    "DATA": "Data pipeline, ETL jobs, data model, analytics schema",
+    "ML_MODEL": "ML model training pipeline, evaluation, deployment artifacts",
 }
 
 # ---------------------------------------------------------------------------
@@ -260,53 +267,53 @@ BUILD_TASK_TYPES = {
 # ---------------------------------------------------------------------------
 TASK_TYPE_TO_AGENT = {
     # Architecture & System Design
-    "ARCHITECTURE":      "system_engineer",
-    "SYSTEM_DESIGN":     "system_engineer",
-    "REQUIREMENTS":      "system_engineer",
-    "SUBSYSTEM_DESIGN":  "system_engineer",
-    "INTERFACE_DESIGN":  "system_engineer",
+    "ARCHITECTURE": "system_engineer",
+    "SYSTEM_DESIGN": "system_engineer",
+    "REQUIREMENTS": "system_engineer",
+    "SUBSYSTEM_DESIGN": "system_engineer",
+    "INTERFACE_DESIGN": "system_engineer",
     "TECHNOLOGY_SELECTION": "system_engineer",
     # Software
-    "BACKEND":  "developer",
+    "BACKEND": "developer",
     "FRONTEND": "developer",
     "DATABASE": "developer",
-    "API":      "developer",
-    "TESTS":    "developer",
-    "INFRA":    "developer",
-    "DOCS":     "developer",
-    "CONFIG":   "developer",
-    "AGENTIC":  "developer",
+    "API": "developer",
+    "TESTS": "developer",
+    "INFRA": "developer",
+    "DOCS": "developer",
+    "CONFIG": "developer",
+    "AGENTIC": "developer",
     # Hardware / Embedded / Mechanical
-    "FIRMWARE":      "firmware_engineer",
-    "HARDWARE_SIM":  "hardware_sim_engineer",
-    "PCB_DESIGN":    "pcb_designer",
-    "MECHANICAL":    "developer",    # mechanical engineer role if defined
-    "SAFETY":        "analyst",      # safety officer role if defined
-    "COMPLIANCE":    "analyst",      # compliance officer role if defined
+    "FIRMWARE": "firmware_engineer",
+    "HARDWARE_SIM": "hardware_sim_engineer",
+    "PCB_DESIGN": "pcb_designer",
+    "MECHANICAL": "developer",  # mechanical engineer role if defined
+    "SAFETY": "analyst",  # safety officer role if defined
+    "COMPLIANCE": "analyst",  # compliance officer role if defined
     "EMBEDDED_TEST": "embedded_tester",
     # Quality & Testing
-    "QA":           "qa_engineer",
-    "SYSTEM_TEST":  "system_tester",
+    "QA": "qa_engineer",
+    "SYSTEM_TEST": "system_tester",
     # Business & Strategy
     "BUSINESS_ANALYSIS": "business_analyst",
-    "MARKET_RESEARCH":   "marketing_strategist",
-    "FINANCIAL":         "financial_analyst",
-    "PRODUCT_MGMT":      "product_manager",
+    "MARKET_RESEARCH": "marketing_strategist",
+    "FINANCIAL": "financial_analyst",
+    "PRODUCT_MGMT": "product_manager",
     # Regulatory & Legal
-    "REGULATORY":   "regulatory_specialist",
-    "LEGAL":        "legal_advisor",
+    "REGULATORY": "regulatory_specialist",
+    "LEGAL": "legal_advisor",
     # Design & UX
-    "UX_DESIGN":    "ux_designer",
+    "UX_DESIGN": "ux_designer",
     # Infrastructure & Operations
-    "DEVOPS":       "devops_engineer",
-    "OPERATIONS":   "operations_manager",
+    "DEVOPS": "devops_engineer",
+    "OPERATIONS": "operations_manager",
     # Content & Localization
-    "TRAINING":       "technical_writer",
-    "LOCALIZATION":   "localization_engineer",
+    "TRAINING": "technical_writer",
+    "LOCALIZATION": "localization_engineer",
     # Cross-cutting
-    "SECURITY":  "analyst",
-    "DATA":      "data_scientist",
-    "ML_MODEL":  "data_scientist",
+    "SECURITY": "analyst",
+    "DATA": "data_scientist",
+    "ML_MODEL": "data_scientist",
     # Solution-defined roles (from prompts.yaml) can extend this at runtime.
 }
 
@@ -318,22 +325,51 @@ WORKFORCE_REGISTRY = {
     "architecture": {
         "lead": "system_engineer",
         "members": ["business_analyst", "product_manager"],
-        "capabilities": ["system decomposition", "architecture design", "subsystem breakdown",
-                         "technology selection", "integration planning", "requirements analysis"],
+        "capabilities": [
+            "system decomposition",
+            "architecture design",
+            "subsystem breakdown",
+            "technology selection",
+            "integration planning",
+            "requirements analysis",
+        ],
     },
     "engineering": {
         "lead": "developer",
-        "members": ["qa_engineer", "system_tester", "devops_engineer", "localization_engineer",
-                     "data_engineer", "agentic_engineer"],
-        "capabilities": ["code generation", "testing", "deployment", "i18n",
-                         "data pipelines", "agent frameworks"],
+        "members": [
+            "qa_engineer",
+            "system_tester",
+            "devops_engineer",
+            "localization_engineer",
+            "data_engineer",
+            "agentic_engineer",
+        ],
+        "capabilities": [
+            "code generation",
+            "testing",
+            "deployment",
+            "i18n",
+            "data pipelines",
+            "agent frameworks",
+        ],
     },
     "analysis": {
         "lead": "analyst",
-        "members": ["business_analyst", "financial_analyst", "data_scientist",
-                     "ml_engineer", "gen_ai_engineer"],
-        "capabilities": ["data analysis", "business modeling", "market research",
-                         "MLOps", "LLM applications", "RAG pipelines"],
+        "members": [
+            "business_analyst",
+            "financial_analyst",
+            "data_scientist",
+            "ml_engineer",
+            "gen_ai_engineer",
+        ],
+        "capabilities": [
+            "data analysis",
+            "business modeling",
+            "market research",
+            "MLOps",
+            "LLM applications",
+            "RAG pipelines",
+        ],
     },
     "design": {
         "lead": "ux_designer",
@@ -353,13 +389,24 @@ WORKFORCE_REGISTRY = {
     "hardware": {
         "lead": "firmware_engineer",
         "members": ["pcb_designer", "embedded_tester", "hardware_sim_engineer"],
-        "capabilities": ["firmware development", "PCB design", "HIL testing", "hardware simulation"],
+        "capabilities": [
+            "firmware development",
+            "PCB design",
+            "HIL testing",
+            "hardware simulation",
+        ],
     },
     "quality": {
         "lead": "qa_engineer",
         "members": ["system_tester", "ux_designer"],
-        "capabilities": ["browser testing", "QA automation", "accessibility auditing",
-                         "visual regression", "performance benchmarking", "security scanning"],
+        "capabilities": [
+            "browser testing",
+            "QA automation",
+            "accessibility auditing",
+            "visual regression",
+            "performance benchmarking",
+            "security scanning",
+        ],
     },
 }
 
@@ -371,69 +418,227 @@ WORKFORCE_REGISTRY = {
 # ---------------------------------------------------------------------------
 ARTIFACT_TYPES = {
     # Code artifacts
-    "BACKEND":       {"category": "code", "extensions": [".py", ".go", ".rs", ".java", ".ts", ".js"], "validator": "syntax"},
-    "FRONTEND":      {"category": "code", "extensions": [".tsx", ".jsx", ".vue", ".svelte", ".html", ".css"], "validator": "syntax"},
-    "API":           {"category": "code", "extensions": [".py", ".ts", ".yaml", ".json"], "validator": "openapi"},
-    "DATABASE":      {"category": "code", "extensions": [".sql", ".py", ".prisma"], "validator": "syntax"},
-    "TESTS":         {"category": "code", "extensions": [".py", ".ts", ".js", ".spec"], "validator": "syntax"},
-    "ML_MODEL":      {"category": "code", "extensions": [".py", ".ipynb", ".yaml"], "validator": "syntax"},
-    "DATA":          {"category": "code", "extensions": [".py", ".sql", ".yaml"], "validator": "syntax"},
-    "AGENTIC":       {"category": "code", "extensions": [".py", ".ts"], "validator": "syntax"},
-    "SECURITY":      {"category": "code", "extensions": [".py", ".yaml", ".json"], "validator": "syntax"},
+    "BACKEND": {
+        "category": "code",
+        "extensions": [".py", ".go", ".rs", ".java", ".ts", ".js"],
+        "validator": "syntax",
+    },
+    "FRONTEND": {
+        "category": "code",
+        "extensions": [".tsx", ".jsx", ".vue", ".svelte", ".html", ".css"],
+        "validator": "syntax",
+    },
+    "API": {
+        "category": "code",
+        "extensions": [".py", ".ts", ".yaml", ".json"],
+        "validator": "openapi",
+    },
+    "DATABASE": {
+        "category": "code",
+        "extensions": [".sql", ".py", ".prisma"],
+        "validator": "syntax",
+    },
+    "TESTS": {
+        "category": "code",
+        "extensions": [".py", ".ts", ".js", ".spec"],
+        "validator": "syntax",
+    },
+    "ML_MODEL": {
+        "category": "code",
+        "extensions": [".py", ".ipynb", ".yaml"],
+        "validator": "syntax",
+    },
+    "DATA": {
+        "category": "code",
+        "extensions": [".py", ".sql", ".yaml"],
+        "validator": "syntax",
+    },
+    "AGENTIC": {
+        "category": "code",
+        "extensions": [".py", ".ts"],
+        "validator": "syntax",
+    },
+    "SECURITY": {
+        "category": "code",
+        "extensions": [".py", ".yaml", ".json"],
+        "validator": "syntax",
+    },
     # Hardware/firmware artifacts
-    "FIRMWARE":      {"category": "hardware", "extensions": [".c", ".h", ".cpp", ".ld", ".cmake"], "validator": "syntax",
-                      "mcp_tools": ["platformio-mcp", "esp-mcp", "gcc-arm"],
-                      "mcp_servers": [
-                          {"name": "platformio-mcp", "repo": "jl-codes/platformio-mcp", "install": "npm"},
-                          {"name": "esp-mcp", "repo": "horw/esp-mcp", "install": "pip"},
-                      ]},
-    "PCB_DESIGN":    {"category": "hardware", "extensions": [".kicad_pcb", ".kicad_sch", ".gbr", ".drl"], "validator": "gerber",
-                      "mcp_tools": ["kicad-mcp-server", "kicad-mcp"],
-                      "mcp_servers": [
-                          {"name": "KiCAD-MCP-Server", "repo": "mixelpixx/KiCAD-MCP-Server", "install": "npm", "tools": 122},
-                          {"name": "kicad-mcp", "repo": "lamaalrajih/kicad-mcp", "install": "pip"},
-                      ]},
-    "EMBEDDED_TEST": {"category": "hardware", "extensions": [".c", ".py", ".robot"], "validator": "syntax",
-                      "mcp_tools": ["platformio-mcp", "cppcheck-misra"],
-                      "mcp_servers": [
-                          {"name": "platformio-mcp", "repo": "jl-codes/platformio-mcp", "install": "npm"},
-                      ]},
-    "MECHANICAL":    {"category": "hardware", "extensions": [".step", ".stl", ".dxf"], "validator": "cad",
-                      "mcp_tools": ["freecad-mcp", "openscad-mcp", "blender-mcp"],
-                      "mcp_servers": [
-                          {"name": "freecad-mcp", "repo": "neka-nat/freecad-mcp", "install": "pip install freecad-mcp"},
-                          {"name": "openscad-mcp", "repo": "jhacksman/OpenSCAD-MCP-Server", "install": "pip"},
-                          {"name": "blender-mcp", "repo": "ahujasid/blender-mcp", "install": "pip"},
-                      ]},
-    "HARDWARE_SIM":  {"category": "hardware", "extensions": [".spice", ".cir", ".v", ".vhd", ".sv"], "validator": "syntax",
-                      "mcp_tools": ["spicebridge", "ngspice", "matlab-mcp"],
-                      "mcp_servers": [
-                          {"name": "spicebridge", "repo": "clanker-lover/spicebridge", "install": "pip", "tools": 18},
-                          {"name": "matlab-mcp", "repo": "matlab/matlab-mcp-core-server", "install": "go"},
-                      ]},
+    "FIRMWARE": {
+        "category": "hardware",
+        "extensions": [".c", ".h", ".cpp", ".ld", ".cmake"],
+        "validator": "syntax",
+        "mcp_tools": ["platformio-mcp", "esp-mcp", "gcc-arm"],
+        "mcp_servers": [
+            {
+                "name": "platformio-mcp",
+                "repo": "jl-codes/platformio-mcp",
+                "install": "npm",
+            },
+            {"name": "esp-mcp", "repo": "horw/esp-mcp", "install": "pip"},
+        ],
+    },
+    "PCB_DESIGN": {
+        "category": "hardware",
+        "extensions": [".kicad_pcb", ".kicad_sch", ".gbr", ".drl"],
+        "validator": "gerber",
+        "mcp_tools": ["kicad-mcp-server", "kicad-mcp"],
+        "mcp_servers": [
+            {
+                "name": "KiCAD-MCP-Server",
+                "repo": "mixelpixx/KiCAD-MCP-Server",
+                "install": "npm",
+                "tools": 122,
+            },
+            {"name": "kicad-mcp", "repo": "lamaalrajih/kicad-mcp", "install": "pip"},
+        ],
+    },
+    "EMBEDDED_TEST": {
+        "category": "hardware",
+        "extensions": [".c", ".py", ".robot"],
+        "validator": "syntax",
+        "mcp_tools": ["platformio-mcp", "cppcheck-misra"],
+        "mcp_servers": [
+            {
+                "name": "platformio-mcp",
+                "repo": "jl-codes/platformio-mcp",
+                "install": "npm",
+            },
+        ],
+    },
+    "MECHANICAL": {
+        "category": "hardware",
+        "extensions": [".step", ".stl", ".dxf"],
+        "validator": "cad",
+        "mcp_tools": ["freecad-mcp", "openscad-mcp", "blender-mcp"],
+        "mcp_servers": [
+            {
+                "name": "freecad-mcp",
+                "repo": "neka-nat/freecad-mcp",
+                "install": "pip install freecad-mcp",
+            },
+            {
+                "name": "openscad-mcp",
+                "repo": "jhacksman/OpenSCAD-MCP-Server",
+                "install": "pip",
+            },
+            {"name": "blender-mcp", "repo": "ahujasid/blender-mcp", "install": "pip"},
+        ],
+    },
+    "HARDWARE_SIM": {
+        "category": "hardware",
+        "extensions": [".spice", ".cir", ".v", ".vhd", ".sv"],
+        "validator": "syntax",
+        "mcp_tools": ["spicebridge", "ngspice", "matlab-mcp"],
+        "mcp_servers": [
+            {
+                "name": "spicebridge",
+                "repo": "clanker-lover/spicebridge",
+                "install": "pip",
+                "tools": 18,
+            },
+            {
+                "name": "matlab-mcp",
+                "repo": "matlab/matlab-mcp-core-server",
+                "install": "go",
+            },
+        ],
+    },
     # Infrastructure artifacts
-    "INFRA":         {"category": "infra", "extensions": [".tf", ".yaml", ".yml", ".Dockerfile"], "validator": "syntax"},
-    "DEVOPS":        {"category": "infra", "extensions": [".yaml", ".yml", ".sh", ".Dockerfile"], "validator": "syntax"},
-    "CONFIG":        {"category": "infra", "extensions": [".yaml", ".yml", ".toml", ".json", ".env"], "validator": "syntax"},
+    "INFRA": {
+        "category": "infra",
+        "extensions": [".tf", ".yaml", ".yml", ".Dockerfile"],
+        "validator": "syntax",
+    },
+    "DEVOPS": {
+        "category": "infra",
+        "extensions": [".yaml", ".yml", ".sh", ".Dockerfile"],
+        "validator": "syntax",
+    },
+    "CONFIG": {
+        "category": "infra",
+        "extensions": [".yaml", ".yml", ".toml", ".json", ".env"],
+        "validator": "syntax",
+    },
     # Document artifacts
-    "DOCS":          {"category": "document", "extensions": [".md", ".rst", ".txt"], "validator": "prose"},
-    "COMPLIANCE":    {"category": "document", "extensions": [".md", ".pdf", ".docx"], "validator": "prose"},
-    "REGULATORY":    {"category": "document", "extensions": [".md", ".pdf", ".docx"], "validator": "prose"},
-    "LEGAL":         {"category": "document", "extensions": [".md", ".pdf", ".docx"], "validator": "prose"},
-    "SAFETY":        {"category": "document", "extensions": [".md", ".xlsx", ".pdf"], "validator": "prose"},
+    "DOCS": {
+        "category": "document",
+        "extensions": [".md", ".rst", ".txt"],
+        "validator": "prose",
+    },
+    "COMPLIANCE": {
+        "category": "document",
+        "extensions": [".md", ".pdf", ".docx"],
+        "validator": "prose",
+    },
+    "REGULATORY": {
+        "category": "document",
+        "extensions": [".md", ".pdf", ".docx"],
+        "validator": "prose",
+    },
+    "LEGAL": {
+        "category": "document",
+        "extensions": [".md", ".pdf", ".docx"],
+        "validator": "prose",
+    },
+    "SAFETY": {
+        "category": "document",
+        "extensions": [".md", ".xlsx", ".pdf"],
+        "validator": "prose",
+    },
     # Design artifacts
-    "UX_DESIGN":     {"category": "design", "extensions": [".fig", ".sketch", ".html", ".md"], "validator": "prose"},
+    "UX_DESIGN": {
+        "category": "design",
+        "extensions": [".fig", ".sketch", ".html", ".md"],
+        "validator": "prose",
+    },
     # Business artifacts
-    "BUSINESS":      {"category": "document", "extensions": [".md", ".xlsx", ".pptx"], "validator": "prose"},
-    "MARKETING":     {"category": "document", "extensions": [".md", ".html"], "validator": "prose"},
-    "PRODUCT":       {"category": "document", "extensions": [".md", ".yaml"], "validator": "prose"},
-    "OPERATIONS":    {"category": "document", "extensions": [".md", ".yaml"], "validator": "prose"},
-    "LOCALIZATION":  {"category": "code", "extensions": [".json", ".yaml", ".po", ".xliff"], "validator": "syntax"},
+    "BUSINESS": {
+        "category": "document",
+        "extensions": [".md", ".xlsx", ".pptx"],
+        "validator": "prose",
+    },
+    "MARKETING": {
+        "category": "document",
+        "extensions": [".md", ".html"],
+        "validator": "prose",
+    },
+    "PRODUCT": {
+        "category": "document",
+        "extensions": [".md", ".yaml"],
+        "validator": "prose",
+    },
+    "OPERATIONS": {
+        "category": "document",
+        "extensions": [".md", ".yaml"],
+        "validator": "prose",
+    },
+    "LOCALIZATION": {
+        "category": "code",
+        "extensions": [".json", ".yaml", ".po", ".xliff"],
+        "validator": "syntax",
+    },
     # QA/Browser artifacts
-    "BROWSER_QA":    {"category": "qa", "extensions": [".json", ".png", ".md"], "validator": "prose"},
-    "BROWSER_A11Y":  {"category": "qa", "extensions": [".json", ".md"], "validator": "prose"},
-    "BROWSER_PERF":  {"category": "qa", "extensions": [".json", ".md"], "validator": "prose"},
-    "SECURITY_AUDIT":{"category": "qa", "extensions": [".json", ".md"], "validator": "prose"},
+    "BROWSER_QA": {
+        "category": "qa",
+        "extensions": [".json", ".png", ".md"],
+        "validator": "prose",
+    },
+    "BROWSER_A11Y": {
+        "category": "qa",
+        "extensions": [".json", ".md"],
+        "validator": "prose",
+    },
+    "BROWSER_PERF": {
+        "category": "qa",
+        "extensions": [".json", ".md"],
+        "validator": "prose",
+    },
+    "SECURITY_AUDIT": {
+        "category": "qa",
+        "extensions": [".json", ".md"],
+        "validator": "prose",
+    },
 }
 
 # ---------------------------------------------------------------------------
@@ -458,11 +663,20 @@ AGENT_ROLES_REGISTRY: dict[str, dict[str, Any]] = {
             "Value stream mapping and lean development principles",
             "Stakeholder requirements translation to technical specifications",
         ],
-        "tools": ["requirements_tracer", "architecture_modeler", "risk_analyzer", "compliance_checker"],
+        "tools": [
+            "requirements_tracer",
+            "architecture_modeler",
+            "risk_analyzer",
+            "compliance_checker",
+        ],
         "mcp_server": "architecture_tools",
         "mcp_capabilities": [
-            "requirements_decompose", "subsystem_identify", "interface_define",
-            "technology_select", "risk_assess", "compliance_map",
+            "requirements_decompose",
+            "subsystem_identify",
+            "interface_define",
+            "technology_select",
+            "risk_assess",
+            "compliance_map",
         ],
         "hire_when": "Complex multi-subsystem products requiring architectural planning and system-level design",
         "docker_image": "sage/architecture-toolchain",
@@ -483,13 +697,27 @@ AGENT_ROLES_REGISTRY: dict[str, dict[str, Any]] = {
             "Error handling and logging patterns",
             "Unit test writing alongside production code",
         ],
-        "tools": ["code_editor", "git", "package_manager", "linter", "formatter", "debugger"],
+        "tools": [
+            "code_editor",
+            "git",
+            "package_manager",
+            "linter",
+            "formatter",
+            "debugger",
+        ],
         "mcp_server": "developer_tools",
         "mcp_capabilities": [
-            "file_read", "file_write", "file_search",
-            "git_commit", "git_branch", "git_diff",
-            "run_tests", "run_linter", "run_formatter",
-            "package_install", "package_search",
+            "file_read",
+            "file_write",
+            "file_search",
+            "git_commit",
+            "git_branch",
+            "git_diff",
+            "run_tests",
+            "run_linter",
+            "run_formatter",
+            "package_install",
+            "package_search",
         ],
         "hire_when": "You need code written, reviewed, or refactored",
     },
@@ -507,11 +735,20 @@ AGENT_ROLES_REGISTRY: dict[str, dict[str, Any]] = {
             "Mutation testing and fault injection",
             "Test automation framework setup (pytest, Jest, Cypress)",
         ],
-        "tools": ["test_runner", "coverage_analyzer", "bug_tracker", "test_data_generator"],
+        "tools": [
+            "test_runner",
+            "coverage_analyzer",
+            "bug_tracker",
+            "test_data_generator",
+        ],
         "mcp_server": "qa_tools",
         "mcp_capabilities": [
-            "run_tests", "coverage_report", "generate_test_data",
-            "create_bug_report", "list_test_suites", "mutation_test",
+            "run_tests",
+            "coverage_report",
+            "generate_test_data",
+            "create_bug_report",
+            "list_test_suites",
+            "mutation_test",
         ],
         "hire_when": "You need test plans, test cases, or quality assurance",
     },
@@ -532,8 +769,12 @@ AGENT_ROLES_REGISTRY: dict[str, dict[str, Any]] = {
         "tools": ["e2e_runner", "load_tester", "api_tester", "browser_automation"],
         "mcp_server": "system_test_tools",
         "mcp_capabilities": [
-            "run_e2e_tests", "run_load_test", "run_api_contract_test",
-            "provision_test_env", "generate_test_report", "run_security_scan",
+            "run_e2e_tests",
+            "run_load_test",
+            "run_api_contract_test",
+            "provision_test_env",
+            "generate_test_report",
+            "run_security_scan",
         ],
         "hire_when": "You need E2E tests, performance benchmarks, or system validation",
     },
@@ -554,9 +795,14 @@ AGENT_ROLES_REGISTRY: dict[str, dict[str, Any]] = {
         "tools": ["docker", "kubernetes", "terraform", "ci_pipeline", "monitoring"],
         "mcp_server": "devops_tools",
         "mcp_capabilities": [
-            "deploy_service", "create_pipeline", "provision_infra",
-            "configure_monitoring", "manage_secrets", "scale_service",
-            "create_runbook", "check_service_health",
+            "deploy_service",
+            "create_pipeline",
+            "provision_infra",
+            "configure_monitoring",
+            "manage_secrets",
+            "scale_service",
+            "create_runbook",
+            "check_service_health",
         ],
         "hire_when": "You need deployment pipelines, infrastructure, or monitoring",
     },
@@ -577,12 +823,15 @@ AGENT_ROLES_REGISTRY: dict[str, dict[str, Any]] = {
         "tools": ["i18n_extractor", "translation_manager", "locale_tester"],
         "mcp_server": "localization_tools",
         "mcp_capabilities": [
-            "extract_strings", "manage_translations", "validate_locale",
-            "format_dates_numbers", "check_rtl_layout", "import_translations",
+            "extract_strings",
+            "manage_translations",
+            "validate_locale",
+            "format_dates_numbers",
+            "check_rtl_layout",
+            "import_translations",
         ],
         "hire_when": "You need multi-language support or localization",
     },
-
     # ── Analysis Team ─────────────────────────────────────────────────
     "analyst": {
         "title": "Technical Analyst",
@@ -598,11 +847,20 @@ AGENT_ROLES_REGISTRY: dict[str, dict[str, Any]] = {
             "Performance bottleneck identification",
             "Alerting threshold tuning",
         ],
-        "tools": ["log_analyzer", "metrics_dashboard", "trace_viewer", "dependency_mapper"],
+        "tools": [
+            "log_analyzer",
+            "metrics_dashboard",
+            "trace_viewer",
+            "dependency_mapper",
+        ],
         "mcp_server": "analyst_tools",
         "mcp_capabilities": [
-            "search_logs", "analyze_metrics", "trace_request",
-            "map_dependencies", "identify_anomalies", "generate_postmortem",
+            "search_logs",
+            "analyze_metrics",
+            "trace_request",
+            "map_dependencies",
+            "identify_anomalies",
+            "generate_postmortem",
         ],
         "hire_when": "You need error analysis, log investigation, or root cause diagnosis",
     },
@@ -620,11 +878,19 @@ AGENT_ROLES_REGISTRY: dict[str, dict[str, Any]] = {
             "Acceptance criteria definition",
             "Competitive analysis and market positioning",
         ],
-        "tools": ["requirements_editor", "process_modeler", "spreadsheet", "survey_builder"],
+        "tools": [
+            "requirements_editor",
+            "process_modeler",
+            "spreadsheet",
+            "survey_builder",
+        ],
         "mcp_server": "business_analysis_tools",
         "mcp_capabilities": [
-            "create_user_story", "model_process", "analyze_roi",
-            "generate_requirements_doc", "create_stakeholder_map",
+            "create_user_story",
+            "model_process",
+            "analyze_roi",
+            "generate_requirements_doc",
+            "create_stakeholder_map",
             "define_acceptance_criteria",
         ],
         "hire_when": "You need requirements, user stories, or business process analysis",
@@ -646,8 +912,11 @@ AGENT_ROLES_REGISTRY: dict[str, dict[str, Any]] = {
         "tools": ["spreadsheet", "financial_model", "chart_builder", "data_query"],
         "mcp_server": "financial_tools",
         "mcp_capabilities": [
-            "build_financial_model", "calculate_unit_economics",
-            "project_revenue", "analyze_pricing", "create_budget",
+            "build_financial_model",
+            "calculate_unit_economics",
+            "project_revenue",
+            "analyze_pricing",
+            "create_budget",
             "generate_financial_report",
         ],
         "hire_when": "You need financial models, pricing, budgets, or investor materials",
@@ -669,13 +938,16 @@ AGENT_ROLES_REGISTRY: dict[str, dict[str, Any]] = {
         "tools": ["jupyter", "pandas", "sklearn", "mlflow", "data_viz", "sql_client"],
         "mcp_server": "data_science_tools",
         "mcp_capabilities": [
-            "run_query", "train_model", "evaluate_model",
-            "create_visualization", "design_experiment",
-            "build_pipeline", "detect_drift",
+            "run_query",
+            "train_model",
+            "evaluate_model",
+            "create_visualization",
+            "design_experiment",
+            "build_pipeline",
+            "detect_drift",
         ],
         "hire_when": "You need data analysis, ML models, or experiment design",
     },
-
     # ── Design Team ───────────────────────────────────────────────────
     "ux_designer": {
         "title": "UX Designer",
@@ -691,11 +963,19 @@ AGENT_ROLES_REGISTRY: dict[str, dict[str, Any]] = {
             "Information architecture",
             "Responsive design patterns",
         ],
-        "tools": ["figma", "wireframe_tool", "prototype_builder", "accessibility_checker"],
+        "tools": [
+            "figma",
+            "wireframe_tool",
+            "prototype_builder",
+            "accessibility_checker",
+        ],
         "mcp_server": "ux_design_tools",
         "mcp_capabilities": [
-            "create_wireframe", "build_prototype", "run_usability_test",
-            "check_accessibility", "generate_design_tokens",
+            "create_wireframe",
+            "build_prototype",
+            "run_usability_test",
+            "check_accessibility",
+            "generate_design_tokens",
             "create_user_flow",
         ],
         "hire_when": "You need UI design, wireframes, user research, or accessibility review",
@@ -714,16 +994,23 @@ AGENT_ROLES_REGISTRY: dict[str, dict[str, Any]] = {
             "Sprint planning and backlog grooming",
             "Product analytics interpretation",
         ],
-        "tools": ["roadmap_builder", "analytics_dashboard", "survey_builder", "task_tracker"],
+        "tools": [
+            "roadmap_builder",
+            "analytics_dashboard",
+            "survey_builder",
+            "task_tracker",
+        ],
         "mcp_server": "product_mgmt_tools",
         "mcp_capabilities": [
-            "create_prd", "build_roadmap", "define_okrs",
-            "prioritize_features", "analyze_user_metrics",
+            "create_prd",
+            "build_roadmap",
+            "define_okrs",
+            "prioritize_features",
+            "analyze_user_metrics",
             "create_sprint_plan",
         ],
         "hire_when": "You need product strategy, roadmaps, PRDs, or prioritization",
     },
-
     # ── Compliance Team ───────────────────────────────────────────────
     "regulatory_specialist": {
         "title": "Regulatory Specialist",
@@ -739,12 +1026,20 @@ AGENT_ROLES_REGISTRY: dict[str, dict[str, Any]] = {
             "SOUP/OTS software classification",
             "Post-market surveillance planning",
         ],
-        "tools": ["compliance_checker", "traceability_matrix", "risk_register", "audit_tool"],
+        "tools": [
+            "compliance_checker",
+            "traceability_matrix",
+            "risk_register",
+            "audit_tool",
+        ],
         "mcp_server": "regulatory_tools",
         "mcp_capabilities": [
-            "check_compliance", "build_traceability_matrix",
-            "create_risk_register", "generate_dhf",
-            "map_standards", "prepare_submission",
+            "check_compliance",
+            "build_traceability_matrix",
+            "create_risk_register",
+            "generate_dhf",
+            "map_standards",
+            "prepare_submission",
         ],
         "hire_when": "You need regulatory compliance, audit prep, or standards mapping",
     },
@@ -762,12 +1057,20 @@ AGENT_ROLES_REGISTRY: dict[str, dict[str, Any]] = {
             "Regulatory filing and notification requirements",
             "Liability and indemnification clause review",
         ],
-        "tools": ["license_scanner", "policy_generator", "contract_analyzer", "legal_db"],
+        "tools": [
+            "license_scanner",
+            "policy_generator",
+            "contract_analyzer",
+            "legal_db",
+        ],
         "mcp_server": "legal_tools",
         "mcp_capabilities": [
-            "scan_licenses", "generate_privacy_policy",
-            "generate_terms_of_service", "check_gdpr_compliance",
-            "review_contract", "assess_ip_risk",
+            "scan_licenses",
+            "generate_privacy_policy",
+            "generate_terms_of_service",
+            "check_gdpr_compliance",
+            "review_contract",
+            "assess_ip_risk",
         ],
         "hire_when": "You need legal documents, license compliance, or privacy policies",
     },
@@ -785,16 +1088,23 @@ AGENT_ROLES_REGISTRY: dict[str, dict[str, Any]] = {
             "Safety validation and verification planning",
             "Incident investigation and corrective action",
         ],
-        "tools": ["fmea_tool", "fault_tree_builder", "risk_matrix", "safety_case_editor"],
+        "tools": [
+            "fmea_tool",
+            "fault_tree_builder",
+            "risk_matrix",
+            "safety_case_editor",
+        ],
         "mcp_server": "safety_tools",
         "mcp_capabilities": [
-            "create_fmea", "build_fault_tree", "assess_risk",
-            "classify_sil_asil", "generate_safety_case",
+            "create_fmea",
+            "build_fault_tree",
+            "assess_risk",
+            "classify_sil_asil",
+            "generate_safety_case",
             "plan_safety_validation",
         ],
         "hire_when": "You need safety analysis, FMEA, fault trees, or hazard assessment",
     },
-
     # ── Operations Team ───────────────────────────────────────────────
     "operations_manager": {
         "title": "Operations Manager",
@@ -810,11 +1120,20 @@ AGENT_ROLES_REGISTRY: dict[str, dict[str, Any]] = {
             "Change management process design",
             "Operational cost optimization",
         ],
-        "tools": ["runbook_editor", "incident_tracker", "capacity_planner", "vendor_manager"],
+        "tools": [
+            "runbook_editor",
+            "incident_tracker",
+            "capacity_planner",
+            "vendor_manager",
+        ],
         "mcp_server": "operations_tools",
         "mcp_capabilities": [
-            "create_runbook", "define_sla", "create_incident_playbook",
-            "plan_capacity", "track_incidents", "manage_on_call",
+            "create_runbook",
+            "define_sla",
+            "create_incident_playbook",
+            "plan_capacity",
+            "track_incidents",
+            "manage_on_call",
         ],
         "hire_when": "You need runbooks, SLAs, incident response, or capacity planning",
     },
@@ -832,12 +1151,20 @@ AGENT_ROLES_REGISTRY: dict[str, dict[str, Any]] = {
             "Onboarding documentation and walkthrough design",
             "Style guide creation and enforcement",
         ],
-        "tools": ["doc_editor", "diagram_builder", "screenshot_tool", "api_doc_generator"],
+        "tools": [
+            "doc_editor",
+            "diagram_builder",
+            "screenshot_tool",
+            "api_doc_generator",
+        ],
         "mcp_server": "documentation_tools",
         "mcp_capabilities": [
-            "create_user_guide", "generate_api_docs",
-            "create_tutorial", "write_release_notes",
-            "build_knowledge_base", "create_video_script",
+            "create_user_guide",
+            "generate_api_docs",
+            "create_tutorial",
+            "write_release_notes",
+            "build_knowledge_base",
+            "create_video_script",
         ],
         "hire_when": "You need documentation, tutorials, API docs, or training materials",
     },
@@ -858,13 +1185,15 @@ AGENT_ROLES_REGISTRY: dict[str, dict[str, Any]] = {
         "tools": ["market_research", "seo_analyzer", "content_calendar", "analytics"],
         "mcp_server": "marketing_tools",
         "mcp_capabilities": [
-            "analyze_market", "research_competitors",
-            "create_positioning", "plan_gtm_strategy",
-            "generate_content_plan", "analyze_seo",
+            "analyze_market",
+            "research_competitors",
+            "create_positioning",
+            "plan_gtm_strategy",
+            "generate_content_plan",
+            "analyze_seo",
         ],
         "hire_when": "You need market research, GTM strategy, or marketing plans",
     },
-
     # ── Hardware Team ──────────────────────────────────────────────────
     "firmware_engineer": {
         "title": "Firmware Engineer",
@@ -883,11 +1212,21 @@ AGENT_ROLES_REGISTRY: dict[str, dict[str, Any]] = {
         "tools": ["gcc-arm", "openocd", "gdb", "jlink", "make", "cmake"],
         "mcp_server": "firmware_tools",
         "mcp_capabilities": [
-            "compile_firmware", "flash_device", "debug_firmware",
-            "analyze_binary", "read_registers", "run_unit_tests",
+            "compile_firmware",
+            "flash_device",
+            "debug_firmware",
+            "analyze_binary",
+            "read_registers",
+            "run_unit_tests",
         ],
         "docker_image": "sage/firmware-toolchain:latest",
-        "docker_packages": ["gcc-arm-none-eabi", "openocd", "cmake", "ninja-build", "gdb-multiarch"],
+        "docker_packages": [
+            "gcc-arm-none-eabi",
+            "openocd",
+            "cmake",
+            "ninja-build",
+            "gdb-multiarch",
+        ],
         "hire_when": "You need embedded firmware, RTOS tasks, or hardware driver development",
     },
     "pcb_designer": {
@@ -907,8 +1246,12 @@ AGENT_ROLES_REGISTRY: dict[str, dict[str, Any]] = {
         "tools": ["kicad", "kicad-cli", "gerber_viewer", "bom_manager"],
         "mcp_server": "pcb_tools",
         "mcp_capabilities": [
-            "create_schematic", "layout_pcb", "run_drc",
-            "generate_gerbers", "generate_bom", "check_erc",
+            "create_schematic",
+            "layout_pcb",
+            "run_drc",
+            "generate_gerbers",
+            "generate_bom",
+            "check_erc",
         ],
         "docker_image": "sage/pcb-toolchain:latest",
         "docker_packages": ["kicad", "kicad-cli", "python3-kicad"],
@@ -931,11 +1274,21 @@ AGENT_ROLES_REGISTRY: dict[str, dict[str, Any]] = {
         "tools": ["unity_test", "cppcheck", "valgrind", "gcov", "can_analyzer"],
         "mcp_server": "embedded_test_tools",
         "mcp_capabilities": [
-            "run_firmware_tests", "analyze_coverage", "test_serial",
-            "test_can_bus", "run_static_analysis", "generate_test_report",
+            "run_firmware_tests",
+            "analyze_coverage",
+            "test_serial",
+            "test_can_bus",
+            "run_static_analysis",
+            "generate_test_report",
         ],
         "docker_image": "sage/embedded-test:latest",
-        "docker_packages": ["gcc-arm-none-eabi", "cppcheck", "valgrind", "lcov", "can-utils"],
+        "docker_packages": [
+            "gcc-arm-none-eabi",
+            "cppcheck",
+            "valgrind",
+            "lcov",
+            "can-utils",
+        ],
         "hire_when": "You need firmware testing, HIL tests, or embedded quality assurance",
     },
     "hardware_sim_engineer": {
@@ -955,20 +1308,27 @@ AGENT_ROLES_REGISTRY: dict[str, dict[str, Any]] = {
         "tools": ["ngspice", "iverilog", "gtkwave", "yosys", "verilator"],
         "mcp_server": "hw_sim_tools",
         "mcp_capabilities": [
-            "run_spice_sim", "simulate_verilog", "synthesize_fpga",
-            "analyze_waveform", "run_power_analysis", "create_testbench",
+            "run_spice_sim",
+            "simulate_verilog",
+            "synthesize_fpga",
+            "analyze_waveform",
+            "run_power_analysis",
+            "create_testbench",
         ],
         "docker_image": "sage/hw-simulation:latest",
         "docker_packages": ["ngspice", "iverilog", "gtkwave", "yosys", "verilator"],
         "hire_when": "You need circuit simulation, FPGA design, or hardware verification",
     },
-
     # ── Orchestration Roles (internal, not hireable) ──────────────────
     "planner": {
         "title": "Planner",
         "description": "Task decomposition, dependency analysis",
         "team": "orchestration",
-        "skills": ["Hierarchical task decomposition", "Dependency graph analysis", "Wave scheduling"],
+        "skills": [
+            "Hierarchical task decomposition",
+            "Dependency graph analysis",
+            "Wave scheduling",
+        ],
         "tools": ["planner_llm"],
         "mcp_server": None,
         "mcp_capabilities": [],
@@ -978,7 +1338,11 @@ AGENT_ROLES_REGISTRY: dict[str, dict[str, Any]] = {
         "title": "Monitor",
         "description": "Integration monitoring, health checks",
         "team": "orchestration",
-        "skills": ["Service health monitoring", "Integration verification", "Alert management"],
+        "skills": [
+            "Service health monitoring",
+            "Integration verification",
+            "Alert management",
+        ],
         "tools": ["health_checker"],
         "mcp_server": None,
         "mcp_capabilities": [],
@@ -988,7 +1352,12 @@ AGENT_ROLES_REGISTRY: dict[str, dict[str, Any]] = {
         "title": "Critic",
         "description": "Adversarial review, quality scoring, compliance checking",
         "team": "orchestration",
-        "skills": ["Code review", "Plan review", "Security analysis", "Compliance verification"],
+        "skills": [
+            "Code review",
+            "Plan review",
+            "Security analysis",
+            "Compliance verification",
+        ],
         "tools": ["critic_llm"],
         "mcp_server": None,
         "mcp_capabilities": [],
@@ -1000,6 +1369,7 @@ AGENT_ROLES_REGISTRY: dict[str, dict[str, Any]] = {
 _AGENT_DESCRIPTIONS = {
     role: info["description"] for role, info in AGENT_ROLES_REGISTRY.items()
 }
+
 
 def get_hireable_roles() -> list[dict[str, Any]]:
     """Return roles available for 'Hire an Agent' — excludes internal orchestration roles."""
@@ -1019,14 +1389,15 @@ def get_hireable_roles() -> list[dict[str, Any]]:
         if info.get("hire_when") is not None
     ]
 
+
 # ---------------------------------------------------------------------------
 # HITL Granularity levels — configurable per solution via project.yaml
 # (Human-in-the-Loop pattern — regulated domains get more gates)
 # ---------------------------------------------------------------------------
 HITL_LEVELS = {
-    "minimal":   ["plan", "final"],           # 2 gates: plan + final
-    "standard":  ["plan", "code", "final"],   # 3 gates: + post-code review
-    "strict":    ["plan", "wave", "code", "integration", "final"],  # every stage
+    "minimal": ["plan", "final"],  # 2 gates: plan + final
+    "standard": ["plan", "code", "final"],  # 3 gates: + post-code review
+    "strict": ["plan", "wave", "code", "integration", "final"],  # every stage
 }
 
 # ---------------------------------------------------------------------------
@@ -1077,7 +1448,12 @@ AGENTIC_PATTERNS = {
             "Content that must meet compliance standards",
             "Any output requiring adversarial validation",
         ],
-        "components": ["generator agent", "critic agent", "acceptance criteria", "iteration loop"],
+        "components": [
+            "generator agent",
+            "critic agent",
+            "acceptance criteria",
+            "iteration loop",
+        ],
     },
     "coordinator": {
         "name": "Multi-Agent Coordinator",
@@ -1087,7 +1463,12 @@ AGENTIC_PATTERNS = {
             "Systems requiring multiple domain experts",
             "Dynamic task routing based on content",
         ],
-        "components": ["coordinator", "specialist agents", "task router", "result merger"],
+        "components": [
+            "coordinator",
+            "specialist agents",
+            "task router",
+            "result merger",
+        ],
     },
     "hierarchical_decomposition": {
         "name": "Hierarchical Task Decomposition",
@@ -1107,7 +1488,12 @@ AGENTIC_PATTERNS = {
             "Consensus-building on design decisions",
             "Multi-perspective analysis",
         ],
-        "components": ["peer agents", "message bus", "voting/consensus", "shared state"],
+        "components": [
+            "peer agents",
+            "message bus",
+            "voting/consensus",
+            "shared state",
+        ],
     },
     "react": {
         "name": "ReAct (Reason and Act)",
@@ -1117,7 +1503,12 @@ AGENTIC_PATTERNS = {
             "Exploratory tasks with uncertain outcomes",
             "Any agent that should self-verify its work",
         ],
-        "components": ["reasoning engine", "action executor", "observation parser", "loop controller"],
+        "components": [
+            "reasoning engine",
+            "action executor",
+            "observation parser",
+            "loop controller",
+        ],
     },
     "human_in_the_loop": {
         "name": "Human-in-the-Loop",
@@ -1127,7 +1518,12 @@ AGENTIC_PATTERNS = {
             "High-risk actions (deployments, data changes)",
             "Any system where human judgment is required",
         ],
-        "components": ["approval queue", "proposal store", "notification system", "feedback loop"],
+        "components": [
+            "approval queue",
+            "proposal store",
+            "notification system",
+            "feedback loop",
+        ],
     },
     "iterative_refinement": {
         "name": "Iterative Refinement",
@@ -1137,7 +1533,12 @@ AGENTIC_PATTERNS = {
             "Code optimization (performance, readability)",
             "Design iteration based on feedback",
         ],
-        "components": ["refiner agent", "quality scorer", "termination criteria", "history tracker"],
+        "components": [
+            "refiner agent",
+            "quality scorer",
+            "termination criteria",
+            "history tracker",
+        ],
     },
 }
 
@@ -1150,210 +1551,623 @@ AGENTIC_PATTERNS = {
 # ---------------------------------------------------------------------------
 DOMAIN_RULES = {
     "medical_device": {
-        "keywords": ["medical device", "surgical", "implant", "diagnostic", "patient monitor",
-                      "clinical", "FDA", "IEC 62304", "ISO 13485", "ISO 14971", "hospital",
-                      "wearable health", "pulse oximeter", "infusion pump", "ventilator",
-                      "medical imaging", "glucose", "insulin", "rehabilitation", "prosthetic",
-                      "Class II", "Class III", "SaMD", "510(k)", "De Novo"],
+        "keywords": [
+            "medical device",
+            "surgical",
+            "implant",
+            "diagnostic",
+            "patient monitor",
+            "clinical",
+            "FDA",
+            "IEC 62304",
+            "ISO 13485",
+            "ISO 14971",
+            "hospital",
+            "wearable health",
+            "pulse oximeter",
+            "infusion pump",
+            "ventilator",
+            "medical imaging",
+            "glucose",
+            "insulin",
+            "rehabilitation",
+            "prosthetic",
+            "Class II",
+            "Class III",
+            "SaMD",
+            "510(k)",
+            "De Novo",
+        ],
         "required_types": ["FIRMWARE", "SAFETY", "COMPLIANCE", "EMBEDDED_TEST", "DOCS"],
         "standards": ["IEC 62304", "ISO 13485", "ISO 14971", "FDA 21 CFR Part 820"],
         "hitl_override": "strict",
         "extra_criteria": {
-            "FIRMWARE": ["IEC 62304 software class documented", "SOUP components listed"],
-            "SAFETY": ["ISO 14971 risk management file complete", "Residual risk acceptable"],
-            "COMPLIANCE": ["DHF (Design History File) structure created", "V&V protocol drafted"],
+            "FIRMWARE": [
+                "IEC 62304 software class documented",
+                "SOUP components listed",
+            ],
+            "SAFETY": [
+                "ISO 14971 risk management file complete",
+                "Residual risk acceptable",
+            ],
+            "COMPLIANCE": [
+                "DHF (Design History File) structure created",
+                "V&V protocol drafted",
+            ],
         },
     },
     "automotive": {
-        "keywords": ["automotive", "vehicle", "ECU", "CAN bus", "ADAS", "infotainment",
-                      "ISO 26262", "AUTOSAR", "OBD", "telematics", "car", "truck",
-                      "autonomous driving", "lidar", "radar sensor", "ASIL",
-                      "V2X", "electric vehicle", "EV charging", "fleet management",
-                      "HMI", "parking", "battery management",
-                      "OCPP", "charging station", "charging network"],
-        "required_types": ["FIRMWARE", "SAFETY", "COMPLIANCE", "EMBEDDED_TEST", "HARDWARE_SIM"],
+        "keywords": [
+            "automotive",
+            "vehicle",
+            "ECU",
+            "CAN bus",
+            "ADAS",
+            "infotainment",
+            "ISO 26262",
+            "AUTOSAR",
+            "OBD",
+            "telematics",
+            "car",
+            "truck",
+            "autonomous driving",
+            "lidar",
+            "radar sensor",
+            "ASIL",
+            "V2X",
+            "electric vehicle",
+            "EV charging",
+            "fleet management",
+            "HMI",
+            "parking",
+            "battery management",
+            "OCPP",
+            "charging station",
+            "charging network",
+        ],
+        "required_types": [
+            "FIRMWARE",
+            "SAFETY",
+            "COMPLIANCE",
+            "EMBEDDED_TEST",
+            "HARDWARE_SIM",
+        ],
         "standards": ["ISO 26262", "AUTOSAR", "UNECE R155/R156"],
         "hitl_override": "strict",
         "extra_criteria": {
             "FIRMWARE": ["AUTOSAR compliance checked", "MISRA C violations zero"],
-            "SAFETY": ["ASIL level determined for each function", "Fault tree analysis complete"],
+            "SAFETY": [
+                "ASIL level determined for each function",
+                "Fault tree analysis complete",
+            ],
         },
     },
     "avionics": {
-        "keywords": ["avionics", "aircraft", "flight", "DO-178C", "DO-254", "aerospace",
-                      "satellite", "rocket", "UAV", "drone", "navigation system",
-                      "flight controller", "autopilot"],
-        "required_types": ["FIRMWARE", "SAFETY", "COMPLIANCE", "EMBEDDED_TEST", "HARDWARE_SIM"],
+        "keywords": [
+            "avionics",
+            "aircraft",
+            "flight",
+            "DO-178C",
+            "DO-254",
+            "aerospace",
+            "satellite",
+            "rocket",
+            "UAV",
+            "drone",
+            "navigation system",
+            "flight controller",
+            "autopilot",
+        ],
+        "required_types": [
+            "FIRMWARE",
+            "SAFETY",
+            "COMPLIANCE",
+            "EMBEDDED_TEST",
+            "HARDWARE_SIM",
+        ],
         "standards": ["DO-178C", "DO-254", "DO-326A", "ARP 4754A"],
         "hitl_override": "strict",
         "extra_criteria": {
             "FIRMWARE": ["DAL level assigned", "MC/DC coverage documented"],
-            "SAFETY": ["Functional hazard assessment complete", "Common cause analysis done"],
+            "SAFETY": [
+                "Functional hazard assessment complete",
+                "Common cause analysis done",
+            ],
         },
     },
     "robotics": {
-        "keywords": ["robot", "robotic", "actuator", "servo", "motor control", "kinematics",
-                      "ROS", "end effector", "manipulator", "cobot", "autonomous"],
-        "required_types": ["FIRMWARE", "MECHANICAL", "SAFETY", "EMBEDDED_TEST", "HARDWARE_SIM"],
+        "keywords": [
+            "robot",
+            "robotic",
+            "actuator",
+            "servo",
+            "motor control",
+            "kinematics",
+            "ROS",
+            "end effector",
+            "manipulator",
+            "cobot",
+            "autonomous",
+        ],
+        "required_types": [
+            "FIRMWARE",
+            "MECHANICAL",
+            "SAFETY",
+            "EMBEDDED_TEST",
+            "HARDWARE_SIM",
+        ],
         "standards": ["ISO 10218", "ISO/TS 15066"],
         "hitl_override": "strict",
         "extra_criteria": {
             "MECHANICAL": ["Joint limits verified", "Payload capacity documented"],
-            "SAFETY": ["Collaborative operation zones defined", "Emergency stop tested"],
+            "SAFETY": [
+                "Collaborative operation zones defined",
+                "Emergency stop tested",
+            ],
         },
     },
     "iot": {
-        "keywords": ["IoT", "sensor", "gateway", "edge device", "MQTT", "LoRa", "Zigbee",
-                      "smart home", "connected device", "embedded sensor", "telemetry",
-                      "wearable", "monitoring", "BLE", "Matter", "Z-Wave", "OPC-UA",
-                      "smart parking", "cold chain", "agriculture", "energy management"],
+        "keywords": [
+            "IoT",
+            "sensor",
+            "gateway",
+            "edge device",
+            "MQTT",
+            "LoRa",
+            "Zigbee",
+            "smart home",
+            "connected device",
+            "embedded sensor",
+            "telemetry",
+            "wearable",
+            "monitoring",
+            "BLE",
+            "Matter",
+            "Z-Wave",
+            "OPC-UA",
+            "smart parking",
+            "cold chain",
+            "agriculture",
+            "energy management",
+        ],
         "required_types": ["FIRMWARE", "EMBEDDED_TEST", "SECURITY", "CONFIG"],
         "standards": ["IEC 62443"],
         "hitl_override": "standard",
         "extra_criteria": {
-            "FIRMWARE": ["OTA update mechanism implemented", "Watchdog timer configured"],
+            "FIRMWARE": [
+                "OTA update mechanism implemented",
+                "Watchdog timer configured",
+            ],
             "SECURITY": ["Device identity provisioned", "Firmware signing enabled"],
         },
     },
     "fintech": {
-        "keywords": ["fintech", "payment", "banking", "trading", "PCI DSS", "SOX",
-                      "KYC", "AML", "ledger", "transaction", "wallet", "crypto",
-                      "insurance", "loan", "credit", "neobank", "remittance",
-                      "accounting", "invoice", "billing", "financial", "pricing",
-                      "expense", "investment", "fund", "claims",
-                      "portfolio", "robo-advisor", "SEC", "tax-loss"],
+        "keywords": [
+            "fintech",
+            "payment",
+            "banking",
+            "trading",
+            "PCI DSS",
+            "SOX",
+            "KYC",
+            "AML",
+            "ledger",
+            "transaction",
+            "wallet",
+            "crypto",
+            "insurance",
+            "loan",
+            "credit",
+            "neobank",
+            "remittance",
+            "accounting",
+            "invoice",
+            "billing",
+            "financial",
+            "pricing",
+            "expense",
+            "investment",
+            "fund",
+            "claims",
+            "portfolio",
+            "robo-advisor",
+            "SEC",
+            "tax-loss",
+        ],
         "required_types": ["SECURITY", "COMPLIANCE", "TESTS", "DATABASE"],
         "standards": ["PCI DSS", "SOX", "SOC 2"],
         "hitl_override": "strict",
         "extra_criteria": {
             "SECURITY": ["PCI DSS SAQ completed", "Encryption at rest and in transit"],
-            "DATABASE": ["Transaction isolation level documented", "Audit trail on all writes"],
+            "DATABASE": [
+                "Transaction isolation level documented",
+                "Audit trail on all writes",
+            ],
         },
     },
     "railway": {
-        "keywords": ["railway", "rail", "locomotive", "train", "brake system", "signalling",
-                      "ETCS", "ERTMS", "interlocking", "level crossing", "points machine",
-                      "EN 50128", "EN 50129", "CENELEC", "rolling stock", "traction",
-                      "rail vehicle", "metro", "tramway", "track circuit", "axle counter"],
-        "required_types": ["FIRMWARE", "SAFETY", "COMPLIANCE", "EMBEDDED_TEST", "HARDWARE_SIM"],
-        "standards": ["EN 50128", "EN 50129", "EN 50126", "IEC 62278", "IEC 62279", "IEC 62425"],
+        "keywords": [
+            "railway",
+            "rail",
+            "locomotive",
+            "train",
+            "brake system",
+            "signalling",
+            "ETCS",
+            "ERTMS",
+            "interlocking",
+            "level crossing",
+            "points machine",
+            "EN 50128",
+            "EN 50129",
+            "CENELEC",
+            "rolling stock",
+            "traction",
+            "rail vehicle",
+            "metro",
+            "tramway",
+            "track circuit",
+            "axle counter",
+        ],
+        "required_types": [
+            "FIRMWARE",
+            "SAFETY",
+            "COMPLIANCE",
+            "EMBEDDED_TEST",
+            "HARDWARE_SIM",
+        ],
+        "standards": [
+            "EN 50128",
+            "EN 50129",
+            "EN 50126",
+            "IEC 62278",
+            "IEC 62279",
+            "IEC 62425",
+        ],
         "hitl_override": "strict",
         "extra_criteria": {
-            "FIRMWARE": ["SIL level assigned per EN 50129", "Defensive programming techniques applied"],
-            "SAFETY": ["CENELEC SIL determination complete", "Common cause failure analysis done", "Safety case per EN 50129 Part 2"],
+            "FIRMWARE": [
+                "SIL level assigned per EN 50129",
+                "Defensive programming techniques applied",
+            ],
+            "SAFETY": [
+                "CENELEC SIL determination complete",
+                "Common cause failure analysis done",
+                "Safety case per EN 50129 Part 2",
+            ],
         },
     },
     "nuclear": {
-        "keywords": ["nuclear", "reactor", "nuclear power", "NPP", "safety system", "protection system",
-                      "IEC 61513", "IEC 60880", "nuclear instrumentation", "I&C",
-                      "radiation monitoring", "emergency shutdown", "SCRAM",
-                      "fuel handling", "containment", "primary coolant"],
-        "required_types": ["FIRMWARE", "SAFETY", "COMPLIANCE", "EMBEDDED_TEST", "HARDWARE_SIM", "DOCS"],
-        "standards": ["IEC 61513", "IEC 60880", "IEC 62138", "IEC 60987", "IEEE 603", "IEEE 7-4.3.2"],
+        "keywords": [
+            "nuclear",
+            "reactor",
+            "nuclear power",
+            "NPP",
+            "safety system",
+            "protection system",
+            "IEC 61513",
+            "IEC 60880",
+            "nuclear instrumentation",
+            "I&C",
+            "radiation monitoring",
+            "emergency shutdown",
+            "SCRAM",
+            "fuel handling",
+            "containment",
+            "primary coolant",
+        ],
+        "required_types": [
+            "FIRMWARE",
+            "SAFETY",
+            "COMPLIANCE",
+            "EMBEDDED_TEST",
+            "HARDWARE_SIM",
+            "DOCS",
+        ],
+        "standards": [
+            "IEC 61513",
+            "IEC 60880",
+            "IEC 62138",
+            "IEC 60987",
+            "IEEE 603",
+            "IEEE 7-4.3.2",
+        ],
         "hitl_override": "strict",
         "extra_criteria": {
-            "FIRMWARE": ["SIL 3/4 coding standards applied", "Diversity and redundancy verified"],
-            "SAFETY": ["Nuclear safety case complete", "Defence-in-depth analysis", "Common mode failure analysis"],
+            "FIRMWARE": [
+                "SIL 3/4 coding standards applied",
+                "Diversity and redundancy verified",
+            ],
+            "SAFETY": [
+                "Nuclear safety case complete",
+                "Defence-in-depth analysis",
+                "Common mode failure analysis",
+            ],
         },
     },
     "industrial_safety": {
-        "keywords": ["process safety", "SIS", "safety instrumented system", "PLC", "DCS",
-                      "SCADA", "emergency shutdown", "IEC 61511", "burner management",
-                      "chemical plant", "refinery", "oil gas", "pipeline",
-                      "boiler", "pressure vessel", "functional safety",
-                      "SIF", "safety instrumented function", "proof test"],
-        "required_types": ["FIRMWARE", "SAFETY", "COMPLIANCE", "EMBEDDED_TEST", "HARDWARE_SIM"],
+        "keywords": [
+            "process safety",
+            "SIS",
+            "safety instrumented system",
+            "PLC",
+            "DCS",
+            "SCADA",
+            "emergency shutdown",
+            "IEC 61511",
+            "burner management",
+            "chemical plant",
+            "refinery",
+            "oil gas",
+            "pipeline",
+            "boiler",
+            "pressure vessel",
+            "functional safety",
+            "SIF",
+            "safety instrumented function",
+            "proof test",
+        ],
+        "required_types": [
+            "FIRMWARE",
+            "SAFETY",
+            "COMPLIANCE",
+            "EMBEDDED_TEST",
+            "HARDWARE_SIM",
+        ],
         "standards": ["IEC 61511", "IEC 61508", "ISA 84", "API 554"],
         "hitl_override": "strict",
         "extra_criteria": {
-            "FIRMWARE": ["SIL determination per IEC 61511", "Proof test interval defined"],
-            "SAFETY": ["LOPA (Layer of Protection Analysis) complete", "SIF integrity verified"],
+            "FIRMWARE": [
+                "SIL determination per IEC 61511",
+                "Proof test interval defined",
+            ],
+            "SAFETY": [
+                "LOPA (Layer of Protection Analysis) complete",
+                "SIF integrity verified",
+            ],
         },
     },
     "marine": {
-        "keywords": ["marine", "ship", "vessel", "maritime", "navigation system", "bridge system",
-                      "engine control", "ballast", "ECDIS", "AIS", "VDR",
-                      "class society", "DNV", "Lloyd's", "Bureau Veritas",
-                      "propulsion control", "steering gear", "cargo management"],
-        "required_types": ["FIRMWARE", "SAFETY", "COMPLIANCE", "EMBEDDED_TEST", "HARDWARE_SIM"],
+        "keywords": [
+            "marine",
+            "ship",
+            "vessel",
+            "maritime",
+            "navigation system",
+            "bridge system",
+            "engine control",
+            "ballast",
+            "ECDIS",
+            "AIS",
+            "VDR",
+            "class society",
+            "DNV",
+            "Lloyd's",
+            "Bureau Veritas",
+            "propulsion control",
+            "steering gear",
+            "cargo management",
+        ],
+        "required_types": [
+            "FIRMWARE",
+            "SAFETY",
+            "COMPLIANCE",
+            "EMBEDDED_TEST",
+            "HARDWARE_SIM",
+        ],
         "standards": ["IEC 61162", "IEC 62065", "IEC 61174", "IMO MSC", "SOLAS"],
         "hitl_override": "strict",
         "extra_criteria": {
-            "FIRMWARE": ["Type approval by classification society", "EMC per IEC 60945"],
+            "FIRMWARE": [
+                "Type approval by classification society",
+                "EMC per IEC 60945",
+            ],
             "SAFETY": ["Marine risk assessment per IMO FSA", "HAZID complete"],
         },
     },
     "space": {
-        "keywords": ["space", "satellite", "spacecraft", "launch vehicle", "orbit",
-                      "ECSS", "flight software", "ground segment", "payload",
-                      "attitude control", "orbit determination", "telemetry",
-                      "space-grade", "radiation hardened", "LEO", "GEO", "deep space"],
-        "required_types": ["FIRMWARE", "SAFETY", "COMPLIANCE", "EMBEDDED_TEST", "HARDWARE_SIM", "DOCS"],
+        "keywords": [
+            "space",
+            "satellite",
+            "spacecraft",
+            "launch vehicle",
+            "orbit",
+            "ECSS",
+            "flight software",
+            "ground segment",
+            "payload",
+            "attitude control",
+            "orbit determination",
+            "telemetry",
+            "space-grade",
+            "radiation hardened",
+            "LEO",
+            "GEO",
+            "deep space",
+        ],
+        "required_types": [
+            "FIRMWARE",
+            "SAFETY",
+            "COMPLIANCE",
+            "EMBEDDED_TEST",
+            "HARDWARE_SIM",
+            "DOCS",
+        ],
         "standards": ["ECSS-E-ST-40C", "ECSS-Q-ST-80C", "NASA-STD-8719.13", "DO-178C"],
         "hitl_override": "strict",
         "extra_criteria": {
-            "FIRMWARE": ["Radiation tolerance verified", "FDIR (Fault Detection Isolation Recovery) implemented"],
+            "FIRMWARE": [
+                "Radiation tolerance verified",
+                "FDIR (Fault Detection Isolation Recovery) implemented",
+            ],
             "SAFETY": ["Mission assurance plan complete", "FMECA per ECSS-Q-ST-30-02C"],
         },
     },
     "construction_equipment": {
-        "keywords": ["construction equipment", "excavator", "crane", "bulldozer",
-                      "earthmover", "ISO 13849", "machinery safety", "hydraulic control",
-                      "load moment indicator", "anti-collision", "operator presence",
-                      "heavy equipment", "mining equipment", "tunnel boring"],
+        "keywords": [
+            "construction equipment",
+            "excavator",
+            "crane",
+            "bulldozer",
+            "earthmover",
+            "ISO 13849",
+            "machinery safety",
+            "hydraulic control",
+            "load moment indicator",
+            "anti-collision",
+            "operator presence",
+            "heavy equipment",
+            "mining equipment",
+            "tunnel boring",
+        ],
         "required_types": ["FIRMWARE", "SAFETY", "MECHANICAL", "EMBEDDED_TEST"],
         "standards": ["ISO 13849", "IEC 62061", "ISO 12100", "EN 474"],
         "hitl_override": "strict",
         "extra_criteria": {
-            "FIRMWARE": ["Performance Level (PL) assigned per ISO 13849", "Category determined"],
-            "SAFETY": ["Risk assessment per ISO 12100", "Protective measures validated"],
+            "FIRMWARE": [
+                "Performance Level (PL) assigned per ISO 13849",
+                "Category determined",
+            ],
+            "SAFETY": [
+                "Risk assessment per ISO 12100",
+                "Protective measures validated",
+            ],
         },
     },
     "elevator": {
-        "keywords": ["elevator", "lift", "escalator", "moving walkway",
-                      "EN 81", "lift controller", "door operator", "safety gear",
-                      "overspeed governor", "car position", "dispatch system"],
+        "keywords": [
+            "elevator",
+            "lift",
+            "escalator",
+            "moving walkway",
+            "EN 81",
+            "lift controller",
+            "door operator",
+            "safety gear",
+            "overspeed governor",
+            "car position",
+            "dispatch system",
+        ],
         "required_types": ["FIRMWARE", "SAFETY", "COMPLIANCE", "EMBEDDED_TEST"],
         "standards": ["EN 81-20", "EN 81-50", "ISO 8100", "ASME A17.1"],
         "hitl_override": "strict",
         "extra_criteria": {
-            "FIRMWARE": ["SIL rating per EN 81-20 Annex F", "Safe state defined for all failure modes"],
-            "SAFETY": ["Risk assessment per EN 81-20 Annex B", "Unintended car movement prevention verified"],
+            "FIRMWARE": [
+                "SIL rating per EN 81-20 Annex F",
+                "Safe state defined for all failure modes",
+            ],
+            "SAFETY": [
+                "Risk assessment per EN 81-20 Annex B",
+                "Unintended car movement prevention verified",
+            ],
         },
     },
     "defense": {
-        "keywords": ["defense", "defence", "military", "MIL-STD", "weapon system",
-                      "fire control", "guidance system", "munition", "armored vehicle",
-                      "C4ISR", "command control", "tactical", "combat management",
-                      "electronic warfare", "countermeasure", "radar system"],
-        "required_types": ["FIRMWARE", "SAFETY", "COMPLIANCE", "SECURITY", "EMBEDDED_TEST", "HARDWARE_SIM"],
+        "keywords": [
+            "defense",
+            "defence",
+            "military",
+            "MIL-STD",
+            "weapon system",
+            "fire control",
+            "guidance system",
+            "munition",
+            "armored vehicle",
+            "C4ISR",
+            "command control",
+            "tactical",
+            "combat management",
+            "electronic warfare",
+            "countermeasure",
+            "radar system",
+        ],
+        "required_types": [
+            "FIRMWARE",
+            "SAFETY",
+            "COMPLIANCE",
+            "SECURITY",
+            "EMBEDDED_TEST",
+            "HARDWARE_SIM",
+        ],
         "standards": ["MIL-STD-882E", "MIL-STD-498", "DO-178C", "DEF STAN 00-56"],
         "hitl_override": "strict",
         "extra_criteria": {
-            "FIRMWARE": ["ITAR/export control compliance", "TEMPEST/EMSEC requirements addressed"],
-            "SAFETY": ["System safety per MIL-STD-882E", "Mishap risk assessment complete"],
-            "SECURITY": ["NIST 800-171 compliance", "Classified data handling procedures"],
+            "FIRMWARE": [
+                "ITAR/export control compliance",
+                "TEMPEST/EMSEC requirements addressed",
+            ],
+            "SAFETY": [
+                "System safety per MIL-STD-882E",
+                "Mishap risk assessment complete",
+            ],
+            "SECURITY": [
+                "NIST 800-171 compliance",
+                "Classified data handling procedures",
+            ],
         },
     },
     "hardware_generic": {
-        "keywords": ["PCB", "schematic", "circuit", "FPGA", "ASIC", "SoC", "power supply",
-                      "antenna", "RF", "analog", "digital design", "signal processing"],
+        "keywords": [
+            "PCB",
+            "schematic",
+            "circuit",
+            "FPGA",
+            "ASIC",
+            "SoC",
+            "power supply",
+            "antenna",
+            "RF",
+            "analog",
+            "digital design",
+            "signal processing",
+        ],
         "required_types": ["PCB_DESIGN", "HARDWARE_SIM", "FIRMWARE", "EMBEDDED_TEST"],
         "standards": [],
         "hitl_override": "standard",
         "extra_criteria": {},
     },
     "ml_ai": {
-        "keywords": ["machine learning", "deep learning", "neural network", "training pipeline",
-                      "model serving", "MLOps", "computer vision", "NLP", "LLM",
-                      "recommendation engine", "classification", "regression",
-                      "AI-powered", "OCR", "speech recognition", "chatbot", "RAG",
-                      "anomaly detection", "fraud detection", "embedding", "search engine",
-                      "translation", "content moderation", "image generation",
-                      "ML ", "model training", "feature store", "NER",
-                      "voice assistant", "NLU", "TTS", "ASR",
-                      "Stable Diffusion", "XGBoost", "neural", "collaborative filtering",
-                      "unsupervised", "time-series", "pipeline"],
+        "keywords": [
+            "machine learning",
+            "deep learning",
+            "neural network",
+            "training pipeline",
+            "model serving",
+            "MLOps",
+            "computer vision",
+            "NLP",
+            "LLM",
+            "recommendation engine",
+            "classification",
+            "regression",
+            "AI-powered",
+            "OCR",
+            "speech recognition",
+            "chatbot",
+            "RAG",
+            "anomaly detection",
+            "fraud detection",
+            "embedding",
+            "search engine",
+            "translation",
+            "content moderation",
+            "image generation",
+            "ML ",
+            "model training",
+            "feature store",
+            "NER",
+            "voice assistant",
+            "NLU",
+            "TTS",
+            "ASR",
+            "Stable Diffusion",
+            "XGBoost",
+            "neural",
+            "collaborative filtering",
+            "unsupervised",
+            "time-series",
+            "pipeline",
+        ],
         "required_types": ["ML_MODEL", "DATA", "TESTS", "INFRA"],
         "standards": [],
         "hitl_override": "standard",
@@ -1362,108 +2176,323 @@ DOMAIN_RULES = {
         },
     },
     "saas_product": {
-        "keywords": ["SaaS", "subscription", "B2B", "B2C", "marketplace", "platform",
-                      "multi-tenant", "recurring revenue", "freemium", "self-service",
-                      "helpdesk", "CRM", "project management", "analytics dashboard",
-                      "form builder", "scheduling", "email marketing", "API gateway",
-                      "collaboration", "ticket", "knowledge base",
-                      "HR management", "onboarding", "payroll", "developer portal",
-                      "rate limiting", "API key", "no-code",
-                      "data source", "chart builder", "dashboard builder"],
-        "required_types": ["BUSINESS_ANALYSIS", "FINANCIAL", "LEGAL", "UX_DESIGN",
-                           "MARKET_RESEARCH", "PRODUCT_MGMT", "OPERATIONS", "DEVOPS"],
+        "keywords": [
+            "SaaS",
+            "subscription",
+            "B2B",
+            "B2C",
+            "marketplace",
+            "platform",
+            "multi-tenant",
+            "recurring revenue",
+            "freemium",
+            "self-service",
+            "helpdesk",
+            "CRM",
+            "project management",
+            "analytics dashboard",
+            "form builder",
+            "scheduling",
+            "email marketing",
+            "API gateway",
+            "collaboration",
+            "ticket",
+            "knowledge base",
+            "HR management",
+            "onboarding",
+            "payroll",
+            "developer portal",
+            "rate limiting",
+            "API key",
+            "no-code",
+            "data source",
+            "chart builder",
+            "dashboard builder",
+        ],
+        "required_types": [
+            "BUSINESS_ANALYSIS",
+            "FINANCIAL",
+            "LEGAL",
+            "UX_DESIGN",
+            "MARKET_RESEARCH",
+            "PRODUCT_MGMT",
+            "OPERATIONS",
+            "DEVOPS",
+        ],
         "standards": ["SOC 2"],
         "hitl_override": "standard",
         "extra_criteria": {
-            "BUSINESS_ANALYSIS": ["Pricing tiers defined", "Churn risk factors identified"],
+            "BUSINESS_ANALYSIS": [
+                "Pricing tiers defined",
+                "Churn risk factors identified",
+            ],
             "FINANCIAL": ["MRR/ARR projections modeled", "CAC and LTV estimated"],
-            "LEGAL": ["Subscription terms cover cancellation and refunds", "Data processing agreement drafted"],
+            "LEGAL": [
+                "Subscription terms cover cancellation and refunds",
+                "Data processing agreement drafted",
+            ],
         },
     },
     "consumer_app": {
-        "keywords": ["mobile app", "consumer", "social", "game", "entertainment",
-                      "iOS", "Android", "app store", "play store", "casual game",
-                      "food delivery", "dating", "travel", "meditation", "fitness",
-                      "recipe", "pet care", "event", "habit", "podcast", "streaming",
-                      "booking", "tracking app", "community",
-                      "restaurant", "discovery", "ticketing", "listening",
-                      "mindfulness", "sleep", "guided sessions",
-                      "delivery app", "hosting",
-                      "matching algorithm", "profile", "chat"],
-        "required_types": ["UX_DESIGN", "MARKET_RESEARCH", "LOCALIZATION", "TRAINING",
-                           "QA", "PRODUCT_MGMT"],
+        "keywords": [
+            "mobile app",
+            "consumer",
+            "social",
+            "game",
+            "entertainment",
+            "iOS",
+            "Android",
+            "app store",
+            "play store",
+            "casual game",
+            "food delivery",
+            "dating",
+            "travel",
+            "meditation",
+            "fitness",
+            "recipe",
+            "pet care",
+            "event",
+            "habit",
+            "podcast",
+            "streaming",
+            "booking",
+            "tracking app",
+            "community",
+            "restaurant",
+            "discovery",
+            "ticketing",
+            "listening",
+            "mindfulness",
+            "sleep",
+            "guided sessions",
+            "delivery app",
+            "hosting",
+            "matching algorithm",
+            "profile",
+            "chat",
+        ],
+        "required_types": [
+            "UX_DESIGN",
+            "MARKET_RESEARCH",
+            "LOCALIZATION",
+            "TRAINING",
+            "QA",
+            "PRODUCT_MGMT",
+        ],
         "standards": [],
         "hitl_override": "standard",
         "extra_criteria": {
-            "UX_DESIGN": ["App store screenshot mockups prepared", "Onboarding flow under 3 steps"],
-            "LOCALIZATION": ["Top 5 target locales identified", "Store listing translated"],
+            "UX_DESIGN": [
+                "App store screenshot mockups prepared",
+                "Onboarding flow under 3 steps",
+            ],
+            "LOCALIZATION": [
+                "Top 5 target locales identified",
+                "Store listing translated",
+            ],
         },
     },
     "enterprise": {
-        "keywords": ["enterprise", "ERP", "CRM", "B2B", "procurement", "workflow automation",
-                      "back-office", "supply chain", "HR system", "asset management",
-                      "IAM", "SSO", "SAML", "SCIM", "data warehouse", "compliance",
-                      "contract management", "knowledge management", "visitor management",
-                      "GRC", "governance", "ISO 27001", "SOC 2",
-                      "ETL", "data catalog", "lineage", "e-signature",
-                      "clause extraction", "obligation tracking"],
-        "required_types": ["BUSINESS_ANALYSIS", "SYSTEM_TEST", "TRAINING", "OPERATIONS",
-                           "LEGAL", "DEVOPS", "QA", "PRODUCT_MGMT"],
+        "keywords": [
+            "enterprise",
+            "ERP",
+            "CRM",
+            "B2B",
+            "procurement",
+            "workflow automation",
+            "back-office",
+            "supply chain",
+            "HR system",
+            "asset management",
+            "IAM",
+            "SSO",
+            "SAML",
+            "SCIM",
+            "data warehouse",
+            "compliance",
+            "contract management",
+            "knowledge management",
+            "visitor management",
+            "GRC",
+            "governance",
+            "ISO 27001",
+            "SOC 2",
+            "ETL",
+            "data catalog",
+            "lineage",
+            "e-signature",
+            "clause extraction",
+            "obligation tracking",
+        ],
+        "required_types": [
+            "BUSINESS_ANALYSIS",
+            "SYSTEM_TEST",
+            "TRAINING",
+            "OPERATIONS",
+            "LEGAL",
+            "DEVOPS",
+            "QA",
+            "PRODUCT_MGMT",
+        ],
         "standards": ["SOC 2", "ISO 27001"],
         "hitl_override": "standard",
         "extra_criteria": {
-            "BUSINESS_ANALYSIS": ["Integration points with existing systems mapped", "Migration plan drafted"],
-            "SYSTEM_TEST": ["Load test simulates expected concurrent users", "Failover scenario tested"],
-            "TRAINING": ["Admin guide separate from end-user guide", "Role-based training paths defined"],
+            "BUSINESS_ANALYSIS": [
+                "Integration points with existing systems mapped",
+                "Migration plan drafted",
+            ],
+            "SYSTEM_TEST": [
+                "Load test simulates expected concurrent users",
+                "Failover scenario tested",
+            ],
+            "TRAINING": [
+                "Admin guide separate from end-user guide",
+                "Role-based training paths defined",
+            ],
         },
     },
     "ecommerce": {
-        "keywords": ["e-commerce", "ecommerce", "online store", "shopping cart", "checkout",
-                      "inventory", "catalog", "payments", "Shopify", "WooCommerce",
-                      "order management", "marketplace", "dropshipping", "subscription box",
-                      "delivery", "grocery", "product recommendation", "loyalty", "rewards",
-                      "returns", "pricing", "seller",
-                      "repricing", "refund", "exchange management",
-                      "competitor price", "multi-store", "product import"],
-        "required_types": ["UX_DESIGN", "FINANCIAL", "LEGAL", "SECURITY", "OPERATIONS",
-                           "MARKET_RESEARCH", "QA"],
+        "keywords": [
+            "e-commerce",
+            "ecommerce",
+            "online store",
+            "shopping cart",
+            "checkout",
+            "inventory",
+            "catalog",
+            "payments",
+            "Shopify",
+            "WooCommerce",
+            "order management",
+            "marketplace",
+            "dropshipping",
+            "subscription box",
+            "delivery",
+            "grocery",
+            "product recommendation",
+            "loyalty",
+            "rewards",
+            "returns",
+            "pricing",
+            "seller",
+            "repricing",
+            "refund",
+            "exchange management",
+            "competitor price",
+            "multi-store",
+            "product import",
+        ],
+        "required_types": [
+            "UX_DESIGN",
+            "FINANCIAL",
+            "LEGAL",
+            "SECURITY",
+            "OPERATIONS",
+            "MARKET_RESEARCH",
+            "QA",
+        ],
         "standards": ["PCI DSS"],
         "hitl_override": "standard",
         "extra_criteria": {
             "SECURITY": ["Payment flow PCI compliant", "Fraud detection rules defined"],
-            "LEGAL": ["Return/refund policy drafted", "Consumer protection compliance checked"],
+            "LEGAL": [
+                "Return/refund policy drafted",
+                "Consumer protection compliance checked",
+            ],
         },
     },
     "healthcare_software": {
-        "keywords": ["health record", "EHR", "EMR", "telehealth", "telemedicine",
-                      "HIPAA", "patient portal", "clinical workflow", "pharmacy",
-                      "clinical trial", "HL7", "FHIR", "mental health", "wellness",
-                      "therapy", "caregiver", "e-prescri",
-                      "patient enrollment", "adverse events", "21 CFR"],
-        "required_types": ["REGULATORY", "SECURITY", "COMPLIANCE", "QA", "SYSTEM_TEST",
-                           "TRAINING", "OPERATIONS", "LEGAL"],
+        "keywords": [
+            "health record",
+            "EHR",
+            "EMR",
+            "telehealth",
+            "telemedicine",
+            "HIPAA",
+            "patient portal",
+            "clinical workflow",
+            "pharmacy",
+            "clinical trial",
+            "HL7",
+            "FHIR",
+            "mental health",
+            "wellness",
+            "therapy",
+            "caregiver",
+            "e-prescri",
+            "patient enrollment",
+            "adverse events",
+            "21 CFR",
+        ],
+        "required_types": [
+            "REGULATORY",
+            "SECURITY",
+            "COMPLIANCE",
+            "QA",
+            "SYSTEM_TEST",
+            "TRAINING",
+            "OPERATIONS",
+            "LEGAL",
+        ],
         "standards": ["HIPAA", "HITECH", "HL7 FHIR"],
         "hitl_override": "strict",
         "extra_criteria": {
             "REGULATORY": ["HIPAA risk assessment complete", "BAA template prepared"],
-            "SECURITY": ["PHI encryption at rest and in transit", "Access audit logging enabled"],
+            "SECURITY": [
+                "PHI encryption at rest and in transit",
+                "Access audit logging enabled",
+            ],
         },
     },
     "edtech": {
-        "keywords": ["education", "e-learning", "LMS", "course", "student", "teacher",
-                      "classroom", "curriculum", "tutoring", "assessment",
-                      "flashcard", "quiz", "exam", "proctoring", "school",
-                      "learning", "bootcamp", "coding challenge", "instructor",
-                      "skill assessment", "virtual lab", "SCORM",
-                      "spaced repetition", "gamification", "study",
-                      "pronunciation", "language learning",
-                      "tutor", "adaptive learning", "Socratic"],
-        "required_types": ["UX_DESIGN", "TRAINING", "LOCALIZATION", "QA",
-                           "PRODUCT_MGMT", "BUSINESS_ANALYSIS"],
+        "keywords": [
+            "education",
+            "e-learning",
+            "LMS",
+            "course",
+            "student",
+            "teacher",
+            "classroom",
+            "curriculum",
+            "tutoring",
+            "assessment",
+            "flashcard",
+            "quiz",
+            "exam",
+            "proctoring",
+            "school",
+            "learning",
+            "bootcamp",
+            "coding challenge",
+            "instructor",
+            "skill assessment",
+            "virtual lab",
+            "SCORM",
+            "spaced repetition",
+            "gamification",
+            "study",
+            "pronunciation",
+            "language learning",
+            "tutor",
+            "adaptive learning",
+            "Socratic",
+        ],
+        "required_types": [
+            "UX_DESIGN",
+            "TRAINING",
+            "LOCALIZATION",
+            "QA",
+            "PRODUCT_MGMT",
+            "BUSINESS_ANALYSIS",
+        ],
         "standards": ["FERPA", "COPPA", "WCAG 2.1"],
         "hitl_override": "standard",
         "extra_criteria": {
-            "UX_DESIGN": ["Accessibility for learners with disabilities", "Mobile-responsive for student devices"],
+            "UX_DESIGN": [
+                "Accessibility for learners with disabilities",
+                "Mobile-responsive for student devices",
+            ],
             "LEGAL": ["FERPA/COPPA compliance if minors involved"],
         },
     },
@@ -1473,70 +2502,206 @@ DOMAIN_RULES = {
 # (Review and Critique pattern — bounded evaluation, not open-ended)
 DEFAULT_ACCEPTANCE_CRITERIA = {
     # Architecture & System Design
-    "ARCHITECTURE":      ["System boundaries clearly defined", "Technology stack justified with trade-offs", "Non-functional requirements addressed"],
-    "SYSTEM_DESIGN":     ["Component interfaces well-defined", "Data flow documented", "Scalability considered"],
-    "REQUIREMENTS":      ["Requirements are testable and measurable", "Traceability matrix complete", "Stakeholder acceptance achieved"],
-    "SUBSYSTEM_DESIGN":  ["Internal APIs documented", "Error handling strategy defined", "Performance constraints specified"],
-    "INTERFACE_DESIGN":  ["Protocol specifications complete", "Data schemas validated", "Backward compatibility addressed"],
-    "TECHNOLOGY_SELECTION": ["Technical risks assessed", "Alternative solutions compared", "Migration path defined if needed"],
+    "ARCHITECTURE": [
+        "System boundaries clearly defined",
+        "Technology stack justified with trade-offs",
+        "Non-functional requirements addressed",
+    ],
+    "SYSTEM_DESIGN": [
+        "Component interfaces well-defined",
+        "Data flow documented",
+        "Scalability considered",
+    ],
+    "REQUIREMENTS": [
+        "Requirements are testable and measurable",
+        "Traceability matrix complete",
+        "Stakeholder acceptance achieved",
+    ],
+    "SUBSYSTEM_DESIGN": [
+        "Internal APIs documented",
+        "Error handling strategy defined",
+        "Performance constraints specified",
+    ],
+    "INTERFACE_DESIGN": [
+        "Protocol specifications complete",
+        "Data schemas validated",
+        "Backward compatibility addressed",
+    ],
+    "TECHNOLOGY_SELECTION": [
+        "Technical risks assessed",
+        "Alternative solutions compared",
+        "Migration path defined if needed",
+    ],
     # Software
-    "BACKEND":  ["Handles errors gracefully", "Has input validation", "Returns structured responses"],
+    "BACKEND": [
+        "Handles errors gracefully",
+        "Has input validation",
+        "Returns structured responses",
+    ],
     "FRONTEND": ["Responsive layout", "Error states handled", "Loading states shown"],
-    "TESTS":    ["Covers happy path", "Covers error path", "No hardcoded test data"],
-    "INFRA":    ["Idempotent", "Secrets not hardcoded", "Rollback documented"],
-    "DATABASE": ["Migrations reversible", "Indexes on query columns", "No data loss on rollback"],
-    "API":      ["RESTful conventions", "Error codes documented", "Versioned endpoints"],
-    "DOCS":     ["Accurate to implementation", "Setup instructions work", "No stale references"],
-    "CONFIG":   ["Environment-specific values parameterized", "Defaults are safe", "Validated on load"],
-    "AGENTIC":  ["Pattern correctly implemented per registry spec", "Graceful degradation on LLM failure", "Observable via audit log"],
+    "TESTS": ["Covers happy path", "Covers error path", "No hardcoded test data"],
+    "INFRA": ["Idempotent", "Secrets not hardcoded", "Rollback documented"],
+    "DATABASE": [
+        "Migrations reversible",
+        "Indexes on query columns",
+        "No data loss on rollback",
+    ],
+    "API": ["RESTful conventions", "Error codes documented", "Versioned endpoints"],
+    "DOCS": [
+        "Accurate to implementation",
+        "Setup instructions work",
+        "No stale references",
+    ],
+    "CONFIG": [
+        "Environment-specific values parameterized",
+        "Defaults are safe",
+        "Validated on load",
+    ],
+    "AGENTIC": [
+        "Pattern correctly implemented per registry spec",
+        "Graceful degradation on LLM failure",
+        "Observable via audit log",
+    ],
     # Hardware / Embedded / Mechanical
-    "FIRMWARE":      ["Compiles without warnings", "No dynamic memory allocation in safety-critical paths", "Interrupt handlers are reentrant-safe"],
-    "HARDWARE_SIM":  ["Simulation matches timing constraints", "Test bench covers all I/O states", "Power analysis within budget"],
-    "PCB_DESIGN":    ["DRC passes with zero violations", "BOM has no single-source components", "Thermal analysis within limits"],
-    "MECHANICAL":    ["Tolerance stack-up within spec", "Assembly sequence documented", "Material selection justified"],
-    "SAFETY":        ["All hazards identified and mitigated", "Risk matrix complete", "Traceability to requirements"],
-    "COMPLIANCE":    ["All applicable standards referenced", "Evidence artifacts linked", "Gap analysis complete"],
-    "EMBEDDED_TEST": ["HIL test coverage ≥ 90%", "All fault injection tests pass", "Timing requirements verified"],
+    "FIRMWARE": [
+        "Compiles without warnings",
+        "No dynamic memory allocation in safety-critical paths",
+        "Interrupt handlers are reentrant-safe",
+    ],
+    "HARDWARE_SIM": [
+        "Simulation matches timing constraints",
+        "Test bench covers all I/O states",
+        "Power analysis within budget",
+    ],
+    "PCB_DESIGN": [
+        "DRC passes with zero violations",
+        "BOM has no single-source components",
+        "Thermal analysis within limits",
+    ],
+    "MECHANICAL": [
+        "Tolerance stack-up within spec",
+        "Assembly sequence documented",
+        "Material selection justified",
+    ],
+    "SAFETY": [
+        "All hazards identified and mitigated",
+        "Risk matrix complete",
+        "Traceability to requirements",
+    ],
+    "COMPLIANCE": [
+        "All applicable standards referenced",
+        "Evidence artifacts linked",
+        "Gap analysis complete",
+    ],
+    "EMBEDDED_TEST": [
+        "HIL test coverage ≥ 90%",
+        "All fault injection tests pass",
+        "Timing requirements verified",
+    ],
     # Quality & Testing
-    "QA":           ["Test plan covers all requirements", "Test cases are reproducible", "Pass/fail criteria defined for each case"],
-    "SYSTEM_TEST":  ["End-to-end scenarios cover critical user paths", "Performance baselines established", "Environment parity with production documented"],
+    "QA": [
+        "Test plan covers all requirements",
+        "Test cases are reproducible",
+        "Pass/fail criteria defined for each case",
+    ],
+    "SYSTEM_TEST": [
+        "End-to-end scenarios cover critical user paths",
+        "Performance baselines established",
+        "Environment parity with production documented",
+    ],
     # Business & Strategy
-    "BUSINESS_ANALYSIS": ["Requirements traceable to business objectives", "User stories follow INVEST criteria", "Process flows cover happy and exception paths"],
-    "MARKET_RESEARCH":   ["Competitor analysis covers top 5 alternatives", "Target personas defined with evidence", "Go-to-market timeline realistic"],
-    "FINANCIAL":         ["Revenue model assumptions documented", "Unit economics calculated", "Break-even timeline identified"],
-    "PRODUCT_MGMT":      ["Success metrics are measurable (KPIs defined)", "Roadmap items prioritized with rationale", "MVP scope clearly bounded"],
+    "BUSINESS_ANALYSIS": [
+        "Requirements traceable to business objectives",
+        "User stories follow INVEST criteria",
+        "Process flows cover happy and exception paths",
+    ],
+    "MARKET_RESEARCH": [
+        "Competitor analysis covers top 5 alternatives",
+        "Target personas defined with evidence",
+        "Go-to-market timeline realistic",
+    ],
+    "FINANCIAL": [
+        "Revenue model assumptions documented",
+        "Unit economics calculated",
+        "Break-even timeline identified",
+    ],
+    "PRODUCT_MGMT": [
+        "Success metrics are measurable (KPIs defined)",
+        "Roadmap items prioritized with rationale",
+        "MVP scope clearly bounded",
+    ],
     # Regulatory & Legal
-    "REGULATORY":   ["All applicable regulations identified", "Submission timeline drafted", "Gap analysis against each standard complete"],
-    "LEGAL":        ["Terms of service cover liability and disputes", "Privacy policy compliant with GDPR/CCPA", "IP ownership and licensing clarified"],
+    "REGULATORY": [
+        "All applicable regulations identified",
+        "Submission timeline drafted",
+        "Gap analysis against each standard complete",
+    ],
+    "LEGAL": [
+        "Terms of service cover liability and disputes",
+        "Privacy policy compliant with GDPR/CCPA",
+        "IP ownership and licensing clarified",
+    ],
     # Design & UX
-    "UX_DESIGN":    ["User research findings documented", "Wireframes cover core flows", "Accessibility audit against WCAG 2.1 AA"],
+    "UX_DESIGN": [
+        "User research findings documented",
+        "Wireframes cover core flows",
+        "Accessibility audit against WCAG 2.1 AA",
+    ],
     # Infrastructure & Operations
-    "DEVOPS":       ["CI/CD pipeline runs green on sample commit", "Monitoring covers uptime, latency, error rate", "Rollback procedure documented and tested"],
-    "OPERATIONS":   ["Runbooks cover top 5 incident scenarios", "SLA targets defined with measurement method", "Capacity plan covers 12-month growth forecast"],
+    "DEVOPS": [
+        "CI/CD pipeline runs green on sample commit",
+        "Monitoring covers uptime, latency, error rate",
+        "Rollback procedure documented and tested",
+    ],
+    "OPERATIONS": [
+        "Runbooks cover top 5 incident scenarios",
+        "SLA targets defined with measurement method",
+        "Capacity plan covers 12-month growth forecast",
+    ],
     # Content & Localization
-    "TRAINING":       ["User guide covers all primary workflows", "Screenshots/diagrams match current UI", "Onboarding path tested with sample user"],
-    "LOCALIZATION":   ["i18n framework configured with fallback locale", "String extraction covers all user-facing text", "RTL layout tested if applicable"],
+    "TRAINING": [
+        "User guide covers all primary workflows",
+        "Screenshots/diagrams match current UI",
+        "Onboarding path tested with sample user",
+    ],
+    "LOCALIZATION": [
+        "i18n framework configured with fallback locale",
+        "String extraction covers all user-facing text",
+        "RTL layout tested if applicable",
+    ],
     # Cross-cutting
-    "SECURITY":  ["Threat model covers STRIDE categories", "No critical/high vulnerabilities", "SBOM generated"],
-    "DATA":      ["Schema documented", "Idempotent pipelines", "Data validation on ingestion"],
-    "ML_MODEL":  ["Evaluation metrics documented", "Training reproducible", "Inference latency within SLA"],
+    "SECURITY": [
+        "Threat model covers STRIDE categories",
+        "No critical/high vulnerabilities",
+        "SBOM generated",
+    ],
+    "DATA": [
+        "Schema documented",
+        "Idempotent pipelines",
+        "Data validation on ingestion",
+    ],
+    "ML_MODEL": [
+        "Evaluation metrics documented",
+        "Training reproducible",
+        "Inference latency within SLA",
+    ],
 }
 
 # Run states
 STATES = {
-    "decomposing":      "Breaking product description into tasks",
-    "critic_plan":      "Critic reviewing the implementation plan",
-    "awaiting_plan":    "Waiting for human approval of the plan",
-    "scaffolding":      "Creating project structure",
-    "executing":        "Running agent tasks",
-    "critic_code":      "Critic reviewing code output",
-    "integrating":      "Merging and testing",
+    "decomposing": "Breaking product description into tasks",
+    "critic_plan": "Critic reviewing the implementation plan",
+    "awaiting_plan": "Waiting for human approval of the plan",
+    "scaffolding": "Creating project structure",
+    "executing": "Running agent tasks",
+    "critic_code": "Critic reviewing code output",
+    "integrating": "Merging and testing",
     "critic_integration": "Critic reviewing integration results",
-    "awaiting_build":   "Waiting for human approval of the build",
-    "finalizing":       "Completing and archiving",
-    "completed":        "Build complete",
-    "failed":           "Build failed",
-    "rejected":         "Build rejected by human",
+    "awaiting_build": "Waiting for human approval of the build",
+    "finalizing": "Completing and archiving",
+    "completed": "Build complete",
+    "failed": "Build failed",
+    "rejected": "Build rejected by human",
 }
 
 
@@ -1560,8 +2725,11 @@ class BuildOrchestrator:
         self._runs: dict[str, dict] = {}
         self._lock = threading.Lock()
         self._checkpoint_db = checkpoint_db or os.path.join(
-            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-            "data", "build_checkpoints.db",
+            os.path.dirname(
+                os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            ),
+            "data",
+            "build_checkpoints.db",
         )
         self._init_checkpoint_db()
         self._restore_runs()
@@ -1574,6 +2742,7 @@ class BuildOrchestrator:
         """Create the build_checkpoints table if it does not exist."""
         try:
             import sqlite3
+
             os.makedirs(os.path.dirname(self._checkpoint_db), exist_ok=True)
             conn = sqlite3.connect(self._checkpoint_db)
             conn.execute("""
@@ -1586,7 +2755,9 @@ class BuildOrchestrator:
             """)
             conn.commit()
             conn.close()
-            self.logger.info("Build checkpoint DB initialised at %s", self._checkpoint_db)
+            self.logger.info(
+                "Build checkpoint DB initialised at %s", self._checkpoint_db
+            )
         except Exception as exc:
             self.logger.warning("Checkpoint DB init failed (non-fatal): %s", exc)
 
@@ -1594,6 +2765,7 @@ class BuildOrchestrator:
         """Persist current run state to SQLite for crash recovery."""
         try:
             import sqlite3
+
             # Serialize run — skip non-serialisable fields
             safe_run = {k: v for k, v in run.items() if k != "_thread"}
             data = json.dumps(safe_run, default=str)
@@ -1605,14 +2777,19 @@ class BuildOrchestrator:
             )
             conn.commit()
             conn.close()
-            self.logger.debug("Checkpointed run %s at state=%s", run["run_id"], run["state"])
+            self.logger.debug(
+                "Checkpointed run %s at state=%s", run["run_id"], run["state"]
+            )
         except Exception as exc:
-            self.logger.warning("Checkpoint failed for run %s: %s", run.get("run_id"), exc)
+            self.logger.warning(
+                "Checkpoint failed for run %s: %s", run.get("run_id"), exc
+            )
 
     def _restore_runs(self):
         """Restore in-progress builds from checkpoint DB on startup."""
         try:
             import sqlite3
+
             conn = sqlite3.connect(self._checkpoint_db)
             conn.row_factory = sqlite3.Row
             rows = conn.execute(
@@ -1628,10 +2805,14 @@ class BuildOrchestrator:
                         self._runs[run["run_id"]] = run
                     restored += 1
                 except Exception as exc:
-                    self.logger.warning("Failed to restore run %s: %s", row["run_id"], exc)
+                    self.logger.warning(
+                        "Failed to restore run %s: %s", row["run_id"], exc
+                    )
 
             if restored:
-                self.logger.info("Restored %d in-progress build run(s) from checkpoint", restored)
+                self.logger.info(
+                    "Restored %d in-progress build run(s) from checkpoint", restored
+                )
         except Exception as exc:
             self.logger.debug("Checkpoint restore skipped: %s", exc)
 
@@ -1750,7 +2931,9 @@ class BuildOrchestrator:
         try:
             phase_start = time.monotonic()
             plan = self._decompose(run)
-            run.setdefault("phase_durations", {})["decompose"] = round(time.monotonic() - phase_start, 2)
+            run.setdefault("phase_durations", {})["decompose"] = round(
+                time.monotonic() - phase_start, 2
+            )
             run["plan"] = plan
             run["updated_at"] = datetime.now(timezone.utc).isoformat()
 
@@ -1772,22 +2955,32 @@ class BuildOrchestrator:
             run["state"] = "critic_plan"
             phase_start = time.monotonic()
             critic_result = self._critic_review_plan(run)
-            run.setdefault("phase_durations", {})["critic_plan"] = round(time.monotonic() - phase_start, 2)
-            run["critic_reports"].append({
-                "phase": "plan",
-                "result": critic_result,
-                "timestamp": datetime.now(timezone.utc).isoformat(),
-            })
+            run.setdefault("phase_durations", {})["critic_plan"] = round(
+                time.monotonic() - phase_start, 2
+            )
+            run["critic_reports"].append(
+                {
+                    "phase": "plan",
+                    "result": critic_result,
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                }
+            )
 
             # Move to awaiting human approval
             run["state"] = "awaiting_plan"
             run["updated_at"] = datetime.now(timezone.utc).isoformat()
             self._checkpoint(run)
 
-            self._audit(run_id, "BUILD_AWAITING_PLAN_APPROVAL", json.dumps({
-                "task_count": len(plan),
-                "critic_score": critic_result.get("final_score", 0),
-            }))
+            self._audit(
+                run_id,
+                "BUILD_AWAITING_PLAN_APPROVAL",
+                json.dumps(
+                    {
+                        "task_count": len(plan),
+                        "critic_score": critic_result.get("final_score", 0),
+                    }
+                ),
+            )
 
         except Exception as exc:
             self.logger.error("Build start failed: %s", exc)
@@ -1805,7 +2998,9 @@ class BuildOrchestrator:
             if run is None:
                 return {"error": f"Run '{run_id}' not found"}
             if run["state"] != "awaiting_plan":
-                return {"error": f"Run is not awaiting plan approval (state: {run['state']})"}
+                return {
+                    "error": f"Run is not awaiting plan approval (state: {run['state']})"
+                }
 
             self._audit(run_id, "BUILD_PLAN_APPROVED", feedback[:500])
 
@@ -1813,34 +3008,44 @@ class BuildOrchestrator:
             run["state"] = "scaffolding"
             run["updated_at"] = datetime.now(timezone.utc).isoformat()
             phase_start = time.monotonic()
-            scaffold_result = self._scaffold(run)
-            run.setdefault("phase_durations", {})["scaffold"] = round(time.monotonic() - phase_start, 2)
+            self._scaffold(run)
+            run.setdefault("phase_durations", {})["scaffold"] = round(
+                time.monotonic() - phase_start, 2
+            )
 
             # Execute agents
             run["state"] = "executing"
             run["updated_at"] = datetime.now(timezone.utc).isoformat()
             phase_start = time.monotonic()
             self._execute_agents(run)
-            run.setdefault("phase_durations", {})["execute"] = round(time.monotonic() - phase_start, 2)
+            run.setdefault("phase_durations", {})["execute"] = round(
+                time.monotonic() - phase_start, 2
+            )
 
             # Critic reviews code
             run["state"] = "critic_code"
             run["updated_at"] = datetime.now(timezone.utc).isoformat()
             phase_start = time.monotonic()
             code_critic = self._critic_review_code(run)
-            run.setdefault("phase_durations", {})["critic_code"] = round(time.monotonic() - phase_start, 2)
-            run["critic_reports"].append({
-                "phase": "code",
-                "result": code_critic,
-                "timestamp": datetime.now(timezone.utc).isoformat(),
-            })
+            run.setdefault("phase_durations", {})["critic_code"] = round(
+                time.monotonic() - phase_start, 2
+            )
+            run["critic_reports"].append(
+                {
+                    "phase": "code",
+                    "result": code_critic,
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                }
+            )
 
             # Integrate
             run["state"] = "integrating"
             run["updated_at"] = datetime.now(timezone.utc).isoformat()
             phase_start = time.monotonic()
             integration = self._integrate(run)
-            run.setdefault("phase_durations", {})["integrate"] = round(time.monotonic() - phase_start, 2)
+            run.setdefault("phase_durations", {})["integrate"] = round(
+                time.monotonic() - phase_start, 2
+            )
             run["integration_result"] = integration
 
             # Critic reviews integration
@@ -1848,23 +3053,33 @@ class BuildOrchestrator:
             run["updated_at"] = datetime.now(timezone.utc).isoformat()
             phase_start = time.monotonic()
             int_critic = self._critic_review_integration(run)
-            run.setdefault("phase_durations", {})["critic_integration"] = round(time.monotonic() - phase_start, 2)
-            run["critic_reports"].append({
-                "phase": "integration",
-                "result": int_critic,
-                "timestamp": datetime.now(timezone.utc).isoformat(),
-            })
+            run.setdefault("phase_durations", {})["critic_integration"] = round(
+                time.monotonic() - phase_start, 2
+            )
+            run["critic_reports"].append(
+                {
+                    "phase": "integration",
+                    "result": int_critic,
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                }
+            )
 
             # Await final human approval
             run["state"] = "awaiting_build"
             run["updated_at"] = datetime.now(timezone.utc).isoformat()
             self._checkpoint(run)
 
-            self._audit(run_id, "BUILD_AWAITING_BUILD_APPROVAL", json.dumps({
-                "agent_count": len(run["agent_results"]),
-                "code_critic_score": code_critic.get("final_score", 0),
-                "integration_critic_score": int_critic.get("final_score", 0),
-            })[:500])
+            self._audit(
+                run_id,
+                "BUILD_AWAITING_BUILD_APPROVAL",
+                json.dumps(
+                    {
+                        "agent_count": len(run["agent_results"]),
+                        "code_critic_score": code_critic.get("final_score", 0),
+                        "integration_critic_score": int_critic.get("final_score", 0),
+                    }
+                )[:500],
+            )
 
             return self._run_summary(run)
 
@@ -1877,7 +3092,9 @@ class BuildOrchestrator:
             if run is None:
                 return {"error": f"Run '{run_id}' not found"}
             if run["state"] != "awaiting_build":
-                return {"error": f"Run is not awaiting build approval (state: {run['state']})"}
+                return {
+                    "error": f"Run is not awaiting build approval (state: {run['state']})"
+                }
 
             self._audit(run_id, "BUILD_APPROVED", feedback[:500])
 
@@ -1886,16 +3103,24 @@ class BuildOrchestrator:
             run["updated_at"] = datetime.now(timezone.utc).isoformat()
             phase_start = time.monotonic()
             self._finalize(run, feedback)
-            run.setdefault("phase_durations", {})["finalize"] = round(time.monotonic() - phase_start, 2)
+            run.setdefault("phase_durations", {})["finalize"] = round(
+                time.monotonic() - phase_start, 2
+            )
 
             run["state"] = "completed"
             run["updated_at"] = datetime.now(timezone.utc).isoformat()
             self._checkpoint(run)
 
-            self._audit(run_id, "BUILD_COMPLETED", json.dumps({
-                "solution": run["solution_name"],
-                "task_count": len(run["plan"]),
-            }))
+            self._audit(
+                run_id,
+                "BUILD_COMPLETED",
+                json.dumps(
+                    {
+                        "solution": run["solution_name"],
+                        "task_count": len(run["plan"]),
+                    }
+                ),
+            )
 
             return self._run_summary(run)
 
@@ -1962,22 +3187,30 @@ class BuildOrchestrator:
             subsystems = self._identify_subsystems(run)
 
             if not subsystems:
-                self.logger.warning("No subsystems identified, falling back to monolithic approach")
+                self.logger.warning(
+                    "No subsystems identified, falling back to monolithic approach"
+                )
                 return self._decompose_monolithic(run)
 
-            self.logger.info("Identified %d subsystems for chunked decomposition", len(subsystems))
+            self.logger.info(
+                "Identified %d subsystems for chunked decomposition", len(subsystems)
+            )
 
             # Phase 2: Pull Assignment - Route to teams
             self.logger.info("Phase 2: Pull Assignment - routing to team leads")
             team_assignments = self._assign_to_teams(subsystems)
 
             # Phase 3: Small Batch Planning - Each team plans their chunk
-            self.logger.info("Phase 3: Small Batch Planning - detailed planning per team")
+            self.logger.info(
+                "Phase 3: Small Batch Planning - detailed planning per team"
+            )
             all_tasks = []
             step_offset = 0
 
             for team_name, team_subsystems in team_assignments.items():
-                team_tasks = self._plan_team_subsystems(run, team_name, team_subsystems, step_offset)
+                team_tasks = self._plan_team_subsystems(
+                    run, team_name, team_subsystems, step_offset
+                )
                 # Adjust step numbers to avoid conflicts
                 for task in team_tasks:
                     task["step"] = task.get("step", 0) + step_offset
@@ -1985,13 +3218,17 @@ class BuildOrchestrator:
                 step_offset += len(team_tasks)
 
             # Phase 4: Integration & Flow - Merge and validate dependencies
-            self.logger.info("Phase 4: Integration & Flow - merging %d tasks", len(all_tasks))
+            self.logger.info(
+                "Phase 4: Integration & Flow - merging %d tasks", len(all_tasks)
+            )
             integrated_plan = self._integrate_team_plans(run, all_tasks, subsystems)
 
             return integrated_plan
 
         except Exception as exc:
-            self.logger.error("Chunked decompose failed: %s, falling back to monolithic", exc)
+            self.logger.error(
+                "Chunked decompose failed: %s, falling back to monolithic", exc
+            )
             return self._decompose_monolithic(run)
 
     def _identify_subsystems(self, run: dict) -> list[dict]:
@@ -2022,16 +3259,17 @@ class BuildOrchestrator:
                 ),
                 agent_role="system_engineer",
                 workspace=run.get("workspace_dir", ""),
-                context="Subsystem identification for chunked decomposition"
+                context="Subsystem identification for chunked decomposition",
             )
 
             # Parse the JSON response
             import json
+
             output = response.get("output", "")
 
             # Try to extract JSON from the response
-            start_idx = output.find('[')
-            end_idx = output.rfind(']') + 1
+            start_idx = output.find("[")
+            end_idx = output.rfind("]") + 1
             if start_idx >= 0 and end_idx > start_idx:
                 json_str = output[start_idx:end_idx]
                 subsystems = json.loads(json_str)
@@ -2066,12 +3304,64 @@ class BuildOrchestrator:
 
         # Team mapping based on subsystem characteristics
         team_mapping = {
-            "engineering": ["api", "backend", "frontend", "service", "server", "database", "web", "mobile"],
-            "hardware": ["firmware", "embedded", "pcb", "circuit", "sensor", "device", "driver", "board"],
-            "analysis": ["analytics", "data", "ml", "ai", "model", "intelligence", "learning", "algorithm"],
-            "design": ["ui", "ux", "interface", "user", "experience", "design", "workflow", "usability"],
-            "operations": ["deployment", "monitoring", "logging", "infrastructure", "devops", "security", "compliance"],
-            "compliance": ["regulatory", "safety", "legal", "compliance", "audit", "risk", "standard"],
+            "engineering": [
+                "api",
+                "backend",
+                "frontend",
+                "service",
+                "server",
+                "database",
+                "web",
+                "mobile",
+            ],
+            "hardware": [
+                "firmware",
+                "embedded",
+                "pcb",
+                "circuit",
+                "sensor",
+                "device",
+                "driver",
+                "board",
+            ],
+            "analysis": [
+                "analytics",
+                "data",
+                "ml",
+                "ai",
+                "model",
+                "intelligence",
+                "learning",
+                "algorithm",
+            ],
+            "design": [
+                "ui",
+                "ux",
+                "interface",
+                "user",
+                "experience",
+                "design",
+                "workflow",
+                "usability",
+            ],
+            "operations": [
+                "deployment",
+                "monitoring",
+                "logging",
+                "infrastructure",
+                "devops",
+                "security",
+                "compliance",
+            ],
+            "compliance": [
+                "regulatory",
+                "safety",
+                "legal",
+                "compliance",
+                "audit",
+                "risk",
+                "standard",
+            ],
         }
 
         for subsystem in subsystems:
@@ -2086,7 +3376,10 @@ class BuildOrchestrator:
                 # Auto-assign based on keywords
                 assigned_team = "engineering"  # default
                 for team, keywords in team_mapping.items():
-                    if any(keyword in name or keyword in description for keyword in keywords):
+                    if any(
+                        keyword in name or keyword in description
+                        for keyword in keywords
+                    ):
                         assigned_team = team
                         break
 
@@ -2094,10 +3387,14 @@ class BuildOrchestrator:
                 assignments[assigned_team] = []
             assignments[assigned_team].append(subsystem)
 
-        self.logger.info("Team assignments: %s", {t: len(subs) for t, subs in assignments.items()})
+        self.logger.info(
+            "Team assignments: %s", {t: len(subs) for t, subs in assignments.items()}
+        )
         return assignments
 
-    def _plan_team_subsystems(self, run: dict, team_name: str, subsystems: list[dict], step_offset: int) -> list[dict]:
+    def _plan_team_subsystems(
+        self, run: dict, team_name: str, subsystems: list[dict], step_offset: int
+    ) -> list[dict]:
         """
         Phase 3: Small Batch Planning
 
@@ -2123,7 +3420,9 @@ class BuildOrchestrator:
                 task_type="SYSTEM_DESIGN",
                 description=(
                     f"As the {team_lead} for the {team_name} team, create detailed implementation tasks for these subsystems:\n\n"
-                    f"SUBSYSTEMS ASSIGNED TO YOUR TEAM:\n" + "\n".join(subsystem_descriptions) + "\n\n"
+                    f"SUBSYSTEMS ASSIGNED TO YOUR TEAM:\n"
+                    + "\n".join(subsystem_descriptions)
+                    + "\n\n"
                     f"CONTEXT: Product is: {run['product_description'][:300]}...\n\n"
                     f"LEAN PLANNING RULES:\n"
                     f"- Create 3-10 implementable tasks per subsystem\n"
@@ -2139,15 +3438,16 @@ class BuildOrchestrator:
                 ),
                 agent_role=team_lead,
                 workspace=run.get("workspace_dir", ""),
-                context=f"Detailed planning for {team_name} subsystems"
+                context=f"Detailed planning for {team_name} subsystems",
             )
 
             # Parse team tasks
             import json
+
             output = response.get("output", "")
 
-            start_idx = output.find('[')
-            end_idx = output.rfind(']') + 1
+            start_idx = output.find("[")
+            end_idx = output.rfind("]") + 1
             if start_idx >= 0 and end_idx > start_idx:
                 json_str = output[start_idx:end_idx]
                 tasks = json.loads(json_str)
@@ -2160,7 +3460,9 @@ class BuildOrchestrator:
                         task.setdefault("step", i + 1)
                         task.setdefault("task_type", "BACKEND")
                         task.setdefault("agent_role", team_lead)
-                        task.setdefault("acceptance_criteria", ["Task completed successfully"])
+                        task.setdefault(
+                            "acceptance_criteria", ["Task completed successfully"]
+                        )
                         task.setdefault("depends_on", [])
 
                         # Add subsystem context
@@ -2180,19 +3482,40 @@ class BuildOrchestrator:
     def _get_team_task_types(self, team_name: str) -> str:
         """Get task types relevant to a specific team."""
         team_types = {
-            "engineering": ["BACKEND", "FRONTEND", "API", "DATABASE", "TESTS", "INFRA", "AGENTIC"],
-            "hardware": ["FIRMWARE", "PCB_DESIGN", "HARDWARE_SIM", "EMBEDDED_TEST", "MECHANICAL"],
+            "engineering": [
+                "BACKEND",
+                "FRONTEND",
+                "API",
+                "DATABASE",
+                "TESTS",
+                "INFRA",
+                "AGENTIC",
+            ],
+            "hardware": [
+                "FIRMWARE",
+                "PCB_DESIGN",
+                "HARDWARE_SIM",
+                "EMBEDDED_TEST",
+                "MECHANICAL",
+            ],
             "analysis": ["DATA", "ML_MODEL", "BUSINESS_ANALYSIS", "FINANCIAL"],
             "design": ["UX_DESIGN", "PRODUCT_MGMT"],
             "operations": ["DEVOPS", "OPERATIONS", "DOCS", "TRAINING"],
             "compliance": ["REGULATORY", "LEGAL", "SAFETY", "COMPLIANCE"],
-            "architecture": ["ARCHITECTURE", "SYSTEM_DESIGN", "REQUIREMENTS", "INTERFACE_DESIGN"],
+            "architecture": [
+                "ARCHITECTURE",
+                "SYSTEM_DESIGN",
+                "REQUIREMENTS",
+                "INTERFACE_DESIGN",
+            ],
         }
 
         types = team_types.get(team_name, ["BACKEND"])
         return ", ".join(types)
 
-    def _integrate_team_plans(self, run: dict, all_tasks: list[dict], subsystems: list[dict]) -> list[dict]:
+    def _integrate_team_plans(
+        self, run: dict, all_tasks: list[dict], subsystems: list[dict]
+    ) -> list[dict]:
         """
         Phase 4: Integration & Flow
 
@@ -2212,7 +3535,9 @@ class BuildOrchestrator:
                 team = task.get("team", "unknown")
                 if team not in team_summaries:
                     team_summaries[team] = []
-                team_summaries[team].append(f"Step {task['step']}: {task.get('task_type', 'UNKNOWN')} - {task.get('description', '')[:100]}...")
+                team_summaries[team].append(
+                    f"Step {task['step']}: {task.get('task_type', 'UNKNOWN')} - {task.get('description', '')[:100]}..."
+                )
 
             # Ask system engineer to add integration tasks and fix dependencies
             integration_prompt = (
@@ -2221,9 +3546,11 @@ class BuildOrchestrator:
                 f"SUBSYSTEMS IDENTIFIED:\n"
             )
             for subsystem in subsystems:
-                integration_prompt += f"- {subsystem['name']}: {subsystem['description'][:100]}...\n"
+                integration_prompt += (
+                    f"- {subsystem['name']}: {subsystem['description'][:100]}...\n"
+                )
 
-            integration_prompt += f"\nTEAM TASKS CREATED:\n"
+            integration_prompt += "\nTEAM TASKS CREATED:\n"
             for team, tasks in team_summaries.items():
                 integration_prompt += f"\n{team.upper()} TEAM ({len(tasks)} tasks):\n"
                 for task_summary in tasks[:3]:  # Show first 3 tasks per team
@@ -2247,16 +3574,17 @@ class BuildOrchestrator:
                 description=integration_prompt,
                 agent_role="system_engineer",
                 workspace=run.get("workspace_dir", ""),
-                context="Integration planning across teams"
+                context="Integration planning across teams",
             )
 
             # Parse integration tasks and append them
             import json
+
             output = response.get("output", "")
 
             integration_tasks = []
-            start_idx = output.find('[')
-            end_idx = output.rfind(']') + 1
+            start_idx = output.find("[")
+            end_idx = output.rfind("]") + 1
             if start_idx >= 0 and end_idx > start_idx:
                 json_str = output[start_idx:end_idx]
                 additional_tasks = json.loads(json_str)
@@ -2266,7 +3594,9 @@ class BuildOrchestrator:
                         task["step"] = len(all_tasks) + i + 1
                         task.setdefault("task_type", "SYSTEM_TEST")
                         task.setdefault("agent_role", "system_engineer")
-                        task.setdefault("acceptance_criteria", ["Integration test passes"])
+                        task.setdefault(
+                            "acceptance_criteria", ["Integration test passes"]
+                        )
                         task.setdefault("depends_on", [])
                         task["team"] = "integration"
                         integration_tasks.append(task)
@@ -2299,8 +3629,13 @@ class BuildOrchestrator:
                             existing.append(ec)
                     task["acceptance_criteria"] = existing
 
-            self.logger.info("Integration complete: %d total tasks (%d team + %d integration + %d quality gates)",
-                           len(final_plan), len(all_tasks), len(integration_tasks), len(quality_gates))
+            self.logger.info(
+                "Integration complete: %d total tasks (%d team + %d integration + %d quality gates)",
+                len(final_plan),
+                len(all_tasks),
+                len(integration_tasks),
+                len(quality_gates),
+            )
 
             return final_plan
 
@@ -2397,96 +3732,125 @@ class BuildOrchestrator:
         step_offset = len(tasks) + 1
 
         # Code Quality Gates (Shift-Left Principle)
-        quality_tasks.extend([
-            {
-                "step": step_offset,
-                "task_type": "QA",
-                "description": "Set up automated code quality gates: linting, complexity analysis, dependency scanning",
-                "acceptance_criteria": [
-                    "Code coverage >= 80% for new code",
-                    "No critical security vulnerabilities in dependencies",
-                    "Cyclomatic complexity <= 10 per function",
-                    "All code passes linting with zero warnings",
-                    "Pre-commit hooks configured for quality checks"
-                ],
-                "depends_on": [],
-                "agent_role": "qa_engineer",
-                "team": "quality",
-                "quality_gate": True
-            },
-            {
-                "step": step_offset + 1,
-                "task_type": "SECURITY",
-                "description": "Implement security scanning and SAST (Static Application Security Testing)",
-                "acceptance_criteria": [
-                    "SAST scan passes with zero critical findings",
-                    "Dependency vulnerability scan shows no high-risk packages",
-                    "Secret scanning configured (no hardcoded credentials)",
-                    "Security headers validation for web components"
-                ],
-                "depends_on": [],
-                "agent_role": "analyst",
-                "team": "security",
-                "quality_gate": True
-            }
-        ])
+        quality_tasks.extend(
+            [
+                {
+                    "step": step_offset,
+                    "task_type": "QA",
+                    "description": "Set up automated code quality gates: linting, complexity analysis, dependency scanning",
+                    "acceptance_criteria": [
+                        "Code coverage >= 80% for new code",
+                        "No critical security vulnerabilities in dependencies",
+                        "Cyclomatic complexity <= 10 per function",
+                        "All code passes linting with zero warnings",
+                        "Pre-commit hooks configured for quality checks",
+                    ],
+                    "depends_on": [],
+                    "agent_role": "qa_engineer",
+                    "team": "quality",
+                    "quality_gate": True,
+                },
+                {
+                    "step": step_offset + 1,
+                    "task_type": "SECURITY",
+                    "description": "Implement security scanning and SAST (Static Application Security Testing)",
+                    "acceptance_criteria": [
+                        "SAST scan passes with zero critical findings",
+                        "Dependency vulnerability scan shows no high-risk packages",
+                        "Secret scanning configured (no hardcoded credentials)",
+                        "Security headers validation for web components",
+                    ],
+                    "depends_on": [],
+                    "agent_role": "analyst",
+                    "team": "security",
+                    "quality_gate": True,
+                },
+            ]
+        )
 
         # Performance Quality Gates
-        has_api = any("API" in task.get("task_type", "") or "BACKEND" in task.get("task_type", "") for task in tasks)
+        has_api = any(
+            "API" in task.get("task_type", "") or "BACKEND" in task.get("task_type", "")
+            for task in tasks
+        )
         if has_api:
-            quality_tasks.append({
-                "step": step_offset + 2,
-                "task_type": "SYSTEM_TEST",
-                "description": "Performance testing: load testing, stress testing, API response time validation",
-                "acceptance_criteria": [
-                    "API response time <= 200ms for 95% of requests",
-                    "System handles 10x expected load without degradation",
-                    "Memory usage remains stable under sustained load",
-                    "Database query performance optimized (no N+1 queries)"
-                ],
-                "depends_on": [task["step"] for task in tasks if "API" in task.get("task_type", "")],
-                "agent_role": "system_tester",
-                "team": "quality",
-                "quality_gate": True
-            })
+            quality_tasks.append(
+                {
+                    "step": step_offset + 2,
+                    "task_type": "SYSTEM_TEST",
+                    "description": "Performance testing: load testing, stress testing, API response time validation",
+                    "acceptance_criteria": [
+                        "API response time <= 200ms for 95% of requests",
+                        "System handles 10x expected load without degradation",
+                        "Memory usage remains stable under sustained load",
+                        "Database query performance optimized (no N+1 queries)",
+                    ],
+                    "depends_on": [
+                        task["step"]
+                        for task in tasks
+                        if "API" in task.get("task_type", "")
+                    ],
+                    "agent_role": "system_tester",
+                    "team": "quality",
+                    "quality_gate": True,
+                }
+            )
 
         # Contract Testing (API Contracts)
         if has_api:
-            quality_tasks.append({
-                "step": step_offset + 3,
-                "task_type": "TESTS",
-                "description": "API contract testing: OpenAPI validation, consumer contract tests, backward compatibility",
-                "acceptance_criteria": [
-                    "All API endpoints match OpenAPI specification",
-                    "Consumer contract tests pass for all known clients",
-                    "API versioning strategy implemented",
-                    "Breaking changes detected and documented"
-                ],
-                "depends_on": [task["step"] for task in tasks if "API" in task.get("task_type", "")],
-                "agent_role": "qa_engineer",
-                "team": "quality",
-                "quality_gate": True
-            })
+            quality_tasks.append(
+                {
+                    "step": step_offset + 3,
+                    "task_type": "TESTS",
+                    "description": "API contract testing: OpenAPI validation, consumer contract tests, backward compatibility",
+                    "acceptance_criteria": [
+                        "All API endpoints match OpenAPI specification",
+                        "Consumer contract tests pass for all known clients",
+                        "API versioning strategy implemented",
+                        "Breaking changes detected and documented",
+                    ],
+                    "depends_on": [
+                        task["step"]
+                        for task in tasks
+                        if "API" in task.get("task_type", "")
+                    ],
+                    "agent_role": "qa_engineer",
+                    "team": "quality",
+                    "quality_gate": True,
+                }
+            )
 
         # Infrastructure Quality Gates (IaC Validation)
-        has_infra = any("INFRA" in task.get("task_type", "") or "DEVOPS" in task.get("task_type", "") for task in tasks)
+        has_infra = any(
+            "INFRA" in task.get("task_type", "")
+            or "DEVOPS" in task.get("task_type", "")
+            for task in tasks
+        )
         if has_infra:
-            quality_tasks.append({
-                "step": step_offset + 4,
-                "task_type": "INFRA",
-                "description": "Infrastructure validation: IaC scanning, resource limits, security policies",
-                "acceptance_criteria": [
-                    "Terraform/Kubernetes configs pass security validation",
-                    "Resource limits defined for all containers",
-                    "Network policies restrict unnecessary traffic",
-                    "Backup and disaster recovery procedures documented",
-                    "Infrastructure costs estimated and approved"
-                ],
-                "depends_on": [task["step"] for task in tasks if any(t in task.get("task_type", "") for t in ["INFRA", "DEVOPS"])],
-                "agent_role": "devops_engineer",
-                "team": "operations",
-                "quality_gate": True
-            })
+            quality_tasks.append(
+                {
+                    "step": step_offset + 4,
+                    "task_type": "INFRA",
+                    "description": "Infrastructure validation: IaC scanning, resource limits, security policies",
+                    "acceptance_criteria": [
+                        "Terraform/Kubernetes configs pass security validation",
+                        "Resource limits defined for all containers",
+                        "Network policies restrict unnecessary traffic",
+                        "Backup and disaster recovery procedures documented",
+                        "Infrastructure costs estimated and approved",
+                    ],
+                    "depends_on": [
+                        task["step"]
+                        for task in tasks
+                        if any(
+                            t in task.get("task_type", "") for t in ["INFRA", "DEVOPS"]
+                        )
+                    ],
+                    "agent_role": "devops_engineer",
+                    "team": "operations",
+                    "quality_gate": True,
+                }
+            )
 
         return quality_tasks
 
@@ -2502,8 +3866,23 @@ class BuildOrchestrator:
         for domain_id, rule in DOMAIN_RULES.items():
             hits = sum(1 for kw in rule["keywords"] if kw.lower() in desc_lower)
             # Standards keywords (ISO, FDA, DO-, PCI, etc.) are high-signal — 1 hit enough
-            standard_kws = [kw for kw in rule["keywords"]
-                           if any(s in kw.upper() for s in ["ISO", "FDA", "IEC", "DO-", "PCI", "SOX", "SOC", "AUTOSAR"])]
+            standard_kws = [
+                kw
+                for kw in rule["keywords"]
+                if any(
+                    s in kw.upper()
+                    for s in [
+                        "ISO",
+                        "FDA",
+                        "IEC",
+                        "DO-",
+                        "PCI",
+                        "SOX",
+                        "SOC",
+                        "AUTOSAR",
+                    ]
+                )
+            ]
             has_standard_hit = any(kw.lower() in desc_lower for kw in standard_kws)
             if hits >= 2 or has_standard_hit:
                 matched.append({**rule, "domain": domain_id})
@@ -2538,14 +3917,18 @@ class BuildOrchestrator:
                 hitl_override = "strict"
 
         matched_names = [did for did, rule in DOMAIN_RULES.items() if rule in matched]
-        lines.append(f"Detected domain(s): **{', '.join(matched_names)}** (matched by keywords)")
-        lines.append(f"\n**REQUIRED task types for this domain** (DO NOT skip these):")
+        lines.append(
+            f"Detected domain(s): **{', '.join(matched_names)}** (matched by keywords)"
+        )
+        lines.append("\n**REQUIRED task types for this domain** (DO NOT skip these):")
         for rt in sorted(all_required):
             desc = BUILD_TASK_TYPES.get(rt, "")
             lines.append(f"  - {rt}: {desc}")
 
         if all_standards:
-            lines.append(f"\n**Applicable standards:** {', '.join(sorted(all_standards))}")
+            lines.append(
+                f"\n**Applicable standards:** {', '.join(sorted(all_standards))}"
+            )
             lines.append(
                 "Include COMPLIANCE tasks that produce evidence artifacts for these standards."
             )
@@ -2620,6 +4003,7 @@ class BuildOrchestrator:
         # Solution-defined roles (from prompts.yaml)
         try:
             from src.core.project_loader import project_config
+
             roles = project_config.get_prompts().get("roles", {})
             if roles:
                 lines.append("\n### Solution-Defined Roles (from prompts.yaml)")
@@ -2671,7 +4055,9 @@ class BuildOrchestrator:
             readme_path = os.path.join(workspace, "README.md")
             if not os.path.exists(readme_path):
                 with open(readme_path, "w", encoding="utf-8") as f:
-                    f.write(f"# {run['solution_name']}\n\n{run['product_description']}\n")
+                    f.write(
+                        f"# {run['solution_name']}\n\n{run['product_description']}\n"
+                    )
 
             # AGENTS.md — record of which agents built what
             agents_path = os.path.join(workspace, "AGENTS.md")
@@ -2681,7 +4067,9 @@ class BuildOrchestrator:
                     f.write(f"Build started: {run['created_at']}\n\n")
                     f.write("## Tasks\n\n")
                     for task in run.get("plan", []):
-                        f.write(f"- **{task.get('task_type', '?')}**: {task.get('description', '')}\n")
+                        f.write(
+                            f"- **{task.get('task_type', '?')}**: {task.get('description', '')}\n"
+                        )
 
             self.logger.info("Scaffolded workspace: %s", workspace)
             return {"status": "completed", "workspace": workspace}
@@ -2734,19 +4122,23 @@ class BuildOrchestrator:
                 if blocked_by:
                     self.logger.warning(
                         "Skipping task step=%s (blocked by failed steps %s): %s",
-                        task.get("step"), blocked_by, task.get("task_type"),
+                        task.get("step"),
+                        blocked_by,
+                        task.get("task_type"),
                     )
-                    results.append({
-                        "task": task,
-                        "result": {
-                            "status": "blocked",
-                            "reason": "dependency_failed",
-                            "blocked_by": blocked_by,
-                        },
-                        "step": task.get("step", 0),
-                        "wave": wave_num,
-                        "agent_role": task.get("agent_role", "developer"),
-                    })
+                    results.append(
+                        {
+                            "task": task,
+                            "result": {
+                                "status": "blocked",
+                                "reason": "dependency_failed",
+                                "blocked_by": blocked_by,
+                            },
+                            "step": task.get("step", 0),
+                            "wave": wave_num,
+                            "agent_role": task.get("agent_role", "developer"),
+                        }
+                    )
                     # Cascade: this blocked task is also a failed step,
                     # so any downstream tasks depending on it will also be blocked
                     failed_steps.add(task.get("step", 0))
@@ -2759,7 +4151,9 @@ class BuildOrchestrator:
 
             self.logger.info(
                 "Executing wave %d/%d: %d task(s) [%s]",
-                wave_num + 1, len(waves), len(executable),
+                wave_num + 1,
+                len(waves),
+                len(executable),
                 ", ".join(t.get("task_type", "?") for t in executable),
             )
 
@@ -2767,7 +4161,9 @@ class BuildOrchestrator:
             prior_context = self._summarize_context(results)
             bus_summary = message_bus.get_summary()
             if prior_context or bus_summary:
-                run["_prior_wave_context"] = (prior_context or "") + "\n" + (bus_summary or "")
+                run["_prior_wave_context"] = (
+                    (prior_context or "") + "\n" + (bus_summary or "")
+                )
 
             wave_results = []
             for task in executable:
@@ -2776,18 +4172,25 @@ class BuildOrchestrator:
                 # Use capability-match warm-start for routing
                 task_description = task.get("description", "")
                 routed_role = adaptive_router.route_with_context(
-                    task.get("task_type", ""), task_description,
+                    task.get("task_type", ""),
+                    task_description,
                 )
                 if routed_role != agent_role:
                     self.logger.info(
                         "Capability-match routing: %s → %s (was %s)",
-                        task.get("task_type"), routed_role, agent_role,
+                        task.get("task_type"),
+                        routed_role,
+                        agent_role,
                     )
                     agent_role = routed_role
 
                 result = self._route_to_agent(
-                    task, agent_role, openswe, run,
-                    openshell=openshell, local_sandbox=local_sandbox,
+                    task,
+                    agent_role,
+                    openswe,
+                    run,
+                    openshell=openshell,
+                    local_sandbox=local_sandbox,
                 )
 
                 # Publish result to message bus for downstream agents
@@ -2812,13 +4215,15 @@ class BuildOrchestrator:
                     quality_score=0.5 if success else 0.0,
                 )
 
-                wave_results.append({
-                    "task": task,
-                    "result": result,
-                    "step": task.get("step", 0),
-                    "wave": wave_num,
-                    "agent_role": agent_role,
-                })
+                wave_results.append(
+                    {
+                        "task": task,
+                        "result": result,
+                        "step": task.get("step", 0),
+                        "wave": wave_num,
+                        "agent_role": agent_role,
+                    }
+                )
 
             results.extend(wave_results)
 
@@ -2840,11 +4245,13 @@ class BuildOrchestrator:
                     self._audit(
                         run_id,
                         "BUILD_DRIFT_WARNING",
-                        json.dumps({
-                            "step": wr["task"].get("step", 0),
-                            "task_type": wr["task"].get("task_type", ""),
-                            "description": wr["task"].get("description", "")[:200],
-                        }),
+                        json.dumps(
+                            {
+                                "step": wr["task"].get("step", 0),
+                                "task_type": wr["task"].get("task_type", ""),
+                                "description": wr["task"].get("description", "")[:200],
+                            }
+                        ),
                     )
 
             # Checkpoint after each wave for crash recovery
@@ -2858,14 +4265,20 @@ class BuildOrchestrator:
             run["drift_warnings"] = drift_count
 
         # Count failures (including blocked) and update run state accordingly
-        failed = [r for r in results if r["result"].get("status") in ("error", "failed", "blocked")]
+        failed = [
+            r
+            for r in results
+            if r["result"].get("status") in ("error", "failed", "blocked")
+        ]
         if failed and len(failed) == len(results):
             run["state"] = "failed"
             run["error"] = f"All {len(failed)} agent tasks failed or blocked"
         elif failed:
             self.logger.warning(
                 "%d/%d tasks failed/blocked (completed: %d)",
-                len(failed), len(results), len(results) - len(failed),
+                len(failed),
+                len(results),
+                len(results) - len(failed),
             )
 
         run["agent_results"] = results
@@ -2881,7 +4294,7 @@ class BuildOrchestrator:
             return []
 
         # Map step number → task
-        task_map = {task.get("step", i): task for i, task in enumerate(plan)}
+        {task.get("step", i): task for i, task in enumerate(plan)}
         completed = set()
         remaining = list(plan)
         waves = []
@@ -2940,7 +4353,8 @@ class BuildOrchestrator:
 
         # Task types that should produce files — derived from ARTIFACT_TYPES registry
         code_producing_types = {
-            tt for tt, info in ARTIFACT_TYPES.items()
+            tt
+            for tt, info in ARTIFACT_TYPES.items()
             if info.get("category") in ("code", "hardware", "infra")
         }
 
@@ -2979,22 +4393,27 @@ class BuildOrchestrator:
                 "FIRMWARE": ["firmware", "hal", "driver", "rtos", "embedded"],
             }
             patterns = type_patterns.get(task_type, [])
-            has_pattern_match = any(
-                p in files_lower for p in patterns
-            )
+            has_pattern_match = any(p in files_lower for p in patterns)
 
             if not has_relevance and not has_pattern_match:
                 self.logger.debug(
                     "Drift check: files %s don't relate to task_type=%s desc=%s",
-                    files_changed[:3], task_type, task["description"][:80],
+                    files_changed[:3],
+                    task_type,
+                    task["description"][:80],
                 )
                 return False
 
         return True
 
     def _route_to_agent(
-        self, task: dict, agent_role: str, openswe, run: dict,
-        openshell=None, local_sandbox=None,
+        self,
+        task: dict,
+        agent_role: str,
+        openswe,
+        run: dict,
+        openshell=None,
+        local_sandbox=None,
     ) -> dict:
         """
         Multi-Agent Coordinator + ReAct dispatch with 3-tier isolation cascade.
@@ -3016,7 +4435,9 @@ class BuildOrchestrator:
         if learned_role != agent_role:
             self.logger.info(
                 "AdaptiveRouter override: %s → %s (was %s)",
-                task_type, learned_role, agent_role,
+                task_type,
+                learned_role,
+                agent_role,
             )
             agent_role = learned_role
 
@@ -3033,7 +4454,9 @@ class BuildOrchestrator:
 
         # ── Tier 2: SandboxRunner local isolation ────────────────────────
         if local_sandbox and workspace:
-            result = self._try_sandbox_runner(enriched_task, workspace, local_sandbox, openswe)
+            result = self._try_sandbox_runner(
+                enriched_task, workspace, local_sandbox, openswe
+            )
             if result is not None:
                 return result
             self.logger.info("Tier 2 (SandboxRunner) failed for task, falling through")
@@ -3041,11 +4464,14 @@ class BuildOrchestrator:
         # ── Tier 3: Domain-aware runner (falls back to OpenSWE) ──────────
         # Select the correct domain runner based on agent role
         from src.integrations.base_runner import get_runner_for_role
+
         domain_runner = get_runner_for_role(agent_role)
         if domain_runner and domain_runner.name != "openswe":
             self.logger.info(
                 "Tier 3 (domain runner '%s') for task_type=%s, role=%s",
-                domain_runner.name, task_type, agent_role,
+                domain_runner.name,
+                task_type,
+                agent_role,
             )
             run_result = domain_runner.execute(
                 task=enriched_task,
@@ -3099,16 +4525,22 @@ class BuildOrchestrator:
                     f"{s['name']} ({s['repo']})" for s in mcp_servers
                 )
                 artifact_hint += f"\nOpen-source MCP servers: {server_hints}"
-            enriched_task["description"] = enriched_task.get("description", "") + artifact_hint
+            enriched_task["description"] = (
+                enriched_task.get("description", "") + artifact_hint
+            )
 
             enriched_task.setdefault("payload", {})
             enriched_task["payload"]["artifact_category"] = category
-            enriched_task["payload"]["expected_extensions"] = artifact_info.get("extensions", [])
+            enriched_task["payload"]["expected_extensions"] = artifact_info.get(
+                "extensions", []
+            )
             enriched_task["payload"]["standards"] = run.get("detected_domains", [])
 
         return enriched_task
 
-    def _try_openshell(self, task: dict, workspace: str, openshell, openswe) -> Optional[dict]:
+    def _try_openshell(
+        self, task: dict, workspace: str, openshell, openswe
+    ) -> Optional[dict]:
         """
         Tier 1: Execute task inside an OpenShell container sandbox.
 
@@ -3118,7 +4550,9 @@ class BuildOrchestrator:
         """
         task_type = task.get("task_type", "")
         # Sanitize task_type for sandbox name (alphanumeric + dashes only)
-        safe_type = "".join(c if c.isalnum() or c in "-_" else "" for c in task_type)[:32]
+        safe_type = "".join(c if c.isalnum() or c in "-_" else "" for c in task_type)[
+            :32
+        ]
         sandbox_name = f"build-{safe_type}-{uuid.uuid4().hex[:8]}"
 
         # Build security policy based on task type
@@ -3131,7 +4565,8 @@ class BuildOrchestrator:
 
                 self.logger.info(
                     "Tier 1 (OpenShell): executing task_type=%s in sandbox %s",
-                    task_type, sandbox_name,
+                    task_type,
+                    sandbox_name,
                 )
 
                 # Run OpenSWE inside the container via sandbox_handle
@@ -3145,12 +4580,18 @@ class BuildOrchestrator:
 
         except Exception as exc:
             self.logger.warning(
-                "Tier 1 (OpenShell) failed for %s: %s", task_type, exc,
+                "Tier 1 (OpenShell) failed for %s: %s",
+                task_type,
+                exc,
             )
             return None
 
     def _try_sandbox_runner(
-        self, task: dict, workspace: str, local_sandbox, openswe,
+        self,
+        task: dict,
+        workspace: str,
+        local_sandbox,
+        openswe,
     ) -> Optional[dict]:
         """
         Tier 2: Execute task in a local repo clone with branch isolation.
@@ -3166,10 +4607,12 @@ class BuildOrchestrator:
         try:
             # Clone workspace into isolated temp directory
             import tempfile
+
             sandbox_dir = tempfile.mkdtemp(prefix="sage-build-")
 
             # Copy workspace to sandbox (faster than git clone for local dirs)
             import shutil
+
             if os.path.isdir(workspace):
                 shutil.copytree(workspace, sandbox_dir, dirs_exist_ok=True)
             else:
@@ -3177,18 +4620,21 @@ class BuildOrchestrator:
                 clone_result = local_sandbox.clone_repo(workspace, sandbox_dir)
                 if not clone_result.get("success"):
                     self.logger.warning(
-                        "Tier 2: clone failed: %s", clone_result.get("error"),
+                        "Tier 2: clone failed: %s",
+                        clone_result.get("error"),
                     )
                     return None
 
             # Create isolated branch
             local_sandbox.execute(
-                f"git checkout -b {branch_name}", sandbox_dir,
+                f"git checkout -b {branch_name}",
+                sandbox_dir,
             )
 
             self.logger.info(
                 "Tier 2 (SandboxRunner): executing task_type=%s in %s",
-                task_type, sandbox_dir,
+                task_type,
+                sandbox_dir,
             )
 
             # Run OpenSWE in the sandboxed directory
@@ -3207,7 +4653,9 @@ class BuildOrchestrator:
 
         except Exception as exc:
             self.logger.warning(
-                "Tier 2 (SandboxRunner) failed for %s: %s", task_type, exc,
+                "Tier 2 (SandboxRunner) failed for %s: %s",
+                task_type,
+                exc,
             )
             return None
 
@@ -3216,6 +4664,7 @@ class BuildOrchestrator:
             if sandbox_dir and os.path.isdir(sandbox_dir):
                 try:
                     import shutil
+
                     shutil.rmtree(sandbox_dir, ignore_errors=True)
                 except Exception:
                     pass
@@ -3270,16 +4719,23 @@ class BuildOrchestrator:
 
         # Task types that need network access
         network_tasks = {
-            "api_integration", "deployment", "cloud_setup",
-            "ci_cd_pipeline", "package_management", "dependency_setup",
+            "api_integration",
+            "deployment",
+            "cloud_setup",
+            "ci_cd_pipeline",
+            "package_management",
+            "dependency_setup",
         }
         if task_type in network_tasks:
             policy["network_policies"]["allow_outbound"] = True
 
         # Task types that need broader filesystem access
         broad_fs_tasks = {
-            "database_setup", "infrastructure", "deployment",
-            "monitoring_setup", "environment_config",
+            "database_setup",
+            "infrastructure",
+            "deployment",
+            "monitoring_setup",
+            "environment_config",
         }
         if task_type in broad_fs_tasks:
             policy["filesystem_policy"]["writable_paths"].append("/var")
@@ -3314,8 +4770,7 @@ class BuildOrchestrator:
             "files_changed": list(set(all_files)),
             "total_tasks": len(results),
             "completed_tasks": sum(
-                1 for r in results
-                if r.get("result", {}).get("status") == "completed"
+                1 for r in results if r.get("result", {}).get("status") == "completed"
             ),
             "combined_diff_preview": "\n---\n".join(all_code[:5])[:4000],
         }
@@ -3348,8 +4803,12 @@ class BuildOrchestrator:
     # ------------------------------------------------------------------
 
     def _revise_plan(
-        self, plan: list, review: dict, *,
-        product_description: str = "", domain_hints: str = "",
+        self,
+        plan: list,
+        review: dict,
+        *,
+        product_description: str = "",
+        domain_hints: str = "",
     ) -> list:
         """
         Revision function for the actor-critic loop.
@@ -3374,29 +4833,38 @@ class BuildOrchestrator:
         # Build focused feedback — only what needs changing
         feedback_lines = []
         if flaws:
-            feedback_lines.append("FLAWS (must fix):\n" + "\n".join(f"- {f}" for f in flaws[:5]))
+            feedback_lines.append(
+                "FLAWS (must fix):\n" + "\n".join(f"- {f}" for f in flaws[:5])
+            )
         if missing:
-            feedback_lines.append("MISSING (must add):\n" + "\n".join(f"- {m}" for m in missing[:5]))
+            feedback_lines.append(
+                "MISSING (must add):\n" + "\n".join(f"- {m}" for m in missing[:5])
+            )
         if suggestions:
-            feedback_lines.append("SUGGESTIONS (optional):\n" + "\n".join(f"- {s}" for s in suggestions[:3]))
+            feedback_lines.append(
+                "SUGGESTIONS (optional):\n"
+                + "\n".join(f"- {s}" for s in suggestions[:3])
+            )
 
         # Build compact plan representation (all tasks, compressed)
         compact_plan = []
         for t in plan:
-            compact_plan.append({
-                "step": t.get("step"),
-                "task_type": t.get("task_type"),
-                "description": t.get("description", "")[:100],
-                "agent_role": t.get("agent_role"),
-                "depends_on": t.get("depends_on", []),
-            })
+            compact_plan.append(
+                {
+                    "step": t.get("step"),
+                    "task_type": t.get("task_type"),
+                    "description": t.get("description", "")[:100],
+                    "agent_role": t.get("agent_role"),
+                    "depends_on": t.get("depends_on", []),
+                }
+            )
 
         # Valid task types for reference
         valid_types = ", ".join(sorted(BUILD_TASK_TYPES))
 
         prompt = (
             f"## Product\n{product_description[:500]}\n\n"
-            f"{'## Domain Context' + chr(10) + domain_hints[:300] + chr(10)*2 if domain_hints else ''}"
+            f"{'## Domain Context' + chr(10) + domain_hints[:300] + chr(10) * 2 if domain_hints else ''}"
             f"## Current Plan ({len(plan)} tasks, scored {score}/100)\n"
             f"{json.dumps(compact_plan, indent=1, default=str)}\n\n"
             f"## Critic Feedback\n{''.join(feedback_lines)}\n\n"
@@ -3420,22 +4888,28 @@ class BuildOrchestrator:
             )
             # Parse JSON array from response
             import re
+
             response = response.replace("```json", "").replace("```", "").strip()
-            arr_match = re.search(r'\[[\s\S]*\]', response)
+            arr_match = re.search(r"\[[\s\S]*\]", response)
             if arr_match:
                 revised = json.loads(arr_match.group(0))
                 if isinstance(revised, list) and len(revised) > 0:
                     # Validate task types — strip invalid ones
-                    valid = [t for t in revised if t.get("task_type") in BUILD_TASK_TYPES]
+                    valid = [
+                        t for t in revised if t.get("task_type") in BUILD_TASK_TYPES
+                    ]
                     if len(valid) >= len(plan) * 0.6:  # don't accept if >40% tasks lost
                         self.logger.info(
                             "Plan revised: %d → %d tasks (valid: %d)",
-                            len(plan), len(revised), len(valid),
+                            len(plan),
+                            len(revised),
+                            len(valid),
                         )
                         return valid
                     self.logger.warning(
                         "Revision lost too many tasks (%d valid out of %d) — keeping original",
-                        len(valid), len(revised),
+                        len(valid),
+                        len(revised),
                     )
         except Exception as exc:
             self.logger.warning("Plan revision failed: %s", exc)
@@ -3466,7 +4940,7 @@ class BuildOrchestrator:
                     f"{task.get('task_type', '?')}: {', '.join(ac[:3])}"
                 )
 
-            context = (
+            (
                 f"Evaluate this plan against these criteria:\n"
                 f"1. Does it cover all components needed for: {run['product_description'][:200]}?\n"
                 f"2. Are dependencies correctly declared (no circular deps)?\n"
@@ -3478,7 +4952,8 @@ class BuildOrchestrator:
             # Closure captures run so revised plans update the run in-place
             def _revise_and_update(plan, review):
                 revised = self._revise_plan(
-                    plan, review,
+                    plan,
+                    review,
                     product_description=run["product_description"],
                     domain_hints=self._detect_domain(run["product_description"]),
                 )
@@ -3504,7 +4979,13 @@ class BuildOrchestrator:
             return result
         except Exception as exc:
             self.logger.warning("Critic plan review failed: %s", exc)
-            return {"passed": False, "critic_error": True, "final_score": 0, "error": str(exc), "history": []}
+            return {
+                "passed": False,
+                "critic_error": True,
+                "final_score": 0,
+                "error": str(exc),
+                "history": [],
+            }
 
     def _critic_review_code(self, run: dict) -> dict:
         """Run critic on agent code outputs."""
@@ -3515,11 +4996,18 @@ class BuildOrchestrator:
             for r in run.get("agent_results", []):
                 code = r.get("result", {}).get("code", "")
                 if code:
-                    all_code.append(f"## {r.get('task', {}).get('description', '')}\n{code}")
+                    all_code.append(
+                        f"## {r.get('task', {}).get('description', '')}\n{code}"
+                    )
 
             combined = "\n\n".join(all_code)[:8000]
             if not combined:
-                return {"passed": True, "final_score": 100, "history": [], "note": "No code to review"}
+                return {
+                    "passed": True,
+                    "final_score": 100,
+                    "history": [],
+                    "note": "No code to review",
+                }
 
             return critic_agent.review_with_loop(
                 review_fn="code",
@@ -3530,7 +5018,13 @@ class BuildOrchestrator:
             )
         except Exception as exc:
             self.logger.warning("Critic code review failed: %s", exc)
-            return {"passed": False, "critic_error": True, "final_score": 0, "error": str(exc), "history": []}
+            return {
+                "passed": False,
+                "critic_error": True,
+                "final_score": 0,
+                "error": str(exc),
+                "history": [],
+            }
 
     def _critic_review_integration(self, run: dict) -> dict:
         """Run critic on integration results."""
@@ -3568,7 +5062,13 @@ class BuildOrchestrator:
             )
         except Exception as exc:
             self.logger.warning("Critic integration review failed: %s", exc)
-            return {"passed": False, "critic_error": True, "final_score": 0, "error": str(exc), "history": []}
+            return {
+                "passed": False,
+                "critic_error": True,
+                "final_score": 0,
+                "error": str(exc),
+                "history": [],
+            }
 
     # ------------------------------------------------------------------
     # Helpers
@@ -3579,12 +5079,14 @@ class BuildOrchestrator:
         critic_scores = []
         for report in run.get("critic_reports", []):
             result = report.get("result", {})
-            critic_scores.append({
-                "phase": report.get("phase", ""),
-                "score": result.get("final_score", 0),
-                "passed": result.get("passed", False),
-                "iterations": result.get("iterations", 0),
-            })
+            critic_scores.append(
+                {
+                    "phase": report.get("phase", ""),
+                    "score": result.get("final_score", 0),
+                    "passed": result.get("passed", False),
+                    "iterations": result.get("iterations", 0),
+                }
+            )
 
         return {
             "run_id": run["run_id"],
@@ -3610,7 +5112,9 @@ class BuildOrchestrator:
                     "step": r.get("step", 0),
                     "wave": r.get("wave", 0),
                     "agent_role": r.get("agent_role", ""),
-                    "acceptance_criteria": r.get("task", {}).get("acceptance_criteria", []),
+                    "acceptance_criteria": r.get("task", {}).get(
+                        "acceptance_criteria", []
+                    ),
                     "error": r.get("result", {}).get("error", ""),
                     "files_changed": r.get("result", {}).get("files_changed", []),
                 }

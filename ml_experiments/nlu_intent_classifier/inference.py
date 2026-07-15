@@ -22,9 +22,8 @@ from __future__ import annotations
 
 import logging
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
 
 import numpy as np
 import torch
@@ -38,13 +37,14 @@ logger = logging.getLogger(__name__)
 # Result types
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class IntentResult:
     intent: str
     confidence: float
-    top_k: list[dict[str, float]]   # [{"intent": ..., "confidence": ...}]
+    top_k: list[dict[str, float]]  # [{"intent": ..., "confidence": ...}]
     latency_ms: float
-    is_oos: bool = False             # True if max confidence < OOS threshold
+    is_oos: bool = False  # True if max confidence < OOS threshold
 
 
 @dataclass
@@ -63,13 +63,20 @@ class LatencyReport:
         logger.info(
             "Latency [n=%d] — P50=%.1fms P95=%.1fms P99=%.1fms Mean=%.1fms "
             "| SLA=%.0fms violations=%d [%s]",
-            self.n_samples, self.p50_ms, self.p95_ms, self.p99_ms, self.mean_ms,
-            self.sla_ms, self.sla_violations, status,
+            self.n_samples,
+            self.p50_ms,
+            self.p95_ms,
+            self.p99_ms,
+            self.mean_ms,
+            self.sla_ms,
+            self.sla_violations,
+            status,
         )
         if not self.sla_pass:
             logger.warning(
                 "SLA VIOLATION: P95 latency %.1fms exceeds SLA %.0fms",
-                self.p95_ms, self.sla_ms,
+                self.p95_ms,
+                self.sla_ms,
             )
 
 
@@ -77,10 +84,11 @@ class LatencyReport:
 # Classifier
 # ---------------------------------------------------------------------------
 
+
 class IntentClassifier:
     """Thread-safe intent classifier wrapping a fine-tuned transformer."""
 
-    _DEFAULT_OOS_THRESHOLD = 0.5   # below this confidence → flag as out-of-scope
+    _DEFAULT_OOS_THRESHOLD = 0.5  # below this confidence → flag as out-of-scope
     _DEFAULT_TOP_K = 5
 
     def __init__(
@@ -92,13 +100,13 @@ class IntentClassifier:
         oos_threshold: float = _DEFAULT_OOS_THRESHOLD,
         top_k: int = _DEFAULT_TOP_K,
     ) -> None:
-        self.model       = model
-        self.tokenizer   = tokenizer
+        self.model = model
+        self.tokenizer = tokenizer
         self.class_names = class_names
-        self.max_length  = max_length
+        self.max_length = max_length
         self.oos_threshold = oos_threshold
-        self.top_k       = min(top_k, len(class_names))
-        self.device      = next(model.parameters()).device
+        self.top_k = min(top_k, len(class_names))
+        self.device = next(model.parameters()).device
         self.model.eval()
 
     # ── Factory ──────────────────────────────────────────────────────────
@@ -111,7 +119,7 @@ class IntentClassifier:
         config_path: str | Path = "config.yaml",
         device: str | None = None,
     ) -> "IntentClassifier":
-        model_dir    = Path(model_dir)
+        model_dir = Path(model_dir)
         tokenizer_dir = Path(tokenizer_dir)
 
         if device is None:
@@ -119,7 +127,7 @@ class IntentClassifier:
         dev = torch.device(device)
 
         tokenizer = AutoTokenizer.from_pretrained(str(tokenizer_dir))
-        model     = AutoModelForSequenceClassification.from_pretrained(str(model_dir))
+        model = AutoModelForSequenceClassification.from_pretrained(str(model_dir))
         model.to(dev)
 
         # Load class names from config or model config
@@ -133,8 +141,9 @@ class IntentClassifier:
                 class_names = [id2label[str(i)] for i in range(len(id2label))]
 
         if not class_names and hasattr(model.config, "id2label"):
-            class_names = [model.config.id2label[i]
-                           for i in range(model.config.num_labels)]
+            class_names = [
+                model.config.id2label[i] for i in range(model.config.num_labels)
+            ]
 
         if not class_names:
             class_names = [f"intent_{i}" for i in range(model.config.num_labels)]
@@ -164,18 +173,18 @@ class IntentClassifier:
         ).to(self.device)
 
         logits = self.model(**inputs).logits[0]
-        probs  = torch.softmax(logits, dim=-1).cpu().numpy()
+        probs = torch.softmax(logits, dim=-1).cpu().numpy()
 
         latency_ms = (time.perf_counter() - t0) * 1000.0
 
-        top_k_idx   = np.argsort(probs)[::-1][: self.top_k]
+        top_k_idx = np.argsort(probs)[::-1][: self.top_k]
         top_k_items = [
             {"intent": self.class_names[i], "confidence": round(float(probs[i]), 4)}
             for i in top_k_idx
         ]
-        best_idx   = int(top_k_idx[0])
-        best_conf  = float(probs[best_idx])
-        is_oos     = best_conf < self.oos_threshold
+        best_idx = int(top_k_idx[0])
+        best_conf = float(probs[best_idx])
+        is_oos = best_conf < self.oos_threshold
 
         return IntentResult(
             intent=self.class_names[best_idx],
@@ -199,27 +208,32 @@ class IntentClassifier:
         ).to(self.device)
 
         logits = self.model(**inputs).logits
-        probs  = torch.softmax(logits, dim=-1).cpu().numpy()
+        probs = torch.softmax(logits, dim=-1).cpu().numpy()
 
-        total_ms  = (time.perf_counter() - t0) * 1000.0
-        per_ms    = total_ms / max(len(texts), 1)
+        total_ms = (time.perf_counter() - t0) * 1000.0
+        per_ms = total_ms / max(len(texts), 1)
 
         results = []
         for i, prob_row in enumerate(probs):
-            top_k_idx   = np.argsort(prob_row)[::-1][: self.top_k]
+            top_k_idx = np.argsort(prob_row)[::-1][: self.top_k]
             top_k_items = [
-                {"intent": self.class_names[j], "confidence": round(float(prob_row[j]), 4)}
+                {
+                    "intent": self.class_names[j],
+                    "confidence": round(float(prob_row[j]), 4),
+                }
                 for j in top_k_idx
             ]
-            best_idx  = int(top_k_idx[0])
+            best_idx = int(top_k_idx[0])
             best_conf = float(prob_row[best_idx])
-            results.append(IntentResult(
-                intent=self.class_names[best_idx],
-                confidence=round(best_conf, 4),
-                top_k=top_k_items,
-                latency_ms=round(per_ms, 2),
-                is_oos=best_conf < self.oos_threshold,
-            ))
+            results.append(
+                IntentResult(
+                    intent=self.class_names[best_idx],
+                    confidence=round(best_conf, 4),
+                    top_k=top_k_items,
+                    latency_ms=round(per_ms, 2),
+                    is_oos=best_conf < self.oos_threshold,
+                )
+            )
         return results
 
     # ── Latency benchmarking ──────────────────────────────────────────────
@@ -250,12 +264,12 @@ class IntentClassifier:
             res = self.predict(sample)
             times.append(res.latency_ms)
 
-        arr         = np.array(times)
-        p50         = float(np.percentile(arr, 50))
-        p95         = float(np.percentile(arr, 95))
-        p99         = float(np.percentile(arr, 99))
-        mean        = float(arr.mean())
-        violations  = int((arr > sla_ms).sum())
+        arr = np.array(times)
+        p50 = float(np.percentile(arr, 50))
+        p95 = float(np.percentile(arr, 95))
+        p99 = float(np.percentile(arr, 99))
+        mean = float(arr.mean())
+        violations = int((arr > sla_ms).sum())
 
         report = LatencyReport(
             n_samples=n,
@@ -276,15 +290,17 @@ class IntentClassifier:
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    import argparse, json
+    import argparse
+    import json
 
     parser = argparse.ArgumentParser(description="NLU intent inference")
-    parser.add_argument("--model-dir",     default="artifacts/model")
+    parser.add_argument("--model-dir", default="artifacts/model")
     parser.add_argument("--tokenizer-dir", default="artifacts/tokenizer")
-    parser.add_argument("--config",        default="config.yaml")
-    parser.add_argument("--text",          help="Single text to classify")
-    parser.add_argument("--benchmark",     action="store_true",
-                        help="Run latency benchmark")
+    parser.add_argument("--config", default="config.yaml")
+    parser.add_argument("--text", help="Single text to classify")
+    parser.add_argument(
+        "--benchmark", action="store_true", help="Run latency benchmark"
+    )
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO)
@@ -292,17 +308,22 @@ if __name__ == "__main__":
 
     if args.text:
         result = clf.predict(args.text)
-        print(json.dumps({
-            "intent":      result.intent,
-            "confidence":  result.confidence,
-            "is_oos":      result.is_oos,
-            "latency_ms":  result.latency_ms,
-            "top_k":       result.top_k,
-        }, indent=2))
+        print(
+            json.dumps(
+                {
+                    "intent": result.intent,
+                    "confidence": result.confidence,
+                    "is_oos": result.is_oos,
+                    "latency_ms": result.latency_ms,
+                    "top_k": result.top_k,
+                },
+                indent=2,
+            )
+        )
 
     if args.benchmark:
         with open(args.config) as f:
             cfg = yaml.safe_load(f)
         sla_ms = cfg.get("inference", {}).get("latency_sla_ms", 50)
-        n      = cfg.get("inference", {}).get("num_latency_samples", 200)
+        n = cfg.get("inference", {}).get("num_latency_samples", 200)
         clf.benchmark(n=n, sla_ms=sla_ms)

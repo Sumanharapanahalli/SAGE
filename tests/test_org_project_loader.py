@@ -1,8 +1,7 @@
 """
 Tests: OrgLoader wired into ProjectConfig — agents see merged task types from parent chain.
 """
-import os
-import pytest
+
 import yaml
 from unittest.mock import patch
 
@@ -28,14 +27,18 @@ def test_get_task_types_includes_parent_types(tmp_path, monkeypatch):
     )
     (tmp_path / "child_sol" / "prompts.yaml").write_text("")
 
-    org = {"org": {"name": "x", "root_solution": "parent_sol", "knowledge_channels": {}}}
+    org = {
+        "org": {"name": "x", "root_solution": "parent_sol", "knowledge_channels": {}}
+    }
     (tmp_path / "org.yaml").write_text(yaml.dump(org))
 
     from src.core.org_loader import OrgLoader
+
     mock_loader = OrgLoader(str(tmp_path))
 
     with patch("src.core.project_loader._get_org_loader", return_value=mock_loader):
         from src.core.project_loader import ProjectConfig
+
         pc = ProjectConfig("child_sol")
         types = pc.get_task_types()
 
@@ -64,14 +67,18 @@ def test_get_task_descriptions_merges_parent(tmp_path, monkeypatch):
     )
     (tmp_path / "child_sol" / "prompts.yaml").write_text("")
 
-    org = {"org": {"name": "x", "root_solution": "parent_sol", "knowledge_channels": {}}}
+    org = {
+        "org": {"name": "x", "root_solution": "parent_sol", "knowledge_channels": {}}
+    }
     (tmp_path / "org.yaml").write_text(yaml.dump(org))
 
     from src.core.org_loader import OrgLoader
+
     mock_loader = OrgLoader(str(tmp_path))
 
     with patch("src.core.project_loader._get_org_loader", return_value=mock_loader):
         from src.core.project_loader import ProjectConfig
+
         pc = ProjectConfig("child_sol")
         descs = pc.get_task_descriptions()
 
@@ -93,11 +100,13 @@ def test_no_org_falls_back_to_flat_tasks(tmp_path, monkeypatch):
     (tmp_path / "solo_sol" / "prompts.yaml").write_text("")
 
     from src.core.org_loader import OrgLoader
+
     # OrgLoader with no org.yaml — org_name will be None
     mock_loader = OrgLoader(str(tmp_path))
 
     with patch("src.core.project_loader._get_org_loader", return_value=mock_loader):
         from src.core.project_loader import ProjectConfig
+
         pc = ProjectConfig("solo_sol")
         types = pc.get_task_types()
 

@@ -23,11 +23,13 @@ def inject(store):
 
 
 def test_submit_feature_request_returns_row():
-    result = backlog.submit_feature_request({
-        "title": "Add dark mode",
-        "description": "Users want a dark theme",
-        "scope": "solution",
-    })
+    result = backlog.submit_feature_request(
+        {
+            "title": "Add dark mode",
+            "description": "Users want a dark theme",
+            "scope": "solution",
+        }
+    )
     assert result["title"] == "Add dark mode"
     assert result["scope"] == "solution"
     assert result["status"] == "pending"
@@ -109,9 +111,18 @@ class FakePlanner:
     """Stand-in for PlannerAgent — avoids the real LLM/vector-store stack."""
 
     def __init__(self, steps=None, raise_exc=None):
-        self.steps = steps if steps is not None else [
-            {"step": 1, "task_type": "DEVELOP", "description": "do the thing", "payload": {}},
-        ]
+        self.steps = (
+            steps
+            if steps is not None
+            else [
+                {
+                    "step": 1,
+                    "task_type": "DEVELOP",
+                    "description": "do the thing",
+                    "payload": {},
+                },
+            ]
+        )
         self.raise_exc = raise_exc
         self.calls = []
 
@@ -160,7 +171,11 @@ def test_plan_sage_scope_returns_github_pr_without_planner_call(monkeypatch):
 
 def test_plan_solution_scope_creates_real_proposal(proposal_store, monkeypatch):
     created = backlog.submit_feature_request(
-        {"title": "Dark mode", "description": "Users want dark theme", "scope": "solution"}
+        {
+            "title": "Dark mode",
+            "description": "Users want dark theme",
+            "scope": "solution",
+        }
     )
     planner = FakePlanner()
     _inject_planner(monkeypatch, planner)

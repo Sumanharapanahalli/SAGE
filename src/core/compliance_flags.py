@@ -24,29 +24,25 @@ Usage:
   )
 """
 
-from typing import Optional
 
 # ---------------------------------------------------------------------------
 # Registry
 # ---------------------------------------------------------------------------
 
 COMPLIANCE_FLAGS: dict = {
-
     # ==========================================================================
     # MEDTECH — IEC 62304, ISO 14971, FDA 21 CFR 820, IEC 60601-1, IEC 62443
     # ==========================================================================
     "medtech": {
-        "standard":     "IEC 62304:2015+A1 + ISO 14971:2019 + FDA 21 CFR 820",
-        "description":  "Medical device software — covers embedded firmware, cloud backend, mobile apps",
-        "authority":    "FDA (US), EMA/Notified Bodies (EU MDR), Health Canada, PMDA (Japan)",
-        "risk_levels":  ["CLASS_A", "CLASS_B", "CLASS_C"],
-
+        "standard": "IEC 62304:2015+A1 + ISO 14971:2019 + FDA 21 CFR 820",
+        "description": "Medical device software — covers embedded firmware, cloud backend, mobile apps",
+        "authority": "FDA (US), EMA/Notified Bodies (EU MDR), Health Canada, PMDA (Japan)",
+        "risk_levels": ["CLASS_A", "CLASS_B", "CLASS_C"],
         "software_class": {
             "CLASS_A": "No injury or damage to health possible",
             "CLASS_B": "Non-serious injury possible",
             "CLASS_C": "Death or serious injury possible",
         },
-
         "required_tasks": {
             "CLASS_A": [
                 "ANALYZE_LOG",
@@ -85,9 +81,7 @@ COMPLIANCE_FLAGS: dict = {
                 "GENERATE_SBOM",
             ],
         },
-
         "hil_required_for": ["CLASS_B", "CLASS_C"],
-
         "evidence_artifacts": [
             "Software Development Plan (IEC 62304 §5.1)",
             "Software Requirements Specification (IEC 62304 §5.2)",
@@ -111,148 +105,144 @@ COMPLIANCE_FLAGS: dict = {
             "Electromagnetic Compatibility Report (IEC 60601-1-2)",
             "Usability Engineering File (IEC 62366-1)",
         ],
-
         "critical_flags": [
             {
-                "id":           "IEC62304-5.1",
-                "level":        "CRITICAL",
-                "description":  "Software development planning required for all classes",
-                "clause":       "IEC 62304:2015 §5.1",
+                "id": "IEC62304-5.1",
+                "level": "CRITICAL",
+                "description": "Software development planning required for all classes",
+                "clause": "IEC 62304:2015 §5.1",
                 "hil_required": False,
-                "applies_to":   ["CLASS_A", "CLASS_B", "CLASS_C"],
+                "applies_to": ["CLASS_A", "CLASS_B", "CLASS_C"],
             },
             {
-                "id":           "IEC62304-5.2",
-                "level":        "CRITICAL",
-                "description":  "Software requirements must be documented and traceable",
-                "clause":       "IEC 62304:2015 §5.2",
+                "id": "IEC62304-5.2",
+                "level": "CRITICAL",
+                "description": "Software requirements must be documented and traceable",
+                "clause": "IEC 62304:2015 §5.2",
                 "hil_required": False,
-                "applies_to":   ["CLASS_B", "CLASS_C"],
+                "applies_to": ["CLASS_B", "CLASS_C"],
             },
             {
-                "id":           "IEC62304-5.5",
-                "level":        "CRITICAL",
-                "description":  "Unit testing required for Class B/C with documented results",
-                "clause":       "IEC 62304:2015 §5.5",
+                "id": "IEC62304-5.5",
+                "level": "CRITICAL",
+                "description": "Unit testing required for Class B/C with documented results",
+                "clause": "IEC 62304:2015 §5.5",
                 "hil_required": False,
-                "applies_to":   ["CLASS_B", "CLASS_C"],
+                "applies_to": ["CLASS_B", "CLASS_C"],
             },
             {
-                "id":           "IEC62304-5.6",
-                "level":        "CRITICAL",
-                "description":  "Integration testing required with hardware and software components",
-                "clause":       "IEC 62304:2015 §5.6",
+                "id": "IEC62304-5.6",
+                "level": "CRITICAL",
+                "description": "Integration testing required with hardware and software components",
+                "clause": "IEC 62304:2015 §5.6",
                 "hil_required": True,
-                "applies_to":   ["CLASS_B", "CLASS_C"],
+                "applies_to": ["CLASS_B", "CLASS_C"],
             },
             {
-                "id":           "IEC62304-5.7",
-                "level":        "CRITICAL",
-                "description":  "System testing against all software requirements",
-                "clause":       "IEC 62304:2015 §5.7",
+                "id": "IEC62304-5.7",
+                "level": "CRITICAL",
+                "description": "System testing against all software requirements",
+                "clause": "IEC 62304:2015 §5.7",
                 "hil_required": True,
-                "applies_to":   ["CLASS_B", "CLASS_C"],
+                "applies_to": ["CLASS_B", "CLASS_C"],
             },
             {
-                "id":           "ISO14971-5",
-                "level":        "CRITICAL",
-                "description":  "Hazard identification for all intended uses and foreseeable misuses",
-                "clause":       "ISO 14971:2019 §5",
+                "id": "ISO14971-5",
+                "level": "CRITICAL",
+                "description": "Hazard identification for all intended uses and foreseeable misuses",
+                "clause": "ISO 14971:2019 §5",
                 "hil_required": False,
-                "applies_to":   ["CLASS_A", "CLASS_B", "CLASS_C"],
+                "applies_to": ["CLASS_A", "CLASS_B", "CLASS_C"],
             },
             {
-                "id":           "ISO14971-6.2",
-                "level":        "CRITICAL",
-                "description":  "Risk control measures implemented and verified in hardware+software",
-                "clause":       "ISO 14971:2019 §6.2",
+                "id": "ISO14971-6.2",
+                "level": "CRITICAL",
+                "description": "Risk control measures implemented and verified in hardware+software",
+                "clause": "ISO 14971:2019 §6.2",
                 "hil_required": True,
-                "applies_to":   ["CLASS_B", "CLASS_C"],
+                "applies_to": ["CLASS_B", "CLASS_C"],
             },
             {
-                "id":           "IEC60601-1-ES",
-                "level":        "CRITICAL",
-                "description":  "Basic electrical safety testing (leakage current, dielectric strength)",
-                "clause":       "IEC 60601-1:2005+A1:2012 §8",
+                "id": "IEC60601-1-ES",
+                "level": "CRITICAL",
+                "description": "Basic electrical safety testing (leakage current, dielectric strength)",
+                "clause": "IEC 60601-1:2005+A1:2012 §8",
                 "hil_required": True,
-                "applies_to":   ["CLASS_B", "CLASS_C"],
+                "applies_to": ["CLASS_B", "CLASS_C"],
             },
             {
-                "id":           "IEC60601-1-EMC",
-                "level":        "CRITICAL",
-                "description":  "EMC testing per IEC 60601-1-2 — emissions and immunity",
-                "clause":       "IEC 60601-1-2:2014+A1:2020",
+                "id": "IEC60601-1-EMC",
+                "level": "CRITICAL",
+                "description": "EMC testing per IEC 60601-1-2 — emissions and immunity",
+                "clause": "IEC 60601-1-2:2014+A1:2020",
                 "hil_required": True,
-                "applies_to":   ["CLASS_B", "CLASS_C"],
+                "applies_to": ["CLASS_B", "CLASS_C"],
             },
             {
-                "id":           "FDA-CYBERSEC",
-                "level":        "HIGH",
-                "description":  "Cybersecurity vulnerability assessment and threat modelling",
-                "clause":       "FDA Cybersecurity Guidance Dec 2023",
+                "id": "FDA-CYBERSEC",
+                "level": "HIGH",
+                "description": "Cybersecurity vulnerability assessment and threat modelling",
+                "clause": "FDA Cybersecurity Guidance Dec 2023",
                 "hil_required": False,
-                "applies_to":   ["CLASS_B", "CLASS_C"],
+                "applies_to": ["CLASS_B", "CLASS_C"],
             },
             {
-                "id":           "FDA-SBOM",
-                "level":        "HIGH",
-                "description":  "Software Bill of Materials generated and maintained",
-                "clause":       "FDA SBOM Requirement 2023",
+                "id": "FDA-SBOM",
+                "level": "HIGH",
+                "description": "Software Bill of Materials generated and maintained",
+                "clause": "FDA SBOM Requirement 2023",
                 "hil_required": False,
-                "applies_to":   ["CLASS_B", "CLASS_C"],
+                "applies_to": ["CLASS_B", "CLASS_C"],
             },
             {
-                "id":           "21CFR820-70",
-                "level":        "HIGH",
-                "description":  "Production and process controls including device testing",
-                "clause":       "21 CFR 820.70",
+                "id": "21CFR820-70",
+                "level": "HIGH",
+                "description": "Production and process controls including device testing",
+                "clause": "21 CFR 820.70",
                 "hil_required": True,
-                "applies_to":   ["CLASS_B", "CLASS_C"],
+                "applies_to": ["CLASS_B", "CLASS_C"],
             },
             {
-                "id":           "IEC62443-3-3-SR",
-                "level":        "HIGH",
-                "description":  "Security requirements for networked medical IoT devices",
-                "clause":       "IEC 62443-3-3 System Security Requirements",
+                "id": "IEC62443-3-3-SR",
+                "level": "HIGH",
+                "description": "Security requirements for networked medical IoT devices",
+                "clause": "IEC 62443-3-3 System Security Requirements",
                 "hil_required": False,
-                "applies_to":   ["CLASS_B", "CLASS_C"],
+                "applies_to": ["CLASS_B", "CLASS_C"],
             },
             {
-                "id":           "IEC62304-8",
-                "level":        "HIGH",
-                "description":  "Software change control and traceability for all modifications",
-                "clause":       "IEC 62304:2015 §8",
+                "id": "IEC62304-8",
+                "level": "HIGH",
+                "description": "Software change control and traceability for all modifications",
+                "clause": "IEC 62304:2015 §8",
                 "hil_required": False,
-                "applies_to":   ["CLASS_A", "CLASS_B", "CLASS_C"],
+                "applies_to": ["CLASS_A", "CLASS_B", "CLASS_C"],
             },
             {
-                "id":           "MDR-PMCF",
-                "level":        "HIGH",
-                "description":  "Post-market clinical follow-up plan (EU MDR Article 83)",
-                "clause":       "EU MDR 2017/745 Article 83",
+                "id": "MDR-PMCF",
+                "level": "HIGH",
+                "description": "Post-market clinical follow-up plan (EU MDR Article 83)",
+                "clause": "EU MDR 2017/745 Article 83",
                 "hil_required": False,
-                "applies_to":   ["CLASS_B", "CLASS_C"],
+                "applies_to": ["CLASS_B", "CLASS_C"],
             },
         ],
     },
-
     # ==========================================================================
     # AUTOMOTIVE — ISO 26262, ISO/SAE 21434, UN ECE WP.29 R155/R156
     # ==========================================================================
     "automotive": {
-        "standard":     "ISO 26262:2018 + ISO/SAE 21434:2021 + UN ECE WP.29 R155/R156",
-        "description":  "Road vehicle functional safety and cybersecurity — from ASIL A to ASIL D",
-        "authority":    "Type approval authorities (KBA Germany, NHTSA US, UNECE WP.29)",
-        "risk_levels":  ["QM", "ASIL_A", "ASIL_B", "ASIL_C", "ASIL_D"],
-
+        "standard": "ISO 26262:2018 + ISO/SAE 21434:2021 + UN ECE WP.29 R155/R156",
+        "description": "Road vehicle functional safety and cybersecurity — from ASIL A to ASIL D",
+        "authority": "Type approval authorities (KBA Germany, NHTSA US, UNECE WP.29)",
+        "risk_levels": ["QM", "ASIL_A", "ASIL_B", "ASIL_C", "ASIL_D"],
         "asil_levels": {
-            "QM":     "Quality Management — no safety requirement",
+            "QM": "Quality Management — no safety requirement",
             "ASIL_A": "Lowest integrity — minor injury possible",
             "ASIL_B": "Low integrity — moderate injury possible",
             "ASIL_C": "Medium integrity — severe injury possible",
             "ASIL_D": "Highest integrity — life-threatening injury possible",
         },
-
         "required_tasks": {
             "QM": [
                 "ANALYZE_LOG",
@@ -303,9 +293,7 @@ COMPLIANCE_FLAGS: dict = {
                 "GENERATE_SBOM",
             ],
         },
-
         "hil_required_for": ["ASIL_B", "ASIL_C", "ASIL_D"],
-
         "evidence_artifacts": [
             "Safety Plan (ISO 26262-2 §6)",
             "Hazard Analysis and Risk Assessment — HARA (ISO 26262-3 §7)",
@@ -327,101 +315,98 @@ COMPLIANCE_FLAGS: dict = {
             "Vehicle Type Approval for Cybersecurity (UN ECE R155)",
             "Software Update Management System — SUMS (UN ECE R156)",
         ],
-
         "critical_flags": [
             {
-                "id":           "ISO26262-3-7",
-                "level":        "CRITICAL",
-                "description":  "HARA: Hazard analysis and risk assessment with ASIL determination",
-                "clause":       "ISO 26262-3:2018 §7",
+                "id": "ISO26262-3-7",
+                "level": "CRITICAL",
+                "description": "HARA: Hazard analysis and risk assessment with ASIL determination",
+                "clause": "ISO 26262-3:2018 §7",
                 "hil_required": False,
-                "applies_to":   ["ASIL_A", "ASIL_B", "ASIL_C", "ASIL_D"],
+                "applies_to": ["ASIL_A", "ASIL_B", "ASIL_C", "ASIL_D"],
             },
             {
-                "id":           "ISO26262-6-9",
-                "level":        "CRITICAL",
-                "description":  "Software unit testing — MC/DC coverage mandatory for ASIL C/D",
-                "clause":       "ISO 26262-6:2018 §9",
+                "id": "ISO26262-6-9",
+                "level": "CRITICAL",
+                "description": "Software unit testing — MC/DC coverage mandatory for ASIL C/D",
+                "clause": "ISO 26262-6:2018 §9",
                 "hil_required": False,
-                "applies_to":   ["ASIL_A", "ASIL_B", "ASIL_C", "ASIL_D"],
-                "note":         "Statement/Branch coverage for ASIL A/B; MC/DC for ASIL C/D",
+                "applies_to": ["ASIL_A", "ASIL_B", "ASIL_C", "ASIL_D"],
+                "note": "Statement/Branch coverage for ASIL A/B; MC/DC for ASIL C/D",
             },
             {
-                "id":           "ISO26262-6-10",
-                "level":        "CRITICAL",
-                "description":  "Software integration testing with HIL including hardware interactions",
-                "clause":       "ISO 26262-6:2018 §10",
+                "id": "ISO26262-6-10",
+                "level": "CRITICAL",
+                "description": "Software integration testing with HIL including hardware interactions",
+                "clause": "ISO 26262-6:2018 §10",
                 "hil_required": True,
-                "applies_to":   ["ASIL_B", "ASIL_C", "ASIL_D"],
+                "applies_to": ["ASIL_B", "ASIL_C", "ASIL_D"],
             },
             {
-                "id":           "ISO26262-4-8",
-                "level":        "CRITICAL",
-                "description":  "Hardware-software interface testing (HSI)",
-                "clause":       "ISO 26262-4:2018 §8",
+                "id": "ISO26262-4-8",
+                "level": "CRITICAL",
+                "description": "Hardware-software interface testing (HSI)",
+                "clause": "ISO 26262-4:2018 §8",
                 "hil_required": True,
-                "applies_to":   ["ASIL_B", "ASIL_C", "ASIL_D"],
+                "applies_to": ["ASIL_B", "ASIL_C", "ASIL_D"],
             },
             {
-                "id":           "ISO26262-D-FMEA",
-                "level":        "CRITICAL",
-                "description":  "DFMEA for ASIL C/D hardware safety analysis",
-                "clause":       "ISO 26262-5:2018 §8",
+                "id": "ISO26262-D-FMEA",
+                "level": "CRITICAL",
+                "description": "DFMEA for ASIL C/D hardware safety analysis",
+                "clause": "ISO 26262-5:2018 §8",
                 "hil_required": False,
-                "applies_to":   ["ASIL_C", "ASIL_D"],
+                "applies_to": ["ASIL_C", "ASIL_D"],
             },
             {
-                "id":           "ISO26262-D-FORMAL",
-                "level":        "CRITICAL",
-                "description":  "Formal methods for safety-critical path verification (ASIL D highly recommended)",
-                "clause":       "ISO 26262-6:2018 Table 10",
+                "id": "ISO26262-D-FORMAL",
+                "level": "CRITICAL",
+                "description": "Formal methods for safety-critical path verification (ASIL D highly recommended)",
+                "clause": "ISO 26262-6:2018 Table 10",
                 "hil_required": False,
-                "applies_to":   ["ASIL_D"],
+                "applies_to": ["ASIL_D"],
             },
             {
-                "id":           "21434-TARA",
-                "level":        "HIGH",
-                "description":  "Threat Analysis and Risk Assessment for all vehicle ECUs",
-                "clause":       "ISO/SAE 21434:2021 §15",
+                "id": "21434-TARA",
+                "level": "HIGH",
+                "description": "Threat Analysis and Risk Assessment for all vehicle ECUs",
+                "clause": "ISO/SAE 21434:2021 §15",
                 "hil_required": False,
-                "applies_to":   ["ASIL_A", "ASIL_B", "ASIL_C", "ASIL_D"],
+                "applies_to": ["ASIL_A", "ASIL_B", "ASIL_C", "ASIL_D"],
             },
             {
-                "id":           "WP29-R155",
-                "level":        "HIGH",
-                "description":  "Cybersecurity Management System type approval (UN ECE R155)",
-                "clause":       "UN ECE WP.29 Regulation 155",
+                "id": "WP29-R155",
+                "level": "HIGH",
+                "description": "Cybersecurity Management System type approval (UN ECE R155)",
+                "clause": "UN ECE WP.29 Regulation 155",
                 "hil_required": False,
-                "applies_to":   ["ASIL_A", "ASIL_B", "ASIL_C", "ASIL_D"],
+                "applies_to": ["ASIL_A", "ASIL_B", "ASIL_C", "ASIL_D"],
             },
             {
-                "id":           "WP29-R156",
-                "level":        "HIGH",
-                "description":  "Software Update Management System type approval (UN ECE R156)",
-                "clause":       "UN ECE WP.29 Regulation 156",
+                "id": "WP29-R156",
+                "level": "HIGH",
+                "description": "Software Update Management System type approval (UN ECE R156)",
+                "clause": "UN ECE WP.29 Regulation 156",
                 "hil_required": False,
-                "applies_to":   ["ASIL_A", "ASIL_B", "ASIL_C", "ASIL_D"],
+                "applies_to": ["ASIL_A", "ASIL_B", "ASIL_C", "ASIL_D"],
             },
             {
-                "id":           "ISO26262-SAFETY-CASE",
-                "level":        "HIGH",
-                "description":  "Safety case documenting compliance argumentation",
-                "clause":       "ISO 26262-2:2018 §9",
+                "id": "ISO26262-SAFETY-CASE",
+                "level": "HIGH",
+                "description": "Safety case documenting compliance argumentation",
+                "clause": "ISO 26262-2:2018 §9",
                 "hil_required": False,
-                "applies_to":   ["ASIL_B", "ASIL_C", "ASIL_D"],
+                "applies_to": ["ASIL_B", "ASIL_C", "ASIL_D"],
             },
         ],
     },
-
     # ==========================================================================
     # RAILWAYS — EN 50128, EN 50129, EN 50126
     # ==========================================================================
     "railways": {
-        "standard":     "EN 50128:2011+A2:2020 + EN 50129:2018 + EN 50126-1:2017",
-        "description":  "Railway signalling and control software — SIL 0 to SIL 4",
-        "authority":    "National Safety Authorities (NSAs), ERA (European Union Agency for Railways)",
-        "risk_levels":  ["SIL_0", "SIL_1", "SIL_2", "SIL_3", "SIL_4"],
-
+        "standard": "EN 50128:2011+A2:2020 + EN 50129:2018 + EN 50126-1:2017",
+        "description": "Railway signalling and control software — SIL 0 to SIL 4",
+        "authority": "National Safety Authorities (NSAs), ERA (European Union Agency for Railways)",
+        "risk_levels": ["SIL_0", "SIL_1", "SIL_2", "SIL_3", "SIL_4"],
         "sil_levels": {
             "SIL_0": "No safety requirement — maintenance tools only",
             "SIL_1": "Low integrity — on-board comfort systems",
@@ -429,7 +414,6 @@ COMPLIANCE_FLAGS: dict = {
             "SIL_3": "Medium-high integrity — interlocking, ETCS sub-systems",
             "SIL_4": "Highest integrity — ATP, ETCS vital functions",
         },
-
         "required_tasks": {
             "SIL_0": ["ANALYZE_LOG", "REVIEW_FIRMWARE_CHANGE"],
             "SIL_1": [
@@ -477,9 +461,7 @@ COMPLIANCE_FLAGS: dict = {
                 "REVIEW_TEST_RESULTS",
             ],
         },
-
         "hil_required_for": ["SIL_2", "SIL_3", "SIL_4"],
-
         "evidence_artifacts": [
             "Software Quality Assurance Plan (EN 50128 §5.2)",
             "Software Requirements Specification (EN 50128 §7.2)",
@@ -499,84 +481,81 @@ COMPLIANCE_FLAGS: dict = {
             "Hazard Register (EN 50126 §9)",
             "CENELEC Role Definitions — Assessor, Verifier (EN 50128 §5.1)",
         ],
-
         "critical_flags": [
             {
-                "id":           "EN50128-5.1-ROLES",
-                "level":        "CRITICAL",
-                "description":  "Mandatory independence between designer, tester, and assessor roles",
-                "clause":       "EN 50128:2011 §5.1 Table 4",
+                "id": "EN50128-5.1-ROLES",
+                "level": "CRITICAL",
+                "description": "Mandatory independence between designer, tester, and assessor roles",
+                "clause": "EN 50128:2011 §5.1 Table 4",
                 "hil_required": False,
-                "applies_to":   ["SIL_2", "SIL_3", "SIL_4"],
+                "applies_to": ["SIL_2", "SIL_3", "SIL_4"],
             },
             {
-                "id":           "EN50128-7.5-LANG",
-                "level":        "CRITICAL",
-                "description":  "Restricted programming language features (no dynamic allocation, no recursion for SIL 3/4)",
-                "clause":       "EN 50128:2011 §7.5 Table 10",
+                "id": "EN50128-7.5-LANG",
+                "level": "CRITICAL",
+                "description": "Restricted programming language features (no dynamic allocation, no recursion for SIL 3/4)",
+                "clause": "EN 50128:2011 §7.5 Table 10",
                 "hil_required": False,
-                "applies_to":   ["SIL_3", "SIL_4"],
+                "applies_to": ["SIL_3", "SIL_4"],
             },
             {
-                "id":           "EN50128-8.4-COMP",
-                "level":        "CRITICAL",
-                "description":  "Component testing with documented results and traceability to requirements",
-                "clause":       "EN 50128:2011 §8.4",
+                "id": "EN50128-8.4-COMP",
+                "level": "CRITICAL",
+                "description": "Component testing with documented results and traceability to requirements",
+                "clause": "EN 50128:2011 §8.4",
                 "hil_required": False,
-                "applies_to":   ["SIL_1", "SIL_2", "SIL_3", "SIL_4"],
+                "applies_to": ["SIL_1", "SIL_2", "SIL_3", "SIL_4"],
             },
             {
-                "id":           "EN50128-8.5-INTEG",
-                "level":        "CRITICAL",
-                "description":  "Integration testing covering HW/SW interfaces",
-                "clause":       "EN 50128:2011 §8.5",
+                "id": "EN50128-8.5-INTEG",
+                "level": "CRITICAL",
+                "description": "Integration testing covering HW/SW interfaces",
+                "clause": "EN 50128:2011 §8.5",
                 "hil_required": True,
-                "applies_to":   ["SIL_2", "SIL_3", "SIL_4"],
+                "applies_to": ["SIL_2", "SIL_3", "SIL_4"],
             },
             {
-                "id":           "EN50128-FORMAL",
-                "level":        "CRITICAL",
-                "description":  "Formal methods (Highly Recommended for SIL 3, Mandatory for SIL 4)",
-                "clause":       "EN 50128:2011 Table 5 — Formal Methods",
+                "id": "EN50128-FORMAL",
+                "level": "CRITICAL",
+                "description": "Formal methods (Highly Recommended for SIL 3, Mandatory for SIL 4)",
+                "clause": "EN 50128:2011 Table 5 — Formal Methods",
                 "hil_required": False,
-                "applies_to":   ["SIL_3", "SIL_4"],
+                "applies_to": ["SIL_3", "SIL_4"],
             },
             {
-                "id":           "EN50128-ISA",
-                "level":        "CRITICAL",
-                "description":  "Independent Safety Assessor review mandatory for SIL 3/4",
-                "clause":       "EN 50128:2011 §6.2",
+                "id": "EN50128-ISA",
+                "level": "CRITICAL",
+                "description": "Independent Safety Assessor review mandatory for SIL 3/4",
+                "clause": "EN 50128:2011 §6.2",
                 "hil_required": False,
-                "applies_to":   ["SIL_3", "SIL_4"],
+                "applies_to": ["SIL_3", "SIL_4"],
             },
             {
-                "id":           "EN50128-PROOF",
-                "level":        "HIGH",
-                "description":  "Software proof of correctness / code review by second party",
-                "clause":       "EN 50128:2011 Table 5 — Static Analysis",
+                "id": "EN50128-PROOF",
+                "level": "HIGH",
+                "description": "Software proof of correctness / code review by second party",
+                "clause": "EN 50128:2011 Table 5 — Static Analysis",
                 "hil_required": False,
-                "applies_to":   ["SIL_2", "SIL_3", "SIL_4"],
+                "applies_to": ["SIL_2", "SIL_3", "SIL_4"],
             },
             {
-                "id":           "EN50129-SAFETY-CASE",
-                "level":        "HIGH",
-                "description":  "Safety case with complete hazard-to-control traceability",
-                "clause":       "EN 50129:2018 §5",
+                "id": "EN50129-SAFETY-CASE",
+                "level": "HIGH",
+                "description": "Safety case with complete hazard-to-control traceability",
+                "clause": "EN 50129:2018 §5",
                 "hil_required": False,
-                "applies_to":   ["SIL_2", "SIL_3", "SIL_4"],
+                "applies_to": ["SIL_2", "SIL_3", "SIL_4"],
             },
         ],
     },
-
     # ==========================================================================
     # AVIONICS — DO-178C, DO-254, ARP4754A
     # ==========================================================================
     "avionics": {
-        "standard":     "DO-178C:2011 + DO-254:2000 + ARP4754A:2010",
-        "description":  "Airborne software and hardware — from DAL E (no effect) to DAL A (catastrophic)",
-        "authority":    "FAA (US), EASA (EU), Transport Canada, CAAC (China)",
-        "risk_levels":  ["DAL_E", "DAL_D", "DAL_C", "DAL_B", "DAL_A"],
-
+        "standard": "DO-178C:2011 + DO-254:2000 + ARP4754A:2010",
+        "description": "Airborne software and hardware — from DAL E (no effect) to DAL A (catastrophic)",
+        "authority": "FAA (US), EASA (EU), Transport Canada, CAAC (China)",
+        "risk_levels": ["DAL_E", "DAL_D", "DAL_C", "DAL_B", "DAL_A"],
         "dal_levels": {
             "DAL_E": "No effect on aircraft operation",
             "DAL_D": "Minor — slight reduction in safety margins",
@@ -584,7 +563,6 @@ COMPLIANCE_FLAGS: dict = {
             "DAL_B": "Hazardous — large reduction in safety margins, serious injuries",
             "DAL_A": "Catastrophic — prevents continued safe flight and landing",
         },
-
         "required_tasks": {
             "DAL_E": ["ANALYZE_LOG"],
             "DAL_D": [
@@ -629,9 +607,7 @@ COMPLIANCE_FLAGS: dict = {
                 "MULTIPLE_VERSION_DISSIMILAR_SOFTWARE",
             ],
         },
-
         "hil_required_for": ["DAL_C", "DAL_B", "DAL_A"],
-
         "evidence_artifacts": [
             "Plan for Software Aspects of Certification — PSAC (DO-178C §11.1)",
             "Software Development Plan — SDP (DO-178C §11.2)",
@@ -655,92 +631,88 @@ COMPLIANCE_FLAGS: dict = {
             "Fault Tree Analysis — FTA (ARP4754A §7.4)",
             "Failure Modes and Effects Analysis — FMEA (ARP4754A §7.4)",
         ],
-
         "critical_flags": [
             {
-                "id":           "DO178C-6.4-REVIEW",
-                "level":        "CRITICAL",
-                "description":  "Software reviews and analyses — requirements, design, code review",
-                "clause":       "DO-178C §6.4",
+                "id": "DO178C-6.4-REVIEW",
+                "level": "CRITICAL",
+                "description": "Software reviews and analyses — requirements, design, code review",
+                "clause": "DO-178C §6.4",
                 "hil_required": False,
-                "applies_to":   ["DAL_C", "DAL_B", "DAL_A"],
+                "applies_to": ["DAL_C", "DAL_B", "DAL_A"],
             },
             {
-                "id":           "DO178C-6.4.3-HWSW",
-                "level":        "CRITICAL",
-                "description":  "Hardware/software integration testing with actual target hardware",
-                "clause":       "DO-178C §6.4.3",
+                "id": "DO178C-6.4.3-HWSW",
+                "level": "CRITICAL",
+                "description": "Hardware/software integration testing with actual target hardware",
+                "clause": "DO-178C §6.4.3",
                 "hil_required": True,
-                "applies_to":   ["DAL_C", "DAL_B", "DAL_A"],
+                "applies_to": ["DAL_C", "DAL_B", "DAL_A"],
             },
             {
-                "id":           "DO178C-MC/DC",
-                "level":        "CRITICAL",
-                "description":  "Modified Condition/Decision Coverage (MC/DC) mandatory for DAL A/B",
-                "clause":       "DO-178C §6.4.4.2",
+                "id": "DO178C-MC/DC",
+                "level": "CRITICAL",
+                "description": "Modified Condition/Decision Coverage (MC/DC) mandatory for DAL A/B",
+                "clause": "DO-178C §6.4.4.2",
                 "hil_required": False,
-                "applies_to":   ["DAL_B", "DAL_A"],
-                "note":         "DAL_A: MC/DC; DAL_B: MC/DC; DAL_C: Decision coverage; DAL_D: Statement coverage",
+                "applies_to": ["DAL_B", "DAL_A"],
+                "note": "DAL_A: MC/DC; DAL_B: MC/DC; DAL_C: Decision coverage; DAL_D: Statement coverage",
             },
             {
-                "id":           "DO178C-INDEPENDENCE",
-                "level":        "CRITICAL",
-                "description":  "Independence required for verification activities at DAL A/B",
-                "clause":       "DO-178C §12.1.3",
+                "id": "DO178C-INDEPENDENCE",
+                "level": "CRITICAL",
+                "description": "Independence required for verification activities at DAL A/B",
+                "clause": "DO-178C §12.1.3",
                 "hil_required": False,
-                "applies_to":   ["DAL_B", "DAL_A"],
+                "applies_to": ["DAL_B", "DAL_A"],
             },
             {
-                "id":           "DO178C-TRACEABILITY",
-                "level":        "CRITICAL",
-                "description":  "Bidirectional traceability: system requirements → SW requirements → design → code → test",
-                "clause":       "DO-178C §6.5",
+                "id": "DO178C-TRACEABILITY",
+                "level": "CRITICAL",
+                "description": "Bidirectional traceability: system requirements → SW requirements → design → code → test",
+                "clause": "DO-178C §6.5",
                 "hil_required": False,
-                "applies_to":   ["DAL_C", "DAL_B", "DAL_A"],
+                "applies_to": ["DAL_C", "DAL_B", "DAL_A"],
             },
             {
-                "id":           "DO178C-FORMAL",
-                "level":        "HIGH",
-                "description":  "Formal methods as alternative means of compliance for DAL A",
-                "clause":       "DO-178C Supplement DO-333",
+                "id": "DO178C-FORMAL",
+                "level": "HIGH",
+                "description": "Formal methods as alternative means of compliance for DAL A",
+                "clause": "DO-178C Supplement DO-333",
                 "hil_required": False,
-                "applies_to":   ["DAL_A"],
+                "applies_to": ["DAL_A"],
             },
             {
-                "id":           "DO254-COMPLEX-HW",
-                "level":        "HIGH",
-                "description":  "Complex hardware (FPGAs, ASICs) requires DO-254 life cycle",
-                "clause":       "DO-254 §1.4",
+                "id": "DO254-COMPLEX-HW",
+                "level": "HIGH",
+                "description": "Complex hardware (FPGAs, ASICs) requires DO-254 life cycle",
+                "clause": "DO-254 §1.4",
                 "hil_required": True,
-                "applies_to":   ["DAL_C", "DAL_B", "DAL_A"],
+                "applies_to": ["DAL_C", "DAL_B", "DAL_A"],
             },
             {
-                "id":           "ARP4754A-PSAC",
-                "level":        "HIGH",
-                "description":  "PSAC approved by certification authority before development start",
-                "clause":       "DO-178C §11.1 + ARP4754A §5.6",
+                "id": "ARP4754A-PSAC",
+                "level": "HIGH",
+                "description": "PSAC approved by certification authority before development start",
+                "clause": "DO-178C §11.1 + ARP4754A §5.6",
                 "hil_required": False,
-                "applies_to":   ["DAL_C", "DAL_B", "DAL_A"],
+                "applies_to": ["DAL_C", "DAL_B", "DAL_A"],
             },
         ],
     },
-
     # ==========================================================================
     # IoT / ICS — IEC 62443, ETSI EN 303 645
     # ==========================================================================
     "iot_ics": {
-        "standard":     "IEC 62443-2-4:2015 + IEC 62443-3-3:2013 + ETSI EN 303 645:2020",
-        "description":  "Industrial control systems and consumer IoT cybersecurity — SL 1 to SL 4",
-        "authority":    "CISA (US), ENISA (EU), BSI (Germany), NCSC (UK)",
-        "risk_levels":  ["SL_1", "SL_2", "SL_3", "SL_4"],
-
+        "standard": "IEC 62443-2-4:2015 + IEC 62443-3-3:2013 + ETSI EN 303 645:2020",
+        "description": "Industrial control systems and consumer IoT cybersecurity — SL 1 to SL 4",
+        "authority": "CISA (US), ENISA (EU), BSI (Germany), NCSC (UK)",
+        "risk_levels": ["SL_1", "SL_2", "SL_3", "SL_4"],
         "security_levels": {
             "SL_1": "Protection against casual or coincidental violation — basic hygiene",
             "SL_2": "Protection against intentional violation with simple means — commodity threats",
             "SL_3": "Protection against sophisticated means with IACS-specific skills",
             "SL_4": "Protection against state-sponsored or nation-state level threats",
         },
-
         "required_tasks": {
             "SL_1": [
                 "ANALYZE_LOG",
@@ -779,9 +751,7 @@ COMPLIANCE_FLAGS: dict = {
                 "INDEPENDENT_SAFETY_ASSESSMENT",
             ],
         },
-
         "hil_required_for": ["SL_3", "SL_4"],
-
         "evidence_artifacts": [
             "Cybersecurity Management System — CSMS (IEC 62443-2-1 §4)",
             "Security Risk Assessment (IEC 62443-3-2)",
@@ -800,87 +770,86 @@ COMPLIANCE_FLAGS: dict = {
             "Incident Response Plan (IEC 62443-2-1 §4.2.3)",
             "Secure Disposal Policy (ETSI EN 303 645 §5.9)",
         ],
-
         "critical_flags": [
             {
-                "id":           "IEC62443-SR-1.1",
-                "level":        "CRITICAL",
-                "description":  "Human user identification and authentication for all interfaces",
-                "clause":       "IEC 62443-3-3 SR 1.1",
+                "id": "IEC62443-SR-1.1",
+                "level": "CRITICAL",
+                "description": "Human user identification and authentication for all interfaces",
+                "clause": "IEC 62443-3-3 SR 1.1",
                 "hil_required": False,
-                "applies_to":   ["SL_1", "SL_2", "SL_3", "SL_4"],
+                "applies_to": ["SL_1", "SL_2", "SL_3", "SL_4"],
             },
             {
-                "id":           "IEC62443-SR-3.1",
-                "level":        "CRITICAL",
-                "description":  "Communication integrity — all communications authenticated or encrypted",
-                "clause":       "IEC 62443-3-3 SR 3.1",
+                "id": "IEC62443-SR-3.1",
+                "level": "CRITICAL",
+                "description": "Communication integrity — all communications authenticated or encrypted",
+                "clause": "IEC 62443-3-3 SR 3.1",
                 "hil_required": False,
-                "applies_to":   ["SL_1", "SL_2", "SL_3", "SL_4"],
+                "applies_to": ["SL_1", "SL_2", "SL_3", "SL_4"],
             },
             {
-                "id":           "IEC62443-SR-3.3",
-                "level":        "CRITICAL",
-                "description":  "Security functionality verification testing",
-                "clause":       "IEC 62443-3-3 SR 3.3",
+                "id": "IEC62443-SR-3.3",
+                "level": "CRITICAL",
+                "description": "Security functionality verification testing",
+                "clause": "IEC 62443-3-3 SR 3.3",
                 "hil_required": True,
-                "applies_to":   ["SL_2", "SL_3", "SL_4"],
+                "applies_to": ["SL_2", "SL_3", "SL_4"],
             },
             {
-                "id":           "IEC62443-SR-4.1",
-                "level":        "CRITICAL",
-                "description":  "Information confidentiality — data-in-transit encryption",
-                "clause":       "IEC 62443-3-3 SR 4.1",
+                "id": "IEC62443-SR-4.1",
+                "level": "CRITICAL",
+                "description": "Information confidentiality — data-in-transit encryption",
+                "clause": "IEC 62443-3-3 SR 4.1",
                 "hil_required": False,
-                "applies_to":   ["SL_2", "SL_3", "SL_4"],
+                "applies_to": ["SL_2", "SL_3", "SL_4"],
             },
             {
-                "id":           "ETSI-303645-5.1",
-                "level":        "CRITICAL",
-                "description":  "No default passwords — unique per-device or user-set on first use",
-                "clause":       "ETSI EN 303 645 §5.1",
+                "id": "ETSI-303645-5.1",
+                "level": "CRITICAL",
+                "description": "No default passwords — unique per-device or user-set on first use",
+                "clause": "ETSI EN 303 645 §5.1",
                 "hil_required": False,
-                "applies_to":   ["SL_1", "SL_2", "SL_3", "SL_4"],
+                "applies_to": ["SL_1", "SL_2", "SL_3", "SL_4"],
             },
             {
-                "id":           "ETSI-303645-5.3",
-                "level":        "CRITICAL",
-                "description":  "Secure update mechanism with cryptographic verification",
-                "clause":       "ETSI EN 303 645 §5.3",
+                "id": "ETSI-303645-5.3",
+                "level": "CRITICAL",
+                "description": "Secure update mechanism with cryptographic verification",
+                "clause": "ETSI EN 303 645 §5.3",
                 "hil_required": True,
-                "applies_to":   ["SL_1", "SL_2", "SL_3", "SL_4"],
+                "applies_to": ["SL_1", "SL_2", "SL_3", "SL_4"],
             },
             {
-                "id":           "ETSI-303645-5.6",
-                "level":        "HIGH",
-                "description":  "Timely security updates with defined support period and EOL notice",
-                "clause":       "ETSI EN 303 645 §5.6",
+                "id": "ETSI-303645-5.6",
+                "level": "HIGH",
+                "description": "Timely security updates with defined support period and EOL notice",
+                "clause": "ETSI EN 303 645 §5.6",
                 "hil_required": False,
-                "applies_to":   ["SL_1", "SL_2", "SL_3", "SL_4"],
+                "applies_to": ["SL_1", "SL_2", "SL_3", "SL_4"],
             },
             {
-                "id":           "IEC62443-4-1-SDLC",
-                "level":        "HIGH",
-                "description":  "Secure development life cycle practices for component suppliers",
-                "clause":       "IEC 62443-4-1:2018",
+                "id": "IEC62443-4-1-SDLC",
+                "level": "HIGH",
+                "description": "Secure development life cycle practices for component suppliers",
+                "clause": "IEC 62443-4-1:2018",
                 "hil_required": False,
-                "applies_to":   ["SL_2", "SL_3", "SL_4"],
+                "applies_to": ["SL_2", "SL_3", "SL_4"],
             },
             {
-                "id":           "IEC62443-SR-2.8",
-                "level":        "HIGH",
-                "description":  "Audit log of all security-relevant events with tamper resistance",
-                "clause":       "IEC 62443-3-3 SR 2.8",
+                "id": "IEC62443-SR-2.8",
+                "level": "HIGH",
+                "description": "Audit log of all security-relevant events with tamper resistance",
+                "clause": "IEC 62443-3-3 SR 2.8",
                 "hil_required": False,
-                "applies_to":   ["SL_2", "SL_3", "SL_4"],
+                "applies_to": ["SL_2", "SL_3", "SL_4"],
             },
             {
-                "id":           "IEC62443-SR-5.1",
-                "level":        "HIGH",
-                "description":  "Network segmentation — separation of IACS from corporate/external networks",
-                "clause":       "IEC 62443-3-3 SR 5.1",
+                "id": "IEC62443-SR-5.1",
+                "level": "HIGH",
+                "description": "Network segmentation — separation of IACS from corporate/external networks",
+                "clause": "IEC 62443-3-3 SR 5.1",
                 "hil_required": False,
-                "applies_to":   ["SL_2", "SL_3", "SL_4"],
+                "applies_to": ["SL_2", "SL_3", "SL_4"],
             },
         ],
     },
@@ -890,6 +859,7 @@ COMPLIANCE_FLAGS: dict = {
 # ---------------------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------------------
+
 
 def list_domains() -> list:
     """Return all supported compliance domains."""
@@ -956,74 +926,80 @@ def generate_compliance_checklist(domain: str, risk_level: str) -> dict:
     entry = COMPLIANCE_FLAGS.get(domain.lower())
     if not entry:
         return {
-            "error":       f"Unknown domain: {domain}. Valid: {list_domains()}",
-            "domain":      domain,
-            "risk_level":  risk_level,
-            "items":       [],
+            "error": f"Unknown domain: {domain}. Valid: {list_domains()}",
+            "domain": domain,
+            "risk_level": risk_level,
+            "items": [],
         }
 
-    risk_upper    = risk_level.upper()
-    flags         = get_required_flags(domain, risk_upper)
+    risk_upper = risk_level.upper()
+    flags = get_required_flags(domain, risk_upper)
     required_tasks = entry.get("required_tasks", {}).get(risk_upper, [])
-    artifacts     = entry.get("evidence_artifacts", [])
-    hil_required  = risk_upper in [r.upper() for r in entry.get("hil_required_for", [])]
+    artifacts = entry.get("evidence_artifacts", [])
+    hil_required = risk_upper in [r.upper() for r in entry.get("hil_required_for", [])]
 
     checklist_items = []
 
     # Compliance flags
     for flag in flags:
-        checklist_items.append({
-            "id":              flag["id"],
-            "type":            "compliance_flag",
-            "level":           flag["level"],
-            "description":     flag["description"],
-            "clause":          flag.get("clause", ""),
-            "hil_required":    flag.get("hil_required", False),
-            "status":          None,   # null = not yet evaluated
-            "evidence_ref":    None,   # to be filled in during audit
-            "notes":           "",
-        })
+        checklist_items.append(
+            {
+                "id": flag["id"],
+                "type": "compliance_flag",
+                "level": flag["level"],
+                "description": flag["description"],
+                "clause": flag.get("clause", ""),
+                "hil_required": flag.get("hil_required", False),
+                "status": None,  # null = not yet evaluated
+                "evidence_ref": None,  # to be filled in during audit
+                "notes": "",
+            }
+        )
 
     # Required task types
     for task in required_tasks:
-        checklist_items.append({
-            "id":           f"TASK-{task}",
-            "type":         "required_task",
-            "level":        "REQUIRED",
-            "description":  f"Task type '{task}' must be completed for {domain.upper()} {risk_upper}",
-            "clause":       entry.get("standard", ""),
-            "hil_required": "HIL" in task,
-            "status":       None,
-            "evidence_ref": None,
-            "notes":        "",
-        })
+        checklist_items.append(
+            {
+                "id": f"TASK-{task}",
+                "type": "required_task",
+                "level": "REQUIRED",
+                "description": f"Task type '{task}' must be completed for {domain.upper()} {risk_upper}",
+                "clause": entry.get("standard", ""),
+                "hil_required": "HIL" in task,
+                "status": None,
+                "evidence_ref": None,
+                "notes": "",
+            }
+        )
 
     # Evidence artifacts
     for i, artifact in enumerate(artifacts):
-        checklist_items.append({
-            "id":           f"DOC-{i+1:03d}",
-            "type":         "evidence_artifact",
-            "level":        "REQUIRED",
-            "description":  artifact,
-            "clause":       entry.get("standard", ""),
-            "hil_required": False,
-            "status":       None,
-            "evidence_ref": None,
-            "notes":        "",
-        })
+        checklist_items.append(
+            {
+                "id": f"DOC-{i + 1:03d}",
+                "type": "evidence_artifact",
+                "level": "REQUIRED",
+                "description": artifact,
+                "clause": entry.get("standard", ""),
+                "hil_required": False,
+                "status": None,
+                "evidence_ref": None,
+                "notes": "",
+            }
+        )
 
     return {
-        "domain":           domain,
-        "risk_level":       risk_upper,
-        "standard":         entry.get("standard", ""),
-        "description":      entry.get("description", ""),
-        "authority":        entry.get("authority", ""),
+        "domain": domain,
+        "risk_level": risk_upper,
+        "standard": entry.get("standard", ""),
+        "description": entry.get("description", ""),
+        "authority": entry.get("authority", ""),
         "hil_testing_required": hil_required,
-        "total_items":      len(checklist_items),
-        "flags":            len(flags),
-        "required_tasks":   len(required_tasks),
-        "artifacts":        len(artifacts),
-        "items":            checklist_items,
+        "total_items": len(checklist_items),
+        "flags": len(flags),
+        "required_tasks": len(required_tasks),
+        "artifacts": len(artifacts),
+        "items": checklist_items,
     }
 
 
@@ -1042,22 +1018,26 @@ def assess_compliance_gap(domain: str, risk_level: str, completed_tasks: list) -
     if not entry:
         return {"error": f"Unknown domain: {domain}"}
 
-    risk_upper    = risk_level.upper()
-    required      = entry.get("required_tasks", {}).get(risk_upper, [])
+    risk_upper = risk_level.upper()
+    required = entry.get("required_tasks", {}).get(risk_upper, [])
     completed_set = {t.upper() for t in completed_tasks}
-    missing       = [t for t in required if t.upper() not in completed_set]
-    hil_missing   = [t for t in missing if "HIL" in t]
+    missing = [t for t in required if t.upper() not in completed_set]
+    hil_missing = [t for t in missing if "HIL" in t]
 
-    pct = round((len(required) - len(missing)) / len(required) * 100, 1) if required else 100.0
+    pct = (
+        round((len(required) - len(missing)) / len(required) * 100, 1)
+        if required
+        else 100.0
+    )
 
     return {
-        "domain":            domain,
-        "risk_level":        risk_upper,
-        "required_tasks":    required,
-        "completed_tasks":   list(completed_set & {t.upper() for t in required}),
-        "missing_tasks":     missing,
+        "domain": domain,
+        "risk_level": risk_upper,
+        "required_tasks": required,
+        "completed_tasks": list(completed_set & {t.upper() for t in required}),
+        "missing_tasks": missing,
         "hil_tasks_missing": hil_missing,
-        "compliance_pct":    pct,
-        "compliant":         len(missing) == 0,
-        "blocking_gaps":     hil_missing,
+        "compliance_pct": pct,
+        "compliant": len(missing) == 0,
+        "blocking_gaps": hil_missing,
     }

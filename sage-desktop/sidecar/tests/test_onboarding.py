@@ -1,4 +1,5 @@
 """Tests for the sidecar onboarding handler."""
+
 import sys
 from pathlib import Path
 

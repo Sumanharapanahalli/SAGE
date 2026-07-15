@@ -45,7 +45,6 @@ Tests for:
   - API POST /build/approve when not awaiting returns 400
 """
 
-import json
 import os
 import tempfile
 from unittest.mock import MagicMock, patch
@@ -60,9 +59,11 @@ pytestmark = pytest.mark.unit
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _fresh_orchestrator():
     import tempfile
     from src.integrations.build_orchestrator import BuildOrchestrator
+
     tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
     tmp.close()
     return BuildOrchestrator(checkpoint_db=tmp.name)
@@ -70,26 +71,50 @@ def _fresh_orchestrator():
 
 def _client():
     from src.interface.api import app
+
     return TestClient(app, raise_server_exceptions=False)
 
 
 MOCK_PLAN = [
     {"step": 1, "task_type": "DATABASE", "description": "Create schema", "payload": {}},
-    {"step": 2, "task_type": "BACKEND", "description": "Build API", "payload": {}, "depends_on": [1]},
-    {"step": 3, "task_type": "FRONTEND", "description": "Build UI", "payload": {}, "depends_on": [2]},
-    {"step": 4, "task_type": "TESTS", "description": "Write tests", "payload": {}, "depends_on": [2]},
+    {
+        "step": 2,
+        "task_type": "BACKEND",
+        "description": "Build API",
+        "payload": {},
+        "depends_on": [1],
+    },
+    {
+        "step": 3,
+        "task_type": "FRONTEND",
+        "description": "Build UI",
+        "payload": {},
+        "depends_on": [2],
+    },
+    {
+        "step": 4,
+        "task_type": "TESTS",
+        "description": "Write tests",
+        "payload": {},
+        "depends_on": [2],
+    },
 ]
 
 MOCK_CRITIC_RESULT = {
-    "passed": True, "final_score": 85, "iterations": 1,
+    "passed": True,
+    "final_score": 85,
+    "iterations": 1,
     "history": [{"score": 85, "iteration": 1}],
     "final_review": {"score": 85, "summary": "Looks good"},
     "threshold": 70,
 }
 
 MOCK_BUILD_RESULT = {
-    "status": "completed", "tier": "llm_react", "code": "x=1",
-    "files_changed": ["app.py"], "output": {},
+    "status": "completed",
+    "tier": "llm_react",
+    "code": "x=1",
+    "files_changed": ["app.py"],
+    "output": {},
 }
 
 
@@ -97,13 +122,15 @@ MOCK_BUILD_RESULT = {
 # BuildOrchestrator.start()
 # ---------------------------------------------------------------------------
 
-class TestStart:
 
+class TestStart:
     def test_returns_run_id_and_plan(self):
         orch = _fresh_orchestrator()
-        with patch.object(orch, "_decompose", return_value=MOCK_PLAN), \
-             patch.object(orch, "_critic_review_plan", return_value=MOCK_CRITIC_RESULT), \
-             patch.object(orch, "_audit"):
+        with (
+            patch.object(orch, "_decompose", return_value=MOCK_PLAN),
+            patch.object(orch, "_critic_review_plan", return_value=MOCK_CRITIC_RESULT),
+            patch.object(orch, "_audit"),
+        ):
             result = orch.start("Build a todo app")
             assert "run_id" in result
             assert result["task_count"] == 4
@@ -111,26 +138,32 @@ class TestStart:
 
     def test_handles_empty_plan(self):
         orch = _fresh_orchestrator()
-        with patch.object(orch, "_decompose", return_value=[]), \
-             patch.object(orch, "_audit"):
+        with (
+            patch.object(orch, "_decompose", return_value=[]),
+            patch.object(orch, "_audit"),
+        ):
             result = orch.start("Build something impossible")
             assert result["state"] == "failed"
             assert result["error"] is not None
 
     def test_includes_hitl_level(self):
         orch = _fresh_orchestrator()
-        with patch.object(orch, "_decompose", return_value=MOCK_PLAN), \
-             patch.object(orch, "_critic_review_plan", return_value=MOCK_CRITIC_RESULT), \
-             patch.object(orch, "_audit"):
+        with (
+            patch.object(orch, "_decompose", return_value=MOCK_PLAN),
+            patch.object(orch, "_critic_review_plan", return_value=MOCK_CRITIC_RESULT),
+            patch.object(orch, "_audit"),
+        ):
             result = orch.start("Build app", hitl_level="strict")
             assert result["hitl_level"] == "strict"
             assert "wave" in result["hitl_gates"]
 
     def test_critic_scores_in_response(self):
         orch = _fresh_orchestrator()
-        with patch.object(orch, "_decompose", return_value=MOCK_PLAN), \
-             patch.object(orch, "_critic_review_plan", return_value=MOCK_CRITIC_RESULT), \
-             patch.object(orch, "_audit"):
+        with (
+            patch.object(orch, "_decompose", return_value=MOCK_PLAN),
+            patch.object(orch, "_critic_review_plan", return_value=MOCK_CRITIC_RESULT),
+            patch.object(orch, "_audit"),
+        ):
             result = orch.start("Build a chat app")
             assert len(result["critic_scores"]) == 1
             assert result["critic_scores"][0]["phase"] == "plan"
@@ -138,17 +171,21 @@ class TestStart:
 
     def test_default_solution_name(self):
         orch = _fresh_orchestrator()
-        with patch.object(orch, "_decompose", return_value=MOCK_PLAN), \
-             patch.object(orch, "_critic_review_plan", return_value=MOCK_CRITIC_RESULT), \
-             patch.object(orch, "_audit"):
+        with (
+            patch.object(orch, "_decompose", return_value=MOCK_PLAN),
+            patch.object(orch, "_critic_review_plan", return_value=MOCK_CRITIC_RESULT),
+            patch.object(orch, "_audit"),
+        ):
             result = orch.start("test")
             assert result["solution_name"].startswith("build_")
 
     def test_custom_solution_name(self):
         orch = _fresh_orchestrator()
-        with patch.object(orch, "_decompose", return_value=MOCK_PLAN), \
-             patch.object(orch, "_critic_review_plan", return_value=MOCK_CRITIC_RESULT), \
-             patch.object(orch, "_audit"):
+        with (
+            patch.object(orch, "_decompose", return_value=MOCK_PLAN),
+            patch.object(orch, "_critic_review_plan", return_value=MOCK_CRITIC_RESULT),
+            patch.object(orch, "_audit"),
+        ):
             result = orch.start("test", solution_name="my_app")
             assert result["solution_name"] == "my_app"
 
@@ -157,26 +194,32 @@ class TestStart:
 # BuildOrchestrator.approve_plan()
 # ---------------------------------------------------------------------------
 
-class TestApprovePlan:
 
+class TestApprovePlan:
     def test_triggers_execution(self):
         orch = _fresh_orchestrator()
-        with patch.object(orch, "_decompose", return_value=MOCK_PLAN), \
-             patch.object(orch, "_critic_review_plan", return_value=MOCK_CRITIC_RESULT), \
-             patch.object(orch, "_scaffold", return_value={"status": "skipped"}), \
-             patch.object(orch, "_execute_agents"), \
-             patch.object(orch, "_critic_review_code", return_value=MOCK_CRITIC_RESULT), \
-             patch.object(orch, "_integrate", return_value={"status": "completed"}), \
-             patch.object(orch, "_critic_review_integration", return_value=MOCK_CRITIC_RESULT), \
-             patch.object(orch, "_audit"):
+        with (
+            patch.object(orch, "_decompose", return_value=MOCK_PLAN),
+            patch.object(orch, "_critic_review_plan", return_value=MOCK_CRITIC_RESULT),
+            patch.object(orch, "_scaffold", return_value={"status": "skipped"}),
+            patch.object(orch, "_execute_agents"),
+            patch.object(orch, "_critic_review_code", return_value=MOCK_CRITIC_RESULT),
+            patch.object(orch, "_integrate", return_value={"status": "completed"}),
+            patch.object(
+                orch, "_critic_review_integration", return_value=MOCK_CRITIC_RESULT
+            ),
+            patch.object(orch, "_audit"),
+        ):
             start_result = orch.start("Build app")
             result = orch.approve_plan(start_result["run_id"])
             assert result["state"] == "awaiting_build"
 
     def test_rejects_when_not_awaiting(self):
         orch = _fresh_orchestrator()
-        with patch.object(orch, "_decompose", return_value=[]), \
-             patch.object(orch, "_audit"):
+        with (
+            patch.object(orch, "_decompose", return_value=[]),
+            patch.object(orch, "_audit"),
+        ):
             start_result = orch.start("test")  # state=failed
             result = orch.approve_plan(start_result["run_id"])
             assert "error" in result
@@ -191,19 +234,23 @@ class TestApprovePlan:
 # BuildOrchestrator.approve_build()
 # ---------------------------------------------------------------------------
 
-class TestApproveBuild:
 
+class TestApproveBuild:
     def test_completes_build(self):
         orch = _fresh_orchestrator()
-        with patch.object(orch, "_decompose", return_value=MOCK_PLAN), \
-             patch.object(orch, "_critic_review_plan", return_value=MOCK_CRITIC_RESULT), \
-             patch.object(orch, "_scaffold", return_value={"status": "skipped"}), \
-             patch.object(orch, "_execute_agents"), \
-             patch.object(orch, "_critic_review_code", return_value=MOCK_CRITIC_RESULT), \
-             patch.object(orch, "_integrate", return_value={"status": "completed"}), \
-             patch.object(orch, "_critic_review_integration", return_value=MOCK_CRITIC_RESULT), \
-             patch.object(orch, "_finalize"), \
-             patch.object(orch, "_audit"):
+        with (
+            patch.object(orch, "_decompose", return_value=MOCK_PLAN),
+            patch.object(orch, "_critic_review_plan", return_value=MOCK_CRITIC_RESULT),
+            patch.object(orch, "_scaffold", return_value={"status": "skipped"}),
+            patch.object(orch, "_execute_agents"),
+            patch.object(orch, "_critic_review_code", return_value=MOCK_CRITIC_RESULT),
+            patch.object(orch, "_integrate", return_value={"status": "completed"}),
+            patch.object(
+                orch, "_critic_review_integration", return_value=MOCK_CRITIC_RESULT
+            ),
+            patch.object(orch, "_finalize"),
+            patch.object(orch, "_audit"),
+        ):
             start_result = orch.start("Build app")
             orch.approve_plan(start_result["run_id"])
             result = orch.approve_build(start_result["run_id"])
@@ -211,9 +258,11 @@ class TestApproveBuild:
 
     def test_rejects_when_not_awaiting(self):
         orch = _fresh_orchestrator()
-        with patch.object(orch, "_decompose", return_value=MOCK_PLAN), \
-             patch.object(orch, "_critic_review_plan", return_value=MOCK_CRITIC_RESULT), \
-             patch.object(orch, "_audit"):
+        with (
+            patch.object(orch, "_decompose", return_value=MOCK_PLAN),
+            patch.object(orch, "_critic_review_plan", return_value=MOCK_CRITIC_RESULT),
+            patch.object(orch, "_audit"),
+        ):
             start_result = orch.start("test")  # state=awaiting_plan, not awaiting_build
             result = orch.approve_build(start_result["run_id"])
             assert "error" in result
@@ -223,13 +272,15 @@ class TestApproveBuild:
 # BuildOrchestrator.get_status() and list_runs()
 # ---------------------------------------------------------------------------
 
-class TestStatusAndList:
 
+class TestStatusAndList:
     def test_get_status_returns_summary(self):
         orch = _fresh_orchestrator()
-        with patch.object(orch, "_decompose", return_value=MOCK_PLAN), \
-             patch.object(orch, "_critic_review_plan", return_value=MOCK_CRITIC_RESULT), \
-             patch.object(orch, "_audit"):
+        with (
+            patch.object(orch, "_decompose", return_value=MOCK_PLAN),
+            patch.object(orch, "_critic_review_plan", return_value=MOCK_CRITIC_RESULT),
+            patch.object(orch, "_audit"),
+        ):
             start_result = orch.start("test")
             status = orch.get_status(start_result["run_id"])
             assert status["run_id"] == start_result["run_id"]
@@ -243,9 +294,11 @@ class TestStatusAndList:
 
     def test_list_runs_returns_all(self):
         orch = _fresh_orchestrator()
-        with patch.object(orch, "_decompose", return_value=MOCK_PLAN), \
-             patch.object(orch, "_critic_review_plan", return_value=MOCK_CRITIC_RESULT), \
-             patch.object(orch, "_audit"):
+        with (
+            patch.object(orch, "_decompose", return_value=MOCK_PLAN),
+            patch.object(orch, "_critic_review_plan", return_value=MOCK_CRITIC_RESULT),
+            patch.object(orch, "_audit"),
+        ):
             orch.start("App 1", solution_name="app1")
             orch.start("App 2", solution_name="app2")
             runs = orch.list_runs()
@@ -261,56 +314,97 @@ class TestStatusAndList:
 # _decompose()
 # ---------------------------------------------------------------------------
 
-class TestDecompose:
 
+class TestDecompose:
     def test_calls_planner_with_build_task_types(self):
         orch = _fresh_orchestrator()
-        with patch("src.agents.planner.planner_agent") as mock_planner, \
-             patch.object(orch, "_build_agent_context", return_value="agents list"):
+        with (
+            patch("src.agents.planner.planner_agent") as mock_planner,
+            patch.object(orch, "_build_agent_context", return_value="agents list"),
+        ):
             mock_planner.create_plan.return_value = MOCK_PLAN
             run = {"product_description": "test", "solution_name": "test"}
-            result = orch._decompose(run)
+            orch._decompose(run)
             call_kwargs = mock_planner.create_plan.call_args[1]
             assert "BACKEND" in call_kwargs["override_task_types"]
             assert "AGENTIC" in call_kwargs["override_task_types"]
 
     def test_enriches_with_acceptance_criteria(self):
         orch = _fresh_orchestrator()
-        plan = [{"step": 1, "task_type": "BACKEND", "description": "Build API", "payload": {}}]
-        with patch("src.agents.planner.planner_agent") as mock_planner, \
-             patch.object(orch, "_build_agent_context", return_value=""):
+        plan = [
+            {
+                "step": 1,
+                "task_type": "BACKEND",
+                "description": "Build API",
+                "payload": {},
+            }
+        ]
+        with (
+            patch("src.agents.planner.planner_agent") as mock_planner,
+            patch.object(orch, "_build_agent_context", return_value=""),
+        ):
             mock_planner.create_plan.return_value = plan
-            result = orch._decompose({"product_description": "test", "solution_name": "test"})
+            result = orch._decompose(
+                {"product_description": "test", "solution_name": "test"}
+            )
             assert "acceptance_criteria" in result[0]
             assert len(result[0]["acceptance_criteria"]) > 0
 
     def test_enriches_with_agent_role(self):
         orch = _fresh_orchestrator()
-        plan = [{"step": 1, "task_type": "FRONTEND", "description": "Build UI", "payload": {}}]
-        with patch("src.agents.planner.planner_agent") as mock_planner, \
-             patch.object(orch, "_build_agent_context", return_value=""):
+        plan = [
+            {
+                "step": 1,
+                "task_type": "FRONTEND",
+                "description": "Build UI",
+                "payload": {},
+            }
+        ]
+        with (
+            patch("src.agents.planner.planner_agent") as mock_planner,
+            patch.object(orch, "_build_agent_context", return_value=""),
+        ):
             mock_planner.create_plan.return_value = plan
-            result = orch._decompose({"product_description": "test", "solution_name": "test"})
+            result = orch._decompose(
+                {"product_description": "test", "solution_name": "test"}
+            )
             assert result[0]["agent_role"] == "developer"
 
     def test_enriches_with_empty_depends_on(self):
         orch = _fresh_orchestrator()
-        plan = [{"step": 1, "task_type": "CONFIG", "description": "Setup", "payload": {}}]
-        with patch("src.agents.planner.planner_agent") as mock_planner, \
-             patch.object(orch, "_build_agent_context", return_value=""):
+        plan = [
+            {"step": 1, "task_type": "CONFIG", "description": "Setup", "payload": {}}
+        ]
+        with (
+            patch("src.agents.planner.planner_agent") as mock_planner,
+            patch.object(orch, "_build_agent_context", return_value=""),
+        ):
             mock_planner.create_plan.return_value = plan
-            result = orch._decompose({"product_description": "test", "solution_name": "test"})
+            result = orch._decompose(
+                {"product_description": "test", "solution_name": "test"}
+            )
             assert result[0]["depends_on"] == []
 
     def test_preserves_llm_provided_criteria(self):
         """If the LLM already provided acceptance_criteria, don't override."""
         orch = _fresh_orchestrator()
-        plan = [{"step": 1, "task_type": "BACKEND", "description": "Build API", "payload": {},
-                 "acceptance_criteria": ["Custom criteria"]}]
-        with patch("src.agents.planner.planner_agent") as mock_planner, \
-             patch.object(orch, "_build_agent_context", return_value=""):
+        plan = [
+            {
+                "step": 1,
+                "task_type": "BACKEND",
+                "description": "Build API",
+                "payload": {},
+                "acceptance_criteria": ["Custom criteria"],
+            }
+        ]
+        with (
+            patch("src.agents.planner.planner_agent") as mock_planner,
+            patch.object(orch, "_build_agent_context", return_value=""),
+        ):
             mock_planner.create_plan.return_value = plan
-            result = orch._decompose({"product_description": "test", "solution_name": "test"})
+            result = orch._decompose(
+                {"product_description": "test", "solution_name": "test"}
+            )
             assert result[0]["acceptance_criteria"] == ["Custom criteria"]
 
 
@@ -318,8 +412,8 @@ class TestDecompose:
 # _build_agent_context()
 # ---------------------------------------------------------------------------
 
-class TestBuildAgentContext:
 
+class TestBuildAgentContext:
     def test_includes_framework_agents(self):
         orch = _fresh_orchestrator()
         with patch("src.core.project_loader.project_config") as mock_pc:
@@ -343,7 +437,10 @@ class TestBuildAgentContext:
         with patch("src.core.project_loader.project_config") as mock_pc:
             mock_pc.get_prompts.return_value = {
                 "roles": {
-                    "security_reviewer": {"name": "Security Reviewer", "description": "Reviews security"}
+                    "security_reviewer": {
+                        "name": "Security Reviewer",
+                        "description": "Reviews security",
+                    }
                 }
             }
             ctx = orch._build_agent_context()
@@ -355,8 +452,8 @@ class TestBuildAgentContext:
 # _compute_waves()
 # ---------------------------------------------------------------------------
 
-class TestComputeWaves:
 
+class TestComputeWaves:
     def test_correct_waves_from_dependencies(self):
         orch = _fresh_orchestrator()
         plan = [
@@ -411,8 +508,8 @@ class TestComputeWaves:
 # _route_to_agent()
 # ---------------------------------------------------------------------------
 
-class TestRouteToAgent:
 
+class TestRouteToAgent:
     def test_enriches_with_acceptance_criteria(self):
         orch = _fresh_orchestrator()
         task = {
@@ -430,8 +527,8 @@ class TestRouteToAgent:
 # _scaffold()
 # ---------------------------------------------------------------------------
 
-class TestScaffold:
 
+class TestScaffold:
     def test_creates_directory_structure(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             workspace = os.path.join(tmpdir, "project")
@@ -460,20 +557,28 @@ class TestScaffold:
 # Critic integration
 # ---------------------------------------------------------------------------
 
-class TestCriticIntegration:
 
+class TestCriticIntegration:
     def test_critic_review_plan_calls_critic(self):
         orch = _fresh_orchestrator()
         with patch("src.agents.critic.critic_agent") as mock_critic:
             mock_critic.review_with_loop.return_value = MOCK_CRITIC_RESULT
-            run = {"plan": MOCK_PLAN, "product_description": "test", "critic_threshold": 70}
+            run = {
+                "plan": MOCK_PLAN,
+                "product_description": "test",
+                "critic_threshold": 70,
+            }
             result = orch._critic_review_plan(run)
             mock_critic.review_with_loop.assert_called_once()
             assert result["final_score"] == 85
 
     def test_critic_review_code_handles_empty(self):
         orch = _fresh_orchestrator()
-        run = {"agent_results": [], "product_description": "test", "critic_threshold": 70}
+        run = {
+            "agent_results": [],
+            "product_description": "test",
+            "critic_threshold": 70,
+        }
         with patch("src.agents.critic.critic_agent") as mock_critic:
             mock_critic.review_with_loop.return_value = MOCK_CRITIC_RESULT
             result = orch._critic_review_code(run)
@@ -482,8 +587,10 @@ class TestCriticIntegration:
     def test_finalize_stores_feedback(self):
         orch = _fresh_orchestrator()
         run = {
-            "solution_name": "test", "product_description": "test",
-            "plan": [], "critic_reports": [],
+            "solution_name": "test",
+            "product_description": "test",
+            "plan": [],
+            "critic_reports": [],
         }
         with patch("src.memory.vector_store.vector_memory") as mock_vm:
             orch._finalize(run, "Great build!")
@@ -494,14 +601,16 @@ class TestCriticIntegration:
 # Module constants
 # ---------------------------------------------------------------------------
 
-class TestModuleConstants:
 
+class TestModuleConstants:
     def test_build_task_types_includes_agentic(self):
         from src.integrations.build_orchestrator import BUILD_TASK_TYPES
+
         assert "AGENTIC" in BUILD_TASK_TYPES
 
     def test_agentic_patterns_populated(self):
         from src.integrations.build_orchestrator import AGENTIC_PATTERNS
+
         assert len(AGENTIC_PATTERNS) >= 10
         assert "react" in AGENTIC_PATTERNS
         assert "coordinator" in AGENTIC_PATTERNS
@@ -509,6 +618,7 @@ class TestModuleConstants:
 
     def test_hitl_levels(self):
         from src.integrations.build_orchestrator import HITL_LEVELS
+
         assert "minimal" in HITL_LEVELS
         assert "standard" in HITL_LEVELS
         assert "strict" in HITL_LEVELS
@@ -516,44 +626,59 @@ class TestModuleConstants:
 
     def test_acceptance_criteria_covers_all_types(self):
         from src.integrations.build_orchestrator import (
-            BUILD_TASK_TYPES, DEFAULT_ACCEPTANCE_CRITERIA,
+            BUILD_TASK_TYPES,
+            DEFAULT_ACCEPTANCE_CRITERIA,
         )
+
         for task_type in BUILD_TASK_TYPES:
-            assert task_type in DEFAULT_ACCEPTANCE_CRITERIA, \
+            assert task_type in DEFAULT_ACCEPTANCE_CRITERIA, (
                 f"Missing acceptance criteria for {task_type}"
+            )
 
     def test_task_type_to_agent_covers_all_types(self):
         from src.integrations.build_orchestrator import (
-            BUILD_TASK_TYPES, TASK_TYPE_TO_AGENT,
+            BUILD_TASK_TYPES,
+            TASK_TYPE_TO_AGENT,
         )
+
         for task_type in BUILD_TASK_TYPES:
-            assert task_type in TASK_TYPE_TO_AGENT, \
+            assert task_type in TASK_TYPE_TO_AGENT, (
                 f"Missing agent mapping for {task_type}"
+            )
 
 
 # ---------------------------------------------------------------------------
 # API endpoint tests
 # ---------------------------------------------------------------------------
 
-class TestBuildAPI:
 
+class TestBuildAPI:
     def test_post_build_start(self):
         client = _client()
         mock_orch = MagicMock()
         mock_orch.start.return_value = {
-            "run_id": "test-123", "state": "awaiting_plan",
-            "solution_name": "test", "plan": MOCK_PLAN,
-            "task_count": 4, "critic_scores": [], "critic_reports": [],
-            "agent_results": [], "integration_result": None,
-            "error": None, "product_description": "test",
-            "created_at": "", "updated_at": "",
-            "state_description": "", "hitl_level": "standard",
+            "run_id": "test-123",
+            "state": "awaiting_plan",
+            "solution_name": "test",
+            "plan": MOCK_PLAN,
+            "task_count": 4,
+            "critic_scores": [],
+            "critic_reports": [],
+            "agent_results": [],
+            "integration_result": None,
+            "error": None,
+            "product_description": "test",
+            "created_at": "",
+            "updated_at": "",
+            "state_description": "",
+            "hitl_level": "standard",
             "hitl_gates": ["plan", "code", "final"],
         }
         with patch("src.interface.api._get_build_orchestrator", return_value=mock_orch):
-            resp = client.post("/build/start", json={
-                "product_description": "Build a hello world web app"
-            })
+            resp = client.post(
+                "/build/start",
+                json={"product_description": "Build a hello world web app"},
+            )
             assert resp.status_code == 200
             data = resp.json()
             assert data["run_id"] == "test-123"
@@ -561,10 +686,12 @@ class TestBuildAPI:
     def test_get_build_status(self):
         """GET /build/status/{run_id} returns status for known run."""
         import src.interface.api as api_mod
+
         orig = api_mod._get_build_orchestrator
         mock_orch = MagicMock()
         mock_orch.get_status.return_value = {
-            "run_id": "test-123", "state": "awaiting_plan",
+            "run_id": "test-123",
+            "state": "awaiting_plan",
         }
         api_mod._get_build_orchestrator = lambda: mock_orch
         try:
@@ -578,6 +705,7 @@ class TestBuildAPI:
     def test_get_build_status_unknown(self):
         """GET /build/status/unknown returns 404."""
         import src.interface.api as api_mod
+
         orig = api_mod._get_build_orchestrator
         mock_orch = MagicMock()
         mock_orch.get_status.return_value = {"error": "Not found"}
@@ -592,15 +720,26 @@ class TestBuildAPI:
     def test_post_build_approve_plan(self):
         client = _client()
         mock_orch = MagicMock()
-        mock_orch.get_status.return_value = {"state": "awaiting_plan", "run_id": "test-123"}
+        mock_orch.get_status.return_value = {
+            "state": "awaiting_plan",
+            "run_id": "test-123",
+        }
         mock_orch.approve_plan.return_value = {
-            "run_id": "test-123", "state": "awaiting_build",
-            "solution_name": "test", "plan": [], "task_count": 0,
-            "critic_scores": [], "critic_reports": [],
-            "agent_results": [], "integration_result": None,
-            "error": None, "product_description": "test",
-            "created_at": "", "updated_at": "",
-            "state_description": "", "hitl_level": "standard",
+            "run_id": "test-123",
+            "state": "awaiting_build",
+            "solution_name": "test",
+            "plan": [],
+            "task_count": 0,
+            "critic_scores": [],
+            "critic_reports": [],
+            "agent_results": [],
+            "integration_result": None,
+            "error": None,
+            "product_description": "test",
+            "created_at": "",
+            "updated_at": "",
+            "state_description": "",
+            "hitl_level": "standard",
             "hitl_gates": [],
         }
         with patch("src.interface.api._get_build_orchestrator", return_value=mock_orch):
@@ -619,8 +758,13 @@ class TestBuildAPI:
         client = _client()
         mock_orch = MagicMock()
         mock_orch.list_runs.return_value = [
-            {"run_id": "a", "solution_name": "app1", "state": "completed",
-             "created_at": "", "task_count": 3},
+            {
+                "run_id": "a",
+                "solution_name": "app1",
+                "state": "completed",
+                "created_at": "",
+                "task_count": 3,
+            },
         ]
         with patch("src.interface.api._get_build_orchestrator", return_value=mock_orch):
             resp = client.get("/build/runs")
@@ -630,25 +774,35 @@ class TestBuildAPI:
 
     def test_post_build_reject(self):
         import src.interface.api as api_mod
+
         orig = api_mod._get_build_orchestrator
         mock_orch = MagicMock()
         mock_orch.reject.return_value = {
-            "run_id": "test-123", "state": "rejected",
+            "run_id": "test-123",
+            "state": "rejected",
             "state_description": "Build rejected by human",
-            "solution_name": "test", "plan": [], "task_count": 0,
-            "critic_scores": [], "critic_reports": [],
-            "agent_results": [], "integration_result": None,
-            "error": "Rejected: Not ready", "product_description": "test",
-            "created_at": "", "updated_at": "",
-            "hitl_level": "standard", "hitl_gates": [],
+            "solution_name": "test",
+            "plan": [],
+            "task_count": 0,
+            "critic_scores": [],
+            "critic_reports": [],
+            "agent_results": [],
+            "integration_result": None,
+            "error": "Rejected: Not ready",
+            "product_description": "test",
+            "created_at": "",
+            "updated_at": "",
+            "hitl_level": "standard",
+            "hitl_gates": [],
             "phase_durations": {},
         }
         api_mod._get_build_orchestrator = lambda: mock_orch
         try:
             client = _client()
-            resp = client.post("/build/approve/test-123", json={
-                "approved": False, "feedback": "Not ready"
-            })
+            resp = client.post(
+                "/build/approve/test-123",
+                json={"approved": False, "feedback": "Not ready"},
+            )
             assert resp.status_code == 200
             data = resp.json()
             assert data["state"] == "rejected"
@@ -660,15 +814,17 @@ class TestBuildAPI:
 # Edge-case tests
 # ---------------------------------------------------------------------------
 
-class TestStartEdgeCases:
 
+class TestStartEdgeCases:
     def test_very_long_product_description(self):
         """start() should handle extremely long descriptions without error."""
         orch = _fresh_orchestrator()
         long_desc = "Build a microservice that " + "handles requests " * 5000
-        with patch.object(orch, "_decompose", return_value=MOCK_PLAN), \
-             patch.object(orch, "_critic_review_plan", return_value=MOCK_CRITIC_RESULT), \
-             patch.object(orch, "_audit"):
+        with (
+            patch.object(orch, "_decompose", return_value=MOCK_PLAN),
+            patch.object(orch, "_critic_review_plan", return_value=MOCK_CRITIC_RESULT),
+            patch.object(orch, "_audit"),
+        ):
             result = orch.start(long_desc)
             assert result["state"] == "awaiting_plan"
             assert result["product_description"] == long_desc
@@ -676,56 +832,70 @@ class TestStartEdgeCases:
     def test_special_characters_in_solution_name(self):
         """start() should accept solution names with special characters."""
         orch = _fresh_orchestrator()
-        with patch.object(orch, "_decompose", return_value=MOCK_PLAN), \
-             patch.object(orch, "_critic_review_plan", return_value=MOCK_CRITIC_RESULT), \
-             patch.object(orch, "_audit"):
+        with (
+            patch.object(orch, "_decompose", return_value=MOCK_PLAN),
+            patch.object(orch, "_critic_review_plan", return_value=MOCK_CRITIC_RESULT),
+            patch.object(orch, "_audit"),
+        ):
             result = orch.start("test", solution_name="my-app_v2.0 (beta)")
             assert result["solution_name"] == "my-app_v2.0 (beta)"
 
     def test_empty_product_description(self):
         """start() with empty description should still work (planner decides)."""
         orch = _fresh_orchestrator()
-        with patch.object(orch, "_decompose", return_value=[]), \
-             patch.object(orch, "_audit"):
+        with (
+            patch.object(orch, "_decompose", return_value=[]),
+            patch.object(orch, "_audit"),
+        ):
             result = orch.start("")
             assert result["state"] == "failed"
 
     def test_decompose_exception_sets_failed(self):
         """start() handles _decompose raising an exception gracefully."""
         orch = _fresh_orchestrator()
-        with patch.object(orch, "_decompose", side_effect=RuntimeError("Planner exploded")), \
-             patch.object(orch, "_audit"):
+        with (
+            patch.object(
+                orch, "_decompose", side_effect=RuntimeError("Planner exploded")
+            ),
+            patch.object(orch, "_audit"),
+        ):
             result = orch.start("Build something")
             assert result["state"] == "failed"
             assert "Planner exploded" in result["error"]
 
 
 class TestApprovePlanEdgeCases:
-
     def test_rejected_plan_with_feedback(self):
         """approve_plan() when run is not awaiting includes feedback context."""
         orch = _fresh_orchestrator()
-        with patch.object(orch, "_decompose", return_value=[]), \
-             patch.object(orch, "_audit"):
+        with (
+            patch.object(orch, "_decompose", return_value=[]),
+            patch.object(orch, "_audit"),
+        ):
             start_result = orch.start("test")  # state=failed
-            result = orch.approve_plan(start_result["run_id"], feedback="Needs more detail")
+            result = orch.approve_plan(
+                start_result["run_id"], feedback="Needs more detail"
+            )
             assert "error" in result
 
 
 class TestApproveBuildEdgeCases:
-
     def test_approve_build_with_feedback_string(self):
         """approve_build() passes feedback to _finalize."""
         orch = _fresh_orchestrator()
-        with patch.object(orch, "_decompose", return_value=MOCK_PLAN), \
-             patch.object(orch, "_critic_review_plan", return_value=MOCK_CRITIC_RESULT), \
-             patch.object(orch, "_scaffold", return_value={"status": "skipped"}), \
-             patch.object(orch, "_execute_agents"), \
-             patch.object(orch, "_critic_review_code", return_value=MOCK_CRITIC_RESULT), \
-             patch.object(orch, "_integrate", return_value={"status": "completed"}), \
-             patch.object(orch, "_critic_review_integration", return_value=MOCK_CRITIC_RESULT), \
-             patch.object(orch, "_finalize") as mock_finalize, \
-             patch.object(orch, "_audit"):
+        with (
+            patch.object(orch, "_decompose", return_value=MOCK_PLAN),
+            patch.object(orch, "_critic_review_plan", return_value=MOCK_CRITIC_RESULT),
+            patch.object(orch, "_scaffold", return_value={"status": "skipped"}),
+            patch.object(orch, "_execute_agents"),
+            patch.object(orch, "_critic_review_code", return_value=MOCK_CRITIC_RESULT),
+            patch.object(orch, "_integrate", return_value={"status": "completed"}),
+            patch.object(
+                orch, "_critic_review_integration", return_value=MOCK_CRITIC_RESULT
+            ),
+            patch.object(orch, "_finalize") as mock_finalize,
+            patch.object(orch, "_audit"),
+        ):
             start_result = orch.start("Build app")
             orch.approve_plan(start_result["run_id"])
             orch.approve_build(start_result["run_id"], feedback="Ship it!")
@@ -740,36 +910,64 @@ class TestApproveBuildEdgeCases:
 
 
 class TestDecomposeEdgeCases:
-
     def test_planner_raises_exception(self):
         """_decompose() returns empty list when planner raises."""
         orch = _fresh_orchestrator()
-        with patch("src.agents.planner.planner_agent") as mock_planner, \
-             patch.object(orch, "_build_agent_context", return_value=""):
+        with (
+            patch("src.agents.planner.planner_agent") as mock_planner,
+            patch.object(orch, "_build_agent_context", return_value=""),
+        ):
             mock_planner.create_plan.side_effect = RuntimeError("LLM timeout")
-            result = orch._decompose({"product_description": "test", "solution_name": "test"})
+            result = orch._decompose(
+                {"product_description": "test", "solution_name": "test"}
+            )
             assert result == []
 
 
 class TestExecuteAgentsEdgeCases:
-
     def test_mixed_success_failure_results(self):
         """_execute_agents() records both successful and failed task results."""
         orch = _fresh_orchestrator()
         mock_openswe = MagicMock()
-        success_result = {"status": "completed", "tier": "llm_react", "code": "x=1", "files_changed": ["a.py"]}
-        failure_result = {"status": "error", "tier": "llm_react", "code": "", "files_changed": [], "error": "fail"}
+        success_result = {
+            "status": "completed",
+            "tier": "llm_react",
+            "code": "x=1",
+            "files_changed": ["a.py"],
+        }
+        failure_result = {
+            "status": "error",
+            "tier": "llm_react",
+            "code": "",
+            "files_changed": [],
+            "error": "fail",
+        }
         mock_openswe.build.side_effect = [success_result, failure_result]
 
         run = {
             "plan": [
-                {"step": 1, "task_type": "BACKEND", "description": "Build API", "depends_on": [], "agent_role": "developer"},
-                {"step": 2, "task_type": "FRONTEND", "description": "Build UI", "depends_on": [], "agent_role": "developer"},
+                {
+                    "step": 1,
+                    "task_type": "BACKEND",
+                    "description": "Build API",
+                    "depends_on": [],
+                    "agent_role": "developer",
+                },
+                {
+                    "step": 2,
+                    "task_type": "FRONTEND",
+                    "description": "Build UI",
+                    "depends_on": [],
+                    "agent_role": "developer",
+                },
             ],
             "agent_results": [],
             "workspace_dir": "",
         }
-        with patch("src.integrations.openswe_runner.get_openswe_runner", return_value=mock_openswe):
+        with patch(
+            "src.integrations.openswe_runner.get_openswe_runner",
+            return_value=mock_openswe,
+        ):
             orch._execute_agents(run)
         assert len(run["agent_results"]) == 2
         assert run["agent_results"][0]["result"]["status"] == "completed"
@@ -777,7 +975,6 @@ class TestExecuteAgentsEdgeCases:
 
 
 class TestIntegrateEdgeCases:
-
     def test_no_agent_results(self):
         """_integrate() with empty agent_results returns zero counts."""
         orch = _fresh_orchestrator()
@@ -792,8 +989,21 @@ class TestIntegrateEdgeCases:
         orch = _fresh_orchestrator()
         run = {
             "agent_results": [
-                {"result": {"status": "error", "code": "", "files_changed": [], "error": "broke"}},
-                {"result": {"status": "completed", "code": "print(1)", "files_changed": ["a.py"]}},
+                {
+                    "result": {
+                        "status": "error",
+                        "code": "",
+                        "files_changed": [],
+                        "error": "broke",
+                    }
+                },
+                {
+                    "result": {
+                        "status": "completed",
+                        "code": "print(1)",
+                        "files_changed": ["a.py"],
+                    }
+                },
             ]
         }
         result = orch._integrate(run)
@@ -803,7 +1013,6 @@ class TestIntegrateEdgeCases:
 
 
 class TestCriticReviewCodeEdgeCases:
-
     def test_agent_results_all_have_errors(self):
         """_critic_review_code() when all results have empty code returns score 100."""
         orch = _fresh_orchestrator()
@@ -822,21 +1031,26 @@ class TestCriticReviewCodeEdgeCases:
 
 
 class TestGetStatusEdgeCases:
-
     def test_status_awaiting_plan(self):
         orch = _fresh_orchestrator()
-        with patch.object(orch, "_decompose", return_value=MOCK_PLAN), \
-             patch.object(orch, "_critic_review_plan", return_value=MOCK_CRITIC_RESULT), \
-             patch.object(orch, "_audit"):
+        with (
+            patch.object(orch, "_decompose", return_value=MOCK_PLAN),
+            patch.object(orch, "_critic_review_plan", return_value=MOCK_CRITIC_RESULT),
+            patch.object(orch, "_audit"),
+        ):
             start = orch.start("test")
             status = orch.get_status(start["run_id"])
             assert status["state"] == "awaiting_plan"
-            assert status["state_description"] == "Waiting for human approval of the plan"
+            assert (
+                status["state_description"] == "Waiting for human approval of the plan"
+            )
 
     def test_status_failed(self):
         orch = _fresh_orchestrator()
-        with patch.object(orch, "_decompose", return_value=[]), \
-             patch.object(orch, "_audit"):
+        with (
+            patch.object(orch, "_decompose", return_value=[]),
+            patch.object(orch, "_audit"),
+        ):
             start = orch.start("test")
             status = orch.get_status(start["run_id"])
             assert status["state"] == "failed"
@@ -844,15 +1058,19 @@ class TestGetStatusEdgeCases:
 
     def test_status_completed(self):
         orch = _fresh_orchestrator()
-        with patch.object(orch, "_decompose", return_value=MOCK_PLAN), \
-             patch.object(orch, "_critic_review_plan", return_value=MOCK_CRITIC_RESULT), \
-             patch.object(orch, "_scaffold", return_value={"status": "skipped"}), \
-             patch.object(orch, "_execute_agents"), \
-             patch.object(orch, "_critic_review_code", return_value=MOCK_CRITIC_RESULT), \
-             patch.object(orch, "_integrate", return_value={"status": "completed"}), \
-             patch.object(orch, "_critic_review_integration", return_value=MOCK_CRITIC_RESULT), \
-             patch.object(orch, "_finalize"), \
-             patch.object(orch, "_audit"):
+        with (
+            patch.object(orch, "_decompose", return_value=MOCK_PLAN),
+            patch.object(orch, "_critic_review_plan", return_value=MOCK_CRITIC_RESULT),
+            patch.object(orch, "_scaffold", return_value={"status": "skipped"}),
+            patch.object(orch, "_execute_agents"),
+            patch.object(orch, "_critic_review_code", return_value=MOCK_CRITIC_RESULT),
+            patch.object(orch, "_integrate", return_value={"status": "completed"}),
+            patch.object(
+                orch, "_critic_review_integration", return_value=MOCK_CRITIC_RESULT
+            ),
+            patch.object(orch, "_finalize"),
+            patch.object(orch, "_audit"),
+        ):
             start = orch.start("test")
             orch.approve_plan(start["run_id"])
             orch.approve_build(start["run_id"])
@@ -862,14 +1080,18 @@ class TestGetStatusEdgeCases:
 
     def test_status_awaiting_build(self):
         orch = _fresh_orchestrator()
-        with patch.object(orch, "_decompose", return_value=MOCK_PLAN), \
-             patch.object(orch, "_critic_review_plan", return_value=MOCK_CRITIC_RESULT), \
-             patch.object(orch, "_scaffold", return_value={"status": "skipped"}), \
-             patch.object(orch, "_execute_agents"), \
-             patch.object(orch, "_critic_review_code", return_value=MOCK_CRITIC_RESULT), \
-             patch.object(orch, "_integrate", return_value={"status": "completed"}), \
-             patch.object(orch, "_critic_review_integration", return_value=MOCK_CRITIC_RESULT), \
-             patch.object(orch, "_audit"):
+        with (
+            patch.object(orch, "_decompose", return_value=MOCK_PLAN),
+            patch.object(orch, "_critic_review_plan", return_value=MOCK_CRITIC_RESULT),
+            patch.object(orch, "_scaffold", return_value={"status": "skipped"}),
+            patch.object(orch, "_execute_agents"),
+            patch.object(orch, "_critic_review_code", return_value=MOCK_CRITIC_RESULT),
+            patch.object(orch, "_integrate", return_value={"status": "completed"}),
+            patch.object(
+                orch, "_critic_review_integration", return_value=MOCK_CRITIC_RESULT
+            ),
+            patch.object(orch, "_audit"),
+        ):
             start = orch.start("test")
             orch.approve_plan(start["run_id"])
             status = orch.get_status(start["run_id"])
@@ -903,7 +1125,6 @@ class TestGetStatusEdgeCases:
 
 
 class TestComputeWavesEdgeCases:
-
     def test_deeply_nested_chain(self):
         """_compute_waves() with a long dependency chain produces N waves."""
         orch = _fresh_orchestrator()
@@ -946,13 +1167,14 @@ class TestComputeWavesEdgeCases:
 
 
 class TestConcurrentStarts:
-
     def test_multiple_starts_independent(self):
         """Multiple start() calls create independent runs."""
         orch = _fresh_orchestrator()
-        with patch.object(orch, "_decompose", return_value=MOCK_PLAN), \
-             patch.object(orch, "_critic_review_plan", return_value=MOCK_CRITIC_RESULT), \
-             patch.object(orch, "_audit"):
+        with (
+            patch.object(orch, "_decompose", return_value=MOCK_PLAN),
+            patch.object(orch, "_critic_review_plan", return_value=MOCK_CRITIC_RESULT),
+            patch.object(orch, "_audit"),
+        ):
             r1 = orch.start("App 1", solution_name="app1")
             r2 = orch.start("App 2", solution_name="app2")
             r3 = orch.start("App 3", solution_name="app3")
@@ -962,21 +1184,26 @@ class TestConcurrentStarts:
 
 
 class TestTaskTypeToAgentEdgeCases:
-
     def test_all_mapped_agents_are_valid_roles(self):
         """TASK_TYPE_TO_AGENT values should be recognized agent roles."""
-        from src.integrations.build_orchestrator import TASK_TYPE_TO_AGENT, AGENT_ROLES_REGISTRY
+        from src.integrations.build_orchestrator import (
+            TASK_TYPE_TO_AGENT,
+            AGENT_ROLES_REGISTRY,
+        )
+
         valid_roles = set(AGENT_ROLES_REGISTRY.keys())
         for task_type, role in TASK_TYPE_TO_AGENT.items():
-            assert role in valid_roles, f"Role '{role}' for {task_type} is not a valid framework role"
+            assert role in valid_roles, (
+                f"Role '{role}' for {task_type} is not a valid framework role"
+            )
 
 
 # ---------------------------------------------------------------------------
 # Domain detection tests
 # ---------------------------------------------------------------------------
 
-class TestDomainDetection:
 
+class TestDomainDetection:
     def test_empty_description(self):
         orch = _fresh_orchestrator()
         result = orch._detect_domain("")
@@ -994,13 +1221,17 @@ class TestDomainDetection:
 
     def test_multiple_domains(self):
         orch = _fresh_orchestrator()
-        result = orch._detect_domain("IoT medical sensor with BLE gateway and patient monitoring FDA IEC 62304")
+        result = orch._detect_domain(
+            "IoT medical sensor with BLE gateway and patient monitoring FDA IEC 62304"
+        )
         assert "FIRMWARE" in result
         assert "SAFETY" in result
 
     def test_automotive_iso26262(self):
         orch = _fresh_orchestrator()
-        matched = orch._matched_domains("Build automotive ECU with ISO 26262 compliance")
+        matched = orch._matched_domains(
+            "Build automotive ECU with ISO 26262 compliance"
+        )
         assert len(matched) >= 1
 
     def test_matched_domains_empty_string(self):
@@ -1013,15 +1244,20 @@ class TestDomainDetection:
 # Adaptive router tests
 # ---------------------------------------------------------------------------
 
-class TestAdaptiveRouter:
 
+class TestAdaptiveRouter:
     def test_cold_start_uses_defaults(self):
-        from src.integrations.build_orchestrator import AdaptiveRouter, TASK_TYPE_TO_AGENT
+        from src.integrations.build_orchestrator import (
+            AdaptiveRouter,
+            TASK_TYPE_TO_AGENT,
+        )
+
         router = AdaptiveRouter()
         assert router.route("BACKEND") == TASK_TYPE_TO_AGENT["BACKEND"]
 
     def test_learns_after_observations(self):
         from src.integrations.build_orchestrator import AdaptiveRouter
+
         router = AdaptiveRouter()
         for _ in range(5):
             router.record("BACKEND", "devops_engineer", True, 0.95)
@@ -1031,8 +1267,10 @@ class TestAdaptiveRouter:
     def test_thread_safe(self):
         import threading
         from src.integrations.build_orchestrator import AdaptiveRouter
+
         router = AdaptiveRouter()
         errors = []
+
         def record_many():
             try:
                 for _ in range(100):
@@ -1040,6 +1278,7 @@ class TestAdaptiveRouter:
                     router.route("TESTS")
             except Exception as e:
                 errors.append(e)
+
         threads = [threading.Thread(target=record_many) for _ in range(4)]
         for t in threads:
             t.start()
@@ -1052,13 +1291,15 @@ class TestAdaptiveRouter:
 # Reject tests
 # ---------------------------------------------------------------------------
 
-class TestReject:
 
+class TestReject:
     def test_reject_sets_state(self):
         orch = _fresh_orchestrator()
-        with patch.object(orch, "_decompose", return_value=MOCK_PLAN), \
-             patch.object(orch, "_critic_review_plan", return_value=MOCK_CRITIC_RESULT), \
-             patch.object(orch, "_audit"):
+        with (
+            patch.object(orch, "_decompose", return_value=MOCK_PLAN),
+            patch.object(orch, "_critic_review_plan", return_value=MOCK_CRITIC_RESULT),
+            patch.object(orch, "_audit"),
+        ):
             result = orch.start("test")
             rejected = orch.reject(result["run_id"], "Not ready")
             assert rejected["state"] == "rejected"
@@ -1076,24 +1317,30 @@ class TestReject:
 # This is a TDD violation that needs to be addressed in future development.
 # ---------------------------------------------------------------------------
 
+
 class TestChunkedDecomposition:
     """TDD tests for lean-inspired chunked decomposition methods."""
 
     def test_identify_subsystems_returns_valid_structure(self):
         """_identify_subsystems returns list of subsystems with required fields."""
         orch = _fresh_orchestrator()
-        run = {"product_description": "IoT wearable device for fall detection", "workspace_dir": ""}
+        run = {
+            "product_description": "IoT wearable device for fall detection",
+            "workspace_dir": "",
+        }
 
         # Mock the system engineer response
         mock_response = {
-            "output": '''[
+            "output": """[
                 {"name": "sensor_module", "description": "Accelerometer and gyroscope data collection", "interfaces": ["i2c", "spi"], "team_hint": "hardware"},
                 {"name": "api_backend", "description": "REST API for caregiver alerts", "interfaces": ["http"], "team_hint": "engineering"},
                 {"name": "mobile_app", "description": "iOS/Android companion app", "interfaces": ["rest_api"], "team_hint": "engineering"}
-            ]'''
+            ]"""
         }
 
-        with patch("src.agents.universal.universal_agent.execute", return_value=mock_response):
+        with patch(
+            "src.agents.universal.universal_agent.execute", return_value=mock_response
+        ):
             subsystems = orch._identify_subsystems(run)
 
             assert len(subsystems) == 3
@@ -1109,7 +1356,9 @@ class TestChunkedDecomposition:
 
         mock_response = {"output": "This is not JSON"}
 
-        with patch("src.agents.universal.universal_agent.execute", return_value=mock_response):
+        with patch(
+            "src.agents.universal.universal_agent.execute", return_value=mock_response
+        ):
             subsystems = orch._identify_subsystems(run)
             assert subsystems == []
 
@@ -1117,10 +1366,26 @@ class TestChunkedDecomposition:
         """_assign_to_teams correctly routes subsystems to appropriate teams."""
         orch = _fresh_orchestrator()
         subsystems = [
-            {"name": "api_backend", "description": "REST API service", "team_hint": "engineering"},
-            {"name": "firmware_module", "description": "Embedded sensor driver", "team_hint": "hardware"},
-            {"name": "ml_model", "description": "Machine learning inference", "team_hint": "analysis"},
-            {"name": "ui_design", "description": "User interface mockups", "team_hint": "design"}
+            {
+                "name": "api_backend",
+                "description": "REST API service",
+                "team_hint": "engineering",
+            },
+            {
+                "name": "firmware_module",
+                "description": "Embedded sensor driver",
+                "team_hint": "hardware",
+            },
+            {
+                "name": "ml_model",
+                "description": "Machine learning inference",
+                "team_hint": "analysis",
+            },
+            {
+                "name": "ui_design",
+                "description": "User interface mockups",
+                "team_hint": "design",
+            },
         ]
 
         assignments = orch._assign_to_teams(subsystems)
@@ -1136,7 +1401,11 @@ class TestChunkedDecomposition:
         """_assign_to_teams defaults unknown subsystems to engineering team."""
         orch = _fresh_orchestrator()
         subsystems = [
-            {"name": "unknown_module", "description": "Some unknown component", "team_hint": "unknown"}
+            {
+                "name": "unknown_module",
+                "description": "Some unknown component",
+                "team_hint": "unknown",
+            }
         ]
 
         assignments = orch._assign_to_teams(subsystems)
@@ -1151,13 +1420,15 @@ class TestChunkedDecomposition:
         subsystems = [{"name": "api_service", "description": "REST API for data"}]
 
         mock_response = {
-            "output": '''[
+            "output": """[
                 {"step": 1, "task_type": "BACKEND", "description": "Build API endpoints", "acceptance_criteria": ["API responds to GET requests"], "depends_on": [], "agent_role": "developer"},
                 {"step": 2, "task_type": "TESTS", "description": "Write API tests", "acceptance_criteria": ["All tests pass"], "depends_on": [1], "agent_role": "developer"}
-            ]'''
+            ]"""
         }
 
-        with patch("src.agents.universal.universal_agent.execute", return_value=mock_response):
+        with patch(
+            "src.agents.universal.universal_agent.execute", return_value=mock_response
+        ):
             tasks = orch._plan_team_subsystems(run, "engineering", subsystems, 0)
 
             assert len(tasks) == 2
@@ -1183,20 +1454,35 @@ class TestChunkedDecomposition:
         """_integrate_team_plans merges team tasks and adds integration tasks."""
         orch = _fresh_orchestrator()
         run = {"product_description": "test product", "workspace_dir": ""}
-        subsystems = [{"name": "api", "description": "API service"}, {"name": "ui", "description": "Frontend"}]
+        subsystems = [
+            {"name": "api", "description": "API service"},
+            {"name": "ui", "description": "Frontend"},
+        ]
 
         team_tasks = [
-            {"step": 1, "task_type": "BACKEND", "description": "Build API", "team": "engineering"},
-            {"step": 2, "task_type": "FRONTEND", "description": "Build UI", "team": "engineering"}
+            {
+                "step": 1,
+                "task_type": "BACKEND",
+                "description": "Build API",
+                "team": "engineering",
+            },
+            {
+                "step": 2,
+                "task_type": "FRONTEND",
+                "description": "Build UI",
+                "team": "engineering",
+            },
         ]
 
         mock_response = {
-            "output": '''[
+            "output": """[
                 {"step": 3, "task_type": "SYSTEM_TEST", "description": "End-to-end integration test", "acceptance_criteria": ["UI can call API successfully"], "depends_on": [1, 2], "agent_role": "system_engineer"}
-            ]'''
+            ]"""
         }
 
-        with patch("src.agents.universal.universal_agent.execute", return_value=mock_response):
+        with patch(
+            "src.agents.universal.universal_agent.execute", return_value=mock_response
+        ):
             with patch.object(orch, "_matched_domains", return_value=[]):
                 with patch.object(orch, "_apply_quality_gates", return_value=[]):
                     integrated = orch._integrate_team_plans(run, team_tasks, subsystems)
@@ -1212,13 +1498,33 @@ class TestChunkedDecomposition:
     def test_decompose_uses_chunked_when_subsystems_found(self):
         """_decompose uses chunked approach when subsystems are successfully identified."""
         orch = _fresh_orchestrator()
-        run = {"product_description": "IoT sensor device", "solution_name": "test", "workspace_dir": ""}
+        run = {
+            "product_description": "IoT sensor device",
+            "solution_name": "test",
+            "workspace_dir": "",
+        }
 
         # Mock successful subsystem identification
-        with patch.object(orch, "_identify_subsystems", return_value=[{"name": "sensor", "description": "test"}]):
-            with patch.object(orch, "_assign_to_teams", return_value={"hardware": [{"name": "sensor"}]}):
-                with patch.object(orch, "_plan_team_subsystems", return_value=[{"step": 1, "task_type": "FIRMWARE"}]):
-                    with patch.object(orch, "_integrate_team_plans", return_value=[{"step": 1, "task_type": "FIRMWARE"}]):
+        with patch.object(
+            orch,
+            "_identify_subsystems",
+            return_value=[{"name": "sensor", "description": "test"}],
+        ):
+            with patch.object(
+                orch,
+                "_assign_to_teams",
+                return_value={"hardware": [{"name": "sensor"}]},
+            ):
+                with patch.object(
+                    orch,
+                    "_plan_team_subsystems",
+                    return_value=[{"step": 1, "task_type": "FIRMWARE"}],
+                ):
+                    with patch.object(
+                        orch,
+                        "_integrate_team_plans",
+                        return_value=[{"step": 1, "task_type": "FIRMWARE"}],
+                    ):
                         tasks = orch._decompose(run)
 
                         assert len(tasks) >= 1
@@ -1227,10 +1533,18 @@ class TestChunkedDecomposition:
     def test_decompose_falls_back_to_monolithic_when_no_subsystems(self):
         """_decompose falls back to monolithic approach when no subsystems identified."""
         orch = _fresh_orchestrator()
-        run = {"product_description": "simple tool", "solution_name": "test", "workspace_dir": ""}
+        run = {
+            "product_description": "simple tool",
+            "solution_name": "test",
+            "workspace_dir": "",
+        }
 
         with patch.object(orch, "_identify_subsystems", return_value=[]):
-            with patch.object(orch, "_decompose_monolithic", return_value=[{"step": 1, "task_type": "BACKEND"}]) as mock_mono:
+            with patch.object(
+                orch,
+                "_decompose_monolithic",
+                return_value=[{"step": 1, "task_type": "BACKEND"}],
+            ) as mock_mono:
                 tasks = orch._decompose(run)
 
                 mock_mono.assert_called_once()  # Verify fallback was used
@@ -1239,9 +1553,15 @@ class TestChunkedDecomposition:
     def test_decompose_monolithic_preserves_original_behavior(self):
         """_decompose_monolithic maintains same behavior as original _decompose method."""
         orch = _fresh_orchestrator()
-        run = {"product_description": "web app", "solution_name": "test", "workspace_dir": ""}
+        run = {
+            "product_description": "web app",
+            "solution_name": "test",
+            "workspace_dir": "",
+        }
 
-        with patch("src.agents.planner.planner_agent.create_plan", return_value=MOCK_PLAN):
+        with patch(
+            "src.agents.planner.planner_agent.create_plan", return_value=MOCK_PLAN
+        ):
             with patch.object(orch, "_matched_domains", return_value=[]):
                 tasks = orch._decompose_monolithic(run)
 

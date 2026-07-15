@@ -18,6 +18,7 @@ method ever raises; both degrade to a "not running" shape, matching the web
 API's exact `{"running": False, "error": str(exc)}` graceful-degradation
 behavior for /scheduler/status.
 """
+
 from __future__ import annotations
 
 # Cached TaskScheduler singleton, built lazily on first call.
@@ -31,6 +32,7 @@ def status(params: dict) -> dict:
     """
     try:
         from src.agents.monitor import monitor_agent
+
         return monitor_agent.get_status()
     except Exception as e:  # noqa: BLE001
         return {"running": False, "error": str(e)}
@@ -48,7 +50,10 @@ def scheduler_status(params: dict) -> dict:
             from src.core.task_scheduler import TaskScheduler
             from src.core.queue_manager import task_queue
             from src.core.project_loader import project_config
-            sched = TaskScheduler(queue_manager=task_queue, project_config=project_config)
+
+            sched = TaskScheduler(
+                queue_manager=task_queue, project_config=project_config
+            )
             sched.start()
             _scheduler = sched
         return _scheduler.status()

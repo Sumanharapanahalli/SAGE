@@ -21,12 +21,14 @@ import numpy as np
 
 
 # ── Pre-processing transforms (applied identically to preds + refs) ──────────
-_TRANSFORM = jiwer.Compose([
-    jiwer.ToLowerCase(),
-    jiwer.RemoveMultipleSpaces(),
-    jiwer.Strip(),
-    jiwer.RemovePunctuation(),
-])
+_TRANSFORM = jiwer.Compose(
+    [
+        jiwer.ToLowerCase(),
+        jiwer.RemoveMultipleSpaces(),
+        jiwer.Strip(),
+        jiwer.RemovePunctuation(),
+    ]
+)
 
 
 def compute_cer(references: List[str], hypotheses: List[str]) -> float:
@@ -44,8 +46,12 @@ def compute_wer(references: List[str], hypotheses: List[str]) -> float:
     """Word Error Rate — lower is better, 0.0 is perfect."""
     if not references:
         return 0.0
-    return jiwer.wer(references, hypotheses, reference_transform=_TRANSFORM,
-                     hypothesis_transform=_TRANSFORM)
+    return jiwer.wer(
+        references,
+        hypotheses,
+        reference_transform=_TRANSFORM,
+        hypothesis_transform=_TRANSFORM,
+    )
 
 
 def compute_exact_match(references: List[str], hypotheses: List[str]) -> float:

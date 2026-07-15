@@ -59,6 +59,7 @@ class CollectiveMemory:
         if self._vector_store is None:
             try:
                 from src.memory.vector_store import VectorMemory
+
                 self._vector_store = VectorMemory(explicit_solution="__collective__")
             except Exception:
                 self._vector_store = _FallbackVectorStore()
@@ -101,17 +102,24 @@ class CollectiveMemory:
             if self.remote_url:
                 subprocess.run(
                     ["git", "clone", self.remote_url, self.repo_path],
-                    capture_output=True, text=True, timeout=60, check=True,
+                    capture_output=True,
+                    text=True,
+                    timeout=60,
+                    check=True,
                 )
             else:
                 self._git_run("init")
                 # Ensure git has a user identity for commits
-                self._git_run("config", "user.email", "sage@collective.local", check=False)
+                self._git_run(
+                    "config", "user.email", "sage@collective.local", check=False
+                )
                 self._git_run("config", "user.name", "SAGE Collective", check=False)
                 # Initial commit so HEAD exists
                 readme = os.path.join(self.repo_path, "README.md")
                 with open(readme, "w") as f:
-                    f.write("# SAGE Collective Intelligence\n\nShared agent learnings and help requests.\n")
+                    f.write(
+                        "# SAGE Collective Intelligence\n\nShared agent learnings and help requests.\n"
+                    )
                 self._git_run("add", "README.md")
                 self._git_run("commit", "-m", "init: collective intelligence repo")
         except (subprocess.CalledProcessError, RuntimeError) as exc:
@@ -185,6 +193,7 @@ class CollectiveMemory:
         if self.require_approval:
             try:
                 from src.core.proposal_store import get_proposal_store, RiskClass
+
                 store = get_proposal_store()
                 proposal = store.create(
                     action_type="collective_publish",
@@ -214,7 +223,13 @@ class CollectiveMemory:
         rel_path = os.path.join("learnings", solution, topic, file_name)
 
         with open(file_path, "w", encoding="utf-8") as f:
-            yaml.dump(learning, f, allow_unicode=True, default_flow_style=False, sort_keys=False)
+            yaml.dump(
+                learning,
+                f,
+                allow_unicode=True,
+                default_flow_style=False,
+                sort_keys=False,
+            )
 
         self._commit(f"learning: {learning['title'][:60]}", [rel_path])
         self._index_learning(learning)
@@ -240,9 +255,13 @@ class CollectiveMemory:
     ) -> list[dict]:
         """List learnings, optionally filtered by solution and/or topic."""
         if solution and topic:
-            pattern = os.path.join(self.repo_path, "learnings", solution, topic, "*.yaml")
+            pattern = os.path.join(
+                self.repo_path, "learnings", solution, topic, "*.yaml"
+            )
         elif solution:
-            pattern = os.path.join(self.repo_path, "learnings", solution, "**", "*.yaml")
+            pattern = os.path.join(
+                self.repo_path, "learnings", solution, "**", "*.yaml"
+            )
         elif topic:
             pattern = os.path.join(self.repo_path, "learnings", "**", topic, "*.yaml")
         else:
@@ -255,7 +274,7 @@ class CollectiveMemory:
                 if data:
                     results.append(data)
 
-        return results[offset: offset + limit]
+        return results[offset : offset + limit]
 
     def search_learnings(
         self,
@@ -266,7 +285,7 @@ class CollectiveMemory:
     ) -> list[dict]:
         """Semantic search across indexed learnings."""
         # Get all learnings from disk for filtering
-        all_learnings = {l["id"]: l for l in self.list_learnings(limit=1000)}
+        all_learnings = {l["id"]: l for l in self.list_learnings(limit=1000)}  # noqa: E741
 
         if query:
             # Use vector store for semantic search
@@ -274,7 +293,7 @@ class CollectiveMemory:
             # vs_results are strings; extract IDs from them
             matched = []
             for text in vs_results:
-                for lid, l in all_learnings.items():
+                for lid, l in all_learnings.items():  # noqa: E741
                     if l["title"] in text or l["content"][:100] in text:
                         if lid not in [m["id"] for m in matched]:
                             matched.append(l)
@@ -307,9 +326,17 @@ class CollectiveMemory:
         matches = glob(pattern, recursive=True)
         if matches:
             with open(matches[0], "w", encoding="utf-8") as f:
-                yaml.dump(learning, f, allow_unicode=True, default_flow_style=False, sort_keys=False)
+                yaml.dump(
+                    learning,
+                    f,
+                    allow_unicode=True,
+                    default_flow_style=False,
+                    sort_keys=False,
+                )
             rel_path = os.path.relpath(matches[0], self.repo_path)
-            self._commit(f"validate: {learning['title'][:50]} by {validated_by}", [rel_path])
+            self._commit(
+                f"validate: {learning['title'][:50]} by {validated_by}", [rel_path]
+            )
 
         return learning
 
@@ -340,7 +367,13 @@ class CollectiveMemory:
         rel_path = os.path.join("help-requests", "open", file_name)
 
         with open(file_path, "w", encoding="utf-8") as f:
-            yaml.dump(full_request, f, allow_unicode=True, default_flow_style=False, sort_keys=False)
+            yaml.dump(
+                full_request,
+                f,
+                allow_unicode=True,
+                default_flow_style=False,
+                sort_keys=False,
+            )
 
         self._commit(f"help-request: {full_request['title'][:60]}", [rel_path])
         logger.info("Created help request: id=%s", req_id)
@@ -349,7 +382,9 @@ class CollectiveMemory:
     def _get_help_request_path(self, request_id: str) -> Optional[str]:
         """Find help request file in open/ or closed/."""
         for status_dir in ["open", "closed"]:
-            path = os.path.join(self.repo_path, "help-requests", status_dir, f"{request_id}.yaml")
+            path = os.path.join(
+                self.repo_path, "help-requests", status_dir, f"{request_id}.yaml"
+            )
             if os.path.isfile(path):
                 return path
         return None
@@ -384,7 +419,9 @@ class CollectiveMemory:
 
     def claim_help_request(self, request_id: str, agent: str, solution: str) -> dict:
         """Claim a help request. Raises if already claimed."""
-        path = os.path.join(self.repo_path, "help-requests", "open", f"{request_id}.yaml")
+        path = os.path.join(
+            self.repo_path, "help-requests", "open", f"{request_id}.yaml"
+        )
         if not os.path.isfile(path):
             raise ValueError(f"Help request {request_id} not found in open requests")
 
@@ -402,7 +439,9 @@ class CollectiveMemory:
         }
 
         with open(path, "w", encoding="utf-8") as f:
-            yaml.dump(data, f, allow_unicode=True, default_flow_style=False, sort_keys=False)
+            yaml.dump(
+                data, f, allow_unicode=True, default_flow_style=False, sort_keys=False
+            )
 
         rel_path = os.path.join("help-requests", "open", f"{request_id}.yaml")
         self._commit(f"claim: {data['title'][:50]} by {agent}", [rel_path])
@@ -426,7 +465,9 @@ class CollectiveMemory:
         data.setdefault("responses", []).append(response_entry)
 
         with open(path, "w", encoding="utf-8") as f:
-            yaml.dump(data, f, allow_unicode=True, default_flow_style=False, sort_keys=False)
+            yaml.dump(
+                data, f, allow_unicode=True, default_flow_style=False, sort_keys=False
+            )
 
         rel_path = os.path.relpath(path, self.repo_path)
         self._commit(
@@ -437,7 +478,9 @@ class CollectiveMemory:
 
     def close_help_request(self, request_id: str) -> dict:
         """Close a help request — move from open/ to closed/."""
-        open_path = os.path.join(self.repo_path, "help-requests", "open", f"{request_id}.yaml")
+        open_path = os.path.join(
+            self.repo_path, "help-requests", "open", f"{request_id}.yaml"
+        )
         if not os.path.isfile(open_path):
             raise ValueError(f"Help request {request_id} not found in open requests")
 
@@ -447,17 +490,27 @@ class CollectiveMemory:
         data["status"] = "closed"
         data["resolved_at"] = datetime.now(timezone.utc).isoformat()
 
-        closed_path = os.path.join(self.repo_path, "help-requests", "closed", f"{request_id}.yaml")
+        closed_path = os.path.join(
+            self.repo_path, "help-requests", "closed", f"{request_id}.yaml"
+        )
         with open(closed_path, "w", encoding="utf-8") as f:
-            yaml.dump(data, f, allow_unicode=True, default_flow_style=False, sort_keys=False)
+            yaml.dump(
+                data, f, allow_unicode=True, default_flow_style=False, sort_keys=False
+            )
 
         os.remove(open_path)
 
         with self._lock:
             if self._git_available:
-                self._git_run("add", os.path.join("help-requests", "closed", f"{request_id}.yaml"))
-                self._git_run("rm", "--cached", os.path.join("help-requests", "open", f"{request_id}.yaml"),
-                              check=False)
+                self._git_run(
+                    "add", os.path.join("help-requests", "closed", f"{request_id}.yaml")
+                )
+                self._git_run(
+                    "rm",
+                    "--cached",
+                    os.path.join("help-requests", "open", f"{request_id}.yaml"),
+                    check=False,
+                )
                 self._git_run("commit", "-m", f"close: {data['title'][:50]}")
 
         logger.info("Closed help request: id=%s", request_id)
@@ -506,7 +559,7 @@ class CollectiveMemory:
 
         topics: dict[str, int] = {}
         solutions: dict[str, int] = {}
-        for l in learnings:
+        for l in learnings:  # noqa: E741
             t = l.get("topic", "general")
             topics[t] = topics.get(t, 0) + 1
             s = l.get("author_solution", "unknown")
@@ -522,7 +575,13 @@ class CollectiveMemory:
 
         index_path = os.path.join(self.repo_path, "index.yaml")
         with open(index_path, "w", encoding="utf-8") as f:
-            yaml.dump(manifest, f, allow_unicode=True, default_flow_style=False, sort_keys=False)
+            yaml.dump(
+                manifest,
+                f,
+                allow_unicode=True,
+                default_flow_style=False,
+                sort_keys=False,
+            )
 
     # ── Stats ─────────────────────────────────────────────────────────
 
@@ -534,7 +593,7 @@ class CollectiveMemory:
 
         topics: dict[str, int] = {}
         contributors: dict[str, int] = {}
-        for l in learnings:
+        for l in learnings:  # noqa: E741
             t = l.get("topic", "general")
             topics[t] = topics.get(t, 0) + 1
             s = l.get("author_solution", "unknown")
@@ -552,7 +611,9 @@ class CollectiveMemory:
 
     @staticmethod
     def extract_learning_from_result(
-        task_result: dict, agent_role: str, solution: str,
+        task_result: dict,
+        agent_role: str,
+        solution: str,
     ) -> Optional[dict]:
         """
         Extract a reusable learning from a completed task result.
@@ -624,9 +685,16 @@ def get_collective_memory() -> CollectiveMemory:
                 # Determine repo path from environment or defaults
                 solutions_dir = os.environ.get(
                     "SAGE_SOLUTIONS_DIR",
-                    os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(
-                        os.path.abspath(__file__),
-                    ))), "solutions"),
+                    os.path.join(
+                        os.path.dirname(
+                            os.path.dirname(
+                                os.path.dirname(
+                                    os.path.abspath(__file__),
+                                )
+                            )
+                        ),
+                        "solutions",
+                    ),
                 )
                 repo_path = os.path.join(solutions_dir, ".collective")
                 _collective_memory = CollectiveMemory(repo_path=repo_path)

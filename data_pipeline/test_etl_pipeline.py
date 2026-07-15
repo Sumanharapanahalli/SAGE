@@ -4,14 +4,12 @@ test_etl_pipeline.py — Unit tests for ETL validators and transform layer.
 No live DB required — loaders are mocked.
 Run: pytest data_pipeline/test_etl_pipeline.py -v
 """
-import pytest
+
 from validators import (
     validate_invoice,
     validate_receipt,
     validate_contract,
     check_invoice_balance,
-    check_date_order,
-    ValidationReport,
 )
 from etl_pipeline import transform_record, stratified_split
 
@@ -19,6 +17,7 @@ from etl_pipeline import transform_record, stratified_split
 # ---------------------------------------------------------------------------
 # Validator tests
 # ---------------------------------------------------------------------------
+
 
 class TestInvoiceValidator:
     def _base(self, **kwargs) -> dict:
@@ -57,11 +56,19 @@ class TestInvoiceValidator:
         # subtotal(900) + tax(100) - discount(0) = 1000 != total(999)
         report = validate_invoice(self._base(total_amount=999.00))
         failures = [r for r in report.results if not r.passed]
-        assert any(r.rule_name == "invoice_balance" and r.severity == "warning" for r in failures)
+        assert any(
+            r.rule_name == "invoice_balance" and r.severity == "warning"
+            for r in failures
+        )
 
     def test_balance_within_tolerance_passes(self):
         result = check_invoice_balance(
-            {"subtotal": 900, "tax_amount": 100, "discount_amount": 0, "total_amount": 1000.005},
+            {
+                "subtotal": 900,
+                "tax_amount": 100,
+                "discount_amount": 0,
+                "total_amount": 1000.005,
+            },
             tolerance=0.01,
         )
         assert result.passed
@@ -91,7 +98,9 @@ class TestReceiptValidator:
 
     def test_future_date_is_warning(self):
         report = validate_receipt(self._base(transaction_date="2099-12-31"))
-        warnings = [r for r in report.results if not r.passed and r.severity == "warning"]
+        warnings = [
+            r for r in report.results if not r.passed and r.severity == "warning"
+        ]
         assert any(r.rule_name == "no_future_date" for r in warnings)
 
 
@@ -115,10 +124,12 @@ class TestContractValidator:
         assert not report.passed
 
     def test_date_order_violation_is_warning(self):
-        report = validate_contract(self._base(
-            effective_date="2025-01-01",
-            expiration_date="2024-01-01",
-        ))
+        report = validate_contract(
+            self._base(
+                effective_date="2025-01-01",
+                expiration_date="2024-01-01",
+            )
+        )
         failures = [r for r in report.results if not r.passed]
         assert any("date_order" in r.rule_name for r in failures)
 
@@ -126,6 +137,7 @@ class TestContractValidator:
 # ---------------------------------------------------------------------------
 # Transform tests
 # ---------------------------------------------------------------------------
+
 
 class TestTransformRecord:
     def test_keys_lowercased(self):
@@ -158,6 +170,7 @@ class TestTransformRecord:
 # Stratified split — no data leakage
 # ---------------------------------------------------------------------------
 
+
 class TestStratifiedSplit:
     def _make_records(self, n_per_class: int, classes=("A", "B", "C")) -> list[dict]:
         records = []
@@ -176,6 +189,7 @@ class TestStratifiedSplit:
         records = self._make_records(100)
         train, test = stratified_split(records, "label", test_size=0.2)
         from collections import Counter
+
         train_dist = Counter(r["label"] for r in train)
         test_dist = Counter(r["label"] for r in test)
         # Each class should appear in both splits
@@ -186,7 +200,9 @@ class TestStratifiedSplit:
         train, test = stratified_split(records, "label", test_size=0.2)
         train_ids = {r["id"] for r in train}
         test_ids = {r["id"] for r in test}
-        assert train_ids.isdisjoint(test_ids), "Data leakage: same record in train and test"
+        assert train_ids.isdisjoint(test_ids), (
+            "Data leakage: same record in train and test"
+        )
 
     def test_deterministic_with_seed(self):
         records = self._make_records(50)

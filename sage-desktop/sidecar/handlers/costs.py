@@ -17,11 +17,12 @@ infer strategy app.py uses); tests monkeypatch it directly (mirroring
 yaml_edit.py's ``_solution_path`` injection) so a test run never touches
 the real repo's config/config.yaml.
 """
+
 from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import Any, Optional
+from typing import Optional
 
 import yaml as _yaml
 

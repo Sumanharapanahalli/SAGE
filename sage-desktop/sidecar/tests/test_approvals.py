@@ -4,10 +4,9 @@ The approvals handler wraps src.core.proposal_store.ProposalStore and
 translates ValueError into the domain-specific RpcError subclasses defined
 in errors.py so the Rust side can map them to typed DesktopError variants.
 """
+
 from __future__ import annotations
 
-import os
-from pathlib import Path
 
 import pytest
 
@@ -42,6 +41,7 @@ def _make_proposal(store, **kwargs):
 
 # ---------- list_pending ----------
 
+
 def test_list_pending_returns_empty_when_no_proposals(store):
     out = ap.list_pending({})
     assert out == []
@@ -74,6 +74,7 @@ def test_list_pending_serializes_enums_and_datetimes_as_json(store):
 
 # ---------- get ----------
 
+
 def test_get_returns_proposal_by_trace_id(store):
     p = _make_proposal(store)
     out = ap.get({"trace_id": p.trace_id})
@@ -94,6 +95,7 @@ def test_get_requires_trace_id_param(store):
 
 # ---------- approve ----------
 
+
 def test_approve_marks_proposal_as_approved(store):
     p = _make_proposal(store)
     out = ap.approve({"trace_id": p.trace_id})
@@ -107,11 +109,13 @@ def test_approve_marks_proposal_as_approved(store):
 
 def test_approve_passes_feedback_through(store):
     p = _make_proposal(store)
-    out = ap.approve({
-        "trace_id": p.trace_id,
-        "decided_by": "alice",
-        "feedback": "looks good",
-    })
+    out = ap.approve(
+        {
+            "trace_id": p.trace_id,
+            "decided_by": "alice",
+            "feedback": "looks good",
+        }
+    )
     assert out["feedback"] == "looks good"
 
 
@@ -140,8 +144,11 @@ def test_approve_raises_proposal_expired_when_expired(store):
     p = _make_proposal(store)
     # Manually mark the proposal as expired in the DB
     import sqlite3
+
     conn = sqlite3.connect(store.db_path)
-    conn.execute("UPDATE proposals SET status='expired' WHERE trace_id=?", (p.trace_id,))
+    conn.execute(
+        "UPDATE proposals SET status='expired' WHERE trace_id=?", (p.trace_id,)
+    )
     conn.commit()
     conn.close()
     with pytest.raises(ProposalExpired):
@@ -149,6 +156,7 @@ def test_approve_raises_proposal_expired_when_expired(store):
 
 
 # ---------- reject ----------
+
 
 def test_reject_marks_proposal_as_rejected(store):
     p = _make_proposal(store)
@@ -171,13 +179,16 @@ def test_reject_raises_already_decided_when_approved(store):
 
 # ---------- batch_approve ----------
 
+
 def test_batch_approve_approves_all_and_returns_per_item_results(store):
     p1 = _make_proposal(store)
     p2 = _make_proposal(store)
-    out = ap.batch_approve({
-        "trace_ids": [p1.trace_id, p2.trace_id],
-        "decided_by": "alice",
-    })
+    out = ap.batch_approve(
+        {
+            "trace_ids": [p1.trace_id, p2.trace_id],
+            "decided_by": "alice",
+        }
+    )
     assert len(out["results"]) == 2
     assert all(r["ok"] is True for r in out["results"])
     # Verify both are actually approved in the store
@@ -190,10 +201,12 @@ def test_batch_approve_reports_failures_without_aborting(store):
     p2 = _make_proposal(store)
     store.approve(p2.trace_id)  # already decided → second entry will fail
 
-    out = ap.batch_approve({
-        "trace_ids": [p1.trace_id, p2.trace_id, "unknown"],
-        "decided_by": "alice",
-    })
+    out = ap.batch_approve(
+        {
+            "trace_ids": [p1.trace_id, p2.trace_id, "unknown"],
+            "decided_by": "alice",
+        }
+    )
     results = out["results"]
     assert len(results) == 3
     by_id = {r["trace_id"]: r for r in results}

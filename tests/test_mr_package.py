@@ -5,11 +5,12 @@ Covers the Merge-Request package builder: section ordering (executive summary
 first), traceability content, the Safe-to-merge verdict, diffstat fencing,
 documentation rendering, title derivation, and determinism/purity.
 """
+
 import pytest
 
 pytestmark = pytest.mark.unit
 
-from src.core.mr_package import build_pr_body, build_pr_title
+from src.core.mr_package import build_pr_body, build_pr_title  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -72,8 +73,7 @@ class TestSectionOrdering:
         body = _body()
         indices = [body.index(header) for header in ORDERED_HEADERS]
         assert indices == sorted(indices), (
-            "section headers are out of order: "
-            f"{list(zip(ORDERED_HEADERS, indices))}"
+            f"section headers are out of order: {list(zip(ORDERED_HEADERS, indices))}"
         )
 
     def test_summary_precedes_system_impact(self):
@@ -89,10 +89,11 @@ class TestSectionOrdering:
 # Traceability — work_item and mr_id inside the Traceability section itself
 # ---------------------------------------------------------------------------
 
+
 def _section_slice(body: str, header: str) -> str:
     """Return the text from *header* up to the next '## ' header (or EOF)."""
     start = body.index(header)
-    rest = body[start + len(header):]
+    rest = body[start + len(header) :]
     nxt = rest.find("\n## ")
     return rest if nxt == -1 else rest[:nxt]
 
@@ -108,6 +109,7 @@ class TestTraceability:
 # ---------------------------------------------------------------------------
 # Safe-to-merge verdict
 # ---------------------------------------------------------------------------
+
 
 class TestSafeToMerge:
     def test_yes_when_gate_green_true(self):
@@ -143,6 +145,7 @@ class TestSafeToMerge:
 # Diffstat is rendered inside a fenced code block
 # ---------------------------------------------------------------------------
 
+
 class TestDiffstatFence:
     def test_diff_stat_between_fences(self):
         body = _body()
@@ -161,6 +164,7 @@ class TestDiffstatFence:
 # ---------------------------------------------------------------------------
 # Documentation section
 # ---------------------------------------------------------------------------
+
 
 class TestDocumentation:
     def test_docs_changed_rendered(self):
@@ -184,6 +188,7 @@ class TestDocumentation:
 # Defaults for empty risk / impact
 # ---------------------------------------------------------------------------
 
+
 class TestDefaults:
     def test_impact_not_assessed_when_empty(self):
         body = _body(impact="")
@@ -202,6 +207,7 @@ class TestDefaults:
 # Footer
 # ---------------------------------------------------------------------------
 
+
 class TestFooter:
     def test_footer_present_with_mr_id(self):
         body = _body()
@@ -212,6 +218,7 @@ class TestFooter:
 # ---------------------------------------------------------------------------
 # Title derivation
 # ---------------------------------------------------------------------------
+
 
 class TestTitle:
     def test_matches_conventional_commit_example(self):
@@ -241,6 +248,7 @@ class TestTitle:
 # ---------------------------------------------------------------------------
 # Determinism / purity — the only assertion covering "deterministic, no I/O"
 # ---------------------------------------------------------------------------
+
 
 class TestDeterminism:
     def test_identical_inputs_produce_identical_output(self):

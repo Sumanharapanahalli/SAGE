@@ -21,10 +21,13 @@ def test_scan_nonexistent_path_raises():
 
 def test_scan_reads_readme_first():
     with tempfile.TemporaryDirectory() as tmp:
-        _make_tree(tmp, {
-            "README.md": "# My Project\nThis is the readme.",
-            "src/main.py": "def main(): pass",
-        })
+        _make_tree(
+            tmp,
+            {
+                "README.md": "# My Project\nThis is the readme.",
+                "src/main.py": "def main(): pass",
+            },
+        )
         scanner = FolderScanner()
         result = scanner.scan(tmp)
         # README should appear before main.py
@@ -35,12 +38,15 @@ def test_scan_reads_readme_first():
 
 def test_scan_skips_git_and_node_modules():
     with tempfile.TemporaryDirectory() as tmp:
-        _make_tree(tmp, {
-            ".git/config": "secret git config",
-            "node_modules/pkg/index.js": "module.exports = {}",
-            "__pycache__/app.cpython-311.pyc": "bytecode",
-            "src/app.py": "print('hello')",
-        })
+        _make_tree(
+            tmp,
+            {
+                ".git/config": "secret git config",
+                "node_modules/pkg/index.js": "module.exports = {}",
+                "__pycache__/app.cpython-311.pyc": "bytecode",
+                "src/app.py": "print('hello')",
+            },
+        )
         scanner = FolderScanner()
         result = scanner.scan(tmp)
         assert ".git/config" not in result
@@ -57,7 +63,9 @@ def test_scan_respects_token_budget():
         scanner = FolderScanner()
         result = scanner.scan(tmp, max_tokens=50)  # ~200 chars
         # Result should be truncated
-        assert len(result) <= 230  # budget is max_tokens*4=200 chars, header ~24 chars max
+        assert (
+            len(result) <= 230
+        )  # budget is max_tokens*4=200 chars, header ~24 chars max
 
 
 def test_scan_includes_file_headers():

@@ -6,6 +6,7 @@ above any single solution. Tests monkeypatch ``handlers.org._sage_root`` to
 an isolated ``tmp_path`` so they never touch the real repo's
 ``solutions/org.yaml``.
 """
+
 from __future__ import annotations
 
 import sys

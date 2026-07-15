@@ -25,8 +25,8 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class PageResult:
-    page_number: int          # 1-indexed
-    image_shape: tuple        # (H, W) of preprocessed image
+    page_number: int  # 1-indexed
+    image_shape: tuple  # (H, W) of preprocessed image
     ocr: OCRResult
     preprocessing_applied: List[str] = field(default_factory=list)
 
@@ -73,6 +73,7 @@ class PDFProcessor:
     ) -> None:
         try:
             import pdf2image
+
             self._pdf2image = pdf2image
         except ImportError as exc:
             raise ImportError(
@@ -115,7 +116,9 @@ class PDFProcessor:
             results.append(page_result)
             self._log.debug(
                 "  Page %d done — words=%d conf=%.3f",
-                idx, len(page_result.ocr.words), page_result.ocr.mean_confidence,
+                idx,
+                len(page_result.ocr.words),
+                page_result.ocr.mean_confidence,
             )
 
         doc = DocumentResult(
@@ -125,7 +128,9 @@ class PDFProcessor:
         )
         self._log.info(
             "Finished %s — %d pages, mean conf=%.3f",
-            pdf_path.name, total_pages, doc.mean_confidence,
+            pdf_path.name,
+            total_pages,
+            doc.mean_confidence,
         )
         return doc
 
@@ -154,7 +159,6 @@ class PDFProcessor:
         return self._pdf2image.convert_from_path(str(pdf_path), **kwargs)
 
     def _process_page(self, page_num: int, pil_image) -> PageResult:
-        import cv2
 
         # PIL → numpy BGR
         raw_np = self._preprocessor.from_pil(pil_image)

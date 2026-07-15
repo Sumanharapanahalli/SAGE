@@ -7,10 +7,10 @@ traces before, during, and after dispatch.
 
 Plugged into DispatchDeciderAgent as the `dispatch_callback`.
 """
+
 from __future__ import annotations
 
 import logging
-import time
 from typing import Optional
 
 from backend.agents.dispatch_decider import GracePeriodState
@@ -67,9 +67,7 @@ class EmergencyCoordinatorAgent:
         if gps:
             lat = gps.get("latitude")
             lon = gps.get("longitude")
-            action_gps = (
-                f"ACTION: Fetched latest GPS for context: lat={lat} lon={lon}"
-            )
+            action_gps = f"ACTION: Fetched latest GPS for context: lat={lat} lon={lon}"
         else:
             action_gps = (
                 "ACTION: No GPS record found for alert context. "

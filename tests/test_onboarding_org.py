@@ -1,10 +1,12 @@
 """Tests for onboarding enhancements: parent_solution, org_name, suggested_routes."""
-from unittest.mock import patch, MagicMock, ANY
+
+from unittest.mock import patch, ANY
 
 
 def test_onboarding_accepts_parent_solution_field():
     from fastapi.testclient import TestClient
     from src.interface.api import app
+
     client = TestClient(app)
     with patch("src.core.onboarding.generate_solution") as mock_gen:
         mock_gen.return_value = {
@@ -15,11 +17,14 @@ def test_onboarding_accepts_parent_solution_field():
             "message": "Solution 'fw_team' created.",
             "suggested_routes": ["team_hw"],
         }
-        resp = client.post("/onboarding/generate", json={
-            "description": "Firmware team for IoT medical device",
-            "solution_name": "fw_team",
-            "parent_solution": "product_base",
-        })
+        resp = client.post(
+            "/onboarding/generate",
+            json={
+                "description": "Firmware team for IoT medical device",
+                "solution_name": "fw_team",
+                "parent_solution": "product_base",
+            },
+        )
     assert resp.status_code == 200
     data = resp.json()
     assert "suggested_routes" in data
@@ -29,6 +34,7 @@ def test_onboarding_accepts_parent_solution_field():
 def test_onboarding_suggested_routes_present_in_response():
     from fastapi.testclient import TestClient
     from src.interface.api import app
+
     client = TestClient(app)
     with patch("src.core.onboarding.generate_solution") as mock_gen:
         mock_gen.return_value = {
@@ -39,10 +45,13 @@ def test_onboarding_suggested_routes_present_in_response():
             "message": "created",
             "suggested_routes": ["team_hw", "platform_infra"],
         }
-        resp = client.post("/onboarding/generate", json={
-            "description": "IoT firmware team",
-            "solution_name": "iot_fw",
-        })
+        resp = client.post(
+            "/onboarding/generate",
+            json={
+                "description": "IoT firmware team",
+                "solution_name": "iot_fw",
+            },
+        )
     assert resp.status_code == 200
     data = resp.json()
     assert data["suggested_routes"] == ["team_hw", "platform_infra"]
@@ -52,6 +61,7 @@ def test_onboarding_passes_parent_solution_to_generate():
     """Verify parent_solution and org_name are forwarded to generate_solution."""
     from fastapi.testclient import TestClient
     from src.interface.api import app
+
     client = TestClient(app)
     with patch("src.core.onboarding.generate_solution") as mock_gen:
         mock_gen.return_value = {
@@ -62,12 +72,15 @@ def test_onboarding_passes_parent_solution_to_generate():
             "message": "created",
             "suggested_routes": [],
         }
-        client.post("/onboarding/generate", json={
-            "description": "Child solution",
-            "solution_name": "child",
-            "parent_solution": "parent_base",
-            "org_name": "acme",
-        })
+        client.post(
+            "/onboarding/generate",
+            json={
+                "description": "Child solution",
+                "solution_name": "child",
+                "parent_solution": "parent_base",
+                "org_name": "acme",
+            },
+        )
     mock_gen.assert_called_once_with(
         description=ANY,
         solution_name=ANY,

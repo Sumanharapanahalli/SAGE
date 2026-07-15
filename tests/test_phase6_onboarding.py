@@ -16,7 +16,6 @@ Tests for:
 """
 
 import os
-import shutil
 import tempfile
 from unittest.mock import MagicMock, patch
 
@@ -40,41 +39,49 @@ active_modules:
 # Unit tests for onboarding module
 # ---------------------------------------------------------------------------
 
-class TestOnboardingModule:
 
+class TestOnboardingModule:
     def test_sanitize_name_removes_spaces(self):
         from src.core.onboarding import _sanitize_name
+
         assert _sanitize_name("My Cool Solution") == "my_cool_solution"
 
     def test_sanitize_name_handles_hyphens(self):
         from src.core.onboarding import _sanitize_name
+
         assert _sanitize_name("agri-drones") == "agri_drones"
 
     def test_sanitize_name_lowercases(self):
         from src.core.onboarding import _sanitize_name
+
         assert _sanitize_name("FinTech Platform") == "fintech_platform"
 
     def test_sanitize_name_collapses_underscores(self):
         from src.core.onboarding import _sanitize_name
+
         assert _sanitize_name("foo__bar") == "foo_bar"
 
     def test_extract_yaml_strips_fences(self):
         from src.core.onboarding import _extract_yaml
+
         raw = "```yaml\nname: test\n```"
         assert _extract_yaml(raw) == "name: test"
 
     def test_extract_yaml_strips_plain_fences(self):
         from src.core.onboarding import _extract_yaml
+
         raw = "```\nkey: value\n```"
         assert _extract_yaml(raw) == "key: value"
 
     def test_extract_yaml_passthrough_clean(self):
         from src.core.onboarding import _extract_yaml
+
         raw = "key: value"
         assert _extract_yaml(raw) == "key: value"
 
     def test_validate_yaml_parses_valid(self):
         from src.core.onboarding import _validate_yaml
+
         result = _validate_yaml("name: test\nversion: '1.0'", "project.yaml")
         assert result["name"] == "test"
 
@@ -93,7 +100,9 @@ class TestOnboardingModule:
             monkeypatch.delenv("SAGE_SOLUTIONS_DIR", raising=False)
             importlib.reload(ob_module)  # restore the default-resolved module state
 
-    def test_solutions_dir_defaults_to_framework_solutions_when_unset(self, monkeypatch):
+    def test_solutions_dir_defaults_to_framework_solutions_when_unset(
+        self, monkeypatch
+    ):
         import importlib
         import src.core.onboarding as ob_module
 
@@ -104,23 +113,28 @@ class TestOnboardingModule:
 
     def test_validate_yaml_raises_on_invalid(self):
         from src.core.onboarding import _validate_yaml
+
         with pytest.raises(ValueError, match="project.yaml"):
             _validate_yaml("key: [unclosed", "project.yaml")
 
     def test_validate_yaml_raises_on_non_dict(self):
         from src.core.onboarding import _validate_yaml
+
         with pytest.raises(ValueError):
             _validate_yaml("- item1\n- item2", "project.yaml")
 
     def test_generate_solution_creates_files(self):
         """generate_solution() must write 3 YAML files to solutions/<name>/."""
         import src.core.onboarding as ob_module
+
         mock_gw = MagicMock()
         mock_gw.generate.return_value = MOCK_YAML
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            with patch.object(ob_module, "_SOLUTIONS_DIR", tmpdir), \
-                 patch("src.core.onboarding.llm_gateway", mock_gw):
+            with (
+                patch.object(ob_module, "_SOLUTIONS_DIR", tmpdir),
+                patch("src.core.onboarding.llm_gateway", mock_gw),
+            ):
                 result = ob_module.generate_solution(
                     description="A test domain",
                     solution_name="test_sol",
@@ -151,12 +165,15 @@ class TestOnboardingModule:
     def test_generate_solution_sanitizes_name(self):
         """generate_solution() must sanitize the solution_name."""
         import src.core.onboarding as ob_module
+
         mock_gw = MagicMock()
         mock_gw.generate.return_value = MOCK_YAML
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            with patch.object(ob_module, "_SOLUTIONS_DIR", tmpdir), \
-                 patch("src.core.onboarding.llm_gateway", mock_gw):
+            with (
+                patch.object(ob_module, "_SOLUTIONS_DIR", tmpdir),
+                patch("src.core.onboarding.llm_gateway", mock_gw),
+            ):
                 result = ob_module.generate_solution(
                     description="A test",
                     solution_name="My New Solution",
@@ -167,12 +184,15 @@ class TestOnboardingModule:
     def test_generate_solution_creates_subdirs(self):
         """generate_solution() must create workflows/, mcp_servers/, evals/ stubs."""
         import src.core.onboarding as ob_module
+
         mock_gw = MagicMock()
         mock_gw.generate.return_value = MOCK_YAML
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            with patch.object(ob_module, "_SOLUTIONS_DIR", tmpdir), \
-                 patch("src.core.onboarding.llm_gateway", mock_gw):
+            with (
+                patch.object(ob_module, "_SOLUTIONS_DIR", tmpdir),
+                patch("src.core.onboarding.llm_gateway", mock_gw),
+            ):
                 ob_module.generate_solution(
                     description="test",
                     solution_name="sub_test",
@@ -187,25 +207,32 @@ class TestOnboardingModule:
 # API endpoint tests
 # ---------------------------------------------------------------------------
 
-class TestOnboardingAPI:
 
+class TestOnboardingAPI:
     def _client(self):
         from src.interface.api import app
+
         return TestClient(app, raise_server_exceptions=False)
 
     def test_generate_returns_200(self):
         """POST /onboarding/generate with valid body must return 200."""
         import src.core.onboarding as ob_module
+
         mock_gw = MagicMock()
         mock_gw.generate.return_value = MOCK_YAML
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            with patch.object(ob_module, "_SOLUTIONS_DIR", tmpdir), \
-                 patch("src.core.onboarding.llm_gateway", mock_gw):
-                resp = self._client().post("/onboarding/generate", json={
-                    "description": "We build agricultural drones for crop monitoring",
-                    "solution_name": "agri_drones",
-                })
+            with (
+                patch.object(ob_module, "_SOLUTIONS_DIR", tmpdir),
+                patch("src.core.onboarding.llm_gateway", mock_gw),
+            ):
+                resp = self._client().post(
+                    "/onboarding/generate",
+                    json={
+                        "description": "We build agricultural drones for crop monitoring",
+                        "solution_name": "agri_drones",
+                    },
+                )
 
         assert resp.status_code == 200
         data = resp.json()
@@ -214,12 +241,16 @@ class TestOnboardingAPI:
 
     def test_generate_missing_description_returns_400(self):
         """POST /onboarding/generate without description must return 400."""
-        resp = self._client().post("/onboarding/generate", json={"solution_name": "test"})
+        resp = self._client().post(
+            "/onboarding/generate", json={"solution_name": "test"}
+        )
         assert resp.status_code == 400
 
     def test_generate_missing_solution_name_returns_400(self):
         """POST /onboarding/generate without solution_name must return 400."""
-        resp = self._client().post("/onboarding/generate", json={"description": "A domain"})
+        resp = self._client().post(
+            "/onboarding/generate", json={"description": "A domain"}
+        )
         assert resp.status_code == 400
 
     def test_generate_existing_solution_returns_exists(self):
@@ -230,10 +261,13 @@ class TestOnboardingAPI:
             existing = os.path.join(tmpdir, "existing_sol")
             os.makedirs(existing)
             with patch.object(ob_module, "_SOLUTIONS_DIR", tmpdir):
-                resp = self._client().post("/onboarding/generate", json={
-                    "description": "Already exists",
-                    "solution_name": "existing_sol",
-                })
+                resp = self._client().post(
+                    "/onboarding/generate",
+                    json={
+                        "description": "Already exists",
+                        "solution_name": "existing_sol",
+                    },
+                )
 
         assert resp.status_code == 200
         assert resp.json()["status"] == "exists"

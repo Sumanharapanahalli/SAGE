@@ -14,7 +14,7 @@ for a retry attempt.
 
 import json
 import logging
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, Optional
 
 logger = logging.getLogger("OutputValidator")
 
@@ -81,7 +81,11 @@ def validate_agent_output(output: Any, output_type: str) -> Dict:
         {"valid": True/False, "errors": [...], "output": <original or None>}
     """
     if not isinstance(output, dict):
-        return {"valid": False, "errors": ["Output must be a JSON object"], "output": output}
+        return {
+            "valid": False,
+            "errors": ["Output must be a JSON object"],
+            "output": output,
+        }
 
     schema = OUTPUT_SCHEMAS.get(output_type)
     if not schema:
@@ -191,7 +195,7 @@ def _extract_json(raw: str) -> Optional[Dict]:
     for end in range(len(raw) - 1, start, -1):
         if raw[end] == "}":
             try:
-                return json.loads(raw[start:end + 1])
+                return json.loads(raw[start : end + 1])
             except json.JSONDecodeError:
                 continue
 

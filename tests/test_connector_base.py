@@ -1,4 +1,5 @@
 """Tests for the connector framework base and registry."""
+
 import pytest
 
 from src.connectors.base import BaseConnector, ConnectorRegistry
@@ -6,6 +7,7 @@ from src.connectors.base import BaseConnector, ConnectorRegistry
 
 class StubConnector(BaseConnector):
     """Test connector that returns canned data."""
+
     connector_type = "stub"
 
     def connect(self, config: dict) -> bool:

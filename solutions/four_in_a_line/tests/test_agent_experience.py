@@ -22,17 +22,17 @@ Run with the backend active:
 Or via pytest (mocked):
     pytest solutions/four_in_a_line/tests/test_agent_experience.py -v
 """
+
 from __future__ import annotations
 import json
 import time
 import sys
 import os
 from dataclasses import dataclass, field
-from typing import Optional
 from datetime import datetime, timezone
 
 # ── Allow running from repo root ─────────────────────────────────────────────
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../.."))
 
 BASE_URL = os.getenv("SAGE_URL", "http://localhost:8000")
 
@@ -54,7 +54,7 @@ SCENARIOS = [
         },
         "expected_severity": ["RED", "AMBER"],
         "expected_keys": ["severity", "root_cause_hypothesis", "recommended_action"],
-        "description": "Should classify as RED/AMBER — 12% of sessions affected is critical"
+        "description": "Should classify as RED/AMBER — 12% of sessions affected is critical",
     },
     {
         "name": "Player retention drop — day-7 retention fell 8pts",
@@ -69,7 +69,7 @@ SCENARIOS = [
         },
         "expected_severity": ["RED", "AMBER"],
         "expected_keys": ["severity", "root_cause_hypothesis", "recommended_action"],
-        "description": "Should identify A/B test as likely root cause"
+        "description": "Should identify A/B test as likely root cause",
     },
     {
         "name": "Green signal — performance within limits",
@@ -83,7 +83,7 @@ SCENARIOS = [
         },
         "expected_severity": ["GREEN"],
         "expected_keys": ["severity", "root_cause_hypothesis", "recommended_action"],
-        "description": "Should classify GREEN — all metrics healthy"
+        "description": "Should classify GREEN — all metrics healthy",
     },
     {
         "name": "AI Opponent Specialist — difficulty balance question",
@@ -95,10 +95,17 @@ SCENARIOS = [
                 "D7 retention on Hard is 8% vs 31% on Medium. "
                 "What minimax depth and heuristic weight changes should we make?"
             ),
-            "context": "Current: minimax depth=8, alpha-beta pruning, no dynamic difficulty. Platform: React Native + TypeScript."
+            "context": "Current: minimax depth=8, alpha-beta pruning, no dynamic difficulty. Platform: React Native + TypeScript.",
         },
-        "expected_keys": ["summary", "analysis", "recommendations", "next_steps", "severity", "confidence"],
-        "description": "Agent should give specific depth/weight recommendations"
+        "expected_keys": [
+            "summary",
+            "analysis",
+            "recommendations",
+            "next_steps",
+            "severity",
+            "confidence",
+        ],
+        "description": "Agent should give specific depth/weight recommendations",
     },
     {
         "name": "Game Designer — new hint system feature",
@@ -109,10 +116,17 @@ SCENARIOS = [
                 "We want to add a hint system. Players can spend coins to see the best move. "
                 "How do we design this without making the game trivial or pay-to-win?"
             ),
-            "context": "Free-to-play, no ads. Current monetisation: cosmetic IAP only. DAU 45k."
+            "context": "Free-to-play, no ads. Current monetisation: cosmetic IAP only. DAU 45k.",
         },
-        "expected_keys": ["summary", "analysis", "recommendations", "next_steps", "severity", "confidence"],
-        "description": "Designer should propose hint mechanics that preserve gameplay integrity"
+        "expected_keys": [
+            "summary",
+            "analysis",
+            "recommendations",
+            "next_steps",
+            "severity",
+            "confidence",
+        ],
+        "description": "Designer should propose hint mechanics that preserve gameplay integrity",
     },
     {
         "name": "Agent roles listing",
@@ -120,7 +134,7 @@ SCENARIOS = [
         "payload": None,
         "method": "GET",
         "expected_keys": ["roles"],
-        "description": "Should return game_designer, monetisation_advisor, ai_opponent_specialist"
+        "description": "Should return game_designer, monetisation_advisor, ai_opponent_specialist",
     },
     {
         "name": "Org chart for four_in_a_line solution",
@@ -128,12 +142,13 @@ SCENARIOS = [
         "payload": None,
         "method": "GET",
         "expected_keys": ["root_roles", "total"],
-        "description": "Should return all roles with hierarchy"
+        "description": "Should return all roles with hierarchy",
     },
 ]
 
 
 # ── Runner ────────────────────────────────────────────────────────────────────
+
 
 @dataclass
 class ExperienceResult:
@@ -160,7 +175,10 @@ def run_scenario(scenario: dict) -> ExperienceResult:
         else:
             data = json.dumps(scenario["payload"]).encode()
             req = urllib.request.Request(
-                url, data=data, headers={"Content-Type": "application/json"}, method="POST"
+                url,
+                data=data,
+                headers={"Content-Type": "application/json"},
+                method="POST",
             )
 
         with urllib.request.urlopen(req, timeout=120) as resp:
@@ -225,9 +243,9 @@ def run_scenario(scenario: dict) -> ExperienceResult:
 
 
 def print_banner(text: str):
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"  {text}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
 
 def run_all() -> list[ExperienceResult]:
@@ -238,17 +256,28 @@ def run_all() -> list[ExperienceResult]:
     # Check health first
     try:
         import urllib.request
+
         with urllib.request.urlopen(f"{BASE_URL}/health", timeout=5) as r:
             health = json.loads(r.read())
-        print(f"  Status:  {health.get('status', '?')} — {health.get('llm_provider', '?')}")
+        print(
+            f"  Status:  {health.get('status', '?')} — {health.get('llm_provider', '?')}"
+        )
         project_info = health.get("project", {})
-        project = project_info.get("project", "unknown") if isinstance(project_info, dict) else str(project_info)
+        project = (
+            project_info.get("project", "unknown")
+            if isinstance(project_info, dict)
+            else str(project_info)
+        )
         if project != "four_in_a_line":
-            print(f"  ⚠ WARNING: active project is '{project}', expected 'four_in_a_line'")
-            print(f"     Switch with: curl -X POST {BASE_URL}/config/switch -d '{{\"project\": \"four_in_a_line\"}}'")
+            print(
+                f"  ⚠ WARNING: active project is '{project}', expected 'four_in_a_line'"
+            )
+            print(
+                f'     Switch with: curl -X POST {BASE_URL}/config/switch -d \'{{"project": "four_in_a_line"}}\''
+            )
     except Exception as e:
         print(f"  ✗ Backend unreachable: {e}")
-        print(f"    Start with: make run PROJECT=four_in_a_line")
+        print("    Start with: make run PROJECT=four_in_a_line")
         sys.exit(1)
 
     results = []
@@ -273,7 +302,9 @@ def write_review(results: list[ExperienceResult]):
     total = len(results)
     avg_ms = sum(r.duration_ms for r in results) / total if total else 0
 
-    review_path = os.path.join(os.path.dirname(__file__), "FRAMEWORK_EXPERIENCE_REVIEW.md")
+    review_path = os.path.join(
+        os.path.dirname(__file__), "FRAMEWORK_EXPERIENCE_REVIEW.md"
+    )
 
     # Gather observations from agent responses
     agent_observations = []
@@ -296,7 +327,7 @@ def write_review(results: list[ExperienceResult]):
 | Scenarios run | {total} |
 | Passed | {passed} / {total} |
 | Avg response time | {avg_ms:.0f}ms |
-| Pass rate | {passed/total*100:.0f}% |
+| Pass rate | {passed / total * 100:.0f}% |
 
 ---
 
@@ -307,7 +338,11 @@ def write_review(results: list[ExperienceResult]):
 """
     for i, r in enumerate(results, 1):
         status = "✅ PASS" if r.passed else "❌ FAIL"
-        notes = "; ".join(r.errors) if r.errors else (r.observations[0] if r.observations else "")
+        notes = (
+            "; ".join(r.errors)
+            if r.errors
+            else (r.observations[0] if r.observations else "")
+        )
         review += f"| {i} | {r.name} | {status} | {r.duration_ms:.0f}ms | {notes} |\n"
 
     review += """
@@ -389,12 +424,13 @@ def write_review(results: list[ExperienceResult]):
 
     with open(review_path, "w") as f:
         f.write(review)
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"  Review written: {review_path}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
 
 # ── pytest-compatible tests (no backend needed — validates structure only) ────
+
 
 def test_scenario_list_not_empty():
     assert len(SCENARIOS) > 0
@@ -409,8 +445,13 @@ def test_all_scenarios_have_required_fields():
 
 def test_result_dataclass():
     r = ExperienceResult(
-        name="test", description="desc", passed=True, duration_ms=42.0,
-        response={"severity": "GREEN"}, observations=["✓ done"], errors=[]
+        name="test",
+        description="desc",
+        passed=True,
+        duration_ms=42.0,
+        response={"severity": "GREEN"},
+        observations=["✓ done"],
+        errors=[],
     )
     assert r.passed is True
     assert r.duration_ms == 42.0

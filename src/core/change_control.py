@@ -20,7 +20,7 @@ import uuid
 from dataclasses import dataclass, field, asdict
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 from src.core.db import get_connection
 
@@ -39,29 +39,30 @@ class ChangeStatus(Enum):
 
 
 class ChangePriority(Enum):
-    CRITICAL = "critical"   # Safety/regulatory issue — immediate action
-    HIGH = "high"           # Significant defect or compliance gap
-    MEDIUM = "medium"       # Enhancement or non-critical fix
-    LOW = "low"             # Cosmetic or minor improvement
+    CRITICAL = "critical"  # Safety/regulatory issue — immediate action
+    HIGH = "high"  # Significant defect or compliance gap
+    MEDIUM = "medium"  # Enhancement or non-critical fix
+    LOW = "low"  # Cosmetic or minor improvement
 
 
 class ChangeCategory(Enum):
-    CORRECTIVE = "corrective"     # Fix a defect
-    PREVENTIVE = "preventive"     # Prevent a potential issue
-    ADAPTIVE = "adaptive"         # Adapt to external change (regulation, dependency)
-    PERFECTIVE = "perfective"     # Improve performance/maintainability
+    CORRECTIVE = "corrective"  # Fix a defect
+    PREVENTIVE = "preventive"  # Prevent a potential issue
+    ADAPTIVE = "adaptive"  # Adapt to external change (regulation, dependency)
+    PERFECTIVE = "perfective"  # Improve performance/maintainability
 
 
 @dataclass
 class ImpactAssessment:
     """Impact assessment for a change request."""
+
     affected_requirements: List[str] = field(default_factory=list)
     affected_components: List[str] = field(default_factory=list)
     affected_tests: List[str] = field(default_factory=list)
-    risk_impact: str = ""          # none, low, medium, high
-    regulatory_impact: str = ""    # none, documentation_update, resubmission
-    safety_impact: str = ""        # none, review_required, revalidation
-    effort_estimate: str = ""      # hours or story points
+    risk_impact: str = ""  # none, low, medium, high
+    regulatory_impact: str = ""  # none, documentation_update, resubmission
+    safety_impact: str = ""  # none, review_required, revalidation
+    effort_estimate: str = ""  # hours or story points
     notes: str = ""
 
     def to_dict(self) -> dict:
@@ -71,11 +72,14 @@ class ImpactAssessment:
 @dataclass
 class ChangeApproval:
     """Individual approval/rejection for a change request."""
+
     approver: str
     role: str
-    decision: str          # approved, rejected, needs_info
+    decision: str  # approved, rejected, needs_info
     comments: str = ""
-    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp: str = field(
+        default_factory=lambda: datetime.now(timezone.utc).isoformat()
+    )
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -105,7 +109,9 @@ class ChangeControlManager:
             sage_dir = os.path.join(os.path.abspath(solutions_dir), project, ".sage")
         else:
             sage_dir = os.path.join(
-                os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+                os.path.dirname(
+                    os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                ),
                 ".sage",
             )
         os.makedirs(sage_dir, exist_ok=True)
@@ -175,8 +181,18 @@ class ChangeControlManager:
                (id, title, description, category, priority, status, requester,
                 affected_items, created_at, updated_at)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-            (cr_id, title, description, category, priority, "draft", requester,
-             json.dumps(affected_items or []), now, now),
+            (
+                cr_id,
+                title,
+                description,
+                category,
+                priority,
+                "draft",
+                requester,
+                json.dumps(affected_items or []),
+                now,
+                now,
+            ),
         )
         conn.execute(
             """INSERT INTO change_history
@@ -193,19 +209,29 @@ class ChangeControlManager:
     def get_request(self, cr_id: str) -> Optional[dict]:
         """Get a change request by ID."""
         conn = get_connection(self.db_path, row_factory=None)
-        row = conn.execute("SELECT * FROM change_requests WHERE id = ?", (cr_id,)).fetchone()
+        row = conn.execute(
+            "SELECT * FROM change_requests WHERE id = ?", (cr_id,)
+        ).fetchone()
         conn.close()
         if not row:
             return None
         return {
-            "id": row[0], "title": row[1], "description": row[2],
-            "category": row[3], "priority": row[4], "status": row[5],
+            "id": row[0],
+            "title": row[1],
+            "description": row[2],
+            "category": row[3],
+            "priority": row[4],
+            "status": row[5],
             "requester": row[6],
             "impact_assessment": json.loads(row[7]) if row[7] else {},
             "approvals": json.loads(row[8]) if row[8] else [],
             "affected_items": json.loads(row[9]) if row[9] else [],
-            "resolution": row[10], "version_before": row[11], "version_after": row[12],
-            "created_at": row[13], "updated_at": row[14], "closed_at": row[15],
+            "resolution": row[10],
+            "version_before": row[11],
+            "version_after": row[12],
+            "created_at": row[13],
+            "updated_at": row[14],
+            "closed_at": row[15],
         }
 
     def list_requests(self, status: Optional[str] = None) -> List[dict]:
@@ -224,12 +250,22 @@ class ChangeControlManager:
             ).fetchall()
         conn.close()
         return [
-            {"id": r[0], "title": r[1], "category": r[2], "priority": r[3],
-             "status": r[4], "requester": r[5], "created_at": r[6], "updated_at": r[7]}
+            {
+                "id": r[0],
+                "title": r[1],
+                "category": r[2],
+                "priority": r[3],
+                "status": r[4],
+                "requester": r[5],
+                "created_at": r[6],
+                "updated_at": r[7],
+            }
             for r in rows
         ]
 
-    def update_status(self, cr_id: str, new_status: str, changed_by: str, comments: str = "") -> dict:
+    def update_status(
+        self, cr_id: str, new_status: str, changed_by: str, comments: str = ""
+    ) -> dict:
         """Transition a change request to a new status."""
         ChangeStatus(new_status)  # validate
 
@@ -274,14 +310,19 @@ class ChangeControlManager:
         conn.close()
         return {"id": cr_id, "status": "impact_assessed"}
 
-    def add_approval(self, cr_id: str, approver: str, role: str, decision: str, comments: str = "") -> dict:
+    def add_approval(
+        self, cr_id: str, approver: str, role: str, decision: str, comments: str = ""
+    ) -> dict:
         """Add an approval decision to a change request."""
         request = self.get_request(cr_id)
         if not request:
             raise ValueError(f"Change request {cr_id} not found")
 
         approval = ChangeApproval(
-            approver=approver, role=role, decision=decision, comments=comments,
+            approver=approver,
+            role=role,
+            decision=decision,
+            comments=comments,
         )
         approvals = request.get("approvals", [])
         approvals.append(approval.to_dict())
@@ -307,8 +348,13 @@ class ChangeControlManager:
         ).fetchall()
         conn.close()
         return [
-            {"from_status": r[0], "to_status": r[1], "changed_by": r[2],
-             "comments": r[3], "timestamp": r[4]}
+            {
+                "from_status": r[0],
+                "to_status": r[1],
+                "changed_by": r[2],
+                "comments": r[3],
+                "timestamp": r[4],
+            }
             for r in rows
         ]
 

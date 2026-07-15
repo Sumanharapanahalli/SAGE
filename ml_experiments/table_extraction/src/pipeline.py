@@ -59,7 +59,9 @@ class TableOutput:
         return asdict(self)
 
     def to_json(self, indent: int = 2) -> str:
-        return json.dumps(self.to_dict(), ensure_ascii=False, indent=indent, default=str)
+        return json.dumps(
+            self.to_dict(), ensure_ascii=False, indent=indent, default=str
+        )
 
 
 class TableExtractionPipeline:
@@ -184,7 +186,8 @@ class TableExtractionPipeline:
         self, data: bytes, mime_type: str = "application/pdf"
     ) -> list[TableOutput]:
         """Process raw bytes (useful for API integrations)."""
-        import tempfile, os
+        import tempfile
+        import os
 
         if mime_type == "application/pdf":
             with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
@@ -196,6 +199,7 @@ class TableExtractionPipeline:
                 os.unlink(tmp_path)
         else:
             from io import BytesIO
+
             img = Image.open(BytesIO(data)).convert("RGB")
             return self.process_image(img)
 
@@ -219,12 +223,14 @@ class TableExtractionPipeline:
                 return None
 
             header_result: HeaderResult = self._header_inf.infer(raw_rows)
-            data_raw = raw_rows[header_result.n_header_rows:]
+            data_raw = raw_rows[header_result.n_header_rows :]
             data_rows = self._extractor.extract_from_native_pdf(
                 data_raw, header_result.column_labels
             )
             if self.coerce_types:
-                data_rows = self._extractor.to_typed_rows(data_rows, header_result.column_labels)
+                data_rows = self._extractor.to_typed_rows(
+                    data_rows, header_result.column_labels
+                )
 
             return TableOutput(
                 page_index=region.page_index,
@@ -242,7 +248,11 @@ class TableExtractionPipeline:
                 notes=header_result.notes,
             )
         except Exception:
-            logger.error("Failed to process PDF region on page %d.", region.page_index, exc_info=True)
+            logger.error(
+                "Failed to process PDF region on page %d.",
+                region.page_index,
+                exc_info=True,
+            )
             return None
 
     def _process_region_image(
@@ -265,7 +275,9 @@ class TableExtractionPipeline:
             # Build raw text matrix for header inference
             raw_matrix: dict[tuple[int, int], str | None] = {}
             for cell in grid.cells:
-                raw_matrix[(cell.row, cell.col)] = self._extractor._ocr_cell(table_img, cell)
+                raw_matrix[(cell.row, cell.col)] = self._extractor._ocr_cell(
+                    table_img, cell
+                )
 
             raw_rows = [
                 [raw_matrix.get((r, c)) for c in range(grid.n_cols)]
@@ -273,12 +285,14 @@ class TableExtractionPipeline:
             ]
 
             header_result: HeaderResult = self._header_inf.infer(raw_rows)
-            data_raw = raw_rows[header_result.n_header_rows:]
+            data_raw = raw_rows[header_result.n_header_rows :]
             data_rows = self._extractor.extract_from_native_pdf(
                 data_raw, header_result.column_labels
             )
             if self.coerce_types:
-                data_rows = self._extractor.to_typed_rows(data_rows, header_result.column_labels)
+                data_rows = self._extractor.to_typed_rows(
+                    data_rows, header_result.column_labels
+                )
 
             return TableOutput(
                 page_index=region.page_index,

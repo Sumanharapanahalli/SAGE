@@ -46,7 +46,13 @@ def _new_id() -> str:
 # Extension attributes: any additional key-value pairs
 
 _REQUIRED_ATTRS = {"id", "source", "specversion", "type"}
-_KNOWN_ATTRS = _REQUIRED_ATTRS | {"datacontenttype", "dataschema", "subject", "time", "data"}
+_KNOWN_ATTRS = _REQUIRED_ATTRS | {
+    "datacontenttype",
+    "dataschema",
+    "subject",
+    "time",
+    "data",
+}
 
 
 @dataclass
@@ -69,6 +75,7 @@ class CloudEvent:
         data: Event payload (any JSON-serializable dict)
         extensions: Additional CloudEvents extension attributes
     """
+
     type: str
     source: str
     data: Dict[str, Any] = field(default_factory=dict)
@@ -133,6 +140,7 @@ class CloudEvent:
 # ─────────────────────────────────────────────────────────────────────
 # SAGE Event Type Factories
 # ─────────────────────────────────────────────────────────────────────
+
 
 def proposal_event(
     action: str,
@@ -199,6 +207,7 @@ def llm_event(
 # ─────────────────────────────────────────────────────────────────────
 # EventBus Integration
 # ─────────────────────────────────────────────────────────────────────
+
 
 def publish_cloud_event(bus: Any, event: CloudEvent) -> int:
     """

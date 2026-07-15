@@ -12,7 +12,7 @@ import logging
 import os
 import random
 import sys
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -62,7 +62,11 @@ def load_splits(cfg: dict) -> DatasetDict:
     dcfg = cfg["data"]
 
     if dcfg.get("dataset_name"):
-        logger.info("Loading HuggingFace dataset: %s / %s", dcfg["dataset_name"], dcfg["dataset_config"])
+        logger.info(
+            "Loading HuggingFace dataset: %s / %s",
+            dcfg["dataset_name"],
+            dcfg["dataset_config"],
+        )
         raw = DatasetDict(
             {
                 "train": load_dataset(
@@ -92,9 +96,15 @@ def load_splits(cfg: dict) -> DatasetDict:
         # Custom JSON manifest: {"file": "...", "text": "...", "speaker_id": "..."}
         raw = DatasetDict(
             {
-                "train": load_dataset("json", data_files=dcfg["custom_train_manifest"], split="train"),
-                "validation": load_dataset("json", data_files=dcfg["custom_val_manifest"], split="train"),
-                "test": load_dataset("json", data_files=dcfg["custom_test_manifest"], split="train"),
+                "train": load_dataset(
+                    "json", data_files=dcfg["custom_train_manifest"], split="train"
+                ),
+                "validation": load_dataset(
+                    "json", data_files=dcfg["custom_val_manifest"], split="train"
+                ),
+                "test": load_dataset(
+                    "json", data_files=dcfg["custom_test_manifest"], split="train"
+                ),
             }
         )
 
@@ -102,10 +112,21 @@ def load_splits(cfg: dict) -> DatasetDict:
     # Stratified speaker-based split if no separate val split exists
     # -----------------------------------------------------------------------
     if dcfg.get("val_fraction") and "validation" not in raw:
-        logger.info("Creating stratified validation split from train (fraction=%.2f)", dcfg["val_fraction"])
+        logger.info(
+            "Creating stratified validation split from train (fraction=%.2f)",
+            dcfg["val_fraction"],
+        )
         train_ds = raw["train"]
-        groups = train_ds[dcfg["stratify_by"]] if dcfg["stratify_by"] in train_ds.column_names else np.arange(len(train_ds))
-        gss = GroupShuffleSplit(n_splits=1, test_size=dcfg["val_fraction"], random_state=cfg["experiment"]["seed"])
+        groups = (
+            train_ds[dcfg["stratify_by"]]
+            if dcfg["stratify_by"] in train_ds.column_names
+            else np.arange(len(train_ds))
+        )
+        gss = GroupShuffleSplit(
+            n_splits=1,
+            test_size=dcfg["val_fraction"],
+            random_state=cfg["experiment"]["seed"],
+        )
         idx = np.arange(len(train_ds))
         train_idx, val_idx = next(gss.split(idx, groups=groups))
         raw["train"] = train_ds.select(train_idx)
@@ -135,6 +156,7 @@ def build_vocab(train_dataset, tokenizer_save_dir: str) -> Wav2Vec2CTCTokenizer:
     """Extract character vocab from training transcripts and build tokenizer.
     IMPORTANT: vocab is derived only from train split — no test data leakage.
     """
+
     def extract_chars(batch):
         return {"chars": list(set(" ".join(batch["text"]).lower()))}
 
@@ -170,7 +192,9 @@ def build_vocab(train_dataset, tokenizer_save_dir: str) -> Wav2Vec2CTCTokenizer:
 # ---------------------------------------------------------------------------
 
 
-def preprocess_split(dataset, processor: Wav2Vec2Processor, sr: int, fit_on_train: bool = False):
+def preprocess_split(
+    dataset, processor: Wav2Vec2Processor, sr: int, fit_on_train: bool = False
+):
     """Feature extraction. Scaler/normalisation happens inside the processor
     using stats derived from the training set only (fit_on_train guard).
     """
@@ -356,7 +380,9 @@ def main(config_path: str = "config.yaml"):
         else:
             # Vocab built from TRAIN only — no data leakage
             tokenizer = build_vocab(raw_datasets["train"], tokenizer_dir)
-            logger.info("Built vocab of %d chars from training set", tokenizer.vocab_size)
+            logger.info(
+                "Built vocab of %d chars from training set", tokenizer.vocab_size
+            )
 
         feature_extractor = Wav2Vec2FeatureExtractor(
             feature_size=1,
@@ -374,10 +400,16 @@ def main(config_path: str = "config.yaml"):
         # 3. Preprocess (no fitting on test data)
         # ------------------------------------------------------------------
         logger.info("=== Phase 3: Preprocessing ===")
-        train_ds = preprocess_split(raw_datasets["train"], processor, data_cfg["sampling_rate"])
-        val_ds = preprocess_split(raw_datasets["validation"], processor, data_cfg["sampling_rate"])
+        train_ds = preprocess_split(
+            raw_datasets["train"], processor, data_cfg["sampling_rate"]
+        )
+        val_ds = preprocess_split(
+            raw_datasets["validation"], processor, data_cfg["sampling_rate"]
+        )
         # Test split is NEVER seen during training or tuning
-        test_ds = preprocess_split(raw_datasets["test"], processor, data_cfg["sampling_rate"])
+        test_ds = preprocess_split(
+            raw_datasets["test"], processor, data_cfg["sampling_rate"]
+        )
 
         data_collator = DataCollatorCTCWithPadding(processor=processor, padding=True)
 
@@ -480,9 +512,11 @@ def main(config_path: str = "config.yaml"):
             json.dump(test_results, f, indent=2)
         mlflow.log_artifact(str(results_path))
 
-        logger.info("Training complete. WER=%.4f | CER=%.4f",
-                    test_results.get("eval_wer", -1),
-                    test_results.get("eval_cer", -1))
+        logger.info(
+            "Training complete. WER=%.4f | CER=%.4f",
+            test_results.get("eval_wer", -1),
+            test_results.get("eval_cer", -1),
+        )
 
     return test_results
 

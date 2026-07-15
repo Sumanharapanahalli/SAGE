@@ -20,11 +20,11 @@ Output:  docs/proposals/<YYYYMMDD>-self-improvement/
          ├── task-01-*.md       ← final proposal (submit to HITL gate)
          └── ...
 """
+
 from __future__ import annotations
 
 import argparse
 import datetime
-import os
 import re
 import sys
 import time
@@ -38,11 +38,10 @@ from pathlib import Path
 SAGE_ROOT = Path(__file__).parent.parent
 
 TASKS: list[dict] = [
-
     # ── BACKEND / API ───────────────────────────────────────────────────────
-
     {
-        "id": 1, "category": "backend",
+        "id": 1,
+        "category": "backend",
         "title": "Typed FastAPI response models",
         "task": (
             "Add Pydantic response models to every FastAPI endpoint in "
@@ -57,9 +56,9 @@ TASKS: list[dict] = [
             "all model classes; existing tests still pass; no business logic changed."
         ),
     },
-
     {
-        "id": 2, "category": "backend",
+        "id": 2,
+        "category": "backend",
         "title": "Structured error events in agents",
         "task": (
             "Replace bare `except Exception as e: logger.error(str(e))` blocks "
@@ -70,8 +69,10 @@ TASKS: list[dict] = [
             "Keep the same external behaviour."
         ),
         "context_files": [
-            "src/agents/analyst.py", "src/agents/developer.py",
-            "src/agents/universal.py", "src/memory/audit_logger.py",
+            "src/agents/analyst.py",
+            "src/agents/developer.py",
+            "src/agents/universal.py",
+            "src/memory/audit_logger.py",
         ],
         "criteria": (
             "All bare except blocks are replaced; audit_logger receives structured "
@@ -79,9 +80,9 @@ TASKS: list[dict] = [
             "existing tests pass."
         ),
     },
-
     {
-        "id": 3, "category": "backend",
+        "id": 3,
+        "category": "backend",
         "title": "Request-ID propagation end-to-end",
         "task": (
             "Add a request_id (UUID4) to every incoming FastAPI request via "
@@ -91,7 +92,8 @@ TASKS: list[dict] = [
             "No breaking changes to existing endpoints."
         ),
         "context_files": [
-            "src/interface/api.py", "src/core/llm_gateway.py",
+            "src/interface/api.py",
+            "src/core/llm_gateway.py",
             "src/memory/audit_logger.py",
         ],
         "criteria": (
@@ -100,9 +102,9 @@ TASKS: list[dict] = [
             "all existing tests pass."
         ),
     },
-
     {
-        "id": 4, "category": "backend",
+        "id": 4,
+        "category": "backend",
         "title": "Circuit breaker for LLM providers",
         "task": (
             "Add a lightweight circuit breaker to src/core/llm_gateway.py: "
@@ -119,9 +121,9 @@ TASKS: list[dict] = [
             "no change to LLMGateway public interface."
         ),
     },
-
     {
-        "id": 5, "category": "backend",
+        "id": 5,
+        "category": "backend",
         "title": "Structured logging schema",
         "task": (
             "Replace all `logger.info(f'...')` f-string calls in "
@@ -132,7 +134,8 @@ TASKS: list[dict] = [
             "that can be toggled with env var SAGE_JSON_LOGS=1."
         ),
         "context_files": [
-            "src/core/llm_gateway.py", "src/core/queue_manager.py",
+            "src/core/llm_gateway.py",
+            "src/core/queue_manager.py",
         ],
         "criteria": (
             "No f-string logs remain in targeted files; "
@@ -141,9 +144,9 @@ TASKS: list[dict] = [
             "SAGE_JSON_LOGS=1 activates it; existing tests pass."
         ),
     },
-
     {
-        "id": 6, "category": "backend",
+        "id": 6,
+        "category": "backend",
         "title": "Rate limiting on /agent/run",
         "task": (
             "Add per-IP rate limiting to the POST /agent/run endpoint in "
@@ -159,9 +162,9 @@ TASKS: list[dict] = [
             "no external dependency added."
         ),
     },
-
     {
-        "id": 7, "category": "backend",
+        "id": 7,
+        "category": "backend",
         "title": "YAML schema validation on project load",
         "task": (
             "Add JSON Schema or Pydantic validation to "
@@ -178,9 +181,9 @@ TASKS: list[dict] = [
             "valid existing solution YAMLs still load without error."
         ),
     },
-
     {
-        "id": 8, "category": "backend",
+        "id": 8,
+        "category": "backend",
         "title": "Health endpoint enrichment",
         "task": (
             "Extend GET /health in src/interface/api.py to return: "
@@ -190,7 +193,8 @@ TASKS: list[dict] = [
             "Add the new fields without breaking the existing response shape."
         ),
         "context_files": [
-            "src/interface/api.py", "src/core/queue_manager.py",
+            "src/interface/api.py",
+            "src/core/queue_manager.py",
             "src/core/llm_gateway.py",
         ],
         "criteria": (
@@ -199,9 +203,9 @@ TASKS: list[dict] = [
             "test_api.py tests pass."
         ),
     },
-
     {
-        "id": 9, "category": "backend",
+        "id": 9,
+        "category": "backend",
         "title": "ProposalRepository extracted from api.py",
         "task": (
             "Extract the SQLite proposal CRUD operations in "
@@ -217,9 +221,9 @@ TASKS: list[dict] = [
             "all existing proposal endpoints still work; tests pass."
         ),
     },
-
     {
-        "id": 10, "category": "backend",
+        "id": 10,
+        "category": "backend",
         "title": "Input sanitization for task descriptions",
         "task": (
             "Add input sanitization to the POST /agent/run endpoint: "
@@ -229,7 +233,8 @@ TASKS: list[dict] = [
             "Add a pure-function sanitize_task_input() in src/modules/payload_validator.py."
         ),
         "context_files": [
-            "src/interface/api.py", "src/modules/payload_validator.py",
+            "src/interface/api.py",
+            "src/modules/payload_validator.py",
         ],
         "criteria": (
             "sanitize_task_input() exists in payload_validator.py; "
@@ -237,11 +242,10 @@ TASKS: list[dict] = [
             "task > 4000 chars returns 422; existing valid requests still work."
         ),
     },
-
     # ── WEB UI ──────────────────────────────────────────────────────────────
-
     {
-        "id": 11, "category": "ui",
+        "id": 11,
+        "category": "ui",
         "title": "StatusDot shared component",
         "task": (
             "Create web/src/components/ui/StatusDot.tsx: a shared component "
@@ -263,9 +267,9 @@ TASKS: list[dict] = [
             "TypeScript compiles without errors."
         ),
     },
-
     {
-        "id": 12, "category": "ui",
+        "id": 12,
+        "category": "ui",
         "title": "Skeleton loading states",
         "task": (
             "Add skeleton loading states to web/src/pages/Analyst.tsx, "
@@ -286,9 +290,9 @@ TASKS: list[dict] = [
             "TypeScript compiles."
         ),
     },
-
     {
-        "id": 13, "category": "ui",
+        "id": 13,
+        "category": "ui",
         "title": "Error boundaries for page components",
         "task": (
             "Add a React error boundary to web/src/App.tsx that wraps "
@@ -306,9 +310,9 @@ TASKS: list[dict] = [
             "TypeScript compiles; does not break normal rendering."
         ),
     },
-
     {
-        "id": 14, "category": "ui",
+        "id": 14,
+        "category": "ui",
         "title": "Aria-labels on icon-only buttons",
         "task": (
             "Add aria-label attributes to every icon-only button (a button "
@@ -331,9 +335,9 @@ TASKS: list[dict] = [
             "TypeScript compiles."
         ),
     },
-
     {
-        "id": 15, "category": "ui",
+        "id": 15,
+        "category": "ui",
         "title": "Copy-to-clipboard for diff/code blocks",
         "task": (
             "Add a copy-to-clipboard button to the diff <pre> block in "
@@ -356,11 +360,10 @@ TASKS: list[dict] = [
             "TypeScript compiles."
         ),
     },
-
     # ── TESTING ─────────────────────────────────────────────────────────────
-
     {
-        "id": 16, "category": "testing",
+        "id": 16,
+        "category": "testing",
         "title": "YAML config loader property tests",
         "task": (
             "Add property-based tests for src/core/project_loader.py using "
@@ -381,9 +384,9 @@ TASKS: list[dict] = [
             "no external deps beyond hypothesis."
         ),
     },
-
     {
-        "id": 17, "category": "testing",
+        "id": 17,
+        "category": "testing",
         "title": "End-to-end agent run -> audit log test",
         "task": (
             "Add an integration test in tests/test_integration_agent_audit.py that: "
@@ -394,7 +397,8 @@ TASKS: list[dict] = [
             "Mock the LLM provider to return a deterministic response."
         ),
         "context_files": [
-            "src/interface/api.py", "src/memory/audit_logger.py",
+            "src/interface/api.py",
+            "src/memory/audit_logger.py",
             "tests/test_api.py",
         ],
         "criteria": (
@@ -404,9 +408,9 @@ TASKS: list[dict] = [
             "tests pass with pytest."
         ),
     },
-
     {
-        "id": 18, "category": "testing",
+        "id": 18,
+        "category": "testing",
         "title": "LLM provider fallback test",
         "task": (
             "Add tests in tests/test_llm_gateway.py for provider fallback: "
@@ -417,7 +421,8 @@ TASKS: list[dict] = [
             "Mock all provider generate() calls."
         ),
         "context_files": [
-            "src/core/llm_gateway.py", "tests/test_llm_gateway.py",
+            "src/core/llm_gateway.py",
+            "tests/test_llm_gateway.py",
         ],
         "criteria": (
             "Fallback test uses mocked providers; "
@@ -425,11 +430,10 @@ TASKS: list[dict] = [
             "no real LLM calls; tests pass with pytest."
         ),
     },
-
     # ── ARCHITECTURE / QUALITY ───────────────────────────────────────────────
-
     {
-        "id": 19, "category": "architecture",
+        "id": 19,
+        "category": "architecture",
         "title": "Type hints for llm_gateway public methods",
         "task": (
             "Add complete PEP 484 type hints to all public methods in "
@@ -447,9 +451,9 @@ TASKS: list[dict] = [
             "no logic changes."
         ),
     },
-
     {
-        "id": 20, "category": "architecture",
+        "id": 20,
+        "category": "architecture",
         "title": "Retry policy class",
         "task": (
             "Extract the ad-hoc retry logic scattered across llm_gateway.py "
@@ -469,7 +473,6 @@ TASKS: list[dict] = [
             "existing LLM tests pass."
         ),
     },
-
 ]
 
 # ---------------------------------------------------------------------------
@@ -487,7 +490,7 @@ def slugify(title: str, task_id: int) -> str:
     which are illegal in Windows paths and previously crashed the writer.
     """
     base = title.lower().replace(" ", "-")
-    base = _INVALID_FILENAME.sub("-", base)       # kill illegal chars
+    base = _INVALID_FILENAME.sub("-", base)  # kill illegal chars
     base = re.sub(r"-{2,}", "-", base).strip("-")  # collapse/trim dashes
     return f"task-{task_id:02d}-{base[:40]}"
 
@@ -497,9 +500,17 @@ def slugify(title: str, task_id: int) -> str:
 # nothing else) is what makes the wait-and-retry safe: a stale-tool or
 # untrusted-workspace failure will NOT match, so we don't sleep forever on it.
 _LIMIT_MARKERS = (
-    "usage limit", "rate limit", "rate_limit", "429",
-    "too many requests", "limit reached", "quota",
-    "overloaded", "resets at", "try again later", "please wait",
+    "usage limit",
+    "rate limit",
+    "rate_limit",
+    "429",
+    "too many requests",
+    "limit reached",
+    "quota",
+    "overloaded",
+    "resets at",
+    "try again later",
+    "please wait",
 )
 
 
@@ -552,7 +563,9 @@ def read_context(files: list[str]) -> str:
     for rel in files:
         p = SAGE_ROOT / rel
         if p.exists():
-            parts.append(f"=== FILE: {rel} ===\n{p.read_text(encoding='utf-8', errors='replace')}")
+            parts.append(
+                f"=== FILE: {rel} ===\n{p.read_text(encoding='utf-8', errors='replace')}"
+            )
         else:
             parts.append(f"=== FILE: {rel} === (NOT FOUND — skip if irrelevant)")
     return "\n\n".join(parts)
@@ -565,40 +578,50 @@ def run_task(task: dict, out_dir: Path, max_iterations: int, threshold: float) -
 
     context = read_context(task.get("context_files", []))
 
-    runner = EvaluatorOptimizerRunner({
-        # disallowed_tools is set explicitly (NOT the shared default in
-        # evaluator_optimizer.py) because that default still lists "MultiEdit",
-        # a tool the current Claude Code CLI no longer knows — which makes the CLI
-        # reject the whole call with rc=1 ("deny rule MultiEdit matches no known
-        # tool"). Keeping the optimizer write-restricted preserves the HITL
-        # guarantee (pure text proposal, never touches the repo).
-        "optimizer": {"provider": "claude-code", "model": "claude-opus-4-8", "timeout": 600,
-                      "disallowed_tools": "Write Edit NotebookEdit Bash"},
-        # Step 0(a): the EVALUATOR must NOT be the same model as the optimizer — a model
-        # grading its own output is self-grading and inflates/misjudges scores. Gemini is a
-        # different VENDOR, not just a different checkpoint: it shares no weights, training
-        # data, or refusal/verbosity biases with the optimizer, so it cannot pattern-match
-        # its own house style as "good". Claude optimizes; Gemini holds the bar.
-        # 900s, not 300s: Gemini CLI latency scales super-linearly with prompt size
-        # (measured: 5KB->7s, 20KB->17s, 50KB->142s), and optimizer candidates here run
-        # 10-35KB. 300s put real evaluations inside the timeout margin.
-        "evaluator": {"provider": "gemini", "model": "gemini-3.5-flash", "timeout": 900},
-        # Survive a transient Gemini overload rather than recording a phantom 0.0.
-        "evaluator_retries": 2,
-        "criteria": task["criteria"],
-        "max_iterations": max_iterations,
-        "score_threshold": threshold,
-        "generate_rubric": True,
-        "sandbox": True,
-    })
+    runner = EvaluatorOptimizerRunner(
+        {
+            # disallowed_tools is set explicitly (NOT the shared default in
+            # evaluator_optimizer.py) because that default still lists "MultiEdit",
+            # a tool the current Claude Code CLI no longer knows — which makes the CLI
+            # reject the whole call with rc=1 ("deny rule MultiEdit matches no known
+            # tool"). Keeping the optimizer write-restricted preserves the HITL
+            # guarantee (pure text proposal, never touches the repo).
+            "optimizer": {
+                "provider": "claude-code",
+                "model": "claude-opus-4-8",
+                "timeout": 600,
+                "disallowed_tools": "Write Edit NotebookEdit Bash",
+            },
+            # Step 0(a): the EVALUATOR must NOT be the same model as the optimizer — a model
+            # grading its own output is self-grading and inflates/misjudges scores. Gemini is a
+            # different VENDOR, not just a different checkpoint: it shares no weights, training
+            # data, or refusal/verbosity biases with the optimizer, so it cannot pattern-match
+            # its own house style as "good". Claude optimizes; Gemini holds the bar.
+            # 900s, not 300s: Gemini CLI latency scales super-linearly with prompt size
+            # (measured: 5KB->7s, 20KB->17s, 50KB->142s), and optimizer candidates here run
+            # 10-35KB. 300s put real evaluations inside the timeout margin.
+            "evaluator": {
+                "provider": "gemini",
+                "model": "gemini-3.5-flash",
+                "timeout": 900,
+            },
+            # Survive a transient Gemini overload rather than recording a phantom 0.0.
+            "evaluator_retries": 2,
+            "criteria": task["criteria"],
+            "max_iterations": max_iterations,
+            "score_threshold": threshold,
+            "generate_rubric": True,
+            "sandbox": True,
+        }
+    )
 
     start = time.time()
     result = runner.run(task["task"], context)
     elapsed = time.time() - start
 
-    result["task_id"]   = task["id"]
-    result["title"]     = task["title"]
-    result["category"]  = task["category"]
+    result["task_id"] = task["id"]
+    result["title"] = task["title"]
+    result["category"] = task["category"]
     result["elapsed_s"] = round(elapsed, 1)
 
     # Write proposal to disk
@@ -620,13 +643,19 @@ def run_task(task: dict, out_dir: Path, max_iterations: int, threshold: float) -
         # iteration, untruncated. This is the artifact a human reads to judge how well
         # the optimizer is actually doing — a 200-char feedback snippet with no sight of
         # the candidate it produced cannot answer that, so nothing here is elided.
-        f.write("\n\n---\n\n## Review Transcript (Gemini critiques → Claude revises)\n\n")
+        f.write(
+            "\n\n---\n\n## Review Transcript (Gemini critiques → Claude revises)\n\n"
+        )
         for h in result.get("history", []):
             verdict = "PASS" if h["passed"] else "REJECTED"
-            f.write(f"### Iteration {h['iteration']} — Gemini scored {h['score']:.1f}/10 → {verdict}\n\n")
+            f.write(
+                f"### Iteration {h['iteration']} — Gemini scored {h['score']:.1f}/10 → {verdict}\n\n"
+            )
             if not h.get("parse_ok", True):
-                f.write("> **Evaluator output was unparseable** (Gemini overloaded or "
-                        "unavailable). This is NOT a genuine 0.0 — re-run this task.\n\n")
+                f.write(
+                    "> **Evaluator output was unparseable** (Gemini overloaded or "
+                    "unavailable). This is NOT a genuine 0.0 — re-run this task.\n\n"
+                )
             f.write("**Gemini's comments:**\n\n")
             f.write(f"{h['feedback'] or '(passed with no further comment)'}\n\n")
             f.write("**Claude's work at this iteration:**\n\n")
@@ -640,15 +669,15 @@ def write_summary(results: list[dict], out_dir: Path, args) -> None:
     """Write _summary.md ranked by score."""
     ranked = sorted(results, key=lambda r: r.get("score", 0), reverse=True)
     total_time = sum(r.get("elapsed_s", 0) for r in results)
-    converged  = sum(1 for r in results if r.get("converged"))
+    converged = sum(1 for r in results if r.get("converged"))
 
     lines = [
         "# SAGE Self-Improvement Run — Summary",
         f"\n**Date:** {datetime.date.today()}  ",
         f"**Tasks run:** {len(results)}  ",
         f"**Converged:** {converged}/{len(results)}  ",
-        f"**Total time:** {total_time/60:.1f} min  ",
-        f"**Model:** Claude Opus 4.8 optimizer / Gemini 3.5 Flash evaluator (cross-vendor judge)  ",
+        f"**Total time:** {total_time / 60:.1f} min  ",
+        "**Model:** Claude Opus 4.8 optimizer / Gemini 3.5 Flash evaluator (cross-vendor judge)  ",
         f"**Max iterations:** {args.max_iterations}  ",
         f"**Threshold:** {args.threshold}  ",
         "\n> Nothing applied — all proposals require HITL approval.\n",
@@ -660,7 +689,7 @@ def write_summary(results: list[dict], out_dir: Path, args) -> None:
         conv = "✓" if r.get("converged") else "✗"
         lines.append(
             f"| {rank} | {r['task_id']} | {r['category']} | {r['title'][:40]} | "
-            f"{r.get('score',0):.1f} | {conv} | {r.get('iterations')} | {r.get('elapsed_s',0):.0f}s |"
+            f"{r.get('score', 0):.1f} | {conv} | {r.get('iterations')} | {r.get('elapsed_s', 0):.0f}s |"
         )
 
     lines += [
@@ -668,14 +697,18 @@ def write_summary(results: list[dict], out_dir: Path, args) -> None:
     ]
     for r in ranked:
         if r.get("score", 0) >= args.threshold:
-            lines.append(f"- **Task {r['task_id']}** ({r['category']}): {r['title']} — score {r.get('score',0):.1f}")
+            lines.append(
+                f"- **Task {r['task_id']}** ({r['category']}): {r['title']} — score {r.get('score', 0):.1f}"
+            )
 
     lines += [
         "\n## Low-scoring / needs re-run\n",
     ]
     for r in ranked:
         if r.get("score", 0) < args.threshold:
-            lines.append(f"- Task {r['task_id']}: {r['title']} — score {r.get('score',0):.1f}")
+            lines.append(
+                f"- Task {r['task_id']}: {r['title']} — score {r.get('score', 0):.1f}"
+            )
 
     out_file = out_dir / "_summary.md"
     out_file.write_text("\n".join(lines), encoding="utf-8")
@@ -684,17 +717,30 @@ def write_summary(results: list[dict], out_dir: Path, args) -> None:
 
 def main():
     ap = argparse.ArgumentParser(description="SAGE Self-Improvement Runner")
-    ap.add_argument("--batch", help="Run only tasks in this category (backend|ui|testing|architecture)")
+    ap.add_argument(
+        "--batch",
+        help="Run only tasks in this category (backend|ui|testing|architecture)",
+    )
     ap.add_argument("--task-ids", help="Comma-separated task IDs to run, e.g. 1,3,7")
     ap.add_argument("--max-iterations", type=int, default=3)
     ap.add_argument("--threshold", type=float, default=8.0)
     ap.add_argument("--dry-run", action="store_true", help="Print plan, don't run")
-    ap.add_argument("--resume", action="store_true", help="Skip tasks with existing output files")
+    ap.add_argument(
+        "--resume", action="store_true", help="Skip tasks with existing output files"
+    )
     ap.add_argument("--out-dir", default="", help="Override output directory")
-    ap.add_argument("--limit-wait-min", type=float, default=30,
-                    help="Minutes to wait before retrying a task that hit a usage limit / overload")
-    ap.add_argument("--limit-max-retries", type=int, default=12,
-                    help="Max wait-and-retry attempts per task on usage-limit errors (0 disables)")
+    ap.add_argument(
+        "--limit-wait-min",
+        type=float,
+        default=30,
+        help="Minutes to wait before retrying a task that hit a usage limit / overload",
+    )
+    ap.add_argument(
+        "--limit-max-retries",
+        type=int,
+        default=12,
+        help="Max wait-and-retry attempts per task on usage-limit errors (0 disables)",
+    )
     args = ap.parse_args()
 
     # Select tasks
@@ -711,14 +757,21 @@ def main():
 
     # Output directory
     date_str = datetime.date.today().strftime("%Y%m%d")
-    out_dir = Path(args.out_dir) if args.out_dir else \
-              SAGE_ROOT / "docs" / "proposals" / f"{date_str}-self-improvement"
+    out_dir = (
+        Path(args.out_dir)
+        if args.out_dir
+        else SAGE_ROOT / "docs" / "proposals" / f"{date_str}-self-improvement"
+    )
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"\nSAGE Self-Improvement Runner")
+    print("\nSAGE Self-Improvement Runner")
     print(f"Output -> {out_dir}")
-    print(f"Tasks  -> {len(tasks)}  |  max_iterations={args.max_iterations}  |  threshold={args.threshold}")
-    print(f"Model  -> Claude Opus 4.8 optimizer / Gemini 3.5 Flash evaluator (cross-vendor judge)\n")
+    print(
+        f"Tasks  -> {len(tasks)}  |  max_iterations={args.max_iterations}  |  threshold={args.threshold}"
+    )
+    print(
+        "Model  -> Claude Opus 4.8 optimizer / Gemini 3.5 Flash evaluator (cross-vendor judge)\n"
+    )
 
     if args.dry_run:
         print("DRY RUN — tasks that would run:\n")
@@ -735,7 +788,9 @@ def main():
             print(f"[{i}/{len(tasks)}] SKIP (converged): {task['title']}")
             continue
 
-        print(f"\n[{i}/{len(tasks)}] TASK {task['id']:02d}: {task['title']}  [{task['category']}]")
+        print(
+            f"\n[{i}/{len(tasks)}] TASK {task['id']:02d}: {task['title']}  [{task['category']}]"
+        )
         print(f"  Context files: {', '.join(task.get('context_files', []))}")
 
         try:
@@ -747,40 +802,53 @@ def main():
                 result = run_task(task, out_dir, args.max_iterations, args.threshold)
                 if hit_usage_limit(result) and attempt < args.limit_max_retries:
                     attempt += 1
-                    resume_at = (datetime.datetime.now()
-                                 + datetime.timedelta(minutes=args.limit_wait_min)
-                                 ).strftime("%H:%M:%S")
-                    print(f"  -> USAGE LIMIT / overload detected. Waiting "
-                          f"{args.limit_wait_min:g} min (until ~{resume_at}), then retry "
-                          f"{attempt}/{args.limit_max_retries}...")
+                    resume_at = (
+                        datetime.datetime.now()
+                        + datetime.timedelta(minutes=args.limit_wait_min)
+                    ).strftime("%H:%M:%S")
+                    print(
+                        f"  -> USAGE LIMIT / overload detected. Waiting "
+                        f"{args.limit_wait_min:g} min (until ~{resume_at}), then retry "
+                        f"{attempt}/{args.limit_max_retries}..."
+                    )
                     time.sleep(args.limit_wait_min * 60)
                     continue
                 break
 
             results.append(result)
             status = "CONVERGED" if result.get("converged") else "BEST"
-            print(f"  -> {status}  score={result.get('score',0):.1f}  "
-                  f"iters={result.get('iterations')}  "
-                  f"time={result.get('elapsed_s',0):.0f}s"
-                  + (f"  (after {attempt} limit-retry)" if attempt else ""))
+            print(
+                f"  -> {status}  score={result.get('score', 0):.1f}  "
+                f"iters={result.get('iterations')}  "
+                f"time={result.get('elapsed_s', 0):.0f}s"
+                + (f"  (after {attempt} limit-retry)" if attempt else "")
+            )
             print(f"  -> Proposal: {result['out_file']}")
         except KeyboardInterrupt:
             print("\n\nInterrupted by user. Writing partial summary...")
             break
         except Exception as exc:  # noqa: BLE001
             print(f"  ERROR: {exc}")
-            results.append({
-                "task_id": task["id"], "title": task["title"],
-                "category": task["category"],
-                "score": 0, "converged": False, "iterations": 0,
-                "elapsed_s": 0, "error": str(exc),
-            })
+            results.append(
+                {
+                    "task_id": task["id"],
+                    "title": task["title"],
+                    "category": task["category"],
+                    "score": 0,
+                    "converged": False,
+                    "iterations": 0,
+                    "elapsed_s": 0,
+                    "error": str(exc),
+                }
+            )
 
     if results:
         write_summary(results, out_dir, args)
 
     print(f"\nDone. Review proposals in:\n  {out_dir}")
-    print("Submit each proposal through the SAGE HITL approval gate - nothing was applied.")
+    print(
+        "Submit each proposal through the SAGE HITL approval gate - nothing was applied."
+    )
 
 
 if __name__ == "__main__":

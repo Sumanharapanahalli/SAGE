@@ -45,7 +45,9 @@ def compute_cer(predictions: list[str], references: list[str]) -> float:
     return cer_metric.compute(predictions=predictions, references=references)
 
 
-def compute_rtf(audio_durations_sec: list[float], inference_times_sec: list[float]) -> float:
+def compute_rtf(
+    audio_durations_sec: list[float], inference_times_sec: list[float]
+) -> float:
     """Real-Time Factor = total inference time / total audio duration.
     RTF < 1.0 means the model runs faster than real-time.
     """
@@ -112,8 +114,15 @@ def evaluate_bias(
         group_results = {}
         for group_val, sub_df in df.groupby(group_col):
             if len(sub_df) < 5:
-                logger.warning("Subgroup %s=%s has only %d samples — low confidence", group_col, group_val, len(sub_df))
-            wer = compute_wer(sub_df["prediction"].tolist(), sub_df["reference"].tolist())
+                logger.warning(
+                    "Subgroup %s=%s has only %d samples — low confidence",
+                    group_col,
+                    group_val,
+                    len(sub_df),
+                )
+            wer = compute_wer(
+                sub_df["prediction"].tolist(), sub_df["reference"].tolist()
+            )
             group_results[str(group_val)] = round(wer, 4)
 
         results[group_col] = group_results
@@ -188,11 +197,19 @@ def main(config_path: str = "config.yaml", model_dir: str | None = None):
     logger.info("WER       = %.4f (%.1f%%)", wer, wer * 100)
     logger.info("CER       = %.4f (%.1f%%)", cer, cer * 100)
     logger.info("RTF       = %.4f (target < %.2f)", rtf, eval_cfg["rtf_sla_threshold"])
-    logger.info("p95 latency = %.1f ms (SLA = %d ms)", p95_latency_ms, cfg["inference"]["latency_sla_ms"])
+    logger.info(
+        "p95 latency = %.1f ms (SLA = %d ms)",
+        p95_latency_ms,
+        cfg["inference"]["latency_sla_ms"],
+    )
 
     rtf_ok = rtf < eval_cfg["rtf_sla_threshold"]
     latency_ok = p95_latency_ms < cfg["inference"]["latency_sla_ms"]
-    logger.info("RTF SLA: %s | Latency SLA: %s", "PASS" if rtf_ok else "FAIL", "PASS" if latency_ok else "FAIL")
+    logger.info(
+        "RTF SLA: %s | Latency SLA: %s",
+        "PASS" if rtf_ok else "FAIL",
+        "PASS" if latency_ok else "FAIL",
+    )
 
     # Build results dataframe (include metadata columns for bias analysis)
     records = []
@@ -214,6 +231,7 @@ def main(config_path: str = "config.yaml", model_dir: str | None = None):
     # true per-sample WER uses jiwer)
     try:
         import jiwer
+
         df["sample_wer"] = df.apply(
             lambda r: jiwer.wer(r["reference"], r["prediction"]), axis=1
         )

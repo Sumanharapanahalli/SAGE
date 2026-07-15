@@ -19,9 +19,13 @@ Docker: sage/doc-toolchain:latest (lightweight)
 import logging
 
 from src.integrations.base_runner import (
-    BaseRunner, RunResult, VerificationReport, VerificationFinding,
-    VerificationSeverity, Exercise, ExerciseScore,
-    register_runner, DOC_ROLES,
+    BaseRunner,
+    VerificationReport,
+    VerificationFinding,
+    VerificationSeverity,
+    Exercise,
+    register_runner,
+    DOC_ROLES,
 )
 
 logger = logging.getLogger("Runner.opendoc")
@@ -79,17 +83,20 @@ class OpenDocRunner(BaseRunner):
                 ),
             }
 
-            base_prompt = role_prompts.get(agent_role, (
-                "You are a senior technical writer.\n"
-                "Generate well-structured documentation with clear sections.\n"
-                "Include examples, diagrams descriptions, and cross-references.\n"
-            ))
+            base_prompt = role_prompts.get(
+                agent_role,
+                (
+                    "You are a senior technical writer.\n"
+                    "Generate well-structured documentation with clear sections.\n"
+                    "Include examples, diagrams descriptions, and cross-references.\n"
+                ),
+            )
 
             system_prompt = (
                 f"{base_prompt}\n"
-                "Output as JSON: {\"files\": [{\"path\": \"...\", \"content\": \"...\"}], "
-                "\"sections_count\": N, \"word_count\": N, "
-                "\"references\": [\"...\"], \"standard_clauses_covered\": []}\n"
+                'Output as JSON: {"files": [{"path": "...", "content": "..."}], '
+                '"sections_count": N, "word_count": N, '
+                '"references": ["..."], "standard_clauses_covered": []}\n'
             )
 
             response = llm_gateway.generate_for_task(
@@ -103,6 +110,7 @@ class OpenDocRunner(BaseRunner):
             metrics = {}
             try:
                 import json
+
                 start = response.find("{")
                 end = response.rfind("}") + 1
                 if start >= 0 and end > start:
@@ -117,8 +125,11 @@ class OpenDocRunner(BaseRunner):
                 pass
 
             return self._make_result(
-                run_id=run_id, status="completed", tier="direct",
-                output=response, files_changed=files_changed,
+                run_id=run_id,
+                status="completed",
+                tier="direct",
+                output=response,
+                files_changed=files_changed,
                 artifacts=[{"path": f, "type": "document"} for f in files_changed],
                 metrics=metrics,
             )
@@ -131,49 +142,72 @@ class OpenDocRunner(BaseRunner):
         score = 30.0
 
         if result.status == "error":
-            return VerificationReport(passed=False, score=0.0, findings=[
-                VerificationFinding("execution", VerificationSeverity.ERROR, "Failed"),
-            ])
+            return VerificationReport(
+                passed=False,
+                score=0.0,
+                findings=[
+                    VerificationFinding(
+                        "execution", VerificationSeverity.ERROR, "Failed"
+                    ),
+                ],
+            )
 
         metrics = result.metrics or {}
 
         # Section completeness
-        sections_complete = metrics.get("sections_complete", metrics.get("sections_count", 0))
+        sections_complete = metrics.get(
+            "sections_complete", metrics.get("sections_count", 0)
+        )
         sections_required = metrics.get("sections_required", 0)
         if sections_required > 0 and sections_complete > 0:
             ratio = sections_complete / sections_required
             score += ratio * 25
             if ratio >= 1.0:
-                findings.append(VerificationFinding(
-                    "completeness", VerificationSeverity.PASS,
-                    f"All {sections_required} sections complete",
-                ))
+                findings.append(
+                    VerificationFinding(
+                        "completeness",
+                        VerificationSeverity.PASS,
+                        f"All {sections_required} sections complete",
+                    )
+                )
             else:
-                findings.append(VerificationFinding(
-                    "completeness", VerificationSeverity.WARNING,
-                    f"{sections_complete}/{sections_required} sections complete",
-                ))
+                findings.append(
+                    VerificationFinding(
+                        "completeness",
+                        VerificationSeverity.WARNING,
+                        f"{sections_complete}/{sections_required} sections complete",
+                    )
+                )
 
         # Standard coverage for regulatory docs
         coverage_pct = metrics.get("standard_coverage_pct")
         if coverage_pct is not None:
             if coverage_pct >= 90:
                 score += 20
-                findings.append(VerificationFinding(
-                    "standard_coverage", VerificationSeverity.PASS,
-                    f"Standard coverage: {coverage_pct}%",
-                ))
+                findings.append(
+                    VerificationFinding(
+                        "standard_coverage",
+                        VerificationSeverity.PASS,
+                        f"Standard coverage: {coverage_pct}%",
+                    )
+                )
             elif coverage_pct >= 70:
                 score += 10
-                findings.append(VerificationFinding(
-                    "standard_coverage", VerificationSeverity.WARNING,
-                    f"Standard coverage: {coverage_pct}% — gaps need review",
-                ))
+                findings.append(
+                    VerificationFinding(
+                        "standard_coverage",
+                        VerificationSeverity.WARNING,
+                        f"Standard coverage: {coverage_pct}% — gaps need review",
+                    )
+                )
             else:
-                findings.append(VerificationFinding(
-                    "standard_coverage", VerificationSeverity.ERROR,
-                    f"Standard coverage only {coverage_pct}%",
-                ))
+                findings.append(
+                    VerificationFinding(
+                        "standard_coverage",
+                        VerificationSeverity.ERROR,
+                        f"Standard coverage only {coverage_pct}%",
+                    )
+                )
 
         # Files produced
         if result.files_changed or result.artifacts:
@@ -181,16 +215,27 @@ class OpenDocRunner(BaseRunner):
 
         # Document content quality
         output_lower = (result.output or "").lower()
-        doc_kws = ["section", "requirement", "reference", "appendix", "summary", "scope", "purpose"]
+        doc_kws = [
+            "section",
+            "requirement",
+            "reference",
+            "appendix",
+            "summary",
+            "scope",
+            "purpose",
+        ]
         if sum(1 for k in doc_kws if k in output_lower) >= 2:
             score += 10
 
         score = min(score, 100.0)
-        return VerificationReport(passed=score >= 40.0, score=score, findings=findings, metrics=metrics)
+        return VerificationReport(
+            passed=score >= 40.0, score=score, findings=findings, metrics=metrics
+        )
 
     def get_toolchain(self):
         return {
-            "runner": self.name, "docker_image": self.docker_image,
+            "runner": self.name,
+            "docker_image": self.docker_image,
             "roles": self.roles,
             "tools": ["markdown", "latex", "pandoc", "jinja2", "vale"],
             "packages": ["pandoc", "texlive-base", "vale", "python3-jinja2"],
@@ -198,13 +243,33 @@ class OpenDocRunner(BaseRunner):
 
     def get_workflow(self):
         return [
-            {"step": 1, "name": "research", "description": "Research context, standards, and prior documents"},
-            {"step": 2, "name": "outline", "description": "Create document outline from template"},
+            {
+                "step": 1,
+                "name": "research",
+                "description": "Research context, standards, and prior documents",
+            },
+            {
+                "step": 2,
+                "name": "outline",
+                "description": "Create document outline from template",
+            },
             {"step": 3, "name": "draft", "description": "Draft document content"},
             {"step": 4, "name": "write", "description": "Write full document sections"},
-            {"step": 5, "name": "cross_reference", "description": "Validate cross-references and traceability"},
-            {"step": 6, "name": "validate", "description": "Check template compliance and standard coverage"},
-            {"step": 7, "name": "publish", "description": "Generate final output (PDF/HTML)"},
+            {
+                "step": 5,
+                "name": "cross_reference",
+                "description": "Validate cross-references and traceability",
+            },
+            {
+                "step": 6,
+                "name": "validate",
+                "description": "Check template compliance and standard coverage",
+            },
+            {
+                "step": 7,
+                "name": "publish",
+                "description": "Generate final output (PDF/HTML)",
+            },
         ]
 
     def get_experience_keys(self):
@@ -213,47 +278,60 @@ class OpenDocRunner(BaseRunner):
     def get_experimental_commands(self, workspace, files):
         """Doc-specific: markdown lint, link validation, word count, structure check."""
         import os
+
         commands = []
         md_files = [f for f in files if f.endswith((".md", ".markdown"))]
-        rst_files = [f for f in files if f.endswith(".rst")]
+        [f for f in files if f.endswith(".rst")]
         tex_files = [f for f in files if f.endswith(".tex")]
         py_files = [f for f in files if f.endswith(".py")]
 
         if md_files:
             # Check markdown structure has required sections
             for mf in md_files[:3]:
-                commands.append({
-                    "name": f"md_structure_{os.path.basename(mf)}",
-                    "cmd": ["python3", "-c",
+                commands.append(
+                    {
+                        "name": f"md_structure_{os.path.basename(mf)}",
+                        "cmd": [
+                            "python3",
+                            "-c",
                             f"import re; t=open('{mf}').read(); "
                             f"h=re.findall(r'^#+\\s', t, re.M); "
                             f"assert len(h)>=2, f'Only {{len(h)}} headings — need structured doc'; "
                             f"assert len(t)>200, f'Doc too short ({{len(t)}} chars)'; "
-                            f"print(f'OK: {{len(h)}} headings, {{len(t)}} chars')"],
-                    "weight": 20,
-                    "timeout": 10,
-                })
+                            f"print(f'OK: {{len(h)}} headings, {{len(t)}} chars')",
+                        ],
+                        "weight": 20,
+                        "timeout": 10,
+                    }
+                )
 
         if tex_files:
             for tf in tex_files[:2]:
-                commands.append({
-                    "name": f"latex_check_{os.path.basename(tf)}",
-                    "cmd": ["python3", "-c",
+                commands.append(
+                    {
+                        "name": f"latex_check_{os.path.basename(tf)}",
+                        "cmd": [
+                            "python3",
+                            "-c",
                             f"t=open('{tf}').read(); "
                             f"assert '\\\\begin{{document}}' in t, 'Missing \\\\begin{{document}}'; "
                             f"assert '\\\\end{{document}}' in t, 'Missing \\\\end{{document}}'; "
-                            f"print('LaTeX structure valid')"],
-                    "weight": 25,
-                    "timeout": 10,
-                })
+                            f"print('LaTeX structure valid')",
+                        ],
+                        "weight": 25,
+                        "timeout": 10,
+                    }
+                )
 
         if py_files:
-            commands.append({
-                "name": "python_syntax",
-                "cmd": ["python3", "-m", "py_compile"] + py_files,
-                "weight": 20,
-                "timeout": 15,
-            })
+            commands.append(
+                {
+                    "name": "python_syntax",
+                    "cmd": ["python3", "-m", "py_compile"] + py_files,
+                    "weight": 20,
+                    "timeout": 15,
+                }
+            )
 
         return commands
 
@@ -264,25 +342,52 @@ class OpenDocRunner(BaseRunner):
             return catalog
         fallback = {
             "beginner": [
-                Exercise(id="doc-b01", role="technical_writer", task_type="DOCUMENTATION",
-                         difficulty="beginner",
-                         description="Write a quickstart guide for a REST API with authentication",
-                         acceptance_criteria=["Installation section", "Auth example", "First API call"],
-                         expected_artifacts=["quickstart.md"], tags=["api", "quickstart"]),
+                Exercise(
+                    id="doc-b01",
+                    role="technical_writer",
+                    task_type="DOCUMENTATION",
+                    difficulty="beginner",
+                    description="Write a quickstart guide for a REST API with authentication",
+                    acceptance_criteria=[
+                        "Installation section",
+                        "Auth example",
+                        "First API call",
+                    ],
+                    expected_artifacts=["quickstart.md"],
+                    tags=["api", "quickstart"],
+                ),
             ],
             "intermediate": [
-                Exercise(id="doc-i01", role="regulatory_specialist", task_type="REGULATORY",
-                         difficulty="intermediate",
-                         description="Create an ISO 14971 risk management plan for a patient monitoring device",
-                         acceptance_criteria=["ISO 14971 sections", "Risk acceptability", "FMEA template"],
-                         expected_artifacts=["risk_management_plan.md"], tags=["iso-14971", "medical"]),
+                Exercise(
+                    id="doc-i01",
+                    role="regulatory_specialist",
+                    task_type="REGULATORY",
+                    difficulty="intermediate",
+                    description="Create an ISO 14971 risk management plan for a patient monitoring device",
+                    acceptance_criteria=[
+                        "ISO 14971 sections",
+                        "Risk acceptability",
+                        "FMEA template",
+                    ],
+                    expected_artifacts=["risk_management_plan.md"],
+                    tags=["iso-14971", "medical"],
+                ),
             ],
             "advanced": [
-                Exercise(id="doc-a01", role="regulatory_specialist", task_type="REGULATORY",
-                         difficulty="advanced",
-                         description="Prepare a 510(k) pre-submission package for an AI diagnostic tool",
-                         acceptance_criteria=["Predicate comparison", "IEC 62304 classification", "Traceability"],
-                         expected_artifacts=["presubmission.md", "traceability.md"], tags=["510k", "fda"]),
+                Exercise(
+                    id="doc-a01",
+                    role="regulatory_specialist",
+                    task_type="REGULATORY",
+                    difficulty="advanced",
+                    description="Prepare a 510(k) pre-submission package for an AI diagnostic tool",
+                    acceptance_criteria=[
+                        "Predicate comparison",
+                        "IEC 62304 classification",
+                        "Traceability",
+                    ],
+                    expected_artifacts=["presubmission.md", "traceability.md"],
+                    tags=["510k", "fda"],
+                ),
             ],
         }
         return fallback.get(difficulty, fallback["intermediate"])
@@ -299,8 +404,18 @@ class OpenDocRunner(BaseRunner):
 
         # Document structure
         output_lower = (result.output or "").lower()
-        doc_kws = ["section", "requirement", "criteria", "scope", "purpose",
-                    "reference", "appendix", "revision", "approval", "traceability"]
+        doc_kws = [
+            "section",
+            "requirement",
+            "criteria",
+            "scope",
+            "purpose",
+            "reference",
+            "appendix",
+            "revision",
+            "approval",
+            "traceability",
+        ]
         kw_hits = sum(1 for k in doc_kws if k in output_lower)
         if kw_hits >= 3:
             score += 20
@@ -309,7 +424,9 @@ class OpenDocRunner(BaseRunner):
             hints.append("Include clear section headers and structured content")
 
         # Word count (substance check)
-        word_count = result.metrics.get("word_count", 0) or len((result.output or "").split())
+        word_count = result.metrics.get("word_count", 0) or len(
+            (result.output or "").split()
+        )
         if word_count > 500:
             score += 15
             criteria["sufficient_depth"] = True
@@ -320,14 +437,29 @@ class OpenDocRunner(BaseRunner):
             hints.append("Provide more detailed content")
 
         # Compliance/regulatory patterns
-        reg_kws = ["iso", "iec", "fda", "compliance", "audit", "risk", "hazard",
-                    "dhf", "dhr", "verification", "validation", "capa"]
+        reg_kws = [
+            "iso",
+            "iec",
+            "fda",
+            "compliance",
+            "audit",
+            "risk",
+            "hazard",
+            "dhf",
+            "dhr",
+            "verification",
+            "validation",
+            "capa",
+        ]
         if sum(1 for k in reg_kws if k in output_lower) >= 2:
             score += 15
             criteria["regulatory_awareness"] = True
 
         # Cross-referencing
-        if any(k in output_lower for k in ["cross-reference", "traceability", "trace matrix", "req-"]):
+        if any(
+            k in output_lower
+            for k in ["cross-reference", "traceability", "trace matrix", "req-"]
+        ):
             score += 10
             criteria["cross_references"] = True
 
@@ -336,7 +468,11 @@ class OpenDocRunner(BaseRunner):
             criteria["verification_passed"] = True
 
         return self._combined_grade(
-            exercise, result, min(score, 100.0), criteria, hints,
+            exercise,
+            result,
+            min(score, 100.0),
+            criteria,
+            hints,
             domain_context=(
                 "Grade as a senior technical writer / regulatory specialist. Check for:\n"
                 "- Document follows the relevant standard's required structure\n"

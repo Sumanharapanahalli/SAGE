@@ -47,6 +47,7 @@ def get_current_tenant() -> str:
     # Fallback: active solution name
     try:
         from src.core.project_loader import project_config
+
         return project_config.project_name or "default"
     except Exception:
         return "default"

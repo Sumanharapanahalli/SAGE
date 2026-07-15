@@ -12,6 +12,7 @@ Config (suites.load):
     n: 200
   max_p95_s: 20            # optional gate: fail if journey p95 exceeds this
 """
+
 from __future__ import annotations
 
 import time
@@ -34,13 +35,19 @@ def _get(url, timeout=30):
 def run(cfg: dict) -> dict:
     # Force IPv4 (see api.py) — 'localhost'->::1 makes urllib wait on the IPv6
     # connect, which would dominate the load timings and report fake throughput.
-    base = cfg.get("base_url", "http://localhost:8000").rstrip("/").replace("localhost", "127.0.0.1")
+    base = (
+        cfg.get("base_url", "http://localhost:8000")
+        .rstrip("/")
+        .replace("localhost", "127.0.0.1")
+    )
     users = int(cfg.get("users", 20))
     journey = cfg.get("journey", ["/health"])
     checks = []
 
     def ck(name, ok, detail=""):
-        checks.append({"name": name, "status": "PASS" if ok else "FAIL", "detail": detail})
+        checks.append(
+            {"name": name, "status": "PASS" if ok else "FAIL", "detail": detail}
+        )
 
     # N concurrent journeys
     def one_user(_i):
@@ -61,10 +68,17 @@ def run(cfg: dict) -> dict:
     ok_users = sum(1 for ok, _ in results if ok)
     all_durs = sorted(d for _, ds in results for d in ds)
     p95 = all_durs[min(len(all_durs) - 1, int(len(all_durs) * 0.95))] if all_durs else 0
-    ck(f"{users} concurrent journeys succeed", ok_users == users,
-       f"{ok_users}/{users} ok in {wall:.1f}s, p95={p95:.2f}s")
+    ck(
+        f"{users} concurrent journeys succeed",
+        ok_users == users,
+        f"{ok_users}/{users} ok in {wall:.1f}s, p95={p95:.2f}s",
+    )
     if cfg.get("max_p95_s"):
-        ck(f"journey p95 < {cfg['max_p95_s']}s", p95 <= cfg["max_p95_s"], f"p95={p95:.2f}s")
+        ck(
+            f"journey p95 < {cfg['max_p95_s']}s",
+            p95 <= cfg["max_p95_s"],
+            f"p95={p95:.2f}s",
+        )
 
     # read-throughput burst
     burst = cfg.get("burst")
@@ -76,8 +90,11 @@ def run(cfg: dict) -> dict:
             codes = list(ex.map(lambda _i: _get(url), range(n)))
         dt = time.perf_counter() - t0
         oks = sum(1 for c in codes if c == 200)
-        ck(f"read burst {n} concurrent", oks == n,
-           f"{oks}/{n} ok in {dt:.2f}s -> {n/dt:.0f} req/s")
+        ck(
+            f"read burst {n} concurrent",
+            oks == n,
+            f"{oks}/{n} ok in {dt:.2f}s -> {n / dt:.0f} req/s",
+        )
 
     passed = sum(1 for c in checks if c["status"] == "PASS")
     failed = sum(1 for c in checks if c["status"] == "FAIL")

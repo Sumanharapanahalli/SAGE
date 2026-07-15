@@ -5,11 +5,9 @@ from __future__ import annotations
 import argparse
 import json
 import logging
-import sys
 from pathlib import Path
 
 import mlflow
-import torch
 
 from word2vec.config import Word2VecConfig
 from word2vec.evaluate import AnalogyEvaluator
@@ -26,29 +24,40 @@ logger = logging.getLogger("word2vec.main")
 
 # ---------------------------------------------------------------------------
 
+
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(
         description="Train Word2Vec (skip-gram + negative sampling) from scratch."
     )
-    p.add_argument("--corpus",       type=str,  default=None,
-                   help="Path to plain-text corpus (default: NLTK Brown+Reuters)")
-    p.add_argument("--dim",          type=int,  default=100,
-                   help="Embedding dimension (default: 100)")
-    p.add_argument("--epochs",       type=int,  default=5)
-    p.add_argument("--window",       type=int,  default=5)
-    p.add_argument("--negatives",    type=int,  default=5)
-    p.add_argument("--min-count",    type=int,  default=5)
-    p.add_argument("--batch-size",   type=int,  default=512)
-    p.add_argument("--lr",           type=float, default=0.025)
-    p.add_argument("--device",       type=str,  default="auto")
-    p.add_argument("--tsne-words",   type=int,  default=200)
-    p.add_argument("--tsne-out",     type=str,  default="tsne_embeddings.png")
+    p.add_argument(
+        "--corpus",
+        type=str,
+        default=None,
+        help="Path to plain-text corpus (default: NLTK Brown+Reuters)",
+    )
+    p.add_argument(
+        "--dim", type=int, default=100, help="Embedding dimension (default: 100)"
+    )
+    p.add_argument("--epochs", type=int, default=5)
+    p.add_argument("--window", type=int, default=5)
+    p.add_argument("--negatives", type=int, default=5)
+    p.add_argument("--min-count", type=int, default=5)
+    p.add_argument("--batch-size", type=int, default=512)
+    p.add_argument("--lr", type=float, default=0.025)
+    p.add_argument("--device", type=str, default="auto")
+    p.add_argument("--tsne-words", type=int, default=200)
+    p.add_argument("--tsne-out", type=str, default="tsne_embeddings.png")
     p.add_argument("--checkpoint-dir", type=str, default="checkpoints")
-    p.add_argument("--seed",         type=int,  default=42)
-    p.add_argument("--no-tsne",      action="store_true",
-                   help="Skip t-SNE (faster for quick checks)")
-    p.add_argument("--output-json",  type=str,  default=None,
-                   help="Write final JSON report to this path")
+    p.add_argument("--seed", type=int, default=42)
+    p.add_argument(
+        "--no-tsne", action="store_true", help="Skip t-SNE (faster for quick checks)"
+    )
+    p.add_argument(
+        "--output-json",
+        type=str,
+        default=None,
+        help="Write final JSON report to this path",
+    )
     return p.parse_args()
 
 
@@ -56,19 +65,19 @@ def main() -> None:
     args = parse_args()
 
     cfg = Word2VecConfig(
-        corpus_path      = args.corpus,
-        embedding_dim    = args.dim,
-        epochs           = args.epochs,
-        window_size      = args.window,
-        num_negatives    = args.negatives,
-        min_count        = args.min_count,
-        batch_size       = args.batch_size,
-        learning_rate    = args.lr,
-        device           = args.device,
-        tsne_n_words     = args.tsne_words,
-        tsne_save_path   = args.tsne_out,
-        checkpoint_dir   = args.checkpoint_dir,
-        seed             = args.seed,
+        corpus_path=args.corpus,
+        embedding_dim=args.dim,
+        epochs=args.epochs,
+        window_size=args.window,
+        num_negatives=args.negatives,
+        min_count=args.min_count,
+        batch_size=args.batch_size,
+        learning_rate=args.lr,
+        device=args.device,
+        tsne_n_words=args.tsne_words,
+        tsne_save_path=args.tsne_out,
+        checkpoint_dir=args.checkpoint_dir,
+        seed=args.seed,
     )
 
     # ── Train ─────────────────────────────────────────────────────────────────
@@ -117,7 +126,8 @@ def main() -> None:
     # ── t-SNE ─────────────────────────────────────────────────────────────────
     if not args.no_tsne:
         plot_path = tsne_plot(
-            model, vocab,
+            model,
+            vocab,
             n_words=cfg.tsne_n_words,
             perplexity=cfg.tsne_perplexity,
             save_path=cfg.tsne_save_path,
@@ -130,30 +140,32 @@ def main() -> None:
     json_report = {
         "model_type": "word2vec_skipgram_negative_sampling",
         "metrics": {
-            "accuracy":       round(test_report.accuracy, 4)      if test_report else 0.0,
-            "f1":             round(test_report.mrr, 4)            if test_report else 0.0,
-            "top5_accuracy":  round(test_report.top5_accuracy, 4)  if test_report else 0.0,
-            "mrr":            round(test_report.mrr, 4)            if test_report else 0.0,
-            "analogy_accuracy": round(test_report.accuracy, 4)    if test_report else 0.0,
+            "accuracy": round(test_report.accuracy, 4) if test_report else 0.0,
+            "f1": round(test_report.mrr, 4) if test_report else 0.0,
+            "top5_accuracy": round(test_report.top5_accuracy, 4)
+            if test_report
+            else 0.0,
+            "mrr": round(test_report.mrr, 4) if test_report else 0.0,
+            "analogy_accuracy": round(test_report.accuracy, 4) if test_report else 0.0,
         },
         "data_checks": {
-            "leakage_risk":    False,   # subsampling/vocab fit on train tokens only
-            "class_imbalance": False,   # N/A — unsupervised; analogy splits are stratified
+            "leakage_risk": False,  # subsampling/vocab fit on train tokens only
+            "class_imbalance": False,  # N/A — unsupervised; analogy splits are stratified
         },
         "training": {
-            "vocab_size":      vocab.size,
-            "embedding_dim":   cfg.embedding_dim,
-            "epochs":          cfg.epochs,
-            "window_size":     cfg.window_size,
-            "num_negatives":   cfg.num_negatives,
+            "vocab_size": vocab.size,
+            "embedding_dim": cfg.embedding_dim,
+            "epochs": cfg.epochs,
+            "window_size": cfg.window_size,
+            "num_negatives": cfg.num_negatives,
         },
         "eval_splits": {
             split: {
-                "accuracy":      r.accuracy,
+                "accuracy": r.accuracy,
                 "top5_accuracy": r.top5_accuracy,
-                "mrr":           r.mrr,
-                "n_valid":       r.n_valid,
-                "n_total":       r.n_total,
+                "mrr": r.mrr,
+                "n_valid": r.n_valid,
+                "n_total": r.n_total,
             }
             for split, r in reports.items()
         },

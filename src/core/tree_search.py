@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class SearchNode:
     """A node in the search tree."""
+
     solution: str
     score: float
     depth: int = 0
@@ -25,7 +26,9 @@ class SearchNode:
     children: list["SearchNode"] = field(default_factory=list)
 
     def add_child(self, solution: str, score: float) -> "SearchNode":
-        child = SearchNode(solution=solution, score=score, depth=self.depth + 1, parent=self)
+        child = SearchNode(
+            solution=solution, score=score, depth=self.depth + 1, parent=self
+        )
         self.children.append(child)
         return child
 
@@ -79,8 +82,8 @@ class TreeSearchEvaluator:
             frontier.sort(key=lambda n: n.score, reverse=True)
 
             # Take top-k for expansion
-            to_expand = frontier[:self.branching_factor]
-            frontier = frontier[self.branching_factor:]
+            to_expand = frontier[: self.branching_factor]
+            frontier = frontier[self.branching_factor :]
 
             for node in to_expand:
                 if node.depth >= self.max_depth:

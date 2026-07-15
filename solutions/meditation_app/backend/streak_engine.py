@@ -4,6 +4,7 @@ A "day" is always resolved in the user's local timezone so that DST transitions
 (spring-forward / fall-back) and UTC-offset midnight boundaries are handled
 correctly.
 """
+
 from __future__ import annotations
 
 from datetime import datetime, date, timedelta

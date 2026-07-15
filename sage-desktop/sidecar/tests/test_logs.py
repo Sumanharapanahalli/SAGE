@@ -1,4 +1,5 @@
 """Tests for the Live Console (logs.tail) handler."""
+
 from __future__ import annotations
 
 import io

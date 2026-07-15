@@ -21,6 +21,7 @@ therefore has no stream at all (it only appends to an in-memory deque) and
 and obvious. The stderr ``StreamHandler`` installed by ``app._configure_logging``
 is untouched: this handler is *additive*.
 """
+
 from __future__ import annotations
 
 import logging

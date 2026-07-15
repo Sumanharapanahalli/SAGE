@@ -28,8 +28,6 @@ from __future__ import annotations
 
 import logging
 import multiprocessing
-import os
-import queue
 import sys
 from typing import Any
 
@@ -40,7 +38,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 #: Maximum RSS memory the child process may consume (bytes).  Linux only.
-_MAX_RSS_BYTES: int = 256 * 1024 * 1024   # 256 MB
+_MAX_RSS_BYTES: int = 256 * 1024 * 1024  # 256 MB
 
 #: Wall-clock seconds before the child is killed.
 _TIMEOUT_SECONDS: int = 30
@@ -53,7 +51,10 @@ _MAX_PAGES: int = 500
 # Child-process worker
 # ---------------------------------------------------------------------------
 
-def _pdf_worker(pdf_bytes: bytes, result_queue: "multiprocessing.Queue[dict[str, Any]]") -> None:
+
+def _pdf_worker(
+    pdf_bytes: bytes, result_queue: "multiprocessing.Queue[dict[str, Any]]"
+) -> None:
     """
     Runs inside an isolated child process.
     Applies an RSS memory cap on Linux, then extracts text with pypdf.
@@ -63,6 +64,7 @@ def _pdf_worker(pdf_bytes: bytes, result_queue: "multiprocessing.Queue[dict[str,
     if sys.platform.startswith("linux"):
         try:
             import resource
+
             resource.setrlimit(
                 resource.RLIMIT_AS,
                 (_MAX_RSS_BYTES, _MAX_RSS_BYTES),
@@ -82,12 +84,14 @@ def _pdf_worker(pdf_bytes: bytes, result_queue: "multiprocessing.Queue[dict[str,
             text = reader.pages[i].extract_text() or ""
             parts.append(text)
 
-        result_queue.put({
-            "ok": True,
-            "text": "\n".join(parts),
-            "page_count": len(reader.pages),
-            "pages_read": pages_to_read,
-        })
+        result_queue.put(
+            {
+                "ok": True,
+                "text": "\n".join(parts),
+                "page_count": len(reader.pages),
+                "pages_read": pages_to_read,
+            }
+        )
     except MemoryError:
         result_queue.put({"ok": False, "error": "PDF extraction exceeded memory limit"})
     except Exception as exc:
@@ -97,6 +101,7 @@ def _pdf_worker(pdf_bytes: bytes, result_queue: "multiprocessing.Queue[dict[str,
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
 
 def extract_pdf_text_safe(pdf_bytes: bytes) -> dict[str, Any]:
     """
@@ -110,7 +115,7 @@ def extract_pdf_text_safe(pdf_bytes: bytes) -> dict[str, Any]:
 
     The caller receives the result regardless of what happens inside the child.
     """
-    ctx = multiprocessing.get_context("spawn")   # spawn > fork for isolation
+    ctx = multiprocessing.get_context("spawn")  # spawn > fork for isolation
     result_queue: "multiprocessing.Queue[dict[str, Any]]" = ctx.Queue(maxsize=1)
 
     proc = ctx.Process(
@@ -124,8 +129,13 @@ def extract_pdf_text_safe(pdf_bytes: bytes) -> dict[str, Any]:
     if proc.is_alive():
         proc.kill()
         proc.join()
-        logger.warning("PDF worker timed out after %d s — document rejected", _TIMEOUT_SECONDS)
-        return {"ok": False, "error": f"PDF extraction timed out ({_TIMEOUT_SECONDS} s)"}
+        logger.warning(
+            "PDF worker timed out after %d s — document rejected", _TIMEOUT_SECONDS
+        )
+        return {
+            "ok": False,
+            "error": f"PDF extraction timed out ({_TIMEOUT_SECONDS} s)",
+        }
 
     if proc.exitcode != 0:
         logger.warning("PDF worker exited with code %d", proc.exitcode)

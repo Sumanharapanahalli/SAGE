@@ -1,23 +1,24 @@
 """
 Unit tests for src/modules/trace_id.py
 """
+
 import re
 
 import pytest
 
 pytestmark = pytest.mark.unit
 
-from src.modules.trace_id import new, is_valid
+from src.modules.trace_id import new, is_valid  # noqa: E402
 
 _UUID4_PATTERN = re.compile(
-    r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
-    re.IGNORECASE
+    r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.IGNORECASE
 )
 
 
 # ---------------------------------------------------------------------------
 # new()
 # ---------------------------------------------------------------------------
+
 
 class TestNew:
     def test_returns_string(self):
@@ -45,6 +46,7 @@ class TestNew:
 # ---------------------------------------------------------------------------
 # is_valid()
 # ---------------------------------------------------------------------------
+
 
 class TestIsValid:
     def test_valid_uuid4_returns_true(self):

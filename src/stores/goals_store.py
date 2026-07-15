@@ -82,8 +82,18 @@ class GoalsStore:
                 """INSERT INTO objectives
                    (id, user_id, solution, title, quarter, status, owner, key_results, created_at, updated_at)
                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                (obj_id, user_id, solution, title, quarter, status, owner,
-                 json.dumps(key_results), now, now),
+                (
+                    obj_id,
+                    user_id,
+                    solution,
+                    title,
+                    quarter,
+                    status,
+                    owner,
+                    json.dumps(key_results),
+                    now,
+                    now,
+                ),
             )
             conn.commit()
             return self.get(obj_id)  # type: ignore
@@ -155,9 +165,7 @@ class GoalsStore:
     def delete(self, obj_id: str) -> bool:
         conn = get_connection(self.db_path)
         try:
-            cur = conn.execute(
-                "DELETE FROM objectives WHERE id = ?", (obj_id,)
-            )
+            cur = conn.execute("DELETE FROM objectives WHERE id = ?", (obj_id,))
             conn.commit()
             return cur.rowcount > 0
         finally:

@@ -55,7 +55,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 from experiment_logger import ExperimentLogger  # noqa: E402 (path insert above)
 
 from validators import (  # noqa: E402
-    ALLOWED_ENTITY_TYPES,
     LabeledSentence,
     LabeledToken,
     RawDocument,
@@ -184,10 +183,7 @@ def _spans_to_bio(
                 if token.idx >= end:
                     in_span = False
 
-    return [
-        LabeledToken(text=tok.text, bio_tag=tag)
-        for tok, tag in zip(doc, tags)
-    ]
+    return [LabeledToken(text=tok.text, bio_tag=tag) for tok, tag in zip(doc, tags)]
 
 
 def _sentence_windows(
@@ -212,7 +208,12 @@ def _compute_metrics_from_seqeval(
     Returns empty dict if seqeval is not installed.
     """
     try:
-        from seqeval.metrics import classification_report, f1_score, precision_score, recall_score
+        from seqeval.metrics import (
+            classification_report,
+            f1_score,
+            precision_score,
+            recall_score,
+        )
 
         return {
             "entity_precision": precision_score(all_true, all_pred),
@@ -271,9 +272,7 @@ class NERDatasetPipeline:
         raw: list[dict] = []
         files = sorted(self.input_dir.glob("*.jsonl"))
         if not files:
-            raise FileNotFoundError(
-                f"No *.jsonl files found in {self.input_dir}"
-            )
+            raise FileNotFoundError(f"No *.jsonl files found in {self.input_dir}")
         for f in files:
             logger.info("Reading %s", f)
             with open(f, encoding="utf-8") as fh:
@@ -284,7 +283,9 @@ class NERDatasetPipeline:
                     try:
                         raw.append(json.loads(line))
                     except json.JSONDecodeError as exc:
-                        logger.warning("%s line %d: JSON parse error — %s", f.name, lineno, exc)
+                        logger.warning(
+                            "%s line %d: JSON parse error — %s", f.name, lineno, exc
+                        )
         return raw
 
     def _deduplicate(self, docs: list[RawDocument]) -> list[RawDocument]:
@@ -302,9 +303,7 @@ class NERDatasetPipeline:
 
     # ── Labeling ──────────────────────────────────────────────────────────────
 
-    def _label_document(
-        self, raw_doc: RawDocument
-    ) -> list[LabeledSentence]:
+    def _label_document(self, raw_doc: RawDocument) -> list[LabeledSentence]:
         """Tokenize text and convert spans to BIO-tagged sentences."""
         spacy_doc = self.nlp(raw_doc.text)
         entities_dicts = [e.model_dump() for e in raw_doc.entities]
@@ -361,7 +360,9 @@ class NERDatasetPipeline:
 
             logger.info(
                 "  bucket=%-8s  total=%4d  train=%4d  val=%4d  test=%4d",
-                bucket_name, n, len(bucket_sents[:n_train]),
+                bucket_name,
+                n,
+                len(bucket_sents[:n_train]),
                 len(bucket_sents[n_train : n_train + n_val]),
                 len(bucket_sents[n_train + n_val :]),
             )
@@ -385,9 +386,7 @@ class NERDatasetPipeline:
             lines.append("")  # blank line = sentence boundary
         return "\n".join(lines)
 
-    def _write_splits(
-        self, splits: dict[str, list[LabeledSentence]]
-    ) -> dict[str, str]:
+    def _write_splits(self, splits: dict[str, list[LabeledSentence]]) -> dict[str, str]:
         """Write CoNLL files; return dict of split_name → sha256 checksum."""
         checksums: dict[str, str] = {}
         for split_name, sents in splits.items():
@@ -443,9 +442,7 @@ class NERDatasetPipeline:
         Returns True if O-token ratio is so high (>95%) that training may
         be dominated by the O class.  Logs a warning but does not abort.
         """
-        n_o = sum(
-            1 for s in sentences for t in s.tokens if t.bio_tag == "O"
-        )
+        n_o = sum(1 for s in sentences for t in s.tokens if t.bio_tag == "O")
         n_total = sum(len(s.tokens) for s in sentences)
         if n_total == 0:
             return False
@@ -538,7 +535,10 @@ class NERDatasetPipeline:
                 "class_imbalance_flag": float(class_imbalance),
             }
             metrics.update(
-                {f"entity_{k.lower()}_count": float(v) for k, v in self.stats.entity_counts.items()}
+                {
+                    f"entity_{k.lower()}_count": float(v)
+                    for k, v in self.stats.entity_counts.items()
+                }
             )
             self._exp.log_metrics(run_id, metrics)
             self._exp.end_run(run_id, status="completed")

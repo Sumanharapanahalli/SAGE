@@ -4,6 +4,7 @@ The audit handler reads the compliance_audit_log SQLite table directly
 via raw SQL (no ORM) to keep the handler fast and independent of any
 AuditLogger instance configuration.
 """
+
 from __future__ import annotations
 
 import pytest
@@ -34,6 +35,7 @@ def _seed(logger, n=5, action_type="PROPOSAL", trace_prefix="t"):
 
 
 # ---------- list ----------
+
 
 def test_list_returns_empty_when_no_events(logger):
     out = audit.list_events({"limit": 50, "offset": 0})
@@ -90,20 +92,27 @@ def test_list_returns_parsed_metadata_json(logger):
 
 # ---------- get_by_trace ----------
 
+
 def test_get_by_trace_returns_all_events_for_one_trace(logger):
     logger.log_event(
-        actor="AI_Agent", action_type="PROPOSAL",
-        input_context="i", output_content="o",
+        actor="AI_Agent",
+        action_type="PROPOSAL",
+        input_context="i",
+        output_content="o",
         metadata={"trace_id": "shared"},
     )
     logger.log_event(
-        actor="Human_Engineer", action_type="APPROVAL",
-        input_context="i", output_content="o",
+        actor="Human_Engineer",
+        action_type="APPROVAL",
+        input_context="i",
+        output_content="o",
         metadata={"trace_id": "shared"},
     )
     logger.log_event(
-        actor="AI_Agent", action_type="PROPOSAL",
-        input_context="i", output_content="o",
+        actor="AI_Agent",
+        action_type="PROPOSAL",
+        input_context="i",
+        output_content="o",
         metadata={"trace_id": "other"},
     )
 
@@ -119,11 +128,13 @@ def test_get_by_trace_returns_empty_for_unknown_trace(logger):
 
 def test_get_by_trace_requires_trace_id(logger):
     from rpc import RpcError
+
     with pytest.raises(RpcError):
         audit.get_by_trace({})
 
 
 # ---------- stats ----------
+
 
 def test_stats_returns_counts_by_action_type(logger):
     _seed(logger, n=3, action_type="PROPOSAL", trace_prefix="p")

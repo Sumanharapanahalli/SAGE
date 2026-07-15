@@ -61,7 +61,6 @@ def generate_model_card(
             "framework": "transformers (HuggingFace)",
             "license": "Apache 2.0",
         },
-
         "intended_use": {
             "primary_uses": [
                 "Detecting toxic language in user-generated text",
@@ -76,7 +75,6 @@ def generate_model_card(
             ],
             "users": ["Platform trust & safety teams", "Researchers", "NLP engineers"],
         },
-
         "training_data": {
             "dataset": cfg["data"]["dataset_name"],
             "description": (
@@ -89,7 +87,6 @@ def generate_model_card(
             "preprocessing": "Tokenization with pre-trained DistilBERT tokenizer (vocab fixed, not re-fitted)",
             "class_balance_note": "Dataset is imbalanced (~10% toxic). Stratification used to preserve ratio.",
         },
-
         "training_config": {
             "epochs": cfg["training"]["epochs"],
             "batch_size": cfg["training"]["batch_size"],
@@ -101,7 +98,6 @@ def generate_model_card(
             "seed": cfg["training"]["seed"],
             "reproducibility": "Fixed seed via transformers.set_seed + torch.manual_seed",
         },
-
         "evaluation_metrics": {
             "test_set": {
                 "accuracy": test_metrics.get("accuracy"),
@@ -118,13 +114,20 @@ def generate_model_card(
                 "carry different costs in moderation contexts."
             ),
         },
-
         "bias_and_fairness": {
             "evaluation_performed": bias_report is not None,
-            "identity_groups_evaluated": bias_report.get("identity_columns_evaluated", []) if bias_report else [],
+            "identity_groups_evaluated": bias_report.get(
+                "identity_columns_evaluated", []
+            )
+            if bias_report
+            else [],
             "fairness_metric": "F1 gap vs. overall baseline",
-            "fairness_threshold": bias_report.get("fairness_threshold") if bias_report else None,
-            "passed_fairness_check": bias_report.get("passed_fairness") if bias_report else None,
+            "fairness_threshold": bias_report.get("fairness_threshold")
+            if bias_report
+            else None,
+            "passed_fairness_check": bias_report.get("passed_fairness")
+            if bias_report
+            else None,
             "violations": fairness_violations,
             "overall_bias_metrics": {
                 "accuracy": overall_bias.get("accuracy"),
@@ -138,14 +141,13 @@ def generate_model_card(
                 "(2) adversarial debiasing, or (3) dataset augmentation for under-represented groups."
             ),
         },
-
         "inference_performance": {
             "sla_ms": cfg["inference"]["sla_ms"],
             "latency_benchmark": (
                 {
-                    "mean_ms":   latency_report.get("mean_ms"),
-                    "p95_ms":    latency_report.get("p95_ms"),
-                    "p99_ms":    latency_report.get("p99_ms"),
+                    "mean_ms": latency_report.get("mean_ms"),
+                    "p95_ms": latency_report.get("p95_ms"),
+                    "p99_ms": latency_report.get("p99_ms"),
                     "sla_passed": latency_report.get("sla_passed"),
                 }
                 if latency_report
@@ -154,7 +156,6 @@ def generate_model_card(
             "hardware": "CPU (optimized) / GPU (if available)",
             "optimization_notes": "Consider ONNX export or torch.quantization for production latency reduction.",
         },
-
         "limitations": [
             "English-only: accuracy degrades on non-English or code-switched text.",
             "Domain shift: trained on Wikipedia talk pages; performance may vary on social media, gaming chat, etc.",
@@ -162,7 +163,6 @@ def generate_model_card(
             "Class imbalance: model may under-detect rare toxic categories.",
             "Temporal drift: new slang or evolving toxic language patterns require periodic retraining.",
         ],
-
         "ethical_considerations": [
             "Model may perpetuate biases present in training data annotations.",
             "False positives can suppress legitimate speech, especially for marginalized communities.",
@@ -170,7 +170,6 @@ def generate_model_card(
             "Identity mentions (e.g., 'I am Black') can spuriously increase toxicity scores — investigate with bias report.",
             "Deployment should include a human-in-the-loop for ambiguous cases.",
         ],
-
         "recommendations": [
             "Run evaluate_bias.py after each retrain and review violation list before deployment.",
             "Monitor production prediction distribution; alert on drift (mean toxic_probability shift > 5%).",
@@ -178,18 +177,16 @@ def generate_model_card(
             "Retrain quarterly or on significant vocabulary drift events.",
             "Log all predictions with trace_ids for audit trail and feedback loop.",
         ],
-
         "experiment_tracking": {
             "platform": "MLflow",
             "tracking_uri": cfg["paths"]["mlflow_tracking_uri"],
             "experiment": "toxicity_detection_baseline",
         },
-
         "how_to_use": {
             "inference": "python inference.py --model_dir artifacts/toxicity_model --text 'your text here'",
             "benchmark": "python inference.py --model_dir artifacts/toxicity_model --benchmark",
             "bias_eval": "python evaluate_bias.py --model_dir artifacts/toxicity_model",
-            "retrain":   "python train_toxicity_model.py --config config.yaml",
+            "retrain": "python train_toxicity_model.py --config config.yaml",
         },
     }
 
@@ -198,24 +195,28 @@ def generate_model_card(
 
 def main():
     parser = argparse.ArgumentParser(description="Generate model card YAML")
-    parser.add_argument("--config",          default="config.yaml")
-    parser.add_argument("--eval_results",    default="artifacts/toxicity_model/evaluation_results.json")
-    parser.add_argument("--bias_report",     default="artifacts/bias_report.json")
-    parser.add_argument("--latency_report",  default="artifacts/latency_report.json")
-    parser.add_argument("--output",          default="model_card.yaml")
+    parser.add_argument("--config", default="config.yaml")
+    parser.add_argument(
+        "--eval_results", default="artifacts/toxicity_model/evaluation_results.json"
+    )
+    parser.add_argument("--bias_report", default="artifacts/bias_report.json")
+    parser.add_argument("--latency_report", default="artifacts/latency_report.json")
+    parser.add_argument("--output", default="model_card.yaml")
     args = parser.parse_args()
 
     with open(args.config) as fh:
         cfg = yaml.safe_load(fh)
 
-    eval_results    = _load_json(args.eval_results)
-    bias_report     = _load_json(args.bias_report)
-    latency_report  = _load_json(args.latency_report)
+    eval_results = _load_json(args.eval_results)
+    bias_report = _load_json(args.bias_report)
+    latency_report = _load_json(args.latency_report)
 
     card = generate_model_card(cfg, eval_results, bias_report, latency_report)
 
     with open(args.output, "w") as fh:
-        yaml.dump(card, fh, default_flow_style=False, sort_keys=False, allow_unicode=True)
+        yaml.dump(
+            card, fh, default_flow_style=False, sort_keys=False, allow_unicode=True
+        )
 
     logger.info("Model card written to %s", args.output)
     print(f"Model card saved: {args.output}")

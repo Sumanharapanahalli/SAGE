@@ -22,19 +22,15 @@ import json
 import logging
 import os
 import random
-import time
 from pathlib import Path
 
 import mlflow
 import numpy as np
 import torch
 import yaml
-from torch.utils.data import DataLoader
 from transformers import (
-    AdamW,
     TrOCRProcessor,
     VisionEncoderDecoderModel,
-    get_linear_schedule_with_warmup,
     EarlyStoppingCallback,
     Seq2SeqTrainer,
     Seq2SeqTrainingArguments,
@@ -61,6 +57,7 @@ logger = logging.getLogger(__name__)
 
 # ── Reproducibility ───────────────────────────────────────────────────────────
 
+
 def set_seed(seed: int) -> None:
     random.seed(seed)
     np.random.seed(seed)
@@ -76,6 +73,7 @@ def set_seed(seed: int) -> None:
 
 # ── Config loader ─────────────────────────────────────────────────────────────
 
+
 def load_config(path: str) -> dict:
     with open(path) as f:
         cfg = yaml.safe_load(f)
@@ -85,12 +83,15 @@ def load_config(path: str) -> dict:
 
 # ── HuggingFace Trainer metric wrapper ───────────────────────────────────────
 
+
 def make_compute_metrics(processor: TrOCRProcessor):
     """Returns a compute_metrics fn compatible with Seq2SeqTrainer."""
 
     def compute_metrics(eval_pred):
         logits, labels = eval_pred
-        pred_ids = np.argmax(logits[0], axis=-1) if isinstance(logits, tuple) else logits
+        pred_ids = (
+            np.argmax(logits[0], axis=-1) if isinstance(logits, tuple) else logits
+        )
         # Decode predictions
         pred_str = processor.batch_decode(pred_ids, skip_special_tokens=True)
         # Replace -100 (padding) in labels before decoding
@@ -103,6 +104,7 @@ def make_compute_metrics(processor: TrOCRProcessor):
 
 
 # ── Main training entry point ─────────────────────────────────────────────────
+
 
 def train(cfg: dict) -> dict:
     seed = cfg["experiment"]["seed"]
@@ -130,19 +132,25 @@ def train(cfg: dict) -> dict:
     processor = TrOCRProcessor.from_pretrained(checkpoint)
 
     # ── 4. Build datasets (augmentation is train-only) ───────────────────────
-    train_aug = build_train_transform(cfg["data"]) if cfg["data"]["augmentation"]["enabled"] else None
-    eval_aug = build_eval_transform()   # always None
+    train_aug = (
+        build_train_transform(cfg["data"])
+        if cfg["data"]["augmentation"]["enabled"]
+        else None
+    )
+    eval_aug = build_eval_transform()  # always None
 
     raw_dir = cfg["data"]["raw_dir"]
     max_len = cfg["model"]["max_target_length"]
 
     train_dataset = InvoiceOCRDataset(train_df, raw_dir, processor, train_aug, max_len)
-    val_dataset   = InvoiceOCRDataset(val_df,   raw_dir, processor, eval_aug,  max_len)
-    test_dataset  = InvoiceOCRDataset(test_df,  raw_dir, processor, eval_aug,  max_len)
+    val_dataset = InvoiceOCRDataset(val_df, raw_dir, processor, eval_aug, max_len)
+    test_dataset = InvoiceOCRDataset(test_df, raw_dir, processor, eval_aug, max_len)
 
     logger.info(
         "Dataset sizes — train: %d | val: %d | test: %d",
-        len(train_dataset), len(val_dataset), len(test_dataset),
+        len(train_dataset),
+        len(val_dataset),
+        len(test_dataset),
     )
 
     # ── 5. Model ──────────────────────────────────────────────────────────────
@@ -181,7 +189,7 @@ def train(cfg: dict) -> dict:
         generation_max_length=max_len,
         seed=seed,
         data_seed=seed,
-        report_to=[],   # disable HF default reporters; we use MLflow directly
+        report_to=[],  # disable HF default reporters; we use MLflow directly
         logging_steps=50,
     )
 
@@ -191,20 +199,22 @@ def train(cfg: dict) -> dict:
 
     with mlflow.start_run(tags=cfg["experiment"]["run_tags"]) as run:
         # Log all config params flat
-        mlflow.log_params({
-            "base_checkpoint": checkpoint,
-            "train_samples": len(train_df),
-            "val_samples": len(val_df),
-            "test_samples": len(test_df),
-            "seed": seed,
-            "train_fingerprint": train_fingerprint,
-            "class_imbalance_detected": imbalance,
-            "num_epochs": tr["num_epochs"],
-            "learning_rate": tr["learning_rate"],
-            "batch_size": tr["per_device_train_batch_size"],
-            "max_target_length": max_len,
-            "beam_size": cfg["model"]["beam_size"],
-        })
+        mlflow.log_params(
+            {
+                "base_checkpoint": checkpoint,
+                "train_samples": len(train_df),
+                "val_samples": len(val_df),
+                "test_samples": len(test_df),
+                "seed": seed,
+                "train_fingerprint": train_fingerprint,
+                "class_imbalance_detected": imbalance,
+                "num_epochs": tr["num_epochs"],
+                "learning_rate": tr["learning_rate"],
+                "batch_size": tr["per_device_train_batch_size"],
+                "max_target_length": max_len,
+                "beam_size": cfg["model"]["beam_size"],
+            }
+        )
 
         trainer = Seq2SeqTrainer(
             model=model,
@@ -224,10 +234,14 @@ def train(cfg: dict) -> dict:
         # ── 8. Train ──────────────────────────────────────────────────────────
         logger.info("Starting training …")
         train_result = trainer.train()
-        mlflow.log_metrics({
-            "train_runtime_s": train_result.metrics["train_runtime"],
-            "train_samples_per_sec": train_result.metrics["train_samples_per_second"],
-        })
+        mlflow.log_metrics(
+            {
+                "train_runtime_s": train_result.metrics["train_runtime"],
+                "train_samples_per_sec": train_result.metrics[
+                    "train_samples_per_second"
+                ],
+            }
+        )
 
         # ── 9. Evaluate on held-out test set ──────────────────────────────────
         logger.info("Evaluating on test set …")
@@ -250,7 +264,8 @@ def train(cfg: dict) -> dict:
         if test_metrics["cer"] > ev["cer_threshold"]:
             logger.warning(
                 "CER %.4f exceeds threshold %.4f — model may not be production-ready",
-                test_metrics["cer"], ev["cer_threshold"],
+                test_metrics["cer"],
+                ev["cer_threshold"],
             )
 
         # ── 11. Save model + processor ────────────────────────────────────────
@@ -284,6 +299,7 @@ def train(cfg: dict) -> dict:
 
 
 # ── CLI ───────────────────────────────────────────────────────────────────────
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Train TrOCR on invoice/receipt data")

@@ -13,14 +13,12 @@ Usage:
             result = sb.exec(["python", "task_runner.py"])
 """
 
-import json
 import logging
 import os
 import shutil
 import subprocess
 import tempfile
 import threading
-import uuid
 from contextlib import contextmanager
 from typing import Optional
 
@@ -40,8 +38,11 @@ class SandboxHandle:
     def exec(self, command: list, timeout: int = 300) -> subprocess.CompletedProcess:
         """Run a command inside this sandbox via SSH."""
         ssh_cmd = [
-            "ssh", "-F", self._ssh_config,
-            "-o", "StrictHostKeyChecking=no",
+            "ssh",
+            "-F",
+            self._ssh_config,
+            "-o",
+            "StrictHostKeyChecking=no",
             "sandbox",
             "--",
         ] + command
@@ -88,7 +89,9 @@ class OpenShellRunner:
         try:
             result = subprocess.run(
                 [self._openshell_path, "version"],
-                capture_output=True, text=True, timeout=10,
+                capture_output=True,
+                text=True,
+                timeout=10,
             )
             version = result.stdout.strip() or result.stderr.strip()
         except Exception as exc:
@@ -119,27 +122,38 @@ class OpenShellRunner:
         If OpenShell is unavailable, yields None (caller must handle).
         """
         if not self._available:
-            self.logger.warning("OpenShell unavailable — yielding None sandbox for %s", name)
+            self.logger.warning(
+                "OpenShell unavailable — yielding None sandbox for %s", name
+            )
             yield None
             return
 
         # Sanitise sandbox name (alphanumeric + dashes only)
-        safe_name = "sage-" + "".join(c if c.isalnum() or c == "-" else "-" for c in name)[:32]
+        safe_name = (
+            "sage-" + "".join(c if c.isalnum() or c == "-" else "-" for c in name)[:32]
+        )
         policy_file = None
         ssh_config_file = None
 
         try:
             # 1. Create sandbox (--keep keeps it alive after initial command)
             create_cmd = [
-                self._openshell_path, "sandbox", "create",
-                "--name", safe_name,
+                self._openshell_path,
+                "sandbox",
+                "create",
+                "--name",
+                safe_name,
                 "--keep",
                 "--no-auto-providers",
                 "--no-tty",
-                "--", "echo", "sage-sandbox-ready",
+                "--",
+                "echo",
+                "sage-sandbox-ready",
             ]
             self.logger.info("Creating sandbox: %s", safe_name)
-            result = subprocess.run(create_cmd, capture_output=True, text=True, timeout=60)
+            result = subprocess.run(
+                create_cmd, capture_output=True, text=True, timeout=60
+            )
             if result.returncode != 0:
                 raise RuntimeError(f"Sandbox create failed: {result.stderr}")
 
@@ -154,12 +168,23 @@ class OpenShellRunner:
 
                 self.logger.info("Applying policy to sandbox: %s", safe_name)
                 policy_result = subprocess.run(
-                    [self._openshell_path, "policy", "set", safe_name,
-                     "--policy", policy_file, "--wait"],
-                    capture_output=True, text=True, timeout=30,
+                    [
+                        self._openshell_path,
+                        "policy",
+                        "set",
+                        safe_name,
+                        "--policy",
+                        policy_file,
+                        "--wait",
+                    ],
+                    capture_output=True,
+                    text=True,
+                    timeout=30,
                 )
                 if policy_result.returncode != 0:
-                    self.logger.warning("Policy apply failed (non-fatal): %s", policy_result.stderr)
+                    self.logger.warning(
+                        "Policy apply failed (non-fatal): %s", policy_result.stderr
+                    )
 
             # 3. Get SSH config
             with tempfile.NamedTemporaryFile(
@@ -169,7 +194,9 @@ class OpenShellRunner:
 
             ssh_config_result = subprocess.run(
                 [self._openshell_path, "sandbox", "ssh-config", safe_name],
-                capture_output=True, text=True, timeout=15,
+                capture_output=True,
+                text=True,
+                timeout=15,
             )
             if ssh_config_result.returncode != 0:
                 raise RuntimeError(f"SSH config failed: {ssh_config_result.stderr}")
@@ -193,7 +220,8 @@ class OpenShellRunner:
             try:
                 subprocess.run(
                     [self._openshell_path, "sandbox", "delete", safe_name],
-                    capture_output=True, timeout=30,
+                    capture_output=True,
+                    timeout=30,
                 )
                 self.logger.info("Sandbox deleted: %s", safe_name)
             except Exception as _del_exc:

@@ -10,6 +10,7 @@ router = APIRouter(tags=["critic"])
 
 # ── Request Models ────────────────────────────────────────────────────
 
+
 class PromptUpdateRequest(BaseModel):
     key: str
     prompt: str
@@ -31,10 +32,12 @@ class HumanReviewSubmission(BaseModel):
 
 # ── Prompt Management ─────────────────────────────────────────────────
 
+
 @router.get("/critic/prompts")
 async def get_critic_prompts():
     """Get all critic system prompts (defaults + custom overrides)."""
     from src.agents.critic import critic_agent
+
     return {"prompts": critic_agent.get_all_prompts()}
 
 
@@ -42,6 +45,7 @@ async def get_critic_prompts():
 async def update_critic_prompt(req: PromptUpdateRequest):
     """Update a critic system prompt. Persists to config/critic_prompts.json."""
     from src.agents.critic import critic_agent
+
     prompts = critic_agent.update_prompt(req.key, req.prompt)
     return {"status": "updated", "key": req.key, "prompts": prompts}
 
@@ -50,16 +54,19 @@ async def update_critic_prompt(req: PromptUpdateRequest):
 async def delete_critic_prompt(key: str):
     """Remove a custom prompt override (reverts to default)."""
     from src.agents.critic import critic_agent
+
     prompts = critic_agent.delete_prompt(key)
     return {"status": "deleted", "key": key, "prompts": prompts}
 
 
 # ── Human Expert Reviews ──────────────────────────────────────────────
 
+
 @router.post("/critic/human/request")
 async def request_human_review(req: HumanReviewRequest):
     """Queue an artifact for human expert review."""
     from src.agents.critic import critic_agent
+
     result = critic_agent.request_human_review(
         review_type=req.review_type,
         artifact=req.artifact,
@@ -73,6 +80,7 @@ async def request_human_review(req: HumanReviewRequest):
 async def submit_human_review(review_id: str, req: HumanReviewSubmission):
     """Submit a human expert review for a pending request."""
     from src.agents.critic import critic_agent
+
     result = critic_agent.submit_human_review(
         review_id=review_id,
         score=req.score,
@@ -87,6 +95,7 @@ async def submit_human_review(review_id: str, req: HumanReviewSubmission):
 async def list_pending_human_reviews():
     """List all pending human expert reviews awaiting submission."""
     from src.agents.critic import critic_agent
+
     return {"pending": critic_agent.get_pending_human_reviews()}
 
 
@@ -94,6 +103,7 @@ async def list_pending_human_reviews():
 async def get_human_review(review_id: str):
     """Get a completed human review by ID."""
     from src.agents.critic import critic_agent
+
     review = critic_agent.get_human_review(review_id)
     if review:
         return review

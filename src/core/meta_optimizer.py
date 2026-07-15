@@ -33,7 +33,7 @@ import statistics
 import threading
 import time
 import uuid
-from typing import Any, Optional
+from typing import Optional
 
 logger = logging.getLogger("MetaOptimizer")
 
@@ -102,11 +102,14 @@ class MetaOptimizer:
                 "exercise_id": session.get("exercise_id", ""),
                 "difficulty": session.get("difficulty", ""),
                 "score": session.get("grade", {}).get("score", 0)
-                    if isinstance(session.get("grade"), dict) else 0,
+                if isinstance(session.get("grade"), dict)
+                else 0,
                 "passed": session.get("grade", {}).get("passed", False)
-                    if isinstance(session.get("grade"), dict) else False,
+                if isinstance(session.get("grade"), dict)
+                else False,
                 "output": session.get("attempt_result", {}).get("output", "")
-                    if isinstance(session.get("attempt_result"), dict) else "",
+                if isinstance(session.get("attempt_result"), dict)
+                else "",
                 "reflection": session.get("reflection", ""),
                 "improvement_plan": session.get("improvement_plan", []),
                 "critic_scores": {
@@ -120,9 +123,7 @@ class MetaOptimizer:
 
     # ── Harness Proposal Generation ─────────────────────────────────────
 
-    def propose_improvement(
-        self, traces: list[dict], runner_name: str = ""
-    ) -> dict:
+    def propose_improvement(self, traces: list[dict], runner_name: str = "") -> dict:
         """
         Use LLM to analyze execution traces and propose harness improvements.
 
@@ -177,7 +178,8 @@ class MetaOptimizer:
             # Parse JSON from response
             cleaned = response.replace("```json", "").replace("```", "").strip()
             import re
-            match = re.search(r'\{[\s\S]*\}', cleaned)
+
+            match = re.search(r"\{[\s\S]*\}", cleaned)
             if match:
                 parsed = json.loads(match.group(0))
                 # Ensure proposal_id
@@ -230,9 +232,7 @@ class MetaOptimizer:
             "details": sessions,
         }
 
-    def _run_evaluation_sessions(
-        self, proposal: dict, runner_name: str
-    ) -> list[dict]:
+    def _run_evaluation_sessions(self, proposal: dict, runner_name: str) -> list[dict]:
         """
         Run Agent Gym sessions with the proposed harness changes.
 
@@ -240,10 +240,12 @@ class MetaOptimizer:
         """
         try:
             from src.core.agent_gym import AgentGym
+
             gym = AgentGym()
 
             # Get runner's roles
             from src.integrations.base_runner import get_runner_by_name
+
             runner = get_runner_by_name(runner_name)
             if not runner or not runner.roles:
                 return []
@@ -251,11 +253,17 @@ class MetaOptimizer:
             role = runner.roles[0]
             session = gym.train(role=role, difficulty="intermediate")
             if session:
-                return [{
-                    "score": session.grade.get("score", 0) if isinstance(session.grade, dict) else 0,
-                    "passed": session.grade.get("passed", False) if isinstance(session.grade, dict) else False,
-                    "exercise_id": session.exercise_id,
-                }]
+                return [
+                    {
+                        "score": session.grade.get("score", 0)
+                        if isinstance(session.grade, dict)
+                        else 0,
+                        "passed": session.grade.get("passed", False)
+                        if isinstance(session.grade, dict)
+                        else False,
+                        "exercise_id": session.exercise_id,
+                    }
+                ]
             return []
         except Exception as exc:
             logger.debug("Evaluation session failed: %s", exc)
@@ -323,9 +331,7 @@ class MetaOptimizer:
                     ),
                 )
 
-    def get_history(
-        self, runner_name: str = "", limit: int = 50
-    ) -> list[dict]:
+    def get_history(self, runner_name: str = "", limit: int = 50) -> list[dict]:
         """Get iteration history, optionally filtered by runner."""
         with sqlite3.connect(self._db_path) as conn:
             conn.row_factory = sqlite3.Row
@@ -377,7 +383,7 @@ class MetaOptimizer:
 
         recent_scores = [
             h.get("evaluation", {}).get("score", 0)
-            for h in history[:self.MIN_CONVERGENCE_ITERATIONS + 2]
+            for h in history[: self.MIN_CONVERGENCE_ITERATIONS + 2]
         ]
 
         if len(recent_scores) < self.MIN_CONVERGENCE_ITERATIONS:
@@ -405,10 +411,7 @@ class MetaOptimizer:
                 "improvement_rate": 0.0,
             }
 
-        scores = [
-            h.get("evaluation", {}).get("score", 0)
-            for h in history
-        ]
+        scores = [h.get("evaluation", {}).get("score", 0) for h in history]
         accepted = sum(1 for h in history if h.get("accepted"))
 
         # Calculate trend
@@ -431,7 +434,9 @@ class MetaOptimizer:
             "best_score": max(scores) if scores else 0,
             "latest_score": scores[0] if scores else 0,
             "trend": trend,
-            "improvement_rate": round(accepted / len(history) * 100, 1) if history else 0.0,
+            "improvement_rate": round(accepted / len(history) * 100, 1)
+            if history
+            else 0.0,
             "converged": self.check_convergence(runner_name),
         }
 
@@ -442,7 +447,7 @@ class MetaOptimizer:
         parts = []
         for i, trace in enumerate(traces[:10]):  # Limit to 10 most recent
             parts.append(
-                f"### Session {i+1}: {trace.get('exercise_id', 'unknown')}\n"
+                f"### Session {i + 1}: {trace.get('exercise_id', 'unknown')}\n"
                 f"- Role: {trace.get('role', '')}\n"
                 f"- Score: {trace.get('score', 0)}/100 "
                 f"({'PASS' if trace.get('passed') else 'FAIL'})\n"
@@ -467,12 +472,10 @@ class MetaOptimizer:
         """Get recent Agent Gym sessions for a runner."""
         try:
             from src.core.agent_gym import AgentGym
+
             gym = AgentGym()
             history = gym.get_history(limit=20)
-            return [
-                s for s in history
-                if s.get("runner_name") == runner_name
-            ]
+            return [s for s in history if s.get("runner_name") == runner_name]
         except Exception:
             return []
 

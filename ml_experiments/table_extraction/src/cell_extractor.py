@@ -74,7 +74,7 @@ class CellExtractor:
         Totals rows are tagged with ``_is_total: true``.
         """
         result: list[dict[str, Any]] = []
-        n_cols = len(column_labels)
+        len(column_labels)
 
         for row in raw_rows:
             record: dict[str, Any] = {}
@@ -120,7 +120,11 @@ class CellExtractor:
         for r_idx in range(grid.n_rows):
             record: dict[str, Any] = {}
             for c_idx in range(grid.n_cols):
-                label = column_labels[c_idx] if c_idx < len(column_labels) else f"col_{c_idx}"
+                label = (
+                    column_labels[c_idx]
+                    if c_idx < len(column_labels)
+                    else f"col_{c_idx}"
+                )
                 key = label if label else f"col_{c_idx}"
                 record[key] = matrix.get((r_idx, c_idx))  # None if cell missing
 
@@ -178,8 +182,11 @@ class CellExtractor:
     def _pytesseract_crop(self, crop: Image.Image) -> str | None:
         try:
             import pytesseract
+
             text = pytesseract.image_to_string(
-                crop, lang=self.ocr_lang, config="--psm 7"  # single text line
+                crop,
+                lang=self.ocr_lang,
+                config="--psm 7",  # single text line
             )
             return self._clean(text)
         except Exception:
@@ -197,7 +204,8 @@ class CellExtractor:
             arr = np.array(crop)
             results = self._easyocr_reader.readtext(arr)
             texts = [
-                r[1] for r in results
+                r[1]
+                for r in results
                 if len(r) > 2 and r[2] >= self.confidence_threshold
             ]
             return self._clean(" ".join(texts)) if texts else None

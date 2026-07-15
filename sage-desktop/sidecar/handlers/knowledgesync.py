@@ -18,6 +18,7 @@ importer at their own files is the operator's own action (same rationale as
 knowledge.add / yaml.write), so it executes immediately. Agent-proposed
 knowledge mutations continue to flow through the proposal queue unchanged.
 """
+
 from __future__ import annotations
 
 import logging
@@ -147,6 +148,7 @@ def _audit(root: str, result: dict) -> None:
 
 
 # ── RPC methods ────────────────────────────────────────────────────────────
+
 
 def sync(params: Any) -> dict:
     if params is None:

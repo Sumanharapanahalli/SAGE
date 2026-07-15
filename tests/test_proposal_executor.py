@@ -27,6 +27,7 @@ from src.core.proposal_store import get_proposal_store, RiskClass
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _make_llm_switch_proposal(payload: dict):
     """Create a pending llm_switch proposal in a fresh store."""
     store = get_proposal_store()
@@ -56,8 +57,8 @@ def _run(coro):
 # Payload forwarding
 # ---------------------------------------------------------------------------
 
-class TestExecuteLLMSwitch:
 
+class TestExecuteLLMSwitch:
     def test_claude_path_forwarded_to_provider(self):
         """
         Regression: claude_path in payload must reach ClaudeCodeCLIProvider.
@@ -65,12 +66,14 @@ class TestExecuteLLMSwitch:
              custom path was silently ignored and auto-detection ran instead.
         """
         custom_path = r"C:\Users\test\.local\bin\claude.exe"
-        proposal = _make_llm_switch_proposal({
-            "provider":        "claude-code",
-            "model":           "claude-sonnet-4-6",
-            "claude_path":     custom_path,
-            "save_as_default": False,
-        })
+        proposal = _make_llm_switch_proposal(
+            {
+                "provider": "claude-code",
+                "model": "claude-sonnet-4-6",
+                "claude_path": custom_path,
+                "save_as_default": False,
+            }
+        )
 
         captured = {}
 
@@ -80,6 +83,7 @@ class TestExecuteLLMSwitch:
 
         with patch(_CC, side_effect=fake_cc), patch(_GW, return_value=MagicMock()):
             from src.core.proposal_executor import _execute_llm_switch
+
             _run(_execute_llm_switch(proposal))
 
         assert captured.get("claude_path") == custom_path, (
@@ -88,63 +92,96 @@ class TestExecuteLLMSwitch:
 
     def test_model_forwarded_to_claude_code_provider(self):
         """req_model must be written into llm_cfg['claude_model']."""
-        proposal = _make_llm_switch_proposal({
-            "provider": "claude-code", "model": "claude-opus-4-6",
-            "claude_path": None, "save_as_default": False,
-        })
+        proposal = _make_llm_switch_proposal(
+            {
+                "provider": "claude-code",
+                "model": "claude-opus-4-6",
+                "claude_path": None,
+                "save_as_default": False,
+            }
+        )
         captured = {}
-        with patch(_CC, side_effect=lambda cfg: (captured.update(cfg), MagicMock())[1]), \
-             patch(_GW, return_value=MagicMock()):
+        with (
+            patch(_CC, side_effect=lambda cfg: (captured.update(cfg), MagicMock())[1]),
+            patch(_GW, return_value=MagicMock()),
+        ):
             from src.core.proposal_executor import _execute_llm_switch
+
             _run(_execute_llm_switch(proposal))
         assert captured.get("claude_model") == "claude-opus-4-6"
 
     def test_no_claude_path_key_when_payload_is_none(self):
         """claude_path must NOT appear in cfg when payload value is None —
         auto-detection inside ClaudeCodeCLIProvider must run instead."""
-        proposal = _make_llm_switch_proposal({
-            "provider": "claude-code", "model": "claude-sonnet-4-6",
-            "claude_path": None, "save_as_default": False,
-        })
+        proposal = _make_llm_switch_proposal(
+            {
+                "provider": "claude-code",
+                "model": "claude-sonnet-4-6",
+                "claude_path": None,
+                "save_as_default": False,
+            }
+        )
         captured = {}
-        with patch(_CC, side_effect=lambda cfg: (captured.update(cfg), MagicMock())[1]), \
-             patch(_GW, return_value=MagicMock()):
+        with (
+            patch(_CC, side_effect=lambda cfg: (captured.update(cfg), MagicMock())[1]),
+            patch(_GW, return_value=MagicMock()),
+        ):
             from src.core.proposal_executor import _execute_llm_switch
+
             _run(_execute_llm_switch(proposal))
         assert "claude_path" not in captured
 
     def test_gemini_model_forwarded(self):
-        proposal = _make_llm_switch_proposal({
-            "provider": "gemini", "model": "gemini-2.5-pro", "save_as_default": False,
-        })
+        proposal = _make_llm_switch_proposal(
+            {
+                "provider": "gemini",
+                "model": "gemini-2.5-pro",
+                "save_as_default": False,
+            }
+        )
         captured = {}
-        with patch(_GEM, side_effect=lambda cfg: (captured.update(cfg), MagicMock())[1]), \
-             patch(_GW, return_value=MagicMock()):
+        with (
+            patch(_GEM, side_effect=lambda cfg: (captured.update(cfg), MagicMock())[1]),
+            patch(_GW, return_value=MagicMock()),
+        ):
             from src.core.proposal_executor import _execute_llm_switch
+
             _run(_execute_llm_switch(proposal))
         assert captured.get("gemini_model") == "gemini-2.5-pro"
 
     def test_ollama_model_forwarded(self):
-        proposal = _make_llm_switch_proposal({
-            "provider": "ollama", "model": "llama3.2", "save_as_default": False,
-        })
+        proposal = _make_llm_switch_proposal(
+            {
+                "provider": "ollama",
+                "model": "llama3.2",
+                "save_as_default": False,
+            }
+        )
         captured = {}
-        with patch(_OLL, side_effect=lambda cfg: (captured.update(cfg), MagicMock())[1]), \
-             patch(_GW, return_value=MagicMock()):
+        with (
+            patch(_OLL, side_effect=lambda cfg: (captured.update(cfg), MagicMock())[1]),
+            patch(_GW, return_value=MagicMock()),
+        ):
             from src.core.proposal_executor import _execute_llm_switch
+
             _run(_execute_llm_switch(proposal))
         assert captured.get("ollama_model") == "llama3.2"
 
     def test_result_contains_provider_and_name(self):
         """Return value must have 'provider' and 'provider_name' keys."""
-        proposal = _make_llm_switch_proposal({
-            "provider": "claude-code", "model": "claude-sonnet-4-6",
-            "claude_path": None, "save_as_default": False,
-        })
+        proposal = _make_llm_switch_proposal(
+            {
+                "provider": "claude-code",
+                "model": "claude-sonnet-4-6",
+                "claude_path": None,
+                "save_as_default": False,
+            }
+        )
         gw_mock = MagicMock()
         gw_mock.get_provider_name.return_value = "ClaudeCodeCLI (claude-sonnet-4-6)"
         with patch(_CC, return_value=MagicMock()), patch(_GW, return_value=gw_mock):
             from src.core.proposal_executor import _execute_llm_switch
+
             result = _run(_execute_llm_switch(proposal))
         assert result["provider"] == "claude-code"
         assert "provider_name" in result
@@ -154,35 +191,49 @@ class TestExecuteLLMSwitch:
 # save_as_default — config.yaml persistence
 # ---------------------------------------------------------------------------
 
-class TestSaveAsDefault:
 
+class TestSaveAsDefault:
     def _real_config_path(self):
         """Compute the same config path the executor uses."""
         executor_file = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            "src", "core", "proposal_executor.py",
+            "src",
+            "core",
+            "proposal_executor.py",
         )
         return os.path.join(
-            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(executor_file)))),
-            "config", "config.yaml",
+            os.path.dirname(
+                os.path.dirname(os.path.dirname(os.path.abspath(executor_file)))
+            ),
+            "config",
+            "config.yaml",
         )
 
     def test_save_as_default_updates_provider_in_config(self):
         """When save_as_default=True, the provider line in config.yaml is updated."""
         config_path = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            "config", "config.yaml",
+            "config",
+            "config.yaml",
         )
         with open(config_path) as f:
             original = f.read()
 
         try:
-            proposal = _make_llm_switch_proposal({
-                "provider": "claude-code", "model": "claude-sonnet-4-6",
-                "claude_path": None, "save_as_default": True,
-            })
-            with patch(_CC, return_value=MagicMock()), patch(_GW, return_value=MagicMock()):
+            proposal = _make_llm_switch_proposal(
+                {
+                    "provider": "claude-code",
+                    "model": "claude-sonnet-4-6",
+                    "claude_path": None,
+                    "save_as_default": True,
+                }
+            )
+            with (
+                patch(_CC, return_value=MagicMock()),
+                patch(_GW, return_value=MagicMock()),
+            ):
                 from src.core.proposal_executor import _execute_llm_switch
+
                 result = _run(_execute_llm_switch(proposal))
 
             with open(config_path) as f:
@@ -200,24 +251,34 @@ class TestSaveAsDefault:
         """When save_as_default=False, config.yaml must not be written."""
         config_path = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            "config", "config.yaml",
+            "config",
+            "config.yaml",
         )
         with open(config_path) as f:
             original = f.read()
 
         try:
-            proposal = _make_llm_switch_proposal({
-                "provider": "ollama", "model": "llama3.2",
-                "save_as_default": False,
-            })
-            with patch(_OLL, return_value=MagicMock()), patch(_GW, return_value=MagicMock()):
+            proposal = _make_llm_switch_proposal(
+                {
+                    "provider": "ollama",
+                    "model": "llama3.2",
+                    "save_as_default": False,
+                }
+            )
+            with (
+                patch(_OLL, return_value=MagicMock()),
+                patch(_GW, return_value=MagicMock()),
+            ):
                 from src.core.proposal_executor import _execute_llm_switch
+
                 _run(_execute_llm_switch(proposal))
 
             with open(config_path) as f:
                 after = f.read()
 
-            assert after == original, "config.yaml was modified despite save_as_default=False"
+            assert after == original, (
+                "config.yaml was modified despite save_as_default=False"
+            )
         finally:
             with open(config_path, "w") as f:
                 f.write(original)
@@ -226,18 +287,27 @@ class TestSaveAsDefault:
         """save_as_default=True with a claude model must update claude_model in config."""
         config_path = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            "config", "config.yaml",
+            "config",
+            "config.yaml",
         )
         with open(config_path) as f:
             original = f.read()
 
         try:
-            proposal = _make_llm_switch_proposal({
-                "provider": "claude-code", "model": "claude-opus-4-6",
-                "claude_path": None, "save_as_default": True,
-            })
-            with patch(_CC, return_value=MagicMock()), patch(_GW, return_value=MagicMock()):
+            proposal = _make_llm_switch_proposal(
+                {
+                    "provider": "claude-code",
+                    "model": "claude-opus-4-6",
+                    "claude_path": None,
+                    "save_as_default": True,
+                }
+            )
+            with (
+                patch(_CC, return_value=MagicMock()),
+                patch(_GW, return_value=MagicMock()),
+            ):
                 from src.core.proposal_executor import _execute_llm_switch
+
                 _run(_execute_llm_switch(proposal))
 
             with open(config_path) as f:

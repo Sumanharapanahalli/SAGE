@@ -54,6 +54,7 @@ logger = logging.getLogger(__name__)
 
 # ── Reproducibility ───────────────────────────────────────────────────────────
 
+
 def set_seed(seed: int) -> None:
     """Pin all sources of randomness for full reproducibility."""
     random.seed(seed)
@@ -68,12 +69,14 @@ def set_seed(seed: int) -> None:
 
 # ── Config ────────────────────────────────────────────────────────────────────
 
+
 def load_config(path: str) -> dict:
     with open(path) as f:
         return yaml.safe_load(f)
 
 
 # ── Data Checks ───────────────────────────────────────────────────────────────
+
 
 def check_data_quality(df: pd.DataFrame) -> dict:
     """Basic data quality checks — logged to MLflow."""
@@ -82,12 +85,12 @@ def check_data_quality(df: pd.DataFrame) -> dict:
     null_frac = float(df.isnull().mean().mean())
 
     checks = {
-        "n_samples":            len(df),
-        "n_classes":            int(df["dialog_act"].nunique()),
+        "n_samples": len(df),
+        "n_classes": int(df["dialog_act"].nunique()),
         "class_imbalance_ratio": round(imbalance_ratio, 2),
         "class_imbalance_flag": imbalance_ratio > 5.0,
-        "null_fraction":        round(null_frac, 4),
-        "leakage_risk":         False,  # scalers/encoders fit on train only
+        "null_fraction": round(null_frac, 4),
+        "leakage_risk": False,  # scalers/encoders fit on train only
     }
     if checks["class_imbalance_flag"]:
         logger.warning(
@@ -98,6 +101,7 @@ def check_data_quality(df: pd.DataFrame) -> dict:
 
 
 # ── Training Loop ─────────────────────────────────────────────────────────────
+
 
 def train_epoch(
     model: nn.Module,
@@ -114,9 +118,9 @@ def train_epoch(
     all_preds, all_labels = [], []
 
     for batch in loader:
-        input_ids     = batch["input_ids"].to(device)
+        input_ids = batch["input_ids"].to(device)
         attention_mask = batch["attention_mask"].to(device)
-        labels        = batch["labels"].to(device)
+        labels = batch["labels"].to(device)
 
         optimizer.zero_grad()
         logits = model(input_ids, attention_mask)
@@ -132,19 +136,20 @@ def train_epoch(
 
     avg_loss = total_loss / len(loader)
     acc = accuracy_score(all_labels, all_preds)
-    f1  = f1_score(all_labels, all_preds, average="weighted", zero_division=0)
+    f1 = f1_score(all_labels, all_preds, average="weighted", zero_division=0)
     return avg_loss, acc, f1
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 
+
 def train(config: dict) -> dict:
-    cfg_train  = config["training"]
-    cfg_model  = config["model"]
-    cfg_data   = config["data"]
-    cfg_inf    = config["inference"]
+    cfg_train = config["training"]
+    cfg_model = config["model"]
+    cfg_data = config["data"]
+    cfg_inf = config["inference"]
     cfg_mlflow = config["mlflow"]
-    cfg_art    = config["artifacts"]
+    cfg_art = config["artifacts"]
 
     set_seed(cfg_train["seed"])
 
@@ -156,26 +161,30 @@ def train(config: dict) -> dict:
 
     with mlflow.start_run() as run:
         # ── Log hyperparameters ──────────────────────────────────────────────
-        mlflow.log_params({
-            "encoder":          cfg_model["encoder"],
-            "hidden_size":      cfg_model["hidden_size"],
-            "lstm_layers":      cfg_model["lstm_layers"],
-            "dropout":          cfg_model["dropout"],
-            "max_seq_len":      cfg_model["max_seq_len"],
-            "epochs":           cfg_train["epochs"],
-            "batch_size":       cfg_train["batch_size"],
-            "learning_rate":    cfg_train["learning_rate"],
-            "weight_decay":     cfg_train["weight_decay"],
-            "warmup_ratio":     cfg_train["warmup_ratio"],
-            "seed":             cfg_train["seed"],
-            "test_size":        cfg_train["test_size"],
-            "val_size":         cfg_train["val_size"],
-            "dataset":          cfg_data["dataset"],
-        })
+        mlflow.log_params(
+            {
+                "encoder": cfg_model["encoder"],
+                "hidden_size": cfg_model["hidden_size"],
+                "lstm_layers": cfg_model["lstm_layers"],
+                "dropout": cfg_model["dropout"],
+                "max_seq_len": cfg_model["max_seq_len"],
+                "epochs": cfg_train["epochs"],
+                "batch_size": cfg_train["batch_size"],
+                "learning_rate": cfg_train["learning_rate"],
+                "weight_decay": cfg_train["weight_decay"],
+                "warmup_ratio": cfg_train["warmup_ratio"],
+                "seed": cfg_train["seed"],
+                "test_size": cfg_train["test_size"],
+                "val_size": cfg_train["val_size"],
+                "dataset": cfg_data["dataset"],
+            }
+        )
 
         # ── Load data ────────────────────────────────────────────────────────
         logger.info("Loading data (source: %s) …", cfg_data["dataset"])
-        df = generate_synthetic_dataset(n_samples=cfg_data.get("n_samples", 2000), seed=cfg_train["seed"])
+        df = generate_synthetic_dataset(
+            n_samples=cfg_data.get("n_samples", 2000), seed=cfg_train["seed"]
+        )
 
         # ── Data quality checks (before split — labels exist, no leakage) ────
         data_checks = check_data_quality(df)
@@ -193,7 +202,7 @@ def train(config: dict) -> dict:
             df,
             test_size=cfg_train["test_size"],
             random_state=cfg_train["seed"],
-            stratify=df["label"],       # stratified on label
+            stratify=df["label"],  # stratified on label
         )
         adjusted_val_size = cfg_train["val_size"] / (1.0 - cfg_train["test_size"])
         train_df, val_df = train_test_split(
@@ -205,34 +214,47 @@ def train(config: dict) -> dict:
 
         logger.info(
             "Split: train=%d | val=%d | test=%d (stratified)",
-            len(train_df), len(val_df), len(test_df),
+            len(train_df),
+            len(val_df),
+            len(test_df),
         )
-        mlflow.log_params({
-            "n_train": len(train_df),
-            "n_val":   len(val_df),
-            "n_test":  len(test_df),
-        })
+        mlflow.log_params(
+            {
+                "n_train": len(train_df),
+                "n_val": len(val_df),
+                "n_test": len(test_df),
+            }
+        )
 
         # ── Datasets — tokenizer loaded from checkpoint (not fitted) ─────────
         encoder_name = cfg_model["encoder"]
-        max_len      = cfg_model["max_seq_len"]
-        n_workers    = cfg_data.get("num_workers", 0)
+        max_len = cfg_model["max_seq_len"]
+        n_workers = cfg_data.get("num_workers", 0)
 
         train_dataset = DialogDataset(train_df, encoder_name, max_len)
-        val_dataset   = DialogDataset(val_df,   encoder_name, max_len)
-        test_dataset  = DialogDataset(test_df,  encoder_name, max_len)
+        val_dataset = DialogDataset(val_df, encoder_name, max_len)
+        test_dataset = DialogDataset(test_df, encoder_name, max_len)
 
         train_loader = DataLoader(
-            train_dataset, batch_size=cfg_train["batch_size"],
-            shuffle=True, collate_fn=collate_fn, num_workers=n_workers,
+            train_dataset,
+            batch_size=cfg_train["batch_size"],
+            shuffle=True,
+            collate_fn=collate_fn,
+            num_workers=n_workers,
         )
         val_loader = DataLoader(
-            val_dataset, batch_size=cfg_train["batch_size"],
-            shuffle=False, collate_fn=collate_fn, num_workers=n_workers,
+            val_dataset,
+            batch_size=cfg_train["batch_size"],
+            shuffle=False,
+            collate_fn=collate_fn,
+            num_workers=n_workers,
         )
         test_loader = DataLoader(
-            test_dataset, batch_size=cfg_train["batch_size"],
-            shuffle=False, collate_fn=collate_fn, num_workers=n_workers,
+            test_dataset,
+            batch_size=cfg_train["batch_size"],
+            shuffle=False,
+            collate_fn=collate_fn,
+            num_workers=n_workers,
         )
 
         # ── Model ────────────────────────────────────────────────────────────
@@ -252,10 +274,9 @@ def train(config: dict) -> dict:
 
         # ── Class-weighted loss (handles imbalance without data leakage) ─────
         class_counts = train_df["dialog_act"].value_counts()
-        weights_arr = np.array([
-            len(train_df) / (n_classes * class_counts.get(c, 1))
-            for c in class_names
-        ])
+        weights_arr = np.array(
+            [len(train_df) / (n_classes * class_counts.get(c, 1)) for c in class_names]
+        )
         class_weights = torch.tensor(weights_arr, dtype=torch.float32).to(device)
         criterion = nn.CrossEntropyLoss(weight=class_weights)
 
@@ -274,50 +295,60 @@ def train(config: dict) -> dict:
         )
 
         # ── Training loop ────────────────────────────────────────────────────
-        best_val_f1      = 0.0
+        best_val_f1 = 0.0
         patience_counter = 0
-        best_model_path  = Path(cfg_art["model_dir"]) / "best_model.pt"
+        best_model_path = Path(cfg_art["model_dir"]) / "best_model.pt"
 
         for epoch in range(cfg_train["epochs"]):
             tr_loss, tr_acc, tr_f1 = train_epoch(
-                model, train_loader, optimizer, scheduler, criterion, device,
+                model,
+                train_loader,
+                optimizer,
+                scheduler,
+                criterion,
+                device,
                 cfg_train["gradient_clip"],
             )
             val_metrics = evaluate_model(model, val_loader, device, criterion)
 
             logger.info(
                 "Epoch %2d/%d | loss=%.4f acc=%.4f f1=%.4f | val_loss=%.4f val_acc=%.4f val_f1=%.4f",
-                epoch + 1, cfg_train["epochs"],
-                tr_loss, tr_acc, tr_f1,
-                val_metrics["loss"], val_metrics["accuracy"], val_metrics["f1_weighted"],
+                epoch + 1,
+                cfg_train["epochs"],
+                tr_loss,
+                tr_acc,
+                tr_f1,
+                val_metrics["loss"],
+                val_metrics["accuracy"],
+                val_metrics["f1_weighted"],
             )
 
             mlflow.log_metrics(
                 {
-                    "train_loss":       tr_loss,
-                    "train_accuracy":   tr_acc,
-                    "train_f1":         tr_f1,
-                    "val_loss":         val_metrics["loss"],
-                    "val_accuracy":     val_metrics["accuracy"],
-                    "val_f1_weighted":  val_metrics["f1_weighted"],
-                    "val_f1_macro":     val_metrics["f1_macro"],
-                    "lr":               scheduler.get_last_lr()[0],
+                    "train_loss": tr_loss,
+                    "train_accuracy": tr_acc,
+                    "train_f1": tr_f1,
+                    "val_loss": val_metrics["loss"],
+                    "val_accuracy": val_metrics["accuracy"],
+                    "val_f1_weighted": val_metrics["f1_weighted"],
+                    "val_f1_macro": val_metrics["f1_macro"],
+                    "lr": scheduler.get_last_lr()[0],
                 },
                 step=epoch,
             )
 
             # ── Early stopping ───────────────────────────────────────────────
             if val_metrics["f1_weighted"] > best_val_f1:
-                best_val_f1      = val_metrics["f1_weighted"]
+                best_val_f1 = val_metrics["f1_weighted"]
                 patience_counter = 0
                 torch.save(
                     {
-                        "epoch":              epoch,
-                        "model_state_dict":   model.state_dict(),
+                        "epoch": epoch,
+                        "model_state_dict": model.state_dict(),
                         "optimizer_state_dict": optimizer.state_dict(),
-                        "val_f1":             best_val_f1,
-                        "label_classes":      class_names,
-                        "config":             config,
+                        "val_f1": best_val_f1,
+                        "label_classes": class_names,
+                        "config": config,
                     },
                     best_model_path,
                 )
@@ -335,16 +366,18 @@ def train(config: dict) -> dict:
         # ── Test evaluation ───────────────────────────────────────────────────
         logger.info("Running test evaluation …")
         test_metrics = evaluate_model(model, test_loader, device, criterion)
-        cls_report   = classification_report_dict(
+        cls_report = classification_report_dict(
             test_metrics["_labels"], test_metrics["_preds"], class_names
         )
 
-        mlflow.log_metrics({
-            "test_accuracy":    test_metrics["accuracy"],
-            "test_f1_weighted": test_metrics["f1_weighted"],
-            "test_f1_macro":    test_metrics["f1_macro"],
-            "test_loss":        test_metrics["loss"],
-        })
+        mlflow.log_metrics(
+            {
+                "test_accuracy": test_metrics["accuracy"],
+                "test_f1_weighted": test_metrics["f1_weighted"],
+                "test_f1_macro": test_metrics["f1_macro"],
+                "test_loss": test_metrics["loss"],
+            }
+        )
 
         # ── Confusion matrix ─────────────────────────────────────────────────
         cm_path = Path(cfg_art["report_dir"]) / "confusion_matrix.png"
@@ -366,17 +399,21 @@ def train(config: dict) -> dict:
         # ── Latency benchmark ─────────────────────────────────────────────────
         logger.info("Benchmarking inference latency …")
         latency_stats = benchmark_latency(model, test_dataset, device, n_samples=200)
-        mlflow.log_metrics({
-            "latency_p50_ms": latency_stats["p50_ms"],
-            "latency_p95_ms": latency_stats["p95_ms"],
-            "latency_p99_ms": latency_stats["p99_ms"],
-        })
+        mlflow.log_metrics(
+            {
+                "latency_p50_ms": latency_stats["p50_ms"],
+                "latency_p95_ms": latency_stats["p95_ms"],
+                "latency_p99_ms": latency_stats["p99_ms"],
+            }
+        )
 
         sla_ms = cfg_inf["max_latency_ms"]
         within_sla = latency_stats["p95_ms"] <= sla_ms
         if not within_sla:
             logger.warning(
-                "⚠ P95 latency %.1f ms exceeds SLA of %s ms", latency_stats["p95_ms"], sla_ms
+                "⚠ P95 latency %.1f ms exceeds SLA of %s ms",
+                latency_stats["p95_ms"],
+                sla_ms,
             )
 
         # ── Save evaluation report ────────────────────────────────────────────
@@ -402,19 +439,23 @@ def train(config: dict) -> dict:
         logger.info("  Accuracy:      %.4f", test_metrics["accuracy"])
         logger.info("  F1 (weighted): %.4f", test_metrics["f1_weighted"])
         logger.info("  F1 (macro):    %.4f", test_metrics["f1_macro"])
-        logger.info("  P95 latency:   %.1f ms (SLA: %s ms) [%s]",
-                    latency_stats["p95_ms"], sla_ms, "OK" if within_sla else "FAIL")
+        logger.info(
+            "  P95 latency:   %.1f ms (SLA: %s ms) [%s]",
+            latency_stats["p95_ms"],
+            sla_ms,
+            "OK" if within_sla else "FAIL",
+        )
         logger.info("  Run ID:        %s", run.info.run_id)
 
         return {
-            "run_id":            run.info.run_id,
-            "test_accuracy":     test_metrics["accuracy"],
-            "test_f1_weighted":  test_metrics["f1_weighted"],
-            "test_f1_macro":     test_metrics["f1_macro"],
-            "latency_p95_ms":    latency_stats["p95_ms"],
-            "within_sla":        within_sla,
-            "bias_flag":         bias_results.get("summary", {}).get("bias_flag", False),
-            "data_checks":       data_checks,
+            "run_id": run.info.run_id,
+            "test_accuracy": test_metrics["accuracy"],
+            "test_f1_weighted": test_metrics["f1_weighted"],
+            "test_f1_macro": test_metrics["f1_macro"],
+            "latency_p95_ms": latency_stats["p95_ms"],
+            "within_sla": within_sla,
+            "bias_flag": bias_results.get("summary", {}).get("bias_flag", False),
+            "data_checks": data_checks,
         }
 
 

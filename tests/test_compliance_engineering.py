@@ -7,14 +7,12 @@ Tests for regulatory compliance engineering modules:
   - Compliance verifier
 """
 
-import json
-import os
-import tempfile
 import pytest
 
 # ═══════════════════════════════════════════════════════════════════════
 # TRACEABILITY MATRIX
 # ═══════════════════════════════════════════════════════════════════════
+
 
 class TestTraceabilityMatrix:
     """Tests for src.core.traceability.TraceabilityMatrix."""
@@ -22,6 +20,7 @@ class TestTraceabilityMatrix:
     @pytest.fixture(autouse=True)
     def setup(self, tmp_path):
         from src.core.traceability import TraceabilityMatrix, TraceLevel
+
         self.db_path = str(tmp_path / "trace.db")
         self.tm = TraceabilityMatrix(db_path=self.db_path)
         self.TraceLevel = TraceLevel
@@ -62,7 +61,9 @@ class TestTraceabilityMatrix:
     def test_add_link_and_forward_backward(self):
         req = self.tm.add_item(level=self.TraceLevel.SYSTEM_REQ, title="Req")
         test = self.tm.add_item(level=self.TraceLevel.UNIT_TEST, title="Test for Req")
-        link = self.tm.add_link(req.id, test.id, link_type="verifies", rationale="Direct test")
+        link = self.tm.add_link(
+            req.id, test.id, link_type="verifies", rationale="Direct test"
+        )
 
         assert link.source_id == req.id
         assert link.target_id == test.id
@@ -92,8 +93,8 @@ class TestTraceabilityMatrix:
         assert orphan.id in sr["orphaned_ids"]
 
     def test_gap_analysis(self):
-        req = self.tm.add_item(level=self.TraceLevel.SOFTWARE_REQ, title="SW Req")
-        design = self.tm.add_item(level=self.TraceLevel.DESIGN, title="Design Element")
+        self.tm.add_item(level=self.TraceLevel.SOFTWARE_REQ, title="SW Req")
+        self.tm.add_item(level=self.TraceLevel.DESIGN, title="Design Element")
         # No links — both are gaps
 
         gaps = self.tm.gap_analysis()
@@ -126,12 +127,14 @@ class TestTraceabilityMatrix:
 # AUDIT INTEGRITY
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestAuditIntegrity:
     """Tests for src.core.audit_integrity.AuditIntegrityManager."""
 
     @pytest.fixture(autouse=True)
     def setup(self, tmp_path):
         from src.core.audit_integrity import AuditIntegrityManager, compute_hmac
+
         self.db_path = str(tmp_path / "audit.db")
         self.mgr = AuditIntegrityManager(db_path=self.db_path)
         self.compute_hmac = compute_hmac
@@ -185,19 +188,28 @@ class TestAuditIntegrity:
 # DOCUMENT GENERATION
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestDocumentGenerator:
     """Tests for src.core.doc_generator.DocumentGenerator."""
 
     @pytest.fixture(autouse=True)
     def setup(self):
         from src.core.doc_generator import DocumentGenerator
+
         self.gen = DocumentGenerator(project_name="test_project", version="2.0")
 
     def test_generate_srs(self):
         reqs = [
-            {"id": "REQ-001", "type": "functional", "title": "Login",
-             "description": "User can log in", "acceptance_criteria": ["Must accept email/password"],
-             "priority": "high", "verification_method": "test", "status": "approved"},
+            {
+                "id": "REQ-001",
+                "type": "functional",
+                "title": "Login",
+                "description": "User can log in",
+                "acceptance_criteria": ["Must accept email/password"],
+                "priority": "high",
+                "verification_method": "test",
+                "status": "approved",
+            },
         ]
         doc = self.gen.generate_srs(reqs, {"intended_use": "Clinical monitoring"})
         assert "Software Requirements Specification" in doc
@@ -208,9 +220,15 @@ class TestDocumentGenerator:
 
     def test_generate_risk_management(self):
         risks = [
-            {"id": "RISK-001", "hazard": "Data loss", "severity": "HIGH",
-             "probability": "LOW", "risk_level": "MEDIUM",
-             "mitigation": "Automatic backup", "residual_risk": "LOW"},
+            {
+                "id": "RISK-001",
+                "hazard": "Data loss",
+                "severity": "HIGH",
+                "probability": "LOW",
+                "risk_level": "MEDIUM",
+                "mitigation": "Automatic backup",
+                "residual_risk": "LOW",
+            },
         ]
         doc = self.gen.generate_risk_management(risks)
         assert "Risk Management File" in doc
@@ -219,8 +237,14 @@ class TestDocumentGenerator:
 
     def test_generate_rtm(self):
         trace = [
-            {"id": "SYS-001", "level": "system_requirement", "title": "Speed",
-             "status": "active", "traces_to": [{"target_id": "TST-001"}], "traced_from": []},
+            {
+                "id": "SYS-001",
+                "level": "system_requirement",
+                "title": "Speed",
+                "status": "active",
+                "traces_to": [{"target_id": "TST-001"}],
+                "traced_from": [],
+            },
         ]
         doc = self.gen.generate_rtm(trace)
         assert "Traceability Matrix" in doc
@@ -228,8 +252,13 @@ class TestDocumentGenerator:
 
     def test_generate_vv_plan(self):
         reqs = [
-            {"id": "REQ-001", "title": "Login", "verification_method": "test",
-             "test_level": "integration", "verification_status": "planned"},
+            {
+                "id": "REQ-001",
+                "title": "Login",
+                "verification_method": "test",
+                "test_level": "integration",
+                "verification_status": "planned",
+            },
         ]
         doc = self.gen.generate_vv_plan(reqs)
         assert "Verification & Validation Plan" in doc
@@ -237,9 +266,14 @@ class TestDocumentGenerator:
 
     def test_generate_soup_inventory(self):
         deps = [
-            {"name": "FastAPI", "version": "0.104.1", "license": "MIT",
-             "purpose": "Web framework", "risk_class": "low",
-             "anomaly_list_url": "https://github.com/tiangolo/fastapi/issues"},
+            {
+                "name": "FastAPI",
+                "version": "0.104.1",
+                "license": "MIT",
+                "purpose": "Web framework",
+                "risk_class": "low",
+                "anomaly_list_url": "https://github.com/tiangolo/fastapi/issues",
+            },
         ]
         doc = self.gen.generate_soup_inventory(deps)
         assert "SOUP Inventory" in doc
@@ -265,12 +299,14 @@ class TestDocumentGenerator:
 # CHANGE CONTROL
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestChangeControl:
     """Tests for src.core.change_control.ChangeControlManager."""
 
     @pytest.fixture(autouse=True)
     def setup(self, tmp_path):
         from src.core.change_control import ChangeControlManager
+
         self.db_path = str(tmp_path / "change.db")
         self.ccm = ChangeControlManager(db_path=self.db_path)
 
@@ -287,8 +323,11 @@ class TestChangeControl:
 
     def test_get_request(self):
         created = self.ccm.create_request(
-            title="Add validation", description="Input validation needed",
-            category="preventive", priority="medium", requester="dev",
+            title="Add validation",
+            description="Input validation needed",
+            category="preventive",
+            priority="medium",
+            requester="dev",
         )
         fetched = self.ccm.get_request(created["id"])
         assert fetched is not None
@@ -307,7 +346,9 @@ class TestChangeControl:
 
     def test_update_status(self):
         created = self.ccm.create_request("Fix", "desc", "corrective", "high", "dev")
-        result = self.ccm.update_status(created["id"], "submitted", "dev", "Ready for review")
+        result = self.ccm.update_status(
+            created["id"], "submitted", "dev", "Ready for review"
+        )
         assert result["old_status"] == "draft"
         assert result["new_status"] == "submitted"
 
@@ -316,10 +357,13 @@ class TestChangeControl:
 
     def test_add_impact_assessment(self):
         created = self.ccm.create_request("Fix", "desc", "corrective", "high", "dev")
-        self.ccm.add_impact_assessment(created["id"], {
-            "affected_requirements": ["REQ-001"],
-            "risk_impact": "low",
-        })
+        self.ccm.add_impact_assessment(
+            created["id"],
+            {
+                "affected_requirements": ["REQ-001"],
+                "risk_impact": "low",
+            },
+        )
         fetched = self.ccm.get_request(created["id"])
         assert fetched["status"] == "impact_assessed"
         assert "REQ-001" in fetched["impact_assessment"]["affected_requirements"]
@@ -327,8 +371,11 @@ class TestChangeControl:
     def test_add_approval(self):
         created = self.ccm.create_request("Fix", "desc", "corrective", "high", "dev")
         result = self.ccm.add_approval(
-            created["id"], approver="qa_lead", role="QA",
-            decision="approved", comments="Looks good",
+            created["id"],
+            approver="qa_lead",
+            role="QA",
+            decision="approved",
+            comments="Looks good",
         )
         assert result["approval"]["decision"] == "approved"
 
@@ -375,12 +422,14 @@ class TestChangeControl:
 # COMPLIANCE VERIFIER
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestComplianceVerifier:
     """Tests for src.core.compliance_verifier.ComplianceVerifier."""
 
     @pytest.fixture(autouse=True)
     def setup(self):
         from src.core.compliance_verifier import ComplianceVerifier
+
         self.verifier = ComplianceVerifier()
 
     def test_verify_iec62304_minimal(self):
@@ -396,7 +445,11 @@ class TestComplianceVerifier:
         data = {
             "development_plan": True,
             "requirements": [
-                {"id": "R1", "acceptance_criteria": ["AC1"], "verification_method": "test"},
+                {
+                    "id": "R1",
+                    "acceptance_criteria": ["AC1"],
+                    "verification_method": "test",
+                },
             ],
             "architecture": True,
             "tests": [{"level": "integration"}],
@@ -413,43 +466,51 @@ class TestComplianceVerifier:
         assert len(passed) >= 7  # most checks pass with full data
 
     def test_verify_iso26262(self):
-        results = self.verifier.verify_iso26262({
-            "hazard_analysis": True,
-            "requirements": [{"type": "safety"}],
-            "asil_classification": "ASIL-B",
-            "change_requests": [{"id": "CR-1"}],
-        })
+        results = self.verifier.verify_iso26262(
+            {
+                "hazard_analysis": True,
+                "requirements": [{"type": "safety"}],
+                "asil_classification": "ASIL-B",
+                "change_requests": [{"id": "CR-1"}],
+            }
+        )
         passed = [r for r in results if r["passed"]]
         assert len(passed) == 4  # all pass
 
     def test_verify_do178c(self):
-        results = self.verifier.verify_do178c({
-            "development_plan": True,
-            "requirements": [{"id": "R1"}],
-            "tests": [{"id": "T1"}],
-        })
+        results = self.verifier.verify_do178c(
+            {
+                "development_plan": True,
+                "requirements": [{"id": "R1"}],
+                "tests": [{"id": "T1"}],
+            }
+        )
         assert len(results) == 4
         # MC/DC should fail (not provided)
         mcdc = next(r for r in results if "MC/DC" in r["description"])
         assert not mcdc["passed"]
 
     def test_verify_en50128(self):
-        results = self.verifier.verify_en50128({
-            "requirements": [{"id": "R1"}],
-            "architecture": True,
-            "sil_level": "SIL 2",
-            "tests": [{"id": "T1"}],
-        })
+        results = self.verifier.verify_en50128(
+            {
+                "requirements": [{"id": "R1"}],
+                "architecture": True,
+                "sil_level": "SIL 2",
+                "tests": [{"id": "T1"}],
+            }
+        )
         passed = [r for r in results if r["passed"]]
         assert len(passed) == 3
 
     def test_verify_21cfr_part11(self):
-        results = self.verifier.verify_21cfr_part11({
-            "system_validated": True,
-            "audit_trail_active": True,
-            "audit_integrity_verified": True,
-            "access_controls": True,
-        })
+        results = self.verifier.verify_21cfr_part11(
+            {
+                "system_validated": True,
+                "audit_trail_active": True,
+                "audit_integrity_verified": True,
+                "access_controls": True,
+            }
+        )
         passed = [r for r in results if r["passed"]]
         assert len(passed) == 4
 

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Dict, List, Optional, Tuple
+from typing import List, Tuple
 
 import numpy as np
 import torch
@@ -56,9 +56,9 @@ class Word2Vec(nn.Module):
 
     def forward(
         self,
-        center: torch.Tensor,      # (B,)
-        context: torch.Tensor,     # (B,)
-        negatives: torch.Tensor,   # (B, K)
+        center: torch.Tensor,  # (B,)
+        context: torch.Tensor,  # (B,)
+        negatives: torch.Tensor,  # (B, K)
     ) -> torch.Tensor:
         """Return mean negative-sampling loss over the batch."""
         # (B, D)
@@ -69,15 +69,15 @@ class Word2Vec(nn.Module):
         v_neg = self.out_embeddings(negatives)
 
         # Positive score:  σ(v_c · v_o)
-        pos_score = (v_c * v_o).sum(dim=1)          # (B,)
-        pos_loss = F.logsigmoid(pos_score)           # (B,)
+        pos_score = (v_c * v_o).sum(dim=1)  # (B,)
+        pos_loss = F.logsigmoid(pos_score)  # (B,)
 
         # Negative scores: σ(−v_c · v_k)
         # bmm: (B, 1, D) × (B, D, K) → (B, 1, K) → squeeze → (B, K)
         neg_score = torch.bmm(
-            v_c.unsqueeze(1),           # (B, 1, D)
-            v_neg.permute(0, 2, 1),     # (B, D, K)
-        ).squeeze(1)                    # (B, K)
+            v_c.unsqueeze(1),  # (B, 1, D)
+            v_neg.permute(0, 2, 1),  # (B, D, K)
+        ).squeeze(1)  # (B, K)
         neg_loss = F.logsigmoid(-neg_score).sum(dim=1)  # (B,)
 
         loss = -(pos_loss + neg_loss).mean()
@@ -104,14 +104,14 @@ class Word2Vec(nn.Module):
         if word not in vocab:
             raise KeyError(f"'{word}' not in vocabulary")
 
-        W = self.get_embeddings()              # (V, D) — already normalised
+        W = self.get_embeddings()  # (V, D) — already normalised
         idx = vocab.encode(word)
-        scores = W @ W[idx]                    # (V,)
-        scores[idx] = -2.0                     # exclude self
+        scores = W @ W[idx]  # (V,)
+        scores[idx] = -2.0  # exclude self
 
         if exclude_special:
-            scores[0] = -2.0                   # PAD
-            scores[1] = -2.0                   # UNK
+            scores[0] = -2.0  # PAD
+            scores[1] = -2.0  # UNK
 
         top_idx = np.argsort(-scores)[:topk]
         return [(vocab.decode(int(i)), float(scores[i])) for i in top_idx]
@@ -134,14 +134,14 @@ class Word2Vec(nn.Module):
         if missing:
             raise KeyError(f"Words not in vocabulary: {missing}")
 
-        W = self.get_embeddings()              # (V, D) — normalised
+        W = self.get_embeddings()  # (V, D) — normalised
         query = W[vocab.encode(c)] - W[vocab.encode(b)] + W[vocab.encode(a)]
         query_norm = query / (np.linalg.norm(query) + 1e-8)
 
-        scores = W @ query_norm                # (V,)
+        scores = W @ query_norm  # (V,)
         for w in (a, b, c):
-            scores[vocab.encode(w)] = -2.0    # exclude input words
-        scores[0] = scores[1] = -2.0          # exclude PAD, UNK
+            scores[vocab.encode(w)] = -2.0  # exclude input words
+        scores[0] = scores[1] = -2.0  # exclude PAD, UNK
 
         top_idx = np.argsort(-scores)[:topk]
         return [(vocab.decode(int(i)), float(scores[i])) for i in top_idx]

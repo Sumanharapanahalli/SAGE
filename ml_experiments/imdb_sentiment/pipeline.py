@@ -22,6 +22,7 @@ Anti-leakage guarantees
 3. The TextPreprocessor is stateless, so order does not matter for it.
 4. No feature selection or threshold derived from the full dataset.
 """
+
 from __future__ import annotations
 
 import logging
@@ -51,9 +52,9 @@ logger = logging.getLogger(__name__)
 DEFAULT_TFIDF_PARAMS: dict[str, Any] = {
     "max_features": 50_000,
     "ngram_range": (1, 2),
-    "sublinear_tf": True,       # log(1 + tf) — reduces dominance of very frequent terms
-    "min_df": 3,                # ignore tokens appearing in < 3 documents
-    "max_df": 0.95,             # ignore tokens in > 95% of documents (near-stopwords)
+    "sublinear_tf": True,  # log(1 + tf) — reduces dominance of very frequent terms
+    "min_df": 3,  # ignore tokens appearing in < 3 documents
+    "max_df": 0.95,  # ignore tokens in > 95% of documents (near-stopwords)
     "strip_accents": "unicode",
     "analyzer": "word",
 }
@@ -74,6 +75,7 @@ RANDOM_STATE = 42
 # Dataset loader
 # ---------------------------------------------------------------------------
 
+
 def load_imdb(subset: int | None = None) -> tuple[list[str], np.ndarray]:
     """
     Load the IMDB dataset via HuggingFace ``datasets``.
@@ -87,7 +89,7 @@ def load_imdb(subset: int | None = None) -> tuple[list[str], np.ndarray]:
     (texts, labels)  — labels: 0=negative, 1=positive
     """
     logger.info("Loading IMDB dataset…")
-    ds = load_dataset("imdb", split="train+test")   # 50 000 total
+    ds = load_dataset("imdb", split="train+test")  # 50 000 total
     texts: list[str] = ds["text"]
     labels: np.ndarray = np.array(ds["label"], dtype=np.int32)
 
@@ -97,10 +99,12 @@ def load_imdb(subset: int | None = None) -> tuple[list[str], np.ndarray]:
         pos_idx = np.where(labels == 1)[0]
         neg_idx = np.where(labels == 0)[0]
         half = subset // 2
-        chosen = np.concatenate([
-            rng.choice(pos_idx, size=half, replace=False),
-            rng.choice(neg_idx, size=half, replace=False),
-        ])
+        chosen = np.concatenate(
+            [
+                rng.choice(pos_idx, size=half, replace=False),
+                rng.choice(neg_idx, size=half, replace=False),
+            ]
+        )
         rng.shuffle(chosen)
         texts = [texts[i] for i in chosen]
         labels = labels[chosen]
@@ -114,6 +118,7 @@ def load_imdb(subset: int | None = None) -> tuple[list[str], np.ndarray]:
 # ---------------------------------------------------------------------------
 # Pipeline builder
 # ---------------------------------------------------------------------------
+
 
 def build_pipeline(
     tfidf_params: dict[str, Any] | None = None,
@@ -142,6 +147,7 @@ def build_pipeline(
 # ---------------------------------------------------------------------------
 # Training entry point
 # ---------------------------------------------------------------------------
+
 
 def train(
     subset: int | None = None,
@@ -178,11 +184,13 @@ def train(
         labels,
         test_size=TEST_SIZE,
         random_state=RANDOM_STATE,
-        stratify=labels,          # ← anti-leakage: ratio preserved, no info from test
+        stratify=labels,  # ← anti-leakage: ratio preserved, no info from test
     )
     logger.info(
         "Split → train: %d  test: %d  (test_size=%.0f%%)",
-        len(X_train), len(X_test), TEST_SIZE * 100,
+        len(X_train),
+        len(X_test),
+        TEST_SIZE * 100,
     )
 
     dataset_stats = {
@@ -218,7 +226,7 @@ def train(
     # ---- 6. Predict on TEST — transform only (no re-fit) --------------------
     logger.info("Evaluating on held-out test set…")
     y_pred = pipe.predict(X_test)
-    y_prob = pipe.predict_proba(X_test)[:, 1]   # probability of class 1 (positive)
+    y_prob = pipe.predict_proba(X_test)[:, 1]  # probability of class 1 (positive)
 
     # ---- 7. Compute metrics -------------------------------------------------
     metrics = compute_metrics(
@@ -227,7 +235,7 @@ def train(
         y_prob=y_prob,
         label_names=["negative", "positive"],
     )
-    metrics["leakage_risk"] = False          # documented: split → fit → transform order
+    metrics["leakage_risk"] = False  # documented: split → fit → transform order
     metrics["class_imbalance"] = is_imbalanced
 
     exp_logger.end_run(run_id, metrics=metrics)

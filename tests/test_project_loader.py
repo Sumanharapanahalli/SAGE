@@ -1,4 +1,5 @@
 """Tests for src.core.project_loader helpers."""
+
 from pathlib import Path
 
 from src.core.project_loader import list_solutions
@@ -69,7 +70,9 @@ def test_list_solutions_honors_sage_solutions_dir_override(tmp_path, monkeypatch
     assert "in_repo_only" not in names
 
 
-def test_list_solutions_without_override_scans_sage_root_solutions_dir(tmp_path, monkeypatch):
+def test_list_solutions_without_override_scans_sage_root_solutions_dir(
+    tmp_path, monkeypatch
+):
     """Default behaviour (no SAGE_SOLUTIONS_DIR set) is unchanged."""
     monkeypatch.delenv("SAGE_SOLUTIONS_DIR", raising=False)
     (tmp_path / "solutions" / "a").mkdir(parents=True)

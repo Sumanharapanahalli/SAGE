@@ -16,6 +16,7 @@ logger = logging.getLogger("filesystem_tools_mcp")
 
 try:
     from fastmcp import FastMCP
+
     mcp = FastMCP("filesystem-tools")
 except ImportError:
     logger.warning("fastmcp not installed — MCP server cannot start standalone")
@@ -26,6 +27,7 @@ def _resolve_sandbox() -> str:
     """Return the active solution directory as the sandbox root."""
     try:
         from src.core.project_loader import project_config, _SOLUTIONS_DIR
+
         return os.path.join(_SOLUTIONS_DIR, project_config.project_name)
     except Exception:
         return ""
@@ -43,13 +45,13 @@ def _enforce_sandbox(path: str) -> str:
     resolved = os.path.realpath(os.path.join(sandbox, path))
     if not resolved.startswith(os.path.realpath(sandbox)):
         raise ValueError(
-            f"Path escapes sandbox: {path} resolves to {resolved} "
-            f"(sandbox: {sandbox})"
+            f"Path escapes sandbox: {path} resolves to {resolved} (sandbox: {sandbox})"
         )
     return resolved
 
 
 if mcp:
+
     @mcp.tool()
     def read_file(path: str, encoding: str = "utf-8", max_bytes: int = 500_000) -> dict:
         """
@@ -210,5 +212,6 @@ if __name__ == "__main__":
     if mcp is None:
         print("ERROR: fastmcp not installed. Run: pip install fastmcp")
         import sys
+
         sys.exit(1)
     mcp.run()

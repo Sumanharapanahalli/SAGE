@@ -7,7 +7,6 @@ Import in Robot Framework:
 """
 
 import socket
-import time
 from typing import Optional
 
 
@@ -25,11 +24,13 @@ class hil_robot_library:
 
     # ── Connection ────────────────────────────────────────────────────────────
 
-    def open_openocd_connection(self, host: str = "127.0.0.1",
-                                port: int = 4444) -> None:
+    def open_openocd_connection(
+        self, host: str = "127.0.0.1", port: int = 4444
+    ) -> None:
         """Open a telnet connection to the OpenOCD command interface."""
-        self._sock = socket.create_connection((host, int(port)),
-                                               timeout=OPENOCD_TIMEOUT)
+        self._sock = socket.create_connection(
+            (host, int(port)), timeout=OPENOCD_TIMEOUT
+        )
         self._drain()
 
     def close_openocd_connection(self) -> None:
@@ -42,7 +43,9 @@ class hil_robot_library:
 
     def _send(self, cmd: str) -> str:
         if self._sock is None:
-            raise RuntimeError("OpenOCD not connected — call Open OpenOCD Connection first")
+            raise RuntimeError(
+                "OpenOCD not connected — call Open OpenOCD Connection first"
+            )
         self._sock.sendall((cmd + "\n").encode())
         return self._recv_until(PROMPT)
 
@@ -92,35 +95,38 @@ class hil_robot_library:
         """Write a 32-bit word to the given hex address."""
         self._send(f"mww {addr} {value}")
 
-    def encode_stimulus_to_adc(self,
-                                velocity_mps: str,
-                                acceleration_mps2: str,
-                                yaw_rate_radps: str,
-                                steering_angle_rad: str,
-                                throttle_pct: str,
-                                brake_pressure_kpa: str,
-                                data_valid: str = "True") -> list:
+    def encode_stimulus_to_adc(
+        self,
+        velocity_mps: str,
+        acceleration_mps2: str,
+        yaw_rate_radps: str,
+        steering_angle_rad: str,
+        throttle_pct: str,
+        brake_pressure_kpa: str,
+        data_valid: str = "True",
+    ) -> list:
         """
         Encode 6 physical vehicle-state values to 12-bit ADC words.
         Returns a list of integers (hex-formatted as strings for Robot).
         """
+
         def clamp(v: int) -> int:
             return max(0, min(0x0FFF, v))
 
-        v   = float(velocity_mps)
-        a   = float(acceleration_mps2)
-        y   = float(yaw_rate_radps)
-        s   = float(steering_angle_rad)
-        t   = float(throttle_pct)
-        b   = float(brake_pressure_kpa)
+        v = float(velocity_mps)
+        a = float(acceleration_mps2)
+        y = float(yaw_rate_radps)
+        s = float(steering_angle_rad)
+        t = float(throttle_pct)
+        b = float(brake_pressure_kpa)
         valid = str(data_valid).strip().lower() in ("true", "1", "yes")
 
         words = [
-            clamp(int(v  / 0.08789)),
-            clamp(int(a  / 0.03831 + 2048)),
-            clamp(int(y  / 0.001533 + 2048)),
-            clamp(int(s  / 0.003834 + 2048)),
-            clamp(int(t  / 0.02442)),
-            clamp(int(b  / 0.09775)) | (0x8000 if valid else 0),
+            clamp(int(v / 0.08789)),
+            clamp(int(a / 0.03831 + 2048)),
+            clamp(int(y / 0.001533 + 2048)),
+            clamp(int(s / 0.003834 + 2048)),
+            clamp(int(t / 0.02442)),
+            clamp(int(b / 0.09775)) | (0x8000 if valid else 0),
         ]
         return [f"0x{w:04X}" for w in words]

@@ -3,7 +3,6 @@
 # Copies .elf/.bin/.hex artifacts to build_output/ after a successful build.
 # Attached to the stm32l4_release environment via extra_scripts.
 # ==============================================================================
-import os
 import shutil
 from pathlib import Path
 
@@ -19,7 +18,9 @@ def post_build_actions(source, target, env):  # noqa: ANN001
     # Locate the ELF produced by the build
     elf_candidates = list(build_dir.glob("*.elf"))
     if not elf_candidates:
-        print("[post_build] WARNING: no .elf found in BUILD_DIR — skipping artifact copy")
+        print(
+            "[post_build] WARNING: no .elf found in BUILD_DIR — skipping artifact copy"
+        )
         return
 
     elf_path = elf_candidates[0]
@@ -52,4 +53,4 @@ def post_build_actions(source, target, env):  # noqa: ANN001
     print(f"[post_build] All artifacts written to: {artifacts_dir}")
 
 
-env.AddPostAction("$BUILD_DIR/${PROGNAME}.elf", post_build_actions)
+env.AddPostAction("$BUILD_DIR/${PROGNAME}.elf", post_build_actions)  # noqa: F821

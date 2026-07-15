@@ -4,6 +4,7 @@ The point of this handler over audit.list is that "show me everything that
 FAILED" must work — errors are matched across event_type, action_type, the
 status column AND the free text of output_content. These tests pin that.
 """
+
 from __future__ import annotations
 
 import json
@@ -81,6 +82,7 @@ def db(tmp_path, monkeypatch):
 
 # --- wiring ---------------------------------------------------------------
 
+
 def test_list_requires_a_wired_logger(monkeypatch):
     monkeypatch.setattr(activity, "_logger", None)
     with pytest.raises(RpcError):
@@ -88,6 +90,7 @@ def test_list_requires_a_wired_logger(monkeypatch):
 
 
 # --- shape ----------------------------------------------------------------
+
 
 def test_list_returns_full_rows_not_just_four_columns(db):
     _insert(
@@ -128,6 +131,7 @@ def test_malformed_metadata_does_not_blow_up(db):
 
 # --- error triage (the whole reason this handler exists) ------------------
 
+
 def test_errors_category_matches_on_event_type(db):
     _insert(db, event_type="LLM_ERROR", action_type="GENERATE")
     _insert(db, event_type="TASK_COMPLETED", action_type="ANALYSIS")
@@ -156,25 +160,35 @@ def test_errors_category_matches_on_status_column(db):
 
 
 def test_errors_category_matches_failed_in_output_text(db):
-    _insert(db, event_type="BUILD", action_type="BUILD",
-            output_content="Stage 3 failed")
+    _insert(
+        db, event_type="BUILD", action_type="BUILD", output_content="Stage 3 failed"
+    )
     out = activity.list_events({"category": "errors"})
     assert out["total"] == 1
 
 
 def test_error_precedence_beats_proposal(db):
     # classifyEvent checks errors FIRST — a failed proposal triages as an error.
-    _insert(db, event_type="PROPOSAL_APPROVED", action_type="APPROVAL",
-            output_content="apply failed: patch did not apply")
+    _insert(
+        db,
+        event_type="PROPOSAL_APPROVED",
+        action_type="APPROVAL",
+        output_content="apply failed: patch did not apply",
+    )
     assert activity.list_events({"category": "errors"})["total"] == 1
     assert activity.list_events({"category": "proposals"})["total"] == 0
 
 
 # --- other categories -----------------------------------------------------
 
+
 def test_proposals_category(db):
-    _insert(db, event_type="PROPOSAL_APPROVED", action_type="APPROVAL",
-            metadata={"decided_by": "harish"})
+    _insert(
+        db,
+        event_type="PROPOSAL_APPROVED",
+        action_type="APPROVAL",
+        metadata={"decided_by": "harish"},
+    )
     _insert(db, event_type="PROPOSAL_REJECTED", action_type="REJECTION")
     _insert(db, event_type="TASK_SUBMITTED", action_type="TASK")
     out = activity.list_events({"category": "proposals"})
@@ -183,8 +197,12 @@ def test_proposals_category(db):
 
 
 def test_llm_category(db):
-    _insert(db, event_type="LLM_CALL", action_type="GENERATION",
-            metadata={"model": "gemini-2.0", "tokens": 812})
+    _insert(
+        db,
+        event_type="LLM_CALL",
+        action_type="GENERATION",
+        metadata={"model": "gemini-2.0", "tokens": 812},
+    )
     _insert(db, event_type="TASK_SUBMITTED", action_type="TASK")
     out = activity.list_events({"category": "llm"})
     assert out["total"] == 1
@@ -207,8 +225,9 @@ def test_categories_partition_the_event_set(db):
     _insert(db, event_type="ACCESS", action_type="ACCESS")
 
     total = activity.list_events({})["total"]
-    counts = {c: activity.list_events({"category": c})["total"]
-              for c in activity.CATEGORIES}
+    counts = {
+        c: activity.list_events({"category": c})["total"] for c in activity.CATEGORIES
+    }
     # Every event lands in exactly one bucket — SQL predicates and the Python
     # classifier must agree, or the pill counts lie.
     assert sum(counts.values()) == total == 5
@@ -230,6 +249,7 @@ def test_unknown_category_rejected(db):
 
 # --- free-text search -----------------------------------------------------
 
+
 def test_query_matches_actor(db):
     _insert(db, actor="Human_Engineer", event_type="APPROVAL")
     _insert(db, actor="AI_Agent", event_type="TASK")
@@ -246,15 +266,24 @@ def test_query_matches_output_content_case_insensitively(db):
 
 
 def test_query_and_category_compose(db):
-    _insert(db, event_type="LLM_ERROR", actor="AI_Agent",
-            output_content="timeout talking to ollama")
-    _insert(db, event_type="LLM_ERROR", actor="AI_Agent",
-            output_content="rate limited by gemini")
+    _insert(
+        db,
+        event_type="LLM_ERROR",
+        actor="AI_Agent",
+        output_content="timeout talking to ollama",
+    )
+    _insert(
+        db,
+        event_type="LLM_ERROR",
+        actor="AI_Agent",
+        output_content="rate limited by gemini",
+    )
     out = activity.list_events({"category": "errors", "query": "ollama"})
     assert out["total"] == 1
 
 
 # --- pagination -----------------------------------------------------------
+
 
 def test_total_reflects_the_filter_not_the_whole_table(db):
     for i in range(7):
@@ -269,16 +298,24 @@ def test_total_reflects_the_filter_not_the_whole_table(db):
 
 
 def test_newest_first(db):
-    _insert(db, event_type="TASK", timestamp="2026-07-11T10:00:00", output_content="old")
-    _insert(db, event_type="TASK", timestamp="2026-07-11T12:00:00", output_content="new")
+    _insert(
+        db, event_type="TASK", timestamp="2026-07-11T10:00:00", output_content="old"
+    )
+    _insert(
+        db, event_type="TASK", timestamp="2026-07-11T12:00:00", output_content="new"
+    )
     out = activity.list_events({})
     assert out["events"][0]["output_content"] == "new"
 
 
 def test_offset_pages_through(db):
     for i in range(5):
-        _insert(db, event_type="TASK", timestamp=f"2026-07-11T10:0{i}:00",
-                output_content=f"e{i}")
+        _insert(
+            db,
+            event_type="TASK",
+            timestamp=f"2026-07-11T10:0{i}:00",
+            output_content=f"e{i}",
+        )
     first = activity.list_events({"limit": 2, "offset": 0})["events"]
     second = activity.list_events({"limit": 2, "offset": 2})["events"]
     assert {e["id"] for e in first}.isdisjoint({e["id"] for e in second})

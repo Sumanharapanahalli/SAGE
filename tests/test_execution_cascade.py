@@ -22,7 +22,7 @@ import shutil
 import tempfile
 import threading
 from contextlib import contextmanager
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -33,21 +33,30 @@ pytestmark = pytest.mark.unit
 # Helpers & constants
 # ---------------------------------------------------------------------------
 
+
 def _fresh_orchestrator():
     from src.integrations.build_orchestrator import BuildOrchestrator
+
     tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
     tmp.close()
     return BuildOrchestrator(checkpoint_db=tmp.name)
 
 
 MOCK_BUILD_RESULT = {
-    "status": "completed", "tier": "llm_react", "code": "x=1",
-    "files_changed": ["app.py"], "output": {},
+    "status": "completed",
+    "tier": "llm_react",
+    "code": "x=1",
+    "files_changed": ["app.py"],
+    "output": {},
 }
 
 MOCK_TASK = {
-    "step": 1, "task_type": "backend_api", "description": "Build REST API",
-    "payload": {}, "depends_on": [], "agent_role": "developer",
+    "step": 1,
+    "task_type": "backend_api",
+    "description": "Build REST API",
+    "payload": {},
+    "depends_on": [],
+    "agent_role": "developer",
 }
 
 MOCK_RUN = {
@@ -92,8 +101,16 @@ def _mock_openswe(result=None, raises=False):
 def _mock_local_sandbox(clone_ok=True, diff_output=""):
     """Create a mock SandboxRunner."""
     mock = MagicMock()
-    mock.clone_repo.return_value = {"success": clone_ok, "error": None if clone_ok else "clone failed"}
-    mock.execute.return_value = {"success": True, "stdout": "", "stderr": "", "returncode": 0}
+    mock.clone_repo.return_value = {
+        "success": clone_ok,
+        "error": None if clone_ok else "clone failed",
+    }
+    mock.execute.return_value = {
+        "success": True,
+        "stdout": "",
+        "stderr": "",
+        "returncode": 0,
+    }
     mock.get_diff.return_value = {"success": bool(diff_output), "stdout": diff_output}
     return mock
 
@@ -102,8 +119,8 @@ def _mock_local_sandbox(clone_ok=True, diff_output=""):
 # Group 1: Individual Tier Verification
 # ---------------------------------------------------------------------------
 
-class TestRouteToAgentCascade:
 
+class TestRouteToAgentCascade:
     def test_tier1_openshell_used_when_available(self):
         orch = _fresh_orchestrator()
         openswe = _mock_openswe()
@@ -112,8 +129,12 @@ class TestRouteToAgentCascade:
         with patch("src.integrations.build_orchestrator.adaptive_router") as ar:
             ar.route.return_value = "developer"
             result = orch._route_to_agent(
-                MOCK_TASK, "developer", openswe, MOCK_RUN,
-                openshell=openshell, local_sandbox=None,
+                MOCK_TASK,
+                "developer",
+                openswe,
+                MOCK_RUN,
+                openshell=openshell,
+                local_sandbox=None,
             )
 
         assert result["execution_tier"] == "openshell"
@@ -133,8 +154,12 @@ class TestRouteToAgentCascade:
             with patch("src.integrations.build_orchestrator.adaptive_router") as ar:
                 ar.route.return_value = "developer"
                 result = orch._route_to_agent(
-                    MOCK_TASK, "developer", openswe, run,
-                    openshell=openshell, local_sandbox=local_sandbox,
+                    MOCK_TASK,
+                    "developer",
+                    openswe,
+                    run,
+                    openshell=openshell,
+                    local_sandbox=local_sandbox,
                 )
             assert result["execution_tier"] == "sandbox_runner"
         finally:
@@ -150,8 +175,12 @@ class TestRouteToAgentCascade:
             with patch("src.integrations.build_orchestrator.adaptive_router") as ar:
                 ar.route.return_value = "developer"
                 result = orch._route_to_agent(
-                    MOCK_TASK, "developer", openswe, run,
-                    openshell=None, local_sandbox=local_sandbox,
+                    MOCK_TASK,
+                    "developer",
+                    openswe,
+                    run,
+                    openshell=None,
+                    local_sandbox=local_sandbox,
                 )
             assert result["execution_tier"] == "sandbox_runner"
         finally:
@@ -165,8 +194,12 @@ class TestRouteToAgentCascade:
         with patch("src.integrations.build_orchestrator.adaptive_router") as ar:
             ar.route.return_value = "developer"
             result = orch._route_to_agent(
-                MOCK_TASK, "developer", openswe, {**MOCK_RUN, "workspace_dir": ""},
-                openshell=None, local_sandbox=local_sandbox,
+                MOCK_TASK,
+                "developer",
+                openswe,
+                {**MOCK_RUN, "workspace_dir": ""},
+                openshell=None,
+                local_sandbox=local_sandbox,
             )
         # Falls to Tier 3 — no execution_tier tag from direct openswe call
         assert result["status"] == "completed"
@@ -179,8 +212,12 @@ class TestRouteToAgentCascade:
         with patch("src.integrations.build_orchestrator.adaptive_router") as ar:
             ar.route.return_value = "developer"
             result = orch._route_to_agent(
-                MOCK_TASK, "developer", openswe, MOCK_RUN,
-                openshell=None, local_sandbox=None,
+                MOCK_TASK,
+                "developer",
+                openswe,
+                MOCK_RUN,
+                openshell=None,
+                local_sandbox=None,
             )
         assert result["status"] == "completed"
         openswe.build.assert_called_once()
@@ -192,8 +229,12 @@ class TestRouteToAgentCascade:
         with patch("src.integrations.build_orchestrator.adaptive_router") as ar:
             ar.route.return_value = "developer"
             result = orch._route_to_agent(
-                MOCK_TASK, "developer", openswe, MOCK_RUN,
-                openshell=None, local_sandbox=None,
+                MOCK_TASK,
+                "developer",
+                openswe,
+                MOCK_RUN,
+                openshell=None,
+                local_sandbox=None,
             )
         openswe.build.assert_called_once()
         assert result["status"] == "completed"
@@ -205,22 +246,33 @@ class TestRouteToAgentCascade:
         with patch("src.integrations.build_orchestrator.adaptive_router") as ar:
             ar.route.return_value = "analyst"  # Override from developer → analyst
             result = orch._route_to_agent(
-                MOCK_TASK, "developer", openswe, MOCK_RUN,
-                openshell=None, local_sandbox=None,
+                MOCK_TASK,
+                "developer",
+                openswe,
+                MOCK_RUN,
+                openshell=None,
+                local_sandbox=None,
             )
         ar.route.assert_called_once_with("backend_api")
         assert result["status"] == "completed"
 
     def test_task_enrichment_passed_to_all_tiers(self):
         orch = _fresh_orchestrator()
-        task = {**MOCK_TASK, "acceptance_criteria": ["Must return JSON", "Must validate"]}
+        task = {
+            **MOCK_TASK,
+            "acceptance_criteria": ["Must return JSON", "Must validate"],
+        }
         openswe = _mock_openswe()
 
         with patch("src.integrations.build_orchestrator.adaptive_router") as ar:
             ar.route.return_value = "developer"
             orch._route_to_agent(
-                task, "developer", openswe, MOCK_RUN,
-                openshell=None, local_sandbox=None,
+                task,
+                "developer",
+                openswe,
+                MOCK_RUN,
+                openshell=None,
+                local_sandbox=None,
             )
         called_task = openswe.build.call_args[1]["task"]
         assert "Must return JSON" in called_task["description"]
@@ -231,8 +283,8 @@ class TestRouteToAgentCascade:
 # Group 2: Cascade Fallback Logic
 # ---------------------------------------------------------------------------
 
-class TestCascadeFallback:
 
+class TestCascadeFallback:
     def test_tier1_exception_falls_to_tier2(self):
         orch = _fresh_orchestrator()
         openswe = _mock_openswe()
@@ -244,8 +296,12 @@ class TestCascadeFallback:
             with patch("src.integrations.build_orchestrator.adaptive_router") as ar:
                 ar.route.return_value = "developer"
                 result = orch._route_to_agent(
-                    MOCK_TASK, "developer", openswe, run,
-                    openshell=openshell, local_sandbox=local_sandbox,
+                    MOCK_TASK,
+                    "developer",
+                    openswe,
+                    run,
+                    openshell=openshell,
+                    local_sandbox=local_sandbox,
                 )
             assert result["execution_tier"] == "sandbox_runner"
         finally:
@@ -256,12 +312,18 @@ class TestCascadeFallback:
         openswe = _mock_openswe()
         openshell = _mock_openshell(available=True, raises=True)
 
-        with patch("src.integrations.build_orchestrator.adaptive_router") as ar, \
-             patch.object(orch, "_try_sandbox_runner", return_value=None):
+        with (
+            patch("src.integrations.build_orchestrator.adaptive_router") as ar,
+            patch.object(orch, "_try_sandbox_runner", return_value=None),
+        ):
             ar.route.return_value = "developer"
             result = orch._route_to_agent(
-                MOCK_TASK, "developer", openswe, MOCK_RUN,
-                openshell=openshell, local_sandbox=_mock_local_sandbox(),
+                MOCK_TASK,
+                "developer",
+                openswe,
+                MOCK_RUN,
+                openshell=openshell,
+                local_sandbox=_mock_local_sandbox(),
             )
         # Falls to Tier 3
         assert result["status"] == "completed"
@@ -276,8 +338,12 @@ class TestCascadeFallback:
         with patch("src.integrations.build_orchestrator.adaptive_router") as ar:
             ar.route.return_value = "developer"
             result = orch._route_to_agent(
-                MOCK_TASK, "developer", openswe, run,
-                openshell=None, local_sandbox=local_sandbox,
+                MOCK_TASK,
+                "developer",
+                openswe,
+                run,
+                openshell=None,
+                local_sandbox=local_sandbox,
             )
         # Tier 2 clone failed → Tier 3
         assert result["status"] == "completed"
@@ -297,8 +363,12 @@ class TestCascadeFallback:
             with patch("src.integrations.build_orchestrator.adaptive_router") as ar:
                 ar.route.return_value = "developer"
                 result = orch._route_to_agent(
-                    MOCK_TASK, "developer", openswe, run,
-                    openshell=None, local_sandbox=local_sandbox,
+                    MOCK_TASK,
+                    "developer",
+                    openswe,
+                    run,
+                    openshell=None,
+                    local_sandbox=local_sandbox,
                 )
             # Tier 2 failed (openswe raised), fell to Tier 3
             assert result["status"] == "completed"
@@ -311,21 +381,24 @@ class TestCascadeFallback:
         openswe = _mock_openswe(result={"status": "error", "output": "LLM failed"})
         openshell = _mock_openshell(available=True, raises=True)
 
-        with patch("src.integrations.build_orchestrator.adaptive_router") as ar, \
-             patch.object(orch, "_try_sandbox_runner", return_value=None):
+        with (
+            patch("src.integrations.build_orchestrator.adaptive_router") as ar,
+            patch.object(orch, "_try_sandbox_runner", return_value=None),
+        ):
             ar.route.return_value = "developer"
             result = orch._route_to_agent(
-                MOCK_TASK, "developer", openswe, MOCK_RUN,
-                openshell=openshell, local_sandbox=_mock_local_sandbox(),
+                MOCK_TASK,
+                "developer",
+                openswe,
+                MOCK_RUN,
+                openshell=openshell,
+                local_sandbox=_mock_local_sandbox(),
             )
         assert result["status"] == "error"
 
     def test_cascade_order_is_1_2_3(self):
         orch = _fresh_orchestrator()
         call_order = []
-
-        orig_try_openshell = orch._try_openshell
-        orig_try_sandbox = orch._try_sandbox_runner
 
         def track_openshell(*args, **kwargs):
             call_order.append("tier1")
@@ -337,13 +410,19 @@ class TestCascadeFallback:
 
         openswe = _mock_openswe()
 
-        with patch.object(orch, "_try_openshell", side_effect=track_openshell), \
-             patch.object(orch, "_try_sandbox_runner", side_effect=track_sandbox), \
-             patch("src.integrations.build_orchestrator.adaptive_router") as ar:
+        with (
+            patch.object(orch, "_try_openshell", side_effect=track_openshell),
+            patch.object(orch, "_try_sandbox_runner", side_effect=track_sandbox),
+            patch("src.integrations.build_orchestrator.adaptive_router") as ar,
+        ):
             ar.route.return_value = "developer"
-            result = orch._route_to_agent(
-                MOCK_TASK, "developer", openswe, MOCK_RUN,
-                openshell=_mock_openshell(), local_sandbox=_mock_local_sandbox(),
+            orch._route_to_agent(
+                MOCK_TASK,
+                "developer",
+                openswe,
+                MOCK_RUN,
+                openshell=_mock_openshell(),
+                local_sandbox=_mock_local_sandbox(),
             )
 
         assert call_order == ["tier1", "tier2"]
@@ -354,8 +433,8 @@ class TestCascadeFallback:
 # Group 3: Tier 1 (OpenShell) Internals
 # ---------------------------------------------------------------------------
 
-class TestTryOpenshell:
 
+class TestTryOpenshell:
     def test_sandbox_name_contains_task_type(self):
         orch = _fresh_orchestrator()
         openswe = _mock_openswe()
@@ -410,8 +489,8 @@ class TestTryOpenshell:
 # Group 4: Tier 2 (SandboxRunner) Internals
 # ---------------------------------------------------------------------------
 
-class TestTrySandboxRunner:
 
+class TestTrySandboxRunner:
     def test_copies_workspace_directory(self):
         orch = _fresh_orchestrator()
         openswe = _mock_openswe()
@@ -422,7 +501,9 @@ class TestTrySandboxRunner:
             f.write("print('hello')")
 
         try:
-            result = orch._try_sandbox_runner(MOCK_TASK, workspace, local_sandbox, openswe)
+            result = orch._try_sandbox_runner(
+                MOCK_TASK, workspace, local_sandbox, openswe
+            )
             assert result is not None
             assert result["execution_tier"] == "sandbox_runner"
         finally:
@@ -438,8 +519,9 @@ class TestTrySandboxRunner:
             orch._try_sandbox_runner(MOCK_TASK, workspace, local_sandbox, openswe)
             # Check that git checkout -b sage-build/... was called
             execute_calls = local_sandbox.execute.call_args_list
-            branch_calls = [c for c in execute_calls
-                            if "git checkout -b sage-build/" in str(c)]
+            branch_calls = [
+                c for c in execute_calls if "git checkout -b sage-build/" in str(c)
+            ]
             assert len(branch_calls) == 1
         finally:
             shutil.rmtree(workspace, ignore_errors=True)
@@ -451,7 +533,9 @@ class TestTrySandboxRunner:
         workspace = tempfile.mkdtemp()
 
         try:
-            result = orch._try_sandbox_runner(MOCK_TASK, workspace, local_sandbox, openswe)
+            result = orch._try_sandbox_runner(
+                MOCK_TASK, workspace, local_sandbox, openswe
+            )
             assert "sandbox_diff" in result
             assert "diff --git" in result["sandbox_diff"]
         finally:
@@ -464,7 +548,9 @@ class TestTrySandboxRunner:
         workspace = tempfile.mkdtemp()
 
         try:
-            result = orch._try_sandbox_runner(MOCK_TASK, workspace, local_sandbox, openswe)
+            result = orch._try_sandbox_runner(
+                MOCK_TASK, workspace, local_sandbox, openswe
+            )
             # Should return None on exception (caught internally)
             assert result is None
         finally:
@@ -476,7 +562,10 @@ class TestTrySandboxRunner:
         local_sandbox = _mock_local_sandbox(clone_ok=False)
 
         result = orch._try_sandbox_runner(
-            MOCK_TASK, "https://github.com/fake/repo.git", local_sandbox, openswe,
+            MOCK_TASK,
+            "https://github.com/fake/repo.git",
+            local_sandbox,
+            openswe,
         )
         local_sandbox.clone_repo.assert_called_once()
         # Clone failed → returns None
@@ -489,7 +578,9 @@ class TestTrySandboxRunner:
         workspace = tempfile.mkdtemp()
 
         try:
-            result = orch._try_sandbox_runner(MOCK_TASK, workspace, local_sandbox, openswe)
+            result = orch._try_sandbox_runner(
+                MOCK_TASK, workspace, local_sandbox, openswe
+            )
             assert result["execution_tier"] == "sandbox_runner"
         finally:
             shutil.rmtree(workspace, ignore_errors=True)
@@ -499,18 +590,24 @@ class TestTrySandboxRunner:
 # Group 5: Task Enrichment
 # ---------------------------------------------------------------------------
 
-class TestEnrichTask:
 
+class TestEnrichTask:
     def test_injects_prior_wave_context(self):
         orch = _fresh_orchestrator()
-        run = {**MOCK_RUN, "_prior_wave_context": "Step 1 created DB schema with 3 tables"}
+        run = {
+            **MOCK_RUN,
+            "_prior_wave_context": "Step 1 created DB schema with 3 tables",
+        }
         result = orch._enrich_task(MOCK_TASK, run)
         assert "[Prior wave context]" in result["description"]
         assert "3 tables" in result["description"]
 
     def test_injects_acceptance_criteria(self):
         orch = _fresh_orchestrator()
-        task = {**MOCK_TASK, "acceptance_criteria": ["Must return JSON", "Must validate input"]}
+        task = {
+            **MOCK_TASK,
+            "acceptance_criteria": ["Must return JSON", "Must validate input"],
+        }
         result = orch._enrich_task(task, MOCK_RUN)
         assert "Must return JSON" in result["description"]
         assert "Must validate input" in result["description"]
@@ -519,6 +616,7 @@ class TestEnrichTask:
     def test_injects_artifact_type_info(self):
         orch = _fresh_orchestrator()
         from src.integrations.build_orchestrator import ARTIFACT_TYPES
+
         # Use a task type that has artifact info
         known_types = list(ARTIFACT_TYPES.keys())
         if known_types:
@@ -529,6 +627,7 @@ class TestEnrichTask:
     def test_sets_payload_artifact_metadata(self):
         orch = _fresh_orchestrator()
         from src.integrations.build_orchestrator import ARTIFACT_TYPES
+
         known_types = list(ARTIFACT_TYPES.keys())
         if known_types:
             task = {**MOCK_TASK, "task_type": known_types[0]}
@@ -550,8 +649,8 @@ class TestEnrichTask:
 # Group 6: Security Policy Generation
 # ---------------------------------------------------------------------------
 
-class TestBuildSandboxPolicy:
 
+class TestBuildSandboxPolicy:
     def test_base_policy_restricts_network(self):
         orch = _fresh_orchestrator()
         policy = orch._build_sandbox_policy({"task_type": "backend_api"})
@@ -573,15 +672,17 @@ class TestBuildSandboxPolicy:
         orch = _fresh_orchestrator()
         for task_type in ["api_integration", "deployment", "ci_cd_pipeline"]:
             policy = orch._build_sandbox_policy({"task_type": task_type})
-            assert policy["network_policies"]["allow_outbound"] is True, \
+            assert policy["network_policies"]["allow_outbound"] is True, (
                 f"{task_type} should allow outbound"
+            )
 
     def test_infra_task_adds_var_writable(self):
         orch = _fresh_orchestrator()
         for task_type in ["infrastructure", "database_setup", "monitoring_setup"]:
             policy = orch._build_sandbox_policy({"task_type": task_type})
-            assert "/var" in policy["filesystem_policy"]["writable_paths"], \
+            assert "/var" in policy["filesystem_policy"]["writable_paths"], (
                 f"{task_type} should have /var writable"
+            )
 
     def test_deployment_gets_both_network_and_var(self):
         orch = _fresh_orchestrator()
@@ -591,9 +692,12 @@ class TestBuildSandboxPolicy:
 
     def test_firmware_task_gets_docker_image(self):
         orch = _fresh_orchestrator()
-        policy = orch._build_sandbox_policy({
-            "task_type": "FIRMWARE", "agent_role": "firmware_engineer",
-        })
+        policy = orch._build_sandbox_policy(
+            {
+                "task_type": "FIRMWARE",
+                "agent_role": "firmware_engineer",
+            }
+        )
         assert "docker_image" in policy
         assert "firmware" in policy["docker_image"]
         assert "docker_packages" in policy
@@ -601,23 +705,31 @@ class TestBuildSandboxPolicy:
 
     def test_pcb_task_gets_kicad_docker(self):
         orch = _fresh_orchestrator()
-        policy = orch._build_sandbox_policy({
-            "task_type": "PCB_DESIGN", "agent_role": "pcb_designer",
-        })
+        policy = orch._build_sandbox_policy(
+            {
+                "task_type": "PCB_DESIGN",
+                "agent_role": "pcb_designer",
+            }
+        )
         assert "docker_image" in policy
         assert "pcb" in policy["docker_image"]
         assert "kicad" in policy["docker_packages"]
 
     def test_software_task_has_no_docker_image(self):
         orch = _fresh_orchestrator()
-        policy = orch._build_sandbox_policy({
-            "task_type": "backend_api", "agent_role": "developer",
-        })
+        policy = orch._build_sandbox_policy(
+            {
+                "task_type": "backend_api",
+                "agent_role": "developer",
+            }
+        )
         assert "docker_image" not in policy
 
     def test_resolve_docker_image_from_agent_role(self):
         orch = _fresh_orchestrator()
-        img = orch._resolve_docker_image({"task_type": "FIRMWARE", "agent_role": "firmware_engineer"})
+        img = orch._resolve_docker_image(
+            {"task_type": "FIRMWARE", "agent_role": "firmware_engineer"}
+        )
         assert img == "sage/firmware-toolchain:latest"
 
     def test_resolve_docker_image_from_task_type_fallback(self):
@@ -629,7 +741,9 @@ class TestBuildSandboxPolicy:
 
     def test_resolve_docker_image_returns_none_for_software(self):
         orch = _fresh_orchestrator()
-        img = orch._resolve_docker_image({"task_type": "BACKEND", "agent_role": "developer"})
+        img = orch._resolve_docker_image(
+            {"task_type": "BACKEND", "agent_role": "developer"}
+        )
         assert img is None
 
 
@@ -637,8 +751,8 @@ class TestBuildSandboxPolicy:
 # Group 7: Security / Injection Testing
 # ---------------------------------------------------------------------------
 
-class TestSecurityInjection:
 
+class TestSecurityInjection:
     def test_path_traversal_in_description_contained_by_policy(self):
         """Task description with path traversal — policy still restricts to /workspace."""
         orch = _fresh_orchestrator()
@@ -668,7 +782,9 @@ class TestSecurityInjection:
         # No semicolons, spaces, or shell metacharacters in name
         assert ";" not in name
         assert " " not in name
-        assert "rm" not in name.split("-")  # rm might appear as substring of "framework" etc
+        assert "rm" not in name.split(
+            "-"
+        )  # rm might appear as substring of "framework" etc
 
     def test_policy_not_overridable_by_task_payload(self):
         """Malicious payload attempting to override policy should be ignored."""
@@ -729,8 +845,8 @@ class TestSecurityInjection:
 # Group 8: Wave Executor Integration
 # ---------------------------------------------------------------------------
 
-class TestExecuteAgentsWaves:
 
+class TestExecuteAgentsWaves:
     def _setup_orch_for_execute(self, plan, openswe_result=None):
         """Set up orchestrator with a run ready for _execute_agents."""
         orch = _fresh_orchestrator()
@@ -758,17 +874,37 @@ class TestExecuteAgentsWaves:
 
     def test_single_wave_all_independent(self):
         plan = [
-            {"step": 1, "task_type": "BACKEND", "description": "API", "depends_on": [], "agent_role": "developer"},
-            {"step": 2, "task_type": "FRONTEND", "description": "UI", "depends_on": [], "agent_role": "developer"},
-            {"step": 3, "task_type": "TESTS", "description": "Tests", "depends_on": [], "agent_role": "developer"},
+            {
+                "step": 1,
+                "task_type": "BACKEND",
+                "description": "API",
+                "depends_on": [],
+                "agent_role": "developer",
+            },
+            {
+                "step": 2,
+                "task_type": "FRONTEND",
+                "description": "UI",
+                "depends_on": [],
+                "agent_role": "developer",
+            },
+            {
+                "step": 3,
+                "task_type": "TESTS",
+                "description": "Tests",
+                "depends_on": [],
+                "agent_role": "developer",
+            },
         ]
         orch, run = self._setup_orch_for_execute(plan)
 
-        with self._mock_route(orch), \
-             patch.object(orch, "_checkpoint"), \
-             patch.object(orch, "_audit"), \
-             patch.object(orch, "_summarize_context", return_value=""), \
-             patch("src.integrations.build_orchestrator.adaptive_router") as ar:
+        with (
+            self._mock_route(orch),
+            patch.object(orch, "_checkpoint"),
+            patch.object(orch, "_audit"),
+            patch.object(orch, "_summarize_context", return_value=""),
+            patch("src.integrations.build_orchestrator.adaptive_router") as ar,
+        ):
             ar.route.side_effect = lambda tt: "developer"
             ar.record = MagicMock()
             orch._execute_agents(run)
@@ -782,17 +918,31 @@ class TestExecuteAgentsWaves:
 
     def test_dependency_failure_propagation(self):
         plan = [
-            {"step": 1, "task_type": "BACKEND", "description": "API", "depends_on": [], "agent_role": "developer"},
-            {"step": 2, "task_type": "FRONTEND", "description": "UI", "depends_on": [1], "agent_role": "developer"},
+            {
+                "step": 1,
+                "task_type": "BACKEND",
+                "description": "API",
+                "depends_on": [],
+                "agent_role": "developer",
+            },
+            {
+                "step": 2,
+                "task_type": "FRONTEND",
+                "description": "UI",
+                "depends_on": [1],
+                "agent_role": "developer",
+            },
         ]
         orch, run = self._setup_orch_for_execute(plan)
 
-        with self._mock_route(orch, fail=True), \
-             patch.object(orch, "_checkpoint"), \
-             patch.object(orch, "_audit"), \
-             patch.object(orch, "_summarize_context", return_value=""), \
-             patch.object(orch, "_check_drift", return_value=False), \
-             patch("src.integrations.build_orchestrator.adaptive_router") as ar:
+        with (
+            self._mock_route(orch, fail=True),
+            patch.object(orch, "_checkpoint"),
+            patch.object(orch, "_audit"),
+            patch.object(orch, "_summarize_context", return_value=""),
+            patch.object(orch, "_check_drift", return_value=False),
+            patch("src.integrations.build_orchestrator.adaptive_router") as ar,
+        ):
             ar.route.side_effect = lambda tt: "developer"
             ar.record = MagicMock()
             orch._execute_agents(run)
@@ -807,9 +957,11 @@ class TestExecuteAgentsWaves:
     def test_empty_plan_returns_no_results(self):
         orch, run = self._setup_orch_for_execute([])
 
-        with self._mock_route(orch), \
-             patch.object(orch, "_checkpoint"), \
-             patch.object(orch, "_audit"):
+        with (
+            self._mock_route(orch),
+            patch.object(orch, "_checkpoint"),
+            patch.object(orch, "_audit"),
+        ):
             orch._execute_agents(run)
 
         assert run["agent_results"] == []
@@ -817,18 +969,38 @@ class TestExecuteAgentsWaves:
 
     def test_multi_wave_sequential_execution(self):
         plan = [
-            {"step": 1, "task_type": "DATABASE", "description": "Schema", "depends_on": [], "agent_role": "developer"},
-            {"step": 2, "task_type": "BACKEND", "description": "API", "depends_on": [1], "agent_role": "developer"},
-            {"step": 3, "task_type": "FRONTEND", "description": "UI", "depends_on": [2], "agent_role": "developer"},
+            {
+                "step": 1,
+                "task_type": "DATABASE",
+                "description": "Schema",
+                "depends_on": [],
+                "agent_role": "developer",
+            },
+            {
+                "step": 2,
+                "task_type": "BACKEND",
+                "description": "API",
+                "depends_on": [1],
+                "agent_role": "developer",
+            },
+            {
+                "step": 3,
+                "task_type": "FRONTEND",
+                "description": "UI",
+                "depends_on": [2],
+                "agent_role": "developer",
+            },
         ]
         orch, run = self._setup_orch_for_execute(plan)
 
-        with self._mock_route(orch), \
-             patch.object(orch, "_checkpoint"), \
-             patch.object(orch, "_audit"), \
-             patch.object(orch, "_summarize_context", return_value=""), \
-             patch.object(orch, "_check_drift", return_value=True), \
-             patch("src.integrations.build_orchestrator.adaptive_router") as ar:
+        with (
+            self._mock_route(orch),
+            patch.object(orch, "_checkpoint"),
+            patch.object(orch, "_audit"),
+            patch.object(orch, "_summarize_context", return_value=""),
+            patch.object(orch, "_check_drift", return_value=True),
+            patch("src.integrations.build_orchestrator.adaptive_router") as ar,
+        ):
             ar.route.side_effect = lambda tt: "developer"
             ar.record = MagicMock()
             orch._execute_agents(run)
@@ -842,7 +1014,13 @@ class TestExecuteAgentsWaves:
     def test_openshell_tier_used_via_route(self):
         """Verify _route_to_agent is called with openshell/sandbox params from _execute_agents."""
         plan = [
-            {"step": 1, "task_type": "BACKEND", "description": "API", "depends_on": [], "agent_role": "developer"},
+            {
+                "step": 1,
+                "task_type": "BACKEND",
+                "description": "API",
+                "depends_on": [],
+                "agent_role": "developer",
+            },
         ]
         orch, run = self._setup_orch_for_execute(plan)
         route_calls = []
@@ -851,12 +1029,14 @@ class TestExecuteAgentsWaves:
             route_calls.append(kwargs)
             return dict(MOCK_BUILD_RESULT)
 
-        with patch.object(orch, "_route_to_agent", side_effect=capture_route), \
-             patch.object(orch, "_checkpoint"), \
-             patch.object(orch, "_audit"), \
-             patch.object(orch, "_summarize_context", return_value=""), \
-             patch.object(orch, "_check_drift", return_value=True), \
-             patch("src.integrations.build_orchestrator.adaptive_router") as ar:
+        with (
+            patch.object(orch, "_route_to_agent", side_effect=capture_route),
+            patch.object(orch, "_checkpoint"),
+            patch.object(orch, "_audit"),
+            patch.object(orch, "_summarize_context", return_value=""),
+            patch.object(orch, "_check_drift", return_value=True),
+            patch("src.integrations.build_orchestrator.adaptive_router") as ar,
+        ):
             ar.route.side_effect = lambda tt: "developer"
             ar.record = MagicMock()
             orch._execute_agents(run)
@@ -870,17 +1050,31 @@ class TestExecuteAgentsWaves:
 
     def test_checkpoint_called_per_wave(self):
         plan = [
-            {"step": 1, "task_type": "BACKEND", "description": "API", "depends_on": [], "agent_role": "developer"},
-            {"step": 2, "task_type": "FRONTEND", "description": "UI", "depends_on": [1], "agent_role": "developer"},
+            {
+                "step": 1,
+                "task_type": "BACKEND",
+                "description": "API",
+                "depends_on": [],
+                "agent_role": "developer",
+            },
+            {
+                "step": 2,
+                "task_type": "FRONTEND",
+                "description": "UI",
+                "depends_on": [1],
+                "agent_role": "developer",
+            },
         ]
         orch, run = self._setup_orch_for_execute(plan)
 
-        with self._mock_route(orch), \
-             patch.object(orch, "_checkpoint") as mock_cp, \
-             patch.object(orch, "_audit"), \
-             patch.object(orch, "_summarize_context", return_value=""), \
-             patch.object(orch, "_check_drift", return_value=True), \
-             patch("src.integrations.build_orchestrator.adaptive_router") as ar:
+        with (
+            self._mock_route(orch),
+            patch.object(orch, "_checkpoint") as mock_cp,
+            patch.object(orch, "_audit"),
+            patch.object(orch, "_summarize_context", return_value=""),
+            patch.object(orch, "_check_drift", return_value=True),
+            patch("src.integrations.build_orchestrator.adaptive_router") as ar,
+        ):
             ar.route.side_effect = lambda tt: "developer"
             ar.record = MagicMock()
             orch._execute_agents(run)
@@ -892,24 +1086,47 @@ class TestExecuteAgentsWaves:
     def test_all_tasks_blocked_wave_skipped(self):
         """All tasks in wave 2 depend on a failed wave 1 task."""
         plan = [
-            {"step": 1, "task_type": "BACKEND", "description": "API", "depends_on": [], "agent_role": "developer"},
-            {"step": 2, "task_type": "TESTS", "description": "Tests", "depends_on": [1], "agent_role": "developer"},
-            {"step": 3, "task_type": "DEPLOY", "description": "Deploy", "depends_on": [1], "agent_role": "developer"},
+            {
+                "step": 1,
+                "task_type": "BACKEND",
+                "description": "API",
+                "depends_on": [],
+                "agent_role": "developer",
+            },
+            {
+                "step": 2,
+                "task_type": "TESTS",
+                "description": "Tests",
+                "depends_on": [1],
+                "agent_role": "developer",
+            },
+            {
+                "step": 3,
+                "task_type": "DEPLOY",
+                "description": "Deploy",
+                "depends_on": [1],
+                "agent_role": "developer",
+            },
         ]
         orch, run = self._setup_orch_for_execute(plan)
 
-        with self._mock_route(orch, fail=True), \
-             patch.object(orch, "_checkpoint"), \
-             patch.object(orch, "_audit"), \
-             patch.object(orch, "_summarize_context", return_value=""), \
-             patch.object(orch, "_check_drift", return_value=False), \
-             patch("src.integrations.build_orchestrator.adaptive_router") as ar:
+        with (
+            self._mock_route(orch, fail=True),
+            patch.object(orch, "_checkpoint"),
+            patch.object(orch, "_audit"),
+            patch.object(orch, "_summarize_context", return_value=""),
+            patch.object(orch, "_check_drift", return_value=False),
+            patch("src.integrations.build_orchestrator.adaptive_router") as ar,
+        ):
             ar.route.side_effect = lambda tt: "developer"
             ar.record = MagicMock()
             orch._execute_agents(run)
 
-        blocked = [r for r in run["agent_results"]
-                   if r.get("result", {}).get("status") == "blocked"]
+        blocked = [
+            r
+            for r in run["agent_results"]
+            if r.get("result", {}).get("status") == "blocked"
+        ]
         assert len(blocked) >= 2
 
         shutil.rmtree(run["workspace_dir"], ignore_errors=True)
@@ -919,8 +1136,8 @@ class TestExecuteAgentsWaves:
 # Group 9: Edge Cases
 # ---------------------------------------------------------------------------
 
-class TestEdgeCases:
 
+class TestEdgeCases:
     def test_route_with_no_openshell_no_sandbox(self):
         orch = _fresh_orchestrator()
         openswe = _mock_openswe()
@@ -928,8 +1145,12 @@ class TestEdgeCases:
         with patch("src.integrations.build_orchestrator.adaptive_router") as ar:
             ar.route.return_value = "developer"
             result = orch._route_to_agent(
-                MOCK_TASK, "developer", openswe, MOCK_RUN,
-                openshell=None, local_sandbox=None,
+                MOCK_TASK,
+                "developer",
+                openswe,
+                MOCK_RUN,
+                openshell=None,
+                local_sandbox=None,
             )
         assert result["status"] == "completed"
 
@@ -963,8 +1184,12 @@ class TestEdgeCases:
         with patch("src.integrations.build_orchestrator.adaptive_router") as ar:
             ar.route.return_value = "developer"
             result = orch._route_to_agent(
-                MOCK_TASK, "developer", openswe, MOCK_RUN,
-                openshell=openshell, local_sandbox=None,
+                MOCK_TASK,
+                "developer",
+                openswe,
+                MOCK_RUN,
+                openshell=openshell,
+                local_sandbox=None,
             )
         # Skips tier 1, falls to tier 3
         assert result["status"] == "completed"
@@ -983,8 +1208,12 @@ class TestEdgeCases:
                 with patch("src.integrations.build_orchestrator.adaptive_router") as ar:
                     ar.route.return_value = "developer"
                     r = orch._route_to_agent(
-                        {**MOCK_TASK, "step": idx}, "developer", openswe, MOCK_RUN,
-                        openshell=None, local_sandbox=None,
+                        {**MOCK_TASK, "step": idx},
+                        "developer",
+                        openswe,
+                        MOCK_RUN,
+                        openshell=None,
+                        local_sandbox=None,
                     )
                     results.append(r)
             except Exception as e:
@@ -1005,8 +1234,8 @@ class TestEdgeCases:
 # Group 10: Integration with Real Temp Dirs
 # ---------------------------------------------------------------------------
 
-class TestIntegrationTempDirs:
 
+class TestIntegrationTempDirs:
     def test_sandbox_runner_copies_real_workspace(self):
         orch = _fresh_orchestrator()
         openswe = _mock_openswe()
@@ -1018,7 +1247,9 @@ class TestIntegrationTempDirs:
             f.write("print('hello world')")
 
         try:
-            result = orch._try_sandbox_runner(MOCK_TASK, workspace, local_sandbox, openswe)
+            result = orch._try_sandbox_runner(
+                MOCK_TASK, workspace, local_sandbox, openswe
+            )
             assert result is not None
             assert result["execution_tier"] == "sandbox_runner"
             # Original workspace untouched
@@ -1036,7 +1267,9 @@ class TestIntegrationTempDirs:
             f.write("x = 1")
 
         try:
-            result = orch._try_sandbox_runner(MOCK_TASK, workspace, local_sandbox, openswe)
+            result = orch._try_sandbox_runner(
+                MOCK_TASK, workspace, local_sandbox, openswe
+            )
             assert result is None  # Exception caught
             # Workspace still exists
             assert os.path.exists(workspace)
@@ -1050,7 +1283,9 @@ class TestIntegrationTempDirs:
 
         workspace = tempfile.mkdtemp()
         try:
-            result = orch._try_sandbox_runner(MOCK_TASK, workspace, local_sandbox, openswe)
+            result = orch._try_sandbox_runner(
+                MOCK_TASK, workspace, local_sandbox, openswe
+            )
             assert result is not None
             assert result["execution_tier"] == "sandbox_runner"
         finally:
@@ -1071,8 +1306,12 @@ class TestIntegrationTempDirs:
             with patch("src.integrations.build_orchestrator.adaptive_router") as ar:
                 ar.route.return_value = "developer"
                 result = orch._route_to_agent(
-                    MOCK_TASK, "developer", openswe, {**MOCK_RUN, "workspace_dir": workspace},
-                    openshell=openshell, local_sandbox=local_sandbox,
+                    MOCK_TASK,
+                    "developer",
+                    openswe,
+                    {**MOCK_RUN, "workspace_dir": workspace},
+                    openshell=openshell,
+                    local_sandbox=local_sandbox,
                 )
             assert result["execution_tier"] == "sandbox_runner"
             assert result["status"] == "completed"

@@ -10,6 +10,7 @@ Usage::
     from config.settings import settings
     print(settings.DATABASE_URL)
 """
+
 from __future__ import annotations
 
 import re

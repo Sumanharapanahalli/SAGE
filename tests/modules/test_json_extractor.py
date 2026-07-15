@@ -1,16 +1,18 @@
 """
 Unit tests for src/modules/json_extractor.py
 """
+
 import pytest
 
 pytestmark = pytest.mark.unit
 
-from src.modules.json_extractor import extract, extract_or_default
+from src.modules.json_extractor import extract, extract_or_default  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
 # extract() — basic cases
 # ---------------------------------------------------------------------------
+
 
 class TestExtractBasic:
     def test_plain_json_object(self):
@@ -18,7 +20,7 @@ class TestExtractBasic:
         assert result == {"key": "value"}
 
     def test_plain_json_array(self):
-        result = extract('[1, 2, 3]')
+        result = extract("[1, 2, 3]")
         assert result == [1, 2, 3]
 
     def test_nested_object(self):
@@ -35,7 +37,7 @@ class TestExtractBasic:
 
     def test_integer_root_value_not_supported_as_object(self):
         # A bare integer is not a JSON object or array — returns None via pattern search
-        result = extract('42')
+        result = extract("42")
         # json.loads("42") is valid JSON (number), so it succeeds on full-string parse
         assert result == 42
 
@@ -43,6 +45,7 @@ class TestExtractBasic:
 # ---------------------------------------------------------------------------
 # extract() — markdown fence handling
 # ---------------------------------------------------------------------------
+
 
 class TestExtractMarkdownFences:
     def test_json_in_backtick_fence(self):
@@ -58,7 +61,7 @@ class TestExtractMarkdownFences:
         assert extract(text) == {"ok": True}
 
     def test_array_in_fence(self):
-        text = '```json\n[1, 2, 3]\n```'
+        text = "```json\n[1, 2, 3]\n```"
         assert extract(text) == [1, 2, 3]
 
     def test_multiline_json_in_fence(self):
@@ -70,13 +73,14 @@ class TestExtractMarkdownFences:
 # extract() — JSON embedded in prose
 # ---------------------------------------------------------------------------
 
+
 class TestExtractEmbeddedInProse:
     def test_object_in_prose(self):
         text = 'Here is the result: {"data": 42} done'
         assert extract(text) == {"data": 42}
 
     def test_array_in_prose(self):
-        text = 'The items are [1, 2, 3] and nothing else.'
+        text = "The items are [1, 2, 3] and nothing else."
         assert extract(text) == [1, 2, 3]
 
     def test_object_at_end_of_prose(self):
@@ -91,6 +95,7 @@ class TestExtractEmbeddedInProse:
 # ---------------------------------------------------------------------------
 # extract() — failure cases
 # ---------------------------------------------------------------------------
+
 
 class TestExtractFailureCases:
     def test_empty_string_returns_none(self):
@@ -115,6 +120,7 @@ class TestExtractFailureCases:
 # ---------------------------------------------------------------------------
 # extract_or_default()
 # ---------------------------------------------------------------------------
+
 
 class TestExtractOrDefault:
     def test_returns_parsed_json_when_valid(self):

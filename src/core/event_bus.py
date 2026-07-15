@@ -17,7 +17,6 @@ import asyncio
 import json
 import logging
 import threading
-import time
 import uuid
 from collections import deque
 from dataclasses import dataclass, field, asdict
@@ -32,31 +31,50 @@ logger = logging.getLogger(__name__)
 
 EVENT_TYPES = {
     # Task lifecycle
-    "task.submitted", "task.started", "task.completed", "task.failed",
-    "task.retried", "task.blocked",
+    "task.submitted",
+    "task.started",
+    "task.completed",
+    "task.failed",
+    "task.retried",
+    "task.blocked",
     # Wave execution
-    "wave.started", "wave.completed",
+    "wave.started",
+    "wave.completed",
     # Build orchestrator
-    "build.started", "build.phase_changed", "build.completed", "build.failed",
+    "build.started",
+    "build.phase_changed",
+    "build.completed",
+    "build.failed",
     # Critic / Reflection
-    "critic.scored", "reflection.started", "reflection.iteration",
-    "reflection.accepted", "reflection.rejected",
+    "critic.scored",
+    "reflection.started",
+    "reflection.iteration",
+    "reflection.accepted",
+    "reflection.rejected",
     # Budget
-    "budget.usage", "budget.warning", "budget.exceeded",
+    "budget.usage",
+    "budget.warning",
+    "budget.exceeded",
     # Consensus
-    "consensus.started", "consensus.vote", "consensus.resolved",
+    "consensus.started",
+    "consensus.vote",
+    "consensus.resolved",
     # Plan selection
-    "plan.candidates_generated", "plan.selected",
+    "plan.candidates_generated",
+    "plan.selected",
     # Agent spawning
-    "agent.spawned", "agent.completed",
+    "agent.spawned",
+    "agent.completed",
     # Generic
-    "system.info", "system.error",
+    "system.info",
+    "system.error",
 }
 
 
 @dataclass
 class Event:
     """A typed, timestamped event."""
+
     event_type: str
     data: dict = field(default_factory=dict)
     event_id: str = field(default_factory=lambda: str(uuid.uuid4()))
@@ -67,13 +85,15 @@ class Event:
 
     def to_sse(self) -> str:
         """Format as SSE message."""
-        payload = json.dumps({
-            "id": self.event_id,
-            "type": self.event_type,
-            "data": self.data,
-            "timestamp": self.timestamp,
-            "source": self.source,
-        })
+        payload = json.dumps(
+            {
+                "id": self.event_id,
+                "type": self.event_type,
+                "data": self.data,
+                "timestamp": self.timestamp,
+                "source": self.source,
+            }
+        )
         return f"event: {self.event_type}\ndata: {payload}\nid: {self.event_id}\n\n"
 
     def to_dict(self) -> dict:
@@ -83,6 +103,7 @@ class Event:
 # ──────────────────────────────────────────────────────────────────────
 # EventBus
 # ──────────────────────────────────────────────────────────────────────
+
 
 class EventBus:
     """In-process pub/sub with SSE streaming support."""

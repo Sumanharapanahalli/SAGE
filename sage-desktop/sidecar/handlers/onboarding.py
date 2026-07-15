@@ -9,6 +9,7 @@ Error mapping:
     RuntimeError (LLM unavailable) → ``RPC_SIDECAR_ERROR``  (-32000)
     ValueError   (bad YAML / name) → ``RPC_INVALID_PARAMS`` (-32602)
 """
+
 from typing import Any, Optional
 
 from rpc import RPC_INVALID_PARAMS, RPC_SIDECAR_ERROR, RpcError

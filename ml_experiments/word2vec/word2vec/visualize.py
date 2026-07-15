@@ -19,32 +19,93 @@ logger = logging.getLogger(__name__)
 # Semantic word groups for colouring
 # ---------------------------------------------------------------------------
 WORD_GROUPS: Dict[str, List[str]] = {
-    "royalty":    ["king", "queen", "prince", "princess", "duke", "duchess",
-                   "throne", "kingdom", "noble", "lord"],
-    "gender":     ["man", "woman", "boy", "girl", "male", "female",
-                   "father", "mother", "son", "daughter"],
-    "capitals":   ["paris", "london", "berlin", "rome", "madrid", "moscow",
-                   "tokyo", "beijing", "washington", "sydney"],
-    "countries":  ["france", "england", "germany", "italy", "spain", "russia",
-                   "japan", "china", "usa", "australia"],
-    "animals":    ["dog", "cat", "horse", "cow", "bird", "fish",
-                   "lion", "tiger", "wolf", "bear"],
-    "adjectives": ["good", "bad", "big", "small", "fast", "slow",
-                   "hot", "cold", "hard", "soft"],
+    "royalty": [
+        "king",
+        "queen",
+        "prince",
+        "princess",
+        "duke",
+        "duchess",
+        "throne",
+        "kingdom",
+        "noble",
+        "lord",
+    ],
+    "gender": [
+        "man",
+        "woman",
+        "boy",
+        "girl",
+        "male",
+        "female",
+        "father",
+        "mother",
+        "son",
+        "daughter",
+    ],
+    "capitals": [
+        "paris",
+        "london",
+        "berlin",
+        "rome",
+        "madrid",
+        "moscow",
+        "tokyo",
+        "beijing",
+        "washington",
+        "sydney",
+    ],
+    "countries": [
+        "france",
+        "england",
+        "germany",
+        "italy",
+        "spain",
+        "russia",
+        "japan",
+        "china",
+        "usa",
+        "australia",
+    ],
+    "animals": [
+        "dog",
+        "cat",
+        "horse",
+        "cow",
+        "bird",
+        "fish",
+        "lion",
+        "tiger",
+        "wolf",
+        "bear",
+    ],
+    "adjectives": [
+        "good",
+        "bad",
+        "big",
+        "small",
+        "fast",
+        "slow",
+        "hot",
+        "cold",
+        "hard",
+        "soft",
+    ],
 }
 
 GROUP_COLOURS: Dict[str, str] = {
-    "royalty":    "#e74c3c",   # red
-    "gender":     "#3498db",   # blue
-    "capitals":   "#2ecc71",   # green
-    "countries":  "#f39c12",   # orange
-    "animals":    "#9b59b6",   # purple
-    "adjectives": "#1abc9c",   # teal
-    "other":      "#95a5a6",   # grey
+    "royalty": "#e74c3c",  # red
+    "gender": "#3498db",  # blue
+    "capitals": "#2ecc71",  # green
+    "countries": "#f39c12",  # orange
+    "animals": "#9b59b6",  # purple
+    "adjectives": "#1abc9c",  # teal
+    "other": "#95a5a6",  # grey
 }
 
 
 # ---------------------------------------------------------------------------
+
 
 def _select_words(
     vocab: Vocabulary,
@@ -111,8 +172,8 @@ def tsne_plot(
         return save_path
 
     # ── Embeddings ────────────────────────────────────────────────────────────
-    W = model.get_embeddings()        # (V, D) — L2-normalised
-    X = W[np.array(indices)]          # (n, D)
+    W = model.get_embeddings()  # (V, D) — L2-normalised
+    X = W[np.array(indices)]  # (n, D)
 
     # ── t-SNE ─────────────────────────────────────────────────────────────────
     logger.info("Running t-SNE on %d words (perplexity=%d)…", n, perplexity)
@@ -126,7 +187,7 @@ def tsne_plot(
         random_state=42,
         verbose=0,
     )
-    X2d = tsne.fit_transform(X)     # (n, 2)
+    X2d = tsne.fit_transform(X)  # (n, 2)
 
     # ── Plot ──────────────────────────────────────────────────────────────────
     fig, ax = plt.subplots(figsize=figsize, facecolor="#1a1a2e")
@@ -150,8 +211,13 @@ def tsne_plot(
 
     # Draw analogy lines (king-man+woman=queen style arrows)
     _draw_analogy_arrow(
-        ax, X2d, words,
-        a="king", b="man", c="woman", d="queen",
+        ax,
+        X2d,
+        words,
+        a="king",
+        b="man",
+        c="woman",
+        d="queen",
         colour="#ffd700",
     )
 
@@ -191,7 +257,10 @@ def _draw_analogy_arrow(
     ax: plt.Axes,
     X2d: np.ndarray,
     words: List[str],
-    a: str, b: str, c: str, d: str,
+    a: str,
+    b: str,
+    c: str,
+    d: str,
     colour: str = "#ffd700",
 ) -> None:
     """Draw a labelled arrow illustrating an analogy relationship."""
@@ -205,7 +274,8 @@ def _draw_analogy_arrow(
 
     ax.annotate(
         "",
-        xy=xy(d), xytext=xy(c),
+        xy=xy(d),
+        xytext=xy(c),
         arrowprops=dict(
             arrowstyle="->",
             color=colour,
@@ -217,7 +287,8 @@ def _draw_analogy_arrow(
     mx = (xy(c)[0] + xy(d)[0]) / 2
     my = (xy(c)[1] + xy(d)[1]) / 2
     ax.text(
-        mx, my,
+        mx,
+        my,
         f"{a}−{b}+{c}={d}",
         fontsize=7,
         color=colour,

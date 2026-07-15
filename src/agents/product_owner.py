@@ -45,6 +45,7 @@ _MIN_CLARITY_SCORE = 6
 # TypedDicts for internal LLM response shapes
 # ---------------------------------------------------------------------------
 
+
 class AnalysisResult(TypedDict, total=False):
     needs_clarification: bool
     clarity_score: int
@@ -66,6 +67,7 @@ class ClarifyingQuestion(TypedDict, total=False):
 # Domain dataclasses
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class UserPersona:
     name: str
@@ -79,10 +81,10 @@ class UserPersona:
 class UserStory:
     id: str
     title: str
-    description: str   # "As a [persona], I want [capability] so that [benefit]"
+    description: str  # "As a [persona], I want [capability] so that [benefit]"
     persona: str
     acceptance_criteria: List[str]
-    priority: str      # "Must Have" | "Should Have" | "Could Have" | "Won't Have"
+    priority: str  # "Must Have" | "Should Have" | "Could Have" | "Won't Have"
     story_points: int
     business_value: str
     dependencies: List[str]
@@ -105,6 +107,7 @@ class ProductBacklog:
 # ---------------------------------------------------------------------------
 # Module-level helpers (pure functions, no LLM dependency)
 # ---------------------------------------------------------------------------
+
 
 def _validate_input(text: str) -> None:
     """Raise ValueError for empty or oversized input."""
@@ -134,7 +137,7 @@ def _parse_json_object(text: str) -> Dict:
     except json.JSONDecodeError:
         pass
 
-    for match in re.finditer(r'\{', text):
+    for match in re.finditer(r"\{", text):
         try:
             obj, _ = json.JSONDecoder().raw_decode(text, match.start())
             if isinstance(obj, dict):
@@ -154,7 +157,7 @@ def _parse_json_array(text: str) -> List:
     except json.JSONDecodeError:
         pass
 
-    for match in re.finditer(r'\[', text):
+    for match in re.finditer(r"\[", text):
         try:
             arr, _ = json.JSONDecoder().raw_decode(text, match.start())
             if isinstance(arr, list):
@@ -169,8 +172,7 @@ def _format_qa_context(follow_up_qa: Optional[List[Dict]]) -> str:
     if not follow_up_qa:
         return ""
     lines = "\n".join(
-        f"Q: {qa.get('question', '')}\nA: {qa.get('answer', '')}"
-        for qa in follow_up_qa
+        f"Q: {qa.get('question', '')}\nA: {qa.get('answer', '')}" for qa in follow_up_qa
     )
     return f"\n\nCUSTOMER ANSWERS:\n{lines}"
 
@@ -200,6 +202,7 @@ def _validate_backlog_standards(data: Dict) -> None:
 # Agent class
 # ---------------------------------------------------------------------------
 
+
 class ProductOwnerAgent:
     """
     Product Owner Agent - converts customer inputs into structured requirements.
@@ -227,6 +230,7 @@ class ProductOwnerAgent:
             with self._init_lock:
                 if self._llm_gateway is None:
                     from src.core.llm_gateway import llm_gateway
+
                     self._llm_gateway = llm_gateway
         return self._llm_gateway
 
@@ -236,6 +240,7 @@ class ProductOwnerAgent:
             with self._init_lock:
                 if self._audit_logger is None:
                     from src.memory.audit_logger import audit_logger
+
                     self._audit_logger = audit_logger
         return self._audit_logger
 
@@ -279,7 +284,9 @@ class ProductOwnerAgent:
                     "handoff_ready": False,
                 }
 
-            backlog = self._create_product_backlog(customer_input, analysis, follow_up_qa)
+            backlog = self._create_product_backlog(
+                customer_input, analysis, follow_up_qa
+            )
             self.audit.log_event(
                 "requirements_proposed",
                 {
@@ -397,11 +404,15 @@ Return the complete updated backlog using the exact same JSON structure as the i
             }
         except json.JSONDecodeError as exc:
             self.logger.error("Backlog refinement returned invalid JSON: %s", exc)
-            self.audit.log_event("refinement_error", {"error": str(exc), "requester_id": requester_id})
+            self.audit.log_event(
+                "refinement_error", {"error": str(exc), "requester_id": requester_id}
+            )
             return {"status": "error", "error": str(exc)}
         except KeyError as exc:
             self.logger.error("Unexpected refinement response shape: %s", exc)
-            self.audit.log_event("refinement_error", {"error": str(exc), "requester_id": requester_id})
+            self.audit.log_event(
+                "refinement_error", {"error": str(exc), "requester_id": requester_id}
+            )
             return {"status": "error", "error": str(exc)}
 
     def prioritize_stories(
@@ -417,7 +428,9 @@ Return the complete updated backlog using the exact same JSON structure as the i
         if not stories:
             raise ValueError("stories must not be empty")
 
-        safe_context = _sanitise_input(business_context) if business_context else "Not provided"
+        safe_context = (
+            _sanitise_input(business_context) if business_context else "Not provided"
+        )
 
         prompt = f"""You are a senior Product Owner applying MoSCoW prioritization.
 
@@ -459,13 +472,17 @@ Return JSON:
             if total > 0 and len(result.get("must_have", [])) > cap:
                 self.logger.warning(
                     "LLM assigned %d/%d stories as Must Have (>60%%) — capping to %d",
-                    len(result["must_have"]), total, cap,
+                    len(result["must_have"]),
+                    total,
+                    cap,
                 )
                 overflow = result["must_have"][cap:]
                 result["must_have"] = result["must_have"][:cap]
                 for s in overflow:
                     s["priority"] = "Should Have"
-                    s.setdefault("priority_rationale", "Reclassified: Must Have cap exceeded")
+                    s.setdefault(
+                        "priority_rationale", "Reclassified: Must Have cap exceeded"
+                    )
                 result["should_have"] = overflow + result.get("should_have", [])
 
             self.audit.log_event(

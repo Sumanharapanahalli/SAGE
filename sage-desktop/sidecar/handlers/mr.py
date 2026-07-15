@@ -34,10 +34,11 @@ AUTH is a GitLab PAT from env/config (GITLAB_URL / GITLAB_TOKEN) — no OAuth, n
 redirect, no port. ``mr.config`` reports the missing-token case as a clean state
 rather than an error, so the UI can render a setup prompt.
 """
+
 from __future__ import annotations
 
 import logging
-from typing import Any, Optional
+from typing import Any
 
 import jobs
 from rpc import RPC_INVALID_PARAMS, RPC_SIDECAR_ERROR, RpcError
@@ -54,6 +55,7 @@ _agent_factory = None
 
 
 # ── agent access ───────────────────────────────────────────────────────────
+
 
 def _get_agent():
     if _agent_factory is not None:
@@ -91,6 +93,7 @@ def _require_configured():
 
 # ── param helpers ──────────────────────────────────────────────────────────
 
+
 def _require_dict(params: Any) -> dict:
     if not isinstance(params, dict):
         raise RpcError(RPC_INVALID_PARAMS, "params must be an object")
@@ -123,6 +126,7 @@ def _raise_if_agent_error(result: Any, method: str) -> dict:
 
 # ── RPC methods ────────────────────────────────────────────────────────────
 
+
 def config(params: Any) -> dict:
     """Is GitLab reachable from this host? Never an error — a state."""
     _require_dict(params if params is not None else {})
@@ -142,7 +146,8 @@ def config(params: Any) -> dict:
         "configured": configured,
         **cfg,
         "message": (
-            "" if configured
+            ""
+            if configured
             else "Set GITLAB_URL and GITLAB_TOKEN (env or config.yaml) to enable GitLab."
         ),
     }
@@ -218,7 +223,9 @@ def propose_create(params: Any) -> dict:
             f"/projects/{project_id}/issues/{issue_iid}"
         )
         if err:
-            raise RpcError(RPC_SIDECAR_ERROR, f"could not fetch issue #{issue_iid}: {err}")
+            raise RpcError(
+                RPC_SIDECAR_ERROR, f"could not fetch issue #{issue_iid}: {err}"
+            )
         issue_title = str((issue_data or {}).get("title", ""))
     except RpcError:
         raise
@@ -270,6 +277,7 @@ def comment(params: Any) -> dict:
 
 
 # ── approved-proposal executor ─────────────────────────────────────────────
+
 
 async def _execute_mr_create(proposal) -> dict:
     """Executor for an APPROVED mr_create proposal — the only path that POSTs.

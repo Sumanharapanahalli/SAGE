@@ -1,17 +1,20 @@
 import json
 import logging
 import uuid
-from typing import Dict, Any, Tuple
+from typing import Dict, Any
 from src.core.llm_gateway import llm_gateway
 from src.core.project_loader import project_config
 from src.memory.vector_store import vector_memory
 from src.memory.audit_logger import audit_logger
 
+
 class AnalystAgent:
     def __init__(self):
         self.logger = logging.getLogger("AnalystAgent")
 
-    def _emit_agent_error(self, task_id: str, exc: Exception, trace_id: str) -> Dict[str, Any]:
+    def _emit_agent_error(
+        self, task_id: str, exc: Exception, trace_id: str
+    ) -> Dict[str, Any]:
         """Emit a structured agent_error event to the audit logger on failure."""
         event = {
             "event": "agent_error",
@@ -31,7 +34,9 @@ class AnalystAgent:
             )
         except Exception:
             # Never let error reporting mask the original failure.
-            self.logger.critical("Failed to emit agent_error event: %s", json.dumps(event))
+            self.logger.critical(
+                "Failed to emit agent_error event: %s", json.dumps(event)
+            )
         return event
 
     def analyze_log(self, log_entry: str) -> Dict[str, Any]:
@@ -46,7 +51,9 @@ class AnalystAgent:
 
         # 1. RAG Lookup
         context_docs = vector_memory.search(log_entry, k=2)
-        context_str = "\n".join(context_docs) if context_docs else "No prior context found."
+        context_str = (
+            "\n".join(context_docs) if context_docs else "No prior context found."
+        )
 
         # 2. Construct Prompt — domain-specific via project_loader
         system_prompt, user_tmpl = project_config.get_analyst_prompts()
@@ -64,7 +71,9 @@ class AnalystAgent:
         try:
             response_text = llm_gateway.generate(user_prompt, system_prompt)
             # clean json markdown if present
-            response_text = response_text.replace("```json", "").replace("```", "").strip()
+            response_text = (
+                response_text.replace("```json", "").replace("```", "").strip()
+            )
             analysis = json.loads(response_text)
         except json.JSONDecodeError:
             self.logger.error("LLM failed to produce valid JSON.")
@@ -72,10 +81,12 @@ class AnalystAgent:
                 "severity": "UNKNOWN",
                 "root_cause_hypothesis": "AI Output Parsing Error",
                 "recommended_action": "Manual Review Required",
-                "raw_output": response_text
+                "raw_output": response_text,
             }
         except Exception as e:
-            self._emit_agent_error(task_id=log_entry[:200], exc=e, trace_id=str(uuid.uuid4()))
+            self._emit_agent_error(
+                task_id=log_entry[:200], exc=e, trace_id=str(uuid.uuid4())
+            )
             return {"error": str(e)}
 
         # 4. Compliance Audit
@@ -83,13 +94,15 @@ class AnalystAgent:
             actor="AnalystAgent",
             action_type="ANALYSIS_PROPOSAL",
             input_context=log_entry,
-            output_content=json.dumps(analysis)
+            output_content=json.dumps(analysis),
         )
-        
+
         analysis["trace_id"] = trace_id
         return analysis
 
-    def learn_from_feedback(self, log_entry: str, human_comment: str, original_analysis: Dict):
+    def learn_from_feedback(
+        self, log_entry: str, human_comment: str, original_analysis: Dict
+    ):
         """
         Ingest human corrections to improve future responses.
         """
@@ -99,17 +112,20 @@ class AnalystAgent:
             f"HUMAN CORRECTION: {human_comment}\n"
             "LESSON: In future, prioritize the Human Correction."
         )
-        
+
         # Save to Vector DB
-        vector_memory.add_feedback(learning_text, metadata={"type": "human_feedback", "source": "AnalystAgent"})
-        
+        vector_memory.add_feedback(
+            learning_text, metadata={"type": "human_feedback", "source": "AnalystAgent"}
+        )
+
         # Audit the feedback
         audit_logger.log_event(
             actor="Human_Engineer",
             action_type="FEEDBACK_LEARNING",
             input_context=json.dumps(original_analysis),
-            output_content=human_comment
+            output_content=human_comment,
         )
         self.logger.info("Feedback digested and improved.")
+
 
 analyst_agent = AnalystAgent()

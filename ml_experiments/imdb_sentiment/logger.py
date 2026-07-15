@@ -11,6 +11,7 @@ Logs every run with:
 No external tracking dependency (MLflow / W&B) — zero infra required.
 Swap the backend by subclassing ``ExperimentLogger``.
 """
+
 from __future__ import annotations
 
 import json

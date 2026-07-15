@@ -1,7 +1,6 @@
 import json
 import logging
 import os
-import time
 import uuid
 from datetime import datetime, timezone
 
@@ -43,6 +42,7 @@ def _resolve_db_path() -> str:
 
 DB_PATH = _resolve_db_path()
 
+
 class AuditLogger:
     def __init__(self, db_path: str = DB_PATH):
         self.db_path = db_path
@@ -56,7 +56,7 @@ class AuditLogger:
         cursor = conn.cursor()
 
         # Schema: Immutable log of interactions
-        cursor.execute('''
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS compliance_audit_log (
                 id TEXT PRIMARY KEY,
                 timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -74,29 +74,33 @@ class AuditLogger:
                 approver_email TEXT,         -- Email of the approver
                 approver_provider TEXT       -- Auth provider: "oidc" | "api_key" | "anonymous"
             )
-        ''')
+        """)
         conn.commit()
 
         # Idempotent migrations for databases created before named-approvals / access-audit features
         _identity_columns = [
-            ("trace_id",           "TEXT"),
-            ("request_id",         "TEXT"),    # Per-HTTP-request correlation id (UUID4)
-            ("event_type",         "TEXT"),
-            ("status",             "TEXT DEFAULT 'OK'"),
-            ("approved_by",        "TEXT"),
-            ("approver_role",      "TEXT"),
-            ("approver_email",     "TEXT"),
-            ("approver_provider",  "TEXT"),
+            ("trace_id", "TEXT"),
+            ("request_id", "TEXT"),  # Per-HTTP-request correlation id (UUID4)
+            ("event_type", "TEXT"),
+            ("status", "TEXT DEFAULT 'OK'"),
+            ("approved_by", "TEXT"),
+            ("approver_role", "TEXT"),
+            ("approver_email", "TEXT"),
+            ("approver_provider", "TEXT"),
         ]
         for col_name, col_type in _identity_columns:
             try:
-                conn.execute(f"ALTER TABLE compliance_audit_log ADD COLUMN {col_name} {col_type}")
+                conn.execute(
+                    f"ALTER TABLE compliance_audit_log ADD COLUMN {col_name} {col_type}"
+                )
                 conn.commit()
-                self.logger.info("Migrated compliance_audit_log: added column %s", col_name)
+                self.logger.info(
+                    "Migrated compliance_audit_log: added column %s", col_name
+                )
             except Exception:
                 pass  # column already exists
 
-        cursor.execute('''
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS chat_messages (
                 id         TEXT PRIMARY KEY,
                 user_id    TEXT NOT NULL,
@@ -107,7 +111,7 @@ class AuditLogger:
                 page_context TEXT,
                 created_at TEXT NOT NULL
             )
-        ''')
+        """)
         conn.commit()
 
         # chat_messages — add message_type and metadata columns (migration)
@@ -145,8 +149,18 @@ class AuditLogger:
                    (id, user_id, session_id, solution, role, content, page_context, created_at,
                     message_type, metadata)
                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                (msg_id, user_id, session_id, solution, role, content, page_context, created_at,
-                 message_type, meta_str),
+                (
+                    msg_id,
+                    user_id,
+                    session_id,
+                    solution,
+                    role,
+                    content,
+                    page_context,
+                    created_at,
+                    message_type,
+                    meta_str,
+                ),
             )
             conn.commit()
             conn.close()
@@ -225,6 +239,7 @@ class AuditLogger:
         if request_id is None:
             try:
                 from src.core.request_context import get_request_id
+
                 request_id = get_request_id()
             except Exception:
                 request_id = ""
@@ -238,26 +253,38 @@ class AuditLogger:
             conn = get_connection(self.db_path, row_factory=None)
             cursor = conn.cursor()
             cursor.execute(
-                '''
+                """
                 INSERT INTO compliance_audit_log
                     (id, timestamp, request_id, actor, action_type, input_context, output_content,
                      metadata, approved_by, approver_role, approver_email, approver_provider)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ''',
+                """,
                 (
-                    event_id, timestamp, (request_id or None), actor, action_type,
-                    input_context, output_content, metadata_json,
-                    approved_by, approver_role, approver_email, approver_provider,
+                    event_id,
+                    timestamp,
+                    (request_id or None),
+                    actor,
+                    action_type,
+                    input_context,
+                    output_content,
+                    metadata_json,
+                    approved_by,
+                    approver_role,
+                    approver_email,
+                    approver_provider,
                 ),
             )
             conn.commit()
             conn.close()
-            self.logger.info("Audit Logged: %s by %s (ID: %s)", action_type, actor, event_id)
+            self.logger.info(
+                "Audit Logged: %s by %s (ID: %s)", action_type, actor, event_id
+            )
             return event_id
         except Exception as e:
             self.logger.critical("FAILED TO WRITE AUDIT LOG: %s", e)
             # In a medical device, failure to log might mean we must STOP the system.
             raise e
+
 
 # Global Access Point
 audit_logger = AuditLogger()

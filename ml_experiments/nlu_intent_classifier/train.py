@@ -56,6 +56,7 @@ logger = logging.getLogger("nlu_train")
 # Reproducibility
 # ---------------------------------------------------------------------------
 
+
 def set_seed(seed: int) -> None:
     random.seed(seed)
     np.random.seed(seed)
@@ -72,6 +73,7 @@ def set_seed(seed: int) -> None:
 # Training loop
 # ---------------------------------------------------------------------------
 
+
 def train_epoch(
     model: torch.nn.Module,
     loader: DataLoader,
@@ -84,9 +86,9 @@ def train_epoch(
     total_loss = 0.0
     for batch in loader:
         optimizer.zero_grad()
-        input_ids      = batch["input_ids"].to(device)
+        input_ids = batch["input_ids"].to(device)
         attention_mask = batch["attention_mask"].to(device)
-        labels         = batch["label"].to(device)
+        labels = batch["label"].to(device)
 
         # Mask out-of-scope samples (label == -1) from loss
         valid = labels >= 0
@@ -117,9 +119,9 @@ def eval_epoch(
     model.eval()
     total_loss, all_preds, all_labels = 0.0, [], []
     for batch in loader:
-        input_ids      = batch["input_ids"].to(device)
+        input_ids = batch["input_ids"].to(device)
         attention_mask = batch["attention_mask"].to(device)
-        labels         = batch["label"].to(device)
+        labels = batch["label"].to(device)
 
         valid = labels >= 0
         if valid.sum() == 0:
@@ -142,6 +144,7 @@ def eval_epoch(
 # HF Dataset → PyTorch DataLoader
 # ---------------------------------------------------------------------------
 
+
 def make_loader(hf_dataset: Any, batch_size: int, shuffle: bool) -> DataLoader:
     hf_dataset = hf_dataset.with_format("torch")
     return DataLoader(hf_dataset, batch_size=batch_size, shuffle=shuffle)
@@ -151,14 +154,15 @@ def make_loader(hf_dataset: Any, batch_size: int, shuffle: bool) -> DataLoader:
 # Main
 # ---------------------------------------------------------------------------
 
+
 def main(cfg_path: str) -> dict[str, Any]:
     # ── Config ──────────────────────────────────────────────────────────
     with open(cfg_path) as f:
         cfg = yaml.safe_load(f)
 
-    seed    = cfg["experiment"]["random_seed"]
-    outdir  = Path(cfg["output"]["model_dir"])
-    tokdir  = Path(cfg["output"]["tokenizer_dir"])
+    seed = cfg["experiment"]["random_seed"]
+    outdir = Path(cfg["output"]["model_dir"])
+    tokdir = Path(cfg["output"]["tokenizer_dir"])
     metrics_path = Path(cfg["output"]["metrics_path"])
     outdir.mkdir(parents=True, exist_ok=True)
     tokdir.mkdir(parents=True, exist_ok=True)
@@ -173,18 +177,20 @@ def main(cfg_path: str) -> dict[str, Any]:
     mlflow.set_experiment(cfg["experiment"]["name"])
 
     with mlflow.start_run() as run:
-        mlflow.log_params({
-            "backbone":      cfg["model"]["backbone"],
-            "epochs":        cfg["training"]["epochs"],
-            "batch_size":    cfg["training"]["batch_size"],
-            "lr":            cfg["training"]["learning_rate"],
-            "weight_decay":  cfg["training"]["weight_decay"],
-            "warmup_ratio":  cfg["training"]["warmup_ratio"],
-            "max_length":    cfg["data"]["max_length"],
-            "test_size":     cfg["data"]["test_size"],
-            "val_size":      cfg["data"]["val_size"],
-            "seed":          seed,
-        })
+        mlflow.log_params(
+            {
+                "backbone": cfg["model"]["backbone"],
+                "epochs": cfg["training"]["epochs"],
+                "batch_size": cfg["training"]["batch_size"],
+                "lr": cfg["training"]["learning_rate"],
+                "weight_decay": cfg["training"]["weight_decay"],
+                "warmup_ratio": cfg["training"]["warmup_ratio"],
+                "max_length": cfg["data"]["max_length"],
+                "test_size": cfg["data"]["test_size"],
+                "val_size": cfg["data"]["val_size"],
+                "seed": seed,
+            }
+        )
         mlflow.log_artifact(cfg_path, artifact_path="config")
 
         # ── Tokenizer (fit-free — no leakage risk) ───────────────────
@@ -198,21 +204,26 @@ def main(cfg_path: str) -> dict[str, Any]:
         cfg["model"]["num_labels"] = num_labels
         logger.info("Number of intent classes: %d", num_labels)
 
-        mlflow.log_params({
-            "num_labels":        num_labels,
-            "class_imbalance":   data_report.class_imbalance_flag,
-            "imbalance_ratio":   round(data_report.imbalance_ratio, 2),
-            "train_samples":     data_report.train_size,
-            "val_samples":       data_report.val_size,
-            "test_samples":      data_report.test_size,
-        })
+        mlflow.log_params(
+            {
+                "num_labels": num_labels,
+                "class_imbalance": data_report.class_imbalance_flag,
+                "imbalance_ratio": round(data_report.imbalance_ratio, 2),
+                "train_samples": data_report.train_size,
+                "val_samples": data_report.val_size,
+                "test_samples": data_report.test_size,
+            }
+        )
 
-        train_loader = make_loader(dataset_dict["train"],
-                                   cfg["training"]["batch_size"], shuffle=True)
-        val_loader   = make_loader(dataset_dict["val"],
-                                   cfg["training"]["batch_size"], shuffle=False)
-        test_loader  = make_loader(dataset_dict["test"],
-                                   cfg["training"]["batch_size"], shuffle=False)
+        train_loader = make_loader(
+            dataset_dict["train"], cfg["training"]["batch_size"], shuffle=True
+        )
+        val_loader = make_loader(
+            dataset_dict["val"], cfg["training"]["batch_size"], shuffle=False
+        )
+        test_loader = make_loader(
+            dataset_dict["test"], cfg["training"]["batch_size"], shuffle=False
+        )
 
         # ── Model ────────────────────────────────────────────────────
         model = AutoModelForSequenceClassification.from_pretrained(
@@ -229,47 +240,59 @@ def main(cfg_path: str) -> dict[str, Any]:
             lr=cfg["training"]["learning_rate"],
             weight_decay=cfg["training"]["weight_decay"],
         )
-        total_steps   = len(train_loader) * cfg["training"]["epochs"]
-        warmup_steps  = int(total_steps * cfg["training"]["warmup_ratio"])
-        scheduler     = get_linear_schedule_with_warmup(
+        total_steps = len(train_loader) * cfg["training"]["epochs"]
+        warmup_steps = int(total_steps * cfg["training"]["warmup_ratio"])
+        scheduler = get_linear_schedule_with_warmup(
             optimizer, warmup_steps, total_steps
         )
 
         # ── Training loop ────────────────────────────────────────────
         best_val_loss = float("inf")
-        patience_ctr  = 0
-        patience      = cfg["training"]["early_stopping_patience"]
+        patience_ctr = 0
+        patience = cfg["training"]["early_stopping_patience"]
 
         for epoch in range(1, cfg["training"]["epochs"] + 1):
             t0 = time.perf_counter()
             train_loss = train_epoch(
-                model, train_loader, optimizer, scheduler,
-                device, cfg["training"]["gradient_clip"],
+                model,
+                train_loader,
+                optimizer,
+                scheduler,
+                device,
+                cfg["training"]["gradient_clip"],
             )
             val_loss, val_preds, val_labels = eval_epoch(model, val_loader, device)
             elapsed = time.perf_counter() - t0
 
-            val_metrics = compute_metrics(val_preds, val_labels,
-                                          label_enc.classes_, prefix="val")
+            val_metrics = compute_metrics(
+                val_preds, val_labels, label_enc.classes_, prefix="val"
+            )
 
             logger.info(
                 "Epoch %d/%d | train_loss=%.4f val_loss=%.4f "
                 "val_acc=%.3f val_f1=%.3f | %.1fs",
-                epoch, cfg["training"]["epochs"],
-                train_loss, val_loss,
-                val_metrics["val_accuracy"], val_metrics["val_f1_macro"],
+                epoch,
+                cfg["training"]["epochs"],
+                train_loss,
+                val_loss,
+                val_metrics["val_accuracy"],
+                val_metrics["val_f1_macro"],
                 elapsed,
             )
             mlflow.log_metrics(
-                {"train_loss": train_loss, "val_loss": val_loss,
-                 **val_metrics, "epoch_seconds": elapsed},
+                {
+                    "train_loss": train_loss,
+                    "val_loss": val_loss,
+                    **val_metrics,
+                    "epoch_seconds": elapsed,
+                },
                 step=epoch,
             )
 
             # Early stopping
             if val_loss < best_val_loss:
                 best_val_loss = val_loss
-                patience_ctr  = 0
+                patience_ctr = 0
                 model.save_pretrained(str(outdir))
                 logger.info("  ✓ New best model saved (val_loss=%.4f)", best_val_loss)
             else:
@@ -282,8 +305,9 @@ def main(cfg_path: str) -> dict[str, Any]:
         model = AutoModelForSequenceClassification.from_pretrained(str(outdir))
         model.to(device)
         _, test_preds, test_labels = eval_epoch(model, test_loader, device)
-        test_metrics = compute_metrics(test_preds, test_labels,
-                                       label_enc.classes_, prefix="test")
+        test_metrics = compute_metrics(
+            test_preds, test_labels, label_enc.classes_, prefix="test"
+        )
 
         logger.info("── Test results ─────────────────────────────")
         for k, v in test_metrics.items():
@@ -293,7 +317,8 @@ def main(cfg_path: str) -> dict[str, Any]:
 
         # ── Bias evaluation ──────────────────────────────────────────
         bias_report = run_bias_evaluation(
-            test_preds, test_labels,
+            test_preds,
+            test_labels,
             label_enc.classes_,
             bias_slices=cfg["data"]["bias_slices"],
         )
@@ -320,6 +345,7 @@ def main(cfg_path: str) -> dict[str, Any]:
 
         # ── Model card ───────────────────────────────────────────────
         from model_card_generator import generate_model_card
+
         card_path = generate_model_card(cfg, final_metrics, label_enc.classes_)
         mlflow.log_artifact(str(card_path), artifact_path="model_card")
         logger.info("Model card → %s", card_path)
@@ -330,7 +356,8 @@ def main(cfg_path: str) -> dict[str, Any]:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="NLU intent classifier training")
-    parser.add_argument("--config", default="config.yaml",
-                        help="Path to YAML config file")
+    parser.add_argument(
+        "--config", default="config.yaml", help="Path to YAML config file"
+    )
     args = parser.parse_args()
     main(args.config)

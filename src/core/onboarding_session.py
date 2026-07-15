@@ -28,9 +28,10 @@ _SESSION_TTL = 3600  # 1 hour
 # Data structures
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class ChatMessage:
-    role: str          # "assistant" | "user"
+    role: str  # "assistant" | "user"
     content: str
     ts: float = field(default_factory=time.time)
 
@@ -47,7 +48,7 @@ class GatheredInfo:
 @dataclass
 class OnboardingSession:
     session_id: str
-    state: str          # "gathering" | "ready" | "generating" | "complete"
+    state: str  # "gathering" | "ready" | "generating" | "complete"
     messages: List[ChatMessage] = field(default_factory=list)
     info: GatheredInfo = field(default_factory=GatheredInfo)
     proposal_trace_id: Optional[str] = None
@@ -57,18 +58,20 @@ class OnboardingSession:
 
     def to_dict(self) -> dict:
         return {
-            "session_id":         self.session_id,
-            "state":              self.state,
-            "messages":           [{"role": m.role, "content": m.content, "ts": m.ts}
-                                   for m in self.messages],
+            "session_id": self.session_id,
+            "state": self.state,
+            "messages": [
+                {"role": m.role, "content": m.content, "ts": m.ts}
+                for m in self.messages
+            ],
             "info": {
-                "description":          self.info.description,
-                "solution_name":        self.info.solution_name,
+                "description": self.info.description,
+                "solution_name": self.info.solution_name,
                 "compliance_standards": self.info.compliance_standards,
-                "integrations":         self.info.integrations,
-                "team_context":         self.info.team_context,
+                "integrations": self.info.integrations,
+                "team_context": self.info.team_context,
             },
-            "proposal_trace_id":  self.proposal_trace_id,
+            "proposal_trace_id": self.proposal_trace_id,
             "solution_name_final": self.solution_name_final,
         }
 
@@ -130,6 +133,7 @@ Set ready=true only when you have: description (non-empty) AND solution_name (no
 # LLM conversation turn
 # ---------------------------------------------------------------------------
 
+
 def _run_conversation_turn(session: OnboardingSession, user_message: str) -> str:
     """
     Send the conversation history + new user message to the LLM.
@@ -143,7 +147,7 @@ def _run_conversation_turn(session: OnboardingSession, user_message: str) -> str
 
     # Build the conversation prompt
     history_lines = []
-    for msg in session.messages[-10:]:   # keep last 10 messages to stay within context
+    for msg in session.messages[-10:]:  # keep last 10 messages to stay within context
         prefix = "SAGE" if msg.role == "assistant" else "User"
         history_lines.append(f"{prefix}: {msg.content}")
     history_lines.append(f"User: {user_message}")
@@ -179,7 +183,7 @@ def _run_conversation_turn(session: OnboardingSession, user_message: str) -> str
         clean = re.sub(r"```(?:json)?\s*\n?", "", raw)
         clean = re.sub(r"\n?```", "", clean).strip()
         # Find the JSON object
-        match = re.search(r'\{.*\}', clean, re.DOTALL)
+        match = re.search(r"\{.*\}", clean, re.DOTALL)
         if match:
             data = json.loads(match.group())
         else:
@@ -206,12 +210,18 @@ def _run_conversation_turn(session: OnboardingSession, user_message: str) -> str
 
         if ready and session.info.description and session.info.solution_name:
             session.state = "ready"
-            logger.info("Onboarding session %s is ready to generate", session.session_id)
+            logger.info(
+                "Onboarding session %s is ready to generate", session.session_id
+            )
 
     except Exception as e:
         logger.warning("Failed to parse LLM JSON response: %s — raw: %s", e, raw[:200])
         # Fall back: use raw text as reply, don't update extracted info
-        reply_text = raw.strip() if raw.strip() else "Could you tell me more about what you build?"
+        reply_text = (
+            raw.strip()
+            if raw.strip()
+            else "Could you tell me more about what you build?"
+        )
 
     return reply_text or "Thanks! Can you tell me a bit more?"
 
@@ -219,6 +229,7 @@ def _run_conversation_turn(session: OnboardingSession, user_message: str) -> str
 # ---------------------------------------------------------------------------
 # Public session API
 # ---------------------------------------------------------------------------
+
 
 def create_session() -> OnboardingSession:
     """Create a new onboarding session with the opening SAGE message."""
@@ -257,9 +268,9 @@ def send_message(session_id: str, user_message: str) -> dict:
 
     if session.state in ("generating", "complete"):
         return {
-            "reply":   "Your solution is already being generated. Check the Proposals panel to approve it.",
-            "state":   session.state,
-            "info":    session.info.__dict__.copy(),
+            "reply": "Your solution is already being generated. Check the Proposals panel to approve it.",
+            "state": session.state,
+            "info": session.info.__dict__.copy(),
             "session_id": session_id,
         }
 
@@ -275,9 +286,9 @@ def send_message(session_id: str, user_message: str) -> dict:
     session.updated_at = time.time()
 
     return {
-        "reply":      reply,
-        "state":      session.state,
-        "info":       session.info.__dict__.copy(),
+        "reply": reply,
+        "state": session.state,
+        "info": session.info.__dict__.copy(),
         "session_id": session_id,
     }
 
@@ -293,34 +304,40 @@ def request_generate(session_id: str) -> dict:
         return {"error": "Session not found or expired."}
 
     if not session.info.description:
-        return {"error": "Not enough information gathered yet. Continue the conversation."}
+        return {
+            "error": "Not enough information gathered yet. Continue the conversation."
+        }
 
     if session.state not in ("ready", "gathering"):
-        return {"error": f"Session is in state '{session.state}' — cannot generate now."}
+        return {
+            "error": f"Session is in state '{session.state}' — cannot generate now."
+        }
 
     session.state = "generating"
     session.updated_at = time.time()
 
     try:
         from src.core.proposal_store import get_proposal_store, RiskClass
+
         store = get_proposal_store()
         from src.interface.api import _get_required_role
+
         proposal = store.create(
-            action_type   = "onboarding_generate",
-            risk_class    = RiskClass.STATEFUL,
-            payload       = {
-                "description":          session.info.description,
-                "solution_name":        session.info.solution_name or "my_solution",
+            action_type="onboarding_generate",
+            risk_class=RiskClass.STATEFUL,
+            payload={
+                "description": session.info.description,
+                "solution_name": session.info.solution_name or "my_solution",
                 "compliance_standards": session.info.compliance_standards,
-                "integrations":         session.info.integrations,
+                "integrations": session.info.integrations,
             },
-            description   = (
+            description=(
                 f"Generate new SAGE solution: '{session.info.solution_name or 'my_solution'}' "
                 f"— {session.info.description[:60]}…"
             ),
-            reversible    = False,
-            proposed_by   = "onboarding-wizard",
-            required_role = _get_required_role("onboarding_generate"),
+            reversible=False,
+            proposed_by="onboarding-wizard",
+            required_role=_get_required_role("onboarding_generate"),
         )
         session.proposal_trace_id = proposal.trace_id
         session.solution_name_final = session.info.solution_name or "my_solution"
@@ -336,16 +353,17 @@ def request_generate(session_id: str) -> dict:
 
         logger.info(
             "Onboarding generate proposed: session=%s trace=%s",
-            session_id, proposal.trace_id,
+            session_id,
+            proposal.trace_id,
         )
         return {
-            "trace_id":      proposal.trace_id,
-            "description":   proposal.description,
+            "trace_id": proposal.trace_id,
+            "description": proposal.description,
             "solution_name": session.solution_name_final,
-            "state":         session.state,
+            "state": session.state,
         }
 
     except Exception as e:
-        session.state = "ready"   # revert so user can retry
+        session.state = "ready"  # revert so user can retry
         logger.error("Onboarding generate failed: %s", e)
         return {"error": str(e)}

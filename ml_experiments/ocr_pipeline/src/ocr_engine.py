@@ -10,9 +10,9 @@ from __future__ import annotations
 
 import abc
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional
 
 import numpy as np
 from PIL import Image
@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Result types
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class BoundingBox:
@@ -35,13 +36,14 @@ class BoundingBox:
 @dataclass
 class OCRWord:
     text: str
-    confidence: float          # [0, 1]
+    confidence: float  # [0, 1]
     bbox: Optional[BoundingBox] = None
 
 
 @dataclass
 class OCRResult:
     """Unified OCR output regardless of engine."""
+
     full_text: str
     words: List[OCRWord]
     mean_confidence: float
@@ -58,15 +60,17 @@ class OCRResult:
 # Engine enum
 # ---------------------------------------------------------------------------
 
+
 class EngineType(str, Enum):
     TESSERACT = "tesseract"
     PADDLEOCR = "paddleocr"
-    ENSEMBLE  = "ensemble"
+    ENSEMBLE = "ensemble"
 
 
 # ---------------------------------------------------------------------------
 # Abstract base
 # ---------------------------------------------------------------------------
+
 
 class BaseOCREngine(abc.ABC):
     """All engines must implement extract()."""
@@ -92,6 +96,7 @@ class BaseOCREngine(abc.ABC):
 # Tesseract engine
 # ---------------------------------------------------------------------------
 
+
 class TesseractEngine(BaseOCREngine):
     """
     Wraps pytesseract.  Uses image_to_data for per-word confidence.
@@ -109,9 +114,12 @@ class TesseractEngine(BaseOCREngine):
     ) -> None:
         try:
             import pytesseract
+
             self._ts = pytesseract
         except ImportError as exc:
-            raise ImportError("pytesseract not installed. Run: pip install pytesseract") from exc
+            raise ImportError(
+                "pytesseract not installed. Run: pip install pytesseract"
+            ) from exc
 
         self.lang = lang
         self.config = config
@@ -149,7 +157,9 @@ class TesseractEngine(BaseOCREngine):
             )
             words.append(OCRWord(text=text, confidence=conf, bbox=bbox))
 
-        full_text = self._ts.image_to_string(pil_img, lang=self.lang, config=self.config)
+        full_text = self._ts.image_to_string(
+            pil_img, lang=self.lang, config=self.config
+        )
         mean_conf = float(np.mean([w.confidence for w in words])) if words else 0.0
 
         self._log.debug(
@@ -166,6 +176,7 @@ class TesseractEngine(BaseOCREngine):
     @staticmethod
     def _to_pil(image: np.ndarray) -> Image.Image:
         import cv2
+
         if image.ndim == 2:
             return Image.fromarray(image, mode="L")
         return Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
@@ -174,6 +185,7 @@ class TesseractEngine(BaseOCREngine):
 # ---------------------------------------------------------------------------
 # PaddleOCR engine
 # ---------------------------------------------------------------------------
+
 
 class PaddleOCREngine(BaseOCREngine):
     """
@@ -189,9 +201,14 @@ class PaddleOCREngine(BaseOCREngine):
     ) -> None:
         try:
             from paddleocr import PaddleOCR
-            self._ocr = PaddleOCR(use_angle_cls=True, lang=lang, use_gpu=use_gpu, show_log=False)
+
+            self._ocr = PaddleOCR(
+                use_angle_cls=True, lang=lang, use_gpu=use_gpu, show_log=False
+            )
         except ImportError as exc:
-            raise ImportError("paddleocr not installed. Run: pip install paddlepaddle paddleocr") from exc
+            raise ImportError(
+                "paddleocr not installed. Run: pip install paddlepaddle paddleocr"
+            ) from exc
 
         self.confidence_threshold = confidence_threshold
         self._log = logging.getLogger(self.__class__.__name__)
@@ -246,6 +263,7 @@ class PaddleOCREngine(BaseOCREngine):
 # Ensemble engine
 # ---------------------------------------------------------------------------
 
+
 class EnsembleOCREngine(BaseOCREngine):
     """
     Runs multiple engines and returns a confidence-weighted merged result.
@@ -275,7 +293,9 @@ class EnsembleOCREngine(BaseOCREngine):
                 self._log.exception("Engine %s failed; skipping.", eng.name)
 
         if not results:
-            return OCRResult(full_text="", words=[], mean_confidence=0.0, engine=self.name)
+            return OCRResult(
+                full_text="", words=[], mean_confidence=0.0, engine=self.name
+            )
 
         best = max(results, key=lambda r: r.mean_confidence)
         all_words = [w for r in results for w in r.words]
@@ -293,6 +313,7 @@ class EnsembleOCREngine(BaseOCREngine):
 # ---------------------------------------------------------------------------
 # Factory
 # ---------------------------------------------------------------------------
+
 
 def build_ocr_engine(
     engine_type: str = "tesseract",

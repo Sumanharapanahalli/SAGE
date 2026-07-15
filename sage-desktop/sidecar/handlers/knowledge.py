@@ -15,6 +15,7 @@ Module-level ``_vm`` and ``_solution_name`` are wired at startup by
 is active, every handler returns ``SidecarError`` with a typed message
 so the UI can render a single disabled state.
 """
+
 from __future__ import annotations
 
 from typing import Any, Optional
@@ -51,9 +52,7 @@ def _coerce_int(value: Any, name: str, default: int, lo: int, hi: int) -> int:
     if isinstance(value, bool) or not isinstance(value, int):
         raise RpcError(RPC_INVALID_PARAMS, f"'{name}' must be an integer")
     if value < lo or value > hi:
-        raise RpcError(
-            RPC_INVALID_PARAMS, f"'{name}' must be between {lo} and {hi}"
-        )
+        raise RpcError(RPC_INVALID_PARAMS, f"'{name}' must be between {lo} and {hi}")
     return value
 
 
@@ -117,6 +116,7 @@ def _normalize_hit(item: Any) -> dict:
 
 
 # ── RPC methods ────────────────────────────────────────────────────────────
+
 
 def list_entries(params: Any) -> dict:
     p = _require_dict(params)

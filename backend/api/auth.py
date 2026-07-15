@@ -4,6 +4,7 @@ api/auth.py — FastAPI security dependencies.
 All protected routes use Depends(get_current_user).
 Returns 401 WWW-Authenticate: Bearer for missing/invalid tokens.
 """
+
 from __future__ import annotations
 
 import logging

@@ -10,16 +10,31 @@ def git_repo(tmp_path):
     if shutil.which("git") is None:
         pytest.skip("git not available")
     subprocess.run(["git", "init", str(tmp_path)], check=True, capture_output=True)
-    subprocess.run(["git", "-C", str(tmp_path), "config", "user.email", "test@test.com"], check=True, capture_output=True)
-    subprocess.run(["git", "-C", str(tmp_path), "config", "user.name", "Test"], check=True, capture_output=True)
+    subprocess.run(
+        ["git", "-C", str(tmp_path), "config", "user.email", "test@test.com"],
+        check=True,
+        capture_output=True,
+    )
+    subprocess.run(
+        ["git", "-C", str(tmp_path), "config", "user.name", "Test"],
+        check=True,
+        capture_output=True,
+    )
     (tmp_path / "main.py").write_text("# main\n")
-    subprocess.run(["git", "-C", str(tmp_path), "add", "."], check=True, capture_output=True)
-    subprocess.run(["git", "-C", str(tmp_path), "commit", "-m", "init"], check=True, capture_output=True)
+    subprocess.run(
+        ["git", "-C", str(tmp_path), "add", "."], check=True, capture_output=True
+    )
+    subprocess.run(
+        ["git", "-C", str(tmp_path), "commit", "-m", "init"],
+        check=True,
+        capture_output=True,
+    )
     return tmp_path
 
 
 def test_create_and_delete_worktree(git_repo):
     from src.core.worktree_manager import WorktreeManager
+
     mgr = WorktreeManager(repo_root=str(git_repo))
     wt_path = mgr.create("test-trace-001")
     assert os.path.isdir(wt_path)
@@ -29,6 +44,7 @@ def test_create_and_delete_worktree(git_repo):
 
 def test_list_worktrees(git_repo):
     from src.core.worktree_manager import WorktreeManager
+
     mgr = WorktreeManager(repo_root=str(git_repo))
     mgr.create("trace-aaa")
     mgr.create("trace-bbb")
@@ -42,5 +58,6 @@ def test_list_worktrees(git_repo):
 
 def test_get_path_returns_none_for_unknown(git_repo):
     from src.core.worktree_manager import WorktreeManager
+
     mgr = WorktreeManager(repo_root=str(git_repo))
     assert mgr.get_path("nonexistent") is None

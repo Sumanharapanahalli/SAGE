@@ -20,7 +20,6 @@ from __future__ import annotations
 import argparse
 import json
 import logging
-import os
 import random
 import sys
 from pathlib import Path
@@ -40,19 +39,20 @@ logger = logging.getLogger("run_experiment")
 ROOT = Path(__file__).parent
 sys.path.insert(0, str(ROOT))
 
-from src.data_utils import (
+from src.data_utils import (  # noqa: E402
     generate_synthetic_series,
     temporal_split_and_scale,
     make_dataloaders,
     check_class_imbalance,
 )
-from src.lstm_model import LSTMForecaster
-from src.arima_baseline import ARIMABaseline
-from src.train import TrainConfig, train, predict_all, get_actuals
-from src.evaluate import evaluate_model, comparison_table, inverse_scale
+from src.lstm_model import LSTMForecaster  # noqa: E402
+from src.arima_baseline import ARIMABaseline  # noqa: E402
+from src.train import TrainConfig, train, predict_all, get_actuals  # noqa: E402
+from src.evaluate import evaluate_model, comparison_table  # noqa: E402
 
 
 # ── Reproducibility ──────────────────────────────────────────────────────────
+
 
 def set_seed(seed: int) -> None:
     random.seed(seed)
@@ -65,6 +65,7 @@ def set_seed(seed: int) -> None:
 
 
 # ── Config loader ─────────────────────────────────────────────────────────────
+
 
 def load_config(path: Path, overrides: dict) -> dict:
     with open(path) as f:
@@ -79,11 +80,16 @@ def load_config(path: Path, overrides: dict) -> dict:
 
 # ── Main ─────────────────────────────────────────────────────────────────────
 
+
 def main() -> dict:
-    parser = argparse.ArgumentParser(description="LSTM vs ARIMA time-series forecasting experiment")
+    parser = argparse.ArgumentParser(
+        description="LSTM vs ARIMA time-series forecasting experiment"
+    )
     parser.add_argument("--config", default=str(ROOT / "config.yaml"))
     parser.add_argument("--epochs", type=int, help="Override training epochs")
-    parser.add_argument("--no-arima", action="store_true", help="Skip slow ARIMA baseline")
+    parser.add_argument(
+        "--no-arima", action="store_true", help="Skip slow ARIMA baseline"
+    )
     args = parser.parse_args()
 
     overrides = {}
@@ -99,6 +105,7 @@ def main() -> dict:
     # ── MLflow setup ─────────────────────────────────────────────────────────
     try:
         import mlflow
+
         mlflow.set_tracking_uri(cfg["mlflow"]["tracking_uri"])
         mlflow.set_experiment(cfg["mlflow"]["experiment_name"])
         use_mlflow = True
@@ -116,14 +123,16 @@ def main() -> dict:
 
     # Data quality check — leakage and imbalance
     data_checks = check_class_imbalance(series)
-    data_checks["leakage_risk"] = False   # enforced by temporal split + train-only scaler fit
+    data_checks["leakage_risk"] = (
+        False  # enforced by temporal split + train-only scaler fit
+    )
     logger.info("Data checks: %s", data_checks)
 
     split = temporal_split_and_scale(series, train_ratio=cfg["data"]["train_ratio"])
 
-    lookback  = cfg["windows"]["lookback"]
-    horizon   = cfg["windows"]["horizon"]
-    batch_sz  = cfg["training"]["batch_size"]
+    lookback = cfg["windows"]["lookback"]
+    horizon = cfg["windows"]["horizon"]
+    batch_sz = cfg["training"]["batch_size"]
 
     train_dl, test_dl = make_dataloaders(split, lookback, horizon, batch_sz)
 
@@ -150,18 +159,21 @@ def main() -> dict:
     mlflow_ctx = mlflow.start_run() if use_mlflow else None
 
     if use_mlflow:
-        mlflow.log_params({
-            "lookback": lookback, "horizon": horizon,
-            "hidden_size": cfg["model"]["hidden_size"],
-            "num_layers": cfg["model"]["num_layers"],
-            "dropout": cfg["model"]["dropout"],
-            "epochs": train_cfg.epochs,
-            "lr": train_cfg.learning_rate,
-            "batch_size": batch_sz,
-            "initial_tf": train_cfg.initial_teacher_forcing,
-            "final_tf": train_cfg.final_teacher_forcing,
-            "seed": cfg["training"]["seed"],
-        })
+        mlflow.log_params(
+            {
+                "lookback": lookback,
+                "horizon": horizon,
+                "hidden_size": cfg["model"]["hidden_size"],
+                "num_layers": cfg["model"]["num_layers"],
+                "dropout": cfg["model"]["dropout"],
+                "epochs": train_cfg.epochs,
+                "lr": train_cfg.learning_rate,
+                "batch_size": batch_sz,
+                "initial_tf": train_cfg.initial_teacher_forcing,
+                "final_tf": train_cfg.final_teacher_forcing,
+                "seed": cfg["training"]["seed"],
+            }
+        )
 
     train_result = train(model, train_dl, test_dl, train_cfg, mlflow_run=mlflow_ctx)
 
@@ -175,7 +187,9 @@ def main() -> dict:
     lstm_preds_scaled = predict_all(model, test_dl, device=train_cfg.device)
     lstm_actuals_scaled = get_actuals(test_dl)
 
-    lstm_metrics = evaluate_model(lstm_actuals_scaled, lstm_preds_scaled, split.scaler, label="lstm")
+    lstm_metrics = evaluate_model(
+        lstm_actuals_scaled, lstm_preds_scaled, split.scaler, label="lstm"
+    )
 
     # ── 4. ARIMA Baseline ─────────────────────────────────────────────────────
     arima_metrics: dict = {}
@@ -193,11 +207,18 @@ def main() -> dict:
         )
         # ARIMA operates in original space — evaluate directly without inverse scaling
         from src.metrics import compute_all as _ca
+
         arima_metrics = _ca(arima_actuals_raw, arima_preds_raw, label="arima")
-        logger.info("ARIMA | MAE=%.4f RMSE=%.4f MAPE=%.2f%%",
-                    arima_metrics["arima_mae"], arima_metrics["arima_rmse"], arima_metrics["arima_mape"])
+        logger.info(
+            "ARIMA | MAE=%.4f RMSE=%.4f MAPE=%.2f%%",
+            arima_metrics["arima_mae"],
+            arima_metrics["arima_rmse"],
+            arima_metrics["arima_mape"],
+        )
         if use_mlflow:
-            mlflow.log_metrics({f"arima_{k.split('arima_')[1]}": v for k, v in arima_metrics.items()})
+            mlflow.log_metrics(
+                {f"arima_{k.split('arima_')[1]}": v for k, v in arima_metrics.items()}
+            )
     else:
         logger.info("Skipping ARIMA baseline (--no-arima)")
 
@@ -218,11 +239,11 @@ def main() -> dict:
     summary = {
         "model_type": "LSTM-EncoderDecoder-TeacherForcing",
         "metrics": {
-            "lstm_mae":   lstm_metrics.get("lstm_mae"),
-            "lstm_rmse":  lstm_metrics.get("lstm_rmse"),
-            "lstm_mape":  lstm_metrics.get("lstm_mape"),
+            "lstm_mae": lstm_metrics.get("lstm_mae"),
+            "lstm_rmse": lstm_metrics.get("lstm_rmse"),
+            "lstm_mape": lstm_metrics.get("lstm_mape"),
             "lstm_smape": lstm_metrics.get("lstm_smape"),
-            "arima_mae":  arima_metrics.get("arima_mae"),
+            "arima_mae": arima_metrics.get("arima_mae"),
             "arima_rmse": arima_metrics.get("arima_rmse"),
             "arima_mape": arima_metrics.get("arima_mape"),
             # accuracy / f1 are not applicable for regression

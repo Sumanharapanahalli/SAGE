@@ -83,9 +83,7 @@ async def run_async_migrations() -> None:
     async with connectable.connect() as connection:
         # Migrations run as migration role — explicitly disable RLS context
         # so policies don't block DDL issued by migration scripts.
-        await connection.execute(
-            text("SET SESSION app.user_role = 'migration_bypass'")
-        )
+        await connection.execute(text("SET SESSION app.user_role = 'migration_bypass'"))
         await connection.run_sync(do_run_migrations)
 
     await connectable.dispose()

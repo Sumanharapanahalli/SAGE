@@ -10,6 +10,7 @@ The agent uses a ReAct (Reason + Act) loop with filesystem tools to:
 No code is committed until a director approves the code_diff proposal.
 On rejection the working tree is reverted cleanly.
 """
+
 import json
 import logging
 import os
@@ -42,6 +43,7 @@ class CodingAgent:
     def llm(self):
         if self._llm is None:
             from src.core.llm_gateway import llm_gateway
+
             self._llm = llm_gateway
         return self._llm
 
@@ -71,7 +73,9 @@ class CodingAgent:
                 content = f.read()
             # Truncate very large files
             if len(content) > 8000:
-                content = content[:8000] + f"\n... [truncated — {len(content)} total chars]"
+                content = (
+                    content[:8000] + f"\n... [truncated — {len(content)} total chars]"
+                )
             return content
         except FileNotFoundError:
             return f"ERROR: File not found: {path}"
@@ -106,9 +110,20 @@ class CodingAgent:
         try:
             full_path = self._contained(path)
             result = subprocess.run(
-                ["grep", "-rn", "--include=*.py", "--include=*.ts", "--include=*.tsx",
-                 "-m", "30", pattern, full_path],
-                capture_output=True, text=True, timeout=10,
+                [
+                    "grep",
+                    "-rn",
+                    "--include=*.py",
+                    "--include=*.ts",
+                    "--include=*.tsx",
+                    "-m",
+                    "30",
+                    pattern,
+                    full_path,
+                ],
+                capture_output=True,
+                text=True,
+                timeout=10,
             )
             out = result.stdout[:3000]
             # Make paths relative
@@ -123,7 +138,9 @@ class CodingAgent:
             if scope == "web":
                 result = subprocess.run(
                     ["npm", "run", "build"],
-                    capture_output=True, text=True, timeout=120,
+                    capture_output=True,
+                    text=True,
+                    timeout=120,
                     cwd=os.path.join(self.root, "web"),
                 )
                 ok = result.returncode == 0
@@ -135,7 +152,9 @@ class CodingAgent:
                     venv_python = os.path.join(self.root, ".venv", "bin", "python")
                 result = subprocess.run(
                     [venv_python, "-m", "pytest", "tests/", "-x", "-q", "--tb=short"],
-                    capture_output=True, text=True, timeout=180,
+                    capture_output=True,
+                    text=True,
+                    timeout=180,
                     cwd=self.root,
                 )
                 ok = result.returncode == 0
@@ -151,14 +170,20 @@ class CodingAgent:
         try:
             result = subprocess.run(
                 ["git", "diff", "HEAD"],
-                capture_output=True, text=True, timeout=10, cwd=self.root,
+                capture_output=True,
+                text=True,
+                timeout=10,
+                cwd=self.root,
             )
             diff = result.stdout or ""
             if not diff.strip():
                 # Also check staged
                 result2 = subprocess.run(
                     ["git", "diff", "--cached"],
-                    capture_output=True, text=True, timeout=10, cwd=self.root,
+                    capture_output=True,
+                    text=True,
+                    timeout=10,
+                    cwd=self.root,
                 )
                 diff = result2.stdout or ""
             return diff[:6000] if diff.strip() else "(no changes detected)"
@@ -174,12 +199,12 @@ class CodingAgent:
         Run the ReAct loop. Returns (final_answer: str, written_files: list[str]).
         """
         tools = {
-            "read_file":    self._tool_read_file,
-            "write_file":   self._tool_write_file,
-            "list_dir":     self._tool_list_dir,
-            "search_code":  self._tool_search_code,
-            "run_tests":    self._tool_run_tests,
-            "git_diff":     self._tool_git_diff,
+            "read_file": self._tool_read_file,
+            "write_file": self._tool_write_file,
+            "list_dir": self._tool_list_dir,
+            "search_code": self._tool_search_code,
+            "run_tests": self._tool_run_tests,
+            "git_diff": self._tool_git_diff,
         }
 
         # Merge MCP tools exported in React-compatible format (best-effort).
@@ -191,6 +216,7 @@ class CodingAgent:
         if not self._isolated:
             try:
                 from src.integrations.mcp_registry import mcp_registry
+
                 tools.update(mcp_registry.as_react_tools())
             except Exception:
                 pass  # MCP tools are supplementary
@@ -200,7 +226,7 @@ class CodingAgent:
             # callables) — the old direct fn.__doc__.strip() / fn.__code__ access crashed
             # the whole loop the moment any such tool was registered.
             try:
-                params = ", ".join(fn.__code__.co_varnames[1:fn.__code__.co_argcount])
+                params = ", ".join(fn.__code__.co_varnames[1 : fn.__code__.co_argcount])
             except AttributeError:
                 params = ""
             doc = (fn.__doc__ or "").strip()
@@ -218,14 +244,14 @@ class CodingAgent:
             f"{tool_descriptions}\n\n"
             "STRICT output format — one of these per response, nothing else:\n"
             "  Thought: <your reasoning>\n"
-            "  Action: tool_name({\"arg\": \"value\"})\n"
+            '  Action: tool_name({"arg": "value"})\n'
             "OR when all changes are done:\n"
             "  Thought: <final reasoning>\n"
             "  FinalAnswer: <plain-text summary of what was implemented>\n\n"
             "CRITICAL RULES:\n"
             "  1. Output ONLY the Thought+Action or Thought+FinalAnswer lines. No prose, no markdown.\n"
             "  2. Do NOT ask for permissions. Do NOT use file dialogs. Do NOT say 'I need permission'.\n"
-            "  3. To write a file, emit: Action: write_file({\"path\": \"...\", \"content\": \"...\"})\n"
+            '  3. To write a file, emit: Action: write_file({"path": "...", "content": "..."})\n'
             "  4. Always read existing files first before writing.\n"
             "  5. Write minimal focused changes — do not refactor unrelated code.\n"
             "  6. Run tests after writing, then call git_diff before FinalAnswer.\n"
@@ -237,22 +263,30 @@ class CodingAgent:
 
         for step in range(max_steps):
             user_prompt = "\n\n".join(history) + "\n\nStep:"
-            response = self.llm.generate(user_prompt, system_prompt, trace_name="coder.react")
+            response = self.llm.generate(
+                user_prompt, system_prompt, trace_name="coder.react"
+            )
             history.append(f"Step {step + 1}:\n{response}")
 
             if "FinalAnswer:" in response:
                 idx = response.index("FinalAnswer:")
-                return response[idx + len("FinalAnswer:"):].strip(), written_files
+                return response[idx + len("FinalAnswer:") :].strip(), written_files
 
             if "Action:" in response:
                 action_idx = response.index("Action:")
-                action_line = response[action_idx + len("Action:"):].split("\n")[0].strip()
+                action_line = (
+                    response[action_idx + len("Action:") :].split("\n")[0].strip()
+                )
                 try:
                     tool_name = action_line[: action_line.index("(")].strip()
-                    args_str  = action_line[action_line.index("(") + 1 : action_line.rindex(")")].strip()
+                    args_str = action_line[
+                        action_line.index("(") + 1 : action_line.rindex(")")
+                    ].strip()
                     tool_args = json.loads(args_str) if args_str else {}
                 except (ValueError, json.JSONDecodeError) as exc:
-                    history.append(f"Observation: Error parsing action '{action_line}': {exc}")
+                    history.append(
+                        f"Observation: Error parsing action '{action_line}': {exc}"
+                    )
                     continue
 
                 if tool_name in tools:
@@ -268,15 +302,22 @@ class CodingAgent:
                 history.append(f"Observation: {str(obs)[:2000]}")
 
         # Max steps reached — force final answer
-        forced = "\n\n".join(history) + "\n\nYou have reached the step limit. Summarise what was done:"
-        response = self.llm.generate(forced, system_prompt, trace_name="coder.react.final")
+        forced = (
+            "\n\n".join(history)
+            + "\n\nYou have reached the step limit. Summarise what was done:"
+        )
+        response = self.llm.generate(
+            forced, system_prompt, trace_name="coder.react.final"
+        )
         return response, written_files
 
     # -----------------------------------------------------------------------
     # Public entry point
     # -----------------------------------------------------------------------
 
-    def implement_step(self, step: dict, plan_trace_id: str = "", beam_width: int = 1) -> dict:
+    def implement_step(
+        self, step: dict, plan_trace_id: str = "", beam_width: int = 1
+    ) -> dict:
         """
         Implement a single plan step. Returns a dict suitable for creating
         a code_diff ProposalStore entry.
@@ -299,11 +340,10 @@ class CodingAgent:
             dict with: summary, diff, written_files, test_result
         """
         description = step.get("description", str(step))
-        payload     = step.get("payload", {})
+        payload = step.get("payload", {})
 
-        task = (
-            f"{description}\n"
-            + (f"Additional context: {json.dumps(payload)}" if payload else "")
+        task = f"{description}\n" + (
+            f"Additional context: {json.dumps(payload)}" if payload else ""
         )
 
         logger.info("CodingAgent: implementing '%s'", description[:80])
@@ -312,7 +352,8 @@ class CodingAgent:
             logger.warning(
                 "implement_step: beam_width=%d requested but working tree is not "
                 "clean — falling back to single-shot (best-of-N needs a clean "
-                "baseline to safely isolate candidates).", beam_width,
+                "baseline to safely isolate candidates).",
+                beam_width,
             )
             result = self._implement_step_once(task, plan_trace_id, step)
             result["beam_search_skipped_reason"] = "working tree not clean"
@@ -321,7 +362,9 @@ class CodingAgent:
         if beam_width <= 1:
             return self._implement_step_once(task, plan_trace_id, step)
 
-        return self._implement_step_via_beam_search(task, plan_trace_id, step, beam_width)
+        return self._implement_step_via_beam_search(
+            task, plan_trace_id, step, beam_width
+        )
 
     def _implement_step_once(self, task: str, plan_trace_id: str, step: dict) -> dict:
         """Single ReAct-loop attempt against the current working tree."""
@@ -331,17 +374,18 @@ class CodingAgent:
 
         logger.info(
             "CodingAgent: done. files_written=%d tests=%s",
-            len(written_files), "PASS" if "PASS" in test_result else "FAIL",
+            len(written_files),
+            "PASS" if "PASS" in test_result else "FAIL",
         )
 
         return {
-            "summary":       summary,
-            "diff":          diff,
+            "summary": summary,
+            "diff": diff,
             "written_files": written_files,
-            "test_result":   test_result,
-            "tests_passed":  "PASS" in test_result,
+            "test_result": test_result,
+            "tests_passed": "PASS" in test_result,
             "plan_trace_id": plan_trace_id,
-            "step":          step,
+            "step": step,
         }
 
     def _implement_step_via_beam_search(
@@ -394,7 +438,9 @@ class CodingAgent:
         )
 
         candidates = [c.plan for c in result.candidates if c.plan]
-        best = result.candidates[result.selected_index].plan if result.candidates else None
+        best = (
+            result.candidates[result.selected_index].plan if result.candidates else None
+        )
 
         # Restore the winner, discard every other candidate's stash.
         for c in candidates:
@@ -406,17 +452,22 @@ class CodingAgent:
             self._drop_stash(sha)
 
         if not best:
-            best = {"summary": "All candidates failed.", "written_files": [],
-                    "diff": "(no changes detected)", "test_result": "", "tests_passed": False}
+            best = {
+                "summary": "All candidates failed.",
+                "written_files": [],
+                "diff": "(no changes detected)",
+                "test_result": "",
+                "tests_passed": False,
+            }
 
         return {
-            "summary":       best.get("summary", ""),
-            "diff":          best.get("diff", ""),
+            "summary": best.get("summary", ""),
+            "diff": best.get("diff", ""),
             "written_files": best.get("written_files", []),
-            "test_result":   best.get("test_result", ""),
-            "tests_passed":  best.get("tests_passed", False),
+            "test_result": best.get("test_result", ""),
+            "tests_passed": best.get("tests_passed", False),
             "plan_trace_id": plan_trace_id,
-            "step":          step,
+            "step": step,
             "verification": {
                 "candidates_scored": candidates_scored["n"],
                 "winning_score": result.selected_score,
@@ -431,7 +482,10 @@ class CodingAgent:
         try:
             result = subprocess.run(
                 ["git", "status", "--porcelain"],
-                cwd=self.root, capture_output=True, text=True, timeout=10,
+                cwd=self.root,
+                capture_output=True,
+                text=True,
+                timeout=10,
             )
             return result.returncode == 0 and not result.stdout.strip()
         except Exception as exc:
@@ -443,13 +497,21 @@ class CodingAgent:
         try:
             result = subprocess.run(
                 ["git", "stash", "push", "-u", "-m", "sage-candidate"],
-                cwd=self.root, capture_output=True, text=True, timeout=15,
+                cwd=self.root,
+                capture_output=True,
+                text=True,
+                timeout=15,
             )
-            if result.returncode != 0 or "No local changes to save" in (result.stdout + result.stderr):
+            if result.returncode != 0 or "No local changes to save" in (
+                result.stdout + result.stderr
+            ):
                 return None
             sha_result = subprocess.run(
                 ["git", "rev-parse", "stash@{0}"],
-                cwd=self.root, capture_output=True, text=True, timeout=10,
+                cwd=self.root,
+                capture_output=True,
+                text=True,
+                timeout=10,
             )
             return sha_result.stdout.strip() if sha_result.returncode == 0 else None
         except Exception as exc:
@@ -460,7 +522,10 @@ class CodingAgent:
         try:
             subprocess.run(
                 ["git", "stash", "apply", sha],
-                cwd=self.root, capture_output=True, text=True, timeout=15,
+                cwd=self.root,
+                capture_output=True,
+                text=True,
+                timeout=15,
             )
         except Exception as exc:
             logger.warning("git stash apply %s failed: %s", sha, exc)
@@ -470,14 +535,20 @@ class CodingAgent:
         try:
             list_result = subprocess.run(
                 ["git", "stash", "list", "--format=%H %gd"],
-                cwd=self.root, capture_output=True, text=True, timeout=10,
+                cwd=self.root,
+                capture_output=True,
+                text=True,
+                timeout=10,
             )
             for line in list_result.stdout.splitlines():
                 parts = line.split(" ", 1)
                 if len(parts) == 2 and parts[0] == sha:
                     subprocess.run(
                         ["git", "stash", "drop", parts[1]],
-                        cwd=self.root, capture_output=True, text=True, timeout=10,
+                        cwd=self.root,
+                        capture_output=True,
+                        text=True,
+                        timeout=10,
                     )
                     return
         except Exception as exc:

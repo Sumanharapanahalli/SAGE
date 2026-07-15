@@ -8,9 +8,9 @@ ProposalStore proposal, so it flows through the already-verified
 approvals.list_pending / approve / reject RPCs and the desktop Approvals
 page with no new inbox to build.
 """
+
 from __future__ import annotations
 
-from typing import Optional
 
 from rpc import RPC_INVALID_PARAMS, RPC_SIDECAR_ERROR, RpcError
 
@@ -54,10 +54,19 @@ def run(params: dict) -> dict:
     if isinstance(analysis, dict) and analysis.get("error"):
         raise RpcError(RPC_SIDECAR_ERROR, str(analysis["error"]))
 
-    severity = str(analysis.get("severity", "UNKNOWN")) if isinstance(analysis, dict) else "UNKNOWN"
+    severity = (
+        str(analysis.get("severity", "UNKNOWN"))
+        if isinstance(analysis, dict)
+        else "UNKNOWN"
+    )
     summary = (
-        (analysis.get("root_cause_hypothesis") or analysis.get("summary") or log_entry[:120])
-        if isinstance(analysis, dict) else log_entry[:120]
+        (
+            analysis.get("root_cause_hypothesis")
+            or analysis.get("summary")
+            or log_entry[:120]
+        )
+        if isinstance(analysis, dict)
+        else log_entry[:120]
     )
 
     from src.core.proposal_store import RiskClass

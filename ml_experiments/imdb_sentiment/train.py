@@ -12,13 +12,13 @@ python train.py --subset 2000
 # Hyperparameter override
 python train.py --subset 5000 --max-features 30000 --C 0.5
 """
+
 from __future__ import annotations
 
 import argparse
 import json
 import logging
 import sys
-from pathlib import Path
 
 from pipeline import train
 
@@ -73,8 +73,12 @@ def main() -> None:
     }
     lr_overrides = {"C": args.C}
 
-    logger.info("Starting training run — subset=%s  max_features=%d  C=%.3f",
-                args.subset, args.max_features, args.C)
+    logger.info(
+        "Starting training run — subset=%s  max_features=%d  C=%.3f",
+        args.subset,
+        args.max_features,
+        args.C,
+    )
 
     metrics = train(
         subset=args.subset,
@@ -97,7 +101,9 @@ def main() -> None:
 
     # Non-zero exit if accuracy is suspiciously low (sanity guard for CI)
     if metrics["accuracy"] < 0.70:
-        logger.error("Accuracy %.4f is below the 0.70 sanity floor.", metrics["accuracy"])
+        logger.error(
+            "Accuracy %.4f is below the 0.70 sanity floor.", metrics["accuracy"]
+        )
         sys.exit(1)
 
 

@@ -4,11 +4,14 @@ Nano-module: Task Payload Validator
 Validates task payloads against required field definitions.
 Zero dependencies — pure Python.
 """
+
 import re
 from typing import Any
 
+
 class ValidationError(ValueError):
     pass
+
 
 # Maximum allowed length for a sanitized task description.
 MAX_TASK_LENGTH = 4000
@@ -70,10 +73,12 @@ def validate(payload: dict, required_fields: list[str]) -> None:
     if missing:
         raise ValidationError(f"Missing required payload fields: {', '.join(missing)}")
 
+
 def coerce_str(payload: dict, key: str, default: str = "") -> str:
     """Return payload[key] as a string, or default if missing."""
     val = payload.get(key, default)
     return str(val) if val is not None else default
+
 
 def coerce_int(payload: dict, key: str, default: int = 0) -> int:
     """Return payload[key] as int, or default if missing/non-numeric."""

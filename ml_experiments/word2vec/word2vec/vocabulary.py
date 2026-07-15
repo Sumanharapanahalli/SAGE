@@ -89,8 +89,8 @@ class Vocabulary:
         more often than their true frequency (Mikolov 2013 §2.2).
         """
         freqs = self.word_freqs.copy()
-        freqs[:2] = 0.0           # never sample PAD or UNK as negatives
-        powered = freqs ** power
+        freqs[:2] = 0.0  # never sample PAD or UNK as negatives
+        powered = freqs**power
         total = powered.sum()
         if total == 0:
             raise ValueError("All word frequencies are zero — cannot build neg table.")
@@ -129,7 +129,7 @@ class Vocabulary:
         ratio = threshold / f
         p = np.sqrt(ratio) + ratio
         p = np.minimum(1.0, p).astype(np.float32)
-        p[:2] = 0.0   # discard PAD and UNK
+        p[:2] = 0.0  # discard PAD and UNK
         return p
 
     def subsample(self, tokens: List[str], threshold: float = 1e-3) -> List[str]:
@@ -138,7 +138,8 @@ class Vocabulary:
         unk = self.word2idx[self.UNK]
         rng = np.random.random(len(tokens))
         result = [
-            t for t, r in zip(tokens, rng)
+            t
+            for t, r in zip(tokens, rng)
             if (idx := self.word2idx.get(t, unk)) > 1 and r < p[idx]
         ]
         logger.info(

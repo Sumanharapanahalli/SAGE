@@ -30,7 +30,7 @@ Reference: FDA Clinical Decision Support Software Guidance (January 6, 2026)
 import logging
 import uuid
 from datetime import datetime, timezone
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 logger = logging.getLogger(__name__)
 
@@ -38,44 +38,110 @@ logger = logging.getLogger(__name__)
 # Input classification rules — FDA Criterion 1
 # ---------------------------------------------------------------------------
 
-IMAGE_KEYWORDS = frozenset([
-    "image", "scan", "ct_scan", "mri", "xray", "x_ray", "x-ray",
-    "ultrasound", "mammogram", "fundus", "retinal", "pathology",
-    "dermatology", "dermoscopy", "endoscopy", "fluoroscopy",
-    "pet_scan", "spect", "angiography", "radiograph",
-    "ct_scan_image", "mri_image", "fundus_image",
-])
+IMAGE_KEYWORDS = frozenset(
+    [
+        "image",
+        "scan",
+        "ct_scan",
+        "mri",
+        "xray",
+        "x_ray",
+        "x-ray",
+        "ultrasound",
+        "mammogram",
+        "fundus",
+        "retinal",
+        "pathology",
+        "dermatology",
+        "dermoscopy",
+        "endoscopy",
+        "fluoroscopy",
+        "pet_scan",
+        "spect",
+        "angiography",
+        "radiograph",
+        "ct_scan_image",
+        "mri_image",
+        "fundus_image",
+    ]
+)
 
-SIGNAL_PATTERN_KEYWORDS = frozenset([
-    "ecg", "ekg", "ecg_waveform", "eeg", "eeg_signal", "emg",
-    "cgm", "cgm_continuous", "cgm_continuous_readings",
-    "holter", "waveform", "continuous_monitoring",
-    "ngs", "genomic_sequence", "next_gen_sequencing",
-    "pulse_oximetry_waveform", "arterial_line_waveform",
-    "fetal_heart_rate_tracing", "polysomnography",
-])
+SIGNAL_PATTERN_KEYWORDS = frozenset(
+    [
+        "ecg",
+        "ekg",
+        "ecg_waveform",
+        "eeg",
+        "eeg_signal",
+        "emg",
+        "cgm",
+        "cgm_continuous",
+        "cgm_continuous_readings",
+        "holter",
+        "waveform",
+        "continuous_monitoring",
+        "ngs",
+        "genomic_sequence",
+        "next_gen_sequencing",
+        "pulse_oximetry_waveform",
+        "arterial_line_waveform",
+        "fetal_heart_rate_tracing",
+        "polysomnography",
+    ]
+)
 
-DISCRETE_KEYWORDS = frozenset([
-    "blood_pressure_single", "blood_pressure", "temperature",
-    "bmi", "weight", "height", "heart_rate_single",
-    "cholesterol_level", "cholesterol", "glucose_single",
-    "hemoglobin", "creatinine", "lipid_panel",
-    "patient_demographics", "age", "sex", "race",
-    "medication_list", "allergy_list", "diagnosis_code",
-    "lab_result", "vital_signs", "smoking_status",
-    "clinical_notes", "patient_reported_symptoms",
-    "discharge_summary", "risk_factors",
-])
+DISCRETE_KEYWORDS = frozenset(
+    [
+        "blood_pressure_single",
+        "blood_pressure",
+        "temperature",
+        "bmi",
+        "weight",
+        "height",
+        "heart_rate_single",
+        "cholesterol_level",
+        "cholesterol",
+        "glucose_single",
+        "hemoglobin",
+        "creatinine",
+        "lipid_panel",
+        "patient_demographics",
+        "age",
+        "sex",
+        "race",
+        "medication_list",
+        "allergy_list",
+        "diagnosis_code",
+        "lab_result",
+        "vital_signs",
+        "smoking_status",
+        "clinical_notes",
+        "patient_reported_symptoms",
+        "discharge_summary",
+        "risk_factors",
+    ]
+)
 
 # Data source types and their FDA classification
-SOURCE_ACCEPTED_TYPES = frozenset([
-    "clinical_guideline", "peer_reviewed", "fda_labeling",
-    "government", "textbook", "professional_society",
-])
+SOURCE_ACCEPTED_TYPES = frozenset(
+    [
+        "clinical_guideline",
+        "peer_reviewed",
+        "fda_labeling",
+        "government",
+        "textbook",
+        "professional_society",
+    ]
+)
 
-SOURCE_FLAGGED_TYPES = frozenset([
-    "proprietary", "novel", "unpublished", "internal",
-])
+SOURCE_FLAGGED_TYPES = frozenset(
+    [
+        "proprietary",
+        "novel",
+        "unpublished",
+        "internal",
+    ]
+)
 
 
 class CDSComplianceFramework:
@@ -110,7 +176,9 @@ class CDSComplianceFramework:
         """
         c1 = self._evaluate_criterion_1(input_types, function_description)
         c2 = self._evaluate_criterion_2(data_sources)
-        c3 = self._evaluate_criterion_3(output_type, intended_user, function_description)
+        c3 = self._evaluate_criterion_3(
+            output_type, intended_user, function_description
+        )
         c4 = self._evaluate_criterion_4(urgency, function_description, output_type)
 
         all_pass = all(c["passes"] for c in [c1, c2, c3, c4])
@@ -141,24 +209,68 @@ class CDSComplianceFramework:
 
         for inp in input_types:
             inp_lower = inp.lower().replace(" ", "_")
-            if inp_lower in IMAGE_KEYWORDS or any(kw in inp_lower for kw in IMAGE_KEYWORDS):
-                flagged_inputs.append({"input": inp, "reason": "medical image processing"})
-            elif inp_lower in SIGNAL_PATTERN_KEYWORDS or any(kw in inp_lower for kw in SIGNAL_PATTERN_KEYWORDS):
-                flagged_inputs.append({"input": inp, "reason": "signal/pattern processing"})
+            if inp_lower in IMAGE_KEYWORDS or any(
+                kw in inp_lower for kw in IMAGE_KEYWORDS
+            ):
+                flagged_inputs.append(
+                    {"input": inp, "reason": "medical image processing"}
+                )
+            elif inp_lower in SIGNAL_PATTERN_KEYWORDS or any(
+                kw in inp_lower for kw in SIGNAL_PATTERN_KEYWORDS
+            ):
+                flagged_inputs.append(
+                    {"input": inp, "reason": "signal/pattern processing"}
+                )
 
         # Also check description for image/signal keywords
-        image_desc_hits = [kw for kw in ["image", "scan", "ct ", "mri ", "x-ray", "xray",
-                                          "radiograph", "ultrasound", "fundus", "pathology",
-                                          "dermoscop", "endoscop", "mammogra"]
-                          if kw in desc_lower]
-        signal_desc_hits = [kw for kw in ["waveform", "ecg", "ekg", "eeg", "cgm",
-                                           "continuous monitor", "holter", "genomic seq"]
-                           if kw in desc_lower]
+        image_desc_hits = [
+            kw
+            for kw in [
+                "image",
+                "scan",
+                "ct ",
+                "mri ",
+                "x-ray",
+                "xray",
+                "radiograph",
+                "ultrasound",
+                "fundus",
+                "pathology",
+                "dermoscop",
+                "endoscop",
+                "mammogra",
+            ]
+            if kw in desc_lower
+        ]
+        signal_desc_hits = [
+            kw
+            for kw in [
+                "waveform",
+                "ecg",
+                "ekg",
+                "eeg",
+                "cgm",
+                "continuous monitor",
+                "holter",
+                "genomic seq",
+            ]
+            if kw in desc_lower
+        ]
 
         if image_desc_hits and not flagged_inputs:
-            flagged_inputs.append({"input": "description", "reason": f"image keywords in description: {image_desc_hits}"})
+            flagged_inputs.append(
+                {
+                    "input": "description",
+                    "reason": f"image keywords in description: {image_desc_hits}",
+                }
+            )
         if signal_desc_hits and not flagged_inputs:
-            flagged_inputs.append({"input": "description", "reason": f"signal keywords in description: {signal_desc_hits}"})
+            flagged_inputs.append(
+                {
+                    "input": "description",
+                    "reason": f"signal keywords in description: {signal_desc_hits}",
+                }
+            )
 
         passes = len(flagged_inputs) == 0
         if passes:
@@ -167,7 +279,11 @@ class CDSComplianceFramework:
             reasons = "; ".join(f"{f['input']}: {f['reason']}" for f in flagged_inputs)
             rationale = f"Criterion 1 FAILS — image/signal/pattern processing detected: {reasons}"
 
-        return {"passes": passes, "rationale": rationale, "flagged_inputs": flagged_inputs}
+        return {
+            "passes": passes,
+            "rationale": rationale,
+            "flagged_inputs": flagged_inputs,
+        }
 
     def _evaluate_criterion_2(self, data_sources: List[Dict]) -> Dict:
         """Criterion 2: Software must use medical information from well-understood sources."""
@@ -183,8 +299,13 @@ class CDSComplianceFramework:
         for src in data_sources:
             src_type = src.get("type", "unknown").lower()
             if src_type in SOURCE_FLAGGED_TYPES or src_type == "unknown":
-                flagged.append({"source": src.get("name", "unnamed"), "type": src_type,
-                               "reason": "Not a well-understood and accepted source per FDA guidance"})
+                flagged.append(
+                    {
+                        "source": src.get("name", "unnamed"),
+                        "type": src_type,
+                        "reason": "Not a well-understood and accepted source per FDA guidance",
+                    }
+                )
             else:
                 accepted.append(src.get("name", "unnamed"))
 
@@ -202,31 +323,56 @@ class CDSComplianceFramework:
 
         return {"passes": passes, "rationale": rationale, "flagged_sources": flagged}
 
-    def _evaluate_criterion_3(self, output_type: str, intended_user: str, description: str) -> Dict:
+    def _evaluate_criterion_3(
+        self, output_type: str, intended_user: str, description: str
+    ) -> Dict:
         """Criterion 3: Software must support HCP decision-making, not replace it."""
         issues = []
 
         # Check intended user is HCP
-        hcp_roles = {"physician", "doctor", "nurse", "pharmacist", "therapist",
-                     "cardiologist", "radiologist", "surgeon", "ophthalmologist",
-                     "psychiatrist", "oncologist", "hcp", "clinician",
-                     "healthcare_professional", "prescriber", "provider",
-                     "primary care physician", "specialist"}
+        hcp_roles = {
+            "physician",
+            "doctor",
+            "nurse",
+            "pharmacist",
+            "therapist",
+            "cardiologist",
+            "radiologist",
+            "surgeon",
+            "ophthalmologist",
+            "psychiatrist",
+            "oncologist",
+            "hcp",
+            "clinician",
+            "healthcare_professional",
+            "prescriber",
+            "provider",
+            "primary care physician",
+            "specialist",
+        }
         user_lower = intended_user.lower().replace("_", " ")
         is_hcp = any(role in user_lower for role in hcp_roles)
 
         if not is_hcp:
-            issues.append(f"Intended user '{intended_user}' is not a healthcare professional")
+            issues.append(
+                f"Intended user '{intended_user}' is not a healthcare professional"
+            )
 
         # Check output type
         device_outputs = {"definitive_diagnosis", "immediate_directive"}
         if output_type in device_outputs:
-            issues.append(f"Output type '{output_type}' directs rather than supports clinical judgment")
+            issues.append(
+                f"Output type '{output_type}' directs rather than supports clinical judgment"
+            )
 
         # Check description for directive language
         desc_lower = description.lower()
-        directive_phrases = ["definitively diagnos", "automatically treat",
-                            "directs the clinician", "replaces clinical judgment"]
+        directive_phrases = [
+            "definitively diagnos",
+            "automatically treat",
+            "directs the clinician",
+            "replaces clinical judgment",
+        ]
         for phrase in directive_phrases:
             if phrase in desc_lower:
                 issues.append(f"Description contains directive language: '{phrase}'")
@@ -239,25 +385,37 @@ class CDSComplianceFramework:
 
         return {"passes": passes, "rationale": rationale, "issues": issues}
 
-    def _evaluate_criterion_4(self, urgency: str, description: str, output_type: str) -> Dict:
+    def _evaluate_criterion_4(
+        self, urgency: str, description: str, output_type: str
+    ) -> Dict:
         """Criterion 4: HCP must be able to independently review the basis."""
         issues = []
 
         # Time-critical assessment
         if urgency in ("time_critical", "urgent", "emergency"):
-            issues.append(f"Urgency '{urgency}' — clinician lacks time for independent review")
+            issues.append(
+                f"Urgency '{urgency}' — clinician lacks time for independent review"
+            )
 
         # Check for black-box indicators
         desc_lower = description.lower()
-        blackbox_phrases = ["black box", "opaque", "unexplainable",
-                           "no explanation provided", "automatic", "immediate"]
+        blackbox_phrases = [
+            "black box",
+            "opaque",
+            "unexplainable",
+            "no explanation provided",
+            "automatic",
+            "immediate",
+        ]
         for phrase in blackbox_phrases:
             if phrase in desc_lower:
                 issues.append(f"Description suggests limited transparency: '{phrase}'")
 
         # Immediate directives inherently limit review time
         if output_type == "immediate_directive":
-            issues.append("Immediate directive output limits independent review opportunity")
+            issues.append(
+                "Immediate directive output limits independent review opportunity"
+            )
 
         passes = len(issues) == 0
         if passes:
@@ -277,23 +435,59 @@ class CDSComplianceFramework:
         for inp in input_types:
             inp_lower = inp.lower().replace(" ", "_").replace("-", "_")
 
-            if inp_lower in IMAGE_KEYWORDS or any(kw in inp_lower for kw in
-                                                    ["image", "scan", "xray", "mri", "ct_scan",
-                                                     "fundus", "pathology", "dermoscop",
-                                                     "mammogra", "ultrasound", "endoscop"]):
+            if inp_lower in IMAGE_KEYWORDS or any(
+                kw in inp_lower
+                for kw in [
+                    "image",
+                    "scan",
+                    "xray",
+                    "mri",
+                    "ct_scan",
+                    "fundus",
+                    "pathology",
+                    "dermoscop",
+                    "mammogra",
+                    "ultrasound",
+                    "endoscop",
+                ]
+            ):
                 category = "image"
                 impact = "fail"
-            elif inp_lower in SIGNAL_PATTERN_KEYWORDS or any(kw in inp_lower for kw in
-                                                              ["waveform", "ecg", "eeg", "emg",
-                                                               "cgm_continuous", "holter",
-                                                               "continuous_monitor", "ngs",
-                                                               "genomic_seq"]):
-                category = "signal" if "waveform" in inp_lower or "signal" in inp_lower else "pattern"
+            elif inp_lower in SIGNAL_PATTERN_KEYWORDS or any(
+                kw in inp_lower
+                for kw in [
+                    "waveform",
+                    "ecg",
+                    "eeg",
+                    "emg",
+                    "cgm_continuous",
+                    "holter",
+                    "continuous_monitor",
+                    "ngs",
+                    "genomic_seq",
+                ]
+            ):
+                category = (
+                    "signal"
+                    if "waveform" in inp_lower or "signal" in inp_lower
+                    else "pattern"
+                )
                 impact = "fail"
-            elif inp_lower in DISCRETE_KEYWORDS or any(kw in inp_lower for kw in
-                                                        ["single", "level", "demographics",
-                                                         "list", "code", "notes", "summary",
-                                                         "temperature", "bmi", "weight"]):
+            elif inp_lower in DISCRETE_KEYWORDS or any(
+                kw in inp_lower
+                for kw in [
+                    "single",
+                    "level",
+                    "demographics",
+                    "list",
+                    "code",
+                    "notes",
+                    "summary",
+                    "temperature",
+                    "bmi",
+                    "weight",
+                ]
+            ):
                 category = "discrete"
                 impact = "pass"
             else:
@@ -301,11 +495,13 @@ class CDSComplianceFramework:
                 category = "structured"
                 impact = "pass"
 
-            results.append({
-                "input_type": inp,
-                "data_category": category,
-                "criterion_1_impact": impact,
-            })
+            results.append(
+                {
+                    "input_type": inp,
+                    "data_category": category,
+                    "criterion_1_impact": impact,
+                }
+            )
         return results
 
     # ------------------------------------------------------------------
@@ -327,12 +523,14 @@ class CDSComplianceFramework:
                 risk = True
                 has_flagged = True
 
-            validated.append({
-                "name": src.get("name", "unnamed"),
-                "type": src_type,
-                "validation_status": status,
-                "criterion_2_risk": risk,
-            })
+            validated.append(
+                {
+                    "name": src.get("name", "unnamed"),
+                    "type": src_type,
+                    "validation_status": status,
+                    "criterion_2_risk": risk,
+                }
+            )
 
         return {
             "sources": validated,
@@ -463,8 +661,11 @@ class CDSComplianceFramework:
             "function": function_description,
             "severity": severity,
             "likelihood": likelihood,
-            "risk_level": "high" if severity == "high" and likelihood == "high" else
-                         "medium" if severity == "high" or likelihood == "high" else "low",
+            "risk_level": "high"
+            if severity == "high" and likelihood == "high"
+            else "medium"
+            if severity == "high" or likelihood == "high"
+            else "low",
             "mitigation_strategies": mitigation_strategies,
             "assessment_date": datetime.now(timezone.utc).isoformat(),
         }
@@ -485,7 +686,7 @@ class CDSComplianceFramework:
             "accuracy_limitations": {
                 "metrics": accuracy_metrics,
                 "note": "These accuracy metrics were measured on the validation population "
-                        "and may not generalize to all patient populations.",
+                "and may not generalize to all patient populations.",
             },
             "population_limitations": {
                 "validated_on": validated_populations,
@@ -547,14 +748,22 @@ class CDSComplianceFramework:
             "function": function_description,
             "target_population": target_population,
             "accuracy_metrics": {
-                "primary": ["Sensitivity", "Specificity", "Positive Predictive Value", "Negative Predictive Value"],
+                "primary": [
+                    "Sensitivity",
+                    "Specificity",
+                    "Positive Predictive Value",
+                    "Negative Predictive Value",
+                ],
                 "secondary": ["AUC-ROC", "F1 Score", "Calibration (Hosmer-Lemeshow)"],
                 "endpoints": clinical_endpoints,
             },
             "gold_standard_comparison": {
                 "reference_standard": gold_standard,
                 "comparison_methodology": "Head-to-head comparison on same patient cohort",
-                "statistical_tests": ["McNemar's test for paired proportions", "DeLong test for AUC comparison"],
+                "statistical_tests": [
+                    "McNemar's test for paired proportions",
+                    "DeLong test for AUC comparison",
+                ],
             },
             "demographic_subgroup_analysis": {
                 "subgroups": demographic_subgroups,
@@ -604,11 +813,14 @@ class CDSComplianceFramework:
             "acceptance_rate": acceptance_rate,
             "average_review_time_seconds": average_review_time_seconds,
             "review_time_concern": review_time_concern,
-            "alert": "; ".join(alert_reasons) if alert_reasons else "No over-reliance indicators detected",
+            "alert": "; ".join(alert_reasons)
+            if alert_reasons
+            else "No over-reliance indicators detected",
             "recommendation": (
                 "Consider retraining clinicians on appropriate CDS use and "
                 "implementing mandatory review checkpoints"
-                if over_reliance else "Usage patterns are within acceptable range"
+                if over_reliance
+                else "Usage patterns are within acceptable range"
             ),
             "assessment_date": datetime.now(timezone.utc).isoformat(),
         }
@@ -656,7 +868,8 @@ class CDSComplianceFramework:
             "action_required": (
                 f"CLASSIFICATION CHANGED from {previous_classification} to {new_classification}. "
                 "Regulatory pathway review required."
-                if changed else "Classification unchanged. Document re-evaluation in change record."
+                if changed
+                else "Classification unchanged. Document re-evaluation in change record."
             ),
         }
 

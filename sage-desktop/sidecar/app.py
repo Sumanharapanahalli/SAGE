@@ -4,6 +4,7 @@ Importable module so integration tests can drive ``run()`` with
 ``io.StringIO`` streams. The thin ``__main__.py`` wrapper only exists so
 the sidecar is runnable as ``python -m sidecar``.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -12,6 +13,7 @@ import os
 import sys
 from pathlib import Path
 from typing import Optional
+
 
 # Put the SAGE repo root on sys.path so `from src.core...` resolves when
 # the sidecar is spawned from arbitrary working directories (Tauri will
@@ -38,7 +40,7 @@ _SAGE_ROOT = _resolve_sage_root()
 if _SAGE_ROOT and _SAGE_ROOT not in sys.path:
     sys.path.insert(0, _SAGE_ROOT)
 
-from rpc import (
+from rpc import (  # noqa: E402
     RpcError,
     Request,
     build_error,
@@ -47,9 +49,9 @@ from rpc import (
     write_ndjson_response,
     RPC_INTERNAL_ERROR,
 )
-import jobs
-from dispatcher import Dispatcher
-from handlers import (
+import jobs  # noqa: E402
+from dispatcher import Dispatcher  # noqa: E402
+from handlers import (  # noqa: E402
     activity,
     agents,
     analyze,
@@ -436,6 +438,7 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
         # runs no TaskWorker, so queued tasks are now VISIBLE but not yet executed — a
         # desktop worker is a separate, tracked gap.)
         import src.core.queue_manager as _qm
+
         _qm.task_queue = queue._queue
     except Exception as e:  # noqa: BLE001
         logging.warning("TaskQueue unavailable: %s", e)
@@ -471,14 +474,17 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
         operator_name = "operator"
         try:
             import yaml as _yaml
+
             op_file = sage_dir / "operator.yaml"
             if op_file.exists():
-                operator_name = (_yaml.safe_load(op_file.read_text(encoding="utf-8"))
-                                 or {}).get("name") or "operator"
+                operator_name = (
+                    _yaml.safe_load(op_file.read_text(encoding="utf-8")) or {}
+                ).get("name") or "operator"
         except Exception:  # noqa: BLE001
             pass
         mergegate._runner, mergegate._store = build_default_runner(
-            str(solution_path), operator=operator_name)
+            str(solution_path), operator=operator_name
+        )
     except Exception as e:  # noqa: BLE001
         logging.warning("Merge-Gate unavailable: %s", e)
 

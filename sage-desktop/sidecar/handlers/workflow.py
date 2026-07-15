@@ -25,6 +25,7 @@ handlers.builds's translation of build_orchestrator's error dicts):
     ``{"error": "..."}`` from run/resume/status -> ``RPC_INVALID_PARAMS``
     Python exception -> ``RPC_SIDECAR_ERROR``
 """
+
 from __future__ import annotations
 
 from rpc import RPC_INVALID_PARAMS, RPC_SIDECAR_ERROR, RpcError
@@ -33,6 +34,7 @@ from rpc import RPC_INVALID_PARAMS, RPC_SIDECAR_ERROR, RpcError
 def list_workflows(params: dict) -> dict:
     try:
         from src.integrations.langgraph_runner import langgraph_runner
+
         workflows = langgraph_runner.list_workflows()
         return {"workflows": workflows, "count": len(workflows)}
     except RpcError:
@@ -51,6 +53,7 @@ def run(params: dict) -> dict:
 
     try:
         from src.integrations.langgraph_runner import langgraph_runner
+
         result = langgraph_runner.run(workflow_name, initial_state)
     except RpcError:
         raise
@@ -72,6 +75,7 @@ def resume(params: dict) -> dict:
 
     try:
         from src.integrations.langgraph_runner import langgraph_runner
+
         result = langgraph_runner.resume(run_id, feedback)
     except RpcError:
         raise
@@ -90,6 +94,7 @@ def status(params: dict) -> dict:
 
     try:
         from src.integrations.langgraph_runner import langgraph_runner
+
         result = langgraph_runner.get_status(run_id)
     except RpcError:
         raise

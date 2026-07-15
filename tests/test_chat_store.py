@@ -1,7 +1,4 @@
 """Tests for chat conversation persistence store."""
-import json
-import os
-import tempfile
 
 import pytest
 
@@ -71,7 +68,7 @@ class TestChatStore:
 
     def test_conversations_ordered_by_updated_at_desc(self, store: ChatStore):
         c1 = store.create("user1", "default", "analyst", "Analyst", [])
-        c2 = store.create("user1", "default", "developer", "Developer", [])
+        store.create("user1", "default", "developer", "Developer", [])
         # Update c1 to make it more recent
         store.update(c1["id"], title="Updated first")
         results = store.list("user1", "default")

@@ -10,6 +10,7 @@ The concrete ``Constitution`` instance is wired at startup by
 ``app._wire_handlers``; if the import fails (e.g. missing deps) the
 handlers degrade gracefully to typed ``SidecarError`` responses.
 """
+
 from __future__ import annotations
 
 from typing import Any, Optional

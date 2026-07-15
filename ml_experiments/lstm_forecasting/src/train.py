@@ -74,8 +74,12 @@ def train(
     model = model.to(device)
 
     criterion = nn.HuberLoss(delta=1.0)
-    optimizer = AdamW(model.parameters(), lr=cfg.learning_rate, weight_decay=cfg.weight_decay)
-    scheduler = ReduceLROnPlateau(optimizer, mode="min", patience=cfg.patience // 2, factor=0.5)
+    optimizer = AdamW(
+        model.parameters(), lr=cfg.learning_rate, weight_decay=cfg.weight_decay
+    )
+    scheduler = ReduceLROnPlateau(
+        optimizer, mode="min", patience=cfg.patience // 2, factor=0.5
+    )
 
     result = TrainResult()
     best_state: Optional[dict] = None
@@ -83,12 +87,18 @@ def train(
 
     logger.info(
         "Training: device=%s epochs=%d batch=%d lr=%.0e TF %.1f→%.1f",
-        cfg.device, cfg.epochs, cfg.batch_size,
-        cfg.learning_rate, cfg.initial_teacher_forcing, cfg.final_teacher_forcing,
+        cfg.device,
+        cfg.epochs,
+        cfg.batch_size,
+        cfg.learning_rate,
+        cfg.initial_teacher_forcing,
+        cfg.final_teacher_forcing,
     )
 
     for epoch in range(cfg.epochs):
-        tf_ratio = tf_schedule(epoch, cfg.epochs, cfg.initial_teacher_forcing, cfg.final_teacher_forcing)
+        tf_ratio = tf_schedule(
+            epoch, cfg.epochs, cfg.initial_teacher_forcing, cfg.final_teacher_forcing
+        )
 
         # ---- Train ----------------------------------------------------------
         model.train()
@@ -114,7 +124,7 @@ def train(
             for x_batch, y_batch in val_dl:
                 x_batch = x_batch.to(device)
                 y_batch = y_batch.to(device)
-                preds = model(x_batch, teacher_forcing_ratio=0.0)   # no TF at eval
+                preds = model(x_batch, teacher_forcing_ratio=0.0)  # no TF at eval
                 val_running += criterion(preds, y_batch).item() * x_batch.size(0)
         val_loss = val_running / len(val_dl.dataset)
 
@@ -125,6 +135,7 @@ def train(
 
         if mlflow_run is not None:
             import mlflow
+
             mlflow.log_metrics(
                 {"train_loss": train_loss, "val_loss": val_loss, "tf_ratio": tf_ratio},
                 step=epoch,
@@ -141,7 +152,12 @@ def train(
         if epoch % 10 == 0 or epoch == cfg.epochs - 1:
             logger.info(
                 "Epoch %3d/%d | train=%.4f val=%.4f | TF=%.2f | best=ep%d",
-                epoch, cfg.epochs, train_loss, val_loss, tf_ratio, result.best_epoch,
+                epoch,
+                cfg.epochs,
+                train_loss,
+                val_loss,
+                tf_ratio,
+                result.best_epoch,
             )
 
         if no_improve_counter >= cfg.patience:
@@ -152,7 +168,11 @@ def train(
     # Restore best weights
     if best_state is not None:
         model.load_state_dict(best_state)
-        logger.info("Restored best model from epoch %d (val_loss=%.4f)", result.best_epoch, result.best_val_loss)
+        logger.info(
+            "Restored best model from epoch %d (val_loss=%.4f)",
+            result.best_epoch,
+            result.best_val_loss,
+        )
 
     return result
 
@@ -161,7 +181,10 @@ def train(
 # Inference helper
 # ---------------------------------------------------------------------------
 
-def predict_all(model: LSTMForecaster, dataloader: DataLoader, device: str = "cpu") -> np.ndarray:
+
+def predict_all(
+    model: LSTMForecaster, dataloader: DataLoader, device: str = "cpu"
+) -> np.ndarray:
     """Run inference over the full dataloader, return (N, horizon) array."""
     model.eval()
     dev = torch.device(device)

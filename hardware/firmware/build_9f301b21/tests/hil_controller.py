@@ -33,6 +33,7 @@ log = logging.getLogger(__name__)
 @dataclass
 class HILResponse:
     """Parsed firmware response."""
+
     ok: bool
     raw: str
     error_code: Optional[int] = None
@@ -61,7 +62,7 @@ class HILController:
     Thread safety: not thread-safe — use one instance per test worker.
     """
 
-    _KV_RE = re.compile(r'(\w+)=(-?\w+)')
+    _KV_RE = re.compile(r"(\w+)=(-?\w+)")
 
     def __init__(
         self,
@@ -140,11 +141,12 @@ class HILController:
         if raw.startswith("ERR"):
             parts = raw.split(None, 2)
             code = int(parts[1]) if len(parts) > 1 else -1
-            msg  = parts[2] if len(parts) > 2 else ""
+            msg = parts[2] if len(parts) > 2 else ""
             return HILResponse(ok=False, raw=raw, error_code=code, error_msg=msg)
         # Unexpected format
-        return HILResponse(ok=False, raw=raw, error_code=-1,
-                           error_msg=f"Unexpected: {raw!r}")
+        return HILResponse(
+            ok=False, raw=raw, error_code=-1, error_msg=f"Unexpected: {raw!r}"
+        )
 
     # ── Command API ───────────────────────────────────────────────────────────
 
@@ -165,8 +167,10 @@ class HILController:
     def get_power_state(self) -> Dict[str, Any]:
         resp = self._cmd("GET_POWER_STATE")
         assert resp.ok, f"GET_POWER_STATE failed: {resp.raw}"
-        return {"power": resp.data.get("POWER", "UNKNOWN"),
-                "tick_ms": resp.get_int("TICK")}
+        return {
+            "power": resp.data.get("POWER", "UNKNOWN"),
+            "tick_ms": resp.get_int("TICK"),
+        }
 
     def force_sleep(self) -> None:
         resp = self._cmd("FORCE_SLEEP")
@@ -179,8 +183,7 @@ class HILController:
     def get_current_markers(self) -> Dict[str, int]:
         resp = self._cmd("GET_CURRENT_MARKERS")
         assert resp.ok, f"GET_CURRENT_MARKERS failed: {resp.raw}"
-        return {"before_ms": resp.get_int("BEFORE"),
-                "after_ms":  resp.get_int("AFTER")}
+        return {"before_ms": resp.get_int("BEFORE"), "after_ms": resp.get_int("AFTER")}
 
     def reset_fall_count(self) -> None:
         resp = self._cmd("RESET_FALL_COUNT")
@@ -191,8 +194,9 @@ class HILController:
         assert resp.ok, f"GET_FALL_COUNT failed: {resp.raw}"
         return resp.get_int("COUNT")
 
-    def inject_accel(self, ax: int, ay: int, az: int,
-                     gx: int = 0, gy: int = 0, gz: int = 0) -> None:
+    def inject_accel(
+        self, ax: int, ay: int, az: int, gx: int = 0, gy: int = 0, gz: int = 0
+    ) -> None:
         """Inject a single accelerometer sample (values in mg / mdps)."""
         resp = self._cmd(f"INJECT_ACCEL {ax} {ay} {az} {gx} {gy} {gz}")
         assert resp.ok, f"INJECT_ACCEL failed: {resp.raw}"
@@ -234,11 +238,9 @@ class HILController:
 
         resp_end = self._cmd("REPLAY_END")
         assert resp_end.ok, f"REPLAY_END failed: {resp_end.raw}"
-        detected   = resp_end.get_int("DETECTED") == 1
+        detected = resp_end.get_int("DETECTED") == 1
         latency_ms = resp_end.get_int("LATENCY_MS")
-        return ReplayResult(detected=detected,
-                            latency_ms=latency_ms,
-                            raw=resp_end.raw)
+        return ReplayResult(detected=detected, latency_ms=latency_ms, raw=resp_end.raw)
 
     def get_lte_latency(self) -> int:
         """Return last end-to-end LTE alert latency in ms."""
