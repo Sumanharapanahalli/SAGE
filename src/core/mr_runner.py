@@ -23,6 +23,8 @@ import subprocess
 import time
 from typing import Callable, Optional
 
+from src.core.github_pr import SAGE_COMMENT_TAG
+
 logger = logging.getLogger("MRRunner")
 
 
@@ -52,10 +54,12 @@ class MRRunner:
         poll_max: int = 60,
         poll_interval: float = 10.0,
         operator: str = "operator",
+        watch=None,  # WatchStore — durable, idempotent comment handling (optional)
     ):
         self.store = store
         self.github = github
         self.worktree = worktree
+        self.watch = watch
         self.code_fn = code_fn
         self.gate_fn = gate_fn
         self.package = package
@@ -183,9 +187,12 @@ class MRRunner:
                 self.store.update(mr_id, state="merged", merged_sha=sha)
                 return {"mr_id": mr_id, "state": "merged", "merged_sha": sha}
 
-            if decision == "CHANGES_REQUESTED":
-                comments = self.github.get_comments(number)
-                notes = "\n".join(f"- {c.get('body', '')}" for c in comments)[:4000]
+            # Any NEW human input — a plain comment or a changes-requested review body —
+            # triggers a rework. Handled idempotently via the watch store: each comment
+            # is acted on exactly once, even across a daemon restart, and SAGE's own
+            # [Sage]-tagged comments are skipped so the watcher never reacts to itself.
+            notes, keys = self._collect_new_human_input(mr_id, number, decision)
+            if notes:
                 self.store.update(mr_id, state="reworking")
                 gate, written = self._run_gate_with_rework(
                     mr_id, path, work_item,
@@ -196,8 +203,16 @@ class MRRunner:
                                                 files=written)
                 if not ok:
                     return self._fail(mr_id, f"rework push failed: {out[:300]}")
+                # Mark handled only AFTER a successful push, so a crash mid-rework
+                # re-does that one rework rather than dropping the comment.
+                if self.watch is not None:
+                    for key in keys:
+                        self.watch.mark_handled(mr_id, key)
+                    self.watch.bump_rework(mr_id)
+                    self.watch.set_decision(mr_id, decision)
                 self.github.comment(number, "Reworked and pushed: addressed the review "
-                                            "comments; evidence gate is green again.")
+                                            "comments; evidence gate is green again.",
+                                    role="dev")
                 self.store.update(mr_id, state="review")
 
             self.sleep_fn(self.poll_interval)
@@ -207,6 +222,49 @@ class MRRunner:
         self.store.update(mr_id, state="review")
         return {"mr_id": mr_id, "state": "review", "pending": True, "pr_number": number}
 
+    def _collect_new_human_input(self, mr_id, number, decision) -> tuple:
+        """Gather unhandled human input on the PR and return ``(notes, keys)``.
+
+        ``notes`` is the concatenated bodies to feed the coder; ``keys`` are the
+        stable ids to mark handled *after* a successful rework. Plain conversation
+        comments plus (on CHANGES_REQUESTED) the review body are included; SAGE's
+        own ``[Sage]``-tagged comments and anything already handled are excluded.
+
+        Without a watch store (no persistence), falls back to the original
+        behaviour: react only to CHANGES_REQUESTED, once per poll, no dedup.
+        """
+        if self.watch is None:
+            if decision != "CHANGES_REQUESTED":
+                return "", []
+            comments = self.github.get_comments(number)
+            notes = "\n".join(f"- {c.get('body', '')}" for c in comments)[:4000]
+            return notes, []
+
+        fresh: list = []  # (handle_key, body)
+        for c in self.github.get_comments(number):
+            body = (c.get("body") or "").strip()
+            if not body or body.startswith(SAGE_COMMENT_TAG):
+                continue  # empty, or SAGE's own comment — never react to self
+            key = c.get("id") or c.get("created") or body[:60]
+            if not self.watch.handled(mr_id, key):
+                fresh.append((key, body))
+
+        if decision == "CHANGES_REQUESTED":
+            for r in self.github.get_reviews(number):
+                if r.get("state") != "CHANGES_REQUESTED":
+                    continue
+                body = (r.get("body") or "").strip()
+                if not body or body.startswith(SAGE_COMMENT_TAG):
+                    continue
+                key = f"review:{r.get('author', '')}:{body[:60]}"
+                if not self.watch.handled(mr_id, key):
+                    fresh.append((key, body))
+
+        if not fresh:
+            return "", []
+        notes = "\n".join(f"- {b}" for _, b in fresh)[:4000]
+        return notes, [k for k, _ in fresh]
+
 
 def build_default_runner(solution_dir: str, operator: str = "operator"):
     """Wire the real dependencies for a solution. Kept out of __init__ so the state machine
@@ -215,6 +273,7 @@ def build_default_runner(solution_dir: str, operator: str = "operator"):
 
     from src.core.github_pr import GitHubPR
     from src.core.mr_store import MRStore
+    from src.core.watch_store import WatchStore
     from src.core import mr_package
     from src.core.worktree_manager import WorktreeManager
     from src.memory.audit_logger import AuditLogger
@@ -223,6 +282,7 @@ def build_default_runner(solution_dir: str, operator: str = "operator"):
     sage_dir = Path(solution_dir) / ".sage"
     sage_dir.mkdir(parents=True, exist_ok=True)
     store = MRStore(str(sage_dir / "mr.db"))
+    watch = WatchStore(str(sage_dir / "watch.db"))
     audit = AuditLogger(db_path=str(sage_dir / "audit_log.db"))
     repo_root = str(Path(__file__).resolve().parent.parent.parent)
 
@@ -279,4 +339,44 @@ def build_default_runner(solution_dir: str, operator: str = "operator"):
 
     return MRRunner(store=store, github=GitHubPR(cwd=repo_root), worktree=WorktreeManager(),
                     code_fn=code_fn, gate_fn=gate_fn, package=mr_package,
-                    record_merge=record_merge, operator=operator), store
+                    record_merge=record_merge, operator=operator, watch=watch), store
+
+
+def resume_open_mrs(runner) -> list:
+    """Resume the watch on every open MR — the daemon's restart hook.
+
+    Lists MRs left in ``review`` / ``reworking`` (a prior watcher stopped, the
+    process exited, the laptop slept) and re-enters the watch for each whose
+    worktree is still available locally. Idempotent comment handling (the watch
+    store) guarantees nothing already actioned is reworked again; the single-writer
+    lease guarantees a co-running desktop watcher and this daemon never double-act.
+
+    Returns a list of per-MR result dicts. Recreating a worktree from the remote
+    proposal branch on a fresh machine is a Phase-2 daemon concern; here we resume
+    the MRs this host can still act on and skip (report) the rest.
+    """
+    results = []
+    open_mrs = runner.store.list("review") + runner.store.list("reworking")
+    for row in open_mrs:
+        mr_id = row["id"]
+        number = row.get("pr_number")
+        if not number:
+            continue  # never reached review — nothing to watch
+        if runner.watch is not None and not runner.watch.acquire(mr_id, runner.operator):
+            results.append({"mr_id": mr_id, "state": "skipped",
+                            "reason": "watch lease held by another process"})
+            continue
+        try:
+            path = runner.worktree.get_path(mr_id)
+        except Exception:  # noqa: BLE001
+            path = None
+        if not path:
+            results.append({"mr_id": mr_id, "state": "skipped",
+                            "reason": "worktree not available on this host"})
+            continue
+        try:
+            results.append(runner._watch(mr_id, row["work_item"], row["branch"], path, number))
+        finally:
+            if runner.watch is not None:
+                runner.watch.release(mr_id, runner.operator)
+    return results

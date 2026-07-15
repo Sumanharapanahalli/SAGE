@@ -8,8 +8,9 @@ from __future__ import annotations
 
 import pytest
 
-from src.core.mr_runner import MRRunner
+from src.core.mr_runner import MRRunner, resume_open_mrs
 from src.core.mr_store import MRStore
+from src.core.watch_store import WatchStore
 
 pytestmark = pytest.mark.unit
 
@@ -41,10 +42,14 @@ class FakeGitHub:
         return {"state": st, "review_decision": dec, "merged_sha": "sha-manual", "error": ""}
 
     def get_comments(self, number):
-        return [{"author": "harish", "body": "handle the null case", "created": "t"}]
+        return [{"id": "c1", "author": "harish", "body": "handle the null case",
+                 "created": "t"}]
 
-    def comment(self, number, body):
-        self.comments.append(body)
+    def get_reviews(self, number):
+        return []
+
+    def comment(self, number, body, role="agent"):
+        self.comments.append({"body": body, "role": role})
         return {"ok": True, "error": ""}
 
     def merge(self, number, method="squash"):
@@ -101,7 +106,8 @@ def _runner(tmp_path, github, *, gate_sequence, merges):
     r = MRRunner(store=store, github=github, worktree=FakeWorktree(tmp_path),
                  code_fn=code_fn, gate_fn=gate_fn, package=FakePackage(),
                  record_merge=record_merge, git_fn=git_fn, sleep_fn=lambda *_: None,
-                 rework_max=2, poll_max=5, poll_interval=0)
+                 rework_max=2, poll_max=5, poll_interval=0,
+                 watch=WatchStore(str(tmp_path / "watch.db")))
     return r, store
 
 
@@ -148,7 +154,48 @@ def test_changes_requested_then_approved(tmp_path):
     res = r.run(mr)
     assert res["state"] == "merged"
     assert gh.comments, "a rework comment should be posted"
+    # the rework comment is authored by the dev agent (drives the [Sage][dev] tag)
+    assert gh.comments[0]["role"] == "dev"
     assert len(merges) == 1
+
+
+def test_plain_comment_reworked_exactly_once(tmp_path):
+    # A plain human comment (no formal "request changes") triggers a rework — and
+    # only once, however many times we poll (idempotent via the watch store).
+    merges = []
+    gh = FakeGitHub()  # no decisions -> REVIEW_REQUIRED each poll; one human comment
+    r, store = _runner(tmp_path, gh, gate_sequence=[True, True, True, True], merges=merges)
+    mr = store.create("plain comment", "sage/mr-6")
+    res = r.run(mr)
+    assert res["state"] == "review" and res.get("pending")
+    dev_comments = [c for c in gh.comments if c["role"] == "dev"]
+    assert len(dev_comments) == 1, "the one comment must be reworked exactly once"
+
+
+def test_sage_own_comment_is_ignored(tmp_path):
+    # The watcher must never react to its own [Sage]-tagged comment (would loop).
+    merges = []
+    gh = FakeGitHub()
+    gh.get_comments = lambda number: [
+        {"id": "s1", "author": "harish", "body": "[Sage][dev] : Reworked and pushed.",
+         "created": "t"}
+    ]
+    r, store = _runner(tmp_path, gh, gate_sequence=[True, True], merges=merges)
+    mr = store.create("self comment", "sage/mr-7")
+    res = r.run(mr)
+    assert res["state"] == "review" and res.get("pending")
+    assert [c for c in gh.comments if c["role"] == "dev"] == [], "must not react to itself"
+
+
+def test_resume_open_mrs_processes_open_reviews(tmp_path):
+    # A restarted daemon resumes MRs left open in the store (approval → merge here).
+    merges = []
+    gh = FakeGitHub(decisions=["APPROVED"])
+    r, store = _runner(tmp_path, gh, gate_sequence=[True], merges=merges)
+    mr = store.create("left open", "sage/mr-8")
+    store.update(mr, state="review", pr_number=99)
+    results = resume_open_mrs(r)
+    assert any(x["mr_id"] == mr and x["state"] == "merged" for x in results)
 
 
 def test_manual_github_merge_is_detected_and_recorded(tmp_path):
