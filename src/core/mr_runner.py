@@ -215,19 +215,34 @@ def build_default_runner(solution_dir: str, operator: str = "operator"):
                 "written_files": result.get("written_files", [])}
 
     def gate_fn(path):
-        rc, out = _default_git(path, "status")  # cheap smoke; real gate runs the suite
+        # The gate runs IN THE WORKTREE (so it validates the branch's code) using the MAIN
+        # checkout's .venv (a worktree has no .venv / node_modules / cargo target of its own).
+        # verify_system.py --fast is wrong here — it needs node/cargo the worktree lacks — so
+        # the gate is the pytest suite: does this change break the framework?
+        import os as _os
+        venv_py = str(Path(repo_root) / ".venv" / "Scripts" / "python.exe")
+        if not _os.path.exists(venv_py):
+            venv_py = str(Path(repo_root) / ".venv" / "bin" / "python")
+
+        # There must actually be a change to gate — never open an empty PR.
+        _, dirty = _default_git(path, "status", "--porcelain")
+        if not dirty.strip():
+            return {"green": False, "output": "coder produced no file changes",
+                    "evidence": {"gate_green": False, "reason": "no changes"}}
         try:
             p = subprocess.run(
-                [str(Path(repo_root) / ".venv" / "Scripts" / "python.exe"),
-                 "scripts/verify_system.py", "--fast", "--json"],
-                cwd=repo_root, capture_output=True, text=True, timeout=1200, errors="replace")
-            import json as _json
-            data = _json.loads((p.stdout or "{}").splitlines()[-1]) if p.stdout.strip() else {}
-            green = data.get("passed", 0) == data.get("total", -1) and data.get("total", 0) > 0
-            return {"green": green, "evidence": {"verify": f"{data.get('passed')}/{data.get('total')}",
-                    "gate_green": green}, "output": p.stdout + p.stderr}
+                [venv_py, "-m", "pytest", "tests/", "-q", "-p", "no:cacheprovider",
+                 "--ignore=tests/system/test_browser_e2e.py"],
+                cwd=path, capture_output=True, text=True, timeout=1800, errors="replace")
+            green = p.returncode == 0
+            out = (p.stdout or "") + (p.stderr or "")
+            last = [l for l in (p.stdout or "").splitlines() if l.strip()]
+            return {"green": green, "output": out,
+                    "evidence": {"tests": last[-1] if last else "", "gate_green": green,
+                                 "summary": "framework test suite"}}
         except Exception as e:  # noqa: BLE001
-            return {"green": False, "evidence": {"gate_green": False}, "output": f"gate error: {e}"}
+            return {"green": False, "output": f"gate error: {e}",
+                    "evidence": {"gate_green": False}}
 
     def record_merge(approver, work_item, mr_id, sha):
         # Signed, chained audit record of the reviewed merge — the compliance event.
