@@ -74,30 +74,49 @@ class MRRunner:
         self.store.update(mr_id, state="failed", error=reason)
         return {"mr_id": mr_id, "state": "failed", "error": reason}
 
-    def _commit_and_push(self, path: str, branch: str, message: str) -> tuple[bool, str]:
-        for args in (("add", "-A"), ("commit", "-m", message)):
-            rc, out = self.git_fn(path, *args)
-            if rc != 0 and args[0] == "commit":
-                return False, out  # nothing to commit / commit failed
+    def _commit_and_push(self, path: str, branch: str, message: str,
+                         files: list = None) -> tuple[bool, str]:
+        # Stage ONLY the files the agent declared — never `git add -A`. The evidence gate
+        # runs the test suite in the worktree, which GENERATES runtime artifacts (.sage/
+        # dbs, caches); -A swept all of that into the PR (observed: PR #12 carried a dozen
+        # chroma/gym binaries alongside the one-line fix). Same class as the executor's
+        # add-A bug fixed earlier today.
+        if files:
+            staged = False
+            for rel in files:
+                if not rel:
+                    continue
+                rc, _ = self.git_fn(path, "add", "--", rel)
+                staged = staged or rc == 0
+            if not staged:
+                return False, "none of the agent's written files could be staged"
+        else:
+            self.git_fn(path, "add", "-A")  # no declared list — last resort
+        rc, out = self.git_fn(path, "commit", "-m", message)
+        if rc != 0:
+            return False, out  # nothing to commit / commit failed
         rc, out = self.git_fn(path, "push", "-u", "origin", branch)
         return rc == 0, out
 
     def _run_gate_with_rework(self, mr_id: str, path: str, work_item: str,
-                              context: str) -> Optional[dict]:
-        """Code → gate, reworking on failure up to rework_max. Returns the green evidence
-        dict, or None if it never went green (caller fails the MR)."""
+                              context: str):
+        """Code → gate, reworking on failure up to rework_max. Returns
+        (green evidence dict | None, written_files) — the file list scopes the commit."""
         self.store.update(mr_id, state="gating")
         last = ""
+        written: list = []
         for attempt in range(self.rework_max + 1):
             ctx = context if attempt == 0 else f"{context}\n\nPREVIOUS ATTEMPT FAILED:\n{last}"
-            self.code_fn(path, ctx)
+            result = self.code_fn(path, ctx)
+            if isinstance(result, dict):
+                written = result.get("written_files", written) or written
             gate = self.gate_fn(path)
             self.store.update(mr_id, evidence=gate.get("evidence", {}))
             if gate.get("green"):
-                return gate
+                return gate, written
             last = gate.get("output", "")[:4000]
             logger.info("MR %s gate red (attempt %d/%d)", mr_id, attempt + 1, self.rework_max + 1)
-        return None
+        return None, written
 
     # -- the lifecycle ------------------------------------------------------
     def run(self, mr_id: str) -> dict:
@@ -119,13 +138,14 @@ class MRRunner:
 
         # 2+3. Code + evidence gate, reworking until green.
         self.store.update(mr_id, state="coding")
-        gate = self._run_gate_with_rework(mr_id, path, work_item, context=work_item)
+        gate, written = self._run_gate_with_rework(mr_id, path, work_item, context=work_item)
         if gate is None:
             return self._fail(mr_id, f"evidence gate never went green after "
                                      f"{self.rework_max + 1} attempts")
 
         # 4. Commit + open the regulatory PR (only now that it is green).
-        ok, out = self._commit_and_push(path, branch, self.package.build_pr_title(work_item))
+        ok, out = self._commit_and_push(path, branch, self.package.build_pr_title(work_item),
+                                        files=written)
         if not ok:
             return self._fail(mr_id, f"commit/push failed: {out[:300]}")
         body = self.package.build_pr_body(
@@ -167,12 +187,13 @@ class MRRunner:
                 comments = self.github.get_comments(number)
                 notes = "\n".join(f"- {c.get('body', '')}" for c in comments)[:4000]
                 self.store.update(mr_id, state="reworking")
-                gate = self._run_gate_with_rework(
+                gate, written = self._run_gate_with_rework(
                     mr_id, path, work_item,
                     context=f"{work_item}\n\nHUMAN REQUESTED CHANGES:\n{notes}")
                 if gate is None:
                     return self._fail(mr_id, "rework could not pass the evidence gate")
-                ok, out = self._commit_and_push(path, branch, f"rework: address review on {mr_id}")
+                ok, out = self._commit_and_push(path, branch, f"rework: address review on {mr_id}",
+                                                files=written)
                 if not ok:
                     return self._fail(mr_id, f"rework push failed: {out[:300]}")
                 self.github.comment(number, "Reworked and pushed: addressed the review "

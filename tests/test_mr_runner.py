@@ -185,3 +185,25 @@ def test_review_pending_when_human_does_not_decide(tmp_path):
     res = r.run(mr)
     assert res["state"] == "review" and res.get("pending") is True
     assert not merges
+
+
+def test_commit_stages_only_the_agents_files_not_add_A(tmp_path):
+    """The evidence gate generates runtime artifacts in the worktree; the commit must stage
+    ONLY the agent's declared files, never `git add -A` (PR #12 leaked chroma/gym binaries)."""
+    from src.core.mr_runner import MRRunner
+    from src.core.mr_store import MRStore
+    calls = []
+
+    def git_fn(path, *args, timeout=30):
+        calls.append(args)
+        return 0, "ok"
+
+    r = MRRunner(store=MRStore(str(tmp_path / "mr.db")), github=None, worktree=None,
+                 code_fn=lambda p, c: {}, gate_fn=lambda p: {"green": True}, package=None,
+                 record_merge=lambda *a: "s", git_fn=git_fn)
+    ok, _ = r._commit_and_push("/wt", "sage/mr-x", "msg", files=["CLAUDE.md", "src/x.py"])
+    assert ok
+    add_args = [a for a in calls if a and a[0] == "add"]
+    # Every add is scoped with `--` to a declared file; none is a bare `add -A`.
+    assert all("-A" not in a for a in add_args), f"add -A leaked: {add_args}"
+    assert ("add", "--", "CLAUDE.md") in calls and ("add", "--", "src/x.py") in calls
