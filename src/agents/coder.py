@@ -173,10 +173,19 @@ class CodingAgent:
         except Exception:
             pass  # MCP tools are supplementary
 
-        tool_descriptions = "\n".join(
-            f"  - {name}({', '.join(fn.__code__.co_varnames[1:fn.__code__.co_argcount])}): {fn.__doc__.strip().splitlines()[0]}"
-            for name, fn in tools.items()
-        )
+        def _describe(name, fn) -> str:
+            # Robust against tools that lack a docstring or a __code__ (MCP/wrapped
+            # callables) — the old direct fn.__doc__.strip() / fn.__code__ access crashed
+            # the whole loop the moment any such tool was registered.
+            try:
+                params = ", ".join(fn.__code__.co_varnames[1:fn.__code__.co_argcount])
+            except AttributeError:
+                params = ""
+            doc = (fn.__doc__ or "").strip()
+            first = doc.splitlines()[0] if doc else name
+            return f"  - {name}({params}): {first}"
+
+        tool_descriptions = "\n".join(_describe(name, fn) for name, fn in tools.items())
 
         system_prompt = (
             "You are a TEXT-ONLY planning agent. You output ONLY the formatted lines below — nothing else.\n"

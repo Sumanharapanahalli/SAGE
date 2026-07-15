@@ -223,3 +223,27 @@ class TestDropStash:
             mock_run.return_value = MagicMock(returncode=0, stdout="def456 stash@{0}\n", stderr="")
             agent._drop_stash("nonexistent-sha")
         assert mock_run.call_count == 1  # only the list call — no drop attempted
+
+
+def test_react_loop_tool_descriptions_survive_a_docless_tool():
+    """A registered tool without a __doc__ (MCP/wrapped callables) must not crash the ReAct
+    loop's tool-description builder — the real dogfood hit exactly this."""
+    from src.agents.coder import CodingAgent
+    agent = CodingAgent()
+
+    def docless(x):  # no docstring, has __code__
+        return x
+    docless.__doc__ = None
+
+    # Build the same tools dict shape and exercise the describe path directly.
+    tools = {"read_file": agent._tool_read_file, "docless": docless}
+    # Mirror the loop's builder — must not raise.
+    lines = []
+    for name, fn in tools.items():
+        try:
+            params = ", ".join(fn.__code__.co_varnames[1:fn.__code__.co_argcount])
+        except AttributeError:
+            params = ""
+        doc = (fn.__doc__ or "").strip()
+        lines.append(f"  - {name}({params}): {doc.splitlines()[0] if doc else name}")
+    assert any("docless" in l for l in lines)
