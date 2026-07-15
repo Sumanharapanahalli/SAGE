@@ -49,10 +49,24 @@ class CodingAgent:
     # Tools
     # -----------------------------------------------------------------------
 
+    def _contained(self, path: str) -> str:
+        """Resolve *path* under self.root and REFUSE anything that escapes it.
+
+        os.path.join(root, abs_path) silently discards root and returns abs_path — so an
+        LLM that writes with an absolute path (or a `..` traversal) escapes the worktree and
+        edits the live tree. That is exactly how the first Merge-Gate dogfood leaked into
+        main. All file tools resolve through here; an out-of-root path raises ValueError.
+        """
+        root = os.path.abspath(self.root)
+        full = os.path.abspath(os.path.join(root, path))
+        if os.path.commonpath([root, full]) != root:
+            raise ValueError(f"path escapes the agent root: {path!r}")
+        return full
+
     def _tool_read_file(self, path: str) -> str:
         """Read a file from the SAGE codebase. Path is relative to project root."""
         try:
-            full = os.path.join(self.root, path)
+            full = self._contained(path)
             with open(full, encoding="utf-8", errors="replace") as f:
                 content = f.read()
             # Truncate very large files
@@ -67,7 +81,7 @@ class CodingAgent:
     def _tool_write_file(self, path: str, content: str) -> str:
         """Write content to a file in the SAGE codebase. Creates parent dirs if needed."""
         try:
-            full = os.path.join(self.root, path)
+            full = self._contained(path)
             os.makedirs(os.path.dirname(full), exist_ok=True)
             with open(full, "w", encoding="utf-8") as f:
                 f.write(content)
@@ -78,7 +92,7 @@ class CodingAgent:
     def _tool_list_dir(self, path: str = "") -> str:
         """List files and directories at path (relative to project root)."""
         try:
-            full = os.path.join(self.root, path) if path else self.root
+            full = self._contained(path) if path else os.path.abspath(self.root)
             entries = []
             for name in sorted(os.listdir(full)):
                 item = os.path.join(full, name)
@@ -90,7 +104,7 @@ class CodingAgent:
     def _tool_search_code(self, pattern: str, path: str = "src") -> str:
         """Search code with grep. pattern is a regex, path is relative to project root."""
         try:
-            full_path = os.path.join(self.root, path)
+            full_path = self._contained(path)
             result = subprocess.run(
                 ["grep", "-rn", "--include=*.py", "--include=*.ts", "--include=*.tsx",
                  "-m", "30", pattern, full_path],

@@ -256,3 +256,26 @@ def test_isolated_coder_flag_gates_mcp_tools():
     from src.agents.coder import CodingAgent
     assert CodingAgent(root="/tmp/wt")._isolated is True
     assert CodingAgent()._isolated is False
+
+
+def test_write_file_refuses_absolute_path_escape(tmp_path):
+    """os.path.join(root, abs_path) discards root — the exact bug that leaked the first
+    dogfood into main. An absolute or ..-traversal path must be REFUSED, not followed."""
+    from src.agents.coder import CodingAgent
+    import os
+    wt = tmp_path / "worktree"; wt.mkdir()
+    outside = tmp_path / "OUTSIDE.md"; outside.write_text("original", encoding="utf-8")
+    agent = CodingAgent(root=str(wt))
+
+    # Absolute path to a file OUTSIDE the root must not be written.
+    res = agent._tool_write_file(str(outside), "HACKED")
+    assert "ERROR" in res or "escape" in res.lower()
+    assert outside.read_text(encoding="utf-8") == "original", "escape write must be refused"
+
+    # ..-traversal must also be refused.
+    res2 = agent._tool_write_file("../OUTSIDE.md", "HACKED")
+    assert outside.read_text(encoding="utf-8") == "original"
+
+    # A normal relative path still works and stays inside the root.
+    ok = agent._tool_write_file("sub/f.py", "print(1)")
+    assert "OK" in ok and (wt / "sub" / "f.py").exists()
