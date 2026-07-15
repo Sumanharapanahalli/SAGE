@@ -103,7 +103,7 @@ sage-desktop/           Third interface: Tauri + Python sidecar via stdin/stdout
 
 ## LLM Provider Quick Switch
 
-Default: Gemini CLI (no API key). Switch anytime:
+Default: claude-code (no API key). Switch anytime:
 
 ```bash
 # Runtime switch (immediate)
@@ -115,7 +115,7 @@ llm:
   ollama_model: "llama3.2"
 ```
 
-Providers: `gemini` (default), `claude-code`, `ollama`, `local`, `claude` (API key required)
+Providers: `claude-code` (default), `gemini`, `ollama`, `local`, `claude` (API key required)
 
 ---
 
