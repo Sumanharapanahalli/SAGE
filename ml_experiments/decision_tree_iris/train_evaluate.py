@@ -53,10 +53,10 @@ from decision_tree import DecisionTreeClassifier, ReducedErrorPruner  # noqa: E4
 
 PARAMS: dict = {
     "random_state": 42,
-    "test_size": 0.20,       # 20 % held-out test set
-    "val_size": 0.20,        # 20 % validation (for REP)
+    "test_size": 0.20,  # 20 % held-out test set
+    "val_size": 0.20,  # 20 % validation (for REP)
     # train_size is implicitly 60 %
-    "max_depth": None,       # grow full tree — REP will prune it
+    "max_depth": None,  # grow full tree — REP will prune it
     "min_samples_split": 2,
     "min_samples_leaf": 1,
     "class_imbalance_ratio_threshold": 1.5,
@@ -86,6 +86,7 @@ logger = logging.getLogger(__name__)
 # Helper: evaluate a model on one split
 # ---------------------------------------------------------------------------
 
+
 def evaluate(
     model: DecisionTreeClassifier,
     X: np.ndarray,
@@ -114,11 +115,12 @@ def evaluate(
 # Data checks
 # ---------------------------------------------------------------------------
 
+
 def check_data(y: np.ndarray, threshold: float) -> dict[str, bool]:
     counts = np.bincount(y)
     ratio = int(counts.max()) / int(counts.min()) if counts.min() > 0 else float("inf")
     return {
-        "leakage_risk": False,          # enforced structurally (scaler fit on train only)
+        "leakage_risk": False,  # enforced structurally (scaler fit on train only)
         "class_imbalance": ratio > threshold,
         "imbalance_ratio": round(ratio, 4),
     }
@@ -127,6 +129,7 @@ def check_data(y: np.ndarray, threshold: float) -> dict[str, bool]:
 # ---------------------------------------------------------------------------
 # Main experiment
 # ---------------------------------------------------------------------------
+
 
 def run_experiment() -> dict:
     logger.info("=" * 60)
@@ -139,14 +142,19 @@ def run_experiment() -> dict:
     # ------------------------------------------------------------------
     iris = load_iris()
     X, y = iris.data.astype(np.float64), iris.target.astype(int)
-    feature_names: list[str] = list(iris.feature_names)
+    list(iris.feature_names)
     target_names: list[str] = list(iris.target_names)
 
     logger.info(
         "Dataset: Iris — %d samples × %d features — %d classes: %s",
-        X.shape[0], X.shape[1], len(target_names), target_names,
+        X.shape[0],
+        X.shape[1],
+        len(target_names),
+        target_names,
     )
-    logger.info("Class distribution: %s", dict(zip(target_names, np.bincount(y).tolist())))
+    logger.info(
+        "Class distribution: %s", dict(zip(target_names, np.bincount(y).tolist()))
+    )
 
     # ------------------------------------------------------------------
     # 2. Data checks
@@ -159,7 +167,8 @@ def run_experiment() -> dict:
     #    — leakage impossible: scaler fitted on train ONLY
     # ------------------------------------------------------------------
     X_tv, X_test, y_tv, y_test = train_test_split(
-        X, y,
+        X,
+        y,
         test_size=PARAMS["test_size"],
         random_state=PARAMS["random_state"],
         stratify=y,
@@ -167,14 +176,17 @@ def run_experiment() -> dict:
     # val_size relative to the remaining (train+val) portion
     val_ratio = PARAMS["val_size"] / (1.0 - PARAMS["test_size"])
     X_train, X_val, y_train, y_val = train_test_split(
-        X_tv, y_tv,
+        X_tv,
+        y_tv,
         test_size=val_ratio,
         random_state=PARAMS["random_state"],
         stratify=y_tv,
     )
     logger.info(
         "Split sizes — train: %d  val: %d  test: %d",
-        len(X_train), len(X_val), len(X_test),
+        len(X_train),
+        len(X_val),
+        len(X_test),
     )
     logger.info(
         "Train class dist: %s  Val: %s  Test: %s",
@@ -187,10 +199,12 @@ def run_experiment() -> dict:
     # 4. Feature scaling — fit on TRAIN only (no leakage)
     # ------------------------------------------------------------------
     scaler = StandardScaler()
-    X_train = scaler.fit_transform(X_train)   # fit + transform
-    X_val   = scaler.transform(X_val)          # transform only
-    X_test  = scaler.transform(X_test)         # transform only
-    logger.info("StandardScaler: mean=%s  std=%s", scaler.mean_.round(4), scaler.scale_.round(4))
+    X_train = scaler.fit_transform(X_train)  # fit + transform
+    X_val = scaler.transform(X_val)  # transform only
+    X_test = scaler.transform(X_test)  # transform only
+    logger.info(
+        "StandardScaler: mean=%s  std=%s", scaler.mean_.round(4), scaler.scale_.round(4)
+    )
     logger.info("Scaler fitted on training data only — no leakage.")
 
     # ------------------------------------------------------------------
@@ -204,12 +218,16 @@ def run_experiment() -> dict:
         min_samples_leaf=PARAMS["min_samples_leaf"],
     )
     tree.fit(X_train, y_train)
-    logger.info("Depth: %d  |  Nodes: %d  |  Leaves: %d",
-                tree.get_depth(), tree.count_nodes(), tree.count_leaves())
+    logger.info(
+        "Depth: %d  |  Nodes: %d  |  Leaves: %d",
+        tree.get_depth(),
+        tree.count_nodes(),
+        tree.count_leaves(),
+    )
 
     m_unp_train = evaluate(tree, X_train, y_train, "Unpruned — Train", target_names)
-    m_unp_val   = evaluate(tree, X_val,   y_val,   "Unpruned — Val",   target_names)
-    m_unp_test  = evaluate(tree, X_test,  y_test,  "Unpruned — Test",  target_names)
+    m_unp_val = evaluate(tree, X_val, y_val, "Unpruned — Val", target_names)
+    m_unp_test = evaluate(tree, X_test, y_test, "Unpruned — Test", target_names)
 
     # ------------------------------------------------------------------
     # 6. Reduced Error Pruning on a deep copy
@@ -219,12 +237,18 @@ def run_experiment() -> dict:
     pruned_tree = copy.deepcopy(tree)
     pruner = ReducedErrorPruner(pruned_tree)
     pruner.prune(X_val, y_val)
-    logger.info("After pruning — Depth: %d  |  Nodes: %d  |  Leaves: %d",
-                pruned_tree.get_depth(), pruned_tree.count_nodes(), pruned_tree.count_leaves())
+    logger.info(
+        "After pruning — Depth: %d  |  Nodes: %d  |  Leaves: %d",
+        pruned_tree.get_depth(),
+        pruned_tree.count_nodes(),
+        pruned_tree.count_leaves(),
+    )
 
-    m_prn_train = evaluate(pruned_tree, X_train, y_train, "Pruned — Train", target_names)
-    m_prn_val   = evaluate(pruned_tree, X_val,   y_val,   "Pruned — Val",   target_names)
-    m_prn_test  = evaluate(pruned_tree, X_test,  y_test,  "Pruned — Test",  target_names)
+    m_prn_train = evaluate(
+        pruned_tree, X_train, y_train, "Pruned — Train", target_names
+    )
+    m_prn_val = evaluate(pruned_tree, X_val, y_val, "Pruned — Val", target_names)
+    m_prn_test = evaluate(pruned_tree, X_test, y_test, "Pruned — Test", target_names)
 
     # ------------------------------------------------------------------
     # 7. Summary table
@@ -233,14 +257,25 @@ def run_experiment() -> dict:
     logger.info("=" * 60)
     logger.info("%-30s  %10s  %10s", "Metric", "Unpruned", "Pruned")
     logger.info("-" * 54)
-    logger.info("%-30s  %10d  %10d", "Tree depth",     tree.get_depth(),        pruned_tree.get_depth())
-    logger.info("%-30s  %10d  %10d", "Node count",     tree.count_nodes(),      pruned_tree.count_nodes())
-    logger.info("%-30s  %10d  %10d", "Leaf count",     tree.count_leaves(),     pruned_tree.count_leaves())
+    logger.info(
+        "%-30s  %10d  %10d", "Tree depth", tree.get_depth(), pruned_tree.get_depth()
+    )
+    logger.info(
+        "%-30s  %10d  %10d", "Node count", tree.count_nodes(), pruned_tree.count_nodes()
+    )
+    logger.info(
+        "%-30s  %10d  %10d",
+        "Leaf count",
+        tree.count_leaves(),
+        pruned_tree.count_leaves(),
+    )
     logger.info("-" * 54)
     for metric in ("accuracy", "f1_macro", "precision_macro", "recall_macro"):
         logger.info(
             "%-30s  %10.4f  %10.4f",
-            f"Test {metric}", m_unp_test[metric], m_prn_test[metric],
+            f"Test {metric}",
+            m_unp_test[metric],
+            m_prn_test[metric],
         )
     logger.info("=" * 60)
 
@@ -263,16 +298,16 @@ def run_experiment() -> dict:
             "nodes": tree.count_nodes(),
             "leaves": tree.count_leaves(),
             "train": m_unp_train,
-            "val":   m_unp_val,
-            "test":  m_unp_test,
+            "val": m_unp_val,
+            "test": m_unp_test,
         },
         "pruned": {
             "depth": pruned_tree.get_depth(),
             "nodes": pruned_tree.count_nodes(),
             "leaves": pruned_tree.count_leaves(),
             "train": m_prn_train,
-            "val":   m_prn_val,
-            "test":  m_prn_test,
+            "val": m_prn_val,
+            "test": m_prn_test,
         },
         # Top-level metrics for the final (pruned) model on test
         "metrics": {

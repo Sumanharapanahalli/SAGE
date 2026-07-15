@@ -140,6 +140,7 @@ def _build_openswe_result(files, tier="llm_react"):
 def orchestrator():
     """Fresh BuildOrchestrator instance for each test."""
     import tempfile
+
     tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
     tmp.close()
     return BuildOrchestrator(checkpoint_db=tmp.name)
@@ -165,11 +166,14 @@ def mock_vector_memory():
 # 1. Full pipeline test
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.integration
 class TestFullPipeline:
     """Exercises the entire build pipeline start-to-finish."""
 
-    def test_full_hello_world_pipeline(self, orchestrator, mock_audit, mock_vector_memory):
+    def test_full_hello_world_pipeline(
+        self, orchestrator, mock_audit, mock_vector_memory
+    ):
         """
         start("Build a hello world web app")
         → decompose → critic reviews plan (75 then 88) → awaiting_plan
@@ -218,15 +222,32 @@ class TestFullPipeline:
 
         # Mock openswe build — returns realistic results per task
         openswe_files = {
-            "BACKEND": [{"path": "src/app.py", "content": "from flask import Flask\napp = Flask(__name__)"}],
-            "FRONTEND": [{"path": "src/App.tsx", "content": "export default function App() { return <h1>Hello</h1> }"}],
-            "TESTS": [{"path": "tests/test_app.py", "content": "def test_hello(): assert True"}],
+            "BACKEND": [
+                {
+                    "path": "src/app.py",
+                    "content": "from flask import Flask\napp = Flask(__name__)",
+                }
+            ],
+            "FRONTEND": [
+                {
+                    "path": "src/App.tsx",
+                    "content": "export default function App() { return <h1>Hello</h1> }",
+                }
+            ],
+            "TESTS": [
+                {
+                    "path": "tests/test_app.py",
+                    "content": "def test_hello(): assert True",
+                }
+            ],
             "CONFIG": [{"path": "Dockerfile", "content": "FROM python:3.11"}],
         }
 
         def mock_openswe_build(task, repo_path=""):
             task_type = task.get("task_type", "BACKEND")
-            files = openswe_files.get(task_type, [{"path": "unknown.txt", "content": ""}])
+            files = openswe_files.get(
+                task_type, [{"path": "unknown.txt", "content": ""}]
+            )
             return _build_openswe_result(files)
 
         mock_openswe = MagicMock()
@@ -243,12 +264,28 @@ class TestFullPipeline:
         with tempfile.TemporaryDirectory() as tmpdir:
             with (
                 patch("src.integrations.build_orchestrator.BuildOrchestrator._audit"),
-                patch("src.agents.critic.CriticAgent.llm", new_callable=PropertyMock, return_value=mock_llm),
-                patch("src.agents.critic.CriticAgent.audit", new_callable=PropertyMock, return_value=mock_audit),
+                patch(
+                    "src.agents.critic.CriticAgent.llm",
+                    new_callable=PropertyMock,
+                    return_value=mock_llm,
+                ),
+                patch(
+                    "src.agents.critic.CriticAgent.audit",
+                    new_callable=PropertyMock,
+                    return_value=mock_audit,
+                ),
                 patch("src.agents.critic.CriticAgent._store_feedback"),
-                patch("src.integrations.build_orchestrator.BuildOrchestrator._decompose", return_value=HELLO_WORLD_PLAN),
-                patch("src.integrations.openswe_runner.get_openswe_runner", return_value=mock_openswe),
-                patch("src.integrations.build_orchestrator.BuildOrchestrator._finalize"),
+                patch(
+                    "src.integrations.build_orchestrator.BuildOrchestrator._decompose",
+                    return_value=HELLO_WORLD_PLAN,
+                ),
+                patch(
+                    "src.integrations.openswe_runner.get_openswe_runner",
+                    return_value=mock_openswe,
+                ),
+                patch(
+                    "src.integrations.build_orchestrator.BuildOrchestrator._finalize"
+                ),
             ):
                 # --- Phase 1: START ---
                 result = orchestrator.start(
@@ -280,7 +317,9 @@ class TestFullPipeline:
 
                 # --- Phase 2: APPROVE PLAN ---
                 run_id = result["run_id"]
-                result2 = orchestrator.approve_plan(run_id, feedback="Looks good, proceed")
+                result2 = orchestrator.approve_plan(
+                    run_id, feedback="Looks good, proceed"
+                )
 
                 assert result2["state"] == "awaiting_build"
                 assert len(result2["agent_results"]) == 4
@@ -311,10 +350,20 @@ class TestFullPipeline:
                 # Verify full status contains all expected fields
                 status = orchestrator.get_status(run_id)
                 expected_fields = [
-                    "run_id", "solution_name", "state", "state_description",
-                    "created_at", "updated_at", "product_description",
-                    "hitl_level", "hitl_gates", "plan", "task_count",
-                    "critic_scores", "critic_reports", "agent_results",
+                    "run_id",
+                    "solution_name",
+                    "state",
+                    "state_description",
+                    "created_at",
+                    "updated_at",
+                    "product_description",
+                    "hitl_level",
+                    "hitl_gates",
+                    "plan",
+                    "task_count",
+                    "critic_scores",
+                    "critic_reports",
+                    "agent_results",
                     "integration_result",
                 ]
                 for field in expected_fields:
@@ -334,14 +383,21 @@ class TestFullPipeline:
 
         with (
             patch("src.agents.planner.planner_agent", mock_planner),
-            patch("src.integrations.build_orchestrator.BuildOrchestrator._build_agent_context", return_value="agents"),
+            patch(
+                "src.integrations.build_orchestrator.BuildOrchestrator._build_agent_context",
+                return_value="agents",
+            ),
         ):
             run = {
                 "product_description": "Test product",
                 "solution_name": "test",
             }
             # Call the real _decompose
-            orch = BuildOrchestrator(checkpoint_db=tempfile.NamedTemporaryFile(suffix=".db", delete=False).name)
+            orch = BuildOrchestrator(
+                checkpoint_db=tempfile.NamedTemporaryFile(
+                    suffix=".db", delete=False
+                ).name
+            )
             plan = orch._decompose(run)
 
             # Plan is enriched with 4 quality-gate tasks (QA, SECURITY,
@@ -350,8 +406,13 @@ class TestFullPipeline:
             assert plan[0]["task_type"] == "BACKEND"
             assert plan[1]["task_type"] == "FRONTEND"
             # Verify acceptance criteria were added from defaults
-            assert plan[0]["acceptance_criteria"] == DEFAULT_ACCEPTANCE_CRITERIA["BACKEND"]
-            assert plan[1]["acceptance_criteria"] == DEFAULT_ACCEPTANCE_CRITERIA["FRONTEND"]
+            assert (
+                plan[0]["acceptance_criteria"] == DEFAULT_ACCEPTANCE_CRITERIA["BACKEND"]
+            )
+            assert (
+                plan[1]["acceptance_criteria"]
+                == DEFAULT_ACCEPTANCE_CRITERIA["FRONTEND"]
+            )
             # Verify depends_on defaulted to []
             assert plan[0]["depends_on"] == []
             assert plan[1]["depends_on"] == []
@@ -363,6 +424,7 @@ class TestFullPipeline:
 # ---------------------------------------------------------------------------
 # 2. Realistic ReAct iteration test
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.integration
 class TestReActIteration:
@@ -385,7 +447,10 @@ class TestReActIteration:
                 # First iteration — basic app
                 return _make_react_response(
                     files=[
-                        {"path": "app.py", "content": "from flask import Flask\napp = Flask(__name__)\n@app.route('/hello')\ndef hello():\n    return {'message': 'Hello'}"},
+                        {
+                            "path": "app.py",
+                            "content": "from flask import Flask\napp = Flask(__name__)\n@app.route('/hello')\ndef hello():\n    return {'message': 'Hello'}",
+                        },
                     ],
                     thought="Building basic Flask hello endpoint",
                     status="ITERATE — need error handling and tests",
@@ -394,8 +459,14 @@ class TestReActIteration:
                 # Second iteration — adds error handling + new file
                 return _make_react_response(
                     files=[
-                        {"path": "app.py", "content": "from flask import Flask\napp = Flask(__name__)\n@app.route('/hello')\ndef hello():\n    try:\n        return {'message': 'Hello, World!'}\n    except Exception as e:\n        return {'error': str(e)}, 500"},
-                        {"path": "tests/test_app.py", "content": "def test_hello():\n    from app import app\n    client = app.test_client()\n    assert client.get('/hello').status_code == 200"},
+                        {
+                            "path": "app.py",
+                            "content": "from flask import Flask\napp = Flask(__name__)\n@app.route('/hello')\ndef hello():\n    try:\n        return {'message': 'Hello, World!'}\n    except Exception as e:\n        return {'error': str(e)}, 500",
+                        },
+                        {
+                            "path": "tests/test_app.py",
+                            "content": "def test_hello():\n    from app import app\n    client = app.test_client()\n    assert client.get('/hello').status_code == 200",
+                        },
                     ],
                     thought="Adding error handling and tests",
                     status="DONE",
@@ -403,7 +474,11 @@ class TestReActIteration:
 
         mock_llm = MagicMock()
         mock_llm.generate = MagicMock(side_effect=mock_llm_generate)
-        mock_llm.generate_for_task = MagicMock(side_effect=lambda task_type, prompt, system_prompt, trace_name="", **kw: mock_llm_generate(prompt, system_prompt, trace_name))
+        mock_llm.generate_for_task = MagicMock(
+            side_effect=lambda task_type, prompt, system_prompt, trace_name="", **kw: (
+                mock_llm_generate(prompt, system_prompt, trace_name)
+            )
+        )
 
         runner = OpenSWERunner()
         # Force tier 3 by clearing openswe url and breaking langgraph
@@ -443,6 +518,7 @@ class TestReActIteration:
 # 3. Critic rejection flow
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.integration
 class TestCriticRejectionFlow:
     """Test behavior when critic gives low scores."""
@@ -452,6 +528,7 @@ class TestCriticRejectionFlow:
         Critic gives score 30 on plan — plan still surfaces to human
         at awaiting_plan state. Human approves anyway.
         """
+
         def mock_critic_generate(prompt, system_prompt, trace_name=""):
             if "plan_review" in trace_name:
                 return _make_critic_json(
@@ -473,19 +550,37 @@ class TestCriticRejectionFlow:
         mock_llm.generate = MagicMock(side_effect=mock_critic_generate)
 
         mock_openswe = MagicMock()
-        mock_openswe.build = MagicMock(return_value=_build_openswe_result(
-            [{"path": "app.py", "content": "print('hello')"}]
-        ))
+        mock_openswe.build = MagicMock(
+            return_value=_build_openswe_result(
+                [{"path": "app.py", "content": "print('hello')"}]
+            )
+        )
 
         with tempfile.TemporaryDirectory() as tmpdir:
             with (
                 patch("src.integrations.build_orchestrator.BuildOrchestrator._audit"),
-                patch("src.agents.critic.CriticAgent.llm", new_callable=PropertyMock, return_value=mock_llm),
-                patch("src.agents.critic.CriticAgent.audit", new_callable=PropertyMock, return_value=MagicMock()),
+                patch(
+                    "src.agents.critic.CriticAgent.llm",
+                    new_callable=PropertyMock,
+                    return_value=mock_llm,
+                ),
+                patch(
+                    "src.agents.critic.CriticAgent.audit",
+                    new_callable=PropertyMock,
+                    return_value=MagicMock(),
+                ),
                 patch("src.agents.critic.CriticAgent._store_feedback"),
-                patch("src.integrations.build_orchestrator.BuildOrchestrator._decompose", return_value=HELLO_WORLD_PLAN),
-                patch("src.integrations.openswe_runner.get_openswe_runner", return_value=mock_openswe),
-                patch("src.integrations.build_orchestrator.BuildOrchestrator._finalize"),
+                patch(
+                    "src.integrations.build_orchestrator.BuildOrchestrator._decompose",
+                    return_value=HELLO_WORLD_PLAN,
+                ),
+                patch(
+                    "src.integrations.openswe_runner.get_openswe_runner",
+                    return_value=mock_openswe,
+                ),
+                patch(
+                    "src.integrations.build_orchestrator.BuildOrchestrator._finalize"
+                ),
             ):
                 # Start — critic gives low score but plan still surfaces
                 result = orchestrator.start(
@@ -506,7 +601,9 @@ class TestCriticRejectionFlow:
                 assert result2["state"] == "awaiting_build"
 
                 # Code critic score is also low but recorded
-                code_critics = [c for c in result2["critic_scores"] if c["phase"] == "code"]
+                code_critics = [
+                    c for c in result2["critic_scores"] if c["phase"] == "code"
+                ]
                 assert len(code_critics) == 1
                 assert code_critics[0]["score"] < 70
 
@@ -518,6 +615,7 @@ class TestCriticRejectionFlow:
 # ---------------------------------------------------------------------------
 # 4. Wave execution test
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.integration
 class TestWaveExecution:
@@ -531,15 +629,47 @@ class TestWaveExecution:
           Wave 3: tasks 5 (depends on 3, 4), 6 (depends on 4)
         """
         plan = [
-            {"step": 1, "task_type": "BACKEND", "description": "Auth service", "depends_on": []},
-            {"step": 2, "task_type": "DATABASE", "description": "Schema setup", "depends_on": []},
-            {"step": 3, "task_type": "API", "description": "Auth endpoints", "depends_on": [1]},
-            {"step": 4, "task_type": "API", "description": "Data endpoints", "depends_on": [2]},
-            {"step": 5, "task_type": "TESTS", "description": "Integration tests", "depends_on": [3, 4]},
-            {"step": 6, "task_type": "FRONTEND", "description": "Dashboard UI", "depends_on": [4]},
+            {
+                "step": 1,
+                "task_type": "BACKEND",
+                "description": "Auth service",
+                "depends_on": [],
+            },
+            {
+                "step": 2,
+                "task_type": "DATABASE",
+                "description": "Schema setup",
+                "depends_on": [],
+            },
+            {
+                "step": 3,
+                "task_type": "API",
+                "description": "Auth endpoints",
+                "depends_on": [1],
+            },
+            {
+                "step": 4,
+                "task_type": "API",
+                "description": "Data endpoints",
+                "depends_on": [2],
+            },
+            {
+                "step": 5,
+                "task_type": "TESTS",
+                "description": "Integration tests",
+                "depends_on": [3, 4],
+            },
+            {
+                "step": 6,
+                "task_type": "FRONTEND",
+                "description": "Dashboard UI",
+                "depends_on": [4],
+            },
         ]
 
-        orch = BuildOrchestrator(checkpoint_db=tempfile.NamedTemporaryFile(suffix=".db", delete=False).name)
+        orch = BuildOrchestrator(
+            checkpoint_db=tempfile.NamedTemporaryFile(suffix=".db", delete=False).name
+        )
         waves = orch._compute_waves(plan)
 
         assert len(waves) == 3
@@ -564,7 +694,9 @@ class TestWaveExecution:
             {"step": 3, "task_type": "TESTS", "description": "C", "depends_on": []},
         ]
 
-        orch = BuildOrchestrator(checkpoint_db=tempfile.NamedTemporaryFile(suffix=".db", delete=False).name)
+        orch = BuildOrchestrator(
+            checkpoint_db=tempfile.NamedTemporaryFile(suffix=".db", delete=False).name
+        )
         waves = orch._compute_waves(plan)
 
         assert len(waves) == 1
@@ -579,7 +711,9 @@ class TestWaveExecution:
             {"step": 4, "task_type": "CONFIG", "description": "D", "depends_on": [3]},
         ]
 
-        orch = BuildOrchestrator(checkpoint_db=tempfile.NamedTemporaryFile(suffix=".db", delete=False).name)
+        orch = BuildOrchestrator(
+            checkpoint_db=tempfile.NamedTemporaryFile(suffix=".db", delete=False).name
+        )
         waves = orch._compute_waves(plan)
 
         assert len(waves) == 4
@@ -594,7 +728,9 @@ class TestWaveExecution:
             {"step": 2, "task_type": "FRONTEND", "description": "B", "depends_on": [1]},
         ]
 
-        orch = BuildOrchestrator(checkpoint_db=tempfile.NamedTemporaryFile(suffix=".db", delete=False).name)
+        orch = BuildOrchestrator(
+            checkpoint_db=tempfile.NamedTemporaryFile(suffix=".db", delete=False).name
+        )
         waves = orch._compute_waves(plan)
 
         # Should still produce waves (forced execution)
@@ -607,7 +743,9 @@ class TestWaveExecution:
 
     def test_empty_plan(self):
         """Empty plan → no waves."""
-        orch = BuildOrchestrator(checkpoint_db=tempfile.NamedTemporaryFile(suffix=".db", delete=False).name)
+        orch = BuildOrchestrator(
+            checkpoint_db=tempfile.NamedTemporaryFile(suffix=".db", delete=False).name
+        )
         waves = orch._compute_waves([])
         assert waves == []
 
@@ -617,30 +755,71 @@ class TestWaveExecution:
         with the openswe runner mock.
         """
         plan = [
-            {"step": 1, "task_type": "BACKEND", "description": "A", "depends_on": [],
-             "acceptance_criteria": ["Works"], "agent_role": "developer"},
-            {"step": 2, "task_type": "DATABASE", "description": "B", "depends_on": [],
-             "acceptance_criteria": ["Works"], "agent_role": "developer"},
-            {"step": 3, "task_type": "API", "description": "C", "depends_on": [1],
-             "acceptance_criteria": ["Works"], "agent_role": "developer"},
-            {"step": 4, "task_type": "API", "description": "D", "depends_on": [2],
-             "acceptance_criteria": ["Works"], "agent_role": "developer"},
-            {"step": 5, "task_type": "TESTS", "description": "E", "depends_on": [3, 4],
-             "acceptance_criteria": ["Works"], "agent_role": "developer"},
-            {"step": 6, "task_type": "FRONTEND", "description": "F", "depends_on": [4],
-             "acceptance_criteria": ["Works"], "agent_role": "developer"},
+            {
+                "step": 1,
+                "task_type": "BACKEND",
+                "description": "A",
+                "depends_on": [],
+                "acceptance_criteria": ["Works"],
+                "agent_role": "developer",
+            },
+            {
+                "step": 2,
+                "task_type": "DATABASE",
+                "description": "B",
+                "depends_on": [],
+                "acceptance_criteria": ["Works"],
+                "agent_role": "developer",
+            },
+            {
+                "step": 3,
+                "task_type": "API",
+                "description": "C",
+                "depends_on": [1],
+                "acceptance_criteria": ["Works"],
+                "agent_role": "developer",
+            },
+            {
+                "step": 4,
+                "task_type": "API",
+                "description": "D",
+                "depends_on": [2],
+                "acceptance_criteria": ["Works"],
+                "agent_role": "developer",
+            },
+            {
+                "step": 5,
+                "task_type": "TESTS",
+                "description": "E",
+                "depends_on": [3, 4],
+                "acceptance_criteria": ["Works"],
+                "agent_role": "developer",
+            },
+            {
+                "step": 6,
+                "task_type": "FRONTEND",
+                "description": "F",
+                "depends_on": [4],
+                "acceptance_criteria": ["Works"],
+                "agent_role": "developer",
+            },
         ]
 
         call_log = []
 
         def mock_build(task, repo_path=""):
             call_log.append(task.get("task_type", "?"))
-            return _build_openswe_result([{"path": f"{task['task_type'].lower()}.py", "content": "pass"}])
+            return _build_openswe_result(
+                [{"path": f"{task['task_type'].lower()}.py", "content": "pass"}]
+            )
 
         mock_openswe = MagicMock()
         mock_openswe.build = MagicMock(side_effect=mock_build)
 
-        with patch("src.integrations.openswe_runner.get_openswe_runner", return_value=mock_openswe):
+        with patch(
+            "src.integrations.openswe_runner.get_openswe_runner",
+            return_value=mock_openswe,
+        ):
             run = {"plan": plan, "agent_results": [], "workspace_dir": ""}
             orchestrator._execute_agents(run)
 
@@ -665,6 +844,7 @@ class TestWaveExecution:
 # ---------------------------------------------------------------------------
 # 5. Error recovery test
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.integration
 class TestErrorRecovery:
@@ -691,7 +871,9 @@ class TestErrorRecovery:
             patch("src.core.llm_gateway.llm_gateway", mock_llm),
             patch.object(runner, "_audit"),
         ):
-            result = runner.build({"description": "Build something", "task_type": "BACKEND"})
+            result = runner.build(
+                {"description": "Build something", "task_type": "BACKEND"}
+            )
 
             assert result["status"] == "completed"
             assert result["tier"] == "llm_react"
@@ -700,12 +882,30 @@ class TestErrorRecovery:
     def test_one_agent_fails_others_continue(self, orchestrator):
         """One agent task fails → others still complete."""
         plan = [
-            {"step": 1, "task_type": "BACKEND", "description": "Good task", "depends_on": [],
-             "acceptance_criteria": ["Works"], "agent_role": "developer"},
-            {"step": 2, "task_type": "FRONTEND", "description": "Bad task", "depends_on": [],
-             "acceptance_criteria": ["Works"], "agent_role": "developer"},
-            {"step": 3, "task_type": "TESTS", "description": "Another good task", "depends_on": [],
-             "acceptance_criteria": ["Works"], "agent_role": "developer"},
+            {
+                "step": 1,
+                "task_type": "BACKEND",
+                "description": "Good task",
+                "depends_on": [],
+                "acceptance_criteria": ["Works"],
+                "agent_role": "developer",
+            },
+            {
+                "step": 2,
+                "task_type": "FRONTEND",
+                "description": "Bad task",
+                "depends_on": [],
+                "acceptance_criteria": ["Works"],
+                "agent_role": "developer",
+            },
+            {
+                "step": 3,
+                "task_type": "TESTS",
+                "description": "Another good task",
+                "depends_on": [],
+                "acceptance_criteria": ["Works"],
+                "agent_role": "developer",
+            },
         ]
 
         call_count = {"n": 0}
@@ -713,20 +913,32 @@ class TestErrorRecovery:
         def mock_build(task, repo_path=""):
             call_count["n"] += 1
             if task.get("task_type") == "FRONTEND":
-                return {"status": "error", "tier": "llm_react", "error": "LLM timeout",
-                        "code": "", "files_changed": []}
-            return _build_openswe_result([{"path": f"{task['task_type'].lower()}.py", "content": "pass"}])
+                return {
+                    "status": "error",
+                    "tier": "llm_react",
+                    "error": "LLM timeout",
+                    "code": "",
+                    "files_changed": [],
+                }
+            return _build_openswe_result(
+                [{"path": f"{task['task_type'].lower()}.py", "content": "pass"}]
+            )
 
         mock_openswe = MagicMock()
         mock_openswe.build = MagicMock(side_effect=mock_build)
 
-        with patch("src.integrations.openswe_runner.get_openswe_runner", return_value=mock_openswe):
+        with patch(
+            "src.integrations.openswe_runner.get_openswe_runner",
+            return_value=mock_openswe,
+        ):
             run = {"plan": plan, "agent_results": [], "workspace_dir": ""}
             orchestrator._execute_agents(run)
 
         # All 3 tasks attempted
         assert len(run["agent_results"]) == 3
-        statuses = {r["task"]["task_type"]: r["result"]["status"] for r in run["agent_results"]}
+        statuses = {
+            r["task"]["task_type"]: r["result"]["status"] for r in run["agent_results"]
+        }
         assert statuses["BACKEND"] == "completed"
         assert statuses["FRONTEND"] == "error"
         assert statuses["TESTS"] == "completed"
@@ -734,17 +946,28 @@ class TestErrorRecovery:
     def test_critic_exception_build_continues(self, orchestrator):
         """Critic throws exception → build continues with default score."""
         mock_openswe = MagicMock()
-        mock_openswe.build = MagicMock(return_value=_build_openswe_result(
-            [{"path": "app.py", "content": "pass"}]
-        ))
+        mock_openswe.build = MagicMock(
+            return_value=_build_openswe_result([{"path": "app.py", "content": "pass"}])
+        )
 
         with tempfile.TemporaryDirectory() as tmpdir:
             with (
                 patch("src.integrations.build_orchestrator.BuildOrchestrator._audit"),
-                patch("src.integrations.build_orchestrator.BuildOrchestrator._decompose", return_value=HELLO_WORLD_PLAN),
-                patch("src.agents.critic.critic_agent.review_with_loop", side_effect=Exception("Critic crashed")),
-                patch("src.integrations.openswe_runner.get_openswe_runner", return_value=mock_openswe),
-                patch("src.integrations.build_orchestrator.BuildOrchestrator._finalize"),
+                patch(
+                    "src.integrations.build_orchestrator.BuildOrchestrator._decompose",
+                    return_value=HELLO_WORLD_PLAN,
+                ),
+                patch(
+                    "src.agents.critic.critic_agent.review_with_loop",
+                    side_effect=Exception("Critic crashed"),
+                ),
+                patch(
+                    "src.integrations.openswe_runner.get_openswe_runner",
+                    return_value=mock_openswe,
+                ),
+                patch(
+                    "src.integrations.build_orchestrator.BuildOrchestrator._finalize"
+                ),
             ):
                 result = orchestrator.start(
                     product_description="Build a hello world web app",
@@ -755,7 +978,10 @@ class TestErrorRecovery:
                 assert result["state"] == "awaiting_plan"
                 # Critic report has error but default passed=True
                 plan_critic = result["critic_reports"][0]["result"]
-                assert plan_critic.get("error") is not None or plan_critic.get("passed") is True
+                assert (
+                    plan_critic.get("error") is not None
+                    or plan_critic.get("passed") is True
+                )
 
                 # Continue through pipeline
                 run_id = result["run_id"]
@@ -771,7 +997,9 @@ class TestErrorRecovery:
 
         mock_llm = MagicMock()
         mock_llm.generate = MagicMock(side_effect=RuntimeError("LLM service down"))
-        mock_llm.generate_for_task = MagicMock(side_effect=RuntimeError("LLM service down"))
+        mock_llm.generate_for_task = MagicMock(
+            side_effect=RuntimeError("LLM service down")
+        )
 
         runner = OpenSWERunner()
         runner._openswe_url = ""
@@ -780,7 +1008,9 @@ class TestErrorRecovery:
             patch("src.core.llm_gateway.llm_gateway", mock_llm),
             patch.object(runner, "_audit"),
         ):
-            result = runner.build({"description": "Build something", "task_type": "BACKEND"})
+            result = runner.build(
+                {"description": "Build something", "task_type": "BACKEND"}
+            )
 
             assert result["status"] == "error"
             assert result["tier"] == "llm_react"
@@ -790,7 +1020,10 @@ class TestErrorRecovery:
         """Empty plan from planner → state is 'failed'."""
         with (
             patch("src.integrations.build_orchestrator.BuildOrchestrator._audit"),
-            patch("src.integrations.build_orchestrator.BuildOrchestrator._decompose", return_value=[]),
+            patch(
+                "src.integrations.build_orchestrator.BuildOrchestrator._decompose",
+                return_value=[],
+            ),
         ):
             result = orchestrator.start(
                 product_description="Build something vague",
@@ -798,12 +1031,16 @@ class TestErrorRecovery:
             )
             assert result["state"] == "failed"
             assert result["error"] is not None
-            assert "decompose" in result["error"].lower() or "planner" in result["error"].lower()
+            assert (
+                "decompose" in result["error"].lower()
+                or "planner" in result["error"].lower()
+            )
 
 
 # ---------------------------------------------------------------------------
 # 6. API integration test
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.integration
 class TestAPIIntegration:
@@ -826,7 +1063,6 @@ class TestAPIIntegration:
 
         # Build a mock orchestrator that simulates the full state machine
         mock_orch = MagicMock()
-        call_count = {"approve": 0}
 
         mock_orch.start.return_value = {
             "run_id": "test-run-001",
@@ -888,12 +1124,15 @@ class TestAPIIntegration:
             client = TestClient(app)
 
             # --- POST /build/start ---
-            resp = client.post("/build/start", json={
-                "product_description": "Build a hello world web app",
-                "solution_name": "api_test",
-                "critic_threshold": 70,
-                "hitl_level": "standard",
-            })
+            resp = client.post(
+                "/build/start",
+                json={
+                    "product_description": "Build a hello world web app",
+                    "solution_name": "api_test",
+                    "critic_threshold": 70,
+                    "hitl_level": "standard",
+                },
+            )
             assert resp.status_code == 200
             data = resp.json()
             assert data["state"] == "awaiting_plan"
@@ -907,10 +1146,13 @@ class TestAPIIntegration:
             assert data["state"] == "awaiting_plan"
 
             # --- POST /build/approve (plan) ---
-            resp = client.post(f"/build/approve/{run_id}", json={
-                "approved": True,
-                "feedback": "Plan approved",
-            })
+            resp = client.post(
+                f"/build/approve/{run_id}",
+                json={
+                    "approved": True,
+                    "feedback": "Plan approved",
+                },
+            )
             assert resp.status_code == 200
             data = resp.json()
             assert data["state"] == "awaiting_build"
@@ -923,10 +1165,13 @@ class TestAPIIntegration:
             assert data["state"] == "awaiting_build"
 
             # --- POST /build/approve (build) ---
-            resp = client.post(f"/build/approve/{run_id}", json={
-                "approved": True,
-                "feedback": "Ship it!",
-            })
+            resp = client.post(
+                f"/build/approve/{run_id}",
+                json={
+                    "approved": True,
+                    "feedback": "Ship it!",
+                },
+            )
             assert resp.status_code == 200
             data = resp.json()
             assert data["state"] == "completed"
@@ -939,7 +1184,9 @@ class TestAPIIntegration:
 
             # Verify mock calls
             mock_orch.start.assert_called_once()
-            mock_orch.approve_plan.assert_called_once_with(run_id, feedback="Plan approved")
+            mock_orch.approve_plan.assert_called_once_with(
+                run_id, feedback="Plan approved"
+            )
             mock_orch.approve_build.assert_called_once_with(run_id, feedback="Ship it!")
         finally:
             api_mod._get_build_orchestrator = orig_get
@@ -979,17 +1226,23 @@ class TestAPIIntegration:
         try:
             client = TestClient(app)
 
-            resp = client.post("/build/start", json={
-                "product_description": "Test product for wrong state validation",
-                "solution_name": "wrong_state_test",
-            })
+            resp = client.post(
+                "/build/start",
+                json={
+                    "product_description": "Test product for wrong state validation",
+                    "solution_name": "wrong_state_test",
+                },
+            )
             run_id = resp.json()["run_id"]
 
             # Reject the build
-            resp2 = client.post(f"/build/approve/{run_id}", json={
-                "approved": False,
-                "feedback": "Rejecting",
-            })
+            resp2 = client.post(
+                f"/build/approve/{run_id}",
+                json={
+                    "approved": False,
+                    "feedback": "Rejecting",
+                },
+            )
             assert resp2.status_code == 200
             assert resp2.json()["status"] == "rejected"
         finally:
@@ -1003,8 +1256,18 @@ class TestAPIIntegration:
 
         mock_orch = MagicMock()
         mock_orch.list_runs.return_value = [
-            {"run_id": "r1", "solution_name": "a", "state": "completed", "task_count": 3},
-            {"run_id": "r2", "solution_name": "b", "state": "awaiting_plan", "task_count": 5},
+            {
+                "run_id": "r1",
+                "solution_name": "a",
+                "state": "completed",
+                "task_count": 3,
+            },
+            {
+                "run_id": "r2",
+                "solution_name": "b",
+                "state": "awaiting_plan",
+                "task_count": 5,
+            },
         ]
 
         orig_get = api_mod._get_build_orchestrator
@@ -1024,13 +1287,16 @@ class TestAPIIntegration:
 # Additional edge case tests
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.integration
 class TestEdgeCases:
     """Miscellaneous edge cases."""
 
     def test_scaffold_creates_directories(self):
         """Scaffold creates src/, tests/, docs/, config/ and writes README + AGENTS.md."""
-        orch = BuildOrchestrator(checkpoint_db=tempfile.NamedTemporaryFile(suffix=".db", delete=False).name)
+        orch = BuildOrchestrator(
+            checkpoint_db=tempfile.NamedTemporaryFile(suffix=".db", delete=False).name
+        )
         with tempfile.TemporaryDirectory() as tmpdir:
             workspace = os.path.join(tmpdir, "my_project")
             run = {
@@ -1052,7 +1318,9 @@ class TestEdgeCases:
 
     def test_scaffold_skips_without_workspace(self):
         """Scaffold skips when no workspace_dir."""
-        orch = BuildOrchestrator(checkpoint_db=tempfile.NamedTemporaryFile(suffix=".db", delete=False).name)
+        orch = BuildOrchestrator(
+            checkpoint_db=tempfile.NamedTemporaryFile(suffix=".db", delete=False).name
+        )
         result = orch._scaffold({"workspace_dir": ""})
         assert result["status"] == "skipped"
 
@@ -1111,8 +1379,20 @@ class TestEdgeCases:
         """Integration step collects files_changed from all agent results."""
         run = {
             "agent_results": [
-                {"result": {"status": "completed", "files_changed": ["a.py", "b.py"], "code": "# a\n# b"}},
-                {"result": {"status": "completed", "files_changed": ["c.py"], "code": "# c"}},
+                {
+                    "result": {
+                        "status": "completed",
+                        "files_changed": ["a.py", "b.py"],
+                        "code": "# a\n# b",
+                    }
+                },
+                {
+                    "result": {
+                        "status": "completed",
+                        "files_changed": ["c.py"],
+                        "code": "# c",
+                    }
+                },
                 {"result": {"status": "error", "files_changed": [], "code": ""}},
             ],
         }
@@ -1137,12 +1417,22 @@ class TestEdgeCases:
             "hitl_gates": ["plan", "code", "final"],
             "plan": HELLO_WORLD_PLAN,
             "critic_reports": [
-                {"phase": "plan", "result": {"final_score": 85, "passed": True, "iterations": 2}},
-                {"phase": "code", "result": {"final_score": 78, "passed": True, "iterations": 1}},
+                {
+                    "phase": "plan",
+                    "result": {"final_score": 85, "passed": True, "iterations": 2},
+                },
+                {
+                    "phase": "code",
+                    "result": {"final_score": 78, "passed": True, "iterations": 1},
+                },
             ],
             "agent_results": [
                 {
-                    "task": {"task_type": "BACKEND", "description": "Build API", "acceptance_criteria": ["Works"]},
+                    "task": {
+                        "task_type": "BACKEND",
+                        "description": "Build API",
+                        "acceptance_criteria": ["Works"],
+                    },
                     "result": {"status": "completed", "tier": "llm_react"},
                     "step": 1,
                     "wave": 0,
@@ -1175,4 +1465,6 @@ class TestEdgeCases:
         assert "standard" in HITL_LEVELS
         assert "strict" in HITL_LEVELS
         for task_type in BUILD_TASK_TYPES:
-            assert task_type in DEFAULT_ACCEPTANCE_CRITERIA, f"Missing criteria for {task_type}"
+            assert task_type in DEFAULT_ACCEPTANCE_CRITERIA, (
+                f"Missing criteria for {task_type}"
+            )

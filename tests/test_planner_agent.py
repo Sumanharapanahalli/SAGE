@@ -20,6 +20,7 @@ TASK_TYPES = {"DEVELOP": "Write or modify code", "TEST": "Write or run tests"}
 
 def _fresh_planner():
     from src.agents.planner import PlannerAgent
+
     planner = PlannerAgent()
     planner._llm_gateway = MagicMock()
     planner._audit_logger = MagicMock()
@@ -33,6 +34,7 @@ def _plan_response(steps):
 # ---------------------------------------------------------------------------
 # create_plan() — default (beam_width=1) behaviour is unchanged
 # ---------------------------------------------------------------------------
+
 
 class TestCreatePlanDefaultBehaviour:
     def test_single_llm_call_when_beam_width_omitted(self):
@@ -69,12 +71,22 @@ class TestCreatePlanDefaultBehaviour:
 # create_plan(beam_width=N) — PlanSelector wiring (game-theory Phase 2)
 # ---------------------------------------------------------------------------
 
+
 class TestCreatePlanBeamSearch:
     def test_generates_n_candidates_and_scores_each(self):
         planner = _fresh_planner()
         # Each generator call returns a distinct one-step plan.
         planner.llm.generate.side_effect = [
-            _plan_response([{"step": 1, "task_type": "DEVELOP", "description": f"variant {i}", "payload": {}}])
+            _plan_response(
+                [
+                    {
+                        "step": 1,
+                        "task_type": "DEVELOP",
+                        "description": f"variant {i}",
+                        "payload": {},
+                    }
+                ]
+            )
             for i in range(3)
         ]
 
@@ -108,11 +120,32 @@ class TestCreatePlanBeamSearch:
     def test_validates_and_filters_steps_in_every_candidate(self):
         planner = _fresh_planner()
         planner.llm.generate.side_effect = [
-            _plan_response([
-                {"step": 1, "task_type": "DEVELOP", "description": "ok", "payload": {}},
-                {"step": 2, "task_type": "BOGUS_TYPE", "description": "bad", "payload": {}},
-            ]),
-            _plan_response([{"step": 1, "task_type": "TEST", "description": "also ok", "payload": {}}]),
+            _plan_response(
+                [
+                    {
+                        "step": 1,
+                        "task_type": "DEVELOP",
+                        "description": "ok",
+                        "payload": {},
+                    },
+                    {
+                        "step": 2,
+                        "task_type": "BOGUS_TYPE",
+                        "description": "bad",
+                        "payload": {},
+                    },
+                ]
+            ),
+            _plan_response(
+                [
+                    {
+                        "step": 1,
+                        "task_type": "TEST",
+                        "description": "also ok",
+                        "payload": {},
+                    }
+                ]
+            ),
         ]
 
         with patch("src.agents.critic.critic_agent") as mock_critic:

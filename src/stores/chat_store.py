@@ -78,8 +78,17 @@ class ChatStore:
                 """INSERT INTO chat_conversations
                    (id, user_id, solution, role_id, role_name, title, messages, created_at, updated_at)
                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                (conv_id, user_id, solution, role_id, role_name,
-                 "New conversation", json.dumps(messages), now, now),
+                (
+                    conv_id,
+                    user_id,
+                    solution,
+                    role_id,
+                    role_name,
+                    "New conversation",
+                    json.dumps(messages),
+                    now,
+                    now,
+                ),
             )
             conn.commit()
             return self.get(conv_id)  # type: ignore

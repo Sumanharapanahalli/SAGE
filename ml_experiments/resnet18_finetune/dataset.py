@@ -11,12 +11,10 @@ ImageFolder layout expected:
 from __future__ import annotations
 
 import logging
-import os
 from pathlib import Path
 from typing import Tuple
 
 import numpy as np
-from PIL import Image
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, Dataset, Subset
 from torchvision import transforms
@@ -28,6 +26,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Transforms
 # ---------------------------------------------------------------------------
+
 
 def build_transforms(cfg: dict, split: str) -> transforms.Compose:
     """
@@ -50,11 +49,13 @@ def build_transforms(cfg: dict, split: str) -> transforms.Compose:
             t.append(transforms.RandomRotation(aug_cfg["random_rotation"]))
         if aug_cfg.get("color_jitter"):
             jcfg = aug_cfg["color_jitter"]
-            t.append(transforms.ColorJitter(
-                brightness=jcfg.get("brightness", 0),
-                contrast=jcfg.get("contrast", 0),
-                saturation=jcfg.get("saturation", 0),
-            ))
+            t.append(
+                transforms.ColorJitter(
+                    brightness=jcfg.get("brightness", 0),
+                    contrast=jcfg.get("contrast", 0),
+                    saturation=jcfg.get("saturation", 0),
+                )
+            )
         t += [transforms.ToTensor(), normalize]
     else:
         # val / test: deterministic resize + center crop only
@@ -71,6 +72,7 @@ def build_transforms(cfg: dict, split: str) -> transforms.Compose:
 # ---------------------------------------------------------------------------
 # Dataset
 # ---------------------------------------------------------------------------
+
 
 class TransformSubset(Dataset):
     """Wraps a Subset and applies a transform independent of the base dataset."""
@@ -139,24 +141,48 @@ def load_splits(
 
     logger.info(
         "Split sizes — train: %d | val: %d | test: %d",
-        len(train_idx), len(val_idx), len(test_idx),
+        len(train_idx),
+        len(val_idx),
+        len(test_idx),
     )
     _check_split_leakage(train_idx, val_idx, test_idx)
 
     # ---- Wrap each split with its own transform ----
-    train_ds = TransformSubset(Subset(base_dataset, train_idx), build_transforms(cfg, "train"))
-    val_ds   = TransformSubset(Subset(base_dataset, val_idx),   build_transforms(cfg, "val"))
-    test_ds  = TransformSubset(Subset(base_dataset, test_idx),  build_transforms(cfg, "test"))
+    train_ds = TransformSubset(
+        Subset(base_dataset, train_idx), build_transforms(cfg, "train")
+    )
+    val_ds = TransformSubset(
+        Subset(base_dataset, val_idx), build_transforms(cfg, "val")
+    )
+    test_ds = TransformSubset(
+        Subset(base_dataset, test_idx), build_transforms(cfg, "test")
+    )
 
     num_workers = data_cfg.get("num_workers", 4)
-    batch_size  = cfg["training"]["batch_size"]
+    batch_size = cfg["training"]["batch_size"]
 
-    train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True,
-                              num_workers=num_workers, pin_memory=True, drop_last=True)
-    val_loader   = DataLoader(val_ds,   batch_size=batch_size, shuffle=False,
-                              num_workers=num_workers, pin_memory=True)
-    test_loader  = DataLoader(test_ds,  batch_size=batch_size, shuffle=False,
-                              num_workers=num_workers, pin_memory=True)
+    train_loader = DataLoader(
+        train_ds,
+        batch_size=batch_size,
+        shuffle=True,
+        num_workers=num_workers,
+        pin_memory=True,
+        drop_last=True,
+    )
+    val_loader = DataLoader(
+        val_ds,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=num_workers,
+        pin_memory=True,
+    )
+    test_loader = DataLoader(
+        test_ds,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=num_workers,
+        pin_memory=True,
+    )
 
     return train_loader, val_loader, test_loader, class_names
 
@@ -164,6 +190,7 @@ def load_splits(
 # ---------------------------------------------------------------------------
 # Integrity checks
 # ---------------------------------------------------------------------------
+
 
 def _check_class_imbalance(targets: np.ndarray, class_names: list[str]) -> None:
     counts = np.bincount(targets)
@@ -184,8 +211,8 @@ def _check_split_leakage(
     test_idx: np.ndarray,
 ) -> None:
     train_set = set(train_idx.tolist())
-    val_set   = set(val_idx.tolist())
-    test_set  = set(test_idx.tolist())
+    val_set = set(val_idx.tolist())
+    test_set = set(test_idx.tolist())
     overlap_tv = train_set & val_set
     overlap_tt = train_set & test_set
     overlap_vt = val_set & test_set

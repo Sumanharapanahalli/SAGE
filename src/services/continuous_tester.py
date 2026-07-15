@@ -2,6 +2,7 @@
 continuous_tester.py — Background service that runs the test suite on a schedule.
 Surfaces failures via audit log. Part of SAGE's parallel AI test agent capability.
 """
+
 import subprocess
 import threading
 import time
@@ -12,7 +13,9 @@ from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
 
-_SAGE_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+_SAGE_ROOT = os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+)
 _PYTEST = os.path.join(_SAGE_ROOT, ".venv", "bin", "pytest")
 _TESTS_DIR = os.path.join(_SAGE_ROOT, "tests")
 
@@ -64,7 +67,9 @@ class ContinuousTester:
         if self._running:
             return
         self._running = True
-        self._thread = threading.Thread(target=self._loop, daemon=True, name="ContinuousTester")
+        self._thread = threading.Thread(
+            target=self._loop, daemon=True, name="ContinuousTester"
+        )
         self._thread.start()
         logger.info("ContinuousTester started (interval=%ds)", self.interval)
 
@@ -78,7 +83,9 @@ class ContinuousTester:
         while self._running:
             self._do_run("all")
             next_ts = time.time() + self.interval
-            self._next_run = datetime.fromtimestamp(next_ts, tz=timezone.utc).isoformat()
+            self._next_run = datetime.fromtimestamp(
+                next_ts, tz=timezone.utc
+            ).isoformat()
             elapsed = 0
             while elapsed < self.interval and self._running:
                 time.sleep(1)
@@ -132,23 +139,41 @@ class ContinuousTester:
             result["suite"] = suite
             return result
         except subprocess.TimeoutExpired:
-            return {"status": "timeout", "passed": 0, "failed": 0, "errors": 1,
-                    "duration_sec": 120, "suite": suite, "output": "Test run timed out"}
+            return {
+                "status": "timeout",
+                "passed": 0,
+                "failed": 0,
+                "errors": 1,
+                "duration_sec": 120,
+                "suite": suite,
+                "output": "Test run timed out",
+            }
         except Exception as e:
-            return {"status": "error", "passed": 0, "failed": 0, "errors": 1,
-                    "duration_sec": 0, "suite": suite, "output": str(e)}
+            return {
+                "status": "error",
+                "passed": 0,
+                "failed": 0,
+                "errors": 1,
+                "duration_sec": 0,
+                "suite": suite,
+                "output": str(e),
+            }
 
     def _notify_failure(self, result: dict):
         """Log test failures to the audit trail."""
         try:
             from src.memory.audit_logger import audit_logger
+
             audit_logger.log_event(
                 actor="ContinuousTester",
                 action_type="TEST_FAILURE",
                 input_context=f"suite={result.get('suite', 'all')} failed={result.get('failed', 0)}",
                 output_content=result.get("output", "")[-500:],
-                metadata={"passed": result.get("passed"), "failed": result.get("failed"),
-                          "failure_streak": self._failure_streak},
+                metadata={
+                    "passed": result.get("passed"),
+                    "failed": result.get("failed"),
+                    "failure_streak": self._failure_streak,
+                },
             )
         except Exception as e:
             logger.warning("Could not log test failure to audit: %s", e)

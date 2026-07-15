@@ -23,19 +23,18 @@ Usage:
 """
 
 import argparse
-import json
 import logging
 import os
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import datetime
 
 # Ensure project root is on path
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-import yaml
+import yaml  # noqa: E402
 
 
 def _load_config() -> dict:
@@ -58,17 +57,19 @@ def _setup_logging(level: str = "INFO"):
 # CLI Mode (Human-in-the-Loop)
 # ---------------------------------------------------------------------------
 
+
 def run_cli():
     """Interactive CLI — mirrors the v1 CLI with all new agents available."""
     from src.agents.analyst import analyst_agent
     from src.core.llm_gateway import llm_gateway
 
     from src.core.project_loader import project_config
+
     meta = project_config.metadata
     print("\n" + "=" * 70)
     print(f"  SAGE Framework — {meta['name']}")
     print(f"  Project: {meta['project']} v{meta['version']}")
-    print(f"  Mode: Interactive CLI (Human-in-the-Loop)")
+    print("  Mode: Interactive CLI (Human-in-the-Loop)")
     print(f"  LLM Provider: {llm_gateway.get_provider_name()}")
     print("=" * 70)
     print("Commands:")
@@ -118,7 +119,9 @@ def run_cli():
             print(f"  | Trace ID:    {result.get('trace_id', 'N/A')}")
             print("  +---------------------------------------------------------------+")
 
-            decision = input("\n  [A]pprove / [R]eject & Teach / [S]kip: ").strip().upper()
+            decision = (
+                input("\n  [A]pprove / [R]eject & Teach / [S]kip: ").strip().upper()
+            )
 
             if decision == "A":
                 print("  Approved. Action logged.")
@@ -142,6 +145,7 @@ def run_cli():
 # ---------------------------------------------------------------------------
 # API Mode (FastAPI Server)
 # ---------------------------------------------------------------------------
+
 
 def run_api(host: str = "0.0.0.0", port: int = 8000, reload: bool = False):
     """Starts the FastAPI REST server via uvicorn."""
@@ -170,6 +174,7 @@ def run_api(host: str = "0.0.0.0", port: int = 8000, reload: bool = False):
 # Monitor Mode (Daemon)
 # ---------------------------------------------------------------------------
 
+
 def run_monitor():
     """Starts the Monitor Agent and displays live status."""
     from src.agents.monitor import monitor_agent
@@ -179,7 +184,9 @@ def run_monitor():
     def on_error_event(event: dict):
         event_type = event.get("type", "unknown")
         content = event.get("content", "")
-        print(f"\n  [EVENT] {event_type} from {event.get('source', '?')}: {content[:100]}")
+        print(
+            f"\n  [EVENT] {event_type} from {event.get('source', '?')}: {content[:100]}"
+        )
 
         if event_type in ("teams_error", "metabase_error") and content:
             print("  Auto-analyzing event content...")
@@ -221,6 +228,7 @@ def run_monitor():
 # Demo Mode
 # ---------------------------------------------------------------------------
 
+
 def run_demo():
     """Runs a quick demo showcasing key system capabilities with mock data."""
     from src.agents.analyst import analyst_agent
@@ -250,8 +258,12 @@ def run_demo():
 
     # --- Demo 2: Task Queue ---
     print("\n[2/4] Task Queue Demo")
-    t1 = task_queue.submit("ANALYZE_LOG", {"log_entry": "ERROR: Motor controller timeout"}, priority=3)
-    t2 = task_queue.submit("ANALYZE_LOG", {"log_entry": "WARNING: Pressure exceeds threshold"}, priority=5)
+    t1 = task_queue.submit(
+        "ANALYZE_LOG", {"log_entry": "ERROR: Motor controller timeout"}, priority=3
+    )
+    t2 = task_queue.submit(
+        "ANALYZE_LOG", {"log_entry": "WARNING: Pressure exceeds threshold"}, priority=5
+    )
     print(f"  Submitted 2 tasks. Queue depth: {task_queue.get_pending_count()}")
     print(f"  Task 1 ID: {t1} — status: {task_queue.get_status(t1)['status']}")
     print(f"  Task 2 ID: {t2} — status: {task_queue.get_status(t2)['status']}")
@@ -261,15 +273,22 @@ def run_demo():
     webhook_url = os.environ.get("TEAMS_INCOMING_WEBHOOK_URL", "")
     if webhook_url:
         from src.interface.teams_bot import teams_bot
-        bot_result = teams_bot.send_analysis_alert({
-            "severity": "HIGH",
-            "root_cause_hypothesis": "Temperature sensor fault (demo)",
-            "recommended_action": "Inspect sensor connections and calibration",
-            "trace_id": result.get("trace_id", "demo-trace"),
-        })
-        print(f"  Teams notification: {bot_result.get('status', bot_result.get('error'))}")
+
+        bot_result = teams_bot.send_analysis_alert(
+            {
+                "severity": "HIGH",
+                "root_cause_hypothesis": "Temperature sensor fault (demo)",
+                "recommended_action": "Inspect sensor connections and calibration",
+                "trace_id": result.get("trace_id", "demo-trace"),
+            }
+        )
+        print(
+            f"  Teams notification: {bot_result.get('status', bot_result.get('error'))}"
+        )
     else:
-        print("  TEAMS_INCOMING_WEBHOOK_URL not set — skipping live Teams notification.")
+        print(
+            "  TEAMS_INCOMING_WEBHOOK_URL not set — skipping live Teams notification."
+        )
         print("  (Set the env var to see adaptive card delivery)")
 
     # --- Demo 4: Developer Agent ---
@@ -277,12 +296,17 @@ def run_demo():
     gitlab_url = os.environ.get("GITLAB_URL", "")
     if gitlab_url:
         from src.agents.developer import developer_agent
+
         print(f"  GitLab URL: {gitlab_url}")
-        mrs = developer_agent.list_open_mrs(int(os.environ.get("GITLAB_PROJECT_ID", "0")))
+        mrs = developer_agent.list_open_mrs(
+            int(os.environ.get("GITLAB_PROJECT_ID", "0"))
+        )
         if "error" not in mrs:
             print(f"  Open MRs: {mrs.get('count', 0)}")
         else:
-            print(f"  GitLab error (expected without valid project): {mrs['error'][:60]}")
+            print(
+                f"  GitLab error (expected without valid project): {mrs['error'][:60]}"
+            )
     else:
         print("  GITLAB_URL not set — skipping live GitLab demo.")
         print("  (Set GITLAB_URL + GITLAB_TOKEN + GITLAB_PROJECT_ID to enable)")
@@ -297,6 +321,7 @@ def run_demo():
 # ---------------------------------------------------------------------------
 # Entry Point
 # ---------------------------------------------------------------------------
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -330,10 +355,20 @@ Environment variables:
         default=None,
         help="Active project name (default: medtech, or SAGE_PROJECT env var)",
     )
-    parser.add_argument("--host", default="0.0.0.0", help="API server host (api mode only)")
-    parser.add_argument("--port", type=int, default=8000, help="API server port (api mode only)")
-    parser.add_argument("--reload", action="store_true", help="Auto-reload on code changes (api mode only)")
-    parser.add_argument("--log-level", default=None, help="Logging level: DEBUG/INFO/WARNING/ERROR")
+    parser.add_argument(
+        "--host", default="0.0.0.0", help="API server host (api mode only)"
+    )
+    parser.add_argument(
+        "--port", type=int, default=8000, help="API server port (api mode only)"
+    )
+    parser.add_argument(
+        "--reload",
+        action="store_true",
+        help="Auto-reload on code changes (api mode only)",
+    )
+    parser.add_argument(
+        "--log-level", default=None, help="Logging level: DEBUG/INFO/WARNING/ERROR"
+    )
 
     args = parser.parse_args()
 
@@ -349,6 +384,7 @@ Environment variables:
     # Load .env if available
     try:
         from dotenv import load_dotenv
+
         env_path = os.path.join(PROJECT_ROOT, ".env")
         if os.path.exists(env_path):
             load_dotenv(env_path)

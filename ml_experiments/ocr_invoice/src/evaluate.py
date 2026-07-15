@@ -21,16 +21,12 @@ from __future__ import annotations
 import argparse
 import json
 import logging
-import time
-from collections import defaultdict
 from pathlib import Path
 from typing import Dict, List
 
 import mlflow
-import numpy as np
 import pandas as pd
 import yaml
-from PIL import Image
 from tqdm import tqdm
 
 from data_utils import load_annotations, stratified_split
@@ -45,6 +41,7 @@ logger = logging.getLogger(__name__)
 
 
 # ── Slice evaluation ──────────────────────────────────────────────────────────
+
 
 def evaluate_slice(
     pipeline: OCRInferencePipeline,
@@ -70,6 +67,7 @@ def evaluate_slice(
 
 # ── Bias evaluation ───────────────────────────────────────────────────────────
 
+
 def evaluate_bias(
     pipeline: OCRInferencePipeline,
     test_df: pd.DataFrame,
@@ -90,10 +88,10 @@ def evaluate_bias(
                 logger.warning("Bias slice %s=%s — 0 samples found", col, val)
                 bias_report[col][val] = {"n_samples": 0, "cer": None, "wer": None}
                 continue
-            logger.info("Evaluating bias slice %s=%s (%d samples)", col, val, len(subset))
-            metrics = evaluate_slice(
-                pipeline, subset, raw_dir, desc=f"{col}={val}"
+            logger.info(
+                "Evaluating bias slice %s=%s (%d samples)", col, val, len(subset)
             )
+            metrics = evaluate_slice(pipeline, subset, raw_dir, desc=f"{col}={val}")
             bias_report[col][val] = metrics
 
         # Flag slices where CER spread > 0.10 (potential bias)
@@ -108,13 +106,17 @@ def evaluate_bias(
             if cer_spread > 0.10:
                 logger.warning(
                     "Potential bias in '%s': CER spread = %.4f (best %.4f, worst %.4f)",
-                    col, cer_spread, min(cer_values), max(cer_values),
+                    col,
+                    cer_spread,
+                    min(cer_values),
+                    max(cer_values),
                 )
 
     return bias_report
 
 
 # ── Latency benchmark ────────────────────────────────────────────────────────
+
 
 def run_latency_benchmark(
     pipeline: OCRInferencePipeline,
@@ -123,14 +125,13 @@ def run_latency_benchmark(
     n_samples: int = 200,
 ) -> Dict:
     """Sample ≤ n_samples images for latency profiling."""
-    sample = test_df.sample(
-        n=min(n_samples, len(test_df)), random_state=42
-    )
+    sample = test_df.sample(n=min(n_samples, len(test_df)), random_state=42)
     images = [Path(raw_dir) / p for p in sample["image_path"]]
     return pipeline.benchmark(images, n_warmup=min(5, len(images)))
 
 
 # ── Main ─────────────────────────────────────────────────────────────────────
+
 
 def main(config_path: str, model_dir: str, data_split: str) -> None:
     with open(config_path) as f:
@@ -207,12 +208,19 @@ def main(config_path: str, model_dir: str, data_split: str) -> None:
         mlflow.set_tracking_uri(cfg["experiment"]["mlflow_tracking_uri"])
         mlflow.set_experiment(cfg["experiment"]["name"])
         with mlflow.start_run(run_name=f"eval_{data_split}"):
-            mlflow.log_metrics({f"eval_{k}": v for k, v in overall_metrics.items()
-                                 if isinstance(v, (int, float))})
-            mlflow.log_metrics({
-                "latency_p95_ms": latency_report.get("p95_ms", -1),
-                "sla_pass": int(latency_report.get("sla_pass", False)),
-            })
+            mlflow.log_metrics(
+                {
+                    f"eval_{k}": v
+                    for k, v in overall_metrics.items()
+                    if isinstance(v, (int, float))
+                }
+            )
+            mlflow.log_metrics(
+                {
+                    "latency_p95_ms": latency_report.get("p95_ms", -1),
+                    "sla_pass": int(latency_report.get("sla_pass", False)),
+                }
+            )
             for path in [
                 cfg["artifacts"]["eval_report_path"],
                 cfg["artifacts"]["bias_report_path"],
@@ -225,11 +233,17 @@ def main(config_path: str, model_dir: str, data_split: str) -> None:
     # ── 8. Print summary ──────────────────────────────────────────────────────
     print("\n── Evaluation Summary ─────────────────────────────────────────")
     print(f"  Split        : {data_split}  ({overall_metrics['n_samples']} samples)")
-    print(f"  CER          : {overall_metrics['cer']:.4f}  {'PASS ✓' if cer_pass else 'FAIL ✗'}")
-    print(f"  WER          : {overall_metrics['wer']:.4f}  {'PASS ✓' if wer_pass else 'FAIL ✗'}")
+    print(
+        f"  CER          : {overall_metrics['cer']:.4f}  {'PASS ✓' if cer_pass else 'FAIL ✗'}"
+    )
+    print(
+        f"  WER          : {overall_metrics['wer']:.4f}  {'PASS ✓' if wer_pass else 'FAIL ✗'}"
+    )
     print(f"  Exact Match  : {overall_metrics['exact_match']:.4f}")
-    print(f"  Latency p95  : {latency_report.get('p95_ms', '?')} ms  "
-          f"  {'PASS ✓' if latency_report.get('sla_pass') else 'FAIL ✗'}")
+    print(
+        f"  Latency p95  : {latency_report.get('p95_ms', '?')} ms  "
+        f"  {'PASS ✓' if latency_report.get('sla_pass') else 'FAIL ✗'}"
+    )
     print("\n  Bias (CER spread per slice):")
     for col, slices in bias_report.items():
         spread = slices.get("_cer_spread")
@@ -240,9 +254,10 @@ def main(config_path: str, model_dir: str, data_split: str) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config",     default="config/ocr_config.yaml")
-    parser.add_argument("--model_dir",  default="artifacts/model")
-    parser.add_argument("--data_split", default="test",
-                        choices=["train", "val", "test"])
+    parser.add_argument("--config", default="config/ocr_config.yaml")
+    parser.add_argument("--model_dir", default="artifacts/model")
+    parser.add_argument(
+        "--data_split", default="test", choices=["train", "val", "test"]
+    )
     args = parser.parse_args()
     main(args.config, args.model_dir, args.data_split)

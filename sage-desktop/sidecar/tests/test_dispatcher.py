@@ -1,4 +1,5 @@
 """Unit tests for the method dispatcher."""
+
 from __future__ import annotations
 
 import pytest

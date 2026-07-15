@@ -16,9 +16,7 @@ import hmac
 import json
 import logging
 import os
-import secrets
 from datetime import datetime, timezone
-from typing import Dict, List, Optional, Tuple
 
 from src.core.db import get_connection
 
@@ -112,7 +110,9 @@ class AuditIntegrityManager:
         conn.commit()
         conn.close()
 
-        logger.info("Integrity chain entry #%d for event %s", sequence_num, audit_event_id)
+        logger.info(
+            "Integrity chain entry #%d for event %s", sequence_num, audit_event_id
+        )
         return {"sequence_num": sequence_num, "chain_hmac": chain_hmac}
 
     def verify_chain(self) -> dict:

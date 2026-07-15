@@ -1,4 +1,5 @@
 """Data transformation engine — pure logic, no I/O."""
+
 from __future__ import annotations
 
 import hashlib
@@ -15,6 +16,7 @@ class TransformationError(ValueError):
 # ---------------------------------------------------------------------------
 # Built-in transform operations
 # ---------------------------------------------------------------------------
+
 
 def _op_rename_keys(data: dict, params: dict) -> dict:
     """Rename top-level keys according to a mapping."""
@@ -112,6 +114,7 @@ _OPERATIONS: dict[str, Any] = {
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
 
 def available_operations() -> list[str]:
     return sorted(_OPERATIONS.keys())

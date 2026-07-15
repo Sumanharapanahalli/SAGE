@@ -16,10 +16,10 @@ is strong, where it is weak, and what the agents themselves said they got wrong.
 
     python scripts/gym_benchmark.py --roles developer,analyst,planner --per-role 2
 """
+
 from __future__ import annotations
 
 import argparse
-import json
 import logging
 import sys
 import time
@@ -79,40 +79,60 @@ def main() -> int:
                 "duration_s": round(time.time() - t0, 1),
             }
             rows.append(row)
-            print(f"  graded={row['grade_score']} passed={row['passed']} "
-                  f"critics={critics} elo {row['elo_before']}->{row['elo_after']} "
-                  f"({row['duration_s']}s)", flush=True)
+            print(
+                f"  graded={row['grade_score']} passed={row['passed']} "
+                f"critics={critics} elo {row['elo_before']}->{row['elo_after']} "
+                f"({row['duration_s']}s)",
+                flush=True,
+            )
 
     # ---- report ----------------------------------------------------------
     done = [r for r in rows if r.get("status") == "completed"]
-    scores = [r["grade_score"] for r in done if isinstance(r.get("grade_score"), (int, float))]
+    scores = [
+        r["grade_score"] for r in done if isinstance(r.get("grade_score"), (int, float))
+    ]
     panels = [set(r["critics"].keys()) for r in done if r.get("critics")]
     all_providers = sorted({p for s in panels for p in s})
 
-    L = ["# SAGE Agent Gym — Benchmark", "",
-         "**What this is:** the gym is SAGE's only source of GROUND TRUTH about agent quality.",
-         "An agent plays a real exercise; the output is mechanically graded (did it execute?",
-         "did it produce artifacts?); a cross-vendor critic panel scores it; the agent reflects;",
-         "a Glicko rating moves. These are measurements, not model opinions.", "",
-         f"**Sessions:** {len(rows)} ({len(done)} completed, {len(rows) - len(done)} errored)  ",
-         f"**Critic panel:** {', '.join(all_providers) if all_providers else 'NONE'}  ",
-         f"**Mean graded score:** {sum(scores) / len(scores):.1f}/100" if scores else
-         "**Mean graded score:** n/a  ", "",
-         "| Role | Exercise | Skill | Graded | Passed | Critic scores | Elo |",
-         "|---|---|---|---|---|---|---|"]
+    L = [
+        "# SAGE Agent Gym — Benchmark",
+        "",
+        "**What this is:** the gym is SAGE's only source of GROUND TRUTH about agent quality.",
+        "An agent plays a real exercise; the output is mechanically graded (did it execute?",
+        "did it produce artifacts?); a cross-vendor critic panel scores it; the agent reflects;",
+        "a Glicko rating moves. These are measurements, not model opinions.",
+        "",
+        f"**Sessions:** {len(rows)} ({len(done)} completed, {len(rows) - len(done)} errored)  ",
+        f"**Critic panel:** {', '.join(all_providers) if all_providers else 'NONE'}  ",
+        f"**Mean graded score:** {sum(scores) / len(scores):.1f}/100"
+        if scores
+        else "**Mean graded score:** n/a  ",
+        "",
+        "| Role | Exercise | Skill | Graded | Passed | Critic scores | Elo |",
+        "|---|---|---|---|---|---|---|",
+    ]
 
     for r in rows:
         if r.get("status") != "completed":
-            L.append(f"| {r['role']} | — | — | ERROR | — | — | {str(r.get('error', ''))[:40]} |")
+            L.append(
+                f"| {r['role']} | — | — | ERROR | — | — | {str(r.get('error', ''))[:40]} |"
+            )
             continue
         cs = ", ".join(f"{k}:{v}" for k, v in (r["critics"] or {}).items()) or "—"
-        L.append(f"| {r['role']} | `{r['exercise_id']}` | {r['skill']} | "
-                 f"{r['grade_score']} | {'yes' if r['passed'] else 'no'} | {cs} | "
-                 f"{r['elo_before']}→{r['elo_after']} |")
+        L.append(
+            f"| {r['role']} | `{r['exercise_id']}` | {r['skill']} | "
+            f"{r['grade_score']} | {'yes' if r['passed'] else 'no'} | {cs} | "
+            f"{r['elo_before']}→{r['elo_after']} |"
+        )
 
-    L += ["", "## What the agents said they got wrong", "",
-          "These are the agents' own reflections after seeing the critics — the compounding",
-          "signal (Law 3). They are the highest-value input to the optimizer.", ""]
+    L += [
+        "",
+        "## What the agents said they got wrong",
+        "",
+        "These are the agents' own reflections after seeing the critics — the compounding",
+        "signal (Law 3). They are the highest-value input to the optimizer.",
+        "",
+    ]
     for r in done:
         if r.get("reflection"):
             L.append(f"**{r['role']} / `{r['exercise_id']}`**  ")
@@ -122,10 +142,14 @@ def main() -> int:
             L.append("")
 
     if len(all_providers) < 2:
-        L += ["## ⚠️ WARNING — the panel collapsed to a single judge", "",
-              f"Only `{', '.join(all_providers) or 'none'}` scored. A one-voice 'panel' is",
-              "exactly the failure that let a hallucinated critique stand unchallenged.",
-              "Check `gemini_timeout` and that the Ollama critic model is served.", ""]
+        L += [
+            "## ⚠️ WARNING — the panel collapsed to a single judge",
+            "",
+            f"Only `{', '.join(all_providers) or 'none'}` scored. A one-voice 'panel' is",
+            "exactly the failure that let a hallucinated critique stand unchallenged.",
+            "Check `gemini_timeout` and that the Ollama critic model is served.",
+            "",
+        ]
 
     out = ROOT / args.out
     out.parent.mkdir(parents=True, exist_ok=True)

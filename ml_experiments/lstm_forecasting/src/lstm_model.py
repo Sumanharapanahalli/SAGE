@@ -24,7 +24,6 @@ tf_ratio = 0.0 → purely autoregressive (no ground truth available).
 from __future__ import annotations
 
 import logging
-import math
 from typing import Optional
 
 import torch
@@ -57,7 +56,9 @@ class LSTMForecaster(nn.Module):
         self.num_layers = num_layers
         self.output_horizon = output_horizon
 
-        lstm_dropout = dropout if num_layers > 1 else 0.0  # PyTorch ignores dropout for single-layer
+        lstm_dropout = (
+            dropout if num_layers > 1 else 0.0
+        )  # PyTorch ignores dropout for single-layer
 
         self.encoder = nn.LSTM(
             input_size=input_size,
@@ -81,8 +82,13 @@ class LSTMForecaster(nn.Module):
 
         self._init_weights()
         n_params = sum(p.numel() for p in self.parameters())
-        logger.info("LSTMForecaster: hidden=%d layers=%d horizon=%d params=%s",
-                    hidden_size, num_layers, output_horizon, f"{n_params:,}")
+        logger.info(
+            "LSTMForecaster: hidden=%d layers=%d horizon=%d params=%s",
+            hidden_size,
+            num_layers,
+            output_horizon,
+            f"{n_params:,}",
+        )
 
     def _init_weights(self) -> None:
         for name, p in self.named_parameters():
@@ -113,18 +119,18 @@ class LSTMForecaster(nn.Module):
             predictions: (batch, horizon) — scaled predictions
         """
         # ---- Encode ---------------------------------------------------------
-        _, (hidden, cell) = self.encoder(x)   # hidden: (num_layers, batch, H)
+        _, (hidden, cell) = self.encoder(x)  # hidden: (num_layers, batch, H)
 
         # ---- Decode step-by-step --------------------------------------------
         # Seed the decoder with the last observed value
-        decoder_input = x[:, -1:, :1]        # (batch, 1, 1)
+        decoder_input = x[:, -1:, :1]  # (batch, 1, 1)
 
         outputs: list[torch.Tensor] = []
         for t in range(self.output_horizon):
             dec_out, (hidden, cell) = self.decoder(decoder_input, (hidden, cell))
             # dec_out: (batch, 1, H)
-            pred = self.projection(self.dropout(dec_out))   # (batch, 1, 1)
-            outputs.append(pred.squeeze(-1))                # (batch, 1)
+            pred = self.projection(self.dropout(dec_out))  # (batch, 1, 1)
+            outputs.append(pred.squeeze(-1))  # (batch, 1)
 
             use_teacher = (
                 target is not None
@@ -134,16 +140,19 @@ class LSTMForecaster(nn.Module):
             if use_teacher:
                 decoder_input = target[:, t].unsqueeze(1).unsqueeze(-1)  # (batch, 1, 1)
             else:
-                decoder_input = pred                                      # (batch, 1, 1)
+                decoder_input = pred  # (batch, 1, 1)
 
-        return torch.cat(outputs, dim=1)   # (batch, horizon)
+        return torch.cat(outputs, dim=1)  # (batch, horizon)
 
 
 # ---------------------------------------------------------------------------
 # Teacher-forcing schedule
 # ---------------------------------------------------------------------------
 
-def teacher_forcing_ratio(epoch: int, total_epochs: int, initial: float, final: float) -> float:
+
+def teacher_forcing_ratio(
+    epoch: int, total_epochs: int, initial: float, final: float
+) -> float:
     """Linear annealing schedule from `initial` to `final`."""
     if total_epochs <= 1:
         return initial

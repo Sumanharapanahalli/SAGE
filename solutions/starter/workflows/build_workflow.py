@@ -99,7 +99,12 @@ def critic_plan(state: BuildState) -> BuildState:
         reports = state.get("critic_reports", [])
         reports.append({"phase": "plan", "result": result})
 
-        return {**state, "critic_scores": scores, "critic_reports": reports, "status": "plan_reviewed"}
+        return {
+            **state,
+            "critic_scores": scores,
+            "critic_reports": reports,
+            "status": "plan_reviewed",
+        }
     except Exception as exc:
         return {**state, "status": "plan_reviewed", "error": str(exc)}
 
@@ -115,7 +120,11 @@ def scaffold(state: BuildState) -> BuildState:
 
     workspace = state.get("workspace_dir", "")
     if not workspace:
-        return {**state, "scaffold_result": {"status": "skipped"}, "status": "scaffolded"}
+        return {
+            **state,
+            "scaffold_result": {"status": "skipped"},
+            "status": "scaffolded",
+        }
 
     try:
         os.makedirs(workspace, exist_ok=True)
@@ -125,12 +134,22 @@ def scaffold(state: BuildState) -> BuildState:
         readme = os.path.join(workspace, "README.md")
         if not os.path.exists(readme):
             with open(readme, "w") as f:
-                f.write(f"# {state.get('solution_name', 'Project')}\n\n"
-                        f"{state.get('product_description', '')}\n")
+                f.write(
+                    f"# {state.get('solution_name', 'Project')}\n\n"
+                    f"{state.get('product_description', '')}\n"
+                )
 
-        return {**state, "scaffold_result": {"status": "completed"}, "status": "scaffolded"}
+        return {
+            **state,
+            "scaffold_result": {"status": "completed"},
+            "status": "scaffolded",
+        }
     except Exception as exc:
-        return {**state, "scaffold_result": {"status": "error", "error": str(exc)}, "status": "scaffolded"}
+        return {
+            **state,
+            "scaffold_result": {"status": "error", "error": str(exc)},
+            "status": "scaffolded",
+        }
 
 
 def execute_agents(state: BuildState) -> BuildState:
@@ -146,11 +165,13 @@ def execute_agents(state: BuildState) -> BuildState:
                 task=task,
                 repo_path=state.get("workspace_dir", ""),
             )
-            results.append({
-                "task": task,
-                "result": result,
-                "step": task.get("step", 0),
-            })
+            results.append(
+                {
+                    "task": task,
+                    "result": result,
+                    "step": task.get("step", 0),
+                }
+            )
 
         return {**state, "agent_results": results, "status": "executed"}
     except Exception as exc:
@@ -186,7 +207,12 @@ def critic_code(state: BuildState) -> BuildState:
         reports = state.get("critic_reports", [])
         reports.append({"phase": "code", "result": result})
 
-        return {**state, "critic_scores": scores, "critic_reports": reports, "status": "code_reviewed"}
+        return {
+            **state,
+            "critic_scores": scores,
+            "critic_reports": reports,
+            "status": "code_reviewed",
+        }
     except Exception as exc:
         return {**state, "status": "code_reviewed", "error": str(exc)}
 
@@ -232,7 +258,12 @@ def critic_integration(state: BuildState) -> BuildState:
         reports = state.get("critic_reports", [])
         reports.append({"phase": "integration", "result": result})
 
-        return {**state, "critic_scores": scores, "critic_reports": reports, "status": "integration_reviewed"}
+        return {
+            **state,
+            "critic_scores": scores,
+            "critic_reports": reports,
+            "status": "integration_reviewed",
+        }
     except Exception as exc:
         return {**state, "status": "integration_reviewed", "error": str(exc)}
 

@@ -24,6 +24,7 @@ Usage::
         ... # your work
     # Emits: {"event": "ocr.completed", "duration_ms": 123.4, ...}
 """
+
 from __future__ import annotations
 
 import logging

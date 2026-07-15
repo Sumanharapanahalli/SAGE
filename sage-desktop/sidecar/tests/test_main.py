@@ -3,6 +3,7 @@
 Drives the `run()` event loop with in-memory StringIO streams so we can
 assert the full NDJSON round-trip without spawning a subprocess.
 """
+
 from __future__ import annotations
 
 import io
@@ -24,10 +25,13 @@ def _drive(stdin_text: str, argv: list[str] | None = None) -> list[dict]:
 
 
 def _req(id: str, method: str, params: dict | None = None) -> str:
-    return json.dumps({"jsonrpc": "2.0", "id": id, "method": method, "params": params or {}})
+    return json.dumps(
+        {"jsonrpc": "2.0", "id": id, "method": method, "params": params or {}}
+    )
 
 
 # ---------- handshake ----------
+
 
 def test_handshake_round_trip():
     out = _drive(_req("1", "handshake") + "\n")
@@ -42,6 +46,7 @@ def test_handshake_round_trip():
 
 # ---------- status ----------
 
+
 def test_status_round_trip_without_solution():
     out = _drive(_req("s1", "status.get") + "\n")
     assert out[0]["result"]["health"] == "ok"
@@ -50,6 +55,7 @@ def test_status_round_trip_without_solution():
 
 
 # ---------- error handling ----------
+
 
 def test_unknown_method_returns_method_not_found_error():
     out = _drive(_req("x", "does.not.exist") + "\n")
@@ -95,11 +101,15 @@ def test_handler_value_error_becomes_internal_error():
 
 # ---------- multiple requests on the same stream ----------
 
+
 def test_multiple_requests_processed_in_order():
     stdin_text = (
-        _req("1", "handshake") + "\n"
-        + _req("2", "status.get") + "\n"
-        + _req("3", "does.not.exist") + "\n"
+        _req("1", "handshake")
+        + "\n"
+        + _req("2", "status.get")
+        + "\n"
+        + _req("3", "does.not.exist")
+        + "\n"
     )
     out = _drive(stdin_text)
     assert [r["id"] for r in out] == ["1", "2", "3"]
@@ -119,6 +129,7 @@ def test_blank_lines_are_ignored():
 
 # ---------- solutions ----------
 
+
 def test_solutions_list_round_trip():
     """Smoke test: `solutions.list` should return a list (possibly empty) —
     the SAGE_ROOT env var and project_loader.list_solutions are wired in
@@ -136,14 +147,18 @@ def test_solutions_list_works_without_sage_root_env(monkeypatch):
     import os
 
     monkeypatch.delenv("SAGE_ROOT", raising=False)
-    sage_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+    sage_root = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "..", "..", "..")
+    )
     if not os.path.isdir(os.path.join(sage_root, "solutions", "starter")):
         pytest.skip("starter solution not present on this branch")
 
     out = _drive(_req("sl0", "solutions.list") + "\n")
     assert "result" in out[0], f"got error: {out[0]}"
     names = [s.get("name") for s in out[0]["result"]]
-    assert "starter" in names, f"expected inferred-root fallback to find solutions, got {names}"
+    assert "starter" in names, (
+        f"expected inferred-root fallback to find solutions, got {names}"
+    )
 
 
 def test_solutions_get_current_without_solution_returns_null():
@@ -154,6 +169,7 @@ def test_solutions_get_current_without_solution_returns_null():
 
 
 # ---------- onboarding ----------
+
 
 def test_onboarding_generate_wires_to_handler():
     """The dispatcher should route to `onboarding.generate` and surface
@@ -167,6 +183,7 @@ def test_onboarding_generate_wires_to_handler():
 
 # ---------- queue ----------
 
+
 def test_queue_status_reports_real_parallel_config(tmp_path):
     """`queue.get_status` must reflect the live ParallelTaskRunner config,
     not the bare TaskQueue (which has no `_config`). This exercises the
@@ -175,7 +192,9 @@ def test_queue_status_reports_real_parallel_config(tmp_path):
     sqlite-backed queue may carry leftover task counts."""
     import os
 
-    sage_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+    sage_root = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "..", "..", "..")
+    )
     solution_path = os.path.join(sage_root, "solutions", "starter")
     if not os.path.isdir(solution_path):
         pytest.skip("starter solution not present on this branch")
@@ -207,6 +226,7 @@ def test_queue_is_wired_to_this_solutions_own_sage_dir(tmp_path):
 
 # ---------- eval ----------
 
+
 def test_wiring_reloads_global_project_config_for_eval_suite_resolution(tmp_path):
     """eval_runner._get_evals_dir() reads the framework-global
     project_loader.project_config singleton directly, not an injectable
@@ -217,7 +237,9 @@ def test_wiring_reloads_global_project_config_for_eval_suite_resolution(tmp_path
     actual --solution-name. Assert the wiring side effect directly."""
     import os
 
-    sage_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+    sage_root = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "..", "..", "..")
+    )
     solution_path = os.path.join(sage_root, "solutions", "starter")
     if not os.path.isdir(solution_path):
         pytest.skip("starter solution not present on this branch")
@@ -232,6 +254,7 @@ def test_wiring_reloads_global_project_config_for_eval_suite_resolution(tmp_path
 
 
 # ---------- builds ----------
+
 
 def test_builds_list_round_trip():
     """`builds.list` should return a list (possibly empty) — exercises
@@ -250,6 +273,7 @@ def test_builds_start_without_description_returns_invalid_params():
 
 # ---------- yaml authoring ----------
 
+
 def test_yaml_read_without_solution_returns_sidecar_error():
     out = _drive(_req("y1", "yaml.read", {"file": "project"}) + "\n")
     assert out[0]["id"] == "y1"
@@ -259,8 +283,7 @@ def test_yaml_read_without_solution_returns_sidecar_error():
 
 def test_yaml_write_with_invalid_file_name_returns_invalid_params():
     out = _drive(
-        _req("y2", "yaml.write", {"file": "secrets", "content": "x: 1\n"})
-        + "\n"
+        _req("y2", "yaml.write", {"file": "secrets", "content": "x: 1\n"}) + "\n"
     )
     assert out[0]["id"] == "y2"
     assert "error" in out[0]
@@ -273,7 +296,9 @@ def test_sidecar_wires_up_stores_when_solution_path_given(tmp_path):
     # Use the starter solution that actually exists on main
     import os
 
-    sage_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+    sage_root = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "..", "..", "..")
+    )
     solution_path = os.path.join(sage_root, "solutions", "starter")
 
     # Only run if the solution exists on this branch
@@ -291,6 +316,7 @@ def test_sidecar_wires_up_stores_when_solution_path_given(tmp_path):
 # This repo has a history of handlers that were written, tested, and never
 # registered — dead code that looks like a feature. These assert the wire is
 # actually connected.
+
 
 @pytest.mark.parametrize("method", ["builds.reject", "queue.cancel", "queue.retry"])
 def test_operator_recovery_rpcs_are_registered_in_the_dispatcher(method):
@@ -333,12 +359,15 @@ def test_builds_reject_round_trip_over_real_ndjson(monkeypatch):
     monkeypatch.setattr(builds, "_logger", _Audit())
     monkeypatch.setattr(builds, "_long_term_memory_factory", lambda: _Memory())
     monkeypatch.setattr(
-        builds, "_operator",
+        builds,
+        "_operator",
         lambda: {"name": "Ada", "email": "ada@example.com", "provider": "local"},
     )
 
     out = _drive(
-        _req("b1", "builds.reject", {"run_id": "r1", "feedback": "no tests in the plan"})
+        _req(
+            "b1", "builds.reject", {"run_id": "r1", "feedback": "no tests in the plan"}
+        )
         + "\n"
     )
     assert "error" not in out[0], out[0]
@@ -352,11 +381,16 @@ def test_builds_reject_on_a_run_not_at_a_gate_returns_invalid_params(monkeypatch
     import src.integrations.build_orchestrator as bo_mod
 
     monkeypatch.setattr(
-        bo_mod, "build_orchestrator",
-        type("O", (), {
-            "get_status": lambda self, r: {"state": "building"},
-            "reject": lambda self, r, f="": {},
-        })(),
+        bo_mod,
+        "build_orchestrator",
+        type(
+            "O",
+            (),
+            {
+                "get_status": lambda self, r: {"state": "building"},
+                "reject": lambda self, r, f="": {},
+            },
+        )(),
     )
     out = _drive(_req("b2", "builds.reject", {"run_id": "r1", "feedback": "x"}) + "\n")
     assert out[0]["error"]["code"] == -32602
@@ -382,7 +416,9 @@ def test_queue_cancel_and_retry_round_trip_over_real_ndjson(monkeypatch):
             self.status = "pending"
 
         def get_all_tasks(self):
-            return [{"task_id": "t1", "status": self.status, "task_type": "ANALYZE_LOG"}]
+            return [
+                {"task_id": "t1", "status": self.status, "task_type": "ANALYZE_LOG"}
+            ]
 
         def cancel_task(self, task_id):
             if task_id != "t1":
@@ -400,18 +436,26 @@ def test_queue_cancel_and_retry_round_trip_over_real_ndjson(monkeypatch):
     monkeypatch.setattr(queue_handler, "_queue", q)
     monkeypatch.setattr(queue_handler, "_logger", audit)
     monkeypatch.setattr(
-        queue_handler, "_operator",
+        queue_handler,
+        "_operator",
         lambda: {"name": "Ada", "email": "ada@example.com", "provider": "local"},
     )
 
     out = _drive(
-        _req("q1", "queue.cancel", {"task_id": "t1"}) + "\n"
-        + _req("q2", "queue.list_tasks", {}) + "\n"
-        + _req("q3", "queue.retry", {"task_id": "t1"}) + "\n"
-        + _req("q4", "queue.cancel", {"task_id": "ghost"}) + "\n"
+        _req("q1", "queue.cancel", {"task_id": "t1"})
+        + "\n"
+        + _req("q2", "queue.list_tasks", {})
+        + "\n"
+        + _req("q3", "queue.retry", {"task_id": "t1"})
+        + "\n"
+        + _req("q4", "queue.cancel", {"task_id": "ghost"})
+        + "\n"
     )
     assert out[0]["result"]["cancelled"] is True
     assert out[1]["result"][0]["status"] == "cancelled"
     assert out[2]["result"]["requeued"] is True
     assert out[3]["error"]["code"] == -32602  # unknown task
-    assert [e["action_type"] for e in audit.events] == ["TASK_CANCELLED", "TASK_RETRIED"]
+    assert [e["action_type"] for e in audit.events] == [
+        "TASK_CANCELLED",
+        "TASK_RETRIED",
+    ]

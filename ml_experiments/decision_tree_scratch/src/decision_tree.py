@@ -29,14 +29,19 @@ from typing import Optional, Any
 # Node
 # ---------------------------------------------------------------------------
 
+
 class Node:
     """A single node in the decision tree."""
 
     __slots__ = (
-        "feature_index", "threshold",
-        "left", "right",
-        "is_leaf", "prediction",
-        "samples", "impurity",
+        "feature_index",
+        "threshold",
+        "left",
+        "right",
+        "is_leaf",
+        "prediction",
+        "samples",
+        "impurity",
     )
 
     def __init__(self) -> None:
@@ -54,6 +59,7 @@ class Node:
 # ---------------------------------------------------------------------------
 # Entropy & Information Gain
 # ---------------------------------------------------------------------------
+
 
 def _entropy(y: np.ndarray) -> float:
     """Shannon entropy H(y) in bits."""
@@ -79,14 +85,16 @@ def _information_gain(y: np.ndarray, left_mask: np.ndarray) -> float:
     if n_left == 0 or n_right == 0:
         return 0.0
     parent_h = _entropy(y)
-    child_h = (n_left / n) * _entropy(y[left_mask]) + \
-              (n_right / n) * _entropy(y[~left_mask])
+    child_h = (n_left / n) * _entropy(y[left_mask]) + (n_right / n) * _entropy(
+        y[~left_mask]
+    )
     return parent_h - child_h
 
 
 # ---------------------------------------------------------------------------
 # Classifier
 # ---------------------------------------------------------------------------
+
 
 class DecisionTreeClassifier:
     """
@@ -181,7 +189,10 @@ class DecisionTreeClassifier:
 
             for thr in thresholds:
                 mask = col <= thr
-                if mask.sum() < self.min_samples_leaf or (~mask).sum() < self.min_samples_leaf:
+                if (
+                    mask.sum() < self.min_samples_leaf
+                    or (~mask).sum() < self.min_samples_leaf
+                ):
                     continue
                 gain = _information_gain(y, mask)
                 if gain > best_gain:
@@ -237,6 +248,7 @@ class DecisionTreeClassifier:
 # ---------------------------------------------------------------------------
 # Reduced Error Pruning (REP)
 # ---------------------------------------------------------------------------
+
 
 def reduced_error_pruning(
     tree: DecisionTreeClassifier,

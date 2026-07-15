@@ -15,9 +15,31 @@ logger = logging.getLogger(__name__)
 
 # File extensions to index
 _TEXT_EXTENSIONS = {
-    ".py", ".ts", ".tsx", ".js", ".jsx", ".md", ".txt", ".yaml", ".yml",
-    ".json", ".toml", ".cfg", ".ini", ".sh", ".bash", ".rs", ".go",
-    ".java", ".c", ".cpp", ".h", ".hpp", ".html", ".css", ".sql",
+    ".py",
+    ".ts",
+    ".tsx",
+    ".js",
+    ".jsx",
+    ".md",
+    ".txt",
+    ".yaml",
+    ".yml",
+    ".json",
+    ".toml",
+    ".cfg",
+    ".ini",
+    ".sh",
+    ".bash",
+    ".rs",
+    ".go",
+    ".java",
+    ".c",
+    ".cpp",
+    ".h",
+    ".hpp",
+    ".html",
+    ".css",
+    ".sql",
 }
 
 
@@ -54,12 +76,14 @@ class FilesystemConnector(BaseConnector):
                 if size > max_size:
                     continue
                 content = fpath.read_text(errors="replace")
-                results.append({
-                    "path": str(fpath),
-                    "content": content,
-                    "size": size,
-                    "extension": fpath.suffix,
-                })
+                results.append(
+                    {
+                        "path": str(fpath),
+                        "content": content,
+                        "size": size,
+                        "extension": fpath.suffix,
+                    }
+                )
             except Exception as e:
                 logger.debug("Skipping %s: %s", fpath, e)
         return results

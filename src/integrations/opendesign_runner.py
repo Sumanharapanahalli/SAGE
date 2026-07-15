@@ -18,9 +18,13 @@ Docker: sage/design-toolchain:latest
 import logging
 
 from src.integrations.base_runner import (
-    BaseRunner, RunResult, VerificationReport, VerificationFinding,
-    VerificationSeverity, Exercise, ExerciseScore,
-    register_runner, DESIGN_ROLES,
+    BaseRunner,
+    VerificationReport,
+    VerificationFinding,
+    VerificationSeverity,
+    Exercise,
+    register_runner,
+    DESIGN_ROLES,
 )
 
 logger = logging.getLogger("Runner.opendesign")
@@ -53,9 +57,9 @@ class OpenDesignRunner(BaseRunner):
                 "- Consistent spacing using 8px grid\n"
                 "- Include design tokens (JSON) for colors, spacing, typography\n"
                 "- Describe wireframes in structured format\n\n"
-                "Output as JSON: {\"files\": [{\"path\": \"...\", \"content\": \"...\"}], "
-                "\"wcag_level\": \"AA\", \"components\": [\"...\"], "
-                "\"design_tokens\": {\"colors\": {}, \"spacing\": {}, \"typography\": {}}}\n"
+                'Output as JSON: {"files": [{"path": "...", "content": "..."}], '
+                '"wcag_level": "AA", "components": ["..."], '
+                '"design_tokens": {"colors": {}, "spacing": {}, "typography": {}}}\n'
             )
 
             response = llm_gateway.generate_for_task(
@@ -69,6 +73,7 @@ class OpenDesignRunner(BaseRunner):
             metrics = {}
             try:
                 import json
+
                 start = response.find("{")
                 end = response.rfind("}") + 1
                 if start >= 0 and end > start:
@@ -80,8 +85,12 @@ class OpenDesignRunner(BaseRunner):
                 pass
 
             return self._make_result(
-                run_id=run_id, status="completed", tier="direct",
-                output=response, files_changed=files_changed, metrics=metrics,
+                run_id=run_id,
+                status="completed",
+                tier="direct",
+                output=response,
+                files_changed=files_changed,
+                metrics=metrics,
             )
         except Exception as exc:
             self.logger.error("OpenDesign execute failed: %s", exc)
@@ -92,9 +101,15 @@ class OpenDesignRunner(BaseRunner):
         score = 30.0
 
         if result.status == "error":
-            return VerificationReport(passed=False, score=0.0, findings=[
-                VerificationFinding("execution", VerificationSeverity.ERROR, "Failed"),
-            ])
+            return VerificationReport(
+                passed=False,
+                score=0.0,
+                findings=[
+                    VerificationFinding(
+                        "execution", VerificationSeverity.ERROR, "Failed"
+                    ),
+                ],
+            )
 
         metrics = result.metrics or {}
 
@@ -102,35 +117,54 @@ class OpenDesignRunner(BaseRunner):
         violations = metrics.get("wcag_violations", -1)
         if violations == 0:
             score += 25
-            findings.append(VerificationFinding(
-                "wcag", VerificationSeverity.PASS, "WCAG AA compliant — zero violations",
-            ))
+            findings.append(
+                VerificationFinding(
+                    "wcag",
+                    VerificationSeverity.PASS,
+                    "WCAG AA compliant — zero violations",
+                )
+            )
         elif violations > 0:
-            findings.append(VerificationFinding(
-                "wcag", VerificationSeverity.ERROR, f"{violations} WCAG violations",
-            ))
+            findings.append(
+                VerificationFinding(
+                    "wcag",
+                    VerificationSeverity.ERROR,
+                    f"{violations} WCAG violations",
+                )
+            )
 
         # Contrast ratio
         contrast = metrics.get("contrast_ratio_min")
         if isinstance(contrast, (int, float)):
             if contrast >= 4.5:
                 score += 15
-                findings.append(VerificationFinding(
-                    "contrast", VerificationSeverity.PASS, f"Contrast: {contrast}:1",
-                ))
+                findings.append(
+                    VerificationFinding(
+                        "contrast",
+                        VerificationSeverity.PASS,
+                        f"Contrast: {contrast}:1",
+                    )
+                )
             else:
-                findings.append(VerificationFinding(
-                    "contrast", VerificationSeverity.ERROR,
-                    f"Contrast {contrast}:1 below 4.5:1 minimum",
-                ))
+                findings.append(
+                    VerificationFinding(
+                        "contrast",
+                        VerificationSeverity.ERROR,
+                        f"Contrast {contrast}:1 below 4.5:1 minimum",
+                    )
+                )
 
         # Touch targets
         min_touch = metrics.get("min_touch_target")
         if isinstance(min_touch, (int, float)) and min_touch >= 44:
             score += 10
-            findings.append(VerificationFinding(
-                "touch_target", VerificationSeverity.PASS, f"Min touch: {min_touch}px",
-            ))
+            findings.append(
+                VerificationFinding(
+                    "touch_target",
+                    VerificationSeverity.PASS,
+                    f"Min touch: {min_touch}px",
+                )
+            )
 
         # Files produced
         if result.files_changed:
@@ -138,29 +172,65 @@ class OpenDesignRunner(BaseRunner):
 
         # Design keywords
         output_lower = (result.output or "").lower()
-        design_kws = ["wireframe", "component", "color", "spacing", "typography", "layout", "token"]
+        design_kws = [
+            "wireframe",
+            "component",
+            "color",
+            "spacing",
+            "typography",
+            "layout",
+            "token",
+        ]
         if sum(1 for k in design_kws if k in output_lower) >= 2:
             score += 10
 
         score = min(score, 100.0)
-        return VerificationReport(passed=score >= 40.0, score=score, findings=findings, metrics=metrics)
+        return VerificationReport(
+            passed=score >= 40.0, score=score, findings=findings, metrics=metrics
+        )
 
     def get_toolchain(self):
         return {
-            "runner": self.name, "docker_image": self.docker_image,
+            "runner": self.name,
+            "docker_image": self.docker_image,
             "roles": self.roles,
-            "tools": ["svg_generator", "accessibility_checker", "token_generator", "wireframe_dsl"],
+            "tools": [
+                "svg_generator",
+                "accessibility_checker",
+                "token_generator",
+                "wireframe_dsl",
+            ],
             "packages": ["axe-core", "pa11y", "svg-optimizer", "design-tokens-cli"],
         }
 
     def get_workflow(self):
         return [
-            {"step": 1, "name": "research", "description": "Research user needs and platform patterns"},
+            {
+                "step": 1,
+                "name": "research",
+                "description": "Research user needs and platform patterns",
+            },
             {"step": 2, "name": "wireframe", "description": "Create wireframe layouts"},
-            {"step": 3, "name": "design", "description": "Design components and screens"},
-            {"step": 4, "name": "prototype", "description": "Build interactive prototype"},
-            {"step": 5, "name": "accessibility", "description": "Run WCAG accessibility audit"},
-            {"step": 6, "name": "tokens", "description": "Export design tokens (colors, spacing, type)"},
+            {
+                "step": 3,
+                "name": "design",
+                "description": "Design components and screens",
+            },
+            {
+                "step": 4,
+                "name": "prototype",
+                "description": "Build interactive prototype",
+            },
+            {
+                "step": 5,
+                "name": "accessibility",
+                "description": "Run WCAG accessibility audit",
+            },
+            {
+                "step": 6,
+                "name": "tokens",
+                "description": "Export design tokens (colors, spacing, type)",
+            },
         ]
 
     def get_experience_keys(self):
@@ -169,54 +239,72 @@ class OpenDesignRunner(BaseRunner):
     def get_experimental_commands(self, workspace, files):
         """Design-specific: SVG/HTML validation, CSS syntax, accessibility check."""
         import os
+
         commands = []
         svg_files = [f for f in files if f.endswith(".svg")]
         html_files = [f for f in files if f.endswith((".html", ".htm"))]
-        css_files = [f for f in files if f.endswith(".css")]
+        [f for f in files if f.endswith(".css")]
         json_files = [f for f in files if f.endswith(".json")]
         py_files = [f for f in files if f.endswith(".py")]
 
         if svg_files:
             for sf in svg_files[:3]:
-                commands.append({
-                    "name": f"svg_valid_{os.path.basename(sf)}",
-                    "cmd": ["python3", "-c",
+                commands.append(
+                    {
+                        "name": f"svg_valid_{os.path.basename(sf)}",
+                        "cmd": [
+                            "python3",
+                            "-c",
                             f"import xml.etree.ElementTree as ET; "
-                            f"ET.parse('{sf}'); print('SVG valid XML')"],
-                    "weight": 20,
-                    "timeout": 10,
-                })
+                            f"ET.parse('{sf}'); print('SVG valid XML')",
+                        ],
+                        "weight": 20,
+                        "timeout": 10,
+                    }
+                )
 
         if html_files:
             for hf in html_files[:3]:
-                commands.append({
-                    "name": f"html_parse_{os.path.basename(hf)}",
-                    "cmd": ["python3", "-c",
+                commands.append(
+                    {
+                        "name": f"html_parse_{os.path.basename(hf)}",
+                        "cmd": [
+                            "python3",
+                            "-c",
                             f"from html.parser import HTMLParser; "
                             f"p=HTMLParser(); p.feed(open('{hf}').read()); "
-                            f"print('HTML parsed OK')"],
-                    "weight": 20,
-                    "timeout": 10,
-                })
+                            f"print('HTML parsed OK')",
+                        ],
+                        "weight": 20,
+                        "timeout": 10,
+                    }
+                )
 
         if json_files:
             for jf in json_files[:3]:
-                commands.append({
-                    "name": f"json_valid_{os.path.basename(jf)}",
-                    "cmd": ["python3", "-c",
+                commands.append(
+                    {
+                        "name": f"json_valid_{os.path.basename(jf)}",
+                        "cmd": [
+                            "python3",
+                            "-c",
                             f"import json; json.load(open('{jf}')); "
-                            f"print('JSON valid')"],
-                    "weight": 15,
-                    "timeout": 10,
-                })
+                            f"print('JSON valid')",
+                        ],
+                        "weight": 15,
+                        "timeout": 10,
+                    }
+                )
 
         if py_files:
-            commands.append({
-                "name": "python_syntax",
-                "cmd": ["python3", "-m", "py_compile"] + py_files,
-                "weight": 20,
-                "timeout": 15,
-            })
+            commands.append(
+                {
+                    "name": "python_syntax",
+                    "cmd": ["python3", "-m", "py_compile"] + py_files,
+                    "weight": 20,
+                    "timeout": 15,
+                }
+            )
 
         return commands
 
@@ -227,25 +315,52 @@ class OpenDesignRunner(BaseRunner):
             return catalog
         fallback = {
             "beginner": [
-                Exercise(id="design-b01", role="ux_designer", task_type="UI_DESIGN",
-                         difficulty="beginner",
-                         description="Design a button component system with primary, secondary, disabled states",
-                         acceptance_criteria=["WCAG AA contrast", "44px touch targets", "Design tokens"],
-                         expected_artifacts=["button.svg", "tokens.json"], tags=["component", "button"]),
+                Exercise(
+                    id="design-b01",
+                    role="ux_designer",
+                    task_type="UI_DESIGN",
+                    difficulty="beginner",
+                    description="Design a button component system with primary, secondary, disabled states",
+                    acceptance_criteria=[
+                        "WCAG AA contrast",
+                        "44px touch targets",
+                        "Design tokens",
+                    ],
+                    expected_artifacts=["button.svg", "tokens.json"],
+                    tags=["component", "button"],
+                ),
             ],
             "intermediate": [
-                Exercise(id="design-i01", role="ux_designer", task_type="UI_DESIGN",
-                         difficulty="intermediate",
-                         description="Design a mobile login flow with email, social login, password reset",
-                         acceptance_criteria=["Wireframes for all screens", "WCAG AA", "Error states"],
-                         expected_artifacts=["login_flow.svg", "tokens.json"], tags=["mobile", "auth"]),
+                Exercise(
+                    id="design-i01",
+                    role="ux_designer",
+                    task_type="UI_DESIGN",
+                    difficulty="intermediate",
+                    description="Design a mobile login flow with email, social login, password reset",
+                    acceptance_criteria=[
+                        "Wireframes for all screens",
+                        "WCAG AA",
+                        "Error states",
+                    ],
+                    expected_artifacts=["login_flow.svg", "tokens.json"],
+                    tags=["mobile", "auth"],
+                ),
             ],
             "advanced": [
-                Exercise(id="design-a01", role="ux_designer", task_type="UI_DESIGN",
-                         difficulty="advanced",
-                         description="Design a complete design system with 10 components, dark/light themes",
-                         acceptance_criteria=["10 components", "Dark/light tokens", "WCAG AA both themes"],
-                         expected_artifacts=["design_system.md", "tokens_light.json"], tags=["design-system"]),
+                Exercise(
+                    id="design-a01",
+                    role="ux_designer",
+                    task_type="UI_DESIGN",
+                    difficulty="advanced",
+                    description="Design a complete design system with 10 components, dark/light themes",
+                    acceptance_criteria=[
+                        "10 components",
+                        "Dark/light tokens",
+                        "WCAG AA both themes",
+                    ],
+                    expected_artifacts=["design_system.md", "tokens_light.json"],
+                    tags=["design-system"],
+                ),
             ],
         }
         return fallback.get(difficulty, fallback["intermediate"])
@@ -269,14 +384,27 @@ class OpenDesignRunner(BaseRunner):
             hints.append("Ensure all designs pass WCAG AA audit")
 
         # Touch targets
-        if isinstance(metrics.get("min_touch_target"), (int, float)) and metrics["min_touch_target"] >= 44:
+        if (
+            isinstance(metrics.get("min_touch_target"), (int, float))
+            and metrics["min_touch_target"] >= 44
+        ):
             score += 10
             criteria["touch_targets"] = True
 
         # Design patterns in output
         output_lower = (result.output or "").lower()
-        design_kws = ["token", "color", "spacing", "component", "typography",
-                       "grid", "breakpoint", "responsive", "state", "variant"]
+        design_kws = [
+            "token",
+            "color",
+            "spacing",
+            "component",
+            "typography",
+            "grid",
+            "breakpoint",
+            "responsive",
+            "state",
+            "variant",
+        ]
         kw_hits = sum(1 for k in design_kws if k in output_lower)
         if kw_hits >= 3:
             score += 15
@@ -285,8 +413,17 @@ class OpenDesignRunner(BaseRunner):
             score += 8
 
         # Accessibility awareness
-        a11y_kws = ["wcag", "aria", "contrast", "screen reader", "focus", "keyboard",
-                     "alt text", "semantic", "accessible"]
+        a11y_kws = [
+            "wcag",
+            "aria",
+            "contrast",
+            "screen reader",
+            "focus",
+            "keyboard",
+            "alt text",
+            "semantic",
+            "accessible",
+        ]
         if sum(1 for k in a11y_kws if k in output_lower) >= 2:
             score += 15
             criteria["accessibility_aware"] = True
@@ -294,7 +431,14 @@ class OpenDesignRunner(BaseRunner):
             hints.append("Address accessibility: WCAG, ARIA, keyboard navigation")
 
         # Design system structure
-        system_kws = ["atomic", "molecule", "organism", "template", "page", "design system"]
+        system_kws = [
+            "atomic",
+            "molecule",
+            "organism",
+            "template",
+            "page",
+            "design system",
+        ]
         if sum(1 for k in system_kws if k in output_lower) >= 1:
             score += 10
             criteria["design_system_thinking"] = True
@@ -304,7 +448,11 @@ class OpenDesignRunner(BaseRunner):
             criteria["verification_passed"] = True
 
         return self._combined_grade(
-            exercise, result, min(score, 100.0), criteria, hints,
+            exercise,
+            result,
+            min(score, 100.0),
+            criteria,
+            hints,
             domain_context=(
                 "Grade as a senior UX designer. Check for:\n"
                 "- WCAG 2.2 AA compliance (contrast, touch targets, keyboard nav)\n"

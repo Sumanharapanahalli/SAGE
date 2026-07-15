@@ -38,6 +38,7 @@ logger = logging.getLogger("LangGraphRunner")
 _HAS_LANGGRAPH = False
 try:
     import langgraph  # noqa: F401
+
     _HAS_LANGGRAPH = True
 except ImportError:
     pass
@@ -50,13 +51,15 @@ def _get_checkpointer():
     """
     db_path = os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-        "data", "langgraph_checkpoints.db",
+        "data",
+        "langgraph_checkpoints.db",
     )
     os.makedirs(os.path.dirname(db_path), exist_ok=True)
 
     # Try langgraph-checkpoint-sqlite first
     try:
         from langgraph.checkpoint.sqlite import SqliteSaver
+
         return SqliteSaver.from_conn_string(db_path)
     except (ImportError, AttributeError):
         pass
@@ -68,6 +71,7 @@ def _get_checkpointer():
     # Fallback: in-memory checkpointer
     try:
         from langgraph.checkpoint.memory import MemorySaver
+
         logger.debug(
             "langgraph-checkpoint-sqlite not available — using MemorySaver "
             "(run state is in-process only)"
@@ -90,10 +94,10 @@ class LangGraphRunner:
     """
 
     def __init__(self):
-        self._workflows: dict[str, Any] = {}   # name -> compiled graph
+        self._workflows: dict[str, Any] = {}  # name -> compiled graph
         self._loaded_solution: str = ""
         self._checkpointer = None
-        self._runs: dict[str, dict] = {}       # run_id -> run metadata
+        self._runs: dict[str, dict] = {}  # run_id -> run metadata
 
     # ------------------------------------------------------------------
     # Discovery
@@ -103,7 +107,10 @@ class LangGraphRunner:
         """Resolve path to active solution's workflows/ directory."""
         try:
             from src.core.project_loader import project_config, _SOLUTIONS_DIR
-            return os.path.join(_SOLUTIONS_DIR, project_config.project_name, "workflows")
+
+            return os.path.join(
+                _SOLUTIONS_DIR, project_config.project_name, "workflows"
+            )
         except Exception:
             return ""
 
@@ -122,6 +129,7 @@ class LangGraphRunner:
 
         try:
             from src.core.project_loader import project_config
+
             solution = project_config.project_name
         except Exception:
             solution = ""
@@ -152,7 +160,8 @@ class LangGraphRunner:
 
         logger.info(
             "LangGraphRunner loaded %d workflow(s) [solution: %s]",
-            len(self._workflows), solution,
+            len(self._workflows),
+            solution,
         )
         return len(self._workflows)
 
@@ -161,9 +170,7 @@ class LangGraphRunner:
         name = filename[:-3]
         path = os.path.join(workflows_dir, filename)
         try:
-            spec = importlib.util.spec_from_file_location(
-                f"workflows.{name}", path
-            )
+            spec = importlib.util.spec_from_file_location(f"workflows.{name}", path)
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
 
@@ -206,7 +213,10 @@ class LangGraphRunner:
             status values: "completed" | "awaiting_approval" | "error"
         """
         if not _HAS_LANGGRAPH:
-            return {"error": "langgraph not installed", "run_id": run_id or str(uuid.uuid4())}
+            return {
+                "error": "langgraph not installed",
+                "run_id": run_id or str(uuid.uuid4()),
+            }
 
         self.load()
 
@@ -337,14 +347,18 @@ class LangGraphRunner:
     def _audit(self, run_id: str, workflow_name: str, status: str, result) -> None:
         """Write workflow run event to the audit log."""
         try:
-            import json
             from src.memory.audit_logger import audit_logger
+
             audit_logger.log_event(
                 actor="LangGraphRunner",
                 action_type="WORKFLOW_RUN",
                 input_context=f"workflow={workflow_name} run_id={run_id}",
                 output_content=str(result)[:500],
-                metadata={"workflow": workflow_name, "run_id": run_id, "status": status},
+                metadata={
+                    "workflow": workflow_name,
+                    "run_id": run_id,
+                    "status": status,
+                },
             )
         except Exception as exc:
             logger.debug("Audit for workflow run failed (non-fatal): %s", exc)

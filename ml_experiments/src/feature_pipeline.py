@@ -37,6 +37,7 @@ logger = logging.getLogger(__name__)
 # Custom transformer: pairwise interaction terms
 # ---------------------------------------------------------------------------
 
+
 class PairwiseInteractions(BaseEstimator, TransformerMixin):
     """
     Generate pairwise interaction features (no squared terms, no bias column).
@@ -68,6 +69,7 @@ class PairwiseInteractions(BaseEstimator, TransformerMixin):
 # ---------------------------------------------------------------------------
 # Custom transformer: mode-impute + target encode (single step)
 # ---------------------------------------------------------------------------
+
 
 class ModeImputeAndTargetEncode(BaseEstimator, TransformerMixin):
     """
@@ -129,6 +131,7 @@ class ModeImputeAndTargetEncode(BaseEstimator, TransformerMixin):
 # Sub-pipeline builders (numeric and OHE — no y dependency)
 # ---------------------------------------------------------------------------
 
+
 def _numeric_pipeline(strategy: str = "mean") -> Pipeline:
     """
     Numeric feature pipeline: impute → z-score scale → pairwise interactions.
@@ -174,6 +177,7 @@ def _ohe_pipeline() -> Pipeline:
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
 
 def build_feature_pipeline(
     numeric_cols: List[str],
@@ -222,7 +226,11 @@ def build_feature_pipeline(
 
     if target_enc_cols:
         transformers.append(
-            ("target_cat", ModeImputeAndTargetEncode(cv=5, smooth="auto"), target_enc_cols)
+            (
+                "target_cat",
+                ModeImputeAndTargetEncode(cv=5, smooth="auto"),
+                target_enc_cols,
+            )
         )
 
     if not transformers:

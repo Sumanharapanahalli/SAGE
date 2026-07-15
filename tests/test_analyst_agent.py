@@ -20,11 +20,13 @@ UUID4_PATTERN = re.compile(
     re.IGNORECASE,
 )
 
-FIXED_ANALYSIS_JSON = json.dumps({
-    "severity": "HIGH",
-    "root_cause_hypothesis": "test hypothesis",
-    "recommended_action": "test action",
-})
+FIXED_ANALYSIS_JSON = json.dumps(
+    {
+        "severity": "HIGH",
+        "root_cause_hypothesis": "test hypothesis",
+        "recommended_action": "test action",
+    }
+)
 
 
 def _query_audit(db_path, action_type=None):
@@ -48,28 +50,40 @@ def _query_audit(db_path, action_type=None):
 
 def test_analyze_log_returns_required_fields(tmp_audit_db):
     """analyze_log() must return a dict with keys: severity, root_cause_hypothesis, recommended_action, trace_id."""
-    with patch("src.core.llm_gateway.LLMGateway.generate", return_value=FIXED_ANALYSIS_JSON), \
-         patch("src.agents.analyst.audit_logger", tmp_audit_db), \
-         patch("src.agents.analyst.vector_memory") as mock_vm:
+    with (
+        patch(
+            "src.core.llm_gateway.LLMGateway.generate", return_value=FIXED_ANALYSIS_JSON
+        ),
+        patch("src.agents.analyst.audit_logger", tmp_audit_db),
+        patch("src.agents.analyst.vector_memory") as mock_vm,
+    ):
         mock_vm.search.return_value = []
         mock_vm.add_feedback = MagicMock()
         from src.agents.analyst import AnalystAgent
+
         agent = AnalystAgent()
         result = agent.analyze_log("ERROR: timeout on sensor read")
 
     assert "severity" in result, "Result must contain 'severity'."
-    assert "root_cause_hypothesis" in result, "Result must contain 'root_cause_hypothesis'."
+    assert "root_cause_hypothesis" in result, (
+        "Result must contain 'root_cause_hypothesis'."
+    )
     assert "recommended_action" in result, "Result must contain 'recommended_action'."
     assert "trace_id" in result, "Result must contain 'trace_id'."
 
 
 def test_analyze_log_creates_audit_record(tmp_audit_db):
     """analyze_log() must create an ANALYSIS_PROPOSAL record in the audit database."""
-    with patch("src.core.llm_gateway.LLMGateway.generate", return_value=FIXED_ANALYSIS_JSON), \
-         patch("src.agents.analyst.audit_logger", tmp_audit_db), \
-         patch("src.agents.analyst.vector_memory") as mock_vm:
+    with (
+        patch(
+            "src.core.llm_gateway.LLMGateway.generate", return_value=FIXED_ANALYSIS_JSON
+        ),
+        patch("src.agents.analyst.audit_logger", tmp_audit_db),
+        patch("src.agents.analyst.vector_memory") as mock_vm,
+    ):
         mock_vm.search.return_value = []
         from src.agents.analyst import AnalystAgent
+
         agent = AnalystAgent()
         agent.analyze_log("ERROR: i2c bus stuck LOW")
 
@@ -79,31 +93,48 @@ def test_analyze_log_creates_audit_record(tmp_audit_db):
 
 def test_analyze_log_trace_id_is_uuid(tmp_audit_db):
     """The trace_id in the result must be a valid UUID v4."""
-    with patch("src.core.llm_gateway.LLMGateway.generate", return_value=FIXED_ANALYSIS_JSON), \
-         patch("src.agents.analyst.audit_logger", tmp_audit_db), \
-         patch("src.agents.analyst.vector_memory") as mock_vm:
+    with (
+        patch(
+            "src.core.llm_gateway.LLMGateway.generate", return_value=FIXED_ANALYSIS_JSON
+        ),
+        patch("src.agents.analyst.audit_logger", tmp_audit_db),
+        patch("src.agents.analyst.vector_memory") as mock_vm,
+    ):
         mock_vm.search.return_value = []
         from src.agents.analyst import AnalystAgent
+
         agent = AnalystAgent()
         result = agent.analyze_log("CRITICAL: watchdog timeout")
 
     trace_id = result.get("trace_id", "")
-    assert UUID4_PATTERN.match(trace_id), f"trace_id '{trace_id}' is not a valid UUID v4."
+    assert UUID4_PATTERN.match(trace_id), (
+        f"trace_id '{trace_id}' is not a valid UUID v4."
+    )
 
 
 def test_analyze_log_handles_json_parse_failure(tmp_audit_db):
     """When LLM returns non-JSON, analyze_log() must still return a dict with all required fields."""
-    with patch("src.core.llm_gateway.LLMGateway.generate", return_value="not valid json at all"), \
-         patch("src.agents.analyst.audit_logger", tmp_audit_db), \
-         patch("src.agents.analyst.vector_memory") as mock_vm:
+    with (
+        patch(
+            "src.core.llm_gateway.LLMGateway.generate",
+            return_value="not valid json at all",
+        ),
+        patch("src.agents.analyst.audit_logger", tmp_audit_db),
+        patch("src.agents.analyst.vector_memory") as mock_vm,
+    ):
         mock_vm.search.return_value = []
         from src.agents.analyst import AnalystAgent
+
         agent = AnalystAgent()
         result = agent.analyze_log("ERROR: flash write failed")
 
     assert "severity" in result, "Fallback result must have 'severity'."
-    assert "root_cause_hypothesis" in result, "Fallback result must have 'root_cause_hypothesis'."
-    assert "recommended_action" in result, "Fallback result must have 'recommended_action'."
+    assert "root_cause_hypothesis" in result, (
+        "Fallback result must have 'root_cause_hypothesis'."
+    )
+    assert "recommended_action" in result, (
+        "Fallback result must have 'recommended_action'."
+    )
     assert "trace_id" in result, "Fallback result must have 'trace_id'."
 
 
@@ -117,11 +148,16 @@ def test_analyze_log_uses_rag_context(tmp_audit_db):
         captured_prompts.append(prompt)
         return FIXED_ANALYSIS_JSON
 
-    with patch("src.core.llm_gateway.LLMGateway.generate", side_effect=capture_generate), \
-         patch("src.agents.analyst.audit_logger", tmp_audit_db), \
-         patch("src.agents.analyst.vector_memory") as mock_vm:
-        mock_vm.search.return_value = ["Previous incident: UART timeout resolved by increasing buffer size."]
+    with (
+        patch("src.core.llm_gateway.LLMGateway.generate", side_effect=capture_generate),
+        patch("src.agents.analyst.audit_logger", tmp_audit_db),
+        patch("src.agents.analyst.vector_memory") as mock_vm,
+    ):
+        mock_vm.search.return_value = [
+            "Previous incident: UART timeout resolved by increasing buffer size."
+        ]
         from src.agents.analyst import AnalystAgent
+
         agent = AnalystAgent()
         agent.analyze_log("ERROR: UART timeout again")
 
@@ -134,18 +170,26 @@ def test_analyze_log_uses_rag_context(tmp_audit_db):
 
 def test_learn_from_feedback_adds_to_memory(tmp_audit_db):
     """learn_from_feedback() must add a learning text to vector memory."""
-    with patch("src.agents.analyst.audit_logger", tmp_audit_db), \
-         patch("src.agents.analyst.vector_memory") as mock_vm:
+    with (
+        patch("src.agents.analyst.audit_logger", tmp_audit_db),
+        patch("src.agents.analyst.vector_memory") as mock_vm,
+    ):
         mock_vm.add_feedback = MagicMock()
         from src.agents.analyst import AnalystAgent
+
         agent = AnalystAgent()
         agent.learn_from_feedback(
             log_entry="ERROR: uart timeout",
             human_comment="Root cause is hardware fault in RX pin",
-            original_analysis={"root_cause_hypothesis": "software bug", "recommended_action": "restart"},
+            original_analysis={
+                "root_cause_hypothesis": "software bug",
+                "recommended_action": "restart",
+            },
         )
         # Verify add_feedback was called
-        assert mock_vm.add_feedback.called, "vector_memory.add_feedback() must be called."
+        assert mock_vm.add_feedback.called, (
+            "vector_memory.add_feedback() must be called."
+        )
         call_args = mock_vm.add_feedback.call_args
         learning_text = call_args[0][0]  # First positional argument
         assert "uart timeout" in learning_text.lower() or "UART" in learning_text, (
@@ -155,10 +199,13 @@ def test_learn_from_feedback_adds_to_memory(tmp_audit_db):
 
 def test_learn_from_feedback_creates_audit_record(tmp_audit_db):
     """learn_from_feedback() must create a FEEDBACK_LEARNING record in the audit log."""
-    with patch("src.agents.analyst.audit_logger", tmp_audit_db), \
-         patch("src.agents.analyst.vector_memory") as mock_vm:
+    with (
+        patch("src.agents.analyst.audit_logger", tmp_audit_db),
+        patch("src.agents.analyst.vector_memory") as mock_vm,
+    ):
         mock_vm.add_feedback = MagicMock()
         from src.agents.analyst import AnalystAgent
+
         agent = AnalystAgent()
         agent.learn_from_feedback(
             log_entry="ERROR: sensor read timeout",
@@ -175,48 +222,69 @@ def test_learn_from_feedback_creates_audit_record(tmp_audit_db):
 
 def test_analyze_log_with_empty_string(tmp_audit_db):
     """analyze_log('') must not raise an exception and must return a result dict."""
-    with patch("src.core.llm_gateway.LLMGateway.generate", return_value=FIXED_ANALYSIS_JSON), \
-         patch("src.agents.analyst.audit_logger", tmp_audit_db), \
-         patch("src.agents.analyst.vector_memory") as mock_vm:
+    with (
+        patch(
+            "src.core.llm_gateway.LLMGateway.generate", return_value=FIXED_ANALYSIS_JSON
+        ),
+        patch("src.agents.analyst.audit_logger", tmp_audit_db),
+        patch("src.agents.analyst.vector_memory") as mock_vm,
+    ):
         mock_vm.search.return_value = []
         from src.agents.analyst import AnalystAgent
+
         agent = AnalystAgent()
         try:
             result = agent.analyze_log("")
         except Exception as exc:
             pytest.fail(f"analyze_log('') raised an exception: {exc}")
-    assert isinstance(result, dict), f"Expected dict result, got {type(result)}: {result!r}"
+    assert isinstance(result, dict), (
+        f"Expected dict result, got {type(result)}: {result!r}"
+    )
 
 
 def test_analyze_log_with_long_entry(tmp_audit_db):
     """analyze_log() with 10000-char input must not raise an exception."""
     long_entry = "x" * 10000
-    with patch("src.core.llm_gateway.LLMGateway.generate", return_value=FIXED_ANALYSIS_JSON), \
-         patch("src.agents.analyst.audit_logger", tmp_audit_db), \
-         patch("src.agents.analyst.vector_memory") as mock_vm:
+    with (
+        patch(
+            "src.core.llm_gateway.LLMGateway.generate", return_value=FIXED_ANALYSIS_JSON
+        ),
+        patch("src.agents.analyst.audit_logger", tmp_audit_db),
+        patch("src.agents.analyst.vector_memory") as mock_vm,
+    ):
         mock_vm.search.return_value = []
         from src.agents.analyst import AnalystAgent
+
         agent = AnalystAgent()
         try:
             result = agent.analyze_log(long_entry)
         except Exception as exc:
-            pytest.fail(f"analyze_log() raised an exception with 10000-char input: {exc}")
+            pytest.fail(
+                f"analyze_log() raised an exception with 10000-char input: {exc}"
+            )
     assert isinstance(result, dict), "Expected dict result for long input."
 
 
 def test_severity_values(tmp_audit_db):
     """Various severity strings from LLM (HIGH, MEDIUM, LOW, CRITICAL) must pass through unchanged."""
     for severity in ["HIGH", "MEDIUM", "LOW", "CRITICAL"]:
-        llm_response = json.dumps({
-            "severity": severity,
-            "root_cause_hypothesis": f"hypothesis for {severity}",
-            "recommended_action": f"action for {severity}",
-        })
-        with patch("src.core.llm_gateway.LLMGateway.generate", return_value=llm_response), \
-             patch("src.agents.analyst.audit_logger", tmp_audit_db), \
-             patch("src.agents.analyst.vector_memory") as mock_vm:
+        llm_response = json.dumps(
+            {
+                "severity": severity,
+                "root_cause_hypothesis": f"hypothesis for {severity}",
+                "recommended_action": f"action for {severity}",
+            }
+        )
+        with (
+            patch(
+                "src.core.llm_gateway.LLMGateway.generate", return_value=llm_response
+            ),
+            patch("src.agents.analyst.audit_logger", tmp_audit_db),
+            patch("src.agents.analyst.vector_memory") as mock_vm,
+        ):
             mock_vm.search.return_value = []
             from src.agents.analyst import AnalystAgent
+
             agent = AnalystAgent()
             result = agent.analyze_log(f"ERROR: test for severity {severity}")
         assert result.get("severity") == severity, (

@@ -18,7 +18,7 @@ import subprocess
 import threading
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Callable, Optional
+from typing import Callable, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -26,16 +26,18 @@ logger = logging.getLogger(__name__)
 @dataclass
 class Tool:
     """A tool that agents can invoke."""
+
     name: str
     description: str
     handler: Callable[..., str]
     requires_approval: bool = False  # HITL gate for dangerous tools
-    timeout: int = 30               # seconds
+    timeout: int = 30  # seconds
 
 
 @dataclass
 class ToolCall:
     """Record of a tool invocation."""
+
     tool_name: str
     arguments: dict
     result: str = ""
@@ -109,6 +111,7 @@ class ToolExecutor:
             return call
 
         import time
+
         start = time.monotonic()
         try:
             result = tool.handler(**arguments)
@@ -121,11 +124,14 @@ class ToolExecutor:
         with self._lock:
             self._call_history.append(call)
 
-        self._emit("tool.executed", {
-            "tool_name": tool_name,
-            "success": not call.error,
-            "duration_ms": call.duration_ms,
-        })
+        self._emit(
+            "tool.executed",
+            {
+                "tool_name": tool_name,
+                "success": not call.error,
+                "duration_ms": call.duration_ms,
+            },
+        )
 
         return call
 
@@ -166,43 +172,57 @@ class ToolExecutor:
 
     def _register_builtins(self) -> None:
         """Register default tools."""
-        self.register(Tool(
-            name="file_read",
-            description="Read a file's contents. Args: {path: str, max_lines: int}",
-            handler=self._tool_file_read,
-        ))
-        self.register(Tool(
-            name="file_list",
-            description="List files in a directory. Args: {path: str, pattern: str}",
-            handler=self._tool_file_list,
-        ))
-        self.register(Tool(
-            name="shell_run",
-            description="Run a shell command (read-only). Args: {command: str}",
-            handler=self._tool_shell_run,
-            requires_approval=True,  # dangerous — needs HITL
-        ))
-        self.register(Tool(
-            name="git_diff",
-            description="Show git diff for working directory. Args: {path: str}",
-            handler=self._tool_git_diff,
-        ))
-        self.register(Tool(
-            name="git_log",
-            description="Show recent git commits. Args: {path: str, count: int}",
-            handler=self._tool_git_log,
-        ))
-        self.register(Tool(
-            name="search_code",
-            description="Search for a pattern in codebase. Args: {pattern: str, path: str}",
-            handler=self._tool_search_code,
-        ))
-        self.register(Tool(
-            name="run_tests",
-            description="Run pytest for a specific test file. Args: {test_path: str}",
-            handler=self._tool_run_tests,
-            requires_approval=True,  # can have side effects
-        ))
+        self.register(
+            Tool(
+                name="file_read",
+                description="Read a file's contents. Args: {path: str, max_lines: int}",
+                handler=self._tool_file_read,
+            )
+        )
+        self.register(
+            Tool(
+                name="file_list",
+                description="List files in a directory. Args: {path: str, pattern: str}",
+                handler=self._tool_file_list,
+            )
+        )
+        self.register(
+            Tool(
+                name="shell_run",
+                description="Run a shell command (read-only). Args: {command: str}",
+                handler=self._tool_shell_run,
+                requires_approval=True,  # dangerous — needs HITL
+            )
+        )
+        self.register(
+            Tool(
+                name="git_diff",
+                description="Show git diff for working directory. Args: {path: str}",
+                handler=self._tool_git_diff,
+            )
+        )
+        self.register(
+            Tool(
+                name="git_log",
+                description="Show recent git commits. Args: {path: str, count: int}",
+                handler=self._tool_git_log,
+            )
+        )
+        self.register(
+            Tool(
+                name="search_code",
+                description="Search for a pattern in codebase. Args: {pattern: str, path: str}",
+                handler=self._tool_search_code,
+            )
+        )
+        self.register(
+            Tool(
+                name="run_tests",
+                description="Run pytest for a specific test file. Args: {test_path: str}",
+                handler=self._tool_run_tests,
+                requires_approval=True,  # can have side effects
+            )
+        )
 
     @staticmethod
     def _tool_file_read(path: str, max_lines: int = 100) -> str:
@@ -215,6 +235,7 @@ class ToolExecutor:
     @staticmethod
     def _tool_file_list(path: str = ".", pattern: str = "*") -> str:
         import glob as g
+
         full_pattern = os.path.join(path, pattern)
         matches = g.glob(full_pattern)
         return "\n".join(sorted(matches)[:50])
@@ -222,7 +243,11 @@ class ToolExecutor:
     @staticmethod
     def _tool_shell_run(command: str) -> str:
         result = subprocess.run(
-            command, shell=True, capture_output=True, text=True, timeout=30,
+            command,
+            shell=True,  # nosec B602 - this IS the agent's deliberate shell-exec tool; bounded by a 30s timeout
+            capture_output=True,
+            text=True,
+            timeout=30,
         )
         output = result.stdout + result.stderr
         return output[:2000]
@@ -230,16 +255,22 @@ class ToolExecutor:
     @staticmethod
     def _tool_git_diff(path: str = ".") -> str:
         result = subprocess.run(
-            ["git", "diff", "--stat"], cwd=path,
-            capture_output=True, text=True, timeout=10,
+            ["git", "diff", "--stat"],
+            cwd=path,
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         return result.stdout[:2000] if result.stdout else "No changes"
 
     @staticmethod
     def _tool_git_log(path: str = ".", count: int = 5) -> str:
         result = subprocess.run(
-            ["git", "log", f"--oneline", f"-{count}"], cwd=path,
-            capture_output=True, text=True, timeout=10,
+            ["git", "log", "--oneline", f"-{count}"],
+            cwd=path,
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         return result.stdout[:1000]
 
@@ -248,7 +279,9 @@ class ToolExecutor:
         try:
             result = subprocess.run(
                 ["grep", "-rn", "--include=*.py", pattern, path],
-                capture_output=True, text=True, timeout=15,
+                capture_output=True,
+                text=True,
+                timeout=15,
             )
             return result.stdout[:2000] if result.stdout else "No matches"
         except Exception:
@@ -258,7 +291,9 @@ class ToolExecutor:
     def _tool_run_tests(test_path: str) -> str:
         result = subprocess.run(
             ["python", "-m", "pytest", test_path, "-q", "--tb=short"],
-            capture_output=True, text=True, timeout=120,
+            capture_output=True,
+            text=True,
+            timeout=120,
         )
         return (result.stdout + result.stderr)[:2000]
 
@@ -266,6 +301,7 @@ class ToolExecutor:
     def _emit(event_type: str, data: dict) -> None:
         try:
             from src.core.event_bus import get_event_bus
+
             get_event_bus().publish(event_type, data, source="tool_executor")
         except Exception:
             pass

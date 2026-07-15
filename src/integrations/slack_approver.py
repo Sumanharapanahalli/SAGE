@@ -27,6 +27,7 @@ logger = logging.getLogger("SlackApprover")
 _HAS_SLACK = False
 _slack_client = None
 
+
 def _init_slack():
     """Lazy-init the Slack WebClient."""
     global _HAS_SLACK, _slack_client
@@ -35,6 +36,7 @@ def _init_slack():
         return False
     try:
         from slack_sdk import WebClient
+
         _slack_client = WebClient(token=token)
         _HAS_SLACK = True
         logger.info("Slack WebClient initialised")
@@ -49,10 +51,10 @@ def _init_slack():
 
 def _build_proposal_blocks(proposal: dict) -> list:
     """Build Slack Block Kit message for an agent proposal."""
-    trace_id     = proposal.get("trace_id", "unknown")
-    summary      = proposal.get("summary", "")[:2000]
-    action_type  = proposal.get("action_type", "PROPOSE")
-    actor        = proposal.get("actor", "SAGE Agent")
+    trace_id = proposal.get("trace_id", "unknown")
+    summary = proposal.get("summary", "")[:2000]
+    action_type = proposal.get("action_type", "PROPOSE")
+    actor = proposal.get("actor", "SAGE Agent")
 
     return [
         {
@@ -107,14 +109,15 @@ def send_proposal(proposal: dict) -> dict:
     """
     if not _HAS_SLACK and not _init_slack():
         reason = (
-            "SLACK_BOT_TOKEN not set" if not os.environ.get("SLACK_BOT_TOKEN")
+            "SLACK_BOT_TOKEN not set"
+            if not os.environ.get("SLACK_BOT_TOKEN")
             else "slack_sdk not installed"
         )
         logger.info("Slack proposal skipped: %s", reason)
         return {"status": "skipped", "reason": reason}
 
     channel = os.environ.get("SLACK_CHANNEL", "#sage-approvals")
-    blocks  = _build_proposal_blocks(proposal)
+    blocks = _build_proposal_blocks(proposal)
 
     try:
         response = _slack_client.chat_postMessage(
@@ -122,11 +125,13 @@ def send_proposal(proposal: dict) -> dict:
             text=f"SAGE Proposal [{proposal.get('action_type', 'ACTION')}] — approval required",
             blocks=blocks,
         )
-        logger.info("Proposal sent to Slack channel %s (ts: %s)", channel, response["ts"])
+        logger.info(
+            "Proposal sent to Slack channel %s (ts: %s)", channel, response["ts"]
+        )
         return {
-            "status":  "sent",
+            "status": "sent",
             "channel": response.get("channel"),
-            "ts":      response.get("ts"),
+            "ts": response.get("ts"),
         }
     except Exception as exc:
         logger.error("Slack send_proposal failed: %s", exc)
@@ -141,7 +146,7 @@ def verify_slack_signature(body: bytes, timestamp: str, signature: str) -> bool:
     """
     secret = os.environ.get("SLACK_SIGNING_SECRET", "")
     if not secret:
-        return True   # no secret configured — accept all (dev mode)
+        return True  # no secret configured — accept all (dev mode)
 
     # Reject stale requests (> 5 minutes old)
     try:
@@ -152,9 +157,9 @@ def verify_slack_signature(body: bytes, timestamp: str, signature: str) -> bool:
         return False
 
     base = f"v0:{timestamp}:{body.decode('utf-8', errors='replace')}"
-    computed = "v0=" + hmac.new(
-        secret.encode(), base.encode(), hashlib.sha256
-    ).hexdigest()
+    computed = (
+        "v0=" + hmac.new(secret.encode(), base.encode(), hashlib.sha256).hexdigest()
+    )
     return hmac.compare_digest(computed, signature)
 
 
@@ -173,13 +178,13 @@ def parse_action_payload(payload_str: str) -> dict:
     try:
         payload = json.loads(payload_str)
         actions = payload.get("actions", [{}])
-        action  = actions[0] if actions else {}
-        value   = json.loads(action.get("value", "{}"))
-        user    = payload.get("user", {}).get("username", "unknown_user")
+        action = actions[0] if actions else {}
+        value = json.loads(action.get("value", "{}"))
+        user = payload.get("user", {}).get("username", "unknown_user")
         return {
-            "trace_id":  value.get("trace_id", ""),
-            "decision":  value.get("decision", ""),
-            "user":      user,
+            "trace_id": value.get("trace_id", ""),
+            "decision": value.get("decision", ""),
+            "user": user,
             "action_ts": payload.get("action_ts", ""),
         }
     except Exception as exc:

@@ -1,8 +1,13 @@
 """Unit tests for src/modules/payload_validator.py"""
+
 import pytest
 from src.modules.payload_validator import (
-    validate, coerce_str, coerce_int, ValidationError,
-    sanitize_task_input, MAX_TASK_LENGTH,
+    validate,
+    coerce_str,
+    coerce_int,
+    ValidationError,
+    sanitize_task_input,
+    MAX_TASK_LENGTH,
 )
 
 pytestmark = pytest.mark.unit

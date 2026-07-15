@@ -16,7 +16,6 @@ from __future__ import annotations
 import math
 import logging
 
-import torch
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import _LRScheduler
 
@@ -40,8 +39,8 @@ class WarmupCosineScheduler(_LRScheduler):
         last_epoch: int = -1,
     ) -> None:
         self.warmup_epochs = warmup_epochs
-        self.total_epochs  = total_epochs
-        self.min_lr        = min_lr
+        self.total_epochs = total_epochs
+        self.min_lr = min_lr
         super().__init__(optimizer, last_epoch)
 
     def get_lr(self) -> list[float]:

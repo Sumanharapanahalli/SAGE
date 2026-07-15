@@ -12,11 +12,10 @@ Tests for DeerFlow-inspired improvements:
 """
 
 import json
-import os
 import tempfile
 import threading
 import time
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -32,6 +31,7 @@ pytestmark = pytest.mark.unit
 def _make_fresh_queue():
     """Return a new TaskQueue backed by an isolated temp SQLite DB."""
     from src.core.queue_manager import TaskQueue
+
     tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
     tmp.close()
     return TaskQueue(db_path=tmp.name)
@@ -40,8 +40,12 @@ def _make_fresh_queue():
 def _make_fresh_runner(max_workers=4, parallel_enabled=True):
     """Return (queue, worker, runner) triple backed by isolated DB."""
     from src.core.queue_manager import (
-        TaskQueue, TaskWorker, ParallelTaskRunner, ParallelConfig,
+        TaskQueue,
+        TaskWorker,
+        ParallelTaskRunner,
+        ParallelConfig,
     )
+
     tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
     tmp.close()
     q = TaskQueue(db_path=tmp.name)
@@ -62,6 +66,7 @@ class TestLoopDetection:
     def test_no_loop_below_threshold(self):
         """Dispatching same task fewer than WARN_THRESHOLD times should not raise."""
         from src.core.queue_manager import LoopDetector
+
         ld = LoopDetector()
         # Below warn threshold (3) — should be fine
         for _ in range(2):
@@ -70,6 +75,7 @@ class TestLoopDetection:
     def test_warn_at_threshold(self):
         """Dispatching same task WARN_THRESHOLD times should log warning (not raise)."""
         from src.core.queue_manager import LoopDetector
+
         ld = LoopDetector()
         # Should not raise at warn threshold
         for _ in range(LoopDetector.WARN_THRESHOLD):
@@ -78,6 +84,7 @@ class TestLoopDetection:
     def test_raises_at_stop_threshold(self):
         """Dispatching same task STOP_THRESHOLD times must raise LoopDetectedError."""
         from src.core.queue_manager import LoopDetector, LoopDetectedError
+
         ld = LoopDetector()
         with pytest.raises(LoopDetectedError):
             for _ in range(LoopDetector.STOP_THRESHOLD):
@@ -86,13 +93,15 @@ class TestLoopDetection:
     def test_different_tasks_no_loop(self):
         """Different task types should not trigger loop detection."""
         from src.core.queue_manager import LoopDetector
+
         ld = LoopDetector()
         for i in range(10):
             ld.check(f"TASK_TYPE_{i}", {"data": str(i)})
 
     def test_reset_clears_window(self):
         """After reset(), loop detection should start fresh."""
-        from src.core.queue_manager import LoopDetector, LoopDetectedError
+        from src.core.queue_manager import LoopDetector
+
         ld = LoopDetector()
         # Build up to just below stop threshold
         for _ in range(LoopDetector.STOP_THRESHOLD - 1):
@@ -104,6 +113,7 @@ class TestLoopDetection:
     def test_sliding_window_eviction(self):
         """Old entries should be evicted when window is full."""
         from src.core.queue_manager import LoopDetector
+
         ld = LoopDetector()
         # Fill window with different tasks
         for i in range(LoopDetector.WINDOW_SIZE):
@@ -124,6 +134,7 @@ class TestRetryLogic:
     def test_transient_error_classification(self):
         """Timeout, rate limit, connection errors should be classified as transient."""
         from src.core.queue_manager import _is_transient_error
+
         assert _is_transient_error("Connection refused") is True
         assert _is_transient_error("HTTP 429 Too Many Requests") is True
         assert _is_transient_error("Request timed out after 30s") is True
@@ -133,6 +144,7 @@ class TestRetryLogic:
     def test_permanent_error_classification(self):
         """Invalid args, missing payload, unknown task should be permanent."""
         from src.core.queue_manager import _is_transient_error
+
         assert _is_transient_error("ValueError: missing 'log_entry'") is False
         assert _is_transient_error("Unknown task_type: 'FOOBAR'") is False
         assert _is_transient_error("KeyError: 'project_id'") is False
@@ -194,7 +206,7 @@ class TestRetryLogic:
         """Failed tasks should accumulate error_history."""
         q = _make_fresh_queue()
         task_id = q.submit("ANALYZE_LOG", {"log_entry": "test"})
-        task = q.get_next(timeout=1.0)
+        q.get_next(timeout=1.0)
 
         q.mark_failed(task_id, "Error 1")
         with q._lock:
@@ -205,6 +217,7 @@ class TestRetryLogic:
     def test_task_has_retry_fields_in_dict(self):
         """Task.to_dict() should include retry_count, max_retries, timeout."""
         from src.core.queue_manager import Task
+
         task = Task("ANALYZE_LOG", {"log_entry": "test"})
         d = task.to_dict()
         assert "retry_count" in d
@@ -225,6 +238,7 @@ class TestErrorFeedback:
     def test_build_error_context_empty_on_first_attempt(self):
         """No error context on first attempt."""
         from src.core.queue_manager import TaskWorker, Task
+
         q = _make_fresh_queue()
         worker = TaskWorker(q, name="TestWorker")
         task = Task("ANALYZE_LOG", {"log_entry": "test"})
@@ -234,6 +248,7 @@ class TestErrorFeedback:
     def test_build_error_context_with_history(self):
         """Error context should include previous error messages."""
         from src.core.queue_manager import TaskWorker, Task
+
         q = _make_fresh_queue()
         worker = TaskWorker(q, name="TestWorker")
         task = Task("ANALYZE_LOG", {"log_entry": "test"})
@@ -249,6 +264,7 @@ class TestErrorFeedback:
     def test_error_context_caps_at_3_errors(self):
         """Only the last 3 errors should be included."""
         from src.core.queue_manager import TaskWorker, Task
+
         q = _make_fresh_queue()
         worker = TaskWorker(q, name="TestWorker")
         task = Task("ANALYZE_LOG", {"log_entry": "test"})
@@ -272,24 +288,28 @@ class TestTaskTimeout:
     def test_default_timeout_per_task_type(self):
         """Tasks should get default timeouts based on their type."""
         from src.core.queue_manager import Task, TASK_TIMEOUT_DEFAULTS
+
         task = Task("ANALYZE_LOG", {"log_entry": "test"})
         assert task.timeout == TASK_TIMEOUT_DEFAULTS["ANALYZE_LOG"]
 
     def test_custom_timeout_override(self):
         """Custom timeout should override the default."""
         from src.core.queue_manager import Task
+
         task = Task("ANALYZE_LOG", {"log_entry": "test"}, timeout=42)
         assert task.timeout == 42
 
     def test_fallback_timeout_for_unknown_type(self):
         """Unknown task types should use DEFAULT_TASK_TIMEOUT."""
         from src.core.queue_manager import Task, DEFAULT_TASK_TIMEOUT
+
         task = Task("UNKNOWN_TYPE", {"data": "test"})
         assert task.timeout == DEFAULT_TASK_TIMEOUT
 
     def test_dispatch_with_timeout_succeeds(self):
         """Fast tasks should complete within timeout."""
         from src.core.queue_manager import TaskWorker, Task
+
         q = _make_fresh_queue()
         worker = TaskWorker(q, name="TestWorker")
         task = Task("ANALYZE_LOG", {"log_entry": "fast"}, timeout=5)
@@ -304,6 +324,7 @@ class TestTaskTimeout:
     def test_dispatch_with_timeout_raises_on_slow_task(self):
         """Slow tasks should raise _TaskTimeoutError."""
         from src.core.queue_manager import TaskWorker, Task, _TaskTimeoutError
+
         q = _make_fresh_queue()
         worker = TaskWorker(q, name="TestWorker")
         task = Task("ANALYZE_LOG", {"log_entry": "slow"}, timeout=1)
@@ -319,6 +340,7 @@ class TestTaskTimeout:
     def test_dispatch_timeout_propagates_inner_exception(self):
         """Exceptions inside dispatch should propagate through timeout wrapper."""
         from src.core.queue_manager import TaskWorker, Task
+
         q = _make_fresh_queue()
         worker = TaskWorker(q, name="TestWorker")
         task = Task("ANALYZE_LOG", {"log_entry": "error"}, timeout=5)
@@ -342,6 +364,7 @@ class TestDependencyPropagation:
     def test_blocked_status_exists(self):
         """TaskStatus should have a BLOCKED state."""
         from src.core.queue_manager import TaskStatus
+
         assert hasattr(TaskStatus, "BLOCKED")
         assert TaskStatus.BLOCKED == "blocked"
 
@@ -358,7 +381,9 @@ class TestDependencyPropagation:
         """Should find pending tasks that depend on a failed task."""
         q = _make_fresh_queue()
         parent_id = q.submit("ANALYZE_LOG", {"log_entry": "parent"})
-        child_id = q.submit("ANALYZE_LOG", {"log_entry": "child"}, depends_on=[parent_id])
+        child_id = q.submit(
+            "ANALYZE_LOG", {"log_entry": "child"}, depends_on=[parent_id]
+        )
 
         blocked = q.get_blocked_dependents(parent_id)
         assert child_id in blocked
@@ -391,7 +416,6 @@ class TestDependencyPropagation:
 
     def test_wave_execution_skips_blocked_tasks(self):
         """ParallelTaskRunner should skip tasks whose dependencies failed."""
-        from src.core.queue_manager import Task, TaskStatus
 
         q, worker, runner = _make_fresh_runner()
         dispatch_log = []
@@ -441,6 +465,7 @@ class TestBuildCheckpointing:
     def _make_orchestrator(self):
         """Create a BuildOrchestrator with temp checkpoint DB."""
         from src.integrations.build_orchestrator import BuildOrchestrator
+
         orch = BuildOrchestrator.__new__(BuildOrchestrator)
         orch.logger = __import__("logging").getLogger("TestOrch")
         orch._runs = {}
@@ -454,6 +479,7 @@ class TestBuildCheckpointing:
     def test_checkpoint_creates_record(self):
         """_checkpoint should persist a run to SQLite."""
         import sqlite3
+
         orch = self._make_orchestrator()
         run = {
             "run_id": "test-123",
@@ -466,7 +492,9 @@ class TestBuildCheckpointing:
         orch._checkpoint(run)
 
         conn = sqlite3.connect(orch._checkpoint_db)
-        row = conn.execute("SELECT * FROM build_runs WHERE run_id=?", ("test-123",)).fetchone()
+        row = conn.execute(
+            "SELECT * FROM build_runs WHERE run_id=?", ("test-123",)
+        ).fetchone()
         conn.close()
         assert row is not None
         assert row[1] == "executing"  # state column
@@ -474,6 +502,7 @@ class TestBuildCheckpointing:
     def test_checkpoint_updates_existing(self):
         """_checkpoint should update existing records on state change."""
         import sqlite3
+
         orch = self._make_orchestrator()
         run = {
             "run_id": "test-456",
@@ -486,21 +515,26 @@ class TestBuildCheckpointing:
         orch._checkpoint(run)
 
         conn = sqlite3.connect(orch._checkpoint_db)
-        row = conn.execute("SELECT state FROM build_runs WHERE run_id=?", ("test-456",)).fetchone()
+        row = conn.execute(
+            "SELECT state FROM build_runs WHERE run_id=?", ("test-456",)
+        ).fetchone()
         conn.close()
         assert row[0] == "executing"
 
     def test_restore_runs_loads_in_progress(self):
         """_restore_runs should load non-terminal runs from checkpoint DB."""
         import sqlite3
+
         orch = self._make_orchestrator()
 
         # Insert an in-progress run directly into DB
-        run_data = json.dumps({
-            "run_id": "restore-789",
-            "state": "awaiting_plan",
-            "plan": [{"step": 1}],
-        })
+        run_data = json.dumps(
+            {
+                "run_id": "restore-789",
+                "state": "awaiting_plan",
+                "plan": [{"step": 1}],
+            }
+        )
         conn = sqlite3.connect(orch._checkpoint_db)
         conn.execute(
             "INSERT INTO build_runs (run_id, state, data, updated_at) VALUES (?, ?, ?, ?)",
@@ -516,6 +550,7 @@ class TestBuildCheckpointing:
     def test_restore_skips_terminal_runs(self):
         """_restore_runs should NOT load completed/failed/rejected runs."""
         import sqlite3
+
         orch = self._make_orchestrator()
 
         for state in ("completed", "failed", "rejected"):
@@ -542,6 +577,7 @@ class TestContextSummarization:
 
     def _make_orchestrator(self):
         from src.integrations.build_orchestrator import BuildOrchestrator
+
         orch = BuildOrchestrator.__new__(BuildOrchestrator)
         orch.logger = __import__("logging").getLogger("TestOrch")
         orch._runs = {}
@@ -576,16 +612,19 @@ class TestContextSummarization:
         # Generate enough results to exceed MAX_CONTEXT_LENGTH
         results = []
         for i in range(100):
-            results.append({
-                "task": {
-                    "task_type": "BACKEND",
-                    "description": f"Build microservice {i} with detailed requirements " * 5,
-                },
-                "result": {
-                    "status": "completed",
-                    "files_changed": [f"service_{i}.py", f"test_{i}.py"],
-                },
-            })
+            results.append(
+                {
+                    "task": {
+                        "task_type": "BACKEND",
+                        "description": f"Build microservice {i} with detailed requirements "
+                        * 5,
+                    },
+                    "result": {
+                        "status": "completed",
+                        "files_changed": [f"service_{i}.py", f"test_{i}.py"],
+                    },
+                }
+            )
         ctx = orch._summarize_context(results)
         assert "SUMMARIZED" in ctx
         assert "100 prior tasks" in ctx
@@ -595,13 +634,15 @@ class TestContextSummarization:
         orch = self._make_orchestrator()
         results = []
         for i in range(50):
-            results.append({
-                "task": {"task_type": "BACKEND", "description": f"Task {i} " * 20},
-                "result": {
-                    "status": "completed" if i % 3 != 0 else "error",
-                    "files_changed": [f"f{i}.py"],
-                },
-            })
+            results.append(
+                {
+                    "task": {"task_type": "BACKEND", "description": f"Task {i} " * 20},
+                    "result": {
+                        "status": "completed" if i % 3 != 0 else "error",
+                        "files_changed": [f"f{i}.py"],
+                    },
+                }
+            )
         ctx = orch._summarize_context(results)
         if "SUMMARIZED" in ctx:
             assert "Completed:" in ctx
@@ -612,13 +653,18 @@ class TestContextSummarization:
         orch = self._make_orchestrator()
         results = []
         for i in range(50):
-            results.append({
-                "task": {"task_type": "FRONTEND", "description": f"Build component {i} " * 20},
-                "result": {
-                    "status": "completed",
-                    "files_changed": [f"component_{i}.tsx"],
-                },
-            })
+            results.append(
+                {
+                    "task": {
+                        "task_type": "FRONTEND",
+                        "description": f"Build component {i} " * 20,
+                    },
+                    "result": {
+                        "status": "completed",
+                        "files_changed": [f"component_{i}.tsx"],
+                    },
+                }
+            )
         ctx = orch._summarize_context(results)
         if "SUMMARIZED" in ctx:
             assert "Files touched:" in ctx
@@ -634,7 +680,7 @@ class TestWorkerIntegration:
 
     def test_worker_retries_transient_then_succeeds(self):
         """Worker should retry transient errors and succeed on later attempt."""
-        from src.core.queue_manager import TaskWorker, Task, TaskStatus
+        from src.core.queue_manager import TaskWorker
 
         q = _make_fresh_queue()
         worker = TaskWorker(q, name="TestWorker")

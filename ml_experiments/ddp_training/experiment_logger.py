@@ -18,11 +18,12 @@ from typing import Any, Dict
 
 logger = logging.getLogger(__name__)
 
-_DB_PATH   = Path("logs/experiments.db")
+_DB_PATH = Path("logs/experiments.db")
 _JSONL_PATH = Path("logs/experiments.jsonl")
 
 
 # ── Internal DB helpers ──────────────────────────────────────────────────────
+
 
 def _conn() -> sqlite3.Connection:
     _DB_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -53,6 +54,7 @@ def _conn() -> sqlite3.Connection:
 
 
 # ── Public API ───────────────────────────────────────────────────────────────
+
 
 def start_run(
     config: Dict[str, Any],

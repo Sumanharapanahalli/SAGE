@@ -26,11 +26,10 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-import numpy as np
 import torch
 import yaml
-from datasets import Dataset, DatasetDict, load_dataset
-from transformers import AutoModelForTokenClassification, AutoTokenizer, pipeline
+from datasets import load_dataset
+from transformers import AutoModelForTokenClassification, AutoTokenizer
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from experiment_logger import ExperimentLogger  # noqa: E402
@@ -44,6 +43,7 @@ log = logging.getLogger("evaluate_ner")
 
 
 # ── CoNLL helpers (mirrored from train_ner.py) ────────────────────────────────
+
 
 def _load_conll_file(path: Path) -> list[dict]:
     sentences, cur_toks, cur_tags = [], [], []
@@ -79,12 +79,13 @@ def _load_split(cfg: dict, split: str) -> list[dict]:
 
     log.info("Local split not found — loading %s from HuggingFace …", split)
     hf_split = "validation" if split == "val" else split
-    ds = load_dataset(cfg["data"]["hf_fallback_dataset"], split=hf_split,
-                      trust_remote_code=True)
+    ds = load_dataset(
+        cfg["data"]["hf_fallback_dataset"], split=hf_split, trust_remote_code=True
+    )
     id2label = ds.features["ner_tags"].feature.names
     return [
         {
-            "tokens":   ex["tokens"],
+            "tokens": ex["tokens"],
             "ner_tags": [id2label[t] for t in ex["ner_tags"]],
         }
         for ex in ds
@@ -92,6 +93,7 @@ def _load_split(cfg: dict, split: str) -> list[dict]:
 
 
 # ── Batch inference ───────────────────────────────────────────────────────────
+
 
 def _predict_batch(
     sentences: list[dict],
@@ -116,7 +118,7 @@ def _predict_batch(
 
     for sent in sentences:
         words = sent["tokens"]
-        gold  = sent["ner_tags"]
+        gold = sent["ner_tags"]
 
         enc = tokenizer(
             words,
@@ -128,10 +130,10 @@ def _predict_batch(
         ).to(device)
 
         with torch.no_grad():
-            logits = model(**enc).logits          # (1, seq_len, num_labels)
+            logits = model(**enc).logits  # (1, seq_len, num_labels)
 
         pred_ids = logits.argmax(-1)[0].cpu().numpy()
-        word_ids  = enc.word_ids()
+        word_ids = enc.word_ids()
 
         # Collapse to word-level (first subword only)
         word_preds: dict[int, str] = {}
@@ -150,6 +152,7 @@ def _predict_batch(
 
 # ── Bias slicing ──────────────────────────────────────────────────────────────
 
+
 def _entity_type_bias(
     sentences: list[dict],
     true_all: list[list[str]],
@@ -166,20 +169,25 @@ def _entity_type_bias(
     for etype in entity_types:
         b_tag = f"B-{etype}"
         indices = [
-            i for i, sent in enumerate(sentences)
+            i
+            for i, sent in enumerate(sentences)
             if any(t == b_tag for t in sent["ner_tags"])
         ]
         if not indices:
-            results[etype] = {"support": 0, "f1": None,
-                               "precision": None, "recall": None}
+            results[etype] = {
+                "support": 0,
+                "f1": None,
+                "precision": None,
+                "recall": None,
+            }
             continue
         slice_true = [true_all[i] for i in indices]
         slice_pred = [pred_all[i] for i in indices]
         results[etype] = {
-            "support":   len(indices),
-            "f1":        round(f1_score(slice_true, slice_pred), 4),
+            "support": len(indices),
+            "f1": round(f1_score(slice_true, slice_pred), 4),
             "precision": round(precision_score(slice_true, slice_pred), 4),
-            "recall":    round(recall_score(slice_true, slice_pred), 4),
+            "recall": round(recall_score(slice_true, slice_pred), 4),
         }
     return results
 
@@ -197,21 +205,18 @@ def _length_bucket_bias(
 
     results = {}
     for bucket_name, (lo, hi) in length_buckets.items():
-        indices = [
-            i for i, s in enumerate(sentences)
-            if lo <= len(s["tokens"]) <= hi
-        ]
+        indices = [i for i, s in enumerate(sentences) if lo <= len(s["tokens"]) <= hi]
         if not indices:
             results[bucket_name] = {"support": 0, "f1": None}
             continue
         slice_true = [true_all[i] for i in indices]
         slice_pred = [pred_all[i] for i in indices]
         results[bucket_name] = {
-            "support":   len(indices),
+            "support": len(indices),
             "length_range": [lo, hi],
-            "f1":        round(f1_score(slice_true, slice_pred), 4),
+            "f1": round(f1_score(slice_true, slice_pred), 4),
             "precision": round(precision_score(slice_true, slice_pred), 4),
-            "recall":    round(recall_score(slice_true, slice_pred), 4),
+            "recall": round(recall_score(slice_true, slice_pred), 4),
         }
     return results
 
@@ -229,10 +234,10 @@ def _class_imbalance_report(sentences: list[dict]) -> dict:
 
     o_ratio = n_o / max(n_total, 1)
     return {
-        "total_tokens":  n_total,
-        "o_tokens":      n_o,
+        "total_tokens": n_total,
+        "o_tokens": n_o,
         "entity_tokens": n_total - n_o,
-        "o_ratio":       round(o_ratio, 4),
+        "o_ratio": round(o_ratio, 4),
         "entity_counts": dict(entity_counts),
         "class_imbalance_flag": o_ratio > 0.95,
     }
@@ -240,19 +245,23 @@ def _class_imbalance_report(sentences: list[dict]) -> dict:
 
 # ── Main evaluation function ──────────────────────────────────────────────────
 
+
 def evaluate(cfg: dict, split: str = "test", model_path: str | None = None) -> dict:
-    base_dir    = Path(__file__).parent
-    model_dir   = Path(model_path) if model_path else \
-                  (base_dir / cfg["output"]["model_dir"]).resolve()
+    base_dir = Path(__file__).parent
+    model_dir = (
+        Path(model_path)
+        if model_path
+        else (base_dir / cfg["output"]["model_dir"]).resolve()
+    )
     reports_dir = (base_dir / cfg["output"]["reports_dir"]).resolve()
-    log_dir     = (base_dir / cfg["output"]["log_dir"]).resolve()
+    log_dir = (base_dir / cfg["output"]["log_dir"]).resolve()
     reports_dir.mkdir(parents=True, exist_ok=True)
 
     # ── Load model + tokenizer (trained artifacts, no re-fitting) ─────────────
     log.info("Loading model from %s", model_dir)
     tokenizer = AutoTokenizer.from_pretrained(str(model_dir))
-    model     = AutoModelForTokenClassification.from_pretrained(str(model_dir))
-    device    = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = AutoModelForTokenClassification.from_pretrained(str(model_dir))
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
     model.eval()
 
@@ -262,11 +271,13 @@ def evaluate(cfg: dict, split: str = "test", model_path: str | None = None) -> d
     label_list = label_map["label_list"]
 
     exp = ExperimentLogger("ner_evaluation", log_dir=log_dir)
-    run_id = exp.start_run(params={
-        "model_dir": str(model_dir),
-        "split":     split,
-        "seed":      cfg["training"]["seed"],
-    })
+    run_id = exp.start_run(
+        params={
+            "model_dir": str(model_dir),
+            "split": split,
+            "seed": cfg["training"]["seed"],
+        }
+    )
 
     # ── Load evaluation split ─────────────────────────────────────────────────
     sentences = _load_split(cfg, split)
@@ -286,10 +297,11 @@ def evaluate(cfg: dict, split: str = "test", model_path: str | None = None) -> d
             precision_score,
             recall_score,
         )
+
         overall = {
             "overall_precision": round(precision_score(true_labels, pred_labels), 4),
-            "overall_recall":    round(recall_score(true_labels, pred_labels), 4),
-            "overall_f1":        round(f1_score(true_labels, pred_labels), 4),
+            "overall_recall": round(recall_score(true_labels, pred_labels), 4),
+            "overall_f1": round(f1_score(true_labels, pred_labels), 4),
             "classification_report": classification_report(
                 true_labels, pred_labels, digits=4
             ),
@@ -300,14 +312,16 @@ def evaluate(cfg: dict, split: str = "test", model_path: str | None = None) -> d
         overall = {}
 
     # ── Bias evaluation ───────────────────────────────────────────────────────
-    entity_types   = cfg["evaluation"]["bias_entity_types"]
+    entity_types = cfg["evaluation"]["bias_entity_types"]
     length_buckets = cfg["evaluation"]["length_buckets"]
 
     log.info("Running bias evaluation: entity types = %s", entity_types)
     entity_bias = _entity_type_bias(sentences, true_labels, pred_labels, entity_types)
 
     log.info("Running bias evaluation: sentence length buckets")
-    length_bias = _length_bucket_bias(sentences, true_labels, pred_labels, length_buckets)
+    length_bias = _length_bucket_bias(
+        sentences, true_labels, pred_labels, length_buckets
+    )
 
     # ── Class imbalance ───────────────────────────────────────────────────────
     imbalance = _class_imbalance_report(sentences)
@@ -320,14 +334,14 @@ def evaluate(cfg: dict, split: str = "test", model_path: str | None = None) -> d
 
     # ── Compile report ────────────────────────────────────────────────────────
     report = {
-        "split":            split,
-        "model_dir":        str(model_dir),
-        "overall_metrics":  overall,
+        "split": split,
+        "model_dir": str(model_dir),
+        "overall_metrics": overall,
         "bias": {
-            "entity_type":      entity_bias,
-            "sentence_length":  length_bias,
+            "entity_type": entity_bias,
+            "sentence_length": length_bias,
         },
-        "class_imbalance":  imbalance,
+        "class_imbalance": imbalance,
     }
 
     report_path = reports_dir / f"eval_{split}_report.json"
@@ -336,10 +350,10 @@ def evaluate(cfg: dict, split: str = "test", model_path: str | None = None) -> d
 
     # ── Log metrics ───────────────────────────────────────────────────────────
     metrics_to_log = {
-        "overall_f1":        overall.get("overall_f1", 0.0),
+        "overall_f1": overall.get("overall_f1", 0.0),
         "overall_precision": overall.get("overall_precision", 0.0),
-        "overall_recall":    overall.get("overall_recall", 0.0),
-        "class_imbalance":   float(imbalance["class_imbalance_flag"]),
+        "overall_recall": overall.get("overall_recall", 0.0),
+        "class_imbalance": float(imbalance["class_imbalance_flag"]),
     }
     for etype, vals in entity_bias.items():
         if vals["f1"] is not None:
@@ -356,16 +370,17 @@ def evaluate(cfg: dict, split: str = "test", model_path: str | None = None) -> d
 
 # ── CLI ───────────────────────────────────────────────────────────────────────
 
+
 def _parse_args():
     p = argparse.ArgumentParser(
         description="NER Model Evaluator + Bias Analyzer",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    p.add_argument("--config", type=Path,
-                   default=Path(__file__).parent / "config.yaml")
-    p.add_argument("--split",  choices=["train", "val", "test"], default="test")
-    p.add_argument("--model",  type=str, default=None,
-                   help="Override model directory path")
+    p.add_argument("--config", type=Path, default=Path(__file__).parent / "config.yaml")
+    p.add_argument("--split", choices=["train", "val", "test"], default="test")
+    p.add_argument(
+        "--model", type=str, default=None, help="Override model directory path"
+    )
     return p.parse_args()
 
 
@@ -384,16 +399,16 @@ def main():
     print(f"  Overall Recall:    {m.get('overall_recall', 'N/A')}")
     print("\n--- Bias by Entity Type ---")
     for etype, vals in report["bias"]["entity_type"].items():
-        print(f"  {etype:<6}  support={vals['support']:>4}  "
-              f"f1={vals['f1']}")
+        print(f"  {etype:<6}  support={vals['support']:>4}  f1={vals['f1']}")
     print("\n--- Bias by Sentence Length ---")
     for bucket, vals in report["bias"]["sentence_length"].items():
-        print(f"  {bucket:<8}  {vals.get('length_range')}  "
-              f"support={vals['support']:>4}  f1={vals['f1']}")
+        print(
+            f"  {bucket:<8}  {vals.get('length_range')}  "
+            f"support={vals['support']:>4}  f1={vals['f1']}"
+        )
     print("\n--- Class Imbalance ---")
     ci = report["class_imbalance"]
-    print(f"  O-token ratio: {ci['o_ratio']:.1%}  "
-          f"(flag={ci['class_imbalance_flag']})")
+    print(f"  O-token ratio: {ci['o_ratio']:.1%}  (flag={ci['class_imbalance_flag']})")
 
 
 if __name__ == "__main__":

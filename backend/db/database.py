@@ -19,7 +19,9 @@ from sqlalchemy.ext.asyncio import (
 
 from backend.db.models import Base  # noqa: F401 – imported so Alembic sees metadata
 
-DATABASE_URL = "postgresql+asyncpg://app_user:changeme@localhost:5432/elder_fall_detection"
+DATABASE_URL = (
+    "postgresql+asyncpg://app_user:changeme@localhost:5432/elder_fall_detection"
+)
 
 # The encryption key is *never* hard-coded in production.
 # Set via: ALTER DATABASE elder_fall_detection SET app.encryption_key = '<key>';

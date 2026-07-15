@@ -4,19 +4,19 @@ Collective Intelligence API — Endpoint Tests
 Tests the REST API layer for learnings, help requests, sync, and stats.
 """
 
-import os
 import pytest
-from unittest.mock import patch, MagicMock
 
 
 # ═══════════════════════════════════════════════════════════════════════
 # FIXTURES
 # ═══════════════════════════════════════════════════════════════════════
 
+
 @pytest.fixture
 def mock_collective(tmp_path):
     """Mock CollectiveMemory for API tests."""
     from src.core.collective_memory import CollectiveMemory
+
     cm = CollectiveMemory(
         repo_path=str(tmp_path / "api_collective"),
         require_approval=False,
@@ -44,16 +44,19 @@ def client(mock_collective):
 # LEARNING ENDPOINTS
 # ═══════════════════════════════════════════════════════════════════════
 
-class TestLearningEndpoints:
 
+class TestLearningEndpoints:
     def test_post_learning_returns_201(self, client):
-        resp = client.post("/collective/learnings", json={
-            "author_agent": "analyst",
-            "author_solution": "medtech",
-            "topic": "uart",
-            "title": "Test learning",
-            "content": "Some useful content",
-        })
+        resp = client.post(
+            "/collective/learnings",
+            json={
+                "author_agent": "analyst",
+                "author_solution": "medtech",
+                "topic": "uart",
+                "title": "Test learning",
+                "content": "Some useful content",
+            },
+        )
         assert resp.status_code == 201
         data = resp.json()
         assert "id" in data
@@ -63,10 +66,16 @@ class TestLearningEndpoints:
         assert resp.status_code == 422
 
     def test_get_learnings_returns_list(self, client):
-        client.post("/collective/learnings", json={
-            "author_agent": "a", "author_solution": "s",
-            "topic": "t", "title": "T", "content": "C",
-        })
+        client.post(
+            "/collective/learnings",
+            json={
+                "author_agent": "a",
+                "author_solution": "s",
+                "topic": "t",
+                "title": "T",
+                "content": "C",
+            },
+        )
         resp = client.get("/collective/learnings")
         assert resp.status_code == 200
         data = resp.json()
@@ -74,31 +83,55 @@ class TestLearningEndpoints:
         assert data["count"] >= 1
 
     def test_get_learnings_with_query(self, client):
-        client.post("/collective/learnings", json={
-            "author_agent": "a", "author_solution": "medtech",
-            "topic": "uart", "title": "UART overflow", "content": "Buffer stuff",
-        })
+        client.post(
+            "/collective/learnings",
+            json={
+                "author_agent": "a",
+                "author_solution": "medtech",
+                "topic": "uart",
+                "title": "UART overflow",
+                "content": "Buffer stuff",
+            },
+        )
         resp = client.get("/collective/learnings", params={"query": "UART"})
         assert resp.status_code == 200
 
     def test_get_learnings_filters_by_solution(self, client):
-        client.post("/collective/learnings", json={
-            "author_agent": "a", "author_solution": "medtech",
-            "topic": "t", "title": "T1", "content": "C",
-        })
-        client.post("/collective/learnings", json={
-            "author_agent": "a", "author_solution": "automotive",
-            "topic": "t", "title": "T2", "content": "C",
-        })
+        client.post(
+            "/collective/learnings",
+            json={
+                "author_agent": "a",
+                "author_solution": "medtech",
+                "topic": "t",
+                "title": "T1",
+                "content": "C",
+            },
+        )
+        client.post(
+            "/collective/learnings",
+            json={
+                "author_agent": "a",
+                "author_solution": "automotive",
+                "topic": "t",
+                "title": "T2",
+                "content": "C",
+            },
+        )
         resp = client.get("/collective/learnings", params={"solution": "medtech"})
         data = resp.json()
-        assert all(l["author_solution"] == "medtech" for l in data["learnings"])
+        assert all(l["author_solution"] == "medtech" for l in data["learnings"])  # noqa: E741
 
     def test_get_learning_by_id(self, client):
-        resp = client.post("/collective/learnings", json={
-            "author_agent": "a", "author_solution": "s",
-            "topic": "t", "title": "T", "content": "C",
-        })
+        resp = client.post(
+            "/collective/learnings",
+            json={
+                "author_agent": "a",
+                "author_solution": "s",
+                "topic": "t",
+                "title": "T",
+                "content": "C",
+            },
+        )
         learning_id = resp.json()["id"]
         resp2 = client.get(f"/collective/learnings/{learning_id}")
         assert resp2.status_code == 200
@@ -109,10 +142,16 @@ class TestLearningEndpoints:
         assert resp.status_code == 404
 
     def test_validate_learning(self, client):
-        resp = client.post("/collective/learnings", json={
-            "author_agent": "a", "author_solution": "s",
-            "topic": "t", "title": "T", "content": "C",
-        })
+        resp = client.post(
+            "/collective/learnings",
+            json={
+                "author_agent": "a",
+                "author_solution": "s",
+                "topic": "t",
+                "title": "T",
+                "content": "C",
+            },
+        )
         learning_id = resp.json()["id"]
         resp2 = client.post(
             f"/collective/learnings/{learning_id}/validate",
@@ -126,76 +165,124 @@ class TestLearningEndpoints:
 # HELP REQUEST ENDPOINTS
 # ═══════════════════════════════════════════════════════════════════════
 
-class TestHelpRequestEndpoints:
 
+class TestHelpRequestEndpoints:
     def test_post_help_request_returns_201(self, client):
-        resp = client.post("/collective/help-requests", json={
-            "title": "Need help with I2C",
-            "requester_agent": "dev",
-            "requester_solution": "auto",
-            "urgency": "high",
-            "required_expertise": ["i2c"],
-            "context": "Bus hangs after sleep/wake.",
-        })
+        resp = client.post(
+            "/collective/help-requests",
+            json={
+                "title": "Need help with I2C",
+                "requester_agent": "dev",
+                "requester_solution": "auto",
+                "urgency": "high",
+                "required_expertise": ["i2c"],
+                "context": "Bus hangs after sleep/wake.",
+            },
+        )
         assert resp.status_code == 201
         assert resp.json()["id"].startswith("hr-")
 
     def test_get_help_requests(self, client):
-        client.post("/collective/help-requests", json={
-            "title": "Help", "requester_agent": "a",
-            "requester_solution": "s", "context": "ctx",
-        })
+        client.post(
+            "/collective/help-requests",
+            json={
+                "title": "Help",
+                "requester_agent": "a",
+                "requester_solution": "s",
+                "context": "ctx",
+            },
+        )
         resp = client.get("/collective/help-requests")
         assert resp.status_code == 200
         assert len(resp.json()["requests"]) >= 1
 
     def test_claim_help_request(self, client):
-        resp = client.post("/collective/help-requests", json={
-            "title": "Help", "requester_agent": "a",
-            "requester_solution": "s", "context": "ctx",
-        })
+        resp = client.post(
+            "/collective/help-requests",
+            json={
+                "title": "Help",
+                "requester_agent": "a",
+                "requester_solution": "s",
+                "context": "ctx",
+            },
+        )
         req_id = resp.json()["id"]
-        resp2 = client.put(f"/collective/help-requests/{req_id}/claim", json={
-            "agent": "expert", "solution": "iot",
-        })
+        resp2 = client.put(
+            f"/collective/help-requests/{req_id}/claim",
+            json={
+                "agent": "expert",
+                "solution": "iot",
+            },
+        )
         assert resp2.status_code == 200
         assert resp2.json()["status"] == "claimed"
 
     def test_claim_already_claimed_returns_409(self, client):
-        resp = client.post("/collective/help-requests", json={
-            "title": "Help", "requester_agent": "a",
-            "requester_solution": "s", "context": "ctx",
-        })
+        resp = client.post(
+            "/collective/help-requests",
+            json={
+                "title": "Help",
+                "requester_agent": "a",
+                "requester_solution": "s",
+                "context": "ctx",
+            },
+        )
         req_id = resp.json()["id"]
-        client.put(f"/collective/help-requests/{req_id}/claim", json={
-            "agent": "a1", "solution": "s1",
-        })
-        resp2 = client.put(f"/collective/help-requests/{req_id}/claim", json={
-            "agent": "a2", "solution": "s2",
-        })
+        client.put(
+            f"/collective/help-requests/{req_id}/claim",
+            json={
+                "agent": "a1",
+                "solution": "s1",
+            },
+        )
+        resp2 = client.put(
+            f"/collective/help-requests/{req_id}/claim",
+            json={
+                "agent": "a2",
+                "solution": "s2",
+            },
+        )
         assert resp2.status_code == 409
 
     def test_respond_to_help_request(self, client):
-        resp = client.post("/collective/help-requests", json={
-            "title": "Help", "requester_agent": "a",
-            "requester_solution": "s", "context": "ctx",
-        })
+        resp = client.post(
+            "/collective/help-requests",
+            json={
+                "title": "Help",
+                "requester_agent": "a",
+                "requester_solution": "s",
+                "context": "ctx",
+            },
+        )
         req_id = resp.json()["id"]
-        client.put(f"/collective/help-requests/{req_id}/claim", json={
-            "agent": "expert", "solution": "iot",
-        })
-        resp2 = client.put(f"/collective/help-requests/{req_id}/respond", json={
-            "responder_agent": "expert", "responder_solution": "iot",
-            "content": "Try the errata workaround.",
-        })
+        client.put(
+            f"/collective/help-requests/{req_id}/claim",
+            json={
+                "agent": "expert",
+                "solution": "iot",
+            },
+        )
+        resp2 = client.put(
+            f"/collective/help-requests/{req_id}/respond",
+            json={
+                "responder_agent": "expert",
+                "responder_solution": "iot",
+                "content": "Try the errata workaround.",
+            },
+        )
         assert resp2.status_code == 200
         assert len(resp2.json()["responses"]) == 1
 
     def test_close_help_request(self, client):
-        resp = client.post("/collective/help-requests", json={
-            "title": "Help", "requester_agent": "a",
-            "requester_solution": "s", "context": "ctx",
-        })
+        resp = client.post(
+            "/collective/help-requests",
+            json={
+                "title": "Help",
+                "requester_agent": "a",
+                "requester_solution": "s",
+                "context": "ctx",
+            },
+        )
         req_id = resp.json()["id"]
         resp2 = client.put(f"/collective/help-requests/{req_id}/close")
         assert resp2.status_code == 200
@@ -206,8 +293,8 @@ class TestHelpRequestEndpoints:
 # SYNC & STATS ENDPOINTS
 # ═══════════════════════════════════════════════════════════════════════
 
-class TestSyncAndStats:
 
+class TestSyncAndStats:
     def test_post_sync(self, client):
         resp = client.post("/collective/sync")
         assert resp.status_code == 200
@@ -227,8 +314,8 @@ class TestSyncAndStats:
 # ERROR PATHS & CORNER CASES
 # ═══════════════════════════════════════════════════════════════════════
 
-class TestAPIEdgeCases:
 
+class TestAPIEdgeCases:
     def test_validate_nonexistent_learning_returns_404(self, client):
         resp = client.post(
             "/collective/learnings/nonexistent-id/validate",
@@ -256,34 +343,56 @@ class TestAPIEdgeCases:
 
     def test_get_learnings_with_tags_filter(self, client):
         """GET /collective/learnings with tags parameter filters results."""
-        client.post("/collective/learnings", json={
-            "author_agent": "a", "author_solution": "s",
-            "topic": "t", "title": "Tagged", "content": "C",
-            "tags": ["python", "web"],
-        })
-        client.post("/collective/learnings", json={
-            "author_agent": "a", "author_solution": "s",
-            "topic": "t", "title": "Other", "content": "C",
-            "tags": ["rust"],
-        })
+        client.post(
+            "/collective/learnings",
+            json={
+                "author_agent": "a",
+                "author_solution": "s",
+                "topic": "t",
+                "title": "Tagged",
+                "content": "C",
+                "tags": ["python", "web"],
+            },
+        )
+        client.post(
+            "/collective/learnings",
+            json={
+                "author_agent": "a",
+                "author_solution": "s",
+                "topic": "t",
+                "title": "Other",
+                "content": "C",
+                "tags": ["rust"],
+            },
+        )
         resp = client.get("/collective/learnings", params={"tags": "python"})
         data = resp.json()
         assert resp.status_code == 200
-        for l in data["learnings"]:
+        for l in data["learnings"]:  # noqa: E741
             assert "python" in l.get("tags", [])
 
     def test_get_help_requests_with_expertise_filter(self, client):
         """GET /collective/help-requests with expertise parameter."""
-        client.post("/collective/help-requests", json={
-            "title": "I2C help", "requester_agent": "a",
-            "requester_solution": "s", "context": "c",
-            "required_expertise": ["i2c", "stm32"],
-        })
-        client.post("/collective/help-requests", json={
-            "title": "Python help", "requester_agent": "a",
-            "requester_solution": "s", "context": "c",
-            "required_expertise": ["python"],
-        })
+        client.post(
+            "/collective/help-requests",
+            json={
+                "title": "I2C help",
+                "requester_agent": "a",
+                "requester_solution": "s",
+                "context": "c",
+                "required_expertise": ["i2c", "stm32"],
+            },
+        )
+        client.post(
+            "/collective/help-requests",
+            json={
+                "title": "Python help",
+                "requester_agent": "a",
+                "requester_solution": "s",
+                "context": "c",
+                "required_expertise": ["python"],
+            },
+        )
         resp = client.get("/collective/help-requests", params={"expertise": "i2c"})
         data = resp.json()
         assert resp.status_code == 200
@@ -292,16 +401,19 @@ class TestAPIEdgeCases:
 
     def test_post_learning_with_all_optional_fields(self, client):
         """POST learning with all fields including optionals."""
-        resp = client.post("/collective/learnings", json={
-            "author_agent": "analyst",
-            "author_solution": "medtech",
-            "topic": "compliance",
-            "title": "Full learning",
-            "content": "Complete content",
-            "tags": ["a", "b"],
-            "confidence": 0.9,
-            "source_task_id": "task-xyz",
-        })
+        resp = client.post(
+            "/collective/learnings",
+            json={
+                "author_agent": "analyst",
+                "author_solution": "medtech",
+                "topic": "compliance",
+                "title": "Full learning",
+                "content": "Complete content",
+                "tags": ["a", "b"],
+                "confidence": 0.9,
+                "source_task_id": "task-xyz",
+            },
+        )
         assert resp.status_code == 201
         learning_id = resp.json()["id"]
         resp2 = client.get(f"/collective/learnings/{learning_id}")
@@ -311,10 +423,15 @@ class TestAPIEdgeCases:
 
     def test_get_help_requests_closed_status(self, client):
         """GET /collective/help-requests?status=closed returns closed ones."""
-        resp = client.post("/collective/help-requests", json={
-            "title": "Help", "requester_agent": "a",
-            "requester_solution": "s", "context": "c",
-        })
+        resp = client.post(
+            "/collective/help-requests",
+            json={
+                "title": "Help",
+                "requester_agent": "a",
+                "requester_solution": "s",
+                "context": "c",
+            },
+        )
         req_id = resp.json()["id"]
         client.put(f"/collective/help-requests/{req_id}/close")
         resp2 = client.get("/collective/help-requests", params={"status": "closed"})

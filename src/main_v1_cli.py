@@ -9,7 +9,6 @@ Or:
     python src/main_v1_cli.py
 """
 
-import time
 import sys
 import os
 import logging
@@ -20,7 +19,8 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 # Suppress noisy third-party loggers
-import warnings
+import warnings  # noqa: E402
+
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 warnings.filterwarnings("ignore", category=UserWarning, module="huggingface_hub")
 
@@ -33,14 +33,19 @@ logging.basicConfig(
 
 # Silence verbose libraries (httpx, huggingface, chromadb telemetry)
 for noisy_logger in [
-    "httpx", "httpcore", "huggingface_hub", "chromadb",
-    "chromadb.telemetry", "chromadb.telemetry.product.posthog",
-    "sentence_transformers", "urllib3",
+    "httpx",
+    "httpcore",
+    "huggingface_hub",
+    "chromadb",
+    "chromadb.telemetry",
+    "chromadb.telemetry.product.posthog",
+    "sentence_transformers",
+    "urllib3",
 ]:
     logging.getLogger(noisy_logger).setLevel(logging.WARNING)
 
-from src.core.llm_gateway import llm_gateway
-from src.agents.analyst import analyst_agent
+from src.core.llm_gateway import llm_gateway  # noqa: E402
+from src.agents.analyst import analyst_agent  # noqa: E402
 
 
 BANNER = """
@@ -50,12 +55,13 @@ BANNER = """
 ============================================================
 """
 
+
 def show_provider_info():
     """Display which LLM provider is active."""
     name = llm_gateway.get_provider_name()
     print(f"  Active LLM Provider : {name}")
-    print(f"  Mode                : Single-Lane (Thread-Locked)")
-    print(f"  Audit Logging       : ON (SQLite)")
+    print("  Mode                : Single-Lane (Thread-Locked)")
+    print("  Audit Logging       : ON (SQLite)")
     print()
 
 
@@ -72,9 +78,9 @@ def run_analysis_loop(logs):
     """Main loop: Analyze -> Propose -> Human Review -> Learn."""
 
     for i, log in enumerate(logs, 1):
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"  ALERT {i}/{len(logs)}")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
         print(f"  LOG: {log}")
         print()
 
@@ -91,14 +97,16 @@ def run_analysis_loop(logs):
 
         if analysis.get("raw_output"):
             print(f"  | RAW      : {analysis['raw_output'][:200]}...")
-        print(f"  +{'='*42}+")
+        print(f"  +{'=' * 42}+")
 
         # Human-in-the-loop
         while True:
             print()
-            choice = input(
-                "  [A]pprove  |  [R]eject & Teach  |  [S]kip  |  [Q]uit : "
-            ).strip().upper()
+            choice = (
+                input("  [A]pprove  |  [R]eject & Teach  |  [S]kip  |  [Q]uit : ")
+                .strip()
+                .upper()
+            )
 
             if choice == "A":
                 print(f"\n  ACTION APPROVED. (Trace: {trace_id})")
@@ -112,7 +120,9 @@ def run_analysis_loop(logs):
                     print("  Learning from feedback...", end="", flush=True)
                     analyst_agent.learn_from_feedback(log, feedback, analysis)
                     print(" Saved to memory!")
-                    print("  Next time this error appears, the AI will use your correction.")
+                    print(
+                        "  Next time this error appears, the AI will use your correction."
+                    )
                 else:
                     print("  (Empty feedback, skipping learn step.)")
                 break
@@ -136,13 +146,14 @@ def main():
     # Quick provider test
     print("  Testing LLM connection...", end="", flush=True)
     test_response = llm_gateway.generate(
-        "Reply with exactly: OK",
-        "You are a system health check. Reply with only 'OK'."
+        "Reply with exactly: OK", "You are a system health check. Reply with only 'OK'."
     )
     if "error" in test_response.lower():
         print(f" FAILED\n  {test_response}")
         print("\n  Please check your LLM provider config (config/config.yaml).")
-        print("  If using 'gemini', ensure the Gemini CLI is installed and authenticated.")
+        print(
+            "  If using 'gemini', ensure the Gemini CLI is installed and authenticated."
+        )
         print("  If using 'local', ensure the GGUF model file exists.\n")
         sys.exit(1)
     else:

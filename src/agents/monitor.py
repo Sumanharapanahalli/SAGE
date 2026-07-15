@@ -23,7 +23,8 @@ logger = logging.getLogger(__name__)
 
 CONFIG_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-    "config", "config.yaml",
+    "config",
+    "config.yaml",
 )
 
 
@@ -52,19 +53,37 @@ class MonitorAgent:
 
         # Teams config
         teams_cfg = config.get("teams", {})
-        self._teams_team_id = os.environ.get("TEAMS_TEAM_ID", str(teams_cfg.get("team_id", "")).replace("${TEAMS_TEAM_ID}", ""))
-        self._teams_channel_id = os.environ.get("TEAMS_CHANNEL_ID", str(teams_cfg.get("channel_id", "")).replace("${TEAMS_CHANNEL_ID}", ""))
+        self._teams_team_id = os.environ.get(
+            "TEAMS_TEAM_ID",
+            str(teams_cfg.get("team_id", "")).replace("${TEAMS_TEAM_ID}", ""),
+        )
+        self._teams_channel_id = os.environ.get(
+            "TEAMS_CHANNEL_ID",
+            str(teams_cfg.get("channel_id", "")).replace("${TEAMS_CHANNEL_ID}", ""),
+        )
         self._teams_poll_interval = int(teams_cfg.get("poll_interval_seconds", 30))
 
         # Metabase config
         metabase_cfg = config.get("metabase", {})
-        self._metabase_poll_interval = int(metabase_cfg.get("poll_interval_seconds", 60))
+        self._metabase_poll_interval = int(
+            metabase_cfg.get("poll_interval_seconds", 60)
+        )
 
         # GitLab config
         gitlab_cfg = config.get("gitlab", {})
-        self._gitlab_url = os.environ.get("GITLAB_URL", str(gitlab_cfg.get("url", "")).replace("${GITLAB_URL}", "")).rstrip("/")
-        self._gitlab_token = os.environ.get("GITLAB_TOKEN", str(gitlab_cfg.get("token", "")).replace("${GITLAB_TOKEN}", ""))
-        self._gitlab_project_id = os.environ.get("GITLAB_PROJECT_ID", str(gitlab_cfg.get("default_project_id", "")).replace("${GITLAB_PROJECT_ID}", ""))
+        self._gitlab_url = os.environ.get(
+            "GITLAB_URL", str(gitlab_cfg.get("url", "")).replace("${GITLAB_URL}", "")
+        ).rstrip("/")
+        self._gitlab_token = os.environ.get(
+            "GITLAB_TOKEN",
+            str(gitlab_cfg.get("token", "")).replace("${GITLAB_TOKEN}", ""),
+        )
+        self._gitlab_project_id = os.environ.get(
+            "GITLAB_PROJECT_ID",
+            str(gitlab_cfg.get("default_project_id", "")).replace(
+                "${GITLAB_PROJECT_ID}", ""
+            ),
+        )
         self._gitlab_poll_interval = 120  # poll GitLab every 2 minutes
 
         # State
@@ -83,6 +102,7 @@ class MonitorAgent:
     def audit(self):
         if self._audit_logger is None:
             from src.memory.audit_logger import audit_logger
+
             self._audit_logger = audit_logger
         return self._audit_logger
 
@@ -109,9 +129,13 @@ class MonitorAgent:
             )
             self._threads.append(t_teams)
             t_teams.start()
-            self.logger.info("Teams poller started (interval: %ds)", self._teams_poll_interval)
+            self.logger.info(
+                "Teams poller started (interval: %ds)", self._teams_poll_interval
+            )
         else:
-            self.logger.warning("Teams polling disabled: TEAMS_TEAM_ID or TEAMS_CHANNEL_ID not set.")
+            self.logger.warning(
+                "Teams polling disabled: TEAMS_TEAM_ID or TEAMS_CHANNEL_ID not set."
+            )
 
         # Metabase poller
         metabase_url = os.environ.get("METABASE_URL", "")
@@ -124,7 +148,9 @@ class MonitorAgent:
             )
             self._threads.append(t_meta)
             t_meta.start()
-            self.logger.info("Metabase poller started (interval: %ds)", self._metabase_poll_interval)
+            self.logger.info(
+                "Metabase poller started (interval: %ds)", self._metabase_poll_interval
+            )
         else:
             self.logger.warning("Metabase polling disabled: METABASE_URL not set.")
 
@@ -138,7 +164,9 @@ class MonitorAgent:
             )
             self._threads.append(t_gitlab)
             t_gitlab.start()
-            self.logger.info("GitLab poller started (interval: %ds)", self._gitlab_poll_interval)
+            self.logger.info(
+                "GitLab poller started (interval: %ds)", self._gitlab_poll_interval
+            )
 
             # GitLab MR poller — auto-triggers REVIEW_MR tasks for new open MRs
             t_gitlab_mr = threading.Thread(
@@ -149,11 +177,17 @@ class MonitorAgent:
             )
             self._threads.append(t_gitlab_mr)
             t_gitlab_mr.start()
-            self.logger.info("GitLab MR poller started (interval: %ds)", self._gitlab_poll_interval)
+            self.logger.info(
+                "GitLab MR poller started (interval: %ds)", self._gitlab_poll_interval
+            )
         else:
-            self.logger.warning("GitLab polling disabled: GITLAB_URL, GITLAB_TOKEN, or GITLAB_PROJECT_ID not set.")
+            self.logger.warning(
+                "GitLab polling disabled: GITLAB_URL, GITLAB_TOKEN, or GITLAB_PROJECT_ID not set."
+            )
 
-        self.logger.info("MonitorAgent running with %d active pollers.", len(self._threads))
+        self.logger.info(
+            "MonitorAgent running with %d active pollers.", len(self._threads)
+        )
 
     def stop(self):
         """Signals all polling threads to stop."""
@@ -199,12 +233,23 @@ class MonitorAgent:
         Polls the configured Teams channel for new error-related messages.
         Emits 'teams_error' events for messages containing error keywords.
         """
-        ERROR_KEYWORDS = ["error", "failure", "fault", "exception", "critical", "alarm", "alert", "FAIL", "crash"]
+        ERROR_KEYWORDS = [
+            "error",
+            "failure",
+            "fault",
+            "exception",
+            "critical",
+            "alarm",
+            "alert",
+            "FAIL",
+            "crash",
+        ]
         self.logger.info("Teams polling thread started.")
 
         while self._running:
             try:
                 from mcp_servers.teams_server import get_messages_since
+
                 result = get_messages_since(
                     team_id=self._teams_team_id,
                     channel_id=self._teams_channel_id,
@@ -221,15 +266,21 @@ class MonitorAgent:
                         matched = [k for k in ERROR_KEYWORDS if k.lower() in content]
                         if matched:
                             self._seen_message_ids.add(msg_id)
-                            self._on_event("teams_error", {
-                                "type": "teams_error",
-                                "source": "teams",
-                                "content": msg.get("content", ""),
-                                "from": msg.get("from", "Unknown"),
-                                "timestamp": msg.get("created_datetime", datetime.now(timezone.utc).isoformat()),
-                                "matched_keywords": matched,
-                                "message_id": msg_id,
-                            })
+                            self._on_event(
+                                "teams_error",
+                                {
+                                    "type": "teams_error",
+                                    "source": "teams",
+                                    "content": msg.get("content", ""),
+                                    "from": msg.get("from", "Unknown"),
+                                    "timestamp": msg.get(
+                                        "created_datetime",
+                                        datetime.now(timezone.utc).isoformat(),
+                                    ),
+                                    "matched_keywords": matched,
+                                    "message_id": msg_id,
+                                },
+                            )
             except Exception as e:
                 self.logger.error("Teams polling error: %s", e)
 
@@ -247,6 +298,7 @@ class MonitorAgent:
         while self._running:
             try:
                 from mcp_servers.metabase_server import get_new_errors
+
                 check_hours = max(interval // 3600 + 1, 1)
                 result = get_new_errors(since_hours=check_hours)
 
@@ -255,13 +307,16 @@ class MonitorAgent:
                     self.logger.info("Metabase: %d new error(s) detected.", len(errors))
 
                     for error_row in errors:
-                        self._on_event("metabase_error", {
-                            "type": "metabase_error",
-                            "source": "metabase",
-                            "content": json.dumps(error_row),
-                            "timestamp": datetime.now(timezone.utc).isoformat(),
-                            "error_data": error_row,
-                        })
+                        self._on_event(
+                            "metabase_error",
+                            {
+                                "type": "metabase_error",
+                                "source": "metabase",
+                                "content": json.dumps(error_row),
+                                "timestamp": datetime.now(timezone.utc).isoformat(),
+                                "error_data": error_row,
+                            },
+                        )
 
                 self._last_error_check = datetime.now(timezone.utc)
 
@@ -298,18 +353,23 @@ class MonitorAgent:
                         continue
 
                     self._seen_issue_ids.add(issue_id)
-                    self._on_event("gitlab_issue", {
-                        "type": "gitlab_issue",
-                        "source": "gitlab",
-                        "content": f"Issue #{issue.get('iid')}: {issue.get('title', '')}",
-                        "timestamp": issue.get("created_at", datetime.now(timezone.utc).isoformat()),
-                        "issue_iid": issue.get("iid"),
-                        "issue_id": issue_id,
-                        "title": issue.get("title", ""),
-                        "description": issue.get("description", ""),
-                        "labels": issue.get("labels", []),
-                        "web_url": issue.get("web_url", ""),
-                    })
+                    self._on_event(
+                        "gitlab_issue",
+                        {
+                            "type": "gitlab_issue",
+                            "source": "gitlab",
+                            "content": f"Issue #{issue.get('iid')}: {issue.get('title', '')}",
+                            "timestamp": issue.get(
+                                "created_at", datetime.now(timezone.utc).isoformat()
+                            ),
+                            "issue_iid": issue.get("iid"),
+                            "issue_id": issue_id,
+                            "title": issue.get("title", ""),
+                            "description": issue.get("description", ""),
+                            "labels": issue.get("labels", []),
+                            "web_url": issue.get("web_url", ""),
+                        },
+                    )
 
             except requests.RequestException as e:
                 self.logger.error("GitLab polling error: %s", e)
@@ -358,6 +418,7 @@ class MonitorAgent:
                     already_queued = False
                     try:
                         from src.core.queue_manager import task_queue
+
                         for existing in task_queue.get_all_tasks():
                             if (
                                 existing.get("task_type") == "REVIEW_MR"
@@ -367,17 +428,22 @@ class MonitorAgent:
                                 already_queued = True
                                 break
                     except Exception as qe:
-                        self.logger.warning("Queue check failed for MR %s: %s", mr_id, qe)
+                        self.logger.warning(
+                            "Queue check failed for MR %s: %s", mr_id, qe
+                        )
 
                     self._seen_mr_ids.add(mr_id)
 
                     if already_queued:
-                        self.logger.debug("MR %s already has a REVIEW_MR task — skipping.", mr_id)
+                        self.logger.debug(
+                            "MR %s already has a REVIEW_MR task — skipping.", mr_id
+                        )
                         continue
 
                     # Submit a new REVIEW_MR task
                     try:
                         from src.core.queue_manager import task_queue
+
                         task_id = task_queue.submit(
                             task_type="REVIEW_MR",
                             payload={
@@ -397,21 +463,30 @@ class MonitorAgent:
                         )
                         self.logger.info(
                             "Auto-queued REVIEW_MR task %s for MR !%s: %s",
-                            task_id, mr.get("iid"), mr.get("title", "")[:60],
+                            task_id,
+                            mr.get("iid"),
+                            mr.get("title", "")[:60],
                         )
-                        self._on_event("gitlab_mr_opened", {
-                            "type": "gitlab_mr_opened",
-                            "source": "gitlab",
-                            "content": f"MR !{mr.get('iid')}: {mr.get('title', '')}",
-                            "timestamp": mr.get("created_at", datetime.now(timezone.utc).isoformat()),
-                            "mr_id": mr_id,
-                            "mr_iid": mr.get("iid"),
-                            "title": mr.get("title", ""),
-                            "web_url": mr.get("web_url", ""),
-                            "task_id": task_id,
-                        })
+                        self._on_event(
+                            "gitlab_mr_opened",
+                            {
+                                "type": "gitlab_mr_opened",
+                                "source": "gitlab",
+                                "content": f"MR !{mr.get('iid')}: {mr.get('title', '')}",
+                                "timestamp": mr.get(
+                                    "created_at", datetime.now(timezone.utc).isoformat()
+                                ),
+                                "mr_id": mr_id,
+                                "mr_iid": mr.get("iid"),
+                                "title": mr.get("title", ""),
+                                "web_url": mr.get("web_url", ""),
+                                "task_id": task_id,
+                            },
+                        )
                     except Exception as submit_err:
-                        self.logger.error("Failed to queue REVIEW_MR for MR %s: %s", mr_id, submit_err)
+                        self.logger.error(
+                            "Failed to queue REVIEW_MR for MR %s: %s", mr_id, submit_err
+                        )
 
             except requests.RequestException as e:
                 self.logger.error("GitLab MR polling error: %s", e)
@@ -434,7 +509,12 @@ class MonitorAgent:
             event_type: Event category string
             payload:    Event data dict
         """
-        self.logger.info("EVENT [%s] from %s: %s", event_type, payload.get("source", "?"), payload.get("content", "")[:100])
+        self.logger.info(
+            "EVENT [%s] from %s: %s",
+            event_type,
+            payload.get("source", "?"),
+            payload.get("content", "")[:100],
+        )
 
         # Audit log every event
         try:
@@ -451,6 +531,7 @@ class MonitorAgent:
         # Publish to EventBus for decoupled subscribers
         try:
             from src.modules.event_bus import event_bus
+
             event_bus.publish(event_type, payload)
         except Exception:
             pass  # event bus is supplementary
@@ -464,7 +545,9 @@ class MonitorAgent:
                         cb(payload)
                         dispatched += 1
                     except Exception as e:
-                        self.logger.error("Callback error for event %s: %s", event_type, e)
+                        self.logger.error(
+                            "Callback error for event %s: %s", event_type, e
+                        )
 
         if dispatched == 0:
             self.logger.debug("No callbacks registered for event type: %s", event_type)

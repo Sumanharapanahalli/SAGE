@@ -14,6 +14,7 @@ Config (suites.browser):
   interactions:
     - {name: "coach-preview", click: "button:has-text('Preview cue')", expect_selector: "#kp-result"}
 """
+
 from __future__ import annotations
 
 import json
@@ -29,20 +30,41 @@ def run(cfg: dict) -> dict:
     checks = []
 
     def ck(name, ok, detail=""):
-        checks.append({"name": name, "status": "PASS" if ok else "FAIL", "detail": detail})
+        checks.append(
+            {"name": name, "status": "PASS" if ok else "FAIL", "detail": detail}
+        )
 
     node = shutil.which("node")
     # env wins over config so a machine can override the (possibly placeholder) path.
     pw_dir = os.environ.get("TESTBENCH_PLAYWRIGHT_DIR") or cfg.get("playwright_dir")
     if not node:
-        return {"passed": 0, "failed": 0, "skipped": 1,
-                "checks": [{"name": "browser", "status": "PASS", "detail": "node not found — skipped"}],
-                "note": "node/Playwright unavailable; browser suite skipped"}
+        return {
+            "passed": 0,
+            "failed": 0,
+            "skipped": 1,
+            "checks": [
+                {
+                    "name": "browser",
+                    "status": "PASS",
+                    "detail": "node not found — skipped",
+                }
+            ],
+            "note": "node/Playwright unavailable; browser suite skipped",
+        }
     if not pw_dir or not (Path(pw_dir) / "node_modules" / "playwright").exists():
-        return {"passed": 0, "failed": 0, "skipped": 1,
-                "checks": [{"name": "browser", "status": "PASS",
-                            "detail": "Playwright not installed (set playwright_dir / TESTBENCH_PLAYWRIGHT_DIR)"}],
-                "note": "Playwright unavailable; browser suite skipped"}
+        return {
+            "passed": 0,
+            "failed": 0,
+            "skipped": 1,
+            "checks": [
+                {
+                    "name": "browser",
+                    "status": "PASS",
+                    "detail": "Playwright not installed (set playwright_dir / TESTBENCH_PLAYWRIGHT_DIR)",
+                }
+            ],
+            "note": "Playwright unavailable; browser suite skipped",
+        }
 
     payload = json.dumps(cfg)
     # ESM resolves `import 'playwright'` from the SCRIPT's directory (not cwd), so
@@ -52,7 +74,10 @@ def run(cfg: dict) -> dict:
         shutil.copy(HERE / "browser.mjs", target)
         proc = subprocess.run(
             [node, str(target), payload],
-            cwd=pw_dir, capture_output=True, text=True, timeout=180,
+            cwd=pw_dir,
+            capture_output=True,
+            text=True,
+            timeout=180,
         )
         out = proc.stdout.strip()
         # the script prints a final JSON line
@@ -61,7 +86,11 @@ def run(cfg: dict) -> dict:
         for c in data.get("checks", []):
             ck(c["name"], c.get("ok", False), c.get("detail", ""))
         if not data.get("checks"):
-            ck("browser run", proc.returncode == 0, f"exit {proc.returncode}: {proc.stderr[-200:]}")
+            ck(
+                "browser run",
+                proc.returncode == 0,
+                f"exit {proc.returncode}: {proc.stderr[-200:]}",
+            )
     except Exception as e:  # noqa: BLE001
         ck("browser run", False, f"{type(e).__name__}: {e}")
     finally:

@@ -8,7 +8,6 @@ Table: api_keys in the same data/audit_log.db as audit log and proposals.
 
 import hashlib
 import logging
-import os
 import secrets
 import sqlite3
 import uuid
@@ -27,8 +26,10 @@ _PREFIX = "sk-sage-"
 # DB helpers
 # ---------------------------------------------------------------------------
 
+
 def _db_path() -> str:
     from src.memory.audit_logger import audit_logger
+
     return audit_logger.db_path
 
 
@@ -60,6 +61,7 @@ def _ensure_table():
 # Public API
 # ---------------------------------------------------------------------------
 
+
 def create_api_key(name: str, email: str, solution: str, role: str) -> tuple[str, str]:
     """
     Generate a new API key.
@@ -81,7 +83,14 @@ def create_api_key(name: str, email: str, solution: str, role: str) -> tuple[str
     )
     conn.commit()
     conn.close()
-    logger.info("API key created: id=%s name=%s email=%s solution=%s role=%s", key_id, name, email, solution, role)
+    logger.info(
+        "API key created: id=%s name=%s email=%s solution=%s role=%s",
+        key_id,
+        name,
+        email,
+        solution,
+        role,
+    )
     return plain_key, key_id
 
 
@@ -91,6 +100,7 @@ def verify_api_key(plain_key: str) -> Optional["UserIdentity"]:
     Returns a UserIdentity on success, None if not found or revoked.
     """
     from src.core.auth import UserIdentity  # local import to avoid circular
+
     _ensure_table()
     key_hash = hashlib.sha256(plain_key.encode()).hexdigest()
     conn = _get_conn()

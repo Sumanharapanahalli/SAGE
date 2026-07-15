@@ -12,7 +12,6 @@ always-on SAGE framework intelligence layer. Handles framework-level tasks:
 Falls back gracefully when the SLM is unavailable -- zero breaking changes.
 """
 
-import json
 import logging
 import os
 from enum import Enum
@@ -22,19 +21,21 @@ logger = logging.getLogger("SAGEIntelligence")
 
 _CONFIG_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-    "config", "config.yaml",
+    "config",
+    "config.yaml",
 )
 
 
 class TaskTier(str, Enum):
-    LIGHT    = "light"     # classification, triage, short summaries -> SLM handles
+    LIGHT = "light"  # classification, triage, short summaries -> SLM handles
     STANDARD = "standard"  # analysis, MR review, planning -> full LLM
-    HEAVY    = "heavy"     # multi-step ReAct, AutoGen code gen -> full LLM + tools
+    HEAVY = "heavy"  # multi-step ReAct, AutoGen code gen -> full LLM + tools
 
 
 def _load_sage_intel_config() -> dict:
     try:
         import yaml
+
         with open(_CONFIG_PATH) as f:
             cfg = yaml.safe_load(f) or {}
         return cfg.get("sage_intelligence", {})
@@ -71,10 +72,14 @@ class SAGEIntelligence:
 
         if self.enabled:
             self.logger.info(
-                "SAGEIntelligence enabled (model=%s, provider=%s)", self.model, self.provider
+                "SAGEIntelligence enabled (model=%s, provider=%s)",
+                self.model,
+                self.provider,
             )
         else:
-            self.logger.info("SAGEIntelligence disabled (set sage_intelligence.enabled: true to activate)")
+            self.logger.info(
+                "SAGEIntelligence disabled (set sage_intelligence.enabled: true to activate)"
+            )
 
     def _ollama_generate(self, prompt: str, system: str = "") -> Optional[str]:
         """Call Ollama with the SLM model. Returns None on any error."""
@@ -82,15 +87,16 @@ class SAGEIntelligence:
             return None
         import json as _json
         import urllib.request as _req
-        import urllib.error
 
-        payload = _json.dumps({
-            "model": self.model,
-            "prompt": prompt,
-            "system": system,
-            "stream": False,
-            "options": {"temperature": 0.1, "num_predict": 512},
-        }).encode()
+        payload = _json.dumps(
+            {
+                "model": self.model,
+                "prompt": prompt,
+                "system": system,
+                "stream": False,
+                "options": {"temperature": 0.1, "num_predict": 512},
+            }
+        ).encode()
 
         try:
             request = _req.Request(
@@ -156,38 +162,53 @@ class SAGEIntelligence:
     def _rule_based_yaml_lint(self, file_name: str, content: str) -> list:
         """Rule-based YAML lint -- no SLM required. Catches common SAGE mistakes."""
         import yaml
+
         errors = []
 
         try:
             parsed = yaml.safe_load(content) or {}
         except yaml.YAMLError as e:
-            return [{"field": "root", "message": f"Invalid YAML syntax: {e}", "suggestion": "Fix YAML syntax errors."}]
+            return [
+                {
+                    "field": "root",
+                    "message": f"Invalid YAML syntax: {e}",
+                    "suggestion": "Fix YAML syntax errors.",
+                }
+            ]
 
         if file_name == "project":
             # Required top-level fields
             for field in ("name", "version", "domain"):
                 if field not in parsed:
-                    errors.append({
-                        "field": field,
-                        "message": f"Required field '{field}' is missing.",
-                        "suggestion": f"Add '{field}: \"your value\"' to project.yaml",
-                    })
+                    errors.append(
+                        {
+                            "field": field,
+                            "message": f"Required field '{field}' is missing.",
+                            "suggestion": f"Add '{field}: \"your value\"' to project.yaml",
+                        }
+                    )
             # active_modules should be a list
-            if "active_modules" in parsed and not isinstance(parsed["active_modules"], list):
-                errors.append({
-                    "field": "active_modules",
-                    "message": "active_modules must be a list.",
-                    "suggestion": "Change to:\nactive_modules:\n  - dashboard\n  - analyst",
-                })
+            if "active_modules" in parsed and not isinstance(
+                parsed["active_modules"], list
+            ):
+                errors.append(
+                    {
+                        "field": "active_modules",
+                        "message": "active_modules must be a list.",
+                        "suggestion": "Change to:\nactive_modules:\n  - dashboard\n  - analyst",
+                    }
+                )
 
         elif file_name == "prompts":
             # roles must exist
             if "roles" not in parsed:
-                errors.append({
-                    "field": "roles",
-                    "message": "prompts.yaml must have a 'roles:' top-level key.",
-                    "suggestion": "Add:\nroles:\n  analyst:\n    name: Analyst\n    system_prompt: ...",
-                })
+                errors.append(
+                    {
+                        "field": "roles",
+                        "message": "prompts.yaml must have a 'roles:' top-level key.",
+                        "suggestion": "Add:\nroles:\n  analyst:\n    name: Analyst\n    system_prompt: ...",
+                    }
+                )
             else:
                 roles = parsed.get("roles", {})
                 for role_id, role in roles.items():
@@ -195,23 +216,29 @@ class SAGEIntelligence:
                         continue
                     sp = role.get("system_prompt", "")
                     if sp and "json" not in sp.lower() and "JSON" not in sp:
-                        errors.append({
-                            "field": f"roles.{role_id}.system_prompt",
-                            "message": f"Role '{role_id}' system_prompt may produce non-JSON output.",
-                            "suggestion": "Add 'Do not output markdown, prose, or any text outside the JSON object.' to the system_prompt.",
-                        })
+                        errors.append(
+                            {
+                                "field": f"roles.{role_id}.system_prompt",
+                                "message": f"Role '{role_id}' system_prompt may produce non-JSON output.",
+                                "suggestion": "Add 'Do not output markdown, prose, or any text outside the JSON object.' to the system_prompt.",
+                            }
+                        )
 
         elif file_name == "tasks":
             if "task_types" not in parsed:
-                errors.append({
-                    "field": "task_types",
-                    "message": "tasks.yaml must have a 'task_types:' key.",
-                    "suggestion": "Add:\ntask_types:\n  - ANALYZE_LOG\n  - PLAN_TASK",
-                })
+                errors.append(
+                    {
+                        "field": "task_types",
+                        "message": "tasks.yaml must have a 'task_types:' key.",
+                        "suggestion": "Add:\ntask_types:\n  - ANALYZE_LOG\n  - PLAN_TASK",
+                    }
+                )
 
         return errors
 
-    def convert_to_api_call(self, user_input: str, solution_context: dict) -> Optional[dict]:
+    def convert_to_api_call(
+        self, user_input: str, solution_context: dict
+    ) -> Optional[dict]:
         """
         Convert a natural language user input to a structured SAGE API call.
         Returns {endpoint, method, body, suggested_task_type} or None.
@@ -237,6 +264,7 @@ class SAGEIntelligence:
             return None
         try:
             import json
+
             # Extract JSON from response
             start = response.find("{")
             end = response.rfind("}") + 1
@@ -275,7 +303,9 @@ class SAGEIntelligence:
 
     def _load_framework_docs(self) -> str:
         """Load key framework docs as context for the SLM."""
-        base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        base = os.path.dirname(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        )
         docs = []
         for path in [
             os.path.join(base, "GETTING_STARTED.md"),

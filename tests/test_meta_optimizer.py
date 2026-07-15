@@ -27,7 +27,7 @@ Features tested:
 import json
 import os
 import tempfile
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -38,9 +38,11 @@ pytestmark = pytest.mark.unit
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _fresh_optimizer(db_path=None):
     """Create a MetaOptimizer with a temp database."""
     from src.core.meta_optimizer import MetaOptimizer
+
     if db_path is None:
         db_path = os.path.join(tempfile.mkdtemp(), "meta_opt.db")
     return MetaOptimizer(db_path=db_path)
@@ -76,7 +78,10 @@ def _mock_execution_trace():
         "turns": [
             {"role": "system", "content": "You are a senior software engineer..."},
             {"role": "user", "content": "Build a REST API for user management"},
-            {"role": "assistant", "content": "THOUGHT: I need to create a Flask app..."},
+            {
+                "role": "assistant",
+                "content": "THOUGHT: I need to create a Flask app...",
+            },
             {"role": "user", "content": "Output: app.py created successfully"},
             {"role": "assistant", "content": "THOUGHT: Now I need tests..."},
         ],
@@ -108,12 +113,15 @@ def _mock_harness_proposal():
 def _mock_llm_ctx(response_text=None):
     if response_text is None:
         response_text = json.dumps(_mock_harness_proposal())
-    return patch("src.core.llm_gateway.llm_gateway.generate", return_value=response_text)
+    return patch(
+        "src.core.llm_gateway.llm_gateway.generate", return_value=response_text
+    )
 
 
 # ===========================================================================
 # Group 1: Trace Collection
 # ===========================================================================
+
 
 class TestTraceCollection:
     """Collecting execution traces from Agent Gym sessions."""
@@ -156,6 +164,7 @@ class TestTraceCollection:
 # ===========================================================================
 # Group 2: Harness Proposal Generation
 # ===========================================================================
+
 
 class TestHarnessProposal:
     """LLM generates improvement proposals from execution traces."""
@@ -209,16 +218,22 @@ class TestHarnessProposal:
 
     def test_llm_failure_returns_empty_proposal(self):
         optimizer = _fresh_optimizer()
-        with patch("src.core.llm_gateway.llm_gateway.generate", side_effect=Exception("LLM down")):
+        with patch(
+            "src.core.llm_gateway.llm_gateway.generate",
+            side_effect=Exception("LLM down"),
+        ):
             proposal = optimizer.propose_improvement(
                 [_mock_execution_trace()], runner_name="openswe"
             )
-            assert proposal.get("changes", []) == [] or proposal.get("error") is not None
+            assert (
+                proposal.get("changes", []) == [] or proposal.get("error") is not None
+            )
 
 
 # ===========================================================================
 # Group 3: Proposal Evaluation
 # ===========================================================================
+
 
 class TestProposalEvaluation:
     """Evaluate harness proposals against exercise sets."""
@@ -226,10 +241,14 @@ class TestProposalEvaluation:
     def test_evaluate_returns_score(self):
         optimizer = _fresh_optimizer()
         proposal = _mock_harness_proposal()
-        with patch.object(optimizer, "_run_evaluation_sessions", return_value=[
-            {"score": 80, "passed": True},
-            {"score": 75, "passed": True},
-        ]):
+        with patch.object(
+            optimizer,
+            "_run_evaluation_sessions",
+            return_value=[
+                {"score": 80, "passed": True},
+                {"score": 75, "passed": True},
+            ],
+        ):
             result = optimizer.evaluate_proposal(proposal, runner_name="openswe")
             assert "score" in result
             assert isinstance(result["score"], (int, float))
@@ -238,9 +257,13 @@ class TestProposalEvaluation:
         """Evaluation must compare against baseline (without proposal)."""
         optimizer = _fresh_optimizer()
         proposal = _mock_harness_proposal()
-        with patch.object(optimizer, "_run_evaluation_sessions", return_value=[
-            {"score": 85, "passed": True},
-        ]):
+        with patch.object(
+            optimizer,
+            "_run_evaluation_sessions",
+            return_value=[
+                {"score": 85, "passed": True},
+            ],
+        ):
             result = optimizer.evaluate_proposal(
                 proposal, runner_name="openswe", baseline_score=70.0
             )
@@ -250,9 +273,13 @@ class TestProposalEvaluation:
         """Proposals that hurt performance should be flagged."""
         optimizer = _fresh_optimizer()
         proposal = _mock_harness_proposal()
-        with patch.object(optimizer, "_run_evaluation_sessions", return_value=[
-            {"score": 40, "passed": False},
-        ]):
+        with patch.object(
+            optimizer,
+            "_run_evaluation_sessions",
+            return_value=[
+                {"score": 40, "passed": False},
+            ],
+        ):
             result = optimizer.evaluate_proposal(
                 proposal, runner_name="openswe", baseline_score=70.0
             )
@@ -262,9 +289,13 @@ class TestProposalEvaluation:
     def test_evaluate_returns_session_details(self):
         optimizer = _fresh_optimizer()
         proposal = _mock_harness_proposal()
-        with patch.object(optimizer, "_run_evaluation_sessions", return_value=[
-            {"score": 90, "passed": True, "exercise_id": "swe-i01"},
-        ]):
+        with patch.object(
+            optimizer,
+            "_run_evaluation_sessions",
+            return_value=[
+                {"score": 90, "passed": True, "exercise_id": "swe-i01"},
+            ],
+        ):
             result = optimizer.evaluate_proposal(proposal, runner_name="openswe")
             assert "sessions" in result or "details" in result
 
@@ -272,6 +303,7 @@ class TestProposalEvaluation:
 # ===========================================================================
 # Group 4: Iteration History & Persistence
 # ===========================================================================
+
 
 class TestIterationHistory:
     """Meta-optimization iterations persisted in SQLite."""
@@ -292,13 +324,15 @@ class TestIterationHistory:
     def test_history_ordered_by_iteration(self):
         optimizer = _fresh_optimizer()
         for i in range(3):
-            optimizer.save_iteration({
-                "iteration_id": f"iter-{i:03d}",
-                "runner_name": "openswe",
-                "proposal": _mock_harness_proposal(),
-                "evaluation": {"score": 70 + i * 5},
-                "accepted": i == 2,
-            })
+            optimizer.save_iteration(
+                {
+                    "iteration_id": f"iter-{i:03d}",
+                    "runner_name": "openswe",
+                    "proposal": _mock_harness_proposal(),
+                    "evaluation": {"score": 70 + i * 5},
+                    "accepted": i == 2,
+                }
+            )
         history = optimizer.get_history(runner_name="openswe")
         assert len(history) == 3
 
@@ -306,13 +340,15 @@ class TestIterationHistory:
         """Persistence must survive optimizer re-creation."""
         db_path = os.path.join(tempfile.mkdtemp(), "meta_opt.db")
         opt1 = _fresh_optimizer(db_path)
-        opt1.save_iteration({
-            "iteration_id": "iter-persist",
-            "runner_name": "openswe",
-            "proposal": _mock_harness_proposal(),
-            "evaluation": {"score": 90},
-            "accepted": True,
-        })
+        opt1.save_iteration(
+            {
+                "iteration_id": "iter-persist",
+                "runner_name": "openswe",
+                "proposal": _mock_harness_proposal(),
+                "evaluation": {"score": 90},
+                "accepted": True,
+            }
+        )
 
         opt2 = _fresh_optimizer(db_path)
         history = opt2.get_history(runner_name="openswe")
@@ -322,33 +358,39 @@ class TestIterationHistory:
     def test_get_best_iteration(self):
         optimizer = _fresh_optimizer()
         for i, score in enumerate([60, 90, 75]):
-            optimizer.save_iteration({
-                "iteration_id": f"iter-{i:03d}",
-                "runner_name": "openswe",
-                "proposal": _mock_harness_proposal(),
-                "evaluation": {"score": score},
-                "accepted": score > 80,
-            })
+            optimizer.save_iteration(
+                {
+                    "iteration_id": f"iter-{i:03d}",
+                    "runner_name": "openswe",
+                    "proposal": _mock_harness_proposal(),
+                    "evaluation": {"score": score},
+                    "accepted": score > 80,
+                }
+            )
         best = optimizer.get_best_iteration(runner_name="openswe")
         assert best is not None
         assert best["evaluation"]["score"] == 90
 
     def test_history_filter_by_runner(self):
         optimizer = _fresh_optimizer()
-        optimizer.save_iteration({
-            "iteration_id": "iter-swe",
-            "runner_name": "openswe",
-            "proposal": _mock_harness_proposal(),
-            "evaluation": {"score": 80},
-            "accepted": True,
-        })
-        optimizer.save_iteration({
-            "iteration_id": "iter-fw",
-            "runner_name": "openfw",
-            "proposal": _mock_harness_proposal(),
-            "evaluation": {"score": 70},
-            "accepted": True,
-        })
+        optimizer.save_iteration(
+            {
+                "iteration_id": "iter-swe",
+                "runner_name": "openswe",
+                "proposal": _mock_harness_proposal(),
+                "evaluation": {"score": 80},
+                "accepted": True,
+            }
+        )
+        optimizer.save_iteration(
+            {
+                "iteration_id": "iter-fw",
+                "runner_name": "openfw",
+                "proposal": _mock_harness_proposal(),
+                "evaluation": {"score": 70},
+                "accepted": True,
+            }
+        )
         swe_history = optimizer.get_history(runner_name="openswe")
         fw_history = optimizer.get_history(runner_name="openfw")
         assert all(h.get("runner_name") == "openswe" for h in swe_history)
@@ -359,16 +401,27 @@ class TestIterationHistory:
 # Group 5: Full Optimization Loop
 # ===========================================================================
 
+
 class TestOptimizationLoop:
     """End-to-end meta-optimization iteration."""
 
     def test_run_iteration_returns_result(self):
         optimizer = _fresh_optimizer()
-        with patch.object(optimizer, "collect_traces", return_value=[_mock_execution_trace()]), \
-             _mock_llm_ctx(), \
-             patch.object(optimizer, "evaluate_proposal", return_value={
-                 "score": 85, "improvement": 15, "sessions": [],
-             }):
+        with (
+            patch.object(
+                optimizer, "collect_traces", return_value=[_mock_execution_trace()]
+            ),
+            _mock_llm_ctx(),
+            patch.object(
+                optimizer,
+                "evaluate_proposal",
+                return_value={
+                    "score": 85,
+                    "improvement": 15,
+                    "sessions": [],
+                },
+            ),
+        ):
             result = optimizer.run_iteration(runner_name="openswe")
             assert isinstance(result, dict)
             assert "iteration_id" in result
@@ -376,11 +429,21 @@ class TestOptimizationLoop:
 
     def test_iteration_saved_to_history(self):
         optimizer = _fresh_optimizer()
-        with patch.object(optimizer, "collect_traces", return_value=[_mock_execution_trace()]), \
-             _mock_llm_ctx(), \
-             patch.object(optimizer, "evaluate_proposal", return_value={
-                 "score": 85, "improvement": 15, "sessions": [],
-             }):
+        with (
+            patch.object(
+                optimizer, "collect_traces", return_value=[_mock_execution_trace()]
+            ),
+            _mock_llm_ctx(),
+            patch.object(
+                optimizer,
+                "evaluate_proposal",
+                return_value={
+                    "score": 85,
+                    "improvement": 15,
+                    "sessions": [],
+                },
+            ),
+        ):
             optimizer.run_iteration(runner_name="openswe")
             history = optimizer.get_history(runner_name="openswe")
             assert len(history) >= 1
@@ -388,22 +451,42 @@ class TestOptimizationLoop:
     def test_accepted_proposal_applied(self):
         """Proposals with positive improvement should be marked accepted."""
         optimizer = _fresh_optimizer()
-        with patch.object(optimizer, "collect_traces", return_value=[_mock_execution_trace()]), \
-             _mock_llm_ctx(), \
-             patch.object(optimizer, "evaluate_proposal", return_value={
-                 "score": 90, "improvement": 20, "sessions": [],
-             }):
+        with (
+            patch.object(
+                optimizer, "collect_traces", return_value=[_mock_execution_trace()]
+            ),
+            _mock_llm_ctx(),
+            patch.object(
+                optimizer,
+                "evaluate_proposal",
+                return_value={
+                    "score": 90,
+                    "improvement": 20,
+                    "sessions": [],
+                },
+            ),
+        ):
             result = optimizer.run_iteration(runner_name="openswe")
             assert result.get("accepted") is True
 
     def test_rejected_proposal_not_applied(self):
         """Proposals with negative improvement should be rejected."""
         optimizer = _fresh_optimizer()
-        with patch.object(optimizer, "collect_traces", return_value=[_mock_execution_trace()]), \
-             _mock_llm_ctx(), \
-             patch.object(optimizer, "evaluate_proposal", return_value={
-                 "score": 50, "improvement": -20, "sessions": [],
-             }):
+        with (
+            patch.object(
+                optimizer, "collect_traces", return_value=[_mock_execution_trace()]
+            ),
+            _mock_llm_ctx(),
+            patch.object(
+                optimizer,
+                "evaluate_proposal",
+                return_value={
+                    "score": 50,
+                    "improvement": -20,
+                    "sessions": [],
+                },
+            ),
+        ):
             result = optimizer.run_iteration(runner_name="openswe")
             assert result.get("accepted") is False
 
@@ -412,6 +495,7 @@ class TestOptimizationLoop:
 # Group 6: Convergence Detection
 # ===========================================================================
 
+
 class TestConvergence:
     """Detect when optimization has plateaued."""
 
@@ -419,39 +503,45 @@ class TestConvergence:
         optimizer = _fresh_optimizer()
         # Simulate 5 iterations with < 1% improvement
         for i in range(5):
-            optimizer.save_iteration({
-                "iteration_id": f"iter-{i:03d}",
-                "runner_name": "openswe",
-                "proposal": _mock_harness_proposal(),
-                "evaluation": {"score": 80.0 + i * 0.1},
-                "accepted": True,
-            })
+            optimizer.save_iteration(
+                {
+                    "iteration_id": f"iter-{i:03d}",
+                    "runner_name": "openswe",
+                    "proposal": _mock_harness_proposal(),
+                    "evaluation": {"score": 80.0 + i * 0.1},
+                    "accepted": True,
+                }
+            )
         converged = optimizer.check_convergence(runner_name="openswe")
         assert converged is True
 
     def test_not_converged_with_improving_scores(self):
         optimizer = _fresh_optimizer()
         for i in range(5):
-            optimizer.save_iteration({
-                "iteration_id": f"iter-{i:03d}",
-                "runner_name": "openswe",
-                "proposal": _mock_harness_proposal(),
-                "evaluation": {"score": 60.0 + i * 5},
-                "accepted": True,
-            })
+            optimizer.save_iteration(
+                {
+                    "iteration_id": f"iter-{i:03d}",
+                    "runner_name": "openswe",
+                    "proposal": _mock_harness_proposal(),
+                    "evaluation": {"score": 60.0 + i * 5},
+                    "accepted": True,
+                }
+            )
         converged = optimizer.check_convergence(runner_name="openswe")
         assert converged is False
 
     def test_not_converged_with_few_iterations(self):
         """Need minimum iterations before declaring convergence."""
         optimizer = _fresh_optimizer()
-        optimizer.save_iteration({
-            "iteration_id": "iter-000",
-            "runner_name": "openswe",
-            "proposal": _mock_harness_proposal(),
-            "evaluation": {"score": 80},
-            "accepted": True,
-        })
+        optimizer.save_iteration(
+            {
+                "iteration_id": "iter-000",
+                "runner_name": "openswe",
+                "proposal": _mock_harness_proposal(),
+                "evaluation": {"score": 80},
+                "accepted": True,
+            }
+        )
         converged = optimizer.check_convergence(runner_name="openswe")
         assert converged is False
 
@@ -459,6 +549,7 @@ class TestConvergence:
 # ===========================================================================
 # Group 7: Statistics & Analytics
 # ===========================================================================
+
 
 class TestAnalytics:
     """Meta-optimizer analytics and reporting."""
@@ -471,25 +562,29 @@ class TestAnalytics:
 
     def test_stats_per_runner(self):
         optimizer = _fresh_optimizer()
-        optimizer.save_iteration({
-            "iteration_id": "iter-001",
-            "runner_name": "openswe",
-            "proposal": _mock_harness_proposal(),
-            "evaluation": {"score": 80},
-            "accepted": True,
-        })
+        optimizer.save_iteration(
+            {
+                "iteration_id": "iter-001",
+                "runner_name": "openswe",
+                "proposal": _mock_harness_proposal(),
+                "evaluation": {"score": 80},
+                "accepted": True,
+            }
+        )
         stats = optimizer.stats(runner_name="openswe")
         assert stats["total_iterations"] >= 1
 
     def test_improvement_trend(self):
         optimizer = _fresh_optimizer()
         for i in range(5):
-            optimizer.save_iteration({
-                "iteration_id": f"iter-{i:03d}",
-                "runner_name": "openswe",
-                "proposal": _mock_harness_proposal(),
-                "evaluation": {"score": 60 + i * 5},
-                "accepted": True,
-            })
+            optimizer.save_iteration(
+                {
+                    "iteration_id": f"iter-{i:03d}",
+                    "runner_name": "openswe",
+                    "proposal": _mock_harness_proposal(),
+                    "evaluation": {"score": 60 + i * 5},
+                    "accepted": True,
+                }
+            )
         stats = optimizer.stats(runner_name="openswe")
         assert "trend" in stats or "improvement_rate" in stats

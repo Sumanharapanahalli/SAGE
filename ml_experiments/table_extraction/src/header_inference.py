@@ -13,7 +13,6 @@ from __future__ import annotations
 import re
 import logging
 from dataclasses import dataclass, field
-from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -144,20 +143,23 @@ class HeaderInference:
             return 0.0  # empty row → data separator, not a header
 
         text_count = sum(
-            1 for c in non_empty
+            1
+            for c in non_empty
             if not _NUMERIC_RE.match(c) and not _CURRENCY_RE.match(c)
         )
         text_ratio = text_count / len(non_empty)
 
-        allcaps_bonus = 0.1 * sum(1 for c in non_empty if c == c.upper() and len(c) > 1) / max(len(non_empty), 1)
+        allcaps_bonus = (
+            0.1
+            * sum(1 for c in non_empty if c == c.upper() and len(c) > 1)
+            / max(len(non_empty), 1)
+        )
         short_text_bonus = 0.1 if all(len(c) < 60 for c in non_empty) else 0.0
 
         score = min(1.0, text_ratio + allcaps_bonus + short_text_bonus)
         return score
 
-    def _detect_header_boundary(
-        self, row_scores: list[float]
-    ) -> tuple[int, float]:
+    def _detect_header_boundary(self, row_scores: list[float]) -> tuple[int, float]:
         """
         Find how many contiguous top rows qualify as headers.
 
@@ -220,9 +222,7 @@ class HeaderInference:
         return merged
 
     @staticmethod
-    def _pad_rows(
-        rows: list[list[str | None]], n_cols: int
-    ) -> list[list[str | None]]:
+    def _pad_rows(rows: list[list[str | None]], n_cols: int) -> list[list[str | None]]:
         return [
             row + [None] * (n_cols - len(row)) if len(row) < n_cols else row[:n_cols]
             for row in rows

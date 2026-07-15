@@ -19,6 +19,7 @@ tamper-evidence against anyone who edits the DB without the key. A production re
 deployment SHOULD supply `SAGE_AUDIT_KEY` from an HSM/KMS rather than the local file — that is
 a deployment decision, documented, not a code gap.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -37,9 +38,17 @@ _GENESIS = "SAGE-AUDIT-CHAIN-GENESIS"
 # after signing must break the signature — so the canonical form covers exactly the columns
 # an auditor cares about, and nothing volatile.
 _SIGNED_FIELDS = (
-    "id", "timestamp", "actor", "action_type",
-    "input_context", "output_content", "metadata",
-    "approved_by", "approver_role", "approver_email", "approver_provider",
+    "id",
+    "timestamp",
+    "actor",
+    "action_type",
+    "input_context",
+    "output_content",
+    "metadata",
+    "approved_by",
+    "approver_role",
+    "approver_email",
+    "approver_provider",
 )
 
 
@@ -61,25 +70,34 @@ def _resolve_key(db_path: str) -> bytes:
             pass
         logger.info("generated audit HMAC key at %s", key_file)
     except OSError as e:  # noqa: BLE001
-        logger.warning("could not persist audit key (%s); using an ephemeral key — "
-                       "the chain will not verify across processes", e)
+        logger.warning(
+            "could not persist audit key (%s); using an ephemeral key — "
+            "the chain will not verify across processes",
+            e,
+        )
     return key
 
 
 def _canonical(row: dict) -> str:
     """Deterministic serialization of the signed fields. json.dumps escapes every value, so
     no field content can forge a separator or collide with another field."""
-    return json.dumps([("" if row.get(f) is None else str(row.get(f))) for f in _SIGNED_FIELDS],
-                      ensure_ascii=False, separators=(",", ":"))
+    return json.dumps(
+        [("" if row.get(f) is None else str(row.get(f))) for f in _SIGNED_FIELDS],
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
 
 
 def _compute(key: bytes, prev_sig: str, row: dict) -> str:
-    msg = (prev_sig or _GENESIS).encode("utf-8") + b"|" + _canonical(row).encode("utf-8")
+    msg = (
+        (prev_sig or _GENESIS).encode("utf-8") + b"|" + _canonical(row).encode("utf-8")
+    )
     return hmac.new(key, msg, hashlib.sha256).hexdigest()
 
 
 def _connect(db_path: str):
     import sqlite3
+
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     return conn
@@ -96,7 +114,9 @@ def _latest_signed_sig(conn) -> str:
     return r[0] if r else ""
 
 
-def sign_event(db_path: str, event_id: str, secret: Optional[str] = None) -> Optional[str]:
+def sign_event(
+    db_path: str, event_id: str, secret: Optional[str] = None
+) -> Optional[str]:
     """Sign a single already-written audit row, chaining it to the previous signed row.
 
     Returns the signature hex, or None if the row does not exist. Call serially (the merge
@@ -105,7 +125,9 @@ def sign_event(db_path: str, event_id: str, secret: Optional[str] = None) -> Opt
     key = secret.encode("utf-8") if secret else _resolve_key(db_path)
     conn = _connect(db_path)
     try:
-        cur = conn.execute("SELECT * FROM compliance_audit_log WHERE id = ?", (event_id,))
+        cur = conn.execute(
+            "SELECT * FROM compliance_audit_log WHERE id = ?", (event_id,)
+        )
         row = cur.fetchone()
         if row is None:
             logger.warning("sign_event: no audit row %s", event_id)
@@ -118,7 +140,9 @@ def sign_event(db_path: str, event_id: str, secret: Optional[str] = None) -> Opt
             (sig, event_id),
         )
         conn.commit()
-        logger.info("signed audit event %s (chained to %s)", event_id, (prev or "GENESIS")[:12])
+        logger.info(
+            "signed audit event %s (chained to %s)", event_id, (prev or "GENESIS")[:12]
+        )
         return sig
     finally:
         conn.close()
@@ -146,8 +170,12 @@ def verify_chain(db_path: str, secret: Optional[str] = None) -> dict:
     for row in rows:
         expected = _compute(key, prev, row)
         if not hmac.compare_digest(expected, row.get("verification_signature", "")):
-            return {"valid": False, "checked": len(rows), "first_bad": row["id"],
-                    "reason": "signature mismatch — row altered, deleted, or re-ordered "
-                              "after signing (or a different key)"}
+            return {
+                "valid": False,
+                "checked": len(rows),
+                "first_bad": row["id"],
+                "reason": "signature mismatch — row altered, deleted, or re-ordered "
+                "after signing (or a different key)",
+            }
         prev = row["verification_signature"]
     return {"valid": True, "checked": len(rows), "first_bad": None, "reason": "ok"}

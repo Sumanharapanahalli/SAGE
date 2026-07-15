@@ -67,7 +67,10 @@ class OnboardingAnalyzer:
 
         # Detect CI
         ci_patterns = [
-            ("GitHub Actions", [".github/workflows", "github actions", "on: push", "on: pull_request"]),
+            (
+                "GitHub Actions",
+                [".github/workflows", "github actions", "on: push", "on: pull_request"],
+            ),
             ("GitLab CI", [".gitlab-ci.yml", "gitlab-ci", "stages:", "- deploy"]),
             ("Jenkins", ["jenkinsfile", "jenkins"]),
             ("CircleCI", [".circleci", "circleci"]),
@@ -87,16 +90,23 @@ class OnboardingAnalyzer:
             signals.detected_integrations.append("slack")
 
         # Compliance hints
-        if any(k in text_lower for k in ["hipaa", "health", "patient", "phi", "medical"]):
+        if any(
+            k in text_lower for k in ["hipaa", "health", "patient", "phi", "medical"]
+        ):
             signals.compliance_hints.append("HIPAA")
-        if any(k in text_lower for k in ["iso 13485", "iec 62304", "medical device", "fda"]):
+        if any(
+            k in text_lower for k in ["iso 13485", "iec 62304", "medical device", "fda"]
+        ):
             signals.compliance_hints.extend(["ISO 13485", "IEC 62304"])
         if "soc 2" in text_lower:
             signals.compliance_hints.append("SOC 2")
 
         # Suggest task types based on stack/domain
         signals.suggested_task_types = ["ANALYZE_LOG", "PLAN_TASK"]
-        if any(k in text_lower for k in ["pull request", "merge request", "pr", "mr", "code review"]):
+        if any(
+            k in text_lower
+            for k in ["pull request", "merge request", "pr", "mr", "code review"]
+        ):
             signals.suggested_task_types.extend(["REVIEW_MR", "CREATE_MR"])
         if any(k in text_lower for k in ["crash", "crashlytics", "sentry", "bugsnag"]):
             signals.suggested_task_types.append("ANALYZE_CRASH")
@@ -115,14 +125,29 @@ class OnboardingAnalyzer:
             return ProjectSignals()
 
         # Collect key files (never read source code -- only manifests/configs)
-        key_files = ["README.md", "README.rst", "package.json", "requirements.txt",
-                     "pubspec.yaml", "Cargo.toml", "go.mod", "pom.xml",
-                     ".github/workflows", ".gitlab-ci.yml", "docker-compose.yml"]
+        key_files = [
+            "README.md",
+            "README.rst",
+            "package.json",
+            "requirements.txt",
+            "pubspec.yaml",
+            "Cargo.toml",
+            "go.mod",
+            "pom.xml",
+            ".github/workflows",
+            ".gitlab-ci.yml",
+            "docker-compose.yml",
+        ]
 
         collected_text = []
         for root, dirs, files in os.walk(path):
             # Skip common non-informative dirs
-            dirs[:] = [d for d in dirs if d not in (".git", "node_modules", ".venv", "__pycache__", "dist", "build")]
+            dirs[:] = [
+                d
+                for d in dirs
+                if d
+                not in (".git", "node_modules", ".venv", "__pycache__", "dist", "build")
+            ]
             for fname in files:
                 fpath = os.path.join(root, fname)
                 rel = os.path.relpath(fpath, path)
@@ -146,6 +171,7 @@ class OnboardingAnalyzer:
         # Try to fetch README from GitHub API
         try:
             import urllib.request
+
             # Extract owner/repo from URL
             match = re.search(r"github\.com/([^/]+)/([^/\s?#]+)", url)
             if match:
@@ -153,7 +179,10 @@ class OnboardingAnalyzer:
                 api_url = f"https://api.github.com/repos/{owner}/{repo}/readme"
                 req = urllib.request.Request(
                     api_url,
-                    headers={"User-Agent": "SAGE-Onboarding/1.0", "Accept": "application/vnd.github.raw"},
+                    headers={
+                        "User-Agent": "SAGE-Onboarding/1.0",
+                        "Accept": "application/vnd.github.raw",
+                    },
                 )
                 with urllib.request.urlopen(req, timeout=10) as resp:
                     readme = resp.read(8000).decode("utf-8", errors="ignore")

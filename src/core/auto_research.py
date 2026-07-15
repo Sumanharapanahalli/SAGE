@@ -30,7 +30,7 @@ import subprocess
 import threading
 import time
 import uuid
-from typing import Any, Optional
+from typing import Optional
 
 logger = logging.getLogger("AutoResearch")
 
@@ -107,14 +107,21 @@ class AutoResearchEngine:
 
         # 1. LLM proposes a code change
         history = self.get_results(limit=10)
-        prompt = self._build_experiment_prompt(workspace, self._baseline_metric, history)
+        prompt = self._build_experiment_prompt(
+            workspace, self._baseline_metric, history
+        )
         try:
             from src.core.llm_gateway import llm_gateway
+
             llm_response = llm_gateway.generate(prompt)
             proposal = json.loads(llm_response)
         except Exception as e:
             logger.warning("LLM proposal failed: %s", e)
-            proposal = {"description": "No proposal", "changes": [], "hypothesis": "N/A"}
+            proposal = {
+                "description": "No proposal",
+                "changes": [],
+                "hypothesis": "N/A",
+            }
 
         # 2. Apply changes
         changes = proposal.get("changes", [])
@@ -122,7 +129,9 @@ class AutoResearchEngine:
             self._apply_changes(changes, workspace)
 
         # 3. Commit changes before running
-        commit_hash = self._git_commit(workspace, proposal.get("description", experiment_id))
+        commit_hash = self._git_commit(
+            workspace, proposal.get("description", experiment_id)
+        )
 
         # 4. Execute experiment
         result = self._execute_experiment(workspace, run_command, budget_s)
@@ -230,7 +239,7 @@ class AutoResearchEngine:
         try:
             result = subprocess.run(
                 run_command,
-                shell=True,
+                shell=True,  # nosec B602 - runs a configured experiment command by design; bounded by the workspace cwd and wall-clock timeout
                 cwd=workspace,
                 capture_output=True,
                 text=True,

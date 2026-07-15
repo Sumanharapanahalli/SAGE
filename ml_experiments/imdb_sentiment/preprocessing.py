@@ -5,10 +5,10 @@ Text preprocessing pipeline:
 Designed to be fitted on train data ONLY and applied to test data
 to prevent data leakage.
 """
+
 from __future__ import annotations
 
 import re
-import string
 from typing import Iterable
 
 import nltk
@@ -31,9 +31,9 @@ _NON_ALPHA = re.compile(r"[^a-z\s]")
 
 def _clean_text(text: str) -> str:
     """Strip HTML, punctuation, and digits; lowercase."""
-    text = _HTML_TAG.sub(" ", text)        # remove HTML tags (IMDB has them)
+    text = _HTML_TAG.sub(" ", text)  # remove HTML tags (IMDB has them)
     text = text.lower()
-    text = _NON_ALPHA.sub(" ", text)       # keep only [a-z] + whitespace
+    text = _NON_ALPHA.sub(" ", text)  # keep only [a-z] + whitespace
     return text
 
 

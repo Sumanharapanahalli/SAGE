@@ -18,9 +18,13 @@ Docker: sage/ml-toolchain:latest
 import logging
 
 from src.integrations.base_runner import (
-    BaseRunner, RunResult, VerificationReport, VerificationFinding,
-    VerificationSeverity, Exercise, ExerciseScore,
-    register_runner, ML_ROLES,
+    BaseRunner,
+    VerificationReport,
+    VerificationFinding,
+    VerificationSeverity,
+    Exercise,
+    register_runner,
+    ML_ROLES,
 )
 
 logger = logging.getLogger("Runner.openml")
@@ -52,9 +56,9 @@ class OpenMLRunner(BaseRunner):
                 "- Include evaluation metrics appropriate for the problem\n"
                 "- Log all experiments with parameters and results\n"
                 "- Include requirements.txt with pinned versions\n\n"
-                "Output as JSON: {\"files\": [{\"path\": \"...\", \"content\": \"...\"}], "
-                "\"model_type\": \"...\", \"metrics\": {\"accuracy\": N, \"f1\": N}, "
-                "\"data_checks\": {\"leakage_risk\": false, \"class_imbalance\": false}}\n"
+                'Output as JSON: {"files": [{"path": "...", "content": "..."}], '
+                '"model_type": "...", "metrics": {"accuracy": N, "f1": N}, '
+                '"data_checks": {"leakage_risk": false, "class_imbalance": false}}\n'
             )
 
             response = llm_gateway.generate_for_task(
@@ -68,6 +72,7 @@ class OpenMLRunner(BaseRunner):
             metrics = {}
             try:
                 import json
+
                 start = response.find("{")
                 end = response.rfind("}") + 1
                 if start >= 0 and end > start:
@@ -80,8 +85,12 @@ class OpenMLRunner(BaseRunner):
                 pass
 
             return self._make_result(
-                run_id=run_id, status="completed", tier="direct",
-                output=response, files_changed=files_changed, metrics=metrics,
+                run_id=run_id,
+                status="completed",
+                tier="direct",
+                output=response,
+                files_changed=files_changed,
+                metrics=metrics,
             )
         except Exception as exc:
             self.logger.error("OpenML execute failed: %s", exc)
@@ -92,9 +101,15 @@ class OpenMLRunner(BaseRunner):
         score = 30.0
 
         if result.status == "error":
-            return VerificationReport(passed=False, score=0.0, findings=[
-                VerificationFinding("execution", VerificationSeverity.ERROR, "Failed"),
-            ])
+            return VerificationReport(
+                passed=False,
+                score=0.0,
+                findings=[
+                    VerificationFinding(
+                        "execution", VerificationSeverity.ERROR, "Failed"
+                    ),
+                ],
+            )
 
         metrics = result.metrics or {}
 
@@ -102,30 +117,43 @@ class OpenMLRunner(BaseRunner):
         accuracy = metrics.get("accuracy")
         f1 = metrics.get("f1")
         if accuracy is not None and accuracy >= 0.99:
-            findings.append(VerificationFinding(
-                "leakage_warning", VerificationSeverity.WARNING,
-                f"Suspiciously high accuracy ({accuracy}) — check for data leakage",
-            ))
+            findings.append(
+                VerificationFinding(
+                    "leakage_warning",
+                    VerificationSeverity.WARNING,
+                    f"Suspiciously high accuracy ({accuracy}) — check for data leakage",
+                )
+            )
             score -= 10
         elif accuracy is not None and accuracy > 0:
             score += 20
-            findings.append(VerificationFinding(
-                "accuracy", VerificationSeverity.PASS, f"Accuracy: {accuracy}",
-            ))
+            findings.append(
+                VerificationFinding(
+                    "accuracy",
+                    VerificationSeverity.PASS,
+                    f"Accuracy: {accuracy}",
+                )
+            )
 
         if f1 is not None and f1 >= 0.99:
-            findings.append(VerificationFinding(
-                "leakage_warning_f1", VerificationSeverity.WARNING,
-                f"Suspiciously high F1 ({f1}) — check for data leakage",
-            ))
+            findings.append(
+                VerificationFinding(
+                    "leakage_warning_f1",
+                    VerificationSeverity.WARNING,
+                    f"Suspiciously high F1 ({f1}) — check for data leakage",
+                )
+            )
 
         # Check data leakage flags
         data_checks = metrics.get("data_checks", {})
         if data_checks.get("leakage_risk"):
-            findings.append(VerificationFinding(
-                "data_leakage", VerificationSeverity.CRITICAL,
-                "Data leakage risk detected",
-            ))
+            findings.append(
+                VerificationFinding(
+                    "data_leakage",
+                    VerificationSeverity.CRITICAL,
+                    "Data leakage risk detected",
+                )
+            )
             score -= 20
 
         # Files produced
@@ -134,7 +162,16 @@ class OpenMLRunner(BaseRunner):
 
         # ML keywords
         output_lower = (result.output or "").lower()
-        ml_kws = ["train", "test", "split", "accuracy", "model", "predict", "evaluate", "feature"]
+        ml_kws = [
+            "train",
+            "test",
+            "split",
+            "accuracy",
+            "model",
+            "predict",
+            "evaluate",
+            "feature",
+        ]
         if sum(1 for k in ml_kws if k in output_lower) >= 3:
             score += 15
 
@@ -143,27 +180,59 @@ class OpenMLRunner(BaseRunner):
             score += 10
 
         score = max(0.0, min(score, 100.0))
-        return VerificationReport(passed=score >= 40.0, score=score, findings=findings, metrics=metrics)
+        return VerificationReport(
+            passed=score >= 40.0, score=score, findings=findings, metrics=metrics
+        )
 
     def get_toolchain(self):
         return {
-            "runner": self.name, "docker_image": self.docker_image,
+            "runner": self.name,
+            "docker_image": self.docker_image,
             "roles": self.roles,
             "tools": ["python", "jupyter", "pandas", "sklearn", "pytorch", "mlflow"],
-            "packages": ["pandas", "scikit-learn", "pytorch", "mlflow", "numpy",
-                         "matplotlib", "seaborn", "xgboost", "lightgbm"],
+            "packages": [
+                "pandas",
+                "scikit-learn",
+                "pytorch",
+                "mlflow",
+                "numpy",
+                "matplotlib",
+                "seaborn",
+                "xgboost",
+                "lightgbm",
+            ],
         }
 
     def get_workflow(self):
         return [
             {"step": 1, "name": "data_load", "description": "Load and inspect dataset"},
             {"step": 2, "name": "eda", "description": "Exploratory data analysis"},
-            {"step": 3, "name": "feature_engineering", "description": "Create and select features"},
-            {"step": 4, "name": "train", "description": "Train model with cross-validation"},
+            {
+                "step": 3,
+                "name": "feature_engineering",
+                "description": "Create and select features",
+            },
+            {
+                "step": 4,
+                "name": "train",
+                "description": "Train model with cross-validation",
+            },
             {"step": 5, "name": "training", "description": "Hyperparameter tuning"},
-            {"step": 6, "name": "evaluate", "description": "Evaluate on held-out test set"},
-            {"step": 7, "name": "experiment_track", "description": "Log experiment to MLflow"},
-            {"step": 8, "name": "package", "description": "Package model for deployment"},
+            {
+                "step": 6,
+                "name": "evaluate",
+                "description": "Evaluate on held-out test set",
+            },
+            {
+                "step": 7,
+                "name": "experiment_track",
+                "description": "Log experiment to MLflow",
+            },
+            {
+                "step": 8,
+                "name": "package",
+                "description": "Package model for deployment",
+            },
         ]
 
     def get_experience_keys(self):
@@ -172,48 +241,67 @@ class OpenMLRunner(BaseRunner):
     def get_experimental_commands(self, workspace, files):
         """ML-specific: syntax check, import check, training script execution."""
         import os
+
         commands = []
         py_files = [f for f in files if f.endswith(".py")]
 
         if py_files:
             # Syntax check
-            commands.append({
-                "name": "python_syntax",
-                "cmd": ["python3", "-m", "py_compile"] + py_files,
-                "weight": 20,
-                "timeout": 15,
-            })
+            commands.append(
+                {
+                    "name": "python_syntax",
+                    "cmd": ["python3", "-m", "py_compile"] + py_files,
+                    "weight": 20,
+                    "timeout": 15,
+                }
+            )
             # Check ML imports resolve (numpy, pandas, sklearn, torch, etc.)
-            commands.append({
-                "name": "ml_imports",
-                "cmd": ["python3", "-c",
+            commands.append(
+                {
+                    "name": "ml_imports",
+                    "cmd": [
+                        "python3",
+                        "-c",
                         "import ast, sys; "
                         f"tree = ast.parse(open('{py_files[0]}').read()); "
                         "imports = [n.names[0].name for n in ast.walk(tree) if isinstance(n, ast.Import)]; "
                         "froms = [n.module for n in ast.walk(tree) if isinstance(n, ast.ImportFrom) and n.module]; "
-                        "print(f'Imports: {imports + froms}')"],
-                "weight": 15,
-                "timeout": 15,
-            })
+                        "print(f'Imports: {imports + froms}')",
+                    ],
+                    "weight": 15,
+                    "timeout": 15,
+                }
+            )
             # Try running training script with timeout (catches crashes early)
-            train_files = [f for f in py_files if any(kw in os.path.basename(f).lower()
-                           for kw in ("train", "main", "experiment", "run"))]
+            train_files = [
+                f
+                for f in py_files
+                if any(
+                    kw in os.path.basename(f).lower()
+                    for kw in ("train", "main", "experiment", "run")
+                )
+            ]
             if train_files:
-                commands.append({
-                    "name": "ml_execute",
-                    "cmd": ["python3", train_files[0]],
-                    "weight": 40,
-                    "timeout": 120,
-                })
+                commands.append(
+                    {
+                        "name": "ml_execute",
+                        "cmd": ["python3", train_files[0]],
+                        "weight": 40,
+                        "timeout": 120,
+                    }
+                )
             # Run tests if present
             test_files = [f for f in py_files if "test" in os.path.basename(f).lower()]
             if test_files:
-                commands.append({
-                    "name": "ml_tests",
-                    "cmd": ["python3", "-m", "pytest", "-x", "--tb=short", "-q"] + test_files,
-                    "weight": 25,
-                    "timeout": 60,
-                })
+                commands.append(
+                    {
+                        "name": "ml_tests",
+                        "cmd": ["python3", "-m", "pytest", "-x", "--tb=short", "-q"]
+                        + test_files,
+                        "weight": 25,
+                        "timeout": 60,
+                    }
+                )
 
         return commands
 
@@ -224,25 +312,52 @@ class OpenMLRunner(BaseRunner):
             return catalog
         fallback = {
             "beginner": [
-                Exercise(id="ml-b01", role="data_scientist", task_type="ML_MODEL",
-                         difficulty="beginner",
-                         description="Train an iris flower classifier using scikit-learn",
-                         acceptance_criteria=["Accuracy > 0.90", "Stratified split", "No data leakage"],
-                         expected_artifacts=["train.py"], tags=["classification", "sklearn"]),
+                Exercise(
+                    id="ml-b01",
+                    role="data_scientist",
+                    task_type="ML_MODEL",
+                    difficulty="beginner",
+                    description="Train an iris flower classifier using scikit-learn",
+                    acceptance_criteria=[
+                        "Accuracy > 0.90",
+                        "Stratified split",
+                        "No data leakage",
+                    ],
+                    expected_artifacts=["train.py"],
+                    tags=["classification", "sklearn"],
+                ),
             ],
             "intermediate": [
-                Exercise(id="ml-i01", role="data_scientist", task_type="ML_MODEL",
-                         difficulty="intermediate",
-                         description="Build a credit card fraud detector handling class imbalance",
-                         acceptance_criteria=["Handles imbalance", "F1 > 0.75 on minority", "No leakage"],
-                         expected_artifacts=["fraud_detector.py"], tags=["classification", "imbalanced"]),
+                Exercise(
+                    id="ml-i01",
+                    role="data_scientist",
+                    task_type="ML_MODEL",
+                    difficulty="intermediate",
+                    description="Build a credit card fraud detector handling class imbalance",
+                    acceptance_criteria=[
+                        "Handles imbalance",
+                        "F1 > 0.75 on minority",
+                        "No leakage",
+                    ],
+                    expected_artifacts=["fraud_detector.py"],
+                    tags=["classification", "imbalanced"],
+                ),
             ],
             "advanced": [
-                Exercise(id="ml-a01", role="data_scientist", task_type="ML_MODEL",
-                         difficulty="advanced",
-                         description="Build end-to-end time series forecasting pipeline",
-                         acceptance_criteria=["Feature engineering", "Model comparison", "Walk-forward validation"],
-                         expected_artifacts=["pipeline.py", "evaluate.py"], tags=["timeseries", "forecasting"]),
+                Exercise(
+                    id="ml-a01",
+                    role="data_scientist",
+                    task_type="ML_MODEL",
+                    difficulty="advanced",
+                    description="Build end-to-end time series forecasting pipeline",
+                    acceptance_criteria=[
+                        "Feature engineering",
+                        "Model comparison",
+                        "Walk-forward validation",
+                    ],
+                    expected_artifacts=["pipeline.py", "evaluate.py"],
+                    tags=["timeseries", "forecasting"],
+                ),
             ],
         }
         return fallback.get(difficulty, fallback["intermediate"])
@@ -273,30 +388,61 @@ class OpenMLRunner(BaseRunner):
 
         # ML patterns
         output_lower = (result.output or "").lower()
-        ml_kws = ["train", "test", "split", "fit", "predict", "score", "accuracy",
-                   "loss", "epoch", "batch", "pipeline", "cross_val", "grid_search"]
+        ml_kws = [
+            "train",
+            "test",
+            "split",
+            "fit",
+            "predict",
+            "score",
+            "accuracy",
+            "loss",
+            "epoch",
+            "batch",
+            "pipeline",
+            "cross_val",
+            "grid_search",
+        ]
         kw_hits = sum(1 for k in ml_kws if k in output_lower)
         if kw_hits >= 3:
             score += 15
             criteria["ml_patterns"] = True
 
         # Data leakage awareness
-        leakage_kws = ["data leakage", "train_test_split", "pipeline", "stratif", "cross_val"]
+        leakage_kws = [
+            "data leakage",
+            "train_test_split",
+            "pipeline",
+            "stratif",
+            "cross_val",
+        ]
         if sum(1 for k in leakage_kws if k in output_lower) >= 1:
             score += 10
             criteria["leakage_awareness"] = True
 
         # Evaluation rigor
-        eval_kws = ["classification_report", "confusion_matrix", "precision", "recall",
-                     "roc_auc", "rmse", "mape", "r2_score"]
+        eval_kws = [
+            "classification_report",
+            "confusion_matrix",
+            "precision",
+            "recall",
+            "roc_auc",
+            "rmse",
+            "mape",
+            "r2_score",
+        ]
         if sum(1 for k in eval_kws if k in output_lower) >= 1:
             score += 10
             criteria["proper_evaluation"] = True
         else:
-            hints.append("Include proper evaluation metrics (classification_report, confusion_matrix)")
+            hints.append(
+                "Include proper evaluation metrics (classification_report, confusion_matrix)"
+            )
 
         # Experiment tracking
-        if any(k in output_lower for k in ["mlflow", "wandb", "experiment", "log_metric"]):
+        if any(
+            k in output_lower for k in ["mlflow", "wandb", "experiment", "log_metric"]
+        ):
             score += 5
             criteria["experiment_tracking"] = True
 
@@ -305,7 +451,11 @@ class OpenMLRunner(BaseRunner):
             criteria["verification_passed"] = True
 
         return self._combined_grade(
-            exercise, result, max(0.0, min(score, 100.0)), criteria, hints,
+            exercise,
+            result,
+            max(0.0, min(score, 100.0)),
+            criteria,
+            hints,
             domain_context=(
                 "Grade as a senior ML engineer. Check for:\n"
                 "- No data leakage (scaler/encoder fit on train only, no future info)\n"

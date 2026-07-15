@@ -23,7 +23,7 @@ from typing import Generator, Optional
 # ---------------------------------------------------------------------------
 _OPENOCD_TCL_HOST = "127.0.0.1"
 _OPENOCD_TCL_PORT = 6666
-_TCL_TERMINATOR   = b"\x1a"   # Ctrl-Z terminates each TCL command
+_TCL_TERMINATOR = b"\x1a"  # Ctrl-Z terminates each TCL command
 
 
 class OpenOCDTCL:
@@ -34,8 +34,8 @@ class OpenOCDTCL:
         host: str = _OPENOCD_TCL_HOST,
         port: int = _OPENOCD_TCL_PORT,
     ) -> None:
-        self._host   = host
-        self._port   = port
+        self._host = host
+        self._port = port
         self._sock: Optional[socket.socket] = None
 
     def connect(self) -> None:
@@ -119,15 +119,24 @@ class HILMemoryMap:
     BASE: int = 0x20000000
 
     @property
-    def MAGIC(self)             -> int: return self.BASE + 0x00
+    def MAGIC(self) -> int:
+        return self.BASE + 0x00
+
     @property
-    def SUITE_PASS_MASK(self)   -> int: return self.BASE + 0x04
+    def SUITE_PASS_MASK(self) -> int:
+        return self.BASE + 0x04
+
     @property
-    def SUITE_FAIL_MASK(self)   -> int: return self.BASE + 0x08
+    def SUITE_FAIL_MASK(self) -> int:
+        return self.BASE + 0x08
+
     @property
-    def TOTAL_ASSERTIONS(self)  -> int: return self.BASE + 0x0C
+    def TOTAL_ASSERTIONS(self) -> int:
+        return self.BASE + 0x0C
+
     @property
-    def FAILED_ASSERTIONS(self) -> int: return self.BASE + 0x10
+    def FAILED_ASSERTIONS(self) -> int:
+        return self.BASE + 0x10
 
 
 HIL_MAP = HILMemoryMap()
@@ -136,10 +145,10 @@ HIL_MAP = HILMemoryMap()
 def read_hil_result(tcl: OpenOCDTCL) -> dict:
     """Read the HIL result block and return as a dict."""
     return {
-        "magic":             tcl.read_word(HIL_MAP.MAGIC),
-        "suite_pass_mask":   tcl.read_word(HIL_MAP.SUITE_PASS_MASK),
-        "suite_fail_mask":   tcl.read_word(HIL_MAP.SUITE_FAIL_MASK),
-        "total_assertions":  tcl.read_word(HIL_MAP.TOTAL_ASSERTIONS),
+        "magic": tcl.read_word(HIL_MAP.MAGIC),
+        "suite_pass_mask": tcl.read_word(HIL_MAP.SUITE_PASS_MASK),
+        "suite_fail_mask": tcl.read_word(HIL_MAP.SUITE_FAIL_MASK),
+        "total_assertions": tcl.read_word(HIL_MAP.TOTAL_ASSERTIONS),
         "failed_assertions": tcl.read_word(HIL_MAP.FAILED_ASSERTIONS),
     }
 
@@ -169,12 +178,12 @@ def openocd_session(
 #   0xF1       play fall profile  → returns 4 bytes (latency_ms)
 #   0xF2       pulse IMU DRDY (GPIO) → no data return
 # ---------------------------------------------------------------------------
-import serial as _serial   # noqa: E402 — deferred import for Robot compat
+import serial as _serial  # noqa: E402 — deferred import for Robot compat
 
 
 class FaultRelayController:
     def __init__(self, port: str, baudrate: int = 115200) -> None:
-        self._port     = port
+        self._port = port
         self._baudrate = baudrate
         self._ser: Optional[_serial.Serial] = None
 
@@ -184,7 +193,7 @@ class FaultRelayController:
             baudrate=self._baudrate,
             timeout=2.0,
         )
-        time.sleep(0.1)   # relay MCU boot settle
+        time.sleep(0.1)  # relay MCU boot settle
 
     def close(self) -> None:
         if self._ser is not None and self._ser.is_open:
@@ -234,6 +243,5 @@ if __name__ == "__main__":
         print("HIL Result Block:")
         for k, v in result.items():
             print(f"  {k:25s} = 0x{v:08X}  ({v})")
-        passed = (result["magic"] == 0xCAFEBEEF and
-                  result["failed_assertions"] == 0)
+        passed = result["magic"] == 0xCAFEBEEF and result["failed_assertions"] == 0
         print(f"\nOverall: {'PASS' if passed else 'FAIL'}")

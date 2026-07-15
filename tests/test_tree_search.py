@@ -1,4 +1,5 @@
 """Tests for BFTS tree search evaluator."""
+
 import pytest
 
 from src.core.tree_search import TreeSearchEvaluator, SearchNode
@@ -25,10 +26,15 @@ class TestTreeSearchEvaluator:
     def evaluator(self):
         def scorer(solution: str) -> float:
             return len(solution) / 100.0  # longer = better (toy scorer)
+
         return TreeSearchEvaluator(scorer=scorer, max_depth=3, branching_factor=2)
 
     def test_evaluate_returns_best(self, evaluator):
-        candidates = ["short", "a medium length solution", "this is the longest candidate solution by far"]
+        candidates = [
+            "short",
+            "a medium length solution",
+            "this is the longest candidate solution by far",
+        ]
         best = evaluator.evaluate(candidates)
         assert best is not None
         assert best.score > 0
@@ -44,7 +50,10 @@ class TestTreeSearchEvaluator:
     def test_max_iterations_respected(self):
         def scorer(s: str) -> float:
             return 0.5
-        ev = TreeSearchEvaluator(scorer=scorer, max_depth=2, branching_factor=2, max_iterations=3)
+
+        ev = TreeSearchEvaluator(
+            scorer=scorer, max_depth=2, branching_factor=2, max_iterations=3
+        )
         ev.evaluate(["a", "b", "c"])
         assert ev.iterations <= 3
 
@@ -54,8 +63,10 @@ class TestTreeSearchEvaluator:
 
     def test_pruning_keeps_top_k(self):
         scores = {}
+
         def scorer(s: str) -> float:
             return scores.get(s, 0.0)
+
         scores = {"a": 0.1, "b": 0.9, "c": 0.5}
         ev = TreeSearchEvaluator(scorer=scorer, max_depth=1, branching_factor=2)
         best = ev.evaluate(["a", "b", "c"])

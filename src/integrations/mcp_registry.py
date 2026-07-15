@@ -42,7 +42,7 @@ class MCPRegistry:
     """
 
     def __init__(self):
-        self._servers: dict[str, object] = {}   # module_name -> module
+        self._servers: dict[str, object] = {}  # module_name -> module
         self._tool_map: dict[str, callable] = {}  # tool_name -> function
         self._loaded_solution: str = ""
 
@@ -58,7 +58,10 @@ class MCPRegistry:
         """Resolve path to active solution's mcp_servers/ directory."""
         try:
             from src.core.project_loader import project_config, _SOLUTIONS_DIR
-            return os.path.join(_SOLUTIONS_DIR, project_config.project_name, "mcp_servers")
+
+            return os.path.join(
+                _SOLUTIONS_DIR, project_config.project_name, "mcp_servers"
+            )
         except Exception:
             return ""
 
@@ -78,6 +81,7 @@ class MCPRegistry:
         """
         try:
             from src.core.project_loader import project_config
+
             solution = project_config.project_name
         except Exception:
             solution = ""
@@ -98,7 +102,8 @@ class MCPRegistry:
                 self._load_server(fw_dir, filename)
             logger.debug(
                 "Framework MCP: loaded %d tool(s) from %s",
-                len(self._tool_map), fw_dir,
+                len(self._tool_map),
+                fw_dir,
             )
 
         # 2. Load solution-level tools (override framework if name collides)
@@ -137,7 +142,9 @@ class MCPRegistry:
 
         logger.info(
             "MCPRegistry loaded %d tool(s) from %d server(s) [solution: %s]",
-            len(self._tool_map), len(self._servers), solution,
+            len(self._tool_map),
+            len(self._servers),
+            solution,
         )
         return len(self._tool_map)
 
@@ -161,7 +168,9 @@ class MCPRegistry:
                 return
 
             # Extract registered tools from FastMCP
-            tool_count = self._register_tools_from_mcp(module_name, module, mcp_instance)
+            tool_count = self._register_tools_from_mcp(
+                module_name, module, mcp_instance
+            )
             logger.debug("Loaded server %s — %d tool(s)", filename, tool_count)
 
         except Exception as exc:
@@ -182,6 +191,7 @@ class MCPRegistry:
         providers = getattr(mcp_instance, "providers", None)
         if providers:
             import asyncio
+
             for provider in providers:
                 list_fn = getattr(provider, "list_tools", None)
                 if not list_fn:
@@ -192,6 +202,7 @@ class MCPRegistry:
                     loop = None
                 if loop and loop.is_running():
                     import concurrent.futures
+
                     with concurrent.futures.ThreadPoolExecutor() as pool:
                         tools = pool.submit(asyncio.run, list_fn()).result()
                 else:
@@ -248,11 +259,13 @@ class MCPRegistry:
         self.load()
         tools = []
         for tool_name, fn in self._tool_map.items():
-            tools.append({
-                "name":        tool_name,
-                "description": (fn.__doc__ or "").strip().split("\n")[0],
-                "server":      getattr(fn, "__module__", "unknown"),
-            })
+            tools.append(
+                {
+                    "name": tool_name,
+                    "description": (fn.__doc__ or "").strip().split("\n")[0],
+                    "server": getattr(fn, "__module__", "unknown"),
+                }
+            )
         return sorted(tools, key=lambda t: t["name"])
 
     def invoke(self, tool_name: str, args: dict = None, trace_id: str = None) -> dict:
@@ -287,11 +300,14 @@ class MCPRegistry:
             self._audit(tool_name, args, str(exc), trace_id, success=False)
             return {"error": str(exc), "tool_name": tool_name}
 
-    def _audit(self, tool_name: str, args: dict, result, trace_id: str, success: bool) -> None:
+    def _audit(
+        self, tool_name: str, args: dict, result, trace_id: str, success: bool
+    ) -> None:
         """Write MCP tool invocation to the audit log."""
         try:
             import json
             from src.memory.audit_logger import audit_logger
+
             audit_logger.log_event(
                 actor="MCPRegistry",
                 action_type="MCP_TOOL_INVOKED",
@@ -320,8 +336,10 @@ class MCPRegistry:
                 def _call(**kw):
                     r = self.invoke(name, kw, trace_id=trace_id)
                     return r.get("result", r.get("error", "no result"))
+
                 _call.__name__ = name
                 return _call
+
             react_tools[tool_name] = _make_caller(tool_name)
         return react_tools
 

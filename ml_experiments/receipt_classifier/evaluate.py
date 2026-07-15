@@ -30,9 +30,7 @@ import pandas as pd
 import yaml
 from joblib import load
 from sklearn.metrics import (
-    ConfusionMatrixDisplay,
     accuracy_score,
-    average_precision_score,
     classification_report,
     confusion_matrix,
     f1_score,
@@ -44,9 +42,6 @@ from sklearn.metrics import (
 from sklearn.model_selection import train_test_split
 
 from data import (
-    CATEGORICAL_FEATURES,
-    NUMERIC_FEATURES,
-    RECEIPT_CATEGORIES,
     SENSITIVE_COLUMNS,
     TARGET_COLUMN,
     load_dataset,
@@ -57,6 +52,7 @@ CONFIG_PATH = Path(__file__).parent / "config.yaml"
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
+
 
 def _load_artefacts(model_dir: str) -> Tuple:
     pipeline = load(Path(model_dir) / "pipeline.joblib")
@@ -97,6 +93,7 @@ def _latency_benchmark(
 
 
 # ── Bias evaluation ────────────────────────────────────────────────────────────
+
 
 def evaluate_bias(
     pipeline,
@@ -140,15 +137,15 @@ def evaluate_bias(
             yp = y_pred[mask]
 
             grp_acc = accuracy_score(yt, yp)
-            grp_f1  = f1_score(yt, yp, average="macro", zero_division=0)
+            grp_f1 = f1_score(yt, yp, average="macro", zero_division=0)
             # positive rate: fraction predicted as highest-frequency class
             dominant = int(pd.Series(yp).mode()[0])
             pos_rate = float((yp == dominant).mean())
 
             group_metrics[str(grp)] = {
-                "n":           int(mask.sum()),
-                "accuracy":    round(grp_acc, 4),
-                "f1_macro":    round(grp_f1, 4),
+                "n": int(mask.sum()),
+                "accuracy": round(grp_acc, 4),
+                "f1_macro": round(grp_f1, 4),
                 "positive_rate": round(pos_rate, 4),
             }
             acc_list.append(grp_acc)
@@ -162,19 +159,22 @@ def evaluate_bias(
             acc_gap = max(acc_list) - min(acc_list)
             results["summary"][col] = {
                 "demographic_parity_gap": round(dp_gap, 4),
-                "accuracy_gap":           round(acc_gap, 4),
-                "bias_flag":              dp_gap > 0.10 or acc_gap > 0.05,
+                "accuracy_gap": round(acc_gap, 4),
+                "bias_flag": dp_gap > 0.10 or acc_gap > 0.05,
             }
             if results["summary"][col]["bias_flag"]:
                 logger.warning(
                     "BIAS ALERT on '%s': dp_gap=%.3f  acc_gap=%.3f",
-                    col, dp_gap, acc_gap,
+                    col,
+                    dp_gap,
+                    acc_gap,
                 )
 
     return results
 
 
 # ── Main evaluation ────────────────────────────────────────────────────────────
+
 
 def evaluate(
     csv_path: str | None = None,
@@ -196,13 +196,16 @@ def evaluate(
     pipeline, label_enc = _load_artefacts(model_dir)
 
     # ── Load data ─────────────────────────────────────────────────────────────
-    dataset = load_dataset(csv_path=csv_path, n_samples=n_samples, random_state=random_state)
+    dataset = load_dataset(
+        csv_path=csv_path, n_samples=n_samples, random_state=random_state
+    )
     X, y_raw = dataset.X, dataset.y
     y = pd.Series(label_enc.transform(y_raw), name=TARGET_COLUMN)
 
     # Same split as training — same seed guarantees identical test set
     _, X_test, _, y_test = train_test_split(
-        X, y,
+        X,
+        y,
         test_size=test_size,
         random_state=random_state,
         stratify=y,
@@ -214,17 +217,18 @@ def evaluate(
     y_prob = pipeline.predict_proba(X_test)
 
     # ── Aggregate metrics ─────────────────────────────────────────────────────
-    acc          = accuracy_score(y_test, y_pred)
-    f1_macro     = f1_score(y_test, y_pred, average="macro")
-    f1_weighted  = f1_score(y_test, y_pred, average="weighted")
-    precision_m  = precision_score(y_test, y_pred, average="macro", zero_division=0)
-    recall_m     = recall_score(y_test, y_pred, average="macro", zero_division=0)
-    logloss      = log_loss(y_test, y_prob)
-    roc_auc      = roc_auc_score(y_test, y_prob, multi_class="ovr", average="macro")
+    acc = accuracy_score(y_test, y_pred)
+    f1_macro = f1_score(y_test, y_pred, average="macro")
+    f1_weighted = f1_score(y_test, y_pred, average="weighted")
+    precision_m = precision_score(y_test, y_pred, average="macro", zero_division=0)
+    recall_m = recall_score(y_test, y_pred, average="macro", zero_division=0)
+    logloss = log_loss(y_test, y_prob)
+    roc_auc = roc_auc_score(y_test, y_prob, multi_class="ovr", average="macro")
 
     # ── Per-class metrics ─────────────────────────────────────────────────────
     report = classification_report(
-        y_test, y_pred,
+        y_test,
+        y_pred,
         target_names=label_enc.classes_,
         output_dict=True,
     )
@@ -254,31 +258,31 @@ def evaluate(
     # ── Assemble report ───────────────────────────────────────────────────────
     report_out = {
         "aggregate_metrics": {
-            "accuracy":       round(acc, 4),
-            "f1_macro":       round(f1_macro, 4),
-            "f1_weighted":    round(f1_weighted, 4),
+            "accuracy": round(acc, 4),
+            "f1_macro": round(f1_macro, 4),
+            "f1_weighted": round(f1_weighted, 4),
             "precision_macro": round(precision_m, 4),
-            "recall_macro":   round(recall_m, 4),
-            "log_loss":       round(logloss, 4),
-            "roc_auc_macro":  round(roc_auc, 4),
+            "recall_macro": round(recall_m, 4),
+            "log_loss": round(logloss, 4),
+            "roc_auc_macro": round(roc_auc, 4),
         },
         "per_class_metrics": {
             cls: {
                 "precision": round(report[cls]["precision"], 4),
-                "recall":    round(report[cls]["recall"], 4),
-                "f1":        round(report[cls]["f1-score"], 4),
-                "support":   int(report[cls]["support"]),
+                "recall": round(report[cls]["recall"], 4),
+                "f1": round(report[cls]["f1-score"], 4),
+                "support": int(report[cls]["support"]),
             }
             for cls in label_enc.classes_
             if cls in report
         },
         "confusion_matrix": cm_dict,
         "latency_benchmark": latency,
-        "bias_evaluation":   bias,
+        "bias_evaluation": bias,
         "data_checks": {
-            "leakage_risk":      False,   # pipeline fitted on train only
-            "class_imbalance":   False,   # checked at train time
-            "test_samples":      len(X_test),
+            "leakage_risk": False,  # pipeline fitted on train only
+            "class_imbalance": False,  # checked at train time
+            "test_samples": len(X_test),
         },
     }
 
@@ -303,7 +307,7 @@ if __name__ == "__main__":
     )
 
     parser = argparse.ArgumentParser(description="Evaluate receipt classifier")
-    parser.add_argument("--csv-path",  default=None)
+    parser.add_argument("--csv-path", default=None)
     parser.add_argument("--model-dir", default="models/")
     parser.add_argument("--n-samples", type=int, default=5_000)
     args = parser.parse_args()

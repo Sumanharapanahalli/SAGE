@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 
 # ── Dataset loading ───────────────────────────────────────────────────────────
 
+
 def load_boston_housing() -> Tuple[np.ndarray, np.ndarray, List[str]]:
     """
     Load Boston Housing dataset.
@@ -68,9 +69,7 @@ def load_boston_housing() -> Tuple[np.ndarray, np.ndarray, List[str]]:
         X = data.data.astype(float)
         y = data.target.astype(float)
         feature_names = list(data.feature_names)
-        logger.info(
-            "Boston Housing loaded via load_boston (legacy): shape=%s", X.shape
-        )
+        logger.info("Boston Housing loaded via load_boston (legacy): shape=%s", X.shape)
         return X, y, feature_names
     except (ImportError, AttributeError):
         pass
@@ -83,6 +82,7 @@ def load_boston_housing() -> Tuple[np.ndarray, np.ndarray, List[str]]:
 
 
 # ── Validation ────────────────────────────────────────────────────────────────
+
 
 def validate_data(
     X: np.ndarray,
@@ -147,6 +147,7 @@ def validate_data(
 
 # ── Train / val / test split ──────────────────────────────────────────────────
 
+
 def train_test_split_reg(
     X: np.ndarray,
     y: np.ndarray,
@@ -173,8 +174,8 @@ def train_test_split_reg(
     n_val = int(round(n * val_size))
 
     test_idx = indices[:n_test]
-    val_idx = indices[n_test: n_test + n_val]
-    train_idx = indices[n_test + n_val:]
+    val_idx = indices[n_test : n_test + n_val]
+    train_idx = indices[n_test + n_val :]
 
     logger.info(
         "Split — train: %d  val: %d  test: %d  (total: %d)",
@@ -184,6 +185,10 @@ def train_test_split_reg(
         n,
     )
     return (
-        X[train_idx], X[val_idx], X[test_idx],
-        y[train_idx], y[val_idx], y[test_idx],
+        X[train_idx],
+        X[val_idx],
+        X[test_idx],
+        y[train_idx],
+        y[val_idx],
+        y[test_idx],
     )

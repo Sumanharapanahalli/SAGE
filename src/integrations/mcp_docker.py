@@ -28,6 +28,7 @@ desktop's `mcp.tools` RPC pick them up with no change on their side.
     docker_mcp.list_tools()                       # [{name, description, schema, server}]
     docker_mcp.invoke("fetch.fetch", {"url": ...})
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -39,7 +40,7 @@ import subprocess
 import threading
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Optional
+from typing import Optional
 
 logger = logging.getLogger("DockerMCP")
 
@@ -56,7 +57,7 @@ class DockerMCPServer:
     args: list[str] = field(default_factory=list)
     env: dict[str, str] = field(default_factory=dict)
     mounts: list[dict] = field(default_factory=list)  # [{source, target, read_only}]
-    network: str = "none"       # deny network by default; opt in per server
+    network: str = "none"  # deny network by default; opt in per server
     enabled: bool = True
     timeout: int = 120
 
@@ -115,7 +116,9 @@ class DockerMCPClient:
             # would then never match — the tool would exist and be permanently unreachable.
             name = str(name)
             if not isinstance(spec, dict) or not spec.get("image"):
-                self.logger.warning("mcp_docker server '%s': missing 'image' — skipped", name)
+                self.logger.warning(
+                    "mcp_docker server '%s': missing 'image' — skipped", name
+                )
                 continue
             srv = DockerMCPServer(
                 name=name,
@@ -139,16 +142,24 @@ class DockerMCPClient:
         if not shutil.which("docker"):
             return False
         try:
-            p = subprocess.run(["docker", "info", "--format", "{{.ServerVersion}}"],
-                               capture_output=True, text=True, timeout=15)
+            p = subprocess.run(
+                ["docker", "info", "--format", "{{.ServerVersion}}"],
+                capture_output=True,
+                text=True,
+                timeout=15,
+            )
             return p.returncode == 0 and bool(p.stdout.strip())
         except Exception:  # noqa: BLE001
             return False
 
     def image_present(self, image: str) -> bool:
         try:
-            p = subprocess.run(["docker", "image", "inspect", image],
-                               capture_output=True, text=True, timeout=30)
+            p = subprocess.run(
+                ["docker", "image", "inspect", image],
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
             return p.returncode == 0
         except Exception:  # noqa: BLE001
             return False
@@ -156,8 +167,12 @@ class DockerMCPClient:
     def pull(self, image: str, timeout: int = 900) -> bool:
         self.logger.info("pulling MCP image %s ...", image)
         try:
-            p = subprocess.run(["docker", "pull", image],
-                               capture_output=True, text=True, timeout=timeout)
+            p = subprocess.run(
+                ["docker", "pull", image],
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+            )
             return p.returncode == 0
         except Exception as e:  # noqa: BLE001
             self.logger.warning("pull %s failed: %s", image, e)
@@ -212,32 +227,45 @@ class DockerMCPClient:
             if not self.docker_available():
                 self.logger.warning(
                     "Docker daemon not reachable — %d MCP server(s) unavailable: %s",
-                    len(self._servers), ", ".join(self._servers),
+                    len(self._servers),
+                    ", ".join(self._servers),
                 )
                 self._loaded = True
                 return 0
 
             for name, srv in self._servers.items():
                 if not self.image_present(srv.image) and not self.pull(srv.image):
-                    self.logger.warning("MCP server '%s': image %s unavailable — skipped",
-                                        name, srv.image)
+                    self.logger.warning(
+                        "MCP server '%s': image %s unavailable — skipped",
+                        name,
+                        srv.image,
+                    )
                     continue
                 try:
+
                     async def _list(session):
                         return await session.list_tools()
 
-                    result = self._run_async(lambda s=srv: self._session(s, _list), srv.timeout)
+                    result = self._run_async(
+                        lambda s=srv: self._session(s, _list), srv.timeout
+                    )
                     for t in result.tools:
-                        self._tools.append({
-                            "name": f"{name}.{t.name}",
-                            "server": name,
-                            "tool": t.name,
-                            "description": t.description or "",
-                            "schema": getattr(t, "inputSchema", None) or {},
-                            "source": f"docker:{srv.image}",
-                        })
-                    self.logger.info("MCP server '%s' (%s): %d tools",
-                                     name, srv.image, len(result.tools))
+                        self._tools.append(
+                            {
+                                "name": f"{name}.{t.name}",
+                                "server": name,
+                                "tool": t.name,
+                                "description": t.description or "",
+                                "schema": getattr(t, "inputSchema", None) or {},
+                                "source": f"docker:{srv.image}",
+                            }
+                        )
+                    self.logger.info(
+                        "MCP server '%s' (%s): %d tools",
+                        name,
+                        srv.image,
+                        len(result.tools),
+                    )
                 except Exception as e:  # noqa: BLE001
                     self.logger.warning("MCP server '%s' failed to start: %s", name, e)
 
@@ -259,13 +287,18 @@ class DockerMCPClient:
         server_name, _, bare = tool_name.partition(".")
         srv = self._servers.get(server_name)
         if srv is None:
-            return {"error": f"unknown MCP server '{server_name}'. "
-                             f"Configured: {sorted(self._servers)}"}
+            return {
+                "error": f"unknown MCP server '{server_name}'. "
+                f"Configured: {sorted(self._servers)}"
+            }
         if not any(t["name"] == tool_name for t in self._tools):
-            return {"error": f"unknown tool '{tool_name}'. "
-                             f"Available: {[t['name'] for t in self._tools]}"}
+            return {
+                "error": f"unknown tool '{tool_name}'. "
+                f"Available: {[t['name'] for t in self._tools]}"
+            }
 
         try:
+
             async def _call(session):
                 return await session.call_tool(bare, args)
 

@@ -12,9 +12,11 @@ import pytest
 # FIXTURES
 # ═══════════════════════════════════════════════════════════════════════
 
+
 @pytest.fixture
 def engine():
     from src.core.workflow_engine import WorkflowEngine
+
     return WorkflowEngine()
 
 
@@ -22,8 +24,11 @@ def engine():
 def simple_graph():
     """A → B → C linear workflow."""
     from src.core.workflow_engine import WorkflowGraph, WorkflowNode, WorkflowEdge
+
     graph = WorkflowGraph(name="simple", description="Linear A→B→C")
-    graph.add_node(WorkflowNode(id="A", task_type="ANALYZE_LOG", payload={"log": "test"}))
+    graph.add_node(
+        WorkflowNode(id="A", task_type="ANALYZE_LOG", payload={"log": "test"})
+    )
     graph.add_node(WorkflowNode(id="B", task_type="CODE_TASK", payload={"task": "fix"}))
     graph.add_node(WorkflowNode(id="C", task_type="REVIEW_MR", payload={"mr": "1"}))
     graph.add_edge(WorkflowEdge(source="A", target="B"))
@@ -35,6 +40,7 @@ def simple_graph():
 def diamond_graph():
     """Diamond: A → B, A → C, B → D, C → D."""
     from src.core.workflow_engine import WorkflowGraph, WorkflowNode, WorkflowEdge
+
     graph = WorkflowGraph(name="diamond", description="Diamond DAG")
     graph.add_node(WorkflowNode(id="A", task_type="PLAN_TASK", payload={}))
     graph.add_node(WorkflowNode(id="B", task_type="CODE_TASK", payload={}))
@@ -51,16 +57,18 @@ def diamond_graph():
 # GRAPH CONSTRUCTION & VALIDATION
 # ═══════════════════════════════════════════════════════════════════════
 
-class TestGraphConstruction:
 
+class TestGraphConstruction:
     def test_add_node(self):
         from src.core.workflow_engine import WorkflowGraph, WorkflowNode
+
         g = WorkflowGraph(name="test")
         g.add_node(WorkflowNode(id="A", task_type="CODE_TASK", payload={}))
         assert "A" in g.nodes
 
     def test_add_edge(self):
         from src.core.workflow_engine import WorkflowGraph, WorkflowNode, WorkflowEdge
+
         g = WorkflowGraph(name="test")
         g.add_node(WorkflowNode(id="A", task_type="CODE_TASK", payload={}))
         g.add_node(WorkflowNode(id="B", task_type="CODE_TASK", payload={}))
@@ -69,12 +77,14 @@ class TestGraphConstruction:
 
     def test_add_edge_to_missing_node_raises(self):
         from src.core.workflow_engine import WorkflowGraph, WorkflowEdge
+
         g = WorkflowGraph(name="test")
         with pytest.raises(ValueError, match="not in graph"):
             g.add_edge(WorkflowEdge(source="X", target="Y"))
 
     def test_duplicate_node_raises(self):
         from src.core.workflow_engine import WorkflowGraph, WorkflowNode
+
         g = WorkflowGraph(name="test")
         g.add_node(WorkflowNode(id="A", task_type="CODE_TASK", payload={}))
         with pytest.raises(ValueError, match="already exists"):
@@ -82,6 +92,7 @@ class TestGraphConstruction:
 
     def test_cycle_detection(self):
         from src.core.workflow_engine import WorkflowGraph, WorkflowNode, WorkflowEdge
+
         g = WorkflowGraph(name="test")
         g.add_node(WorkflowNode(id="A", task_type="CODE_TASK", payload={}))
         g.add_node(WorkflowNode(id="B", task_type="CODE_TASK", payload={}))
@@ -94,8 +105,8 @@ class TestGraphConstruction:
 # TOPOLOGICAL SORT & WAVES
 # ═══════════════════════════════════════════════════════════════════════
 
-class TestTopologicalSort:
 
+class TestTopologicalSort:
     def test_linear_sort(self, simple_graph):
         order = simple_graph.topological_sort()
         assert order == ["A", "B", "C"]
@@ -119,6 +130,7 @@ class TestTopologicalSort:
 
     def test_single_node_graph(self):
         from src.core.workflow_engine import WorkflowGraph, WorkflowNode
+
         g = WorkflowGraph(name="single")
         g.add_node(WorkflowNode(id="X", task_type="CODE_TASK", payload={}))
         waves = g.compute_waves()
@@ -129,8 +141,8 @@ class TestTopologicalSort:
 # EXECUTION
 # ═══════════════════════════════════════════════════════════════════════
 
-class TestExecution:
 
+class TestExecution:
     def test_execute_linear(self, engine, simple_graph):
         result = engine.execute(simple_graph)
         assert result["status"] == "completed"
@@ -148,6 +160,7 @@ class TestExecution:
 
     def test_execute_with_failing_node(self, engine):
         from src.core.workflow_engine import WorkflowGraph, WorkflowNode, WorkflowEdge
+
         g = WorkflowGraph(name="fail_test")
         g.add_node(WorkflowNode(id="good", task_type="CODE_TASK", payload={}))
         g.add_node(WorkflowNode(id="bad", task_type="FAIL_TASK", payload={}))
@@ -161,6 +174,7 @@ class TestExecution:
 
     def test_execute_empty_graph(self, engine):
         from src.core.workflow_engine import WorkflowGraph
+
         g = WorkflowGraph(name="empty")
         result = engine.execute(g)
         assert result["status"] == "completed"
@@ -171,10 +185,11 @@ class TestExecution:
 # CONDITIONAL EDGES
 # ═══════════════════════════════════════════════════════════════════════
 
-class TestConditionalEdges:
 
+class TestConditionalEdges:
     def test_condition_true_follows_edge(self, engine):
         from src.core.workflow_engine import WorkflowGraph, WorkflowNode, WorkflowEdge
+
         g = WorkflowGraph(name="cond_test")
         g.add_node(WorkflowNode(id="A", task_type="CODE_TASK", payload={}))
         g.add_node(WorkflowNode(id="B", task_type="CODE_TASK", payload={}))
@@ -184,6 +199,7 @@ class TestConditionalEdges:
 
     def test_condition_false_skips_edge(self, engine):
         from src.core.workflow_engine import WorkflowGraph, WorkflowNode, WorkflowEdge
+
         g = WorkflowGraph(name="cond_skip")
         g.add_node(WorkflowNode(id="A", task_type="CODE_TASK", payload={}))
         g.add_node(WorkflowNode(id="B", task_type="CODE_TASK", payload={}))
@@ -197,8 +213,8 @@ class TestConditionalEdges:
 # TEMPLATES
 # ═══════════════════════════════════════════════════════════════════════
 
-class TestTemplates:
 
+class TestTemplates:
     def test_list_templates(self, engine):
         templates = engine.list_templates()
         assert len(templates) >= 2
@@ -220,8 +236,8 @@ class TestTemplates:
 # SERIALIZATION
 # ═══════════════════════════════════════════════════════════════════════
 
-class TestSerialization:
 
+class TestSerialization:
     def test_to_dict(self, simple_graph):
         d = simple_graph.to_dict()
         assert d["name"] == "simple"
@@ -230,6 +246,7 @@ class TestSerialization:
 
     def test_from_dict(self):
         from src.core.workflow_engine import WorkflowGraph
+
         d = {
             "name": "from_dict",
             "description": "test",
@@ -254,6 +271,7 @@ class TestSerialization:
     def test_roundtrip_serialization(self, diamond_graph):
         """to_dict → from_dict produces equivalent graph."""
         from src.core.workflow_engine import WorkflowGraph
+
         d = diamond_graph.to_dict()
         restored = WorkflowGraph.from_dict(d)
         assert set(restored.nodes.keys()) == set(diamond_graph.nodes.keys())
@@ -265,12 +283,13 @@ class TestSerialization:
 # CORNER CASES & ERROR PATHS
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestCornerCases:
     """Edge cases for graph construction and execution."""
 
     def test_executor_exception_is_caught(self, engine):
         """Executor that raises exception → node marked failed."""
-        from src.core.workflow_engine import WorkflowGraph, WorkflowNode, WorkflowEdge, WorkflowEngine
+        from src.core.workflow_engine import WorkflowGraph, WorkflowNode, WorkflowEngine
 
         def exploding_executor(node, context):
             raise RuntimeError("Boom!")
@@ -285,10 +304,13 @@ class TestCornerCases:
     def test_on_failure_edge_fires_when_predecessor_fails(self, engine):
         """on_failure edge should execute target when predecessor fails."""
         from src.core.workflow_engine import WorkflowGraph, WorkflowNode, WorkflowEdge
+
         g = WorkflowGraph(name="failure_handler")
         g.add_node(WorkflowNode(id="risky", task_type="FAIL_TASK", payload={}))
         g.add_node(WorkflowNode(id="handler", task_type="CODE_TASK", payload={}))
-        g.add_edge(WorkflowEdge(source="risky", target="handler", condition="on_failure"))
+        g.add_edge(
+            WorkflowEdge(source="risky", target="handler", condition="on_failure")
+        )
         result = engine.execute(g)
         assert result["results"]["risky"]["status"] == "failed"
         assert result["results"]["handler"]["status"] == "completed"
@@ -296,6 +318,7 @@ class TestCornerCases:
     def test_always_edge_runs_despite_failure(self, engine):
         """'always' edge executes target even when predecessor fails."""
         from src.core.workflow_engine import WorkflowGraph, WorkflowNode, WorkflowEdge
+
         g = WorkflowGraph(name="always_test")
         g.add_node(WorkflowNode(id="fail", task_type="FAIL_TASK", payload={}))
         g.add_node(WorkflowNode(id="cleanup", task_type="CODE_TASK", payload={}))
@@ -307,6 +330,7 @@ class TestCornerCases:
     def test_wide_graph_parallel_wave(self, engine):
         """Many independent nodes all land in wave 0."""
         from src.core.workflow_engine import WorkflowGraph, WorkflowNode
+
         g = WorkflowGraph(name="wide")
         for i in range(10):
             g.add_node(WorkflowNode(id=f"N{i}", task_type="CODE_TASK", payload={}))
@@ -317,7 +341,13 @@ class TestCornerCases:
 
     def test_custom_executor_receives_context(self):
         """Custom executor receives workflow_id and predecessor_results in context."""
-        from src.core.workflow_engine import WorkflowGraph, WorkflowNode, WorkflowEdge, WorkflowEngine
+        from src.core.workflow_engine import (
+            WorkflowGraph,
+            WorkflowNode,
+            WorkflowEdge,
+            WorkflowEngine,
+        )
+
         contexts = {}
 
         def tracking_executor(node, context):
@@ -352,6 +382,7 @@ class TestCornerCases:
     def test_self_loop_detection(self):
         """Adding a self-loop edge raises ValueError."""
         from src.core.workflow_engine import WorkflowGraph, WorkflowNode, WorkflowEdge
+
         g = WorkflowGraph(name="self_loop")
         g.add_node(WorkflowNode(id="A", task_type="CODE_TASK", payload={}))
         with pytest.raises(ValueError):
@@ -360,6 +391,7 @@ class TestCornerCases:
     def test_three_node_cycle_detection(self):
         """Detect cycle in A→B→C→A."""
         from src.core.workflow_engine import WorkflowGraph, WorkflowNode, WorkflowEdge
+
         g = WorkflowGraph(name="triangle")
         g.add_node(WorkflowNode(id="A", task_type="CODE_TASK", payload={}))
         g.add_node(WorkflowNode(id="B", task_type="CODE_TASK", payload={}))
@@ -371,7 +403,8 @@ class TestCornerCases:
 
     def test_partial_status_when_some_succeed_some_fail(self, engine):
         """Overall status is 'partial' when some nodes succeed and some fail."""
-        from src.core.workflow_engine import WorkflowGraph, WorkflowNode, WorkflowEdge
+        from src.core.workflow_engine import WorkflowGraph, WorkflowNode
+
         g = WorkflowGraph(name="partial")
         g.add_node(WorkflowNode(id="ok", task_type="CODE_TASK", payload={}))
         g.add_node(WorkflowNode(id="bad", task_type="FAIL_TASK", payload={}))
@@ -395,12 +428,14 @@ class TestCornerCases:
     def test_node_timeout_default(self):
         """WorkflowNode has default timeout of 300."""
         from src.core.workflow_engine import WorkflowNode
+
         node = WorkflowNode(id="A", task_type="CODE_TASK")
         assert node.timeout == 300
 
     def test_from_dict_with_missing_optional_fields(self):
         """from_dict handles missing optional fields gracefully."""
         from src.core.workflow_engine import WorkflowGraph
+
         d = {
             "nodes": [{"id": "X", "task_type": "CODE_TASK"}],
             "edges": [],

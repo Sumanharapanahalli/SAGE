@@ -52,14 +52,16 @@ def test_get_queue_status_counts_by_status():
     # version of this test fabricated {"status": "done"} — a string the
     # framework never produces — which is precisely why the handler's matching
     # "done" key went unnoticed while the UI's Done tile stayed at 0.
-    queue._queue = FakeQueue(tasks=[
-        {"id": "1", "status": "pending", "task_type": "x"},
-        {"id": "2", "status": "pending", "task_type": "x"},
-        {"id": "3", "status": "in_progress", "task_type": "y"},
-        {"id": "4", "status": "completed", "task_type": "z"},
-        {"id": "5", "status": "failed", "task_type": "z"},
-        {"id": "6", "status": "cancelled", "task_type": "z"},
-    ])
+    queue._queue = FakeQueue(
+        tasks=[
+            {"id": "1", "status": "pending", "task_type": "x"},
+            {"id": "2", "status": "pending", "task_type": "x"},
+            {"id": "3", "status": "in_progress", "task_type": "y"},
+            {"id": "4", "status": "completed", "task_type": "z"},
+            {"id": "5", "status": "failed", "task_type": "z"},
+            {"id": "6", "status": "cancelled", "task_type": "z"},
+        ]
+    )
     queue._parallel_runner = FakeParallelRunner(parallel_enabled=True, max_workers=4)
     result = queue.get_queue_status({})
     assert result["pending"] == 2
@@ -88,19 +90,21 @@ def test_get_queue_status_when_unavailable_returns_zeros():
 
 
 def test_list_queue_tasks_applies_status_filter():
-    queue._queue = FakeQueue(tasks=[
-        {"id": "1", "status": "pending", "task_type": "x"},
-        {"id": "2", "status": "done", "task_type": "y"},
-    ])
+    queue._queue = FakeQueue(
+        tasks=[
+            {"id": "1", "status": "pending", "task_type": "x"},
+            {"id": "2", "status": "done", "task_type": "y"},
+        ]
+    )
     result = queue.list_queue_tasks({"status": "done"})
     assert len(result) == 1
     assert result[0]["id"] == "2"
 
 
 def test_list_queue_tasks_limits_results():
-    queue._queue = FakeQueue(tasks=[
-        {"id": str(i), "status": "done", "task_type": "x"} for i in range(100)
-    ])
+    queue._queue = FakeQueue(
+        tasks=[{"id": str(i), "status": "done", "task_type": "x"} for i in range(100)]
+    )
     result = queue.list_queue_tasks({"limit": 10})
     assert len(result) == 10
 
@@ -132,8 +136,14 @@ class ControlQueue(FakeQueue):
 
     def __init__(self, tasks=None, cancel_result=None, requeue_result=None):
         super().__init__(tasks)
-        self.cancel_result = cancel_result or {"cancelled": False, "reason": "not_found"}
-        self.requeue_result = requeue_result or {"requeued": False, "reason": "not_found"}
+        self.cancel_result = cancel_result or {
+            "cancelled": False,
+            "reason": "not_found",
+        }
+        self.requeue_result = requeue_result or {
+            "requeued": False,
+            "reason": "not_found",
+        }
         self.cancelled = []
         self.requeued = []
 
@@ -174,9 +184,13 @@ def test_cancel_requires_task_id(audit):
 
 
 def test_cancel_pending_task_succeeds(audit):
-    q = ControlQueue(cancel_result={
-        "cancelled": True, "status": "cancelled", "was_running": False,
-    })
+    q = ControlQueue(
+        cancel_result={
+            "cancelled": True,
+            "status": "cancelled",
+            "was_running": False,
+        }
+    )
     queue._queue = q
     out = queue.cancel_task({"task_id": "t1"})
     assert out["cancelled"] is True
@@ -184,7 +198,9 @@ def test_cancel_pending_task_succeeds(audit):
 
 
 def test_cancel_unknown_task_is_invalid_params(audit):
-    queue._queue = ControlQueue(cancel_result={"cancelled": False, "reason": "not_found"})
+    queue._queue = ControlQueue(
+        cancel_result={"cancelled": False, "reason": "not_found"}
+    )
     with pytest.raises(RpcError) as exc:
         queue.cancel_task({"task_id": "ghost"})
     assert exc.value.code == -32602
@@ -192,9 +208,13 @@ def test_cancel_unknown_task_is_invalid_params(audit):
 
 
 def test_cancel_terminal_task_is_refused(audit):
-    queue._queue = ControlQueue(cancel_result={
-        "cancelled": False, "reason": "terminal", "status": "completed",
-    })
+    queue._queue = ControlQueue(
+        cancel_result={
+            "cancelled": False,
+            "reason": "terminal",
+            "status": "completed",
+        }
+    )
     with pytest.raises(RpcError) as exc:
         queue.cancel_task({"task_id": "t1"})
     assert exc.value.code == -32602
@@ -204,18 +224,26 @@ def test_cancel_terminal_task_is_refused(audit):
 def test_cancel_reports_was_running_so_the_ui_does_not_imply_a_kill(audit):
     """An in_progress task is tombstoned, not killed — no cooperative
     cancellation exists. The flag lets the UI say so honestly."""
-    queue._queue = ControlQueue(cancel_result={
-        "cancelled": True, "status": "cancelled", "was_running": True,
-    })
+    queue._queue = ControlQueue(
+        cancel_result={
+            "cancelled": True,
+            "status": "cancelled",
+            "was_running": True,
+        }
+    )
     out = queue.cancel_task({"task_id": "t1"})
     assert out["was_running"] is True
     assert "worker not killed" in audit.events[0]["output_content"]
 
 
 def test_cancel_is_audited_and_signed_by_the_operator(audit):
-    queue._queue = ControlQueue(cancel_result={
-        "cancelled": True, "status": "cancelled", "was_running": False,
-    })
+    queue._queue = ControlQueue(
+        cancel_result={
+            "cancelled": True,
+            "status": "cancelled",
+            "was_running": False,
+        }
+    )
     queue.cancel_task({"task_id": "t1"})
     ev = audit.events[0]
     assert ev["action_type"] == "TASK_CANCELLED"
@@ -242,9 +270,13 @@ def test_retry_requeues_a_failed_task(audit):
 
 
 def test_retry_refuses_a_task_that_is_not_terminal(audit):
-    queue._queue = ControlQueue(requeue_result={
-        "requeued": False, "reason": "not_retryable", "status": "in_progress",
-    })
+    queue._queue = ControlQueue(
+        requeue_result={
+            "requeued": False,
+            "reason": "not_retryable",
+            "status": "in_progress",
+        }
+    )
     with pytest.raises(RpcError) as exc:
         queue.retry_task({"task_id": "t1"})
     assert exc.value.code == -32602
@@ -252,7 +284,9 @@ def test_retry_refuses_a_task_that_is_not_terminal(audit):
 
 
 def test_retry_unknown_task_is_invalid_params(audit):
-    queue._queue = ControlQueue(requeue_result={"requeued": False, "reason": "not_found"})
+    queue._queue = ControlQueue(
+        requeue_result={"requeued": False, "reason": "not_found"}
+    )
     with pytest.raises(RpcError) as exc:
         queue.retry_task({"task_id": "ghost"})
     assert exc.value.code == -32602

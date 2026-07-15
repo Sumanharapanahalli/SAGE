@@ -23,7 +23,6 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +31,7 @@ logger = logging.getLogger(__name__)
 # ─────────────────────────────────────────────────────────────────────────────
 
 try:
-    from prometheus_client import Counter, Gauge, CollectorRegistry, REGISTRY
+    from prometheus_client import Counter, Gauge, CollectorRegistry, REGISTRY  # noqa: F401
     from prometheus_fastapi_instrumentator import Instrumentator
 
     _METRICS_AVAILABLE = True
@@ -84,29 +83,34 @@ else:
     class _NoOpCounter:  # type: ignore[no-redef]
         def labels(self, **_: str) -> "_NoOpCounter":
             return self
+
         def inc(self, amount: float = 1) -> None:
             pass
 
     class _NoOpGauge:  # type: ignore[no-redef]
         def labels(self, **_: str) -> "_NoOpGauge":
             return self
+
         def set(self, value: float) -> None:
             pass
+
         def inc(self, amount: float = 1) -> None:
             pass
+
         def dec(self, amount: float = 1) -> None:
             pass
 
     JOBS_PROCESSED = _NoOpCounter()  # type: ignore[assignment]
-    JOBS_FAILED = _NoOpCounter()     # type: ignore[assignment]
-    QUEUE_DEPTH = _NoOpGauge()       # type: ignore[assignment]
-    WORKERS_ACTIVE = _NoOpGauge()    # type: ignore[assignment]
+    JOBS_FAILED = _NoOpCounter()  # type: ignore[assignment]
+    QUEUE_DEPTH = _NoOpGauge()  # type: ignore[assignment]
+    WORKERS_ACTIVE = _NoOpGauge()  # type: ignore[assignment]
     BUILD_DURATION_SECONDS = _NoOpCounter()  # type: ignore[assignment]
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Public helper functions (used by queue manager, build orchestrator, etc.)
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def inc_jobs_processed(job_type: str = "unknown") -> None:
     """Increment the processed-jobs counter for a given job type."""
@@ -131,7 +135,9 @@ def set_workers_active(count: int, worker_type: str = "default") -> None:
     WORKERS_ACTIVE.labels(worker_type=worker_type).set(count)
 
 
-def add_build_duration(seconds: float, domain: str = "unknown", task_type: str = "unknown") -> None:
+def add_build_duration(
+    seconds: float, domain: str = "unknown", task_type: str = "unknown"
+) -> None:
     """Accumulate time spent in build tasks (called after each task completes)."""
     BUILD_DURATION_SECONDS.labels(domain=domain, task_type=task_type).inc(seconds)
 
@@ -139,6 +145,7 @@ def add_build_duration(seconds: float, domain: str = "unknown", task_type: str =
 # ─────────────────────────────────────────────────────────────────────────────
 # FastAPI integration
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def setup_metrics(app: "FastAPI") -> None:  # type: ignore[name-defined]  # noqa: F821
     """
@@ -161,13 +168,17 @@ def setup_metrics(app: "FastAPI") -> None:  # type: ignore[name-defined]  # noqa
         _register_fallback_endpoint(app)
         return
 
-    metrics_enabled = os.getenv("ENABLE_METRICS", "true").lower() not in ("0", "false", "no")
+    metrics_enabled = os.getenv("ENABLE_METRICS", "true").lower() not in (
+        "0",
+        "false",
+        "no",
+    )
     if not metrics_enabled:
         logger.info("Metrics disabled via ENABLE_METRICS env var.")
         return
 
     try:
-        instrumentator = (
+        (
             Instrumentator(
                 should_group_status_codes=True,
                 should_ignore_untemplated=True,

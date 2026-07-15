@@ -72,14 +72,14 @@ class DialogDataset(Dataset):
 
         # Truncate history to last N turns to limit sequence length
         history_turns: List[str] = [
-            t.strip()
-            for t in str(row["history"]).split("[SEP]")
-            if t.strip()
+            t.strip() for t in str(row["history"]).split("[SEP]") if t.strip()
         ][-self.max_history_turns :]
 
         history_text = " [SEP] ".join(history_turns)
         current_text = str(row["current_utterance"]).strip()
-        full_text = f"{history_text} [SEP] {current_text}" if history_text else current_text
+        full_text = (
+            f"{history_text} [SEP] {current_text}" if history_text else current_text
+        )
 
         encoding = self.tokenizer(
             full_text,
@@ -90,7 +90,7 @@ class DialogDataset(Dataset):
         )
 
         return {
-            "input_ids": encoding["input_ids"].squeeze(0),       # (seq_len,)
+            "input_ids": encoding["input_ids"].squeeze(0),  # (seq_len,)
             "attention_mask": encoding["attention_mask"].squeeze(0),  # (seq_len,)
             "labels": torch.tensor(int(row["label"]), dtype=torch.long),
         }
@@ -108,39 +108,71 @@ def collate_fn(batch: List[Dict[str, torch.Tensor]]) -> Dict[str, torch.Tensor]:
 # ── Synthetic MultiWOZ-style data generator ──────────────────────────────────
 
 DIALOG_ACTS = [
-    "inform", "request", "confirm", "deny", "greet",
-    "bye", "book", "recommend", "nooffer", "offerbook",
-    "offerbooked", "reqmore", "welcome", "select", "nobook",
+    "inform",
+    "request",
+    "confirm",
+    "deny",
+    "greet",
+    "bye",
+    "book",
+    "recommend",
+    "nooffer",
+    "offerbook",
+    "offerbooked",
+    "reqmore",
+    "welcome",
+    "select",
+    "nobook",
 ]
 
 DOMAINS = [
-    "restaurant", "hotel", "taxi", "train",
-    "attraction", "hospital", "police",
+    "restaurant",
+    "hotel",
+    "taxi",
+    "train",
+    "attraction",
+    "hospital",
+    "police",
 ]
 
 _TEMPLATES = {
-    "inform":      "I can provide {domain} information for you.",
-    "request":     "What {domain} details do you need?",
-    "confirm":     "Would you like to confirm the {domain} booking?",
-    "deny":        "I'm sorry, that {domain} is not available.",
-    "greet":       "Hello! How can I help you today?",
-    "bye":         "Thank you for using our service. Goodbye!",
-    "book":        "I'll book the {domain} for you right away.",
-    "recommend":   "I recommend this {domain} option.",
-    "nooffer":     "Unfortunately no {domain} matches your criteria.",
-    "offerbook":   "Would you like me to book this {domain}?",
+    "inform": "I can provide {domain} information for you.",
+    "request": "What {domain} details do you need?",
+    "confirm": "Would you like to confirm the {domain} booking?",
+    "deny": "I'm sorry, that {domain} is not available.",
+    "greet": "Hello! How can I help you today?",
+    "bye": "Thank you for using our service. Goodbye!",
+    "book": "I'll book the {domain} for you right away.",
+    "recommend": "I recommend this {domain} option.",
+    "nooffer": "Unfortunately no {domain} matches your criteria.",
+    "offerbook": "Would you like me to book this {domain}?",
     "offerbooked": "Your {domain} has been booked successfully.",
-    "reqmore":     "Is there anything else I can help you with?",
-    "welcome":     "You're welcome! Anything else?",
-    "select":      "Please select a {domain} from the options.",
-    "nobook":      "I cannot book this {domain} at the moment.",
+    "reqmore": "Is there anything else I can help you with?",
+    "welcome": "You're welcome! Anything else?",
+    "select": "Please select a {domain} from the options.",
+    "nobook": "I cannot book this {domain} at the moment.",
 }
 
 # Simulated class imbalance (mirrors real MultiWOZ distributions)
-_ACT_WEIGHTS = np.array([
-    0.20, 0.15, 0.10, 0.05, 0.08, 0.05, 0.08,
-    0.08, 0.03, 0.04, 0.04, 0.04, 0.02, 0.02, 0.02,
-])
+_ACT_WEIGHTS = np.array(
+    [
+        0.20,
+        0.15,
+        0.10,
+        0.05,
+        0.08,
+        0.05,
+        0.08,
+        0.08,
+        0.03,
+        0.04,
+        0.04,
+        0.04,
+        0.02,
+        0.02,
+        0.02,
+    ]
+)
 _ACT_PROBS = _ACT_WEIGHTS / _ACT_WEIGHTS.sum()
 
 
@@ -173,16 +205,22 @@ def generate_synthetic_dataset(
             for _ in range(history_len)
         ]
 
-        rows.append({
-            "dialog_id":         f"dialog_{i:05d}",
-            "turn_id":           int(rng.integers(1, 10)),
-            "history":           " [SEP] ".join(history_turns),
-            "current_utterance": _TEMPLATES[act].format(domain=domain),
-            "dialog_act":        act,
-            "domain":            domain,
-            "user_group":        rng.choice(user_groups),
-        })
+        rows.append(
+            {
+                "dialog_id": f"dialog_{i:05d}",
+                "turn_id": int(rng.integers(1, 10)),
+                "history": " [SEP] ".join(history_turns),
+                "current_utterance": _TEMPLATES[act].format(domain=domain),
+                "dialog_act": act,
+                "domain": domain,
+                "user_group": rng.choice(user_groups),
+            }
+        )
 
     df = pd.DataFrame(rows)
-    logger.info("Generated synthetic dataset: %d samples, %d acts", len(df), df["dialog_act"].nunique())
+    logger.info(
+        "Generated synthetic dataset: %d samples, %d acts",
+        len(df),
+        df["dialog_act"].nunique(),
+    )
     return df

@@ -11,7 +11,7 @@ from typing import Optional, Tuple
 
 import cv2
 import numpy as np
-from PIL import Image, ImageEnhance
+from PIL import Image
 
 logger = logging.getLogger(__name__)
 
@@ -171,7 +171,9 @@ class ImagePreprocessor:
             return 0.0
 
         median_angle = float(np.median(angles))
-        self._log.debug("Detected skew angle: %.2f° (from %d contours)", median_angle, len(angles))
+        self._log.debug(
+            "Detected skew angle: %.2f° (from %d contours)", median_angle, len(angles)
+        )
         return median_angle
 
     def _rotate(self, image: np.ndarray, angle: float) -> np.ndarray:

@@ -58,6 +58,10 @@ class ConnectorRegistry:
 
     def get_info(self) -> list[dict]:
         return [
-            {"type": name, "class": cls.__name__, "doc": (cls.__doc__ or "").strip().split("\n")[0]}
+            {
+                "type": name,
+                "class": cls.__name__,
+                "doc": (cls.__doc__ or "").strip().split("\n")[0],
+            }
             for name, cls in self._types.items()
         ]

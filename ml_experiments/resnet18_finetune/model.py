@@ -5,7 +5,6 @@ model.py — ResNet-18 fine-tuning with progressive layer unfreezing.
 from __future__ import annotations
 
 import logging
-from typing import Optional
 
 import torch
 import torch.nn as nn
@@ -31,7 +30,7 @@ class ResNet18Classifier(nn.Module):
         backbone = models.resnet18(weights=weights)
 
         # Replace the classification head
-        in_features = backbone.fc.in_features          # 512 for ResNet-18
+        in_features = backbone.fc.in_features  # 512 for ResNet-18
         backbone.fc = nn.Sequential(
             nn.Dropout(p=dropout),
             nn.Linear(in_features, num_classes),
@@ -70,10 +69,13 @@ class ResNet18Classifier(nn.Module):
                 p.requires_grad = True
 
         trainable = sum(p.numel() for p in self.parameters() if p.requires_grad)
-        total     = sum(p.numel() for p in self.parameters())
+        total = sum(p.numel() for p in self.parameters())
         logger.info(
             "Trainable params: %d / %d (%.1f%%) — active layers: %s",
-            trainable, total, 100 * trainable / total, layer_names,
+            trainable,
+            total,
+            100 * trainable / total,
+            layer_names,
         )
 
     def get_param_groups(
@@ -86,13 +88,16 @@ class ResNet18Classifier(nn.Module):
             - backbone layers (lower LR for preservation of pretrained features)
             - classification head (higher LR for task adaptation)
         """
-        head_params     = list(self.model.fc.parameters())
-        head_param_ids  = {id(p) for p in head_params}
-        backbone_params = [p for p in self.parameters()
-                           if id(p) not in head_param_ids and p.requires_grad]
+        head_params = list(self.model.fc.parameters())
+        head_param_ids = {id(p) for p in head_params}
+        backbone_params = [
+            p
+            for p in self.parameters()
+            if id(p) not in head_param_ids and p.requires_grad
+        ]
         return [
             {"params": backbone_params, "lr": backbone_lr},
-            {"params": head_params,     "lr": head_lr},
+            {"params": head_params, "lr": head_lr},
         ]
 
 

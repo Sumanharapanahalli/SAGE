@@ -10,13 +10,12 @@ Pattern: Constitutional AI, Multi-Agent Debate (Du et al.)
 """
 
 import logging
-import statistics
 import threading
 import uuid
 from collections import Counter
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Callable, Optional
+from typing import Callable, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -24,8 +23,9 @@ logger = logging.getLogger(__name__)
 @dataclass
 class Vote:
     """A single agent's vote."""
-    voter: str             # agent role
-    decision: str          # the vote value (e.g., "approve", "reject", "abstain")
+
+    voter: str  # agent role
+    decision: str  # the vote value (e.g., "approve", "reject", "abstain")
     confidence: float = 0.5
     reasoning: str = ""
     timestamp: str = field(
@@ -45,13 +45,14 @@ class Vote:
 @dataclass
 class ConsensusResult:
     """Result of a consensus round."""
+
     consensus_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     question: str = ""
     votes: list = field(default_factory=list)
-    decision: str = ""           # majority decision
+    decision: str = ""  # majority decision
     agreement_ratio: float = 0.0  # 0-1, how much agents agreed
-    needs_human: bool = False     # escalate if disagreement too high
-    method: str = "majority"      # majority | weighted | unanimous
+    needs_human: bool = False  # escalate if disagreement too high
+    method: str = "majority"  # majority | weighted | unanimous
     started_at: str = ""
     completed_at: str = ""
 
@@ -59,8 +60,7 @@ class ConsensusResult:
         return {
             "consensus_id": self.consensus_id,
             "question": self.question[:200],
-            "votes": [v.to_dict() if hasattr(v, 'to_dict') else v
-                      for v in self.votes],
+            "votes": [v.to_dict() if hasattr(v, "to_dict") else v for v in self.votes],
             "decision": self.decision,
             "agreement_ratio": self.agreement_ratio,
             "needs_human": self.needs_human,
@@ -120,12 +120,15 @@ class ConsensusEngine:
             started_at=datetime.now(timezone.utc).isoformat(),
         )
 
-        self._emit("consensus.started", {
-            "consensus_id": result.consensus_id,
-            "question": question[:100],
-            "voter_count": len(voters),
-            "method": method,
-        })
+        self._emit(
+            "consensus.started",
+            {
+                "consensus_id": result.consensus_id,
+                "question": question[:100],
+                "voter_count": len(voters),
+                "method": method,
+            },
+        )
 
         full_question = f"{question}\n\nContext: {context}" if context else question
 
@@ -151,12 +154,15 @@ class ConsensusEngine:
 
             votes.append(vote)
 
-            self._emit("consensus.vote", {
-                "consensus_id": result.consensus_id,
-                "voter": role,
-                "decision": vote.decision,
-                "confidence": vote.confidence,
-            })
+            self._emit(
+                "consensus.vote",
+                {
+                    "consensus_id": result.consensus_id,
+                    "voter": role,
+                    "decision": vote.decision,
+                    "confidence": vote.confidence,
+                },
+            )
 
         result.votes = votes
 
@@ -174,12 +180,15 @@ class ConsensusEngine:
 
         result.completed_at = datetime.now(timezone.utc).isoformat()
 
-        self._emit("consensus.resolved", {
-            "consensus_id": result.consensus_id,
-            "decision": result.decision,
-            "agreement_ratio": result.agreement_ratio,
-            "needs_human": result.needs_human,
-        })
+        self._emit(
+            "consensus.resolved",
+            {
+                "consensus_id": result.consensus_id,
+                "decision": result.decision,
+                "agreement_ratio": result.agreement_ratio,
+                "needs_human": result.needs_human,
+            },
+        )
 
         with self._lock:
             self._results[result.consensus_id] = result
@@ -239,8 +248,12 @@ class ConsensusEngine:
         with self._lock:
             results = list(self._results.values())
         if not results:
-            return {"total_rounds": 0, "avg_agreement": 0,
-                    "escalation_rate": 0, "unanimous_rate": 0}
+            return {
+                "total_rounds": 0,
+                "avg_agreement": 0,
+                "escalation_rate": 0,
+                "unanimous_rate": 0,
+            }
         escalated = sum(1 for r in results if r.needs_human)
         unanimous = sum(1 for r in results if r.agreement_ratio == 1.0)
         return {
@@ -256,6 +269,7 @@ class ConsensusEngine:
     def _emit(event_type: str, data: dict) -> None:
         try:
             from src.core.event_bus import get_event_bus
+
             get_event_bus().publish(event_type, data, source="consensus_engine")
         except Exception:
             pass

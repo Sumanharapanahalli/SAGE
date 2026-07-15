@@ -17,6 +17,7 @@ store/instance to wire at startup, so these handlers import them
 directly at call time rather than reading an injected module-level
 variable.
 """
+
 from __future__ import annotations
 
 from rpc import RPC_INVALID_PARAMS, RPC_SIDECAR_ERROR, RpcError
@@ -27,6 +28,7 @@ _VALID_VISIBILITIES = {"public", "private", "disabled"}
 def list(params: dict) -> dict:  # noqa: A001 - matches web API's `list_skills` verb
     try:
         from src.core.skill_loader import skill_registry
+
         include_disabled = bool((params or {}).get("include_disabled", False))
         found = skill_registry.list_all(include_disabled=include_disabled)
         return {
@@ -42,6 +44,7 @@ def list(params: dict) -> dict:  # noqa: A001 - matches web API's `list_skills` 
 def set_visibility(params: dict) -> dict:
     try:
         from src.core.skill_loader import skill_registry
+
         p = params or {}
         name = p.get("name")
         visibility = p.get("visibility")
@@ -62,6 +65,7 @@ def set_visibility(params: dict) -> dict:
 def reload(params: dict) -> dict:  # noqa: A001 - matches web API's `reload_skills` verb
     try:
         from src.core.skill_loader import skill_registry
+
         count = skill_registry.reload()
         return {
             "status": "reloaded",
@@ -77,6 +81,7 @@ def reload(params: dict) -> dict:  # noqa: A001 - matches web API's `reload_skil
 def mcp_tools(params: dict) -> dict:
     try:
         from src.integrations.mcp_registry import mcp_registry
+
         tools = mcp_registry.list_tools()
         return {"tools": tools, "count": len(tools)}
     except RpcError:

@@ -24,7 +24,6 @@ All LLM calls are mocked — these tests verify wiring, state transitions,
 and data integrity across the full request lifecycle.
 """
 
-import json
 import re
 import sqlite3
 from unittest.mock import MagicMock, patch
@@ -51,10 +50,12 @@ MOCK_ANALYSIS = {
 # Fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture(autouse=True)
 def _clear_proposals():
     """Reset in-memory proposal store between tests."""
     from src.interface import api
+
     api._pending_proposals.clear()
     yield
     api._pending_proposals.clear()
@@ -65,6 +66,7 @@ def sys_client(tmp_audit_db):
     """System test client with isolated audit DB."""
     with patch("src.interface.api._get_audit_logger", return_value=tmp_audit_db):
         from src.interface.api import app
+
         with TestClient(app) as c:
             yield c, tmp_audit_db
 
@@ -117,12 +119,16 @@ class TestHealthAndStatus:
         with patch("src.interface.api._get_llm_gateway") as mock_llm:
             mock_llm.return_value.get_provider_name.return_value = "mock"
             mock_llm.return_value.get_model_info.return_value = {
-                "model": "mock", "daily_request_limit": 0,
-                "context_tokens": 4096, "unlimited": True,
+                "model": "mock",
+                "daily_request_limit": 0,
+                "context_tokens": 4096,
+                "unlimited": True,
             }
             mock_llm.return_value.get_usage.return_value = {
-                "calls": 0, "calls_today": 0,
-                "estimated_tokens": 0, "errors": 0,
+                "calls": 0,
+                "calls_today": 0,
+                "estimated_tokens": 0,
+                "errors": 0,
                 "started_at": "2026-01-01T00:00:00+00:00",
                 "day_started_at": "2026-01-01T00:00:00+00:00",
             }
@@ -156,7 +162,9 @@ class TestAnalysisLifecycle:
     def _analyze(self, client, trace_id="aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee"):
         analyst = _mock_analyst(trace_id)
         with patch("src.interface.api._get_analyst", return_value=analyst):
-            resp = client.post("/analyze", json={"log_entry": "ERROR: OOM at service:42"})
+            resp = client.post(
+                "/analyze", json={"log_entry": "ERROR: OOM at service:42"}
+            )
         return resp
 
     def test_analyze_creates_proposal(self, sys_client):
@@ -172,6 +180,7 @@ class TestAnalysisLifecycle:
         trace_id = resp.json()["trace_id"]
         # Proposals stored in _pending_proposals dict
         from src.interface.api import _pending_proposals
+
         assert trace_id in _pending_proposals
 
     def test_approve_removes_from_pending(self, sys_client):
@@ -181,6 +190,7 @@ class TestAnalysisLifecycle:
         approve_resp = c.post(f"/approve/{trace_id}")
         assert approve_resp.status_code == 200
         from src.interface.api import _pending_proposals
+
         assert trace_id not in _pending_proposals
 
     def test_approve_creates_audit_record(self, sys_client):
@@ -199,11 +209,15 @@ class TestAnalysisLifecycle:
         c, _ = sys_client
         resp = self._analyze(c, trace_id="aaaaaaaa-bbbb-4ccc-8ddd-333333333333")
         trace_id = resp.json()["trace_id"]
-        reject_resp = c.post(f"/reject/{trace_id}", json={
-            "feedback": "Analysis missed the real root cause",
-        })
+        reject_resp = c.post(
+            f"/reject/{trace_id}",
+            json={
+                "feedback": "Analysis missed the real root cause",
+            },
+        )
         assert reject_resp.status_code == 200
         from src.interface.api import _pending_proposals
+
         assert trace_id not in _pending_proposals
 
     def test_approve_invalid_trace_returns_404(self, sys_client):
@@ -213,9 +227,12 @@ class TestAnalysisLifecycle:
 
     def test_reject_invalid_trace_returns_404(self, sys_client):
         c, _ = sys_client
-        resp = c.post("/reject/nonexistent-id-does-not-exist", json={
-            "feedback": "bad",
-        })
+        resp = c.post(
+            "/reject/nonexistent-id-does-not-exist",
+            json={
+                "feedback": "bad",
+            },
+        )
         assert resp.status_code in (400, 404)
 
     def test_analyze_rejects_empty_log(self, sys_client):
@@ -227,10 +244,13 @@ class TestAnalysisLifecycle:
         c, _ = sys_client
         # batch approve works with ProposalStore proposals, not _pending_proposals
         # Just verify the endpoint accepts the right shape
-        resp = c.post("/proposals/approve-batch", json={
-            "trace_ids": ["nonexistent-1", "nonexistent-2"],
-            "decided_by": "suman",
-        })
+        resp = c.post(
+            "/proposals/approve-batch",
+            json={
+                "trace_ids": ["nonexistent-1", "nonexistent-2"],
+                "decided_by": "suman",
+            },
+        )
         assert resp.status_code == 200
         body = resp.json()
         assert "results" in body
@@ -248,10 +268,13 @@ class TestLLMSwitch:
         c, _ = sys_client
         with patch("src.interface.api._get_llm_gateway") as mock_llm:
             mock_llm.return_value.provider = MagicMock()
-            resp = c.post("/llm/switch", json={
-                "provider": "ollama",
-                "model": "llama3.2",
-            })
+            resp = c.post(
+                "/llm/switch",
+                json={
+                    "provider": "ollama",
+                    "model": "llama3.2",
+                },
+            )
         assert resp.status_code == 200
         body = resp.json()
         assert body.get("status") == "switched" or "provider" in body
@@ -272,9 +295,12 @@ class TestConfigSwitch:
 
     def test_update_modules(self, sys_client):
         c, _ = sys_client
-        resp = c.post("/config/modules", json={
-            "modules": ["dashboard", "analyst", "knowledge"],
-        })
+        resp = c.post(
+            "/config/modules",
+            json={
+                "modules": ["dashboard", "analyst", "knowledge"],
+            },
+        )
         assert resp.status_code == 200
 
     def test_read_yaml(self, sys_client):
@@ -309,10 +335,13 @@ class TestKnowledgeCRUD:
     def test_add_knowledge_entry(self, sys_client):
         c, _ = sys_client
         # The endpoint expects "text" not "content", and creates a proposal
-        resp = c.post("/knowledge/add", json={
-            "text": "UART buffer overflow requires increasing RX_BUF_SIZE to 512",
-            "metadata": {"source": "manual", "category": "firmware"},
-        })
+        resp = c.post(
+            "/knowledge/add",
+            json={
+                "text": "UART buffer overflow requires increasing RX_BUF_SIZE to 512",
+                "metadata": {"source": "manual", "category": "firmware"},
+            },
+        )
         assert resp.status_code == 200
 
     def test_search_knowledge(self, sys_client):
@@ -338,10 +367,13 @@ class TestQueueAndTasks:
 
     def test_submit_task(self, sys_client):
         c, _ = sys_client
-        resp = c.post("/tasks/submit", json={
-            "task_type": "ANALYZE_LOG",
-            "payload": {"log_entry": "ERROR test"},
-        })
+        resp = c.post(
+            "/tasks/submit",
+            json={
+                "task_type": "ANALYZE_LOG",
+                "payload": {"log_entry": "ERROR test"},
+            },
+        )
         assert resp.status_code == 200
         body = resp.json()
         assert "task_id" in body
@@ -368,9 +400,12 @@ class TestBuildOrchestrator:
                 "status": "planning",
                 "description": "Test product",
             }
-            resp = c.post("/build/start", json={
-                "product_description": "A simple REST API for task management with CRUD endpoints",
-            })
+            resp = c.post(
+                "/build/start",
+                json={
+                    "product_description": "A simple REST API for task management with CRUD endpoints",
+                },
+            )
         assert resp.status_code == 200
         body = resp.json()
         assert "run_id" in body
@@ -436,8 +471,10 @@ class TestMultiLLMSystem:
         class _P:
             def __init__(self, resp):
                 self._resp = resp
+
             def provider_name(self):
                 return "mock"
+
             def generate(self, prompt, system_prompt):
                 return self._resp
 
@@ -457,12 +494,14 @@ class TestMultiLLMSystem:
         class _Fail:
             def provider_name(self):
                 return "fail"
+
             def generate(self, p, s):
                 raise ConnectionError("down")
 
         class _OK:
             def provider_name(self):
                 return "ok"
+
             def generate(self, p, s):
                 return "backup works"
 
@@ -471,8 +510,11 @@ class TestMultiLLMSystem:
         pool.register("backup", _OK())
 
         result = generate_parallel(
-            pool, "test", "sys",
-            strategy="fallback", provider_names=["broken", "backup"],
+            pool,
+            "test",
+            "sys",
+            strategy="fallback",
+            provider_names=["broken", "backup"],
         )
         assert result["response"] == "backup works"
         assert result["provider"] == "backup"
@@ -484,8 +526,10 @@ class TestMultiLLMSystem:
         class _P:
             def __init__(self, resp):
                 self._resp = resp
+
             def provider_name(self):
                 return "mock"
+
             def generate(self, p, s):
                 return self._resp
 
@@ -503,8 +547,10 @@ class TestMultiLLMSystem:
         class _P:
             def __init__(self, resp):
                 self._resp = resp
+
             def provider_name(self):
                 return "mock"
+
             def generate(self, p, s):
                 return self._resp
 
@@ -529,8 +575,10 @@ class TestAuditTrail:
         c, audit = sys_client
         # Insert events directly
         audit.log_event(
-            actor="system-test", action_type="TEST_EVENT",
-            input_context="input", output_content="output",
+            actor="system-test",
+            action_type="TEST_EVENT",
+            input_context="input",
+            output_content="output",
         )
         resp = c.get("/audit?limit=10")
         assert resp.status_code == 200
@@ -544,8 +592,10 @@ class TestAuditTrail:
         c, audit = sys_client
         for i in range(5):
             audit.log_event(
-                actor="system-test", action_type="TEST_EVENT",
-                input_context=f"input-{i}", output_content=f"output-{i}",
+                actor="system-test",
+                action_type="TEST_EVENT",
+                input_context=f"input-{i}",
+                output_content=f"output-{i}",
             )
         page1 = c.get("/audit?limit=2&offset=0").json()
         page2 = c.get("/audit?limit=2&offset=2").json()
@@ -570,14 +620,17 @@ class TestFeatureRequests:
     def test_submit_solution_feature_request(self, sys_client):
         c, _ = sys_client
         # FeatureRequestCreate requires: module_id, module_name, title, description
-        resp = c.post("/feedback/feature-request", json={
-            "module_id": "dashboard",
-            "module_name": "Dashboard",
-            "title": "Add voice commands",
-            "description": "Support voice input for hands-free operation",
-            "scope": "solution",
-            "requested_by": "suman",
-        })
+        resp = c.post(
+            "/feedback/feature-request",
+            json={
+                "module_id": "dashboard",
+                "module_name": "Dashboard",
+                "title": "Add voice commands",
+                "description": "Support voice input for hands-free operation",
+                "scope": "solution",
+                "requested_by": "suman",
+            },
+        )
         assert resp.status_code == 200
         body = resp.json()
         assert "id" in body
@@ -585,27 +638,33 @@ class TestFeatureRequests:
 
     def test_submit_sage_feature_request(self, sys_client):
         c, _ = sys_client
-        resp = c.post("/feedback/feature-request", json={
-            "module_id": "llm",
-            "module_name": "LLM Gateway",
-            "title": "Add WebSocket streaming",
-            "description": "Support WebSocket as alternative to SSE",
-            "scope": "sage",
-            "requested_by": "contributor",
-        })
+        resp = c.post(
+            "/feedback/feature-request",
+            json={
+                "module_id": "llm",
+                "module_name": "LLM Gateway",
+                "title": "Add WebSocket streaming",
+                "description": "Support WebSocket as alternative to SSE",
+                "scope": "sage",
+                "requested_by": "contributor",
+            },
+        )
         assert resp.status_code == 200
 
     def test_list_feature_requests(self, sys_client):
         c, _ = sys_client
         # Submit first
-        c.post("/feedback/feature-request", json={
-            "module_id": "analyst",
-            "module_name": "Analyst",
-            "title": "Test request",
-            "description": "For listing test",
-            "scope": "solution",
-            "requested_by": "test",
-        })
+        c.post(
+            "/feedback/feature-request",
+            json={
+                "module_id": "analyst",
+                "module_name": "Analyst",
+                "title": "Test request",
+                "description": "For listing test",
+                "scope": "solution",
+                "requested_by": "test",
+            },
+        )
         resp = c.get("/feedback/feature-requests")
         assert resp.status_code == 200
         body = resp.json()
@@ -647,26 +706,35 @@ class TestWebhooks:
 
     def test_teams_webhook_accepts_json(self, sys_client):
         c, _ = sys_client
-        resp = c.post("/webhook/teams", json={
-            "message": "ERROR: device offline",
-            "from": "monitor-bot",
-        })
+        resp = c.post(
+            "/webhook/teams",
+            json={
+                "message": "ERROR: device offline",
+                "from": "monitor-bot",
+            },
+        )
         assert resp.status_code == 200
 
     def test_teams_webhook_rejects_invalid(self, sys_client):
         c, _ = sys_client
-        resp = c.post("/webhook/teams", content=b"not json",
-                       headers={"Content-Type": "application/json"})
+        resp = c.post(
+            "/webhook/teams",
+            content=b"not json",
+            headers={"Content-Type": "application/json"},
+        )
         assert resp.status_code in (400, 422)
 
     def test_n8n_webhook_with_event_type(self, sys_client):
         c, _ = sys_client
         # n8n requires event_type field
-        resp = c.post("/webhook/n8n", json={
-            "event_type": "log_alert",
-            "payload": {"message": "CPU > 90%"},
-            "source": "n8n-workflow",
-        })
+        resp = c.post(
+            "/webhook/n8n",
+            json={
+                "event_type": "log_alert",
+                "payload": {"message": "CPU > 90%"},
+                "source": "n8n-workflow",
+            },
+        )
         assert resp.status_code == 200
 
 
@@ -744,10 +812,13 @@ class TestOnboarding:
                 "files": ["project.yaml", "prompts.yaml", "tasks.yaml"],
                 "message": "Solution created",
             }
-            resp = c.post("/onboarding/generate", json={
-                "description": "A fitness tracking app for gym users",
-                "solution_name": "fitness_app",
-            })
+            resp = c.post(
+                "/onboarding/generate",
+                json={
+                    "description": "A fitness tracking app for gym users",
+                    "solution_name": "fitness_app",
+                },
+            )
         assert resp.status_code == 200
 
 
@@ -807,14 +878,18 @@ class TestFullLifecycleSmoke:
         # 2. Submit analysis
         analyst = _mock_analyst(trace_id="ffffffff-0000-4000-8000-aaaaaaaaaaaa")
         with patch("src.interface.api._get_analyst", return_value=analyst):
-            analyze_resp = c.post("/analyze", json={
-                "log_entry": "CRITICAL: Connection pool exhausted at db_pool:89",
-            })
+            analyze_resp = c.post(
+                "/analyze",
+                json={
+                    "log_entry": "CRITICAL: Connection pool exhausted at db_pool:89",
+                },
+            )
         assert analyze_resp.status_code == 200
         trace_id = analyze_resp.json()["trace_id"]
 
         # 3. Verify proposal is stored
         from src.interface.api import _pending_proposals
+
         assert trace_id in _pending_proposals
 
         # 4. Approve
@@ -839,19 +914,26 @@ class TestFullLifecycleSmoke:
         # Submit analysis
         analyst = _mock_analyst(trace_id="ffffffff-1111-4111-8111-bbbbbbbbbbbb")
         with patch("src.interface.api._get_analyst", return_value=analyst):
-            resp = c.post("/analyze", json={
-                "log_entry": "WARNING: cache miss rate >50%",
-            })
+            resp = c.post(
+                "/analyze",
+                json={
+                    "log_entry": "WARNING: cache miss rate >50%",
+                },
+            )
         trace_id = resp.json()["trace_id"]
 
         # Reject with feedback
-        reject_resp = c.post(f"/reject/{trace_id}", json={
-            "feedback": "Root cause is incorrect — config issue not cache",
-        })
+        reject_resp = c.post(
+            f"/reject/{trace_id}",
+            json={
+                "feedback": "Root cause is incorrect — config issue not cache",
+            },
+        )
         assert reject_resp.status_code == 200
 
         # Verify cleared
         from src.interface.api import _pending_proposals
+
         assert trace_id not in _pending_proposals
 
 

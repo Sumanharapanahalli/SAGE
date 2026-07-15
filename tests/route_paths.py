@@ -9,6 +9,7 @@ a crashing test cannot detect a genuinely missing endpoint, so it was false safe
 Walk the tree instead, so a route is found whether it is declared on the app directly
 or contributed by an included router.
 """
+
 from __future__ import annotations
 
 from typing import Any

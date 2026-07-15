@@ -5,11 +5,11 @@ independent of AuditLogger's write path. Trace IDs live inside the
 metadata JSON blob (AuditLogger.log_event does not populate the dedicated
 ``trace_id`` column), so filtering uses SQLite's ``json_extract`` operator.
 """
+
 from __future__ import annotations
 
 import json
 import sqlite3
-from typing import Optional
 
 from rpc import RpcError, RPC_INVALID_PARAMS
 
@@ -57,6 +57,7 @@ def _require_trace_id(params: dict) -> str:
 
 
 # ---------- handlers ----------
+
 
 def list_events(params: dict) -> dict:
     """List audit events newest-first with pagination + optional filters."""

@@ -14,22 +14,19 @@ Tests for all 9 SOTA orchestrator modules:
   9. Consensus Engine
 """
 
-import asyncio
-import os
 import threading
 import time
-
-import pytest
 
 
 # ═══════════════════════════════════════════════════════════════════════
 # 1. EVENT BUS
 # ═══════════════════════════════════════════════════════════════════════
 
-class TestEventBus:
 
+class TestEventBus:
     def test_publish_creates_event(self):
         from src.core.event_bus import EventBus
+
         bus = EventBus()
         event = bus.publish("task.started", {"task_id": "t1"})
         assert event.event_type == "task.started"
@@ -38,6 +35,7 @@ class TestEventBus:
 
     def test_history_stores_events(self):
         from src.core.event_bus import EventBus
+
         bus = EventBus()
         bus.publish("task.started", {"id": "1"})
         bus.publish("task.completed", {"id": "2"})
@@ -46,6 +44,7 @@ class TestEventBus:
 
     def test_history_filters_by_type(self):
         from src.core.event_bus import EventBus
+
         bus = EventBus()
         bus.publish("task.started", {})
         bus.publish("task.completed", {})
@@ -55,6 +54,7 @@ class TestEventBus:
 
     def test_history_bounded(self):
         from src.core.event_bus import EventBus
+
         bus = EventBus(history_size=5)
         for i in range(10):
             bus.publish("test", {"i": i})
@@ -62,6 +62,7 @@ class TestEventBus:
 
     def test_sync_callback(self):
         from src.core.event_bus import EventBus
+
         bus = EventBus()
         received = []
         bus.on_event(lambda e: received.append(e))
@@ -71,6 +72,7 @@ class TestEventBus:
 
     def test_event_to_sse(self):
         from src.core.event_bus import Event
+
         event = Event(event_type="task.started", data={"id": "1"})
         sse = event.to_sse()
         assert "event: task.started" in sse
@@ -79,6 +81,7 @@ class TestEventBus:
 
     def test_stats(self):
         from src.core.event_bus import EventBus
+
         bus = EventBus()
         bus.publish("a", {})
         bus.publish("b", {})
@@ -88,6 +91,7 @@ class TestEventBus:
 
     def test_thread_safety(self):
         from src.core.event_bus import EventBus
+
         bus = EventBus()
         errors = []
 
@@ -108,12 +112,14 @@ class TestEventBus:
 
     def test_singleton(self):
         from src.core.event_bus import get_event_bus
+
         bus1 = get_event_bus()
         bus2 = get_event_bus()
         assert bus1 is bus2
 
     def test_callback_error_doesnt_break_publish(self):
         from src.core.event_bus import EventBus
+
         bus = EventBus()
         bus.on_event(lambda e: 1 / 0)  # will raise
         event = bus.publish("test", {})  # should not raise
@@ -124,10 +130,11 @@ class TestEventBus:
 # 2. BUDGET MANAGER
 # ═══════════════════════════════════════════════════════════════════════
 
-class TestBudgetManager:
 
+class TestBudgetManager:
     def test_record_usage(self):
         from src.core.budget_manager import BudgetManager
+
         bm = BudgetManager()
         usage = bm.record_usage("agent:analyst", input_tokens=100, output_tokens=50)
         assert usage["total_tokens"] == 150
@@ -135,6 +142,7 @@ class TestBudgetManager:
 
     def test_cumulative_usage(self):
         from src.core.budget_manager import BudgetManager
+
         bm = BudgetManager()
         bm.record_usage("agent:dev", input_tokens=100, output_tokens=50)
         bm.record_usage("agent:dev", input_tokens=200, output_tokens=100)
@@ -144,6 +152,7 @@ class TestBudgetManager:
 
     def test_budget_check_no_limit(self):
         from src.core.budget_manager import BudgetManager
+
         bm = BudgetManager()
         bm.record_usage("test", input_tokens=1000000)
         check = bm.check_budget("test")
@@ -152,6 +161,7 @@ class TestBudgetManager:
 
     def test_budget_check_exceeded(self):
         from src.core.budget_manager import BudgetManager, BudgetConfig
+
         bm = BudgetManager()
         bm.set_budget("limited", BudgetConfig(max_tokens=100, hard_stop=True))
         bm.record_usage("limited", input_tokens=150)
@@ -161,6 +171,7 @@ class TestBudgetManager:
 
     def test_budget_check_soft_limit(self):
         from src.core.budget_manager import BudgetManager, BudgetConfig
+
         bm = BudgetManager()
         bm.set_budget("soft", BudgetConfig(max_tokens=100, hard_stop=False))
         bm.record_usage("soft", input_tokens=150)
@@ -170,6 +181,7 @@ class TestBudgetManager:
 
     def test_cost_budget(self):
         from src.core.budget_manager import BudgetManager, BudgetConfig
+
         bm = BudgetManager()
         bm.set_budget("cost", BudgetConfig(max_cost_usd=1.0))
         bm.record_usage("cost", cost_usd=0.5)
@@ -181,6 +193,7 @@ class TestBudgetManager:
 
     def test_reset_scope(self):
         from src.core.budget_manager import BudgetManager
+
         bm = BudgetManager()
         bm.record_usage("scope1", input_tokens=1000)
         bm.reset_scope("scope1")
@@ -189,6 +202,7 @@ class TestBudgetManager:
 
     def test_top_consumers(self):
         from src.core.budget_manager import BudgetManager
+
         bm = BudgetManager()
         bm.record_usage("agent:dev", input_tokens=500)
         bm.record_usage("agent:analyst", input_tokens=1000)
@@ -199,6 +213,7 @@ class TestBudgetManager:
 
     def test_stats(self):
         from src.core.budget_manager import BudgetManager
+
         bm = BudgetManager()
         bm.record_usage("a", input_tokens=100)
         bm.record_usage("b", input_tokens=200)
@@ -208,6 +223,7 @@ class TestBudgetManager:
 
     def test_utilization_calculation(self):
         from src.core.budget_manager import BudgetManager, BudgetConfig
+
         bm = BudgetManager()
         bm.set_budget("test", BudgetConfig(max_tokens=1000))
         bm.record_usage("test", input_tokens=500)
@@ -219,10 +235,11 @@ class TestBudgetManager:
 # 3. REFLECTION ENGINE
 # ═══════════════════════════════════════════════════════════════════════
 
-class TestReflectionEngine:
 
+class TestReflectionEngine:
     def test_accepts_above_threshold(self):
         from src.core.reflection_engine import ReflectionEngine, ReflectionConfig
+
         engine = ReflectionEngine()
         result = engine.reflect(
             generator=lambda ctx: "good output",
@@ -235,6 +252,7 @@ class TestReflectionEngine:
 
     def test_rejects_below_threshold(self):
         from src.core.reflection_engine import ReflectionEngine, ReflectionConfig
+
         engine = ReflectionEngine()
         result = engine.reflect(
             generator=lambda ctx: "bad output",
@@ -246,6 +264,7 @@ class TestReflectionEngine:
 
     def test_improvement_over_iterations(self):
         from src.core.reflection_engine import ReflectionEngine, ReflectionConfig
+
         call_count = [0]
 
         def improving_critic(output):
@@ -254,7 +273,7 @@ class TestReflectionEngine:
 
         engine = ReflectionEngine()
         result = engine.reflect(
-            generator=lambda ctx: f"attempt",
+            generator=lambda ctx: "attempt",
             critic=improving_critic,
             config=ReflectionConfig(max_iterations=5, acceptance_threshold=0.8),
         )
@@ -263,6 +282,7 @@ class TestReflectionEngine:
 
     def test_stops_on_no_improvement(self):
         from src.core.reflection_engine import ReflectionEngine, ReflectionConfig
+
         engine = ReflectionEngine()
         result = engine.reflect(
             generator=lambda ctx: "stuck",
@@ -278,6 +298,7 @@ class TestReflectionEngine:
 
     def test_history_recorded(self):
         from src.core.reflection_engine import ReflectionEngine
+
         engine = ReflectionEngine()
         result = engine.reflect(
             generator=lambda ctx: "output",
@@ -288,6 +309,7 @@ class TestReflectionEngine:
 
     def test_generator_error_handled(self):
         from src.core.reflection_engine import ReflectionEngine
+
         engine = ReflectionEngine()
         result = engine.reflect(
             generator=lambda ctx: (_ for _ in ()).throw(RuntimeError("boom")),
@@ -298,6 +320,7 @@ class TestReflectionEngine:
 
     def test_get_stats(self):
         from src.core.reflection_engine import ReflectionEngine
+
         engine = ReflectionEngine()
         engine.reflect(
             generator=lambda ctx: "ok",
@@ -309,6 +332,7 @@ class TestReflectionEngine:
 
     def test_list_recent(self):
         from src.core.reflection_engine import ReflectionEngine
+
         engine = ReflectionEngine()
         for _ in range(3):
             engine.reflect(
@@ -320,6 +344,7 @@ class TestReflectionEngine:
 
     def test_get_result_by_id(self):
         from src.core.reflection_engine import ReflectionEngine
+
         engine = ReflectionEngine()
         result = engine.reflect(
             generator=lambda ctx: "ok",
@@ -331,6 +356,7 @@ class TestReflectionEngine:
 
     def test_feedback_injected_into_context(self):
         from src.core.reflection_engine import ReflectionEngine, ReflectionConfig
+
         contexts = []
 
         def tracking_gen(ctx):
@@ -352,37 +378,45 @@ class TestReflectionEngine:
 # 4. MEMORY-AUGMENTED PLANNER
 # ═══════════════════════════════════════════════════════════════════════
 
-class TestMemoryPlanner:
 
+class TestMemoryPlanner:
     def test_augment_context_returns_string(self):
         from src.core.memory_planner import MemoryPlanner
+
         mp = MemoryPlanner()
         ctx = mp.augment_context("Build a REST API")
         assert isinstance(ctx, str)
 
     def test_record_plan(self):
         from src.core.memory_planner import MemoryPlanner
+
         mp = MemoryPlanner()
-        mp.record_plan({
-            "name": "api-build",
-            "description": "Build REST API",
-            "tasks": [{"task_type": "CODE_TASK"}],
-        })
+        mp.record_plan(
+            {
+                "name": "api-build",
+                "description": "Build REST API",
+                "tasks": [{"task_type": "CODE_TASK"}],
+            }
+        )
         assert mp.get_stats()["recorded_plans"] == 1
 
     def test_find_similar_plans(self):
         from src.core.memory_planner import MemoryPlanner
+
         mp = MemoryPlanner()
-        mp.record_plan({
-            "name": "api-build",
-            "description": "Build REST API with authentication",
-            "tasks": [{"task_type": "CODE_TASK"}, {"task_type": "REVIEW_MR"}],
-        })
+        mp.record_plan(
+            {
+                "name": "api-build",
+                "description": "Build REST API with authentication",
+                "tasks": [{"task_type": "CODE_TASK"}, {"task_type": "REVIEW_MR"}],
+            }
+        )
         results = mp._find_similar_plans("Build API with auth")
         assert len(results) >= 1
 
     def test_plan_history_bounded(self):
         from src.core.memory_planner import MemoryPlanner
+
         mp = MemoryPlanner()
         for i in range(110):
             mp.record_plan({"name": f"plan-{i}", "tasks": []})
@@ -390,17 +424,21 @@ class TestMemoryPlanner:
 
     def test_augment_includes_plan_history(self):
         from src.core.memory_planner import MemoryPlanner
+
         mp = MemoryPlanner()
-        mp.record_plan({
-            "name": "firmware-update",
-            "description": "Firmware OTA update pipeline",
-            "tasks": [{"task_type": "FIRMWARE"}, {"task_type": "TEST"}],
-        })
+        mp.record_plan(
+            {
+                "name": "firmware-update",
+                "description": "Firmware OTA update pipeline",
+                "tasks": [{"task_type": "FIRMWARE"}, {"task_type": "TEST"}],
+            }
+        )
         ctx = mp.augment_context("Build firmware update")
         assert "firmware" in ctx.lower() or ctx == ""
 
     def test_stats(self):
         from src.core.memory_planner import MemoryPlanner
+
         mp = MemoryPlanner(max_examples=3, min_confidence=0.5)
         stats = mp.get_stats()
         assert stats["max_examples"] == 3
@@ -411,10 +449,11 @@ class TestMemoryPlanner:
 # 5. TOOL EXECUTOR
 # ═══════════════════════════════════════════════════════════════════════
 
-class TestToolExecutor:
 
+class TestToolExecutor:
     def test_list_builtin_tools(self):
         from src.core.tool_executor import ToolExecutor
+
         te = ToolExecutor()
         tools = te.list_tools()
         names = [t["name"] for t in tools]
@@ -424,64 +463,85 @@ class TestToolExecutor:
 
     def test_register_custom_tool(self):
         from src.core.tool_executor import ToolExecutor, Tool
+
         te = ToolExecutor()
-        te.register(Tool(
-            name="custom_tool",
-            description="A custom tool",
-            handler=lambda: "custom result",
-        ))
+        te.register(
+            Tool(
+                name="custom_tool",
+                description="A custom tool",
+                handler=lambda: "custom result",
+            )
+        )
         assert any(t["name"] == "custom_tool" for t in te.list_tools())
 
     def test_execute_custom_tool(self):
         from src.core.tool_executor import ToolExecutor, Tool
+
         te = ToolExecutor()
-        te.register(Tool(
-            name="echo",
-            description="Echo back",
-            handler=lambda msg="": f"echo: {msg}",
-        ))
+        te.register(
+            Tool(
+                name="echo",
+                description="Echo back",
+                handler=lambda msg="": f"echo: {msg}",
+            )
+        )
         call = te.execute("echo", {"msg": "hello"})
         assert call.result == "echo: hello"
         assert not call.error
 
     def test_execute_unknown_tool(self):
         from src.core.tool_executor import ToolExecutor
+
         te = ToolExecutor()
         call = te.execute("nonexistent_tool")
         assert "Unknown tool" in call.error
 
     def test_tool_requires_approval(self):
         from src.core.tool_executor import ToolExecutor
+
         te = ToolExecutor()
         call = te.execute("shell_run", {"command": "ls"})
         assert "approval" in call.error.lower()
 
     def test_tool_error_caught(self):
         from src.core.tool_executor import ToolExecutor, Tool
+
         te = ToolExecutor()
-        te.register(Tool(
-            name="failing",
-            description="Fails",
-            handler=lambda: 1 / 0,
-        ))
+        te.register(
+            Tool(
+                name="failing",
+                description="Fails",
+                handler=lambda: 1 / 0,
+            )
+        )
         call = te.execute("failing")
         assert call.error
         assert "division" in call.error.lower()
 
     def test_execute_multiple_tool_calls(self):
         from src.core.tool_executor import ToolExecutor, Tool
+
         te = ToolExecutor()
-        te.register(Tool(name="add", description="Add", handler=lambda a=0, b=0: str(int(a) + int(b))))
-        results = te.execute_tool_calls([
-            {"tool": "add", "arguments": {"a": 1, "b": 2}},
-            {"tool": "add", "arguments": {"a": 3, "b": 4}},
-        ])
+        te.register(
+            Tool(
+                name="add",
+                description="Add",
+                handler=lambda a=0, b=0: str(int(a) + int(b)),
+            )
+        )
+        results = te.execute_tool_calls(
+            [
+                {"tool": "add", "arguments": {"a": 1, "b": 2}},
+                {"tool": "add", "arguments": {"a": 3, "b": 4}},
+            ]
+        )
         assert len(results) == 2
         assert results[0]["result"] == "3"
         assert results[1]["result"] == "7"
 
     def test_file_read_tool(self, tmp_path):
         from src.core.tool_executor import ToolExecutor
+
         te = ToolExecutor()
         test_file = tmp_path / "test.txt"
         test_file.write_text("hello world")
@@ -490,12 +550,14 @@ class TestToolExecutor:
 
     def test_file_read_missing_file(self):
         from src.core.tool_executor import ToolExecutor
+
         te = ToolExecutor()
         call = te.execute("file_read", {"path": "/nonexistent/path/file.txt"})
         assert "not found" in call.result.lower()
 
     def test_get_tool_descriptions(self):
         from src.core.tool_executor import ToolExecutor
+
         te = ToolExecutor()
         desc = te.get_tool_descriptions()
         assert "file_read" in desc
@@ -503,6 +565,7 @@ class TestToolExecutor:
 
     def test_history_tracked(self):
         from src.core.tool_executor import ToolExecutor, Tool
+
         te = ToolExecutor()
         te.register(Tool(name="noop", description="No-op", handler=lambda: "ok"))
         te.execute("noop")
@@ -512,6 +575,7 @@ class TestToolExecutor:
 
     def test_stats(self):
         from src.core.tool_executor import ToolExecutor, Tool
+
         te = ToolExecutor()
         te.register(Tool(name="noop", description="No-op", handler=lambda: "ok"))
         te.execute("noop")
@@ -525,10 +589,11 @@ class TestToolExecutor:
 # 6. DYNAMIC AGENT SPAWNER
 # ═══════════════════════════════════════════════════════════════════════
 
-class TestAgentSpawner:
 
+class TestAgentSpawner:
     def test_spawn_default_executor(self):
         from src.core.agent_spawner import AgentSpawner
+
         spawner = AgentSpawner()
         result = spawner.spawn(role="analyst", task="Analyze code")
         assert result["status"] == "completed"
@@ -536,8 +601,11 @@ class TestAgentSpawner:
 
     def test_spawn_custom_executor(self):
         from src.core.agent_spawner import AgentSpawner
+
         spawner = AgentSpawner(
-            agent_fn=lambda role_id, task, context="": {"summary": f"Done by {role_id}"},
+            agent_fn=lambda role_id, task, context="": {
+                "summary": f"Done by {role_id}"
+            },
         )
         result = spawner.spawn(role="dev", task="Fix bug")
         assert result["status"] == "completed"
@@ -545,6 +613,7 @@ class TestAgentSpawner:
 
     def test_depth_limit(self):
         from src.core.agent_spawner import AgentSpawner
+
         spawner = AgentSpawner(max_depth=2)
         result = spawner.spawn(role="dev", task="task", depth=5)
         assert result["status"] == "rejected"
@@ -556,7 +625,9 @@ class TestAgentSpawner:
 
         spawner = AgentSpawner(
             max_concurrent=2,
-            agent_fn=lambda role_id, task, context="": time.sleep(0.3) or {"done": True},
+            agent_fn=lambda role_id, task, context="": (
+                time.sleep(0.3) or {"done": True}
+            ),
         )
         results = []
 
@@ -575,6 +646,7 @@ class TestAgentSpawner:
 
     def test_list_spawns(self):
         from src.core.agent_spawner import AgentSpawner
+
         spawner = AgentSpawner()
         spawner.spawn(role="a", task="t1")
         spawner.spawn(role="b", task="t2")
@@ -583,6 +655,7 @@ class TestAgentSpawner:
 
     def test_list_spawns_by_parent(self):
         from src.core.agent_spawner import AgentSpawner
+
         spawner = AgentSpawner()
         spawner.spawn(role="a", task="t1", parent_task_id="p1")
         spawner.spawn(role="b", task="t2", parent_task_id="p2")
@@ -591,6 +664,7 @@ class TestAgentSpawner:
 
     def test_stats(self):
         from src.core.agent_spawner import AgentSpawner
+
         spawner = AgentSpawner()
         spawner.spawn(role="a", task="t1")
         stats = spawner.get_stats()
@@ -613,10 +687,11 @@ class TestAgentSpawner:
 # 7. PLAN SELECTOR (BEAM SEARCH)
 # ═══════════════════════════════════════════════════════════════════════
 
-class TestPlanSelector:
 
+class TestPlanSelector:
     def test_selects_best_candidate(self):
         from src.core.plan_selector import PlanSelector
+
         call_count = [0]
 
         def gen(ctx):
@@ -630,7 +705,9 @@ class TestPlanSelector:
 
         selector = PlanSelector()
         result = selector.select(
-            generator=gen, critic=critic, beam_width=3,
+            generator=gen,
+            critic=critic,
+            beam_width=3,
             apply_reflection=False,
         )
         assert abs(result.selected_score - 0.9) < 0.001
@@ -639,6 +716,7 @@ class TestPlanSelector:
 
     def test_candidates_ranked(self):
         from src.core.plan_selector import PlanSelector
+
         scores = iter([0.5, 0.9, 0.3])
 
         selector = PlanSelector()
@@ -653,6 +731,7 @@ class TestPlanSelector:
 
     def test_reflection_applied_when_below_threshold(self):
         from src.core.plan_selector import PlanSelector
+
         call_count = [0]
 
         def gen(ctx):
@@ -673,6 +752,7 @@ class TestPlanSelector:
 
     def test_no_reflection_when_above_threshold(self):
         from src.core.plan_selector import PlanSelector
+
         selector = PlanSelector()
         result = selector.select(
             generator=lambda ctx: "great plan",
@@ -686,6 +766,7 @@ class TestPlanSelector:
 
     def test_generator_failure_handled(self):
         from src.core.plan_selector import PlanSelector
+
         call_count = [0]
 
         def flaky_gen(ctx):
@@ -705,23 +786,27 @@ class TestPlanSelector:
 
     def test_stats(self):
         from src.core.plan_selector import PlanSelector
+
         selector = PlanSelector()
         selector.select(
             generator=lambda ctx: "plan",
             critic=lambda p: {"score": 0.8, "feedback": ""},
-            beam_width=2, apply_reflection=False,
+            beam_width=2,
+            apply_reflection=False,
         )
         stats = selector.get_stats()
         assert stats["total_selections"] == 1
 
     def test_list_recent(self):
         from src.core.plan_selector import PlanSelector
+
         selector = PlanSelector()
         for _ in range(3):
             selector.select(
                 generator=lambda ctx: "plan",
                 critic=lambda p: {"score": 0.5, "feedback": ""},
-                beam_width=1, apply_reflection=False,
+                beam_width=1,
+                apply_reflection=False,
             )
         assert len(selector.list_recent(limit=2)) == 2
 
@@ -730,8 +815,8 @@ class TestPlanSelector:
 # 8. BACKTRACK PLANNER
 # ═══════════════════════════════════════════════════════════════════════
 
-class TestBacktrackPlanner:
 
+class TestBacktrackPlanner:
     def _sample_graph(self):
         return {
             "tasks": [
@@ -749,6 +834,7 @@ class TestBacktrackPlanner:
 
     def test_record_failure(self):
         from src.core.backtrack_planner import BacktrackPlanner
+
         bp = BacktrackPlanner()
         count = bp.record_failure("t1")
         assert count == 1
@@ -757,6 +843,7 @@ class TestBacktrackPlanner:
 
     def test_should_backtrack(self):
         from src.core.backtrack_planner import BacktrackPlanner
+
         bp = BacktrackPlanner(failure_threshold=2)
         bp.record_failure("t1")
         assert not bp.should_backtrack("t1")
@@ -765,6 +852,7 @@ class TestBacktrackPlanner:
 
     def test_handle_failure_no_backtrack_needed(self):
         from src.core.backtrack_planner import BacktrackPlanner
+
         bp = BacktrackPlanner(failure_threshold=3)
         bp.record_failure("t1")
         result = bp.handle_failure("t1", "error", self._sample_graph())
@@ -772,6 +860,7 @@ class TestBacktrackPlanner:
 
     def test_handle_failure_triggers_replan(self):
         from src.core.backtrack_planner import BacktrackPlanner
+
         bp = BacktrackPlanner(failure_threshold=2)
         bp.record_failure("t2")
         bp.record_failure("t2")  # now at threshold
@@ -782,6 +871,7 @@ class TestBacktrackPlanner:
 
     def test_affected_subtree_identification(self):
         from src.core.backtrack_planner import BacktrackPlanner
+
         bp = BacktrackPlanner()
         affected = bp._identify_affected_subtree("t2", self._sample_graph())
         ids = {t["task_id"] for t in affected}
@@ -792,6 +882,7 @@ class TestBacktrackPlanner:
 
     def test_max_backtracks_limit(self):
         from src.core.backtrack_planner import BacktrackPlanner
+
         bp = BacktrackPlanner(failure_threshold=1, max_backtracks=1)
         # First backtrack succeeds
         bp.record_failure("t1")
@@ -806,7 +897,13 @@ class TestBacktrackPlanner:
         from src.core.backtrack_planner import BacktrackPlanner
 
         def custom_replan(**kwargs):
-            return [{"task_id": "new-1", "task_type": "CODE_TASK", "payload": {"fixed": True}}]
+            return [
+                {
+                    "task_id": "new-1",
+                    "task_type": "CODE_TASK",
+                    "payload": {"fixed": True},
+                }
+            ]
 
         bp = BacktrackPlanner(replan_fn=custom_replan, failure_threshold=1)
         bp.record_failure("t1")
@@ -815,6 +912,7 @@ class TestBacktrackPlanner:
 
     def test_stats(self):
         from src.core.backtrack_planner import BacktrackPlanner
+
         bp = BacktrackPlanner(failure_threshold=1)
         bp.record_failure("t1")
         bp.handle_failure("t1", "err", self._sample_graph())
@@ -824,6 +922,7 @@ class TestBacktrackPlanner:
 
     def test_list_records(self):
         from src.core.backtrack_planner import BacktrackPlanner
+
         bp = BacktrackPlanner(failure_threshold=1)
         bp.record_failure("t1")
         bp.handle_failure("t1", "err", self._sample_graph())
@@ -836,15 +935,20 @@ class TestBacktrackPlanner:
 # 9. CONSENSUS ENGINE
 # ═══════════════════════════════════════════════════════════════════════
 
-class TestConsensusEngine:
 
+class TestConsensusEngine:
     def test_majority_vote(self):
         from src.core.consensus_engine import ConsensusEngine
+
         engine = ConsensusEngine()
 
         def evaluator(role, question):
             if role == "qa":
-                return {"decision": "reject", "confidence": 0.8, "reasoning": "Bugs found"}
+                return {
+                    "decision": "reject",
+                    "confidence": 0.8,
+                    "reasoning": "Bugs found",
+                }
             return {"decision": "approve", "confidence": 0.7, "reasoning": "Looks good"}
 
         result = engine.vote(
@@ -857,11 +961,16 @@ class TestConsensusEngine:
 
     def test_weighted_vote(self):
         from src.core.consensus_engine import ConsensusEngine
+
         engine = ConsensusEngine()
 
         def evaluator(role, question):
             if role == "security":
-                return {"decision": "reject", "confidence": 0.95, "reasoning": "Vulnerability"}
+                return {
+                    "decision": "reject",
+                    "confidence": 0.95,
+                    "reasoning": "Vulnerability",
+                }
             return {"decision": "approve", "confidence": 0.3, "reasoning": "OK"}
 
         result = engine.vote(
@@ -875,6 +984,7 @@ class TestConsensusEngine:
 
     def test_unanimous_vote_pass(self):
         from src.core.consensus_engine import ConsensusEngine
+
         engine = ConsensusEngine()
         result = engine.vote(
             question="Ship it?",
@@ -887,6 +997,7 @@ class TestConsensusEngine:
 
     def test_unanimous_vote_fail(self):
         from src.core.consensus_engine import ConsensusEngine
+
         engine = ConsensusEngine()
         votes = iter(["approve", "reject", "approve"])
         result = engine.vote(
@@ -899,6 +1010,7 @@ class TestConsensusEngine:
 
     def test_disagreement_escalation(self):
         from src.core.consensus_engine import ConsensusEngine
+
         engine = ConsensusEngine(disagreement_threshold=0.7)
         votes = iter(["approve", "reject"])
         result = engine.vote(
@@ -910,6 +1022,7 @@ class TestConsensusEngine:
 
     def test_abstain_handling(self):
         from src.core.consensus_engine import ConsensusEngine
+
         engine = ConsensusEngine()
         result = engine.vote(
             question="Test?",
@@ -920,6 +1033,7 @@ class TestConsensusEngine:
 
     def test_evaluator_error_handled(self):
         from src.core.consensus_engine import ConsensusEngine
+
         engine = ConsensusEngine()
         call_count = [0]
 
@@ -940,9 +1054,11 @@ class TestConsensusEngine:
 
     def test_stats(self):
         from src.core.consensus_engine import ConsensusEngine
+
         engine = ConsensusEngine()
         engine.vote(
-            question="Q1?", voters=["a"],
+            question="Q1?",
+            voters=["a"],
             evaluator=lambda r, q: {"decision": "approve", "confidence": 0.9},
         )
         stats = engine.get_stats()
@@ -950,9 +1066,11 @@ class TestConsensusEngine:
 
     def test_get_result_by_id(self):
         from src.core.consensus_engine import ConsensusEngine
+
         engine = ConsensusEngine()
         result = engine.vote(
-            question="Q?", voters=["a"],
+            question="Q?",
+            voters=["a"],
             evaluator=lambda r, q: {"decision": "approve", "confidence": 0.8},
         )
         fetched = engine.get_result(result.consensus_id)
@@ -961,10 +1079,12 @@ class TestConsensusEngine:
 
     def test_agreement_ratio_calculation(self):
         from src.core.consensus_engine import ConsensusEngine
+
         engine = ConsensusEngine()
         decisions = iter(["approve", "approve", "reject"])
         result = engine.vote(
-            question="Q?", voters=["a", "b", "c"],
+            question="Q?",
+            voters=["a", "b", "c"],
             evaluator=lambda r, q: {"decision": next(decisions), "confidence": 0.7},
         )
         # 2 out of 3 agree → 0.667
@@ -975,8 +1095,8 @@ class TestConsensusEngine:
 # CROSS-MODULE INTEGRATION
 # ═══════════════════════════════════════════════════════════════════════
 
-class TestCrossModuleIntegration:
 
+class TestCrossModuleIntegration:
     def test_reflection_with_budget_check(self):
         """Reflection loop should work alongside budget tracking."""
         from src.core.reflection_engine import ReflectionEngine
@@ -1000,6 +1120,7 @@ class TestCrossModuleIntegration:
     def test_plan_selector_uses_reflection(self):
         """Plan selector should integrate with reflection engine."""
         from src.core.plan_selector import PlanSelector
+
         selector = PlanSelector()
         scores = iter([0.3, 0.3, 0.3, 0.5, 0.8])
         result = selector.select(
@@ -1022,6 +1143,7 @@ class TestCrossModuleIntegration:
 
         # Patch the global bus temporarily
         import src.core.event_bus as eb_module
+
         old_bus = eb_module._event_bus
         eb_module._event_bus = bus
 
@@ -1056,21 +1178,32 @@ class TestCrossModuleIntegration:
         from src.core.memory_planner import MemoryPlanner
 
         mp = MemoryPlanner()
-        mp.record_plan({
-            "name": "successful-api",
-            "description": "Build API with proper error handling",
-            "tasks": [{"task_type": "CODE_TASK"}],
-        })
+        mp.record_plan(
+            {
+                "name": "successful-api",
+                "description": "Build API with proper error handling",
+                "tasks": [{"task_type": "CODE_TASK"}],
+            }
+        )
 
         def memory_replan(**kwargs):
             ctx = mp.augment_context(kwargs.get("error", ""))
-            return [{"task_id": "new-1", "task_type": "CODE_TASK",
-                      "payload": {"memory_context": ctx}}]
+            return [
+                {
+                    "task_id": "new-1",
+                    "task_type": "CODE_TASK",
+                    "payload": {"memory_context": ctx},
+                }
+            ]
 
         bp = BacktrackPlanner(replan_fn=memory_replan, failure_threshold=1)
         bp.record_failure("t1")
-        result = bp.handle_failure("t1", "API error handling", {
-            "tasks": [{"task_id": "t1", "task_type": "CODE_TASK"}],
-            "dependencies": [],
-        })
+        result = bp.handle_failure(
+            "t1",
+            "API error handling",
+            {
+                "tasks": [{"task_id": "t1", "task_type": "CODE_TASK"}],
+                "dependencies": [],
+            },
+        )
         assert result is not None

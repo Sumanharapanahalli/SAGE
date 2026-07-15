@@ -19,17 +19,16 @@ downstream agent.
 
 import json
 import logging
-import os
-from typing import Optional
 
-import yaml
 
 logger = logging.getLogger(__name__)
+
 
 # Task types are loaded dynamically from the active project config
 # (falls back to framework defaults if project config omits tasks.yaml)
 def _get_valid_task_types() -> set[str]:
     from src.core.project_loader import project_config
+
     return set(project_config.get_task_types())
 
 
@@ -51,6 +50,7 @@ class PlannerAgent:
     def llm(self):
         if self._llm_gateway is None:
             from src.core.llm_gateway import llm_gateway
+
             self._llm_gateway = llm_gateway
         return self._llm_gateway
 
@@ -58,6 +58,7 @@ class PlannerAgent:
     def audit(self):
         if self._audit_logger is None:
             from src.memory.audit_logger import audit_logger
+
             self._audit_logger = audit_logger
         return self._audit_logger
 
@@ -67,11 +68,11 @@ class PlannerAgent:
 
     # SAGE framework task types — used when planning framework improvements (scope=sage)
     FRAMEWORK_TASK_TYPES = {
-        "ANALYZE":  "Analyse existing code, architecture, or requirements",
-        "DEVELOP":  "Write or modify code files in the SAGE codebase",
-        "REVIEW":   "Review code quality, security, or correctness",
-        "TEST":     "Write or run tests to verify correctness",
-        "PLAN":     "Decompose a sub-goal into further steps",
+        "ANALYZE": "Analyse existing code, architecture, or requirements",
+        "DEVELOP": "Write or modify code files in the SAGE codebase",
+        "REVIEW": "Review code quality, security, or correctness",
+        "TEST": "Write or run tests to verify correctness",
+        "PLAN": "Decompose a sub-goal into further steps",
         "DOCUMENT": "Update documentation or comments",
     }
 
@@ -113,11 +114,11 @@ class PlannerAgent:
             )
         else:
             from src.core.project_loader import project_config
+
             valid_types = _get_valid_task_types()
             task_descs = project_config.get_task_descriptions()
             descs_str = "\n".join(
-                f"  {k}: {v}" for k, v in task_descs.items()
-                if k in valid_types
+                f"  {k}: {v}" for k, v in task_descs.items() if k in valid_types
             ) or "  " + "\n  ".join(sorted(valid_types))
             system_prompt_base = project_config.get_planner_prompt().replace(
                 "VALID_TASK_TYPES", ", ".join(sorted(valid_types))
@@ -129,7 +130,9 @@ class PlannerAgent:
             # Inject SKILL.md domain knowledge when available
             _skill = project_config.skill_content
             if _skill:
-                system_prompt_base = system_prompt_base + "\n\n## Domain Skills\n" + _skill
+                system_prompt_base = (
+                    system_prompt_base + "\n\n## Domain Skills\n" + _skill
+                )
 
         system_prompt = system_prompt_base + (
             f"\n\nTask type descriptions:\n{descs_str}\n\n"
@@ -140,10 +143,14 @@ class PlannerAgent:
             "  - If the task cannot be mapped to supported types, return []."
         )
 
-        base_user_prompt = f"Task: {description}\n\nGenerate the execution plan as a JSON array:"
+        base_user_prompt = (
+            f"Task: {description}\n\nGenerate the execution plan as a JSON array:"
+        )
 
         if beam_width <= 1:
-            validated = self._generate_and_validate_plan(base_user_prompt, system_prompt, valid_types)
+            validated = self._generate_and_validate_plan(
+                base_user_prompt, system_prompt, valid_types
+            )
             self.logger.info("Plan created: %d step(s).", len(validated))
             return validated
 
@@ -158,24 +165,31 @@ class PlannerAgent:
         response_text = self.llm.generate(user_prompt, system_prompt)
 
         try:
-            response_text = response_text.replace("```json", "").replace("```", "").strip()
+            response_text = (
+                response_text.replace("```json", "").replace("```", "").strip()
+            )
             # Extract JSON array even when the LLM adds prose before/after it
             import re as _re
-            arr_match = _re.search(r'\[[\s\S]*\]', response_text)
+
+            arr_match = _re.search(r"\[[\s\S]*\]", response_text)
             if arr_match:
                 response_text = arr_match.group(0)
             plan = json.loads(response_text)
             if not isinstance(plan, list):
                 raise ValueError("Expected a JSON array.")
         except (json.JSONDecodeError, ValueError) as exc:
-            self.logger.error("Plan parsing failed: %s | Raw: %s", exc, response_text[:300])
+            self.logger.error(
+                "Plan parsing failed: %s | Raw: %s", exc, response_text[:300]
+            )
             return []
 
         validated = []
         for step in plan:
             task_type = step.get("task_type", "").upper()
             if task_type not in valid_types:
-                self.logger.warning("Planner emitted unknown task_type '%s' — skipping.", task_type)
+                self.logger.warning(
+                    "Planner emitted unknown task_type '%s' — skipping.", task_type
+                )
                 continue
             if not isinstance(step.get("payload"), dict):
                 step["payload"] = {}  # default to empty payload rather than skipping
@@ -203,7 +217,9 @@ class PlannerAgent:
         from src.agents.critic import critic_agent
 
         def _generator(ctx: str) -> list[dict]:
-            return self._generate_and_validate_plan(f"{base_user_prompt}\n\n{ctx}", system_prompt, valid_types)
+            return self._generate_and_validate_plan(
+                f"{base_user_prompt}\n\n{ctx}", system_prompt, valid_types
+            )
 
         def _critic(plan: list[dict]) -> dict:
             review = critic_agent.multi_critic_review("plan", plan, description)
@@ -222,7 +238,9 @@ class PlannerAgent:
         validated = best.plan if best and best.plan else []
         self.logger.info(
             "Plan created via beam_width=%d selection: %d step(s), score=%.2f",
-            beam_width, len(validated), result.selected_score,
+            beam_width,
+            len(validated),
+            result.selected_score,
         )
         return validated
 
@@ -272,15 +290,19 @@ class PlannerAgent:
                 payload=step["payload"],
                 priority=priority,
             )
-            task_ids.append({
-                "step": step.get("step"),
-                "task_type": step["task_type"],
-                "description": step.get("description", ""),
-                "task_id": task_id,
-            })
+            task_ids.append(
+                {
+                    "step": step.get("step"),
+                    "task_type": step["task_type"],
+                    "description": step.get("description", ""),
+                    "task_id": task_id,
+                }
+            )
             self.logger.info(
                 "Submitted step %s: %s (task_id=%s)",
-                step.get("step"), step["task_type"], task_id,
+                step.get("step"),
+                step["task_type"],
+                task_id,
             )
 
         # Update audit entry with the full plan
@@ -294,7 +316,8 @@ class PlannerAgent:
 
         self.logger.info(
             "Plan-and-Execute complete: %d subtask(s) queued (trace: %s).",
-            len(task_ids), trace_id,
+            len(task_ids),
+            trace_id,
         )
         return {
             "status": "queued",
@@ -316,6 +339,7 @@ class PlannerAgent:
             List of status dicts from the TaskQueue.
         """
         from src.core.queue_manager import task_queue
+
         return [
             task_queue.get_status(tid) or {"task_id": tid, "status": "not_found"}
             for tid in task_ids

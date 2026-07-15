@@ -5,6 +5,7 @@ The load-bearing assertion is ``test_sync_passes_solution_scoped_vector_store``:
 so if the handler ever stops passing the sidecar's VectorMemory explicitly the
 operator's documents silently import into the wrong solution's collection.
 """
+
 from __future__ import annotations
 
 import sys
@@ -46,8 +47,12 @@ class _FakeAuditLogger:
 def solution_dir(tmp_path: Path) -> Path:
     root = tmp_path / "demo"
     root.mkdir()
-    (root / "project.yaml").write_text("name: demo\n" + "x: y\n" * 200, encoding="utf-8")
-    (root / "README.md").write_text("# Demo\n" + "Knowledge body. " * 200, encoding="utf-8")
+    (root / "project.yaml").write_text(
+        "name: demo\n" + "x: y\n" * 200, encoding="utf-8"
+    )
+    (root / "README.md").write_text(
+        "# Demo\n" + "Knowledge body. " * 200, encoding="utf-8"
+    )
     (root / "image.png").write_bytes(b"\x89PNG binary not text")
     (root / "empty.md").write_text("   \n", encoding="utf-8")
     skipped = root / "node_modules"
@@ -92,15 +97,17 @@ def test_sync_passes_solution_scoped_vector_store(monkeypatch, wired, solution_d
     monkeypatch.setattr(syncer, "sync_directory", spy)
 
     knowledgesync.sync({})
-    assert seen["vector_store"] is vm, "sync_directory must receive the sidecar VectorMemory"
+    assert seen["vector_store"] is vm, (
+        "sync_directory must receive the sidecar VectorMemory"
+    )
 
 
 def test_sync_reports_scan_accounting(wired, solution_dir):
     out = knowledgesync.sync({})
     # 4 files at the root; node_modules/ is excluded from the walk entirely.
     assert out["files_scanned"] == 4
-    assert out["files_indexed"] == 2          # project.yaml + README.md
-    assert out["skipped"] == 2                # image.png (ext) + empty.md (blank)
+    assert out["files_indexed"] == 2  # project.yaml + README.md
+    assert out["skipped"] == 2  # image.png (ext) + empty.md (blank)
     assert out["errors"] == []
 
 
@@ -195,7 +202,9 @@ def test_real_vector_memory_roundtrip(tmp_path, monkeypatch):
     monkeypatch.setenv("SAGE_SOLUTIONS_DIR", str(tmp_path))
     root = tmp_path / "demo"
     root.mkdir()
-    (root / "guide.md").write_text("Vector sync knowledge body. " * 100, encoding="utf-8")
+    (root / "guide.md").write_text(
+        "Vector sync knowledge body. " * 100, encoding="utf-8"
+    )
 
     from src.memory.vector_store import VectorMemory
 

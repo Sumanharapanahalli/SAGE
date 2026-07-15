@@ -5,7 +5,7 @@ API endpoints for multi-standard regulatory compliance assessment.
 """
 
 import logging
-from typing import Dict, List, Optional
+from typing import List, Optional
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
@@ -40,6 +40,7 @@ class GapAnalysisRequest(BaseModel):
 
 def _get_framework():
     from src.core.regulatory_compliance import regulatory_compliance
+
     return regulatory_compliance
 
 

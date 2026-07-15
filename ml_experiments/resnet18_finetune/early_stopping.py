@@ -8,7 +8,6 @@ import copy
 import logging
 from typing import Optional
 
-import torch
 import torch.nn as nn
 
 logger = logging.getLogger(__name__)
@@ -33,10 +32,10 @@ class EarlyStopping:
         min_delta: float = 1e-3,
         restore: bool = True,
     ) -> None:
-        self.patience   = patience
-        self.monitor    = monitor
-        self.min_delta  = min_delta
-        self.restore    = restore
+        self.patience = patience
+        self.monitor = monitor
+        self.min_delta = min_delta
+        self.restore = restore
         self._higher_is_better = monitor == "val_acc"
         self._best_value: Optional[float] = None
         self._best_weights: Optional[dict] = None
@@ -55,15 +54,20 @@ class EarlyStopping:
 
         if improved:
             self._best_value = value
-            self._counter    = 0
+            self._counter = 0
             if self.restore:
                 self._best_weights = copy.deepcopy(model.state_dict())
-            logger.debug("EarlyStopping: improvement %.4f → storing best weights.", value)
+            logger.debug(
+                "EarlyStopping: improvement %.4f → storing best weights.", value
+            )
         else:
             self._counter += 1
             logger.debug(
                 "EarlyStopping: no improvement (%d/%d) — best=%.4f current=%.4f",
-                self._counter, self.patience, self._best_value or 0.0, value,
+                self._counter,
+                self.patience,
+                self._best_value or 0.0,
+                value,
             )
 
         if self._counter >= self.patience:
@@ -73,12 +77,16 @@ class EarlyStopping:
                 logger.info(
                     "EarlyStopping triggered at epoch %d. "
                     "Restored weights from best epoch (best %s=%.4f).",
-                    epoch, self.monitor, self._best_value or 0.0,
+                    epoch,
+                    self.monitor,
+                    self._best_value or 0.0,
                 )
             else:
                 logger.info(
                     "EarlyStopping triggered at epoch %d (best %s=%.4f).",
-                    epoch, self.monitor, self._best_value or 0.0,
+                    epoch,
+                    self.monitor,
+                    self._best_value or 0.0,
                 )
             return True
         return False

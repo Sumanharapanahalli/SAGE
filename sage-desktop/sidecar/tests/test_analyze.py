@@ -6,6 +6,7 @@ persists the AnalystAgent's result as a REAL ProposalStore proposal so it
 flows through the already-verified approvals.list_pending / approve / reject
 RPCs and the desktop Approvals page.
 """
+
 from __future__ import annotations
 
 import pytest
@@ -51,6 +52,7 @@ def _inject_analyst(monkeypatch, analyst):
 
 # ---------- validation ----------
 
+
 def test_run_rejects_missing_log_entry(store, monkeypatch):
     _inject_analyst(monkeypatch, FakeAnalyst())
     with pytest.raises(RpcError):
@@ -71,6 +73,7 @@ def test_run_requires_store_initialized(monkeypatch):
 
 
 # ---------- happy path: this IS the PROPOSE trigger ----------
+
 
 def test_run_creates_a_pending_proposal_from_the_analysis(store, monkeypatch):
     analyst = FakeAnalyst()
@@ -93,17 +96,23 @@ def test_run_creates_a_pending_proposal_from_the_analysis(store, monkeypatch):
 
 
 def test_run_description_surfaces_severity_and_summary_for_triage(store, monkeypatch):
-    _inject_analyst(monkeypatch, FakeAnalyst(result={
-        "severity": "RED",
-        "root_cause_hypothesis": "auth service down",
-        "trace_id": "t2",
-    }))
+    _inject_analyst(
+        monkeypatch,
+        FakeAnalyst(
+            result={
+                "severity": "RED",
+                "root_cause_hypothesis": "auth service down",
+                "trace_id": "t2",
+            }
+        ),
+    )
     result = az.run({"log_entry": "500s spiking"})
     assert "RED" in result["description"]
     assert "auth service down" in result["description"]
 
 
 # ---------- failure handling: no partial/garbage proposals ----------
+
 
 def test_run_raises_and_creates_no_proposal_when_analyst_raises(store, monkeypatch):
     _inject_analyst(monkeypatch, FakeAnalyst(raise_exc=RuntimeError("llm down")))
@@ -112,7 +121,9 @@ def test_run_raises_and_creates_no_proposal_when_analyst_raises(store, monkeypat
     assert store.get_pending() == []
 
 
-def test_run_raises_and_creates_no_proposal_when_analysis_has_error_key(store, monkeypatch):
+def test_run_raises_and_creates_no_proposal_when_analysis_has_error_key(
+    store, monkeypatch
+):
     # AnalystAgent.analyze_log() returns {"error": ...} on its own internal
     # failure path (e.g. audit logger exception) rather than raising.
     _inject_analyst(monkeypatch, FakeAnalyst(result={"error": "audit log unavailable"}))

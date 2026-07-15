@@ -34,17 +34,23 @@ class WorktreeManager:
         The worktree is a checkout of the current HEAD on a new branch.
         """
         wt_path = os.path.join(self._wt_base, trace_id)
-        branch  = f"proposal/{trace_id[:8]}"
+        branch = f"proposal/{trace_id[:8]}"
         try:
             subprocess.run(
                 ["git", "worktree", "add", "-b", branch, wt_path, "HEAD"],
-                cwd=self._root, check=True, capture_output=True, timeout=15,
+                cwd=self._root,
+                check=True,
+                capture_output=True,
+                timeout=15,
             )
             self._worktrees[trace_id] = wt_path
             logger.info("Worktree created: %s -> %s", trace_id, wt_path)
             return wt_path
         except subprocess.CalledProcessError as exc:
-            logger.error("git worktree add failed: %s", exc.stderr.decode() if exc.stderr else exc)
+            logger.error(
+                "git worktree add failed: %s",
+                exc.stderr.decode() if exc.stderr else exc,
+            )
             raise
 
     def remove(self, trace_id: str) -> None:
@@ -53,16 +59,24 @@ class WorktreeManager:
         try:
             subprocess.run(
                 ["git", "worktree", "remove", "--force", wt_path],
-                cwd=self._root, check=True, capture_output=True, timeout=15,
+                cwd=self._root,
+                check=True,
+                capture_output=True,
+                timeout=15,
             )
             branch = f"proposal/{trace_id[:8]}"
             subprocess.run(
                 ["git", "branch", "-D", branch],
-                cwd=self._root, capture_output=True, timeout=10,
+                cwd=self._root,
+                capture_output=True,
+                timeout=10,
             )
             logger.info("Worktree removed: %s", trace_id)
         except subprocess.CalledProcessError as exc:
-            logger.warning("git worktree remove failed: %s", exc.stderr.decode() if exc.stderr else exc)
+            logger.warning(
+                "git worktree remove failed: %s",
+                exc.stderr.decode() if exc.stderr else exc,
+            )
 
     def get_path(self, trace_id: str) -> Optional[str]:
         """Return the worktree path for *trace_id*, or None if not found."""
@@ -78,7 +92,9 @@ class WorktreeManager:
         try:
             out = subprocess.check_output(
                 ["git", "worktree", "list", "--porcelain"],
-                cwd=self._root, timeout=10, text=True,
+                cwd=self._root,
+                timeout=10,
+                text=True,
             )
             current_path = ""
             for line in out.splitlines():

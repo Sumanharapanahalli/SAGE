@@ -22,23 +22,29 @@ UUID4_PATTERN = re.compile(
     re.IGNORECASE,
 )
 
-REVIEW_JSON = json.dumps({
-    "summary": "Minor refactor, looks safe.",
-    "issues": [],
-    "suggestions": ["Add unit tests for edge cases."],
-    "approved": True,
-})
+REVIEW_JSON = json.dumps(
+    {
+        "summary": "Minor refactor, looks safe.",
+        "issues": [],
+        "suggestions": ["Add unit tests for edge cases."],
+        "approved": True,
+    }
+)
 
-PATCH_JSON = json.dumps({
-    "patch": "--- a/file.c\n+++ b/file.c\n@@ -10,7 +10,7 @@\n-old line\n+new line\n",
-    "explanation": "Increased buffer size from 256 to 512.",
-    "confidence": "high",
-})
+PATCH_JSON = json.dumps(
+    {
+        "patch": "--- a/file.c\n+++ b/file.c\n@@ -10,7 +10,7 @@\n-old line\n+new line\n",
+        "explanation": "Increased buffer size from 256 to 512.",
+        "confidence": "high",
+    }
+)
 
-MR_DRAFT_JSON = json.dumps({
-    "mr_title": "Fix: UART RX buffer too small",
-    "mr_description": "Resolves #45\n\nIncreases buffer from 256 to 512 bytes.",
-})
+MR_DRAFT_JSON = json.dumps(
+    {
+        "mr_title": "Fix: UART RX buffer too small",
+        "mr_description": "Resolves #45\n\nIncreases buffer from 256 to 512 bytes.",
+    }
+)
 
 
 def _query_audit(db_path, action_type=None):
@@ -73,8 +79,12 @@ def _make_response(status_code=200, json_data=None, raise_exc=None):
 
 def test_init_reads_env_vars(tmp_audit_db):
     """DeveloperAgent must read GITLAB_URL and GITLAB_TOKEN from environment."""
-    with patch.dict(os.environ, {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "test-token-123"}):
+    with patch.dict(
+        os.environ,
+        {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "test-token-123"},
+    ):
         from src.agents.developer import DeveloperAgent
+
         agent = DeveloperAgent()
     assert agent.gitlab_url == "https://gl.test.local"
     assert agent.gitlab_token == "test-token-123"
@@ -82,16 +92,24 @@ def test_init_reads_env_vars(tmp_audit_db):
 
 def test_init_warns_when_no_gitlab_url(tmp_audit_db, caplog):
     """When GITLAB_URL is not set, the agent must log a warning."""
-    env = {k: v for k, v in os.environ.items() if k not in ("GITLAB_URL", "GITLAB_TOKEN")}
+    env = {
+        k: v for k, v in os.environ.items() if k not in ("GITLAB_URL", "GITLAB_TOKEN")
+    }
     env.pop("GITLAB_URL", None)
     env.pop("GITLAB_TOKEN", None)
     with patch.dict(os.environ, env, clear=True):
         import logging
+
         with caplog.at_level(logging.WARNING, logger="DeveloperAgent"):
             from src.agents.developer import DeveloperAgent
+
             agent = DeveloperAgent()
     # Check warning was logged (or url is empty)
-    assert agent.gitlab_url == "" or "GITLAB_URL" in caplog.text or agent.gitlab_url is not None
+    assert (
+        agent.gitlab_url == ""
+        or "GITLAB_URL" in caplog.text
+        or agent.gitlab_url is not None
+    )
 
 
 def test_review_mr_returns_required_fields(tmp_audit_db, mock_gitlab_responses):
@@ -104,17 +122,32 @@ def test_review_mr_returns_required_fields(tmp_audit_db, mock_gitlab_responses):
             return diff_resp
         return mr_resp
 
-    with patch.dict(os.environ, {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"}), \
-         patch("requests.get", side_effect=side_effect_get), \
-         patch("src.core.llm_gateway.LLMGateway.generate", return_value=REVIEW_JSON), \
-         patch("src.agents.developer.developer_agent") as _:
+    with (
+        patch.dict(
+            os.environ, {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"}
+        ),
+        patch("requests.get", side_effect=side_effect_get),
+        patch("src.core.llm_gateway.LLMGateway.generate", return_value=REVIEW_JSON),
+        patch("src.agents.developer.developer_agent") as _,
+    ):
         from src.agents.developer import DeveloperAgent
+
         agent = DeveloperAgent()
         agent._audit_logger = tmp_audit_db
         result = agent.review_merge_request(project_id=123, mr_iid=7)
 
-    for field in ("summary", "issues", "suggestions", "approved", "trace_id", "mr_iid", "mr_title"):
-        assert field in result, f"Result must contain '{field}'. Got keys: {list(result.keys())}"
+    for field in (
+        "summary",
+        "issues",
+        "suggestions",
+        "approved",
+        "trace_id",
+        "mr_iid",
+        "mr_title",
+    ):
+        assert field in result, (
+            f"Result must contain '{field}'. Got keys: {list(result.keys())}"
+        )
 
 
 def test_review_mr_creates_audit_record(tmp_audit_db, mock_gitlab_responses):
@@ -127,10 +160,15 @@ def test_review_mr_creates_audit_record(tmp_audit_db, mock_gitlab_responses):
             return diff_resp
         return mr_resp
 
-    with patch.dict(os.environ, {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"}), \
-         patch("requests.get", side_effect=side_effect_get), \
-         patch("src.core.llm_gateway.LLMGateway.generate", return_value=REVIEW_JSON):
+    with (
+        patch.dict(
+            os.environ, {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"}
+        ),
+        patch("requests.get", side_effect=side_effect_get),
+        patch("src.core.llm_gateway.LLMGateway.generate", return_value=REVIEW_JSON),
+    ):
         from src.agents.developer import DeveloperAgent
+
         agent = DeveloperAgent()
         agent._audit_logger = tmp_audit_db
         agent.review_merge_request(project_id=123, mr_iid=7)
@@ -142,13 +180,23 @@ def test_review_mr_creates_audit_record(tmp_audit_db, mock_gitlab_responses):
 def test_review_mr_handles_gitlab_error(tmp_audit_db):
     """When requests.get raises ConnectionError, review_merge_request() must return a dict with 'error' key."""
     import requests as req_module
-    with patch.dict(os.environ, {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"}), \
-         patch("requests.get", side_effect=req_module.ConnectionError("Connection refused")):
+
+    with (
+        patch.dict(
+            os.environ, {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"}
+        ),
+        patch(
+            "requests.get", side_effect=req_module.ConnectionError("Connection refused")
+        ),
+    ):
         from src.agents.developer import DeveloperAgent
+
         agent = DeveloperAgent()
         agent._audit_logger = tmp_audit_db
         result = agent.review_merge_request(project_id=123, mr_iid=7)
-    assert "error" in result, f"Expected 'error' key on connection failure, got: {result}"
+    assert "error" in result, (
+        f"Expected 'error' key on connection failure, got: {result}"
+    )
 
 
 def test_create_mr_from_issue_returns_mr_url(tmp_audit_db, mock_gitlab_responses):
@@ -157,18 +205,21 @@ def test_create_mr_from_issue_returns_mr_url(tmp_audit_db, mock_gitlab_responses
     project_resp = _make_response(200, mock_gitlab_responses["project"])
     mr_created_resp = _make_response(201, mock_gitlab_responses["mr_created"])
 
-    call_count = {"n": 0}
-
     def side_effect_get(url, **kwargs):
         if "/issues/" in url:
             return issue_resp
         return project_resp
 
-    with patch.dict(os.environ, {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"}), \
-         patch("requests.get", side_effect=side_effect_get), \
-         patch("requests.post", return_value=mr_created_resp), \
-         patch("src.core.llm_gateway.LLMGateway.generate", return_value=MR_DRAFT_JSON):
+    with (
+        patch.dict(
+            os.environ, {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"}
+        ),
+        patch("requests.get", side_effect=side_effect_get),
+        patch("requests.post", return_value=mr_created_resp),
+        patch("src.core.llm_gateway.LLMGateway.generate", return_value=MR_DRAFT_JSON),
+    ):
         from src.agents.developer import DeveloperAgent
+
         agent = DeveloperAgent()
         agent._audit_logger = tmp_audit_db
         result = agent.create_mr_from_issue(project_id=123, issue_iid=45)
@@ -189,17 +240,26 @@ def test_create_mr_auto_generates_branch_name(tmp_audit_db, mock_gitlab_response
             return issue_resp
         return project_resp
 
-    with patch.dict(os.environ, {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"}), \
-         patch("requests.get", side_effect=side_effect_get), \
-         patch("requests.post", return_value=mr_created_resp), \
-         patch("src.core.llm_gateway.LLMGateway.generate", return_value=MR_DRAFT_JSON):
+    with (
+        patch.dict(
+            os.environ, {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"}
+        ),
+        patch("requests.get", side_effect=side_effect_get),
+        patch("requests.post", return_value=mr_created_resp),
+        patch("src.core.llm_gateway.LLMGateway.generate", return_value=MR_DRAFT_JSON),
+    ):
         from src.agents.developer import DeveloperAgent
+
         agent = DeveloperAgent()
         agent._audit_logger = tmp_audit_db
-        result = agent.create_mr_from_issue(project_id=123, issue_iid=45, source_branch=None)
+        result = agent.create_mr_from_issue(
+            project_id=123, issue_iid=45, source_branch=None
+        )
 
     branch = result.get("source_branch", "")
-    assert branch.startswith("sage-ai/"), f"Expected branch starting with 'sage-ai/', got: '{branch}'"
+    assert branch.startswith("sage-ai/"), (
+        f"Expected branch starting with 'sage-ai/', got: '{branch}'"
+    )
     assert "45" in branch, f"Expected issue IID '45' in branch name, got: '{branch}'"
 
 
@@ -214,11 +274,16 @@ def test_create_mr_creates_audit_record(tmp_audit_db, mock_gitlab_responses):
             return issue_resp
         return project_resp
 
-    with patch.dict(os.environ, {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"}), \
-         patch("requests.get", side_effect=side_effect_get), \
-         patch("requests.post", return_value=mr_created_resp), \
-         patch("src.core.llm_gateway.LLMGateway.generate", return_value=MR_DRAFT_JSON):
+    with (
+        patch.dict(
+            os.environ, {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"}
+        ),
+        patch("requests.get", side_effect=side_effect_get),
+        patch("requests.post", return_value=mr_created_resp),
+        patch("src.core.llm_gateway.LLMGateway.generate", return_value=MR_DRAFT_JSON),
+    ):
         from src.agents.developer import DeveloperAgent
+
         agent = DeveloperAgent()
         agent._audit_logger = tmp_audit_db
         agent.create_mr_from_issue(project_id=123, issue_iid=45)
@@ -230,6 +295,7 @@ def test_create_mr_creates_audit_record(tmp_audit_db, mock_gitlab_responses):
 def test_create_mr_logs_failure_to_audit(tmp_audit_db, mock_gitlab_responses):
     """When GitLab MR POST returns 403, an MR_CREATE_FAILED record must be in the audit log."""
     import requests as req_module
+
     issue_resp = _make_response(200, mock_gitlab_responses["issue"])
     project_resp = _make_response(200, mock_gitlab_responses["project"])
     forbidden_resp = _make_response(
@@ -242,11 +308,16 @@ def test_create_mr_logs_failure_to_audit(tmp_audit_db, mock_gitlab_responses):
             return issue_resp
         return project_resp
 
-    with patch.dict(os.environ, {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"}), \
-         patch("requests.get", side_effect=side_effect_get), \
-         patch("requests.post", return_value=forbidden_resp), \
-         patch("src.core.llm_gateway.LLMGateway.generate", return_value=MR_DRAFT_JSON):
+    with (
+        patch.dict(
+            os.environ, {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"}
+        ),
+        patch("requests.get", side_effect=side_effect_get),
+        patch("requests.post", return_value=forbidden_resp),
+        patch("src.core.llm_gateway.LLMGateway.generate", return_value=MR_DRAFT_JSON),
+    ):
         from src.agents.developer import DeveloperAgent
+
         agent = DeveloperAgent()
         agent._audit_logger = tmp_audit_db
         result = agent.create_mr_from_issue(project_id=123, issue_iid=45)
@@ -258,12 +329,20 @@ def test_create_mr_logs_failure_to_audit(tmp_audit_db, mock_gitlab_responses):
 
 def test_list_open_mrs_returns_list(tmp_audit_db, mock_gitlab_responses):
     """list_open_mrs() must return a dict with 'merge_requests' list and count=2."""
-    mrs_data = [mock_gitlab_responses["mr"], {**mock_gitlab_responses["mr"], "iid": 8, "id": 1002}]
+    mrs_data = [
+        mock_gitlab_responses["mr"],
+        {**mock_gitlab_responses["mr"], "iid": 8, "id": 1002},
+    ]
     resp = _make_response(200, mrs_data)
 
-    with patch.dict(os.environ, {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"}), \
-         patch("requests.get", return_value=resp):
+    with (
+        patch.dict(
+            os.environ, {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"}
+        ),
+        patch("requests.get", return_value=resp),
+    ):
         from src.agents.developer import DeveloperAgent
+
         agent = DeveloperAgent()
         agent._audit_logger = tmp_audit_db
         result = agent.list_open_mrs(project_id=123)
@@ -280,14 +359,21 @@ def test_get_pipeline_status_no_pipeline(tmp_audit_db, mock_gitlab_responses):
     mr_no_pipeline["head_pipeline"] = None
     resp = _make_response(200, mr_no_pipeline)
 
-    with patch.dict(os.environ, {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"}), \
-         patch("requests.get", return_value=resp):
+    with (
+        patch.dict(
+            os.environ, {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"}
+        ),
+        patch("requests.get", return_value=resp),
+    ):
         from src.agents.developer import DeveloperAgent
+
         agent = DeveloperAgent()
         agent._audit_logger = tmp_audit_db
         result = agent.get_pipeline_status(project_id=123, mr_iid=7)
 
-    assert result.get("status") == "no_pipeline", f"Expected 'no_pipeline', got: {result.get('status')}"
+    assert result.get("status") == "no_pipeline", (
+        f"Expected 'no_pipeline', got: {result.get('status')}"
+    )
 
 
 def test_get_pipeline_status_with_pipeline(tmp_audit_db, mock_gitlab_responses):
@@ -297,6 +383,7 @@ def test_get_pipeline_status_with_pipeline(tmp_audit_db, mock_gitlab_responses):
     jobs_resp = _make_response(200, mock_gitlab_responses["jobs"])
 
     call_count = {"n": 0}
+
     def side_effect_get(url, **kwargs):
         call_count["n"] += 1
         if "/jobs" in url:
@@ -305,9 +392,14 @@ def test_get_pipeline_status_with_pipeline(tmp_audit_db, mock_gitlab_responses):
             return pipeline_resp
         return mr_resp
 
-    with patch.dict(os.environ, {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"}), \
-         patch("requests.get", side_effect=side_effect_get):
+    with (
+        patch.dict(
+            os.environ, {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"}
+        ),
+        patch("requests.get", side_effect=side_effect_get),
+    ):
         from src.agents.developer import DeveloperAgent
+
         agent = DeveloperAgent()
         agent._audit_logger = tmp_audit_db
         result = agent.get_pipeline_status(project_id=123, mr_iid=7)
@@ -318,9 +410,14 @@ def test_get_pipeline_status_with_pipeline(tmp_audit_db, mock_gitlab_responses):
 
 def test_propose_code_patch_returns_diff(tmp_audit_db):
     """propose_code_patch() must return a dict with patch, explanation, and confidence fields."""
-    with patch.dict(os.environ, {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"}), \
-         patch("src.core.llm_gateway.LLMGateway.generate", return_value=PATCH_JSON):
+    with (
+        patch.dict(
+            os.environ, {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"}
+        ),
+        patch("src.core.llm_gateway.LLMGateway.generate", return_value=PATCH_JSON),
+    ):
         from src.agents.developer import DeveloperAgent
+
         agent = DeveloperAgent()
         agent._audit_logger = tmp_audit_db
         result = agent.propose_code_patch(
@@ -330,14 +427,21 @@ def test_propose_code_patch_returns_diff(tmp_audit_db):
         )
 
     for field in ("patch", "explanation", "confidence"):
-        assert field in result, f"Result must contain '{field}'. Got keys: {list(result.keys())}"
+        assert field in result, (
+            f"Result must contain '{field}'. Got keys: {list(result.keys())}"
+        )
 
 
 def test_propose_code_patch_creates_audit_record(tmp_audit_db):
     """propose_code_patch() must create a CODE_PATCH_PROPOSAL audit record."""
-    with patch.dict(os.environ, {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"}), \
-         patch("src.core.llm_gateway.LLMGateway.generate", return_value=PATCH_JSON):
+    with (
+        patch.dict(
+            os.environ, {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"}
+        ),
+        patch("src.core.llm_gateway.LLMGateway.generate", return_value=PATCH_JSON),
+    ):
         from src.agents.developer import DeveloperAgent
+
         agent = DeveloperAgent()
         agent._audit_logger = tmp_audit_db
         agent.propose_code_patch(
@@ -352,10 +456,17 @@ def test_propose_code_patch_creates_audit_record(tmp_audit_db):
 
 def test_propose_code_patch_beam_width_1_is_single_shot(tmp_audit_db):
     """beam_width=1 (default) must not touch WorktreeManager at all."""
-    with patch.dict(os.environ, {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"}), \
-         patch("src.core.llm_gateway.LLMGateway.generate", return_value=PATCH_JSON) as mock_gen, \
-         patch("src.core.worktree_manager.WorktreeManager") as mock_wtm:
+    with (
+        patch.dict(
+            os.environ, {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"}
+        ),
+        patch(
+            "src.core.llm_gateway.LLMGateway.generate", return_value=PATCH_JSON
+        ) as mock_gen,
+        patch("src.core.worktree_manager.WorktreeManager") as mock_wtm,
+    ):
         from src.agents.developer import DeveloperAgent
+
         agent = DeveloperAgent()
         agent._audit_logger = tmp_audit_db
         result = agent.propose_code_patch(
@@ -374,31 +485,51 @@ def test_propose_code_patch_beam_width_1_is_single_shot(tmp_audit_db):
 # (game-theory Phase 2)
 # ---------------------------------------------------------------------------
 
+
 def _patch_json(marker, confidence="medium"):
-    return json.dumps({
-        "patch": f"--- a/f.c\n+++ b/f.c\n@@ -1 +1 @@\n-old\n+{marker}\n",
-        "explanation": f"variant {marker}",
-        "confidence": confidence,
-    })
+    return json.dumps(
+        {
+            "patch": f"--- a/f.c\n+++ b/f.c\n@@ -1 +1 @@\n-old\n+{marker}\n",
+            "explanation": f"variant {marker}",
+            "confidence": confidence,
+        }
+    )
 
 
 class TestProposeCodePatchBeamSearch:
     def _agent(self, tmp_audit_db):
         from src.agents.developer import DeveloperAgent
+
         agent = DeveloperAgent()
         agent._audit_logger = tmp_audit_db
         return agent
 
-    def test_generates_n_candidates_and_worktree_lifecycle_runs_for_each(self, tmp_audit_db):
+    def test_generates_n_candidates_and_worktree_lifecycle_runs_for_each(
+        self, tmp_audit_db
+    ):
         agent = self._agent(tmp_audit_db)
-        with patch.dict(os.environ, {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"}), \
-             patch("src.core.llm_gateway.LLMGateway.generate", side_effect=[
-                 _patch_json("A"), _patch_json("B"), _patch_json("C"),
-             ]), \
-             patch("src.core.worktree_manager.WorktreeManager") as mock_wtm_cls, \
-             patch.object(agent, "_apply_patch_in_worktree", return_value=(True, "applied cleanly")), \
-             patch.object(agent, "_run_tests_in_worktree", return_value=(True, "PASS")), \
-             patch("src.agents.critic.critic_agent") as mock_critic:
+        with (
+            patch.dict(
+                os.environ,
+                {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"},
+            ),
+            patch(
+                "src.core.llm_gateway.LLMGateway.generate",
+                side_effect=[
+                    _patch_json("A"),
+                    _patch_json("B"),
+                    _patch_json("C"),
+                ],
+            ),
+            patch("src.core.worktree_manager.WorktreeManager") as mock_wtm_cls,
+            patch.object(
+                agent,
+                "_apply_patch_in_worktree",
+                return_value=(True, "applied cleanly"),
+            ),
+            patch.object(agent, "_run_tests_in_worktree", return_value=(True, "PASS")),
+            patch("src.agents.critic.critic_agent") as mock_critic,
+        ):
             mock_wtm = MagicMock()
             mock_wtm.create.return_value = "/fake/wt/path"
             mock_wtm_cls.return_value = mock_wtm
@@ -424,16 +555,30 @@ class TestProposeCodePatchBeamSearch:
 
     def test_candidate_that_fails_to_apply_is_disqualified(self, tmp_audit_db):
         agent = self._agent(tmp_audit_db)
-        with patch.dict(os.environ, {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"}), \
-             patch("src.core.llm_gateway.LLMGateway.generate", side_effect=[
-                 _patch_json("BAD"), _patch_json("GOOD"),
-             ]), \
-             patch("src.core.worktree_manager.WorktreeManager") as mock_wtm_cls, \
-             patch.object(agent, "_apply_patch_in_worktree", side_effect=[
-                 (False, "patch did not apply"), (True, "applied cleanly"),
-             ]), \
-             patch.object(agent, "_run_tests_in_worktree", return_value=(True, "PASS")), \
-             patch("src.agents.critic.critic_agent") as mock_critic:
+        with (
+            patch.dict(
+                os.environ,
+                {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"},
+            ),
+            patch(
+                "src.core.llm_gateway.LLMGateway.generate",
+                side_effect=[
+                    _patch_json("BAD"),
+                    _patch_json("GOOD"),
+                ],
+            ),
+            patch("src.core.worktree_manager.WorktreeManager") as mock_wtm_cls,
+            patch.object(
+                agent,
+                "_apply_patch_in_worktree",
+                side_effect=[
+                    (False, "patch did not apply"),
+                    (True, "applied cleanly"),
+                ],
+            ),
+            patch.object(agent, "_run_tests_in_worktree", return_value=(True, "PASS")),
+            patch("src.agents.critic.critic_agent") as mock_critic,
+        ):
             mock_wtm = MagicMock()
             mock_wtm.create.return_value = "/fake/wt/path"
             mock_wtm_cls.return_value = mock_wtm
@@ -456,16 +601,33 @@ class TestProposeCodePatchBeamSearch:
 
     def test_worktree_removed_even_when_test_run_raises(self, tmp_audit_db):
         agent = self._agent(tmp_audit_db)
-        with patch.dict(os.environ, {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"}), \
-             patch("src.core.llm_gateway.LLMGateway.generate", side_effect=[_patch_json("A"), _patch_json("B")]), \
-             patch("src.core.worktree_manager.WorktreeManager") as mock_wtm_cls, \
-             patch.object(agent, "_apply_patch_in_worktree", return_value=(True, "applied cleanly")), \
-             patch.object(agent, "_run_tests_in_worktree", side_effect=RuntimeError("boom")), \
-             patch("src.agents.critic.critic_agent") as mock_critic:
+        with (
+            patch.dict(
+                os.environ,
+                {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"},
+            ),
+            patch(
+                "src.core.llm_gateway.LLMGateway.generate",
+                side_effect=[_patch_json("A"), _patch_json("B")],
+            ),
+            patch("src.core.worktree_manager.WorktreeManager") as mock_wtm_cls,
+            patch.object(
+                agent,
+                "_apply_patch_in_worktree",
+                return_value=(True, "applied cleanly"),
+            ),
+            patch.object(
+                agent, "_run_tests_in_worktree", side_effect=RuntimeError("boom")
+            ),
+            patch("src.agents.critic.critic_agent") as mock_critic,
+        ):
             mock_wtm = MagicMock()
             mock_wtm.create.return_value = "/fake/wt/path"
             mock_wtm_cls.return_value = mock_wtm
-            mock_critic.multi_critic_review.return_value = {"score": 50, "summary": "ok"}
+            mock_critic.multi_critic_review.return_value = {
+                "score": 50,
+                "summary": "ok",
+            }
 
             agent.propose_code_patch(
                 file_path="src/uart_driver.c",
@@ -478,7 +640,9 @@ class TestProposeCodePatchBeamSearch:
 
 
 class TestApplyPatchInWorktree:
-    def test_empty_patch_is_rejected_without_touching_subprocess(self, tmp_path, tmp_audit_db):
+    def test_empty_patch_is_rejected_without_touching_subprocess(
+        self, tmp_path, tmp_audit_db
+    ):
         agent = TestProposeCodePatchBeamSearch()._agent(tmp_audit_db)
         with patch("src.agents.developer.subprocess.run") as mock_run:
             applied, msg = agent._apply_patch_in_worktree(str(tmp_path), "   ")
@@ -490,7 +654,9 @@ class TestApplyPatchInWorktree:
         agent = TestProposeCodePatchBeamSearch()._agent(tmp_audit_db)
         with patch("src.agents.developer.subprocess.run") as mock_run:
             mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
-            applied, msg = agent._apply_patch_in_worktree(str(tmp_path), "--- a/f\n+++ b/f\n")
+            applied, msg = agent._apply_patch_in_worktree(
+                str(tmp_path), "--- a/f\n+++ b/f\n"
+            )
         assert applied is True
         assert mock_run.call_count == 1
         assert mock_run.call_args[0][0][2] == "-p1"
@@ -502,15 +668,21 @@ class TestApplyPatchInWorktree:
                 MagicMock(returncode=1, stdout="", stderr="p1 failed"),
                 MagicMock(returncode=0, stdout="", stderr=""),
             ]
-            applied, msg = agent._apply_patch_in_worktree(str(tmp_path), "--- f\n+++ f\n")
+            applied, msg = agent._apply_patch_in_worktree(
+                str(tmp_path), "--- f\n+++ f\n"
+            )
         assert applied is True
         assert mock_run.call_count == 2
 
     def test_disqualified_when_both_p_levels_fail(self, tmp_path, tmp_audit_db):
         agent = TestProposeCodePatchBeamSearch()._agent(tmp_audit_db)
         with patch("src.agents.developer.subprocess.run") as mock_run:
-            mock_run.return_value = MagicMock(returncode=1, stdout="", stderr="corrupt hunk")
-            applied, msg = agent._apply_patch_in_worktree(str(tmp_path), "not a real diff")
+            mock_run.return_value = MagicMock(
+                returncode=1, stdout="", stderr="corrupt hunk"
+            )
+            applied, msg = agent._apply_patch_in_worktree(
+                str(tmp_path), "not a real diff"
+            )
         assert applied is False
         assert "corrupt hunk" in msg
 
@@ -526,7 +698,9 @@ class TestRunTestsInWorktree:
     def test_returns_true_on_zero_returncode(self, tmp_path, tmp_audit_db):
         agent = TestProposeCodePatchBeamSearch()._agent(tmp_audit_db)
         with patch("src.agents.developer.subprocess.run") as mock_run:
-            mock_run.return_value = MagicMock(returncode=0, stdout="5 passed", stderr="")
+            mock_run.return_value = MagicMock(
+                returncode=0, stdout="5 passed", stderr=""
+            )
             ok, output = agent._run_tests_in_worktree(str(tmp_path))
         assert ok is True
         assert "5 passed" in output
@@ -535,7 +709,9 @@ class TestRunTestsInWorktree:
     def test_returns_false_on_nonzero_returncode(self, tmp_path, tmp_audit_db):
         agent = TestProposeCodePatchBeamSearch()._agent(tmp_audit_db)
         with patch("src.agents.developer.subprocess.run") as mock_run:
-            mock_run.return_value = MagicMock(returncode=1, stdout="", stderr="1 failed")
+            mock_run.return_value = MagicMock(
+                returncode=1, stdout="", stderr="1 failed"
+            )
             ok, output = agent._run_tests_in_worktree(str(tmp_path))
         assert ok is False
         assert "1 failed" in output
@@ -553,12 +729,19 @@ def test_add_mr_comment_posts_to_gitlab(tmp_audit_db, mock_gitlab_responses):
     """add_mr_comment() must create an MR_COMMENT_ADDED audit record and return note_id."""
     note_resp = _make_response(201, mock_gitlab_responses["note"])
 
-    with patch.dict(os.environ, {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"}), \
-         patch("requests.post", return_value=note_resp):
+    with (
+        patch.dict(
+            os.environ, {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"}
+        ),
+        patch("requests.post", return_value=note_resp),
+    ):
         from src.agents.developer import DeveloperAgent
+
         agent = DeveloperAgent()
         agent._audit_logger = tmp_audit_db
-        result = agent.add_mr_comment(project_id=123, mr_iid=7, comment="SAGE[ai] review: LGTM")
+        result = agent.add_mr_comment(
+            project_id=123, mr_iid=7, comment="SAGE[ai] review: LGTM"
+        )
 
     assert "note_id" in result, f"Expected 'note_id' in result: {result}"
     rows = _query_audit(tmp_audit_db.db_path, action_type="MR_COMMENT_ADDED")
@@ -568,9 +751,15 @@ def test_add_mr_comment_posts_to_gitlab(tmp_audit_db, mock_gitlab_responses):
 def test_add_mr_comment_handles_error(tmp_audit_db):
     """When requests.post raises an exception, add_mr_comment() must return a dict with 'error'."""
     import requests as req_module
-    with patch.dict(os.environ, {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"}), \
-         patch("requests.post", side_effect=req_module.ConnectionError("Network error")):
+
+    with (
+        patch.dict(
+            os.environ, {"GITLAB_URL": "https://gl.test.local", "GITLAB_TOKEN": "tok"}
+        ),
+        patch("requests.post", side_effect=req_module.ConnectionError("Network error")),
+    ):
         from src.agents.developer import DeveloperAgent
+
         agent = DeveloperAgent()
         agent._audit_logger = tmp_audit_db
         result = agent.add_mr_comment(project_id=123, mr_iid=7, comment="Test comment")

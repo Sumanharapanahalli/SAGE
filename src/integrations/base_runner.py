@@ -37,7 +37,6 @@ import uuid
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum
-from pathlib import Path
 from typing import Any, Optional
 
 
@@ -48,8 +47,10 @@ logger = logging.getLogger("BaseRunner")
 # Data classes
 # ---------------------------------------------------------------------------
 
+
 class VerificationSeverity(Enum):
     """Severity levels for verification findings."""
+
     PASS = "pass"
     INFO = "info"
     WARNING = "warning"
@@ -60,6 +61,7 @@ class VerificationSeverity(Enum):
 @dataclass
 class VerificationFinding:
     """A single verification check result."""
+
     check: str
     severity: VerificationSeverity
     message: str
@@ -69,6 +71,7 @@ class VerificationFinding:
 @dataclass
 class VerificationReport:
     """Aggregate verification result from a domain runner."""
+
     passed: bool
     score: float  # 0-100
     findings: list[VerificationFinding] = field(default_factory=list)
@@ -96,6 +99,7 @@ class VerificationReport:
 @dataclass
 class RunResult:
     """Standardized result from any domain runner execution."""
+
     run_id: str
     status: str  # "completed", "failed", "error", "partial"
     runner: str  # e.g. "openswe", "openfw", "openeda"
@@ -116,7 +120,13 @@ class RunResult:
             "runner": self.runner,
             "tier": self.tier,
             "artifacts": self.artifacts,
-            "output": (str(self.output)[:2000] if not isinstance(self.output, str) else self.output[:2000]) if self.output else "",
+            "output": (
+                str(self.output)[:2000]
+                if not isinstance(self.output, str)
+                else self.output[:2000]
+            )
+            if self.output
+            else "",
             "files_changed": self.files_changed,
             "verification": self.verification.to_dict() if self.verification else None,
             "experience": self.experience,
@@ -129,6 +139,7 @@ class RunResult:
 @dataclass
 class Exercise:
     """A training exercise for the Agent Gym."""
+
     id: str
     role: str
     task_type: str
@@ -144,6 +155,7 @@ class Exercise:
 @dataclass
 class ExerciseScore:
     """Score from grading an exercise attempt."""
+
     exercise_id: str
     passed: bool
     score: float  # 0-100
@@ -155,6 +167,7 @@ class ExerciseScore:
 # ---------------------------------------------------------------------------
 # Abstract Base Runner
 # ---------------------------------------------------------------------------
+
 
 class BaseRunner(ABC):
     """
@@ -269,6 +282,7 @@ class BaseRunner(ABC):
         """
         try:
             from src.core.skill_loader import skill_registry
+
             if role:
                 return skill_registry.build_prompt_for_role(role)
             # All skills for this runner
@@ -276,7 +290,9 @@ class BaseRunner(ABC):
             parts = []
             for skill in skills:
                 if skill.prompt:
-                    parts.append(f"## Skill: {skill.name} (v{skill.version})\n{skill.prompt}")
+                    parts.append(
+                        f"## Skill: {skill.name} (v{skill.version})\n{skill.prompt}"
+                    )
             return "\n\n".join(parts)
         except Exception:
             return ""
@@ -285,6 +301,7 @@ class BaseRunner(ABC):
         """Get acceptance criteria from registered skills."""
         try:
             from src.core.skill_loader import skill_registry
+
             if role:
                 return skill_registry.get_acceptance_criteria_for_role(role)
             skills = skill_registry.get_for_runner(self.name)
@@ -299,6 +316,7 @@ class BaseRunner(ABC):
         """List all active skills registered for this runner."""
         try:
             from src.core.skill_loader import skill_registry
+
             return [s.to_dict() for s in skill_registry.get_for_runner(self.name)]
         except Exception:
             return []
@@ -307,6 +325,7 @@ class BaseRunner(ABC):
         """Get the union of tools from all skills for this runner."""
         try:
             from src.core.skill_loader import skill_registry
+
             skills = skill_registry.get_for_runner(self.name)
             tools = []
             seen = set()
@@ -330,6 +349,7 @@ class BaseRunner(ABC):
         """
         try:
             from src.core.exercise_seeds import get_all_seeds
+
             seeds = get_all_seeds().get(self.name, [])
             if not seeds:
                 return []
@@ -341,17 +361,19 @@ class BaseRunner(ABC):
                 # Build deterministic ID from domain + index + difficulty
                 diff = seed.get("difficulty", "intermediate")
                 prefix = self.name[:3]
-                ex_id = f"{prefix}-{diff[0]}{i+1:02d}"
-                exercises.append(Exercise(
-                    id=ex_id,
-                    role=self.roles[0] if self.roles else "",
-                    task_type=seed.get("task_type", ""),
-                    difficulty=diff,
-                    description=seed.get("description", seed.get("title", "")),
-                    acceptance_criteria=seed.get("acceptance_criteria", []),
-                    expected_artifacts=[],
-                    tags=seed.get("tags", []),
-                ))
+                ex_id = f"{prefix}-{diff[0]}{i + 1:02d}"
+                exercises.append(
+                    Exercise(
+                        id=ex_id,
+                        role=self.roles[0] if self.roles else "",
+                        task_type=seed.get("task_type", ""),
+                        difficulty=diff,
+                        description=seed.get("description", seed.get("title", "")),
+                        acceptance_criteria=seed.get("acceptance_criteria", []),
+                        expected_artifacts=[],
+                        tags=seed.get("tags", []),
+                    )
+                )
             return exercises
         except Exception as exc:
             self.logger.debug("Catalog load failed: %s", exc)
@@ -409,8 +431,9 @@ class BaseRunner(ABC):
             # Parse JSON from response
             import json as _json
             import re as _re
+
             cleaned = response.replace("```json", "").replace("```", "").strip()
-            match = _re.search(r'\{[\s\S]*\}', cleaned)
+            match = _re.search(r"\{[\s\S]*\}", cleaned)
             if match:
                 parsed = _json.loads(match.group(0))
                 return {
@@ -440,8 +463,8 @@ class BaseRunner(ABC):
         blocks = []
         # Pattern: ```lang\n...``` optionally preceded by a filename hint
         pattern = re.compile(
-            r'(?:(?:#|//|--)\s*(?:file(?:name)?|File)\s*:\s*(\S+)\s*\n)?'
-            r'```(\w+)?\s*\n(.*?)```',
+            r"(?:(?:#|//|--)\s*(?:file(?:name)?|File)\s*:\s*(\S+)\s*\n)?"
+            r"```(\w+)?\s*\n(.*?)```",
             re.DOTALL,
         )
         for match in pattern.finditer(output or ""):
@@ -506,9 +529,7 @@ class BaseRunner(ABC):
             written.append(fpath)
         return written
 
-    def _run_command(
-        self, cmd: list[str], cwd: str, timeout: int = 60
-    ) -> dict:
+    def _run_command(self, cmd: list[str], cwd: str, timeout: int = 60) -> dict:
         """
         Run a command in the workspace and capture results.
 
@@ -565,68 +586,88 @@ class BaseRunner(ABC):
         if ".py" in extensions:
             # Python: syntax check all .py files
             py_files = [f for f in files if f.endswith(".py")]
-            commands.append({
-                "name": "python_syntax",
-                "cmd": ["python3", "-m", "py_compile"] + py_files,
-                "weight": 25,
-                "timeout": 30,
-            })
+            commands.append(
+                {
+                    "name": "python_syntax",
+                    "cmd": ["python3", "-m", "py_compile"] + py_files,
+                    "weight": 25,
+                    "timeout": 30,
+                }
+            )
             # Run tests if test files exist
             test_files = [f for f in py_files if "test" in os.path.basename(f).lower()]
             if test_files:
-                commands.append({
-                    "name": "python_tests",
-                    "cmd": ["python3", "-m", "pytest", "-x", "--tb=short", "-q"] + test_files,
-                    "weight": 35,
-                    "timeout": 60,
-                })
+                commands.append(
+                    {
+                        "name": "python_tests",
+                        "cmd": ["python3", "-m", "pytest", "-x", "--tb=short", "-q"]
+                        + test_files,
+                        "weight": 35,
+                        "timeout": 60,
+                    }
+                )
             # Try running main file
             main_files = [f for f in py_files if f not in test_files]
             if main_files:
-                commands.append({
-                    "name": "python_import",
-                    "cmd": ["python3", "-c", f"import importlib.util; "
+                commands.append(
+                    {
+                        "name": "python_import",
+                        "cmd": [
+                            "python3",
+                            "-c",
+                            f"import importlib.util; "
                             f"spec = importlib.util.spec_from_file_location('m', '{main_files[0]}'); "
-                            f"mod = importlib.util.module_from_spec(spec)"],
-                    "weight": 15,
-                    "timeout": 15,
-                })
+                            f"mod = importlib.util.module_from_spec(spec)",
+                        ],
+                        "weight": 15,
+                        "timeout": 15,
+                    }
+                )
 
         if ".js" in extensions or ".ts" in extensions:
             js_files = [f for f in files if f.endswith((".js", ".ts"))]
-            commands.append({
-                "name": "node_syntax",
-                "cmd": ["node", "--check"] + [f for f in js_files if f.endswith(".js")],
-                "weight": 25,
-                "timeout": 15,
-            })
+            commands.append(
+                {
+                    "name": "node_syntax",
+                    "cmd": ["node", "--check"]
+                    + [f for f in js_files if f.endswith(".js")],
+                    "weight": 25,
+                    "timeout": 15,
+                }
+            )
 
         if ".c" in extensions or ".cpp" in extensions:
             c_files = [f for f in files if f.endswith((".c", ".cpp"))]
             compiler = "gcc" if ".c" in extensions else "g++"
-            commands.append({
-                "name": "c_compile",
-                "cmd": [compiler, "-fsyntax-only", "-Wall", "-Wextra"] + c_files,
-                "weight": 35,
-                "timeout": 30,
-            })
+            commands.append(
+                {
+                    "name": "c_compile",
+                    "cmd": [compiler, "-fsyntax-only", "-Wall", "-Wextra"] + c_files,
+                    "weight": 35,
+                    "timeout": 30,
+                }
+            )
 
         if ".go" in extensions:
-            commands.append({
-                "name": "go_build",
-                "cmd": ["go", "build", "./..."],
-                "weight": 35,
-                "timeout": 30,
-            })
+            commands.append(
+                {
+                    "name": "go_build",
+                    "cmd": ["go", "build", "./..."],
+                    "weight": 35,
+                    "timeout": 30,
+                }
+            )
 
         if ".rs" in extensions:
-            commands.append({
-                "name": "rust_check",
-                "cmd": ["rustc", "--edition", "2021", "--crate-type", "lib"]
-                + [f for f in files if f.endswith(".rs")],
-                "weight": 35,
-                "timeout": 30,
-            })
+            commands.append(
+                {
+                    "name": "rust_check",
+                    "cmd": ["rustc", "--edition", "2021", "--crate-type", "lib"]
+                    + [f for f in files if f.endswith(".rs")],
+                    "weight": 35,
+                    "timeout": 30,
+                }
+            )
 
         return commands
 
@@ -661,14 +702,18 @@ class BaseRunner(ABC):
                     return {
                         "score": 0,
                         "criteria": {"code_extracted": False},
-                        "hints": ["Output must contain code blocks (```lang ... ```) to be experimentally verified"],
+                        "hints": [
+                            "Output must contain code blocks (```lang ... ```) to be experimentally verified"
+                        ],
                         "details": {"reason": "no_code_blocks"},
                     }
             else:
                 return {
                     "score": 0,
                     "criteria": {"code_extracted": False},
-                    "hints": ["Output must contain code blocks (```lang ... ```) to be experimentally verified"],
+                    "hints": [
+                        "Output must contain code blocks (```lang ... ```) to be experimentally verified"
+                    ],
                     "details": {"reason": "no_code_blocks"},
                 }
 
@@ -701,14 +746,16 @@ class BaseRunner(ABC):
                 cmd_spec["cmd"], cwd=workspace, timeout=cmd_spec.get("timeout", 60)
             )
             passed = cmd_result["returncode"] == 0
-            command_results.append({
-                "name": cmd_spec["name"],
-                "passed": passed,
-                "returncode": cmd_result["returncode"],
-                "duration_s": cmd_result["duration_s"],
-                "stdout_preview": cmd_result["stdout"][:200],
-                "stderr_preview": cmd_result["stderr"][:200],
-            })
+            command_results.append(
+                {
+                    "name": cmd_spec["name"],
+                    "passed": passed,
+                    "returncode": cmd_result["returncode"],
+                    "duration_s": cmd_result["duration_s"],
+                    "stdout_preview": cmd_result["stdout"][:200],
+                    "stderr_preview": cmd_result["stderr"][:200],
+                }
+            )
 
             exp_criteria[f"exp:{cmd_spec['name']}"] = passed
             if passed:
@@ -716,7 +763,8 @@ class BaseRunner(ABC):
             else:
                 stderr = cmd_result["stderr"][:200]
                 exp_hints.append(
-                    f"{cmd_spec['name']} failed: {stderr}" if stderr
+                    f"{cmd_spec['name']} failed: {stderr}"
+                    if stderr
                     else f"{cmd_spec['name']} failed with exit code {cmd_result['returncode']}"
                 )
 
@@ -753,9 +801,13 @@ class BaseRunner(ABC):
         If LLM fails, uses experimental + structural.
         """
         # Try experimental verification first
-        workspace = result.metrics.get("workspace") or tempfile.mkdtemp(prefix="sage_exp_")
+        workspace = result.metrics.get("workspace") or tempfile.mkdtemp(
+            prefix="sage_exp_"
+        )
         exp_result = self._experimental_verify(result, exercise, workspace)
-        has_experimental = exp_result["score"] > 0 or exp_result.get("criteria", {}).get("code_extracted")
+        has_experimental = exp_result["score"] > 0 or exp_result.get(
+            "criteria", {}
+        ).get("code_extracted")
 
         # LLM grading
         llm_result = self._llm_grade(exercise, result, domain_context)
@@ -900,7 +952,9 @@ def register_supplementary_runner(runner: BaseRunner) -> None:
     (e.g., browser testing for qa_engineer who primarily uses openswe).
     """
     _RUNNER_INSTANCES[runner.name] = runner
-    logger.info("Registered supplementary runner '%s' for roles: %s", runner.name, runner.roles)
+    logger.info(
+        "Registered supplementary runner '%s' for roles: %s", runner.name, runner.roles
+    )
 
 
 def get_runner_for_role(role: str) -> Optional[BaseRunner]:
@@ -940,13 +994,19 @@ def get_role_to_runner_map() -> dict[str, str]:
 # ---------------------------------------------------------------------------
 
 SWE_ROLES = [
-    "developer", "qa_engineer", "system_tester", "devops_engineer",
-    "localization_engineer", "data_engineer", "agentic_engineer",
+    "developer",
+    "qa_engineer",
+    "system_tester",
+    "devops_engineer",
+    "localization_engineer",
+    "data_engineer",
+    "agentic_engineer",
     "system_engineer",
 ]
 
 FIRMWARE_ROLES = [
-    "firmware_engineer", "embedded_tester",
+    "firmware_engineer",
+    "embedded_tester",
 ]
 
 EDA_ROLES = [
@@ -958,12 +1018,18 @@ SIM_ROLES = [
 ]
 
 ML_ROLES = [
-    "data_scientist", "ml_engineer", "gen_ai_engineer",
+    "data_scientist",
+    "ml_engineer",
+    "gen_ai_engineer",
 ]
 
 DOC_ROLES = [
-    "technical_writer", "regulatory_specialist", "legal_advisor",
-    "safety_engineer", "business_analyst", "financial_analyst",
+    "technical_writer",
+    "regulatory_specialist",
+    "legal_advisor",
+    "safety_engineer",
+    "business_analyst",
+    "financial_analyst",
     "analyst",
 ]
 
@@ -972,24 +1038,32 @@ DESIGN_ROLES = [
 ]
 
 BROWSER_ROLES = [
-    "qa_engineer", "system_tester", "ux_designer",
+    "qa_engineer",
+    "system_tester",
+    "ux_designer",
 ]
 
 STRATEGY_ROLES = [
-    "product_manager", "marketing_strategist", "operations_manager",
+    "product_manager",
+    "marketing_strategist",
+    "operations_manager",
 ]
 
 TERMINAL_ROLES = [
-    "terminal_operator", "shell_expert",
+    "terminal_operator",
+    "shell_expert",
 ]
 
 RESEARCH_ROLES = [
-    "research_engineer", "ml_researcher",
+    "research_engineer",
+    "ml_researcher",
 ]
 
 # Orchestration roles don't need a runner — they plan/review, not execute
 ORCHESTRATION_ROLES = [
-    "planner", "monitor", "critic",
+    "planner",
+    "monitor",
+    "critic",
 ]
 
 # All role families for validation
@@ -1018,9 +1092,11 @@ SUPPLEMENTARY_FAMILIES = {
 # Auto-import all domain runners to trigger registration
 # ---------------------------------------------------------------------------
 
+
 def _auto_register_runners():
     """Import all runner modules so they self-register via register_runner()."""
     import importlib
+
     runner_modules = [
         "src.integrations.openswe_adapter",
         "src.integrations.openfw_runner",

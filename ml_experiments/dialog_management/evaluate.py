@@ -39,6 +39,7 @@ logger = logging.getLogger(__name__)
 
 # ── Core Evaluation ───────────────────────────────────────────────────────────
 
+
 def evaluate_model(
     model: nn.Module,
     loader: DataLoader,
@@ -72,14 +73,20 @@ def evaluate_model(
 
     avg_loss = total_loss / len(loader)
     metrics = {
-        "loss":               avg_loss,
-        "accuracy":           accuracy_score(all_labels, all_preds),
-        "f1_weighted":        f1_score(all_labels, all_preds, average="weighted", zero_division=0),
-        "f1_macro":           f1_score(all_labels, all_preds, average="macro",    zero_division=0),
-        "precision_weighted": precision_score(all_labels, all_preds, average="weighted", zero_division=0),
-        "recall_weighted":    recall_score(all_labels, all_preds, average="weighted",    zero_division=0),
-        "_preds":             all_preds,
-        "_labels":            all_labels,
+        "loss": avg_loss,
+        "accuracy": accuracy_score(all_labels, all_preds),
+        "f1_weighted": f1_score(
+            all_labels, all_preds, average="weighted", zero_division=0
+        ),
+        "f1_macro": f1_score(all_labels, all_preds, average="macro", zero_division=0),
+        "precision_weighted": precision_score(
+            all_labels, all_preds, average="weighted", zero_division=0
+        ),
+        "recall_weighted": recall_score(
+            all_labels, all_preds, average="weighted", zero_division=0
+        ),
+        "_preds": all_preds,
+        "_labels": all_labels,
     }
     return metrics
 
@@ -97,6 +104,7 @@ def classification_report_dict(
 
 # ── Confusion Matrix ──────────────────────────────────────────────────────────
 
+
 def save_confusion_matrix(
     labels: List[int],
     preds: List[int],
@@ -109,10 +117,12 @@ def save_confusion_matrix(
     fig, ax = plt.subplots(figsize=(12, 10))
     sns.heatmap(
         cm_norm,
-        annot=True, fmt=".2f",
+        annot=True,
+        fmt=".2f",
         xticklabels=class_names,
         yticklabels=class_names,
-        cmap="Blues", ax=ax,
+        cmap="Blues",
+        ax=ax,
     )
     ax.set_title("Normalised Confusion Matrix — Dialog Act Classification")
     ax.set_xlabel("Predicted")
@@ -124,6 +134,7 @@ def save_confusion_matrix(
 
 
 # ── Bias Evaluation ───────────────────────────────────────────────────────────
+
 
 def bias_evaluation(
     model: nn.Module,
@@ -153,11 +164,15 @@ def bias_evaluation(
 
     for group_name, group_df in test_df.groupby(group_col):
         if len(group_df) < 5:
-            logger.warning("Group '%s' has only %d samples — skipping.", group_name, len(group_df))
+            logger.warning(
+                "Group '%s' has only %d samples — skipping.", group_name, len(group_df)
+            )
             continue
 
         dataset = DialogDataset(group_df, encoder_name, max_seq_len)
-        loader = DataLoader(dataset, batch_size=32, shuffle=False, collate_fn=collate_fn)
+        loader = DataLoader(
+            dataset, batch_size=32, shuffle=False, collate_fn=collate_fn
+        )
         criterion = nn.CrossEntropyLoss()
         metrics = evaluate_model(model, loader, device, criterion)
 
@@ -167,39 +182,41 @@ def bias_evaluation(
         group_f1s[str(group_name)] = f1
 
         results["groups"][str(group_name)] = {
-            "n_samples":   len(group_df),
-            "accuracy":    round(acc, 4),
+            "n_samples": len(group_df),
+            "accuracy": round(acc, 4),
             "f1_weighted": round(f1, 4),
         }
 
     if len(group_accuracies) >= 2:
         acc_values = list(group_accuracies.values())
         gap = max(acc_values) - min(acc_values)
-        best_group  = max(group_accuracies, key=lambda k: group_accuracies[k])
+        best_group = max(group_accuracies, key=lambda k: group_accuracies[k])
         worst_group = min(group_accuracies, key=lambda k: group_accuracies[k])
 
         results["summary"] = {
-            "demographic_parity_gap":    round(gap, 4),
-            "best_group":                best_group,
-            "worst_group":               worst_group,
-            "bias_flag":                 gap > 0.05,
-            "bias_threshold":            0.05,
+            "demographic_parity_gap": round(gap, 4),
+            "best_group": best_group,
+            "worst_group": worst_group,
+            "bias_flag": gap > 0.05,
+            "bias_threshold": 0.05,
             "recommendation": (
                 f"Accuracy gap of {gap:.1%} exceeds 5 pp threshold. "
                 "Consider oversampling under-performing group or re-weighting loss."
-                if gap > 0.05 else
-                f"Accuracy gap {gap:.1%} is within acceptable range."
+                if gap > 0.05
+                else f"Accuracy gap {gap:.1%} is within acceptable range."
             ),
         }
         logger.info(
             "Bias eval — demographic parity gap: %.4f | flag: %s",
-            gap, gap > 0.05,
+            gap,
+            gap > 0.05,
         )
 
     return results
 
 
 # ── Latency Profiling ─────────────────────────────────────────────────────────
+
 
 def benchmark_latency(
     model: nn.Module,
@@ -238,20 +255,24 @@ def benchmark_latency(
 
     stats = {
         "mean_ms": float(np.mean(latencies_ms)),
-        "p50_ms":  float(np.percentile(latencies_ms, 50)),
-        "p95_ms":  float(np.percentile(latencies_ms, 95)),
-        "p99_ms":  float(np.percentile(latencies_ms, 99)),
-        "max_ms":  float(np.max(latencies_ms)),
-        "n":       n_samples,
+        "p50_ms": float(np.percentile(latencies_ms, 50)),
+        "p95_ms": float(np.percentile(latencies_ms, 95)),
+        "p99_ms": float(np.percentile(latencies_ms, 99)),
+        "max_ms": float(np.max(latencies_ms)),
+        "n": n_samples,
     }
     logger.info(
         "Latency — mean=%.1f ms | P50=%.1f ms | P95=%.1f ms | P99=%.1f ms",
-        stats["mean_ms"], stats["p50_ms"], stats["p95_ms"], stats["p99_ms"],
+        stats["mean_ms"],
+        stats["p50_ms"],
+        stats["p95_ms"],
+        stats["p99_ms"],
     )
     return stats
 
 
 # ── Full Evaluation Report ────────────────────────────────────────────────────
+
 
 def save_evaluation_report(
     metrics: Dict,
@@ -263,16 +284,15 @@ def save_evaluation_report(
 ) -> None:
     report = {
         "overall_metrics": {
-            k: round(v, 4) for k, v in metrics.items()
-            if not k.startswith("_")
+            k: round(v, 4) for k, v in metrics.items() if not k.startswith("_")
         },
         "per_class_metrics": class_report,
-        "bias_evaluation":   bias_results,
-        "latency":           latency_stats,
+        "bias_evaluation": bias_results,
+        "latency": latency_stats,
         "sla": {
             "target_p95_ms": sla_ms,
-            "p95_ms":        latency_stats.get("p95_ms"),
-            "within_sla":    latency_stats.get("p95_ms", 999) <= sla_ms,
+            "p95_ms": latency_stats.get("p95_ms"),
+            "within_sla": latency_stats.get("p95_ms", 999) <= sla_ms,
         },
     }
     with open(output_path, "w") as f:

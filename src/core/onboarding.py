@@ -189,6 +189,7 @@ task_types:
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _try_add_to_org(org_name: str, solution_name: str) -> None:
     """
     Non-fatal: if org.yaml exists in SAGE_SOLUTIONS_DIR, add the solution under
@@ -238,6 +239,7 @@ def _try_add_to_org(org_name: str, solution_name: str) -> None:
 # Generator
 # ---------------------------------------------------------------------------
 
+
 def _sanitize_name(name: str) -> str:
     """Convert arbitrary string to safe snake_case folder name."""
     name = name.lower().strip()
@@ -259,7 +261,9 @@ def _validate_yaml(text: str, filename: str) -> dict:
     try:
         result = yaml.safe_load(text)
         if not isinstance(result, dict):
-            raise ValueError(f"{filename}: expected a YAML mapping, got {type(result).__name__}")
+            raise ValueError(
+                f"{filename}: expected a YAML mapping, got {type(result).__name__}"
+            )
         return result
     except yaml.YAMLError as e:
         raise ValueError(f"{filename}: YAML parse error — {e}")
@@ -304,22 +308,22 @@ def generate_solution(
     integrations_str = "\n  - ".join(integrations or ["gitlab"]) or "- gitlab"
 
     template_vars = {
-        "description":          description,
-        "solution_name":        solution_name,
+        "description": description,
+        "solution_name": solution_name,
         "compliance_standards": compliance_str,
-        "integrations":         integrations_str,
-        "parent_solution":      parent_solution or "none",
+        "integrations": integrations_str,
+        "parent_solution": parent_solution or "none",
     }
 
     target_dir = os.path.join(_SOLUTIONS_DIR, solution_name)
     if os.path.exists(target_dir):
         return {
-            "solution_name":    solution_name,
-            "path":             target_dir,
-            "status":           "exists",
-            "files":            {},
+            "solution_name": solution_name,
+            "path": target_dir,
+            "status": "exists",
+            "files": {},
             "suggested_routes": [],
-            "message":          f"Solution '{solution_name}' already exists. Use /config/switch to load it.",
+            "message": f"Solution '{solution_name}' already exists. Use /config/switch to load it.",
         }
 
     logger.info("Generating solution '%s' from description...", solution_name)
@@ -328,9 +332,9 @@ def generate_solution(
     files = {}
 
     for filename, prompt_template in [
-        ("project.yaml",  _PROJECT_YAML_PROMPT),
-        ("prompts.yaml",  _PROMPTS_YAML_PROMPT),
-        ("tasks.yaml",    _TASKS_YAML_PROMPT),
+        ("project.yaml", _PROJECT_YAML_PROMPT),
+        ("prompts.yaml", _PROMPTS_YAML_PROMPT),
+        ("tasks.yaml", _TASKS_YAML_PROMPT),
     ]:
         prompt = prompt_template.format(**template_vars)
         raw = llm_gateway.generate(
@@ -355,9 +359,7 @@ def generate_solution(
     if not isinstance(suggested_routes, list):
         suggested_routes = []
     # Sanitize each entry to snake_case strings
-    suggested_routes = [
-        _sanitize_name(str(r)) for r in suggested_routes if r
-    ]
+    suggested_routes = [_sanitize_name(str(r)) for r in suggested_routes if r]
 
     # Inject parent: field if requested
     if parent_solution:
@@ -391,13 +393,13 @@ def generate_solution(
     logger.info("Solution '%s' created at %s", solution_name, target_dir)
 
     return {
-        "solution_name":   solution_name,
-        "path":            target_dir,
-        "status":          "created",
-        "files":           files,
+        "solution_name": solution_name,
+        "path": target_dir,
+        "status": "created",
+        "files": files,
         "suggested_routes": suggested_routes,
-        "message":         (
+        "message": (
             f"Solution '{solution_name}' created. "
-            f"Load it with: POST /config/switch {{\"project\": \"{solution_name}\"}}"
+            f'Load it with: POST /config/switch {{"project": "{solution_name}"}}'
         ),
     }

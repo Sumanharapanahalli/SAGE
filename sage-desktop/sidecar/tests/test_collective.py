@@ -6,6 +6,7 @@ tested without pulling in git or ChromaDB. One end-to-end test at
 the bottom of this file exercises a real ``CollectiveMemory`` in
 a ``tmp_path``.
 """
+
 from __future__ import annotations
 
 import sys
@@ -41,7 +42,9 @@ class _FakeCM:
         self._indexed = 0
 
     # ── Learning helpers (fake) ────────────────────────────────
-    def _add_learning(self, *, solution="s1", topic="t1", title="t", content="c") -> str:
+    def _add_learning(
+        self, *, solution="s1", topic="t1", title="t", content="c"
+    ) -> str:
         lid = str(uuid.uuid4())
         self._learnings[lid] = {
             "id": lid,
@@ -65,7 +68,7 @@ class _FakeCM:
             items = [x for x in items if x["author_solution"] == solution]
         if topic:
             items = [x for x in items if x["topic"] == topic]
-        return items[offset: offset + limit]
+        return items[offset : offset + limit]
 
     def get_learning(self, learning_id: str):
         return self._learnings.get(learning_id)
@@ -75,8 +78,7 @@ class _FakeCM:
         if query:
             q = query.lower()
             items = [
-                x for x in items
-                if q in x["title"].lower() or q in x["content"].lower()
+                x for x in items if q in x["title"].lower() or q in x["content"].lower()
             ]
         if tags:
             items = [x for x in items if any(t in x.get("tags", []) for t in tags)]
@@ -89,19 +91,26 @@ class _FakeCM:
         # require_approval.
         if self.require_approval:
             trace_id = f"trace-{uuid.uuid4().hex[:8]}"
-            self._proposals[trace_id] = {"learning": learning, "proposed_by": proposed_by}
+            self._proposals[trace_id] = {
+                "learning": learning,
+                "proposed_by": proposed_by,
+            }
             return trace_id
         lid = str(uuid.uuid4())
-        full = dict(learning, id=lid, validation_count=0,
-                    created_at="2026-04-17T00:00:00+00:00",
-                    updated_at="2026-04-17T00:00:00+00:00")
+        full = dict(
+            learning,
+            id=lid,
+            validation_count=0,
+            created_at="2026-04-17T00:00:00+00:00",
+            updated_at="2026-04-17T00:00:00+00:00",
+        )
         self._learnings[lid] = full
         return lid
 
     def validate_learning(self, learning_id: str, validated_by: str) -> dict:
         if learning_id not in self._learnings:
             raise ValueError(f"Learning {learning_id} not found")
-        l = self._learnings[learning_id]
+        l = self._learnings[learning_id]  # noqa: E741
         l["validation_count"] += 1
         l["confidence"] = min(1.0, l["confidence"] + (1.0 - l["confidence"]) * 0.1)
         l["updated_at"] = "2026-04-17T00:00:01+00:00"
@@ -131,7 +140,8 @@ class _FakeCM:
         items = list(source.values())
         if expertise:
             items = [
-                x for x in items
+                x
+                for x in items
                 if any(e in x.get("required_expertise", []) for e in expertise)
             ]
         return items
@@ -162,7 +172,8 @@ class _FakeCM:
             raise ValueError(f"Help request {request_id} is already claimed")
         data["status"] = "claimed"
         data["claimed_by"] = {
-            "agent": agent, "solution": solution,
+            "agent": agent,
+            "solution": solution,
             "claimed_at": "2026-04-17T00:00:01+00:00",
         }
         return data
@@ -171,12 +182,14 @@ class _FakeCM:
         src = self._help_open if request_id in self._help_open else self._help_closed
         if request_id not in src:
             raise ValueError(f"Help request {request_id} not found")
-        src[request_id].setdefault("responses", []).append({
-            "responder_agent": response.get("responder_agent", ""),
-            "responder_solution": response.get("responder_solution", ""),
-            "content": response.get("content", ""),
-            "created_at": "2026-04-17T00:00:02+00:00",
-        })
+        src[request_id].setdefault("responses", []).append(
+            {
+                "responder_agent": response.get("responder_agent", ""),
+                "responder_solution": response.get("responder_solution", ""),
+                "content": response.get("content", ""),
+                "created_at": "2026-04-17T00:00:02+00:00",
+            }
+        )
         return src[request_id]
 
     def close_help_request(self, request_id: str) -> dict:
@@ -196,7 +209,7 @@ class _FakeCM:
     def get_stats(self) -> dict:
         topics: dict[str, int] = {}
         contributors: dict[str, int] = {}
-        for l in self._learnings.values():
+        for l in self._learnings.values():  # noqa: E741
             topics[l["topic"]] = topics.get(l["topic"], 0) + 1
             contributors[l["author_solution"]] = (
                 contributors.get(l["author_solution"], 0) + 1
@@ -314,13 +327,15 @@ def test_search_learnings_rejects_non_string_query(wired, monkeypatch):
 
 def test_publish_learning_ungated_returns_id(wired, monkeypatch):
     monkeypatch.setattr(collective, "_cm", wired)
-    out = collective.publish_learning({
-        "author_agent": "analyst",
-        "author_solution": "medtech",
-        "topic": "uart",
-        "title": "test",
-        "content": "details",
-    })
+    out = collective.publish_learning(
+        {
+            "author_agent": "analyst",
+            "author_solution": "medtech",
+            "topic": "uart",
+            "title": "test",
+            "content": "details",
+        }
+    )
     assert out["gated"] is False
     assert out["id"] is not None
     assert "trace_id" not in out or out.get("trace_id") is None
@@ -329,14 +344,16 @@ def test_publish_learning_ungated_returns_id(wired, monkeypatch):
 def test_publish_learning_gated_returns_trace_id(wired, monkeypatch):
     wired.require_approval = True
     monkeypatch.setattr(collective, "_cm", wired)
-    out = collective.publish_learning({
-        "author_agent": "analyst",
-        "author_solution": "medtech",
-        "topic": "uart",
-        "title": "t",
-        "content": "c",
-        "proposed_by": "operator@desktop",
-    })
+    out = collective.publish_learning(
+        {
+            "author_agent": "analyst",
+            "author_solution": "medtech",
+            "topic": "uart",
+            "title": "t",
+            "content": "c",
+            "proposed_by": "operator@desktop",
+        }
+    )
     assert out["gated"] is True
     assert out["id"] is None
     assert out["trace_id"].startswith("trace-")
@@ -405,14 +422,16 @@ def test_list_help_requests_rejects_bad_status(wired, monkeypatch):
 
 def test_create_help_request_returns_id(wired, monkeypatch):
     monkeypatch.setattr(collective, "_cm", wired)
-    out = collective.create_help_request({
-        "title": "I2C help",
-        "requester_agent": "developer",
-        "requester_solution": "automotive",
-        "urgency": "high",
-        "required_expertise": ["i2c"],
-        "context": "stuck",
-    })
+    out = collective.create_help_request(
+        {
+            "title": "I2C help",
+            "requester_agent": "developer",
+            "requester_solution": "automotive",
+            "urgency": "high",
+            "required_expertise": ["i2c"],
+            "context": "stuck",
+        }
+    )
     assert out["id"].startswith("hr-")
     assert len(wired._help_open) == 1
 
@@ -420,27 +439,33 @@ def test_create_help_request_returns_id(wired, monkeypatch):
 def test_create_help_request_rejects_bad_urgency(wired, monkeypatch):
     monkeypatch.setattr(collective, "_cm", wired)
     with pytest.raises(RpcError) as e:
-        collective.create_help_request({
-            "title": "x", "requester_agent": "a",
-            "requester_solution": "s", "urgency": "emergency",
-        })
+        collective.create_help_request(
+            {
+                "title": "x",
+                "requester_agent": "a",
+                "requester_solution": "s",
+                "urgency": "emergency",
+            }
+        )
     assert e.value.code == -32602
 
 
 def test_create_help_request_requires_title(wired, monkeypatch):
     monkeypatch.setattr(collective, "_cm", wired)
     with pytest.raises(RpcError):
-        collective.create_help_request({
-            "title": "", "requester_agent": "a", "requester_solution": "s",
-        })
+        collective.create_help_request(
+            {
+                "title": "",
+                "requester_agent": "a",
+                "requester_solution": "s",
+            }
+        )
 
 
 def test_claim_help_request_transitions_to_claimed(wired, monkeypatch):
     monkeypatch.setattr(collective, "_cm", wired)
     hid = wired._add_help()
-    out = collective.claim_help_request(
-        {"id": hid, "agent": "fw", "solution": "iot"}
-    )
+    out = collective.claim_help_request({"id": hid, "agent": "fw", "solution": "iot"})
     assert out["request"]["status"] == "claimed"
     assert out["request"]["claimed_by"]["agent"] == "fw"
 
@@ -450,9 +475,7 @@ def test_claim_help_request_raises_if_already_claimed(wired, monkeypatch):
     hid = wired._add_help()
     wired._help_open[hid]["claimed_by"] = {"agent": "other", "solution": "x"}
     with pytest.raises(RpcError) as e:
-        collective.claim_help_request(
-            {"id": hid, "agent": "fw", "solution": "iot"}
-        )
+        collective.claim_help_request({"id": hid, "agent": "fw", "solution": "iot"})
     assert e.value.code == -32000
     assert "claimed" in e.value.message.lower()
 
@@ -466,10 +489,14 @@ def test_claim_help_request_requires_fields(wired, monkeypatch):
 def test_respond_to_help_request_appends_response(wired, monkeypatch):
     monkeypatch.setattr(collective, "_cm", wired)
     hid = wired._add_help()
-    out = collective.respond_to_help_request({
-        "id": hid, "responder_agent": "fw",
-        "responder_solution": "iot", "content": "try X",
-    })
+    out = collective.respond_to_help_request(
+        {
+            "id": hid,
+            "responder_agent": "fw",
+            "responder_solution": "iot",
+            "content": "try X",
+        }
+    )
     assert len(out["request"]["responses"]) == 1
     assert out["request"]["responses"][0]["content"] == "try X"
 
@@ -478,10 +505,14 @@ def test_respond_to_help_request_requires_content(wired, monkeypatch):
     monkeypatch.setattr(collective, "_cm", wired)
     hid = wired._add_help()
     with pytest.raises(RpcError):
-        collective.respond_to_help_request({
-            "id": hid, "responder_agent": "a",
-            "responder_solution": "s", "content": "  ",
-        })
+        collective.respond_to_help_request(
+            {
+                "id": hid,
+                "responder_agent": "a",
+                "responder_solution": "s",
+                "content": "  ",
+            }
+        )
 
 
 def test_close_help_request_moves_to_closed(wired, monkeypatch):
@@ -541,15 +572,17 @@ def test_real_collective_memory_roundtrip(tmp_path, monkeypatch):
     empty = collective.list_learnings({})
     assert empty["total"] == 0
 
-    published = collective.publish_learning({
-        "author_agent": "analyst",
-        "author_solution": "medtech",
-        "topic": "uart",
-        "title": "UART recovery",
-        "content": "When overflow detected, flush buffer then...",
-        "tags": ["uart", "embedded"],
-        "confidence": 0.7,
-    })
+    published = collective.publish_learning(
+        {
+            "author_agent": "analyst",
+            "author_solution": "medtech",
+            "topic": "uart",
+            "title": "UART recovery",
+            "content": "When overflow detected, flush buffer then...",
+            "tags": ["uart", "embedded"],
+            "confidence": 0.7,
+        }
+    )
     assert published["gated"] is False
     learning_id = published["id"]
 
@@ -565,13 +598,15 @@ def test_real_collective_memory_roundtrip(tmp_path, monkeypatch):
     )
     assert validated["learning"]["validation_count"] == 1
 
-    help_out = collective.create_help_request({
-        "title": "I2C help",
-        "requester_agent": "developer",
-        "requester_solution": "automotive",
-        "urgency": "high",
-        "required_expertise": ["i2c"],
-    })
+    help_out = collective.create_help_request(
+        {
+            "title": "I2C help",
+            "requester_agent": "developer",
+            "requester_solution": "automotive",
+            "urgency": "high",
+            "required_expertise": ["i2c"],
+        }
+    )
     hid = help_out["id"]
     claimed = collective.claim_help_request(
         {"id": hid, "agent": "fw", "solution": "iot"}

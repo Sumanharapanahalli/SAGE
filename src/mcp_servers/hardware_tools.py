@@ -24,6 +24,7 @@ logger = logging.getLogger("hardware_tools_mcp")
 
 try:
     from fastmcp import FastMCP
+
     mcp = FastMCP("hardware-tools")
 except ImportError:
     logger.warning("fastmcp not installed — MCP server cannot start standalone")
@@ -34,14 +35,19 @@ except ImportError:
 # Tool availability detection
 # ---------------------------------------------------------------------------
 
+
 def _check_tool(binary: str) -> Dict:
     """Check if an external tool binary is available."""
     path = shutil.which(binary)
     if path:
         try:
-            version = subprocess.run(
-                [binary, "--version"], capture_output=True, text=True, timeout=10
-            ).stdout.strip().split("\n")[0]
+            version = (
+                subprocess.run(
+                    [binary, "--version"], capture_output=True, text=True, timeout=10
+                )
+                .stdout.strip()
+                .split("\n")[0]
+            )
         except Exception:
             version = "available"
         return {"available": True, "path": path, "version": version}
@@ -96,6 +102,7 @@ def _run_command(cmd: List[str], timeout: int = 60, cwd: Optional[str] = None) -
 # Tool Status (discovery)
 # ---------------------------------------------------------------------------
 
+
 def list_hardware_tools() -> Dict:
     """List all available hardware tools and their status."""
     tools = {
@@ -148,6 +155,7 @@ def list_hardware_tools() -> Dict:
 # KiCad Tools
 # ---------------------------------------------------------------------------
 
+
 def kicad_create_project(project_name: str, workspace: str) -> Dict:
     """Create a new KiCad project directory structure."""
     project_dir = os.path.join(workspace, project_name)
@@ -191,31 +199,53 @@ def kicad_run_drc(pcb_path: str) -> Dict:
 def kicad_export_gerbers(pcb_path: str, output_dir: str) -> Dict:
     """Export Gerber files from KiCad PCB."""
     os.makedirs(output_dir, exist_ok=True)
-    return _run_command([
-        "kicad-cli", "pcb", "export", "gerbers",
-        "-o", output_dir, pcb_path,
-    ])
+    return _run_command(
+        [
+            "kicad-cli",
+            "pcb",
+            "export",
+            "gerbers",
+            "-o",
+            output_dir,
+            pcb_path,
+        ]
+    )
 
 
 def kicad_export_bom(schematic_path: str, output_path: str) -> Dict:
     """Export Bill of Materials from KiCad schematic."""
-    return _run_command([
-        "kicad-cli", "sch", "export", "python-bom",
-        "-o", output_path, schematic_path,
-    ])
+    return _run_command(
+        [
+            "kicad-cli",
+            "sch",
+            "export",
+            "python-bom",
+            "-o",
+            output_path,
+            schematic_path,
+        ]
+    )
 
 
 def kicad_export_netlist(schematic_path: str, output_path: str) -> Dict:
     """Export netlist from KiCad schematic for SPICE simulation."""
-    return _run_command([
-        "kicad-cli", "sch", "export", "netlist",
-        "-o", output_path, schematic_path,
-    ])
+    return _run_command(
+        [
+            "kicad-cli",
+            "sch",
+            "export",
+            "netlist",
+            "-o",
+            output_path,
+            schematic_path,
+        ]
+    )
 
 
 # ---------------------------------------------------------------------------
 # FreeCAD / OpenSCAD Tools
 # ---------------------------------------------------------------------------
+
 
 def openscad_render(scad_file: str, output_stl: str) -> Dict:
     """Render OpenSCAD file to STL."""
@@ -224,36 +254,55 @@ def openscad_render(scad_file: str, output_stl: str) -> Dict:
 
 def openscad_render_png(scad_file: str, output_png: str) -> Dict:
     """Render OpenSCAD file to PNG preview."""
-    return _run_command([
-        "openscad", "--render", "-o", output_png,
-        "--imgsize=1024,768", scad_file,
-    ])
+    return _run_command(
+        [
+            "openscad",
+            "--render",
+            "-o",
+            output_png,
+            "--imgsize=1024,768",
+            scad_file,
+        ]
+    )
 
 
 def freecad_export_step(fcstd_file: str, output_step: str) -> Dict:
     """Export FreeCAD model to STEP format for manufacturing."""
-    return _run_command([
-        "freecad", "--console",
-        "-c", f"import Part; Part.open('{fcstd_file}'); Part.export(Part.getDocument('Unnamed').Objects, '{output_step}')",
-    ], timeout=120)
+    return _run_command(
+        [
+            "freecad",
+            "--console",
+            "-c",
+            f"import Part; Part.open('{fcstd_file}'); Part.export(Part.getDocument('Unnamed').Objects, '{output_step}')",
+        ],
+        timeout=120,
+    )
 
 
 # ---------------------------------------------------------------------------
 # SPICE Simulation Tools
 # ---------------------------------------------------------------------------
 
+
 def ngspice_simulate(netlist_path: str, output_dir: str) -> Dict:
     """Run ngspice simulation on a netlist."""
     os.makedirs(output_dir, exist_ok=True)
-    return _run_command([
-        "ngspice", "-b", "-o", os.path.join(output_dir, "output.log"),
-        netlist_path,
-    ], timeout=120)
+    return _run_command(
+        [
+            "ngspice",
+            "-b",
+            "-o",
+            os.path.join(output_dir, "output.log"),
+            netlist_path,
+        ],
+        timeout=120,
+    )
 
 
 # ---------------------------------------------------------------------------
 # Firmware Tools
 # ---------------------------------------------------------------------------
+
 
 def firmware_compile(
     source_dir: str,
@@ -279,7 +328,9 @@ def firmware_compile(
     flags = cpu_flags.get(target, cpu_flags["cortex-m4"])
 
     output_elf = os.path.join(source_dir, "firmware.elf")
-    cmd = f"arm-none-eabi-gcc {flags} {optimization} -o {output_elf} {' '.join(c_files)}"
+    cmd = (
+        f"arm-none-eabi-gcc {flags} {optimization} -o {output_elf} {' '.join(c_files)}"
+    )
 
     return _run_command(cmd.split())
 
@@ -291,13 +342,16 @@ def firmware_size(elf_path: str) -> Dict:
 
 def cppcheck_misra(source_dir: str) -> Dict:
     """Run MISRA-C static analysis on firmware source."""
-    return _run_command([
-        "cppcheck",
-        "--enable=all",
-        "--addon=misra",
-        "--suppress=missingInclude",
-        source_dir,
-    ], timeout=120)
+    return _run_command(
+        [
+            "cppcheck",
+            "--enable=all",
+            "--addon=misra",
+            "--suppress=missingInclude",
+            source_dir,
+        ],
+        timeout=120,
+    )
 
 
 # ---------------------------------------------------------------------------

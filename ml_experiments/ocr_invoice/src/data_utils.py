@@ -13,9 +13,8 @@ from __future__ import annotations
 
 import hashlib
 import logging
-import os
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 import albumentations as A
 import cv2
@@ -108,27 +107,30 @@ def stratified_split(
 
 # ── Augmentation (train-only) ────────────────────────────────────────────────
 
+
 def build_train_transform(cfg: dict) -> A.Compose:
     """Albumentations pipeline applied ONLY to training images."""
     aug = cfg.get("augmentation", {})
-    return A.Compose([
-        A.RandomBrightnessContrast(
-            brightness_limit=aug.get("random_brightness", 0.2),
-            contrast_limit=aug.get("random_contrast", 0.2),
-            p=0.5,
-        ),
-        A.Rotate(
-            limit=aug.get("random_rotation_deg", 3),
-            border_mode=cv2.BORDER_REPLICATE,
-            p=0.4,
-        ),
-        A.ImageCompression(
-            quality_lower=aug.get("jpeg_quality_range", [60, 100])[0],
-            quality_upper=aug.get("jpeg_quality_range", [60, 100])[1],
-            p=0.3,
-        ),
-        A.GaussNoise(var_limit=(10, 50), p=0.2),
-    ])
+    return A.Compose(
+        [
+            A.RandomBrightnessContrast(
+                brightness_limit=aug.get("random_brightness", 0.2),
+                contrast_limit=aug.get("random_contrast", 0.2),
+                p=0.5,
+            ),
+            A.Rotate(
+                limit=aug.get("random_rotation_deg", 3),
+                border_mode=cv2.BORDER_REPLICATE,
+                p=0.4,
+            ),
+            A.ImageCompression(
+                quality_lower=aug.get("jpeg_quality_range", [60, 100])[0],
+                quality_upper=aug.get("jpeg_quality_range", [60, 100])[1],
+                p=0.3,
+            ),
+            A.GaussNoise(var_limit=(10, 50), p=0.2),
+        ]
+    )
 
 
 def build_eval_transform() -> None:
@@ -137,6 +139,7 @@ def build_eval_transform() -> None:
 
 
 # ── Dataset ───────────────────────────────────────────────────────────────────
+
 
 class InvoiceOCRDataset(Dataset):
     """Line-crop dataset for TrOCR fine-tuning.
@@ -230,7 +233,9 @@ def check_class_imbalance(
     if ratio > threshold:
         logger.warning(
             "Class imbalance detected in '%s': max/min ratio = %.1f (threshold %.1f)",
-            col, ratio, threshold,
+            col,
+            ratio,
+            threshold,
         )
         return True
     return False

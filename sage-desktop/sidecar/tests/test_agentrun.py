@@ -5,6 +5,7 @@ API's POST /agent/run returns "status": "pending_review" and stores nothing,
 so its approval banner is decorative. These tests pin the Law-1 behaviour:
 the run lands in the SAME ProposalStore the Approvals inbox reads.
 """
+
 from __future__ import annotations
 
 import pytest
@@ -27,23 +28,31 @@ class FakeProject:
     """Stand-in for ProjectConfig."""
 
     def __init__(self, roles=None, metadata=None):
-        self._roles = roles if roles is not None else {
-            "marketing_strategist": {
-                "name": "Marketing Strategist",
-                "description": "Go-to-market",
-                "icon": "📣",
-                "system_prompt": "You are a marketing strategist.",
+        self._roles = (
+            roles
+            if roles is not None
+            else {
+                "marketing_strategist": {
+                    "name": "Marketing Strategist",
+                    "description": "Go-to-market",
+                    "icon": "📣",
+                    "system_prompt": "You are a marketing strategist.",
+                }
             }
-        }
-        self._metadata = metadata if metadata is not None else {
-            "project": "testsol",
-            "name": "Test Solution",
-            "domain": "medical_devices",
-            "active_modules": ["analyst"],
-            "ui_labels": {"input": "Log"},
-            "dashboard": {"tiles": ["approvals"]},
-            "theme": {"primary": "#123456"},
-        }
+        )
+        self._metadata = (
+            metadata
+            if metadata is not None
+            else {
+                "project": "testsol",
+                "name": "Test Solution",
+                "domain": "medical_devices",
+                "active_modules": ["analyst"],
+                "ui_labels": {"input": "Log"},
+                "dashboard": {"tiles": ["approvals"]},
+                "theme": {"primary": "#123456"},
+            }
+        )
         self.project_name = "testsol"
 
     def get_prompts(self):
@@ -58,24 +67,30 @@ class FakeAgent:
     """Stand-in for UniversalAgent — no LLM, no vector store."""
 
     def __init__(self, result=None, raise_exc=None):
-        self.result = result if result is not None else {
-            "trace_id": "agent-trace-1",
-            "role_id": "marketing_strategist",
-            "role_name": "Marketing Strategist",
-            "icon": "📣",
-            "summary": "Launch in two phases",
-            "analysis": "long form",
-            "recommendations": ["Do A"],
-            "next_steps": ["Step 1"],
-            "severity": "GREEN",
-            "confidence": "HIGH",
-            "status": "pending_review",
-        }
+        self.result = (
+            result
+            if result is not None
+            else {
+                "trace_id": "agent-trace-1",
+                "role_id": "marketing_strategist",
+                "role_name": "Marketing Strategist",
+                "icon": "📣",
+                "summary": "Launch in two phases",
+                "analysis": "long form",
+                "recommendations": ["Do A"],
+                "next_steps": ["Step 1"],
+                "severity": "GREEN",
+                "confidence": "HIGH",
+                "status": "pending_review",
+            }
+        )
         self.raise_exc = raise_exc
         self.calls = []
 
     def run(self, role_id, task, context="", actor="web-ui"):
-        self.calls.append({"role_id": role_id, "task": task, "context": context, "actor": actor})
+        self.calls.append(
+            {"role_id": role_id, "task": task, "context": context, "actor": actor}
+        )
         if self.raise_exc:
             raise self.raise_exc
         return self.result
@@ -94,6 +109,7 @@ def _inject_agent(monkeypatch, agent):
 
 
 # ---------- agents.run: validation ----------
+
 
 def test_run_rejects_missing_role_id(store, project, monkeypatch):
     _inject_agent(monkeypatch, FakeAgent())
@@ -114,7 +130,9 @@ def test_run_requires_store_initialized(project, monkeypatch):
         ar.run({"role_id": "marketing_strategist", "task": "Draft a plan"})
 
 
-def test_run_maps_unknown_role_value_error_to_invalid_params(store, project, monkeypatch):
+def test_run_maps_unknown_role_value_error_to_invalid_params(
+    store, project, monkeypatch
+):
     _inject_agent(monkeypatch, FakeAgent(raise_exc=ValueError("Role 'nope' not found")))
     with pytest.raises(RpcError) as exc:
         ar.run({"role_id": "nope", "task": "Draft a plan"})
@@ -124,14 +142,17 @@ def test_run_maps_unknown_role_value_error_to_invalid_params(store, project, mon
 
 # ---------- agents.run: the Law-1 fix ----------
 
+
 def test_run_persists_a_real_pending_proposal(store, project, monkeypatch):
     agent = _inject_agent(monkeypatch, FakeAgent())
 
-    out = ar.run({
-        "role_id": "marketing_strategist",
-        "task": "Draft a go-to-market plan",
-        "context": "B2B SaaS",
-    })
+    out = ar.run(
+        {
+            "role_id": "marketing_strategist",
+            "task": "Draft a go-to-market plan",
+            "context": "B2B SaaS",
+        }
+    )
 
     assert out["result"]["summary"] == "Launch in two phases"
     assert out["proposal"]["status"] == "pending"
@@ -147,7 +168,9 @@ def test_run_persists_a_real_pending_proposal(store, project, monkeypatch):
     assert pending[0].payload["result"]["summary"] == "Launch in two phases"
 
 
-def test_run_adopts_the_agent_trace_id_so_the_audit_log_resolves(store, project, monkeypatch):
+def test_run_adopts_the_agent_trace_id_so_the_audit_log_resolves(
+    store, project, monkeypatch
+):
     _inject_agent(monkeypatch, FakeAgent())
     out = ar.run({"role_id": "marketing_strategist", "task": "Draft a plan"})
     assert out["proposal"]["trace_id"] == "agent-trace-1"
@@ -155,12 +178,17 @@ def test_run_adopts_the_agent_trace_id_so_the_audit_log_resolves(store, project,
 
 
 def test_run_description_surfaces_severity_and_role(store, project, monkeypatch):
-    _inject_agent(monkeypatch, FakeAgent(result={
-        "trace_id": "t2",
-        "role_name": "Marketing Strategist",
-        "summary": "Pricing is the blocker",
-        "severity": "RED",
-    }))
+    _inject_agent(
+        monkeypatch,
+        FakeAgent(
+            result={
+                "trace_id": "t2",
+                "role_name": "Marketing Strategist",
+                "summary": "Pricing is the blocker",
+                "severity": "RED",
+            }
+        ),
+    )
     out = ar.run({"role_id": "marketing_strategist", "task": "Review pricing"})
     assert "RED" in out["proposal"]["description"]
     assert "Pricing is the blocker" in out["proposal"]["description"]
@@ -231,6 +259,7 @@ def test_hire_rejects_non_string_task_types(store, project):
 
 # ---------- agents.analyze_jd ----------
 
+
 def test_analyze_jd_returns_the_extracted_config(project, monkeypatch):
     captured = {}
 
@@ -273,6 +302,7 @@ def test_analyze_jd_maps_missing_llm_gateway_to_sidecar_error(project, monkeypat
 
 
 # ---------- config.get_project ----------
+
 
 def test_get_project_returns_the_parsed_project_yaml(project):
     out = ar.get_project({})

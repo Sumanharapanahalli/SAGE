@@ -10,7 +10,6 @@ SQLite table: llm_costs in data/audit_log.db
 import logging
 import os
 import sqlite3
-import time
 from datetime import datetime, timezone, timedelta
 
 logger = logging.getLogger(__name__)
@@ -19,18 +18,18 @@ logger = logging.getLogger(__name__)
 # Cost table (USD per 1K tokens) — input and output rates
 # ---------------------------------------------------------------------------
 COST_PER_1K_TOKENS: dict[str, dict[str, float]] = {
-    "claude-sonnet-4-6":          {"input": 0.003,    "output": 0.015},
-    "claude-opus-4-6":            {"input": 0.015,    "output": 0.075},
-    "claude-sonnet-4-5":          {"input": 0.003,    "output": 0.015},
-    "claude-opus-4-5":            {"input": 0.015,    "output": 0.075},
-    "claude-haiku-4-5":           {"input": 0.00025,  "output": 0.00125},
-    "gemini-2.5-flash":           {"input": 0.000075, "output": 0.0003},
-    "gemini-2.5-pro":             {"input": 0.00125,  "output": 0.005},
-    "gemini-2.0-flash":           {"input": 0.000075, "output": 0.0003},
-    "gpt-4o":                     {"input": 0.0025,   "output": 0.010},
-    "ollama":                     {"input": 0.0,      "output": 0.0},
-    "local":                      {"input": 0.0,      "output": 0.0},
-    "default":                    {"input": 0.002,    "output": 0.008},
+    "claude-sonnet-4-6": {"input": 0.003, "output": 0.015},
+    "claude-opus-4-6": {"input": 0.015, "output": 0.075},
+    "claude-sonnet-4-5": {"input": 0.003, "output": 0.015},
+    "claude-opus-4-5": {"input": 0.015, "output": 0.075},
+    "claude-haiku-4-5": {"input": 0.00025, "output": 0.00125},
+    "gemini-2.5-flash": {"input": 0.000075, "output": 0.0003},
+    "gemini-2.5-pro": {"input": 0.00125, "output": 0.005},
+    "gemini-2.0-flash": {"input": 0.000075, "output": 0.0003},
+    "gpt-4o": {"input": 0.0025, "output": 0.010},
+    "ollama": {"input": 0.0, "output": 0.0},
+    "local": {"input": 0.0, "output": 0.0},
+    "default": {"input": 0.002, "output": 0.008},
 }
 
 
@@ -38,9 +37,13 @@ def _get_db_path() -> str:
     """Resolve audit_log.db path from config or default."""
     try:
         import yaml
+
         config_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-            "config", "config.yaml",
+            os.path.dirname(
+                os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            ),
+            "config",
+            "config.yaml",
         )
         if os.path.exists(config_path):
             with open(config_path, "r") as f:
@@ -84,7 +87,9 @@ def _estimate_cost(model: str, input_tokens: int, output_tokens: int) -> float:
     if rates is None:
         rates = COST_PER_1K_TOKENS["default"]
 
-    cost = (input_tokens / 1000.0) * rates["input"] + (output_tokens / 1000.0) * rates["output"]
+    cost = (input_tokens / 1000.0) * rates["input"] + (output_tokens / 1000.0) * rates[
+        "output"
+    ]
     return round(cost, 8)
 
 
@@ -115,13 +120,27 @@ def record_usage(
                  estimated_cost_usd, trace_id, recorded_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            (tenant, solution, model, input_tokens, output_tokens, cost, trace_id, recorded_at),
+            (
+                tenant,
+                solution,
+                model,
+                input_tokens,
+                output_tokens,
+                cost,
+                trace_id,
+                recorded_at,
+            ),
         )
         conn.commit()
         conn.close()
         logger.debug(
             "Cost recorded: tenant=%s solution=%s model=%s in=%d out=%d cost=$%.6f",
-            tenant, solution, model, input_tokens, output_tokens, cost,
+            tenant,
+            solution,
+            model,
+            input_tokens,
+            output_tokens,
+            cost,
         )
     except Exception as exc:
         logger.warning("Cost tracking record_usage failed (non-fatal): %s", exc)
@@ -203,25 +222,31 @@ def get_summary(
         conn.close()
 
         return {
-            "total_cost_usd":      round(total_cost, 6),
-            "total_calls":         total_calls,
-            "total_input_tokens":  total_input,
+            "total_cost_usd": round(total_cost, 6),
+            "total_calls": total_calls,
+            "total_input_tokens": total_input,
             "total_output_tokens": total_output,
-            "avg_cost_per_call":   avg_cost,
-            "by_model":            [dict(r) for r in model_rows],
-            "by_solution":         [dict(r) for r in solution_rows],
-            "period_days":         period_days,
-            "tenant":              tenant,
-            "solution":            solution,
+            "avg_cost_per_call": avg_cost,
+            "by_model": [dict(r) for r in model_rows],
+            "by_solution": [dict(r) for r in solution_rows],
+            "period_days": period_days,
+            "tenant": tenant,
+            "solution": solution,
         }
 
     except Exception as exc:
         logger.warning("get_summary failed (non-fatal): %s", exc)
         return {
-            "total_cost_usd": 0.0, "total_calls": 0,
-            "total_input_tokens": 0, "total_output_tokens": 0,
-            "avg_cost_per_call": 0.0, "by_model": [], "by_solution": [],
-            "period_days": period_days, "tenant": tenant, "solution": solution,
+            "total_cost_usd": 0.0,
+            "total_calls": 0,
+            "total_input_tokens": 0,
+            "total_output_tokens": 0,
+            "avg_cost_per_call": 0.0,
+            "by_model": [],
+            "by_solution": [],
+            "period_days": period_days,
+            "tenant": tenant,
+            "solution": solution,
         }
 
 
@@ -285,9 +310,13 @@ def check_budget(tenant: str, solution: str) -> tuple[bool, float]:
     """
     try:
         import yaml
+
         config_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-            "config", "config.yaml",
+            os.path.dirname(
+                os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            ),
+            "config",
+            "config.yaml",
         )
         if not os.path.exists(config_path):
             return True, 0.0
@@ -302,7 +331,9 @@ def check_budget(tenant: str, solution: str) -> tuple[bool, float]:
 
     # Get the limit for this solution (fall back to default)
     per_solution: dict = budget_cfg.get("per_solution", {})
-    limit_usd: float = per_solution.get(solution, budget_cfg.get("default_monthly_usd", 50.0))
+    limit_usd: float = per_solution.get(
+        solution, budget_cfg.get("default_monthly_usd", 50.0)
+    )
 
     # Current month spend
     try:

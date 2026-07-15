@@ -30,17 +30,19 @@ logger = logging.getLogger("analysis_workflow")
 # State definition
 # ---------------------------------------------------------------------------
 
+
 class AnalysisState(TypedDict, total=False):
-    task: str           # Input: description of what to analyse
-    analysis: str       # Output of analyze_node
-    approved: bool      # Set by human via /workflow/resume
-    comment: str        # Optional human comment
-    final_output: str   # Produced by finalize_node after approval
+    task: str  # Input: description of what to analyse
+    analysis: str  # Output of analyze_node
+    approved: bool  # Set by human via /workflow/resume
+    comment: str  # Optional human comment
+    final_output: str  # Produced by finalize_node after approval
 
 
 # ---------------------------------------------------------------------------
 # Nodes
 # ---------------------------------------------------------------------------
+
 
 def analyze_node(state: AnalysisState) -> AnalysisState:
     """
@@ -51,6 +53,7 @@ def analyze_node(state: AnalysisState) -> AnalysisState:
     analysis = ""
     try:
         from src.core.llm_gateway import llm_gateway
+
         analysis = llm_gateway.generate(
             prompt=f"Analyse the following and produce a concise structured summary:\n\n{task}",
             system_prompt="You are a precise analyst. Respond with a bullet-point summary.",
@@ -72,16 +75,19 @@ def finalize_node(state: AnalysisState) -> AnalysisState:
         final_output = f"[rejected] Human rejected the analysis. Comment: {state.get('comment', '')}"
     else:
         analysis = state.get("analysis", "")
-        comment  = state.get("comment", "")
+        comment = state.get("comment", "")
         final_output = analysis
         if comment:
             final_output = f"{analysis}\n\n[Human note] {comment}"
 
     try:
         from src.memory.vector_store import vector_memory
+
         vector_memory.add_feedback(
             original_analysis=state.get("analysis", ""),
-            human_feedback=state.get("comment", "approved" if state.get("approved") else "rejected"),
+            human_feedback=state.get(
+                "comment", "approved" if state.get("approved") else "rejected"
+            ),
             context=state.get("task", ""),
         )
     except Exception:
@@ -112,6 +118,7 @@ except ImportError:
     class _StubWorkflow:
         def invoke(self, state, config=None):
             return {**state, "error": "langgraph not installed"}
+
         def get_state(self, config):
             return None
 

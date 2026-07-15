@@ -18,6 +18,7 @@ doing its job (no LLM, no solution config), and those are what drive ``go``.
 
 Resources are injected by ``app._wire_handlers``. Nothing here mutates state.
 """
+
 from __future__ import annotations
 
 import concurrent.futures
@@ -86,7 +87,10 @@ _solution_path: Optional[Path] = None
 SIDECAR_VERSION = "0.1.0"
 
 
-def _check(name: str, fn: Callable[[], tuple], ) -> dict:
+def _check(
+    name: str,
+    fn: Callable[[], tuple],
+) -> dict:
     """Run one check, time it, and never let it raise."""
     started = time.perf_counter()
     try:
@@ -114,6 +118,7 @@ _PROBE_POOL = concurrent.futures.ThreadPoolExecutor(
 
 
 # ── individual checks ──────────────────────────────────────────────────────
+
 
 def _check_sidecar() -> tuple:
     import sys
@@ -243,6 +248,7 @@ def _check_solution() -> tuple:
 
 
 # ── RPC method ─────────────────────────────────────────────────────────────
+
 
 def preflight(params: Any) -> dict:
     """Run every readiness check and return a go/no-go verdict.

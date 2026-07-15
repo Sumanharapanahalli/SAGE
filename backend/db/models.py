@@ -298,9 +298,7 @@ class UserDeviceAssignment(Base):
     """
 
     __tablename__ = "user_device_assignments"
-    __table_args__ = (
-        UniqueConstraint("user_id", "device_id", name="uq_user_device"),
-    )
+    __table_args__ = (UniqueConstraint("user_id", "device_id", name="uq_user_device"),)
 
     assignment_id: Mapped[UUID] = mapped_column(
         PG_UUID(as_uuid=True),
@@ -336,9 +334,7 @@ class UserDeviceAssignment(Base):
     )
 
     def __repr__(self) -> str:
-        return (
-            f"<UserDeviceAssignment user={self.user_id} device={self.device_id}>"
-        )
+        return f"<UserDeviceAssignment user={self.user_id} device={self.device_id}>"
 
 
 # ---------------------------------------------------------------------------
@@ -510,6 +506,5 @@ class AuditLog(Base):
 
     def __repr__(self) -> str:
         return (
-            f"<AuditLog log_id={self.log_id} actor={self.actor}"
-            f" action={self.action}>"
+            f"<AuditLog log_id={self.log_id} actor={self.actor} action={self.action}>"
         )

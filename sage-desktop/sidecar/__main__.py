@@ -7,6 +7,7 @@ CLI:
     python -m sidecar --solution-name NAME --solution-path PATH
     python sidecar/__main__.py --solution-name NAME --solution-path PATH
 """
+
 import os
 import sys
 

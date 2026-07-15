@@ -1,16 +1,18 @@
 """
 Unit tests for src/modules/severity.py
 """
+
 import pytest
 
 pytestmark = pytest.mark.unit
 
-from src.modules.severity import Severity, parse, requires_action, badge_color
+from src.modules.severity import Severity, parse, requires_action, badge_color  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
 # parse() — known aliases
 # ---------------------------------------------------------------------------
+
 
 class TestParse:
     def test_unknown_lowercase(self):
@@ -69,6 +71,7 @@ class TestParse:
 # Severity IntEnum ordering
 # ---------------------------------------------------------------------------
 
+
 class TestSeverityOrdering:
     def test_unknown_is_zero(self):
         assert Severity.UNKNOWN == 0
@@ -83,7 +86,13 @@ class TestSeverityOrdering:
         assert Severity.RED < Severity.CRITICAL
 
     def test_full_ascending_chain(self):
-        assert Severity.UNKNOWN < Severity.GREEN < Severity.AMBER < Severity.RED < Severity.CRITICAL
+        assert (
+            Severity.UNKNOWN
+            < Severity.GREEN
+            < Severity.AMBER
+            < Severity.RED
+            < Severity.CRITICAL
+        )
 
     def test_aliases_share_numeric_value(self):
         assert Severity.GREEN == Severity.LOW == Severity.INFO
@@ -94,6 +103,7 @@ class TestSeverityOrdering:
 # ---------------------------------------------------------------------------
 # requires_action()
 # ---------------------------------------------------------------------------
+
 
 class TestRequiresAction:
     def test_critical_requires_action_at_amber_threshold(self):
@@ -129,6 +139,7 @@ class TestRequiresAction:
 # ---------------------------------------------------------------------------
 # badge_color()
 # ---------------------------------------------------------------------------
+
 
 class TestBadgeColor:
     def test_critical_returns_red(self):

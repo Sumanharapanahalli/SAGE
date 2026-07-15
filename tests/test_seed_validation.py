@@ -15,7 +15,7 @@ import logging
 from contextlib import contextmanager
 from datetime import date, timedelta
 from decimal import Decimal
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -33,6 +33,7 @@ from tests.seed_test_data import (
 # Helpers
 # =============================================================================
 
+
 def _checks_passed(checks: list[_Check]) -> bool:
     return all(c.passed for c in checks)
 
@@ -45,15 +46,26 @@ def _blocking_failures(checks: list[_Check]) -> list[_Check]:
 # _validate_record — accounts
 # =============================================================================
 
+
 class TestValidateAccounts:
     TABLE = "accounts"
 
     def test_valid_active_account(self):
-        row = {"username": "alice_test", "password": "hash", "status": "active", "balance": Decimal("100.00")}
+        row = {
+            "username": "alice_test",
+            "password": "hash",
+            "status": "active",
+            "balance": Decimal("100.00"),
+        }
         assert _checks_passed(_validate_record(self.TABLE, row))
 
     def test_valid_zero_balance(self):
-        row = {"username": "carol_test", "password": "hash", "status": "active", "balance": Decimal("0.00")}
+        row = {
+            "username": "carol_test",
+            "password": "hash",
+            "status": "active",
+            "balance": Decimal("0.00"),
+        }
         assert _checks_passed(_validate_record(self.TABLE, row))
 
     def test_missing_username_is_critical(self):
@@ -67,24 +79,40 @@ class TestValidateAccounts:
         assert any("required:password" in c.rule for c in blocks)
 
     def test_invalid_status_enum(self):
-        row = {"username": "x_test", "password": "hash", "status": "banned", "balance": Decimal("0")}
+        row = {
+            "username": "x_test",
+            "password": "hash",
+            "status": "banned",
+            "balance": Decimal("0"),
+        }
         blocks = _blocking_failures(_validate_record(self.TABLE, row))
         assert any("enum:status" in c.rule for c in blocks)
 
     def test_negative_balance_fails(self):
-        row = {"username": "x_test", "password": "hash", "status": "active", "balance": Decimal("-1.00")}
+        row = {
+            "username": "x_test",
+            "password": "hash",
+            "status": "active",
+            "balance": Decimal("-1.00"),
+        }
         blocks = _blocking_failures(_validate_record(self.TABLE, row))
         assert any("non_negative:balance" in c.rule for c in blocks)
 
     @pytest.mark.parametrize("status", ["active", "suspended", "closed"])
     def test_all_allowed_statuses(self, status):
-        row = {"username": "x_test", "password": "hash", "status": status, "balance": Decimal("0")}
+        row = {
+            "username": "x_test",
+            "password": "hash",
+            "status": status,
+            "balance": Decimal("0"),
+        }
         assert _checks_passed(_validate_record(self.TABLE, row))
 
 
 # =============================================================================
 # _validate_record — p2p_transfers
 # =============================================================================
+
 
 class TestValidateTransfers:
     TABLE = "p2p_transfers"
@@ -103,19 +131,27 @@ class TestValidateTransfers:
         assert _checks_passed(_validate_record(self.TABLE, self._row()))
 
     def test_zero_amount_fails(self):
-        blocks = _blocking_failures(_validate_record(self.TABLE, self._row(amount=Decimal("0"))))
+        blocks = _blocking_failures(
+            _validate_record(self.TABLE, self._row(amount=Decimal("0")))
+        )
         assert any("positive:amount" in c.rule for c in blocks)
 
     def test_negative_amount_fails(self):
-        blocks = _blocking_failures(_validate_record(self.TABLE, self._row(amount=Decimal("-5"))))
+        blocks = _blocking_failures(
+            _validate_record(self.TABLE, self._row(amount=Decimal("-5")))
+        )
         assert any("positive:amount" in c.rule for c in blocks)
 
     def test_self_transfer_blocked(self):
-        blocks = _blocking_failures(_validate_record(self.TABLE, self._row(sender_id=3, receiver_id=3)))
+        blocks = _blocking_failures(
+            _validate_record(self.TABLE, self._row(sender_id=3, receiver_id=3))
+        )
         assert any("no_self_transfer" in c.rule for c in blocks)
 
     def test_invalid_status_enum(self):
-        blocks = _blocking_failures(_validate_record(self.TABLE, self._row(status="approved")))
+        blocks = _blocking_failures(
+            _validate_record(self.TABLE, self._row(status="approved"))
+        )
         assert any("enum:status" in c.rule for c in blocks)
 
     @pytest.mark.parametrize("status", ["pending", "completed", "failed", "reversed"])
@@ -126,6 +162,7 @@ class TestValidateTransfers:
 # =============================================================================
 # _validate_record — virtual_cards
 # =============================================================================
+
 
 class TestValidateCards:
     TABLE = "virtual_cards"
@@ -153,16 +190,22 @@ class TestValidateCards:
         assert any("card_not_expired" in c.rule for c in warns)
 
     def test_invalid_card_type(self):
-        blocks = _blocking_failures(_validate_record(self.TABLE, self._row(card_type="virtual")))
+        blocks = _blocking_failures(
+            _validate_record(self.TABLE, self._row(card_type="virtual"))
+        )
         assert any("enum:card_type" in c.rule for c in blocks)
 
     def test_invalid_status(self):
-        blocks = _blocking_failures(_validate_record(self.TABLE, self._row(status="locked")))
+        blocks = _blocking_failures(
+            _validate_record(self.TABLE, self._row(status="locked"))
+        )
         assert any("enum:status" in c.rule for c in blocks)
 
     @pytest.mark.parametrize("card_type", ["debit", "credit", "prepaid"])
     def test_all_card_types(self, card_type):
-        assert _checks_passed(_validate_record(self.TABLE, self._row(card_type=card_type)))
+        assert _checks_passed(
+            _validate_record(self.TABLE, self._row(card_type=card_type))
+        )
 
     @pytest.mark.parametrize("status", ["active", "frozen", "cancelled"])
     def test_all_card_statuses(self, status):
@@ -173,19 +216,35 @@ class TestValidateCards:
 # _validate_record — spending_insights
 # =============================================================================
 
+
 class TestValidateInsights:
     TABLE = "spending_insights"
 
     def test_valid_insight(self):
-        row = {"account_id": 1, "date": date.today(), "category": "food", "amount": Decimal("25.00")}
+        row = {
+            "account_id": 1,
+            "date": date.today(),
+            "category": "food",
+            "amount": Decimal("25.00"),
+        }
         assert _checks_passed(_validate_record(self.TABLE, row))
 
     def test_zero_amount_allowed(self):
-        row = {"account_id": 1, "date": date.today(), "category": "food", "amount": Decimal("0.00")}
+        row = {
+            "account_id": 1,
+            "date": date.today(),
+            "category": "food",
+            "amount": Decimal("0.00"),
+        }
         assert _checks_passed(_validate_record(self.TABLE, row))
 
     def test_negative_amount_fails(self):
-        row = {"account_id": 1, "date": date.today(), "category": "food", "amount": Decimal("-1.00")}
+        row = {
+            "account_id": 1,
+            "date": date.today(),
+            "category": "food",
+            "amount": Decimal("-1.00"),
+        }
         assert _blocking_failures(_validate_record(self.TABLE, row))
 
     def test_missing_category_fails(self):
@@ -196,6 +255,7 @@ class TestValidateInsights:
 # =============================================================================
 # _validate_record — investment_options
 # =============================================================================
+
 
 class TestValidateInvestments:
     TABLE = "investment_options"
@@ -215,11 +275,15 @@ class TestValidateInvestments:
         assert _checks_passed(_validate_record(self.TABLE, self._row()))
 
     def test_invalid_risk_level(self):
-        blocks = _blocking_failures(_validate_record(self.TABLE, self._row(risk_level="extreme")))
+        blocks = _blocking_failures(
+            _validate_record(self.TABLE, self._row(risk_level="extreme"))
+        )
         assert any("enum:risk_level" in c.rule for c in blocks)
 
     def test_negative_return_potential_fails(self):
-        blocks = _blocking_failures(_validate_record(self.TABLE, self._row(return_potential=Decimal("-1"))))
+        blocks = _blocking_failures(
+            _validate_record(self.TABLE, self._row(return_potential=Decimal("-1")))
+        )
         assert any("non_negative:return_potential" in c.rule for c in blocks)
 
     @pytest.mark.parametrize("level", ["low", "medium", "high", "very_high"])
@@ -231,14 +295,23 @@ class TestValidateInvestments:
 # _is_valid — severity routing
 # =============================================================================
 
+
 class TestIsValid:
     def test_valid_row_returns_true(self):
-        row = {"username": "x_test", "password": "hash", "status": "active", "balance": Decimal("0")}
+        row = {
+            "username": "x_test",
+            "password": "hash",
+            "status": "active",
+            "balance": Decimal("0"),
+        }
         assert _is_valid("accounts", row, "x_test") is True
 
     def test_critical_failure_returns_false(self):
         # Missing required username
-        assert _is_valid("accounts", {"password": "h", "status": "active"}, "anon") is False
+        assert (
+            _is_valid("accounts", {"password": "h", "status": "active"}, "anon")
+            is False
+        )
 
     def test_warning_only_returns_true(self, caplog):
         """Expired card triggers a warning but must not block insertion."""
@@ -258,6 +331,7 @@ class TestIsValid:
 # TestDataSeeder — idempotency via mock session
 # =============================================================================
 
+
 def _make_mock_session_factory(account_rows=None):
     """
     Returns a context-manager session factory whose execute() returns
@@ -267,7 +341,14 @@ def _make_mock_session_factory(account_rows=None):
     if account_rows is None:
         # Build mock row objects matching (account_id, username)
         account_rows = []
-        usernames = ["alice_test", "bob_test", "carol_test", "dave_test", "eve_test", "frank_test"]
+        usernames = [
+            "alice_test",
+            "bob_test",
+            "carol_test",
+            "dave_test",
+            "eve_test",
+            "frank_test",
+        ]
         for i, uname in enumerate(usernames, start=1):
             r = MagicMock()
             r.account_id = i
@@ -296,8 +377,11 @@ class TestDataSeederIdempotency:
         seeder = TestDataSeeder(factory)
         stats = seeder.seed_all()
         assert set(stats.keys()) == {
-            "accounts", "p2p_transfers", "virtual_cards",
-            "spending_insights", "investment_options",
+            "accounts",
+            "p2p_transfers",
+            "virtual_cards",
+            "spending_insights",
+            "investment_options",
         }
 
     def test_seed_all_attempted_counts_match_seed_data(self):
@@ -308,6 +392,7 @@ class TestDataSeederIdempotency:
             SEED_INVESTMENTS,
             SEED_TRANSFERS_TEMPLATE,
         )
+
         factory, _ = _make_mock_session_factory()
         seeder = TestDataSeeder(factory)
         stats = seeder.seed_all()

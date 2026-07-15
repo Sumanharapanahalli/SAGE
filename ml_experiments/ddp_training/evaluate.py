@@ -69,22 +69,22 @@ def evaluate(
         probs = torch.softmax(logits, dim=-1)
         preds = logits.argmax(dim=-1)
 
-        total_loss   += loss.item()
+        total_loss += loss.item()
         total_samples += len(y_batch)
 
         all_preds.extend(preds.cpu().numpy())
         all_labels.extend(y_batch.cpu().numpy())
         all_probs.extend(probs.cpu().numpy())
 
-    preds_arr  = np.array(all_preds)
+    preds_arr = np.array(all_preds)
     labels_arr = np.array(all_labels)
-    probs_arr  = np.array(all_probs)
+    probs_arr = np.array(all_probs)
 
-    avg_loss  = total_loss / total_samples
-    accuracy  = accuracy_score(labels_arr, preds_arr)
-    f1        = f1_score(labels_arr, preds_arr, average="macro", zero_division=0)
+    avg_loss = total_loss / total_samples
+    accuracy = accuracy_score(labels_arr, preds_arr)
+    f1 = f1_score(labels_arr, preds_arr, average="macro", zero_division=0)
     precision = precision_score(labels_arr, preds_arr, average="macro", zero_division=0)
-    recall    = recall_score(labels_arr, preds_arr, average="macro", zero_division=0)
+    recall = recall_score(labels_arr, preds_arr, average="macro", zero_division=0)
 
     try:
         if num_classes == 2:
@@ -98,22 +98,20 @@ def evaluate(
         auc = float("nan")
 
     # Full per-class report (info level — visible in log file, not returned)
-    report = classification_report(
-        labels_arr, preds_arr, zero_division=0, digits=4
-    )
+    report = classification_report(labels_arr, preds_arr, zero_division=0, digits=4)
     logger.info(f"[{split}] Classification report:\n{report}")
 
     metrics: Dict[str, Any] = {
-        f"{split}_loss":           round(avg_loss,  4),
-        f"{split}_accuracy":       round(accuracy,  4),
-        f"{split}_f1_macro":       round(f1,        4),
+        f"{split}_loss": round(avg_loss, 4),
+        f"{split}_accuracy": round(accuracy, 4),
+        f"{split}_f1_macro": round(f1, 4),
         f"{split}_precision_macro": round(precision, 4),
-        f"{split}_recall_macro":   round(recall,    4),
-        f"{split}_auc_ovr":        round(auc, 4) if not np.isnan(auc) else None,
+        f"{split}_recall_macro": round(recall, 4),
+        f"{split}_auc_ovr": round(auc, 4) if not np.isnan(auc) else None,
     }
 
     logger.info(
-        f"[{split}] " +
-        " | ".join(f"{k.split('_', 1)[1]}={v}" for k, v in metrics.items())
+        f"[{split}] "
+        + " | ".join(f"{k.split('_', 1)[1]}={v}" for k, v in metrics.items())
     )
     return metrics

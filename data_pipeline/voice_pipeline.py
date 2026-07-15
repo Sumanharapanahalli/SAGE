@@ -14,6 +14,7 @@ Design decisions:
   - Experiment logging: every pipeline run is persisted to voice_pipeline_runs +
     voice_validation_results tables with a UUID run_id.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -26,7 +27,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass, field, asdict
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
-from typing import Any, Generator, Iterator, Optional
+from typing import Any, Generator, Optional
 
 import psycopg2
 import psycopg2.extras
@@ -46,6 +47,7 @@ logger = logging.getLogger("voice_pipeline")
 # Config
 # ---------------------------------------------------------------------------
 
+
 def load_config(path: str | Path = "voice_pipeline_config.yaml") -> dict:
     with open(path) as fh:
         raw = yaml.safe_load(fh)
@@ -60,6 +62,7 @@ def _expand_env_vars(obj: Any) -> Any:
         return [_expand_env_vars(i) for i in obj]
     if isinstance(obj, str) and "${" in obj:
         import re
+
         def _sub(m: re.Match) -> str:
             inner = m.group(1)
             if ":-" in inner:
@@ -67,6 +70,7 @@ def _expand_env_vars(obj: Any) -> Any:
             else:
                 var, default = inner, ""
             return os.environ.get(var, default)
+
         return re.sub(r"\$\{([^}]+)\}", _sub, obj)
     return obj
 
@@ -74,6 +78,7 @@ def _expand_env_vars(obj: Any) -> Any:
 # ---------------------------------------------------------------------------
 # Database helpers
 # ---------------------------------------------------------------------------
+
 
 @contextmanager
 def get_db_conn(db_cfg: dict) -> Generator:
@@ -109,6 +114,7 @@ def apply_schema(conn, schema_file: str | Path) -> None:
 # SHA-256 content hash
 # ---------------------------------------------------------------------------
 
+
 def sha256_of_file(path: str | Path) -> str:
     h = hashlib.sha256()
     with open(path, "rb") as fh:
@@ -125,6 +131,7 @@ def sha256_of_bytes(data: bytes) -> str:
 # Validation — voice-specific rules
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class VoiceValidationResult:
     rule_name: str
@@ -140,7 +147,9 @@ class VoiceValidationReport:
 
     @property
     def passed(self) -> bool:
-        return all(r.passed for r in self.results if r.severity in ("error", "critical"))
+        return all(
+            r.passed for r in self.results if r.severity in ("error", "critical")
+        )
 
     @property
     def failures(self) -> list[VoiceValidationResult]:
@@ -161,16 +170,22 @@ def _check_required(record: dict, fields: list[str]) -> list[VoiceValidationResu
     for f in fields:
         val = record.get(f)
         missing = val is None or (isinstance(val, str) and val.strip() == "")
-        out.append(VoiceValidationResult(
-            rule_name=f"required:{f}",
-            passed=not missing,
-            message="" if not missing else f"Required field '{f}' is missing or empty",
-            severity="critical",
-        ))
+        out.append(
+            VoiceValidationResult(
+                rule_name=f"required:{f}",
+                passed=not missing,
+                message=""
+                if not missing
+                else f"Required field '{f}' is missing or empty",
+                severity="critical",
+            )
+        )
     return out
 
 
-def _check_enum(record: dict, field_name: str, allowed: list, severity: str = "error") -> VoiceValidationResult:
+def _check_enum(
+    record: dict, field_name: str, allowed: list, severity: str = "error"
+) -> VoiceValidationResult:
     val = record.get(field_name)
     if val is None:
         return VoiceValidationResult(f"enum:{field_name}", True, "null skipped", "info")
@@ -192,7 +207,9 @@ def _check_numeric_range(
 ) -> VoiceValidationResult:
     val = record.get(field_name)
     if val is None:
-        return VoiceValidationResult(f"range:{field_name}", True, "null skipped", "info")
+        return VoiceValidationResult(
+            f"range:{field_name}", True, "null skipped", "info"
+        )
     try:
         n = float(val)
         ok = min_val <= n <= max_val
@@ -214,22 +231,33 @@ def _check_consent(record: dict) -> VoiceValidationResult:
     return VoiceValidationResult(
         rule_name="consent_required",
         passed=ok,
-        message="" if ok else f"consent_given={given!r}; recording cannot be stored without explicit consent",
+        message=""
+        if ok
+        else f"consent_given={given!r}; recording cannot be stored without explicit consent",
         severity="critical",
     )
 
 
-def _check_no_future_recording(record: dict, max_skew_seconds: int = 60) -> VoiceValidationResult:
+def _check_no_future_recording(
+    record: dict, max_skew_seconds: int = 60
+) -> VoiceValidationResult:
     raw = record.get("recorded_at")
     if raw is None:
-        return VoiceValidationResult("no_future_recorded_at", True, "null skipped", "info")
+        return VoiceValidationResult(
+            "no_future_recorded_at", True, "null skipped", "info"
+        )
     try:
         if isinstance(raw, str):
             ts = datetime.fromisoformat(raw.replace("Z", "+00:00"))
         elif isinstance(raw, datetime):
             ts = raw
         else:
-            return VoiceValidationResult("no_future_recorded_at", False, f"Cannot parse recorded_at={raw!r}", "error")
+            return VoiceValidationResult(
+                "no_future_recorded_at",
+                False,
+                f"Cannot parse recorded_at={raw!r}",
+                "error",
+            )
         now = datetime.now(timezone.utc)
         if ts.tzinfo is None:
             ts = ts.replace(tzinfo=timezone.utc)
@@ -239,12 +267,16 @@ def _check_no_future_recording(record: dict, max_skew_seconds: int = 60) -> Voic
     return VoiceValidationResult(
         rule_name="no_future_recorded_at",
         passed=ok,
-        message="" if ok else f"recorded_at={raw} is in the future (skew > {max_skew_seconds}s)",
+        message=""
+        if ok
+        else f"recorded_at={raw} is in the future (skew > {max_skew_seconds}s)",
         severity="warning",
     )
 
 
-def validate_voice_recording(record: dict, cfg: dict | None = None) -> VoiceValidationReport:
+def validate_voice_recording(
+    record: dict, cfg: dict | None = None
+) -> VoiceValidationReport:
     """
     Full validation for a single voice recording record.
     cfg is the 'validation.voice_recording' block from voice_pipeline_config.yaml.
@@ -254,47 +286,71 @@ def validate_voice_recording(record: dict, cfg: dict | None = None) -> VoiceVali
     report = VoiceValidationReport(external_id=record.get("external_id", "<unknown>"))
 
     # 1. Required fields
-    required = cfg.get("required_fields", [
-        "external_id", "content_hash", "storage_uri", "format",
-        "duration_seconds", "sample_rate_hz", "channels", "file_size_bytes",
-        "recorded_at", "language_bcp47", "consent_given", "consent_timestamp",
-    ])
+    required = cfg.get(
+        "required_fields",
+        [
+            "external_id",
+            "content_hash",
+            "storage_uri",
+            "format",
+            "duration_seconds",
+            "sample_rate_hz",
+            "channels",
+            "file_size_bytes",
+            "recorded_at",
+            "language_bcp47",
+            "consent_given",
+            "consent_timestamp",
+        ],
+    )
     report.results.extend(_check_required(record, required))
 
     # 2. Consent — checked early so we don't write unconsented data
     report.results.append(_check_consent(record))
 
     # 3. Enum checks
-    allowed_formats = cfg.get("allowed_formats", ["wav","mp3","flac","ogg","m4a","mp4","webm","aac"])
+    allowed_formats = cfg.get(
+        "allowed_formats", ["wav", "mp3", "flac", "ogg", "m4a", "mp4", "webm", "aac"]
+    )
     report.results.append(_check_enum(record, "format", allowed_formats))
 
-    allowed_sr = cfg.get("allowed_sample_rates", [8000, 16000, 22050, 24000, 44100, 48000])
+    allowed_sr = cfg.get(
+        "allowed_sample_rates", [8000, 16000, 22050, 24000, 44100, 48000]
+    )
     sr = record.get("sample_rate_hz")
     sr_ok = sr in allowed_sr if sr is not None else True
-    report.results.append(VoiceValidationResult(
-        rule_name="sample_rate_hz",
-        passed=sr_ok,
-        message="" if sr_ok else f"sample_rate_hz={sr} not in {allowed_sr}",
-        severity="error",
-    ))
+    report.results.append(
+        VoiceValidationResult(
+            rule_name="sample_rate_hz",
+            passed=sr_ok,
+            message="" if sr_ok else f"sample_rate_hz={sr} not in {allowed_sr}",
+            severity="error",
+        )
+    )
 
     allowed_ch = cfg.get("allowed_channels", [1, 2])
     report.results.append(_check_enum(record, "channels", allowed_ch))
 
     # 4. Numeric range checks
     dur_cfg = cfg.get("duration", {"min_seconds": 0.1, "max_seconds": 14400})
-    report.results.append(_check_numeric_range(
-        record, "duration_seconds",
-        dur_cfg.get("min_seconds", 0.1),
-        dur_cfg.get("max_seconds", 14400),
-    ))
+    report.results.append(
+        _check_numeric_range(
+            record,
+            "duration_seconds",
+            dur_cfg.get("min_seconds", 0.1),
+            dur_cfg.get("max_seconds", 14400),
+        )
+    )
 
     sz_cfg = cfg.get("file_size", {"min_bytes": 100, "max_bytes": 2147483648})
-    report.results.append(_check_numeric_range(
-        record, "file_size_bytes",
-        sz_cfg.get("min_bytes", 100),
-        sz_cfg.get("max_bytes", 2_147_483_648),
-    ))
+    report.results.append(
+        _check_numeric_range(
+            record,
+            "file_size_bytes",
+            sz_cfg.get("min_bytes", 100),
+            sz_cfg.get("max_bytes", 2_147_483_648),
+        )
+    )
 
     # 5. Temporal check
     skew = cfg.get("max_future_skew_seconds", 60)
@@ -307,7 +363,10 @@ def validate_voice_recording(record: dict, cfg: dict | None = None) -> VoiceVali
 # Optional quality metrics (requires pydub + ffprobe)
 # ---------------------------------------------------------------------------
 
-def compute_quality_metrics(audio_path: str | Path, cfg: dict | None = None) -> dict[str, Any]:
+
+def compute_quality_metrics(
+    audio_path: str | Path, cfg: dict | None = None
+) -> dict[str, Any]:
     """
     Compute lightweight quality metrics from an audio file.
     Returns a dict ready for insertion into voice_quality_metrics.
@@ -328,32 +387,47 @@ def compute_quality_metrics(audio_path: str | Path, cfg: dict | None = None) -> 
 
         rms_db = float(audio.dBFS)
         peak_db = float(audio.max_dBFS)
-        dynamic_range_db = round(peak_db - rms_db, 3) if rms_db > float("-inf") else None
+        dynamic_range_db = (
+            round(peak_db - rms_db, 3) if rms_db > float("-inf") else None
+        )
 
         # Silence ratio
-        silent_ranges = detect_silence(audio, min_silence_len=100, silence_thresh=silence_threshold)
+        silent_ranges = detect_silence(
+            audio, min_silence_len=100, silence_thresh=silence_threshold
+        )
         silent_ms = sum(end - start for start, end in silent_ranges)
         silence_ratio = round(silent_ms / total_ms, 4)
         speech_ratio = round(1.0 - silence_ratio, 4)
 
         # Clipping: fraction of 10ms frames where peak > threshold
         frame_len = 10  # ms
-        frames = [audio[i:i + frame_len] for i in range(0, total_ms, frame_len)]
+        frames = [audio[i : i + frame_len] for i in range(0, total_ms, frame_len)]
         clipping_frames = sum(1 for f in frames if f.max_dBFS > clipping_threshold)
         clipping_ratio = round(clipping_frames / max(len(frames), 1), 4)
 
         # Simplified SNR: compare RMS of loudest quartile vs quietest quartile
         frame_levels = sorted(f.rms for f in frames if f.rms > 0)
         if len(frame_levels) >= 4:
-            loud_mean = sum(frame_levels[3 * len(frame_levels) // 4 :]) / max(1, len(frame_levels) // 4)
-            quiet_mean = sum(frame_levels[: len(frame_levels) // 4]) / max(1, len(frame_levels) // 4)
+            loud_mean = sum(frame_levels[3 * len(frame_levels) // 4 :]) / max(
+                1, len(frame_levels) // 4
+            )
+            quiet_mean = sum(frame_levels[: len(frame_levels) // 4]) / max(
+                1, len(frame_levels) // 4
+            )
             import math
-            snr_db = round(20 * math.log10(loud_mean / max(quiet_mean, 1e-9)), 3) if loud_mean > 0 else None
+
+            snr_db = (
+                round(20 * math.log10(loud_mean / max(quiet_mean, 1e-9)), 3)
+                if loud_mean > 0
+                else None
+            )
         else:
             snr_db = None
 
         # Clarity: penalise high clipping and high silence
-        clarity_score = round(max(0.0, 1.0 - clipping_ratio * 2 - max(0.0, silence_ratio - 0.3)), 4)
+        clarity_score = round(
+            max(0.0, 1.0 - clipping_ratio * 2 - max(0.0, silence_ratio - 0.3)), 4
+        )
 
         # Grade
         if clarity_score >= 0.8 and (snr_db or 0) >= 20:
@@ -379,10 +453,14 @@ def compute_quality_metrics(audio_path: str | Path, cfg: dict | None = None) -> 
             "quality_grade": grade,
             "is_silent": silence_ratio > 0.95,
             "has_clipping": clipping_ratio > 0.01,
-            "has_background_noise": (snr_db is not None and snr_db < cfg.get("min_snr_db_warn", 10)),
+            "has_background_noise": (
+                snr_db is not None and snr_db < cfg.get("min_snr_db_warn", 10)
+            ),
         }
     except ImportError:
-        logger.warning('"pydub not installed — quality metrics skipped for %s"', audio_path)
+        logger.warning(
+            '"pydub not installed — quality metrics skipped for %s"', audio_path
+        )
         return {}
     except Exception as exc:
         logger.warning('"Quality metric error for %s: %s"', audio_path, exc)
@@ -392,6 +470,7 @@ def compute_quality_metrics(audio_path: str | Path, cfg: dict | None = None) -> 
 # ---------------------------------------------------------------------------
 # Stratified split (for downstream ML tasks — no leakage)
 # ---------------------------------------------------------------------------
+
 
 def stratified_split(
     records: list[dict],
@@ -425,12 +504,16 @@ def stratified_split(
         n_test = max(1, round(n * test_size))
         n_val = max(1, round(n * val_size))
         test.extend(items[:n_test])
-        val.extend(items[n_test:n_test + n_val])
-        train.extend(items[n_test + n_val:])
+        val.extend(items[n_test : n_test + n_val])
+        train.extend(items[n_test + n_val :])
 
     logger.info(
         '"Stratified split on %r: train=%d val=%d test=%d (seed=%d)"',
-        label_key, len(train), len(val), len(test), random_seed,
+        label_key,
+        len(train),
+        len(val),
+        len(test),
+        random_seed,
     )
     return train, val, test
 
@@ -438,6 +521,7 @@ def stratified_split(
 # ---------------------------------------------------------------------------
 # Run tracking
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class PipelineRun:
@@ -503,8 +587,11 @@ def _finish_run(conn, run: PipelineRun) -> None:
     conn.commit()
     logger.info(
         '"Run %s finished: loaded=%d skipped=%d failed=%d pass_rate=%.2f"',
-        run.run_id, run.records_loaded, run.records_skipped,
-        run.records_failed, run.validation_pass_rate,
+        run.run_id,
+        run.records_loaded,
+        run.records_skipped,
+        run.records_failed,
+        run.validation_pass_rate,
     )
 
 
@@ -537,6 +624,7 @@ def _persist_validation(conn, run_id: str, report: VoiceValidationReport) -> Non
 # ---------------------------------------------------------------------------
 # DB upserts — all idempotent (ON CONFLICT DO UPDATE)
 # ---------------------------------------------------------------------------
+
 
 def _upsert_speaker(conn, speaker: dict) -> str:
     """Upsert a speaker record; return the speaker_id (UUID string)."""
@@ -620,7 +708,9 @@ def _upsert_recording(conn, rec: dict, run_id: str) -> tuple[str, bool]:
                 "pii_scrubbed": rec.get("pii_scrubbed", False),
                 "data_retention_days": rec.get("data_retention_days", 365),
                 "run_id": run_id,
-                "raw_metadata": json.dumps(rec.get("raw_metadata")) if rec.get("raw_metadata") else None,
+                "raw_metadata": json.dumps(rec.get("raw_metadata"))
+                if rec.get("raw_metadata")
+                else None,
             },
         )
         row = cur.fetchone()
@@ -690,6 +780,7 @@ def _upsert_quality_metrics(conn, recording_id: str, metrics: dict) -> None:
 # Sidecar manifest loader
 # ---------------------------------------------------------------------------
 
+
 def _load_manifest(audio_path: Path) -> dict:
     """
     Load companion JSON sidecar: audio.wav → audio.json.
@@ -717,12 +808,15 @@ def _build_record_from_file(audio_path: Path, run_id: str) -> dict:
     fmt = fmt_map.get(suffix, suffix)
 
     return {
-        "external_id": meta.get("external_id") or f"{audio_path.stem}_{content_hash[:8]}",
+        "external_id": meta.get("external_id")
+        or f"{audio_path.stem}_{content_hash[:8]}",
         "content_hash": content_hash,
         "storage_uri": meta.get("storage_uri") or str(audio_path.resolve()),
         "original_filename": audio_path.name,
         "format": meta.get("format") or fmt,
-        "duration_seconds": meta.get("duration_seconds"),   # required; must be in sidecar
+        "duration_seconds": meta.get(
+            "duration_seconds"
+        ),  # required; must be in sidecar
         "sample_rate_hz": meta.get("sample_rate_hz"),
         "channels": meta.get("channels"),
         "bit_depth": meta.get("bit_depth"),
@@ -739,7 +833,7 @@ def _build_record_from_file(audio_path: Path, run_id: str) -> dict:
         "consent_version": meta.get("consent_version"),
         "pii_scrubbed": meta.get("pii_scrubbed", False),
         "data_retention_days": meta.get("data_retention_days", 365),
-        "speaker": meta.get("speaker"),     # optional nested speaker dict
+        "speaker": meta.get("speaker"),  # optional nested speaker dict
         "raw_metadata": meta or None,
         "run_id": run_id,
     }
@@ -748,6 +842,7 @@ def _build_record_from_file(audio_path: Path, run_id: str) -> dict:
 # ---------------------------------------------------------------------------
 # Main pipeline entry points
 # ---------------------------------------------------------------------------
+
 
 def ingest_directory(
     source_dir: str | Path,
@@ -767,8 +862,13 @@ def ingest_directory(
     alert_threshold = cfg.get("alerts", {}).get("failure_rate_threshold", 0.05)
 
     source_dir = Path(source_dir)
-    patterns = cfg.get("sources", {}).get("filesystem", {}).get(
-        "file_patterns", ["*.wav", "*.mp3", "*.flac", "*.ogg", "*.m4a", "*.webm", "*.aac"]
+    patterns = (
+        cfg.get("sources", {})
+        .get("filesystem", {})
+        .get(
+            "file_patterns",
+            ["*.wav", "*.mp3", "*.flac", "*.ogg", "*.m4a", "*.webm", "*.aac"],
+        )
     )
 
     run = PipelineRun(source_dir=str(source_dir))
@@ -785,7 +885,12 @@ def ingest_directory(
         for pattern in patterns:
             audio_files.extend(source_dir.glob(pattern))
 
-        logger.info('"Starting run %s: found %d audio files in %s"', run.run_id, len(audio_files), source_dir)
+        logger.info(
+            '"Starting run %s: found %d audio files in %s"',
+            run.run_id,
+            len(audio_files),
+            source_dir,
+        )
 
         for audio_path in sorted(audio_files):
             run.records_read += 1
@@ -817,7 +922,11 @@ def ingest_directory(
                 recording_id, inserted = _upsert_recording(conn, record, run.run_id)
 
                 if not inserted:
-                    logger.debug('"Skipped duplicate: %s (hash=%s)"', audio_path.name, record["content_hash"][:12])
+                    logger.debug(
+                        '"Skipped duplicate: %s (hash=%s)"',
+                        audio_path.name,
+                        record["content_hash"][:12],
+                    )
                     run.records_skipped += 1
                     conn.commit()
                     continue
@@ -830,12 +939,16 @@ def ingest_directory(
 
                 conn.commit()
                 run.records_loaded += 1
-                logger.info('"Loaded recording_id=%s file=%s"', recording_id, audio_path.name)
+                logger.info(
+                    '"Loaded recording_id=%s file=%s"', recording_id, audio_path.name
+                )
 
             except Exception as exc:
                 conn.rollback()
                 run.records_failed += 1
-                logger.error('"Failed to process %s: %s"', audio_path, exc, exc_info=True)
+                logger.error(
+                    '"Failed to process %s: %s"', audio_path, exc, exc_info=True
+                )
 
         # Finalise run
         total_processed = run.records_loaded + run.records_failed
@@ -846,7 +959,11 @@ def ingest_directory(
     elapsed = time.monotonic() - t0
     logger.info(
         '"Pipeline complete: run_id=%s loaded=%d skipped=%d failed=%d elapsed=%.1fs"',
-        run.run_id, run.records_loaded, run.records_skipped, run.records_failed, elapsed,
+        run.run_id,
+        run.records_loaded,
+        run.records_skipped,
+        run.records_failed,
+        elapsed,
     )
     return run
 
@@ -886,7 +1003,11 @@ def ingest_records(
                 run.records_skipped += 1
                 continue
 
-            if qa_cfg.get("enabled", True) and recording_id and record.get("storage_uri"):
+            if (
+                qa_cfg.get("enabled", True)
+                and recording_id
+                and record.get("storage_uri")
+            ):
                 local_path = record["storage_uri"]
                 if Path(local_path).exists():
                     metrics = compute_quality_metrics(local_path, qa_cfg)
@@ -897,7 +1018,12 @@ def ingest_records(
 
         except Exception as exc:
             run.records_failed += 1
-            logger.error('"ingest_records error for %s: %s"', record.get("external_id"), exc, exc_info=True)
+            logger.error(
+                '"ingest_records error for %s: %s"',
+                record.get("external_id"),
+                exc,
+                exc_info=True,
+            )
 
 
 # ---------------------------------------------------------------------------
@@ -910,18 +1036,24 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Voice data ingestion pipeline")
     parser.add_argument("source_dir", help="Directory containing audio files to ingest")
     parser.add_argument(
-        "--config", default="voice_pipeline_config.yaml",
+        "--config",
+        default="voice_pipeline_config.yaml",
         help="Path to voice_pipeline_config.yaml",
     )
     args = parser.parse_args()
 
     completed_run = ingest_directory(args.source_dir, config_path=args.config)
-    print(json.dumps({
-        "run_id": completed_run.run_id,
-        "status": completed_run.status,
-        "records_read": completed_run.records_read,
-        "records_loaded": completed_run.records_loaded,
-        "records_skipped": completed_run.records_skipped,
-        "records_failed": completed_run.records_failed,
-        "validation_pass_rate": round(completed_run.validation_pass_rate, 4),
-    }, indent=2))
+    print(
+        json.dumps(
+            {
+                "run_id": completed_run.run_id,
+                "status": completed_run.status,
+                "records_read": completed_run.records_read,
+                "records_loaded": completed_run.records_loaded,
+                "records_skipped": completed_run.records_skipped,
+                "records_failed": completed_run.records_failed,
+                "validation_pass_rate": round(completed_run.validation_pass_rate, 4),
+            },
+            indent=2,
+        )
+    )

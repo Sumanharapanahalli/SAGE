@@ -54,16 +54,29 @@ def upgrade() -> None:
         "wearer", "caregiver", "admin", name="user_role_enum", create_type=False
     )
     device_status_enum = postgresql.ENUM(
-        "active", "inactive", "maintenance", "decommissioned",
-        name="device_status_enum", create_type=False,
+        "active",
+        "inactive",
+        "maintenance",
+        "decommissioned",
+        name="device_status_enum",
+        create_type=False,
     )
     severity_level_enum = postgresql.ENUM(
-        "low", "medium", "high", "critical",
-        name="severity_level_enum", create_type=False,
+        "low",
+        "medium",
+        "high",
+        "critical",
+        name="severity_level_enum",
+        create_type=False,
     )
     alert_status_enum = postgresql.ENUM(
-        "pending", "sent", "acknowledged", "resolved", "false_positive",
-        name="alert_status_enum", create_type=False,
+        "pending",
+        "sent",
+        "acknowledged",
+        "resolved",
+        "false_positive",
+        name="alert_status_enum",
+        create_type=False,
     )
 
     op.execute("CREATE TYPE user_role_enum AS ENUM ('wearer', 'caregiver', 'admin')")
@@ -300,9 +313,9 @@ def upgrade() -> None:
     )
 
     # Supporting indexes
-    op.create_index("ix_devices_owner",  "devices", ["owner_id"])
-    op.create_index("ix_uda_device",     "user_device_assignments", ["device_id"])
-    op.create_index("ix_uda_user",       "user_device_assignments", ["user_id"])
+    op.create_index("ix_devices_owner", "devices", ["owner_id"])
+    op.create_index("ix_uda_device", "user_device_assignments", ["device_id"])
+    op.create_index("ix_uda_user", "user_device_assignments", ["user_id"])
     op.create_index(
         "ix_fall_events_alert_status",
         "fall_events",
@@ -444,9 +457,7 @@ def _apply_rls() -> None:
     )
 
     # user_device_assignments
-    op.execute(
-        "ALTER TABLE user_device_assignments ENABLE ROW LEVEL SECURITY"
-    )
+    op.execute("ALTER TABLE user_device_assignments ENABLE ROW LEVEL SECURITY")
     op.execute("ALTER TABLE user_device_assignments FORCE ROW LEVEL SECURITY")
     op.execute(
         """
@@ -572,15 +583,11 @@ def _apply_grants() -> None:
     op.execute("GRANT USAGE ON SCHEMA public TO app_user")
     op.execute("GRANT SELECT, INSERT, UPDATE ON users TO app_user")
     op.execute("GRANT SELECT, INSERT, UPDATE ON devices TO app_user")
-    op.execute(
-        "GRANT SELECT, INSERT, DELETE ON user_device_assignments TO app_user"
-    )
+    op.execute("GRANT SELECT, INSERT, DELETE ON user_device_assignments TO app_user")
     op.execute("GRANT SELECT, INSERT, UPDATE ON fall_events TO app_user")
     op.execute("GRANT SELECT, INSERT ON gps_history TO app_user")
     op.execute("GRANT SELECT, INSERT ON audit_log TO app_user")
-    op.execute(
-        "GRANT USAGE, SELECT ON SEQUENCE gps_history_id_seq TO app_user"
-    )
+    op.execute("GRANT USAGE, SELECT ON SEQUENCE gps_history_id_seq TO app_user")
     op.execute("GRANT SELECT ON ALL TABLES IN SCHEMA public TO app_readonly")
 
 
@@ -588,9 +595,7 @@ def downgrade() -> None:
     # Reverse order: drop tables, triggers, functions, types
 
     for table in ("users", "devices", "fall_events"):
-        op.execute(
-            f"DROP TRIGGER IF EXISTS trg_{table}_updated_at ON {table}"
-        )
+        op.execute(f"DROP TRIGGER IF EXISTS trg_{table}_updated_at ON {table}")
     op.execute("DROP FUNCTION IF EXISTS set_updated_at()")
 
     op.drop_table("audit_log")

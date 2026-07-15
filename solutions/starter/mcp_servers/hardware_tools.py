@@ -34,6 +34,7 @@ logger = logging.getLogger("hardware_tools_mcp")
 
 try:
     from fastmcp import FastMCP
+
     mcp = FastMCP("hardware-tools")
 except ImportError:
     # Graceful degradation: FastMCP not installed
@@ -44,6 +45,7 @@ except ImportError:
 def _tool_available(name: str) -> bool:
     """Check if a CLI tool is on PATH."""
     import shutil
+
     return shutil.which(name) is not None
 
 
@@ -59,12 +61,17 @@ def _run(cmd: list, timeout: int = 60, cwd: str = None) -> dict:
         )
         return {
             "returncode": result.returncode,
-            "stdout":     result.stdout[-3000:],
-            "stderr":     result.stderr[-1500:],
-            "success":    result.returncode == 0,
+            "stdout": result.stdout[-3000:],
+            "stderr": result.stderr[-1500:],
+            "success": result.returncode == 0,
         }
     except subprocess.TimeoutExpired:
-        return {"returncode": -1, "stdout": "", "stderr": "Command timed out", "success": False}
+        return {
+            "returncode": -1,
+            "stdout": "",
+            "stderr": "Command timed out",
+            "success": False,
+        }
     except FileNotFoundError as e:
         return {"returncode": -1, "stdout": "", "stderr": str(e), "success": False}
     except Exception as e:
@@ -76,6 +83,7 @@ def _run(cmd: list, timeout: int = 60, cwd: str = None) -> dict:
 # ---------------------------------------------------------------------------
 
 if mcp:
+
     @mcp.tool()
     def openocd_flash(
         firmware_path: str,
@@ -93,28 +101,36 @@ if mcp:
         Returns structured result with success status and OpenOCD output.
         """
         if not _tool_available("openocd"):
-            return {"available": False, "reason": "openocd not found on PATH. Install: https://openocd.org/"}
+            return {
+                "available": False,
+                "reason": "openocd not found on PATH. Install: https://openocd.org/",
+            }
 
         if not os.path.isfile(firmware_path):
-            return {"available": True, "success": False, "error": f"Firmware file not found: {firmware_path}"}
+            return {
+                "available": True,
+                "success": False,
+                "error": f"Firmware file not found: {firmware_path}",
+            }
 
         verify_cmd = "verify" if verify else ""
         cmd = [
             "openocd",
-            "-f", config_file,
-            "-c", f"program {firmware_path} {verify_cmd} reset exit",
+            "-f",
+            config_file,
+            "-c",
+            f"program {firmware_path} {verify_cmd} reset exit",
         ]
         result = _run(cmd, timeout=120)
         ok = "Verified OK" in result["stderr"] or result["success"]
         return {
             "available": True,
-            "success":   ok,
-            "firmware":  firmware_path,
-            "config":    config_file,
-            "output":    result["stderr"][-1500:],
+            "success": ok,
+            "firmware": firmware_path,
+            "config": config_file,
+            "output": result["stderr"][-1500:],
             "returncode": result["returncode"],
         }
-
 
     @mcp.tool()
     def openocd_debug(
@@ -146,18 +162,17 @@ if mcp:
                 return {"available": True, "success": False, "error": stderr[:500]}
             return {
                 "available": True,
-                "success":   True,
-                "pid":       proc.pid,
+                "success": True,
+                "pid": proc.pid,
                 "gdb_target": f"target remote localhost:{gdb_port}",
                 "instruction": f"Attach GDB with: arm-none-eabi-gdb -ex 'target remote localhost:{gdb_port}'",
             }
         except Exception as e:
             return {"available": True, "success": False, "error": str(e)}
 
-
-# ---------------------------------------------------------------------------
-# KiCad tools
-# ---------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
+    # KiCad tools
+    # ---------------------------------------------------------------------------
 
     @mcp.tool()
     def kicad_drc(
@@ -176,20 +191,28 @@ if mcp:
         if not _tool_available("kicad-cli"):
             return {
                 "available": False,
-                "reason":    "kicad-cli not found. Install KiCad 7+ from https://www.kicad.org/",
+                "reason": "kicad-cli not found. Install KiCad 7+ from https://www.kicad.org/",
             }
 
         if not os.path.isfile(pcb_file):
-            return {"available": True, "success": False, "error": f"PCB file not found: {pcb_file}"}
+            return {
+                "available": True,
+                "success": False,
+                "error": f"PCB file not found: {pcb_file}",
+            }
 
         with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as f:
             out_path = f.name
 
         try:
             cmd = [
-                "kicad-cli", "pcb", "drc",
-                "--output", out_path,
-                "--format", "json",
+                "kicad-cli",
+                "pcb",
+                "drc",
+                "--output",
+                out_path,
+                "--format",
+                "json",
                 pcb_file,
             ]
             result = _run(cmd, timeout=60)
@@ -204,13 +227,13 @@ if mcp:
                         violations = []
 
             return {
-                "available":       True,
-                "success":         result["success"],
-                "pcb_file":        pcb_file,
+                "available": True,
+                "success": result["success"],
+                "pcb_file": pcb_file,
                 "violation_count": len(violations),
-                "violations":      violations[:50],  # cap for response size
-                "stdout":          result["stdout"][:500],
-                "stderr":          result["stderr"][:500],
+                "violations": violations[:50],  # cap for response size
+                "stdout": result["stdout"][:500],
+                "stderr": result["stderr"][:500],
             }
         finally:
             try:
@@ -218,10 +241,9 @@ if mcp:
             except Exception:
                 pass
 
-
-# ---------------------------------------------------------------------------
-# ngspice simulation
-# ---------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
+    # ngspice simulation
+    # ---------------------------------------------------------------------------
 
     @mcp.tool()
     def ngspice_simulate(
@@ -240,11 +262,15 @@ if mcp:
         if not _tool_available("ngspice"):
             return {
                 "available": False,
-                "reason":    "ngspice not found. Install: sudo apt install ngspice / brew install ngspice",
+                "reason": "ngspice not found. Install: sudo apt install ngspice / brew install ngspice",
             }
 
         if not os.path.isfile(netlist_file):
-            return {"available": True, "success": False, "error": f"Netlist not found: {netlist_file}"}
+            return {
+                "available": True,
+                "success": False,
+                "error": f"Netlist not found: {netlist_file}",
+            }
 
         result = _run(["ngspice", "-b", netlist_file], timeout=120)
         output = (result["stdout"] + result["stderr"])[:3000]
@@ -258,18 +284,17 @@ if mcp:
                         break
 
         return {
-            "available":         True,
-            "success":           result["success"],
-            "netlist":           netlist_file,
-            "output":            output,
-            "extracted_values":  extracted,
-            "returncode":        result["returncode"],
+            "available": True,
+            "success": result["success"],
+            "netlist": netlist_file,
+            "output": output,
+            "extracted_values": extracted,
+            "returncode": result["returncode"],
         }
 
-
-# ---------------------------------------------------------------------------
-# Serial monitor
-# ---------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
+    # Serial monitor
+    # ---------------------------------------------------------------------------
 
     @mcp.tool()
     def serial_monitor(
@@ -292,27 +317,29 @@ if mcp:
         try:
             import serial
         except ImportError:
-            return {"available": False, "reason": "pyserial not installed: pip install pyserial"}
+            return {
+                "available": False,
+                "reason": "pyserial not installed: pip install pyserial",
+            }
 
         try:
             with serial.Serial(port, baud_rate, timeout=timeout_seconds) as ser:
                 data = ser.read(read_bytes)
                 text = data.decode("utf-8", errors="replace")
             return {
-                "available":  True,
-                "success":    True,
-                "port":       port,
-                "baud_rate":  baud_rate,
+                "available": True,
+                "success": True,
+                "port": port,
+                "baud_rate": baud_rate,
                 "bytes_read": len(data),
-                "output":     text,
+                "output": text,
             }
         except Exception as e:
             return {"available": True, "success": False, "error": str(e), "port": port}
 
-
-# ---------------------------------------------------------------------------
-# CAN bus tools
-# ---------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
+    # CAN bus tools
+    # ---------------------------------------------------------------------------
 
     @mcp.tool()
     def can_send(
@@ -337,7 +364,10 @@ if mcp:
         try:
             import can
         except ImportError:
-            return {"available": False, "reason": "python-can not installed: pip install python-can"}
+            return {
+                "available": False,
+                "reason": "python-can not installed: pip install python-can",
+            }
 
         data = data or [0x00]
         try:
@@ -350,16 +380,15 @@ if mcp:
             bus.send(msg)
             bus.shutdown()
             return {
-                "available":      True,
-                "success":        True,
-                "channel":        channel,
+                "available": True,
+                "success": True,
+                "channel": channel,
                 "arbitration_id": hex(arbitration_id),
-                "data_sent":      data,
-                "dlc":            len(data),
+                "data_sent": data,
+                "dlc": len(data),
             }
         except Exception as e:
             return {"available": True, "success": False, "error": str(e)}
-
 
     @mcp.tool()
     def can_monitor(
@@ -382,41 +411,45 @@ if mcp:
         try:
             import can
         except ImportError:
-            return {"available": False, "reason": "python-can not installed: pip install python-can"}
+            return {
+                "available": False,
+                "reason": "python-can not installed: pip install python-can",
+            }
 
         try:
-            bus    = can.interface.Bus(channel=channel, bustype=interface)
+            bus = can.interface.Bus(channel=channel, bustype=interface)
             frames = []
-            start  = time.time()
+            start = time.time()
 
             while len(frames) < frame_count and (time.time() - start) < timeout_seconds:
                 msg = bus.recv(timeout=1.0)
                 if msg:
-                    frames.append({
-                        "timestamp":      msg.timestamp,
-                        "arbitration_id": hex(msg.arbitration_id),
-                        "dlc":            msg.dlc,
-                        "data":           list(msg.data),
-                        "is_extended_id": msg.is_extended_id,
-                        "is_error_frame": msg.is_error_frame,
-                    })
+                    frames.append(
+                        {
+                            "timestamp": msg.timestamp,
+                            "arbitration_id": hex(msg.arbitration_id),
+                            "dlc": msg.dlc,
+                            "data": list(msg.data),
+                            "is_extended_id": msg.is_extended_id,
+                            "is_error_frame": msg.is_error_frame,
+                        }
+                    )
 
             bus.shutdown()
             return {
-                "available":     True,
-                "success":       True,
-                "channel":       channel,
+                "available": True,
+                "success": True,
+                "channel": channel,
                 "frames_captured": len(frames),
-                "frames":        frames,
+                "frames": frames,
                 "capture_duration_seconds": round(time.time() - start, 3),
             }
         except Exception as e:
             return {"available": True, "success": False, "error": str(e)}
 
-
-# ---------------------------------------------------------------------------
-# pytest-embedded
-# ---------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
+    # pytest-embedded
+    # ---------------------------------------------------------------------------
 
     @mcp.tool()
     def pytest_embedded(
@@ -439,7 +472,9 @@ if mcp:
         try:
             result = subprocess.run(
                 [sys.executable, "-m", "pytest", "--version"],
-                capture_output=True, text=True, timeout=10,
+                capture_output=True,
+                text=True,
+                timeout=10,
             )
             if result.returncode != 0:
                 return {"available": False, "reason": "pytest not installed"}
@@ -447,7 +482,9 @@ if mcp:
             return {"available": False, "reason": "pytest not found"}
 
         cmd = [
-            sys.executable, "-m", "pytest",
+            sys.executable,
+            "-m",
+            "pytest",
             test_path,
             f"--target={target}",
             f"--port={port}",
@@ -477,22 +514,21 @@ if mcp:
                     pass
 
         return {
-            "available":  True,
-            "success":    result["success"],
-            "target":     target,
-            "port":       port,
-            "test_path":  test_path,
-            "passed":     passed,
-            "failed":     failed,
-            "errors":     errors,
-            "output":     output,
+            "available": True,
+            "success": result["success"],
+            "target": target,
+            "port": port,
+            "test_path": test_path,
+            "passed": passed,
+            "failed": failed,
+            "errors": errors,
+            "output": output,
             "returncode": result["returncode"],
         }
 
-
-# ---------------------------------------------------------------------------
-# J-Link tools
-# ---------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
+    # J-Link tools
+    # ---------------------------------------------------------------------------
 
     @mcp.tool()
     def jlink_flash(
@@ -517,19 +553,17 @@ if mcp:
         if not _tool_available("JLinkExe"):
             return {
                 "available": False,
-                "reason":    "JLinkExe not found. Install SEGGER J-Link tools from https://www.segger.com/",
+                "reason": "JLinkExe not found. Install SEGGER J-Link tools from https://www.segger.com/",
             }
 
         if not os.path.isfile(firmware_path):
-            return {"available": True, "success": False, "error": f"Firmware not found: {firmware_path}"}
+            return {
+                "available": True,
+                "success": False,
+                "error": f"Firmware not found: {firmware_path}",
+            }
 
-        script = (
-            f"h\n"
-            f"loadbin {firmware_path},{flash_address}\n"
-            f"r\n"
-            f"g\n"
-            f"exit\n"
-        )
+        script = f"h\nloadbin {firmware_path},{flash_address}\nr\ng\nexit\n"
         with tempfile.NamedTemporaryFile(mode="w", suffix=".jlink", delete=False) as f:
             f.write(script)
             script_path = f.name
@@ -537,30 +571,35 @@ if mcp:
         try:
             cmd = [
                 "JLinkExe",
-                "-device", device,
-                "-if", interface,
-                "-speed", str(speed),
-                "-autoconnect", "1",
-                "-NoGui", "1",
-                "-CommandFile", script_path,
+                "-device",
+                device,
+                "-if",
+                interface,
+                "-speed",
+                str(speed),
+                "-autoconnect",
+                "1",
+                "-NoGui",
+                "1",
+                "-CommandFile",
+                script_path,
             ]
             result = _run(cmd, timeout=60)
             ok = result["success"] or "Flash download: Program OK" in result["stdout"]
             return {
-                "available":    True,
-                "success":      ok,
-                "device":       device,
-                "firmware":     firmware_path,
+                "available": True,
+                "success": ok,
+                "device": device,
+                "firmware": firmware_path,
                 "flash_address": flash_address,
-                "output":       result["stdout"][-1500:],
-                "returncode":   result["returncode"],
+                "output": result["stdout"][-1500:],
+                "returncode": result["returncode"],
             }
         finally:
             try:
                 os.unlink(script_path)
             except Exception:
                 pass
-
 
     @mcp.tool()
     def jlink_rtt_read(
@@ -585,7 +624,7 @@ if mcp:
         if not _tool_available("JLinkExe"):
             return {
                 "available": False,
-                "reason":    "JLinkExe not found. Install SEGGER J-Link tools from https://www.segger.com/",
+                "reason": "JLinkExe not found. Install SEGGER J-Link tools from https://www.segger.com/",
             }
 
         timeout_s = read_timeout_ms / 1000
@@ -606,12 +645,18 @@ if mcp:
         try:
             cmd = [
                 "JLinkExe",
-                "-device", device,
-                "-if", interface,
-                "-speed", str(speed),
-                "-autoconnect", "1",
-                "-NoGui", "1",
-                "-CommandFile", script_path,
+                "-device",
+                device,
+                "-if",
+                interface,
+                "-speed",
+                str(speed),
+                "-autoconnect",
+                "1",
+                "-NoGui",
+                "1",
+                "-CommandFile",
+                script_path,
             ]
             result = _run(cmd, timeout=int(timeout_s) + 15)
             output = result["stdout"] + result["stderr"]
@@ -619,16 +664,16 @@ if mcp:
             # Extract RTT output between RTT markers if present
             rtt_text = output
             if "RTT>" in output:
-                lines = [l for l in output.split("\n") if "RTT>" not in l and l.strip()]
+                lines = [l for l in output.split("\n") if "RTT>" not in l and l.strip()]  # noqa: E741
                 rtt_text = "\n".join(lines)
 
             return {
-                "available":   True,
-                "success":     result["success"],
-                "device":      device,
-                "channel":     channel,
-                "rtt_output":  rtt_text[-2000:],
-                "returncode":  result["returncode"],
+                "available": True,
+                "success": result["success"],
+                "device": device,
+                "channel": channel,
+                "rtt_output": rtt_text[-2000:],
+                "returncode": result["returncode"],
             }
         finally:
             try:

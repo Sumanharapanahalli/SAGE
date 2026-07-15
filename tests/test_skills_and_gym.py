@@ -12,7 +12,6 @@ Covers:
 import json
 import os
 import tempfile
-import textwrap
 import unittest
 from contextlib import contextmanager
 from unittest.mock import MagicMock, patch
@@ -26,14 +25,16 @@ import yaml
 @contextmanager
 def _mock_llm():
     """Mock LLM gateway for tests that trigger generation."""
-    mock_response = json.dumps({
-        "score": 72,
-        "flaws": ["Test flaw 1"],
-        "suggestions": ["Test suggestion"],
-        "missing": [],
-        "security_risks": [],
-        "summary": "Test summary",
-    })
+    mock_response = json.dumps(
+        {
+            "score": 72,
+            "flaws": ["Test flaw 1"],
+            "suggestions": ["Test suggestion"],
+            "missing": [],
+            "security_risks": [],
+            "summary": "Test summary",
+        }
+    )
     with patch("src.core.llm_gateway.llm_gateway") as mock_gw:
         mock_gw.generate.return_value = mock_response
         mock_gw.generate_for_task.return_value = mock_response
@@ -47,15 +48,19 @@ def _mock_llm():
 # 1. SkillLoader Tests
 # ===========================================================================
 
+
 class TestSkillLoader(unittest.TestCase):
     """Test skill YAML loading, registry, and visibility management."""
 
     def setUp(self):
         from src.core.skill_loader import SkillRegistry
+
         self.registry = SkillRegistry()
         self.tmpdir = tempfile.mkdtemp()
 
-    def _write_skill(self, name, visibility="public", runner="test", roles=None, **extra):
+    def _write_skill(
+        self, name, visibility="public", runner="test", roles=None, **extra
+    ):
         data = {
             "name": name,
             "version": "1.0.0",
@@ -218,12 +223,14 @@ class TestSkillLoader(unittest.TestCase):
 # 2. Public Skill YAML Validation
 # ===========================================================================
 
+
 class TestPublicSkillYAMLs(unittest.TestCase):
     """Validate all shipped public skill YAML files."""
 
     SKILLS_DIR = os.path.join(
         os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-        "skills", "public",
+        "skills",
+        "public",
     )
 
     EXPECTED_SKILLS = [
@@ -250,7 +257,15 @@ class TestPublicSkillYAMLs(unittest.TestCase):
         "brainstorming",
     ]
 
-    REQUIRED_FIELDS = ["name", "version", "roles", "runner", "tools", "prompt", "acceptance_criteria"]
+    REQUIRED_FIELDS = [
+        "name",
+        "version",
+        "roles",
+        "runner",
+        "tools",
+        "prompt",
+        "acceptance_criteria",
+    ]
 
     def test_all_expected_skills_exist(self):
         if not os.path.isdir(self.SKILLS_DIR):
@@ -276,6 +291,7 @@ class TestPublicSkillYAMLs(unittest.TestCase):
         if not os.path.isdir(self.SKILLS_DIR):
             self.skipTest("skills/public/ not found")
         from src.core.skill_loader import SkillRegistry
+
         reg = SkillRegistry()
         count = reg.load_directory(self.SKILLS_DIR)
         self.assertEqual(count, len(self.EXPECTED_SKILLS))
@@ -326,8 +342,9 @@ class TestPublicSkillYAMLs(unittest.TestCase):
                 continue
             for role in roles:
                 self.assertIn(
-                    role, covered_roles,
-                    f"Role '{role}' ({family}) not covered by any public skill"
+                    role,
+                    covered_roles,
+                    f"Role '{role}' ({family}) not covered by any public skill",
                 )
 
 
@@ -335,11 +352,13 @@ class TestPublicSkillYAMLs(unittest.TestCase):
 # 3. Multi-Critic Tests
 # ===========================================================================
 
+
 class TestMultiCritic(unittest.TestCase):
     """Test N-provider critic aggregation."""
 
     def _make_critic(self):
         from src.agents.critic import CriticAgent
+
         critic = CriticAgent()
         critic._llm_gateway = MagicMock()
         critic._audit_logger = MagicMock()
@@ -350,10 +369,16 @@ class TestMultiCritic(unittest.TestCase):
         critic = self._make_critic()
         critic._llm_gateway.provider_pool.list_providers.return_value = []
         critic._llm_gateway.provider_pool.get.return_value = None
-        critic._llm_gateway.generate.return_value = json.dumps({
-            "score": 75, "flaws": ["f1"], "suggestions": [], "missing": [],
-            "security_risks": [], "summary": "ok"
-        })
+        critic._llm_gateway.generate.return_value = json.dumps(
+            {
+                "score": 75,
+                "flaws": ["f1"],
+                "suggestions": [],
+                "missing": [],
+                "security_risks": [],
+                "summary": "ok",
+            }
+        )
 
         result = critic.multi_critic_review("plan", {"tasks": []}, "test product")
         self.assertIn("score", result)
@@ -363,25 +388,46 @@ class TestMultiCritic(unittest.TestCase):
         critic = self._make_critic()
 
         # Mock primary
-        critic._llm_gateway.generate.return_value = json.dumps({
-            "score": 80, "flaws": ["primary_flaw"], "suggestions": [],
-            "missing": [], "security_risks": [], "summary": "primary"
-        })
+        critic._llm_gateway.generate.return_value = json.dumps(
+            {
+                "score": 80,
+                "flaws": ["primary_flaw"],
+                "suggestions": [],
+                "missing": [],
+                "security_risks": [],
+                "summary": "primary",
+            }
+        )
 
         # Mock pool with 2 providers
         mock_pool = MagicMock()
         mock_pool.list_providers.return_value = ["gemini", "ollama"]
         gemini_prov = MagicMock()
-        gemini_prov.generate.return_value = json.dumps({
-            "score": 60, "flaws": ["gemini_flaw"], "suggestions": [],
-            "missing": [], "security_risks": [], "summary": "gemini"
-        })
+        gemini_prov.generate.return_value = json.dumps(
+            {
+                "score": 60,
+                "flaws": ["gemini_flaw"],
+                "suggestions": [],
+                "missing": [],
+                "security_risks": [],
+                "summary": "gemini",
+            }
+        )
         ollama_prov = MagicMock()
-        ollama_prov.generate.return_value = json.dumps({
-            "score": 70, "flaws": ["ollama_flaw"], "suggestions": [],
-            "missing": [], "security_risks": [], "summary": "ollama"
-        })
-        mock_pool.get.side_effect = lambda n: {"gemini": gemini_prov, "ollama": ollama_prov}.get(n)
+        ollama_prov.generate.return_value = json.dumps(
+            {
+                "score": 70,
+                "flaws": ["ollama_flaw"],
+                "suggestions": [],
+                "missing": [],
+                "security_risks": [],
+                "summary": "ollama",
+            }
+        )
+        mock_pool.get.side_effect = lambda n: {
+            "gemini": gemini_prov,
+            "ollama": ollama_prov,
+        }.get(n)
         critic._llm_gateway.provider_pool = mock_pool
 
         result = critic.multi_critic_review("plan", {"tasks": []}, "test product")
@@ -400,19 +446,31 @@ class TestMultiCritic(unittest.TestCase):
         critic = self._make_critic()
 
         # Primary gives high score
-        critic._llm_gateway.generate.return_value = json.dumps({
-            "score": 90, "flaws": [], "suggestions": [],
-            "missing": [], "security_risks": [], "summary": "great"
-        })
+        critic._llm_gateway.generate.return_value = json.dumps(
+            {
+                "score": 90,
+                "flaws": [],
+                "suggestions": [],
+                "missing": [],
+                "security_risks": [],
+                "summary": "great",
+            }
+        )
 
         # Pool provider gives low score
         mock_pool = MagicMock()
         mock_pool.list_providers.return_value = ["gemini"]
         gemini_prov = MagicMock()
-        gemini_prov.generate.return_value = json.dumps({
-            "score": 30, "flaws": ["terrible"], "suggestions": [],
-            "missing": [], "security_risks": [], "summary": "bad"
-        })
+        gemini_prov.generate.return_value = json.dumps(
+            {
+                "score": 30,
+                "flaws": ["terrible"],
+                "suggestions": [],
+                "missing": [],
+                "security_risks": [],
+                "summary": "bad",
+            }
+        )
         mock_pool.get.side_effect = lambda n: gemini_prov if n == "gemini" else None
         critic._llm_gateway.provider_pool = mock_pool
 
@@ -423,18 +481,30 @@ class TestMultiCritic(unittest.TestCase):
         """Flaws from all providers are merged and deduplicated."""
         critic = self._make_critic()
 
-        critic._llm_gateway.generate.return_value = json.dumps({
-            "score": 70, "flaws": ["shared_flaw", "primary_only"],
-            "suggestions": [], "missing": [], "security_risks": [], "summary": ""
-        })
+        critic._llm_gateway.generate.return_value = json.dumps(
+            {
+                "score": 70,
+                "flaws": ["shared_flaw", "primary_only"],
+                "suggestions": [],
+                "missing": [],
+                "security_risks": [],
+                "summary": "",
+            }
+        )
 
         mock_pool = MagicMock()
         mock_pool.list_providers.return_value = ["gemini"]
         gemini_prov = MagicMock()
-        gemini_prov.generate.return_value = json.dumps({
-            "score": 65, "flaws": ["shared_flaw", "gemini_only"],
-            "suggestions": [], "missing": [], "security_risks": [], "summary": ""
-        })
+        gemini_prov.generate.return_value = json.dumps(
+            {
+                "score": 65,
+                "flaws": ["shared_flaw", "gemini_only"],
+                "suggestions": [],
+                "missing": [],
+                "security_risks": [],
+                "summary": "",
+            }
+        )
         mock_pool.get.side_effect = lambda n: gemini_prov if n == "gemini" else None
         critic._llm_gateway.provider_pool = mock_pool
 
@@ -448,6 +518,7 @@ class TestMultiCritic(unittest.TestCase):
     def test_backward_compat_alias(self):
         """dual_critic_review is an alias for multi_critic_review."""
         from src.agents.critic import CriticAgent
+
         self.assertIs(CriticAgent.dual_critic_review, CriticAgent.multi_critic_review)
 
 
@@ -455,12 +526,14 @@ class TestMultiCritic(unittest.TestCase):
 # 4. Skill-Runner Integration
 # ===========================================================================
 
+
 class TestSkillRunnerIntegration(unittest.TestCase):
     """Test that runners load skills from the registry."""
 
     def test_runner_get_skills(self):
         """Runners should return skills from the registry."""
         from src.integrations.base_runner import get_runner_by_name
+
         runner = get_runner_by_name("openfw")
         if not runner:
             self.skipTest("openfw runner not registered")
@@ -471,6 +544,7 @@ class TestSkillRunnerIntegration(unittest.TestCase):
     def test_runner_get_skill_prompt(self):
         """Runners should build prompts from skill YAML."""
         from src.integrations.base_runner import get_runner_by_name
+
         runner = get_runner_by_name("openfw")
         if not runner:
             self.skipTest("openfw runner not registered")
@@ -481,6 +555,7 @@ class TestSkillRunnerIntegration(unittest.TestCase):
     def test_runner_get_acceptance_criteria(self):
         """Runners should aggregate acceptance criteria from skills."""
         from src.integrations.base_runner import get_runner_by_name
+
         runner = get_runner_by_name("openfw")
         if not runner:
             self.skipTest("openfw runner not registered")
@@ -490,6 +565,7 @@ class TestSkillRunnerIntegration(unittest.TestCase):
     def test_runner_toolchain_merges_skills(self):
         """Runner toolchain should include tools from skill YAML."""
         from src.integrations.base_runner import get_runner_by_name
+
         runner = get_runner_by_name("openfw")
         if not runner:
             self.skipTest("openfw runner not registered")
@@ -502,6 +578,7 @@ class TestSkillRunnerIntegration(unittest.TestCase):
 # ===========================================================================
 # 5. Agent Gym Tests
 # ===========================================================================
+
 
 class TestGymDBDataIsolation(unittest.TestCase):
     """GymDB's no-arg default must resolve under the active solution's
@@ -520,6 +597,7 @@ class TestGymDBDataIsolation(unittest.TestCase):
 
     def test_default_db_path_is_not_framework_root(self):
         from src.core.agent_gym import GymDB
+
         db = GymDB()
         framework_root_path = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
@@ -529,6 +607,7 @@ class TestGymDBDataIsolation(unittest.TestCase):
 
     def test_explicit_db_path_still_overrides_the_default(self):
         from src.core.agent_gym import GymDB
+
         explicit = os.path.join(tempfile.mkdtemp(), "explicit_gym.db")
         db = GymDB(db_path=explicit)
         self.assertEqual(db.db_path, explicit)
@@ -540,6 +619,7 @@ class TestAgentGym(unittest.TestCase):
     def _make_gym(self):
         """Create an AgentGym with a temp SQLite DB."""
         from src.core.agent_gym import AgentGym
+
         db_path = os.path.join(tempfile.mkdtemp(), "test_gym.db")
         return AgentGym(db_path=db_path)
 
@@ -557,9 +637,11 @@ class TestAgentGym(unittest.TestCase):
         """Full training loop with mocked LLM."""
         gym = self._make_gym()
 
-        with _mock_llm(), \
-             patch("src.core.agent_gym.agent_gym", gym), \
-             patch("src.memory.vector_store.vector_memory") as mock_vm:
+        with (
+            _mock_llm(),
+            patch("src.core.agent_gym.agent_gym", gym),
+            patch("src.memory.vector_store.vector_memory") as mock_vm,
+        ):
             mock_vm.add_feedback = MagicMock()
 
             session = gym.train(role="firmware_engineer", difficulty="beginner")
@@ -572,6 +654,7 @@ class TestAgentGym(unittest.TestCase):
     def test_elo_rating_update(self):
         """ELO rating should change after training."""
         from src.core.agent_gym import SkillRating
+
         gym = self._make_gym()
 
         rating = SkillRating("test_role", "test_skill")
@@ -587,6 +670,7 @@ class TestAgentGym(unittest.TestCase):
     def test_elo_loss(self):
         """ELO should decrease on poor performance."""
         from src.core.agent_gym import SkillRating
+
         gym = self._make_gym()
 
         rating = SkillRating("test_role", "test_skill", rating=1200.0)
@@ -598,6 +682,7 @@ class TestAgentGym(unittest.TestCase):
     def test_glicko2_rd_shrinks_with_data(self):
         """Rating deviation should decrease as more data accumulates (Glicko-2)."""
         from src.core.agent_gym import SkillRating
+
         gym = self._make_gym()
 
         # Fresh rating with high RD (uncertain)
@@ -615,6 +700,7 @@ class TestAgentGym(unittest.TestCase):
     def test_glicko2_confidence_interval(self):
         """to_dict should include confidence interval."""
         from src.core.agent_gym import SkillRating
+
         rating = SkillRating("r", "s", rating=1200, rating_deviation=100)
         d = rating.to_dict()
         self.assertIn("confidence_interval", d)
@@ -623,6 +709,7 @@ class TestAgentGym(unittest.TestCase):
 
     def test_leaderboard(self):
         from src.core.agent_gym import SkillRating
+
         gym = self._make_gym()
         gym._ratings["a:s1"] = SkillRating("a", "s1", rating=1500)
         gym._ratings["b:s2"] = SkillRating("b", "s2", rating=1200)
@@ -634,12 +721,17 @@ class TestAgentGym(unittest.TestCase):
 
     def test_history(self):
         from src.core.agent_gym import TrainingSession
+
         gym = self._make_gym()
         for i in range(5):
             sid = f"session-{i}"
             gym._sessions[sid] = TrainingSession(
-                session_id=sid, agent_role="dev", runner_name="openswe",
-                skill_name="swe", exercise_id=f"ex-{i}", difficulty="intermediate",
+                session_id=sid,
+                agent_role="dev",
+                runner_name="openswe",
+                skill_name="swe",
+                exercise_id=f"ex-{i}",
+                difficulty="intermediate",
                 status="completed",
             )
             gym._history.append(sid)
@@ -652,6 +744,7 @@ class TestAgentGym(unittest.TestCase):
     def test_sqlite_persistence(self):
         """Sessions and ratings survive gym restart."""
         from src.core.agent_gym import AgentGym, SkillRating, TrainingSession
+
         db_path = os.path.join(tempfile.mkdtemp(), "persist_test.db")
 
         # First gym instance: add a rating and session
@@ -661,9 +754,14 @@ class TestAgentGym(unittest.TestCase):
         gym1._db.save_rating("dev:swe", rating)
 
         session = TrainingSession(
-            session_id="persist-1", agent_role="dev", runner_name="openswe",
-            skill_name="swe", exercise_id="ex-1", difficulty="intermediate",
-            status="completed", grade={"score": 80, "passed": True},
+            session_id="persist-1",
+            agent_role="dev",
+            runner_name="openswe",
+            skill_name="swe",
+            exercise_id="ex-1",
+            difficulty="intermediate",
+            status="completed",
+            grade={"score": 80, "passed": True},
         )
         gym1._db.save_session(session)
 
@@ -689,15 +787,21 @@ class TestAgentGym(unittest.TestCase):
     def test_curriculum_advance(self):
         """Curriculum advances difficulty after enough wins."""
         from src.core.agent_gym import AgentGym, SkillRating, TrainingSession
+
         db_path = os.path.join(tempfile.mkdtemp(), "curriculum_test.db")
         gym = AgentGym(db_path=db_path)
 
         # Seed 5 completed sessions at beginner, all passing
         for i in range(5):
             s = TrainingSession(
-                session_id=f"cur-{i}", agent_role="dev", runner_name="openswe",
-                skill_name="swe", exercise_id=f"ex-{i}", difficulty="beginner",
-                status="completed", grade={"score": 85, "passed": True},
+                session_id=f"cur-{i}",
+                agent_role="dev",
+                runner_name="openswe",
+                skill_name="swe",
+                exercise_id=f"ex-{i}",
+                difficulty="beginner",
+                status="completed",
+                grade={"score": 85, "passed": True},
                 started_at=1000.0 + i,
             )
             gym._db.save_session(s)
@@ -712,15 +816,21 @@ class TestAgentGym(unittest.TestCase):
     def test_curriculum_demote(self):
         """Curriculum demotes difficulty after enough losses."""
         from src.core.agent_gym import AgentGym, SkillRating, TrainingSession
+
         db_path = os.path.join(tempfile.mkdtemp(), "demote_test.db")
         gym = AgentGym(db_path=db_path)
 
         # Seed 6 completed sessions at intermediate, all failing
         for i in range(6):
             s = TrainingSession(
-                session_id=f"dem-{i}", agent_role="dev", runner_name="openswe",
-                skill_name="swe", exercise_id=f"ex-{i}", difficulty="intermediate",
-                status="completed", grade={"score": 15, "passed": False},
+                session_id=f"dem-{i}",
+                agent_role="dev",
+                runner_name="openswe",
+                skill_name="swe",
+                exercise_id=f"ex-{i}",
+                difficulty="intermediate",
+                status="completed",
+                grade={"score": 15, "passed": False},
                 started_at=1000.0 + i,
             )
             gym._db.save_session(s)
@@ -735,6 +845,7 @@ class TestAgentGym(unittest.TestCase):
     def test_spaced_repetition_scheduling(self):
         """Failed exercises get scheduled for spaced repetition retry."""
         from src.core.agent_gym import SkillRating
+
         gym = self._make_gym()
 
         rating = SkillRating("dev", "swe")
@@ -743,11 +854,14 @@ class TestAgentGym(unittest.TestCase):
 
         # Exercise should be in failed_exercises with retry at session+1
         self.assertIn("ex-1", rating.failed_exercises)
-        self.assertEqual(rating.failed_exercises["ex-1"], 2)  # sessions(1) + interval(1)
+        self.assertEqual(
+            rating.failed_exercises["ex-1"], 2
+        )  # sessions(1) + interval(1)
 
     def test_spaced_repetition_clear_on_pass(self):
         """Passing a previously failed exercise clears it from spaced repetition."""
         from src.core.agent_gym import SkillRating
+
         gym = self._make_gym()
 
         rating = SkillRating("dev", "swe")
@@ -761,7 +875,9 @@ class TestAgentGym(unittest.TestCase):
         """Batch training returns a list of sessions."""
         gym = self._make_gym()
         # Batch with nonexistent roles should return failed sessions
-        sessions = gym.train_batch(roles=["nonexistent_a", "nonexistent_b"], max_parallel=2)
+        sessions = gym.train_batch(
+            roles=["nonexistent_a", "nonexistent_b"], max_parallel=2
+        )
         self.assertEqual(len(sessions), 2)
         for s in sessions:
             self.assertEqual(s.status, "failed")
@@ -771,14 +887,19 @@ class TestAgentGym(unittest.TestCase):
 # 6. Skill Data Class
 # ===========================================================================
 
+
 class TestSkillDataClass(unittest.TestCase):
     """Test Skill dataclass methods."""
 
     def test_to_dict(self):
         from src.core.skill_loader import Skill
+
         s = Skill(
-            name="test", version="1.0", visibility="public",
-            roles=["dev"], runner="openswe",
+            name="test",
+            version="1.0",
+            visibility="public",
+            roles=["dev"],
+            runner="openswe",
         )
         d = s.to_dict()
         self.assertEqual(d["name"], "test")
@@ -786,6 +907,7 @@ class TestSkillDataClass(unittest.TestCase):
 
     def test_is_active(self):
         from src.core.skill_loader import Skill
+
         pub = Skill(name="p", version="1", visibility="public", roles=[], runner="")
         dis = Skill(name="d", version="1", visibility="disabled", roles=[], runner="")
         self.assertTrue(pub.is_active)
@@ -793,9 +915,14 @@ class TestSkillDataClass(unittest.TestCase):
 
     def test_prompt_truncation(self):
         from src.core.skill_loader import Skill
+
         s = Skill(
-            name="long", version="1", visibility="public",
-            roles=[], runner="", prompt="x" * 500,
+            name="long",
+            version="1",
+            visibility="public",
+            roles=[],
+            runner="",
+            prompt="x" * 500,
         )
         d = s.to_dict()
         self.assertTrue(d["prompt"].endswith("..."))
@@ -806,11 +933,13 @@ class TestSkillDataClass(unittest.TestCase):
 # 7. Exercise Catalog Tests
 # ===========================================================================
 
+
 class TestExerciseCatalog(unittest.TestCase):
     """Test the scalable exercise catalog system."""
 
     def _make_catalog(self):
         from src.core.exercise_catalog import ExerciseCatalog
+
         db_path = os.path.join(tempfile.mkdtemp(), "test_catalog.db")
         return ExerciseCatalog(db_path=db_path)
 
@@ -826,6 +955,7 @@ class TestExerciseCatalog(unittest.TestCase):
     def test_all_domains_have_seeds(self):
         """Every domain in VARIANT_AXES should have seed exercises."""
         from src.core.exercise_catalog import VARIANT_AXES
+
         catalog = self._make_catalog()
         for domain in VARIANT_AXES:
             exercises = catalog.get_for_domain(domain)
@@ -857,10 +987,15 @@ class TestExerciseCatalog(unittest.TestCase):
     def test_exercise_to_dict(self):
         """Exercise should serialize to dict with all fields."""
         from src.core.exercise_catalog import Exercise
+
         ex = Exercise(
-            id="test-1", domain="openfw", skill="fw",
-            title="Test", description="Do the thing",
-            difficulty="beginner", tags=["test"],
+            id="test-1",
+            domain="openfw",
+            skill="fw",
+            title="Test",
+            description="Do the thing",
+            difficulty="beginner",
+            tags=["test"],
             acceptance_criteria=["It works"],
         )
         d = ex.to_dict()
@@ -882,8 +1017,11 @@ class TestExerciseCatalog(unittest.TestCase):
         for domain in ["openfw", "openswe", "openml"]:
             count = catalog.count(domain)
             difficulties = count["by_difficulty"]
-            self.assertGreater(len(difficulties), 2,
-                               f"{domain} has only {len(difficulties)} difficulty levels")
+            self.assertGreater(
+                len(difficulties),
+                2,
+                f"{domain} has only {len(difficulties)} difficulty levels",
+            )
 
     def test_firmware_domain_coverage(self):
         """Firmware domain should cover key embedded topics."""
@@ -892,7 +1030,16 @@ class TestExerciseCatalog(unittest.TestCase):
         for ex in catalog.get_for_domain("openfw"):
             all_tags.update(ex.tags)
 
-        required_topics = ["gpio", "uart", "spi", "i2c", "dma", "rtos", "safety", "power"]
+        required_topics = [
+            "gpio",
+            "uart",
+            "spi",
+            "i2c",
+            "dma",
+            "rtos",
+            "safety",
+            "power",
+        ]
         for topic in required_topics:
             self.assertIn(topic, all_tags, f"Firmware catalog missing topic: {topic}")
 

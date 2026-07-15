@@ -6,6 +6,7 @@ Adapted from open-swe (https://github.com/langchain-ai/open-swe) for SAGE's
 agent-first architecture. Supports local subprocess execution with Docker
 extension path.
 """
+
 import os
 import subprocess
 import logging
@@ -35,13 +36,23 @@ class SandboxRunner:
                 workspace_dir = tempfile.mkdtemp(prefix="sage-swe-")
             result = subprocess.run(
                 ["git", "clone", "--depth=1", repo_url, workspace_dir],
-                capture_output=True, text=True, timeout=120,
+                capture_output=True,
+                text=True,
+                timeout=120,
             )
             if result.returncode != 0:
-                return {"success": False, "error": result.stderr, "workspace_dir": workspace_dir}
+                return {
+                    "success": False,
+                    "error": result.stderr,
+                    "workspace_dir": workspace_dir,
+                }
             return {"success": True, "workspace_dir": workspace_dir, "error": None}
         except Exception as e:
-            return {"success": False, "error": str(e), "workspace_dir": workspace_dir or ""}
+            return {
+                "success": False,
+                "error": str(e),
+                "workspace_dir": workspace_dir or "",
+            }
 
     def execute(self, command: str, workspace_dir: str, timeout: int = 300) -> dict:
         """Execute a shell command in the workspace directory.
@@ -50,7 +61,7 @@ class SandboxRunner:
         try:
             result = subprocess.run(
                 command,
-                shell=True,
+                shell=True,  # nosec B602 - the sandbox runner's purpose is to execute commands in an isolated workspace; bounded by cwd and timeout
                 capture_output=True,
                 text=True,
                 cwd=workspace_dir,
@@ -65,7 +76,12 @@ class SandboxRunner:
                 "success": result.returncode == 0,
             }
         except subprocess.TimeoutExpired:
-            return {"stdout": "", "stderr": "Command timed out", "returncode": -1, "success": False}
+            return {
+                "stdout": "",
+                "stderr": "Command timed out",
+                "returncode": -1,
+                "success": False,
+            }
         except Exception as e:
             return {"stdout": "", "stderr": str(e), "returncode": -1, "success": False}
 
@@ -77,7 +93,11 @@ class SandboxRunner:
                 content = f.read()
             return {"content": content, "success": True, "path": path}
         except FileNotFoundError:
-            return {"content": None, "success": False, "error": f"File not found: {path}"}
+            return {
+                "content": None,
+                "success": False,
+                "error": f"File not found: {path}",
+            }
         except Exception as e:
             return {"content": None, "success": False, "error": str(e)}
 

@@ -31,7 +31,6 @@ import json
 import logging
 import os
 import subprocess
-import textwrap
 import uuid
 from typing import Any
 
@@ -40,10 +39,12 @@ logger = logging.getLogger("AutoGenRunner")
 _HAS_AUTOGEN = False
 try:
     import autogen  # noqa: F401
+
     _HAS_AUTOGEN = True
 except ImportError:
     try:
         import pyautogen as autogen  # noqa: F401
+
         _HAS_AUTOGEN = True
     except ImportError:
         pass
@@ -58,7 +59,8 @@ def _check_docker() -> bool:
         try:
             result = subprocess.run(
                 ["docker", "info"],
-                capture_output=True, timeout=5,
+                capture_output=True,
+                timeout=5,
             )
             _DOCKER_AVAILABLE = result.returncode == 0
         except Exception:
@@ -69,6 +71,7 @@ def _check_docker() -> bool:
 # ---------------------------------------------------------------------------
 # Plan generation helpers
 # ---------------------------------------------------------------------------
+
 
 def _plan_via_autogen(task: str, llm_config: dict) -> str:
     """Use AutoGen AssistantAgent to generate a code plan."""
@@ -104,6 +107,7 @@ def _plan_via_llm(task: str) -> str:
     """Fallback: use SAGE's LLM gateway directly to generate a code plan."""
     try:
         from src.core.llm_gateway import llm_gateway
+
         return llm_gateway.generate(
             prompt=(
                 f"Task: {task}\n\n"
@@ -126,6 +130,7 @@ def _plan_via_llm(task: str) -> str:
 def _extract_code_block(text: str) -> str:
     """Extract the first ```python ... ``` block from a plan string."""
     import re
+
     pattern = r"```python\s*([\s\S]*?)```"
     match = re.search(pattern, text)
     return match.group(1).strip() if match else ""
@@ -135,19 +140,27 @@ def _extract_code_block(text: str) -> str:
 # Execution helpers
 # ---------------------------------------------------------------------------
 
+
 def _run_in_docker(code: str, timeout: int = 30) -> dict:
     """
     Execute code in an isolated Docker container (no network, read-only FS).
     Returns {"stdout": ..., "stderr": ..., "returncode": ...}.
     """
-    safe_code = code.replace("'", "'\\''")
+    code.replace("'", "'\\''")
     cmd = [
-        "docker", "run", "--rm",
-        "--network", "none",
-        "--memory", "128m",
-        "--cpus", "0.5",
+        "docker",
+        "run",
+        "--rm",
+        "--network",
+        "none",
+        "--memory",
+        "128m",
+        "--cpus",
+        "0.5",
         "python:3.12-slim",
-        "python", "-c", code,
+        "python",
+        "-c",
+        code,
     ]
     try:
         proc = subprocess.run(
@@ -188,7 +201,10 @@ def _run_local(code: str, timeout: int = 10) -> dict:
             "warning": "Docker not available — ran in local subprocess (no isolation)",
         }
     except subprocess.TimeoutExpired:
-        return {"error": f"Local execution timed out after {timeout}s", "sandbox": "local_subprocess"}
+        return {
+            "error": f"Local execution timed out after {timeout}s",
+            "sandbox": "local_subprocess",
+        }
     except Exception as exc:
         return {"error": str(exc), "sandbox": "local_subprocess"}
 
@@ -196,6 +212,7 @@ def _run_local(code: str, timeout: int = 10) -> dict:
 # ---------------------------------------------------------------------------
 # AutoGenRunner
 # ---------------------------------------------------------------------------
+
 
 class AutoGenRunner:
     """
@@ -207,7 +224,7 @@ class AutoGenRunner:
     """
 
     def __init__(self):
-        self._runs: dict[str, dict] = {}   # run_id -> metadata
+        self._runs: dict[str, dict] = {}  # run_id -> metadata
 
     def _build_llm_config(self) -> dict:
         """
@@ -216,9 +233,13 @@ class AutoGenRunner:
         """
         try:
             import yaml
+
             cfg_path = os.path.join(
-                os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-                "config", "config.yaml",
+                os.path.dirname(
+                    os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                ),
+                "config",
+                "config.yaml",
             )
             with open(cfg_path) as f:
                 cfg = yaml.safe_load(f)
@@ -267,23 +288,23 @@ class AutoGenRunner:
         code = _extract_code_block(plan_text)
 
         self._runs[run_id] = {
-            "run_id":   run_id,
-            "task":     task,
-            "plan":     plan_text,
-            "code":     code,
-            "status":   "awaiting_approval",
+            "run_id": run_id,
+            "task": task,
+            "plan": plan_text,
+            "code": code,
+            "status": "awaiting_approval",
             "trace_id": trace_id,
         }
 
         self._audit(run_id, "CODE_PLAN", plan_text[:500], trace_id, success=True)
 
         return {
-            "run_id":    run_id,
-            "status":    "awaiting_approval",
-            "task":      task,
-            "plan":      plan_text,
-            "code":      code,
-            "autogen":   _HAS_AUTOGEN,
+            "run_id": run_id,
+            "status": "awaiting_approval",
+            "task": task,
+            "plan": plan_text,
+            "code": code,
+            "autogen": _HAS_AUTOGEN,
         }
 
     def execute(self, run_id: str) -> dict:
@@ -320,20 +341,32 @@ class AutoGenRunner:
         if _check_docker():
             output = _run_in_docker(code)
         else:
-            logger.warning("Docker unavailable — executing in local subprocess (no isolation)")
+            logger.warning(
+                "Docker unavailable — executing in local subprocess (no isolation)"
+            )
             output = _run_local(code)
 
-        status = "error" if ("error" in output or output.get("returncode", 0) != 0) else "completed"
+        status = (
+            "error"
+            if ("error" in output or output.get("returncode", 0) != 0)
+            else "completed"
+        )
         meta["status"] = status
         meta["output"] = output
 
-        self._audit(run_id, "CODE_EXECUTE", json.dumps(output)[:500], meta.get("trace_id"), success=(status == "completed"))
+        self._audit(
+            run_id,
+            "CODE_EXECUTE",
+            json.dumps(output)[:500],
+            meta.get("trace_id"),
+            success=(status == "completed"),
+        )
 
         return {
-            "run_id":  run_id,
-            "status":  status,
-            "task":    meta["task"],
-            "output":  output,
+            "run_id": run_id,
+            "status": status,
+            "task": meta["task"],
+            "output": output,
         }
 
     def approve(self, run_id: str, comment: str = "") -> dict:
@@ -359,7 +392,9 @@ class AutoGenRunner:
 
         meta["status"] = "approved"
         meta["approval_comment"] = comment
-        self._audit(run_id, "CODE_APPROVED", comment, meta.get("trace_id"), success=True)
+        self._audit(
+            run_id, "CODE_APPROVED", comment, meta.get("trace_id"), success=True
+        )
         return {"run_id": run_id, "status": "approved"}
 
     def get_status(self, run_id: str) -> dict:
@@ -368,25 +403,28 @@ class AutoGenRunner:
         if meta is None:
             return {"error": f"Run '{run_id}' not found", "run_id": run_id}
         return {
-            "run_id":   meta["run_id"],
-            "status":   meta["status"],
-            "task":     meta["task"],
+            "run_id": meta["run_id"],
+            "status": meta["status"],
+            "task": meta["task"],
             "has_code": bool(meta.get("code")),
         }
 
-    def _audit(self, run_id: str, action: str, content: str, trace_id: Any, success: bool) -> None:
+    def _audit(
+        self, run_id: str, action: str, content: str, trace_id: Any, success: bool
+    ) -> None:
         """Write code task event to the audit log."""
         try:
             from src.memory.audit_logger import audit_logger
+
             audit_logger.log_event(
                 actor="AutoGenRunner",
                 action_type=action,
                 input_context=f"run_id={run_id}",
                 output_content=content[:500],
                 metadata={
-                    "run_id":   run_id,
-                    "success":  success,
-                    **( {"trace_id": trace_id} if trace_id else {}),
+                    "run_id": run_id,
+                    "success": success,
+                    **({"trace_id": trace_id} if trace_id else {}),
                 },
             )
         except Exception as exc:

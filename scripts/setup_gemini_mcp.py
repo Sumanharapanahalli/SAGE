@@ -29,6 +29,7 @@ SETTINGS_PATH = os.path.join(GEMINI_DIR, "settings.json")
 # MCP Server Definitions
 # ---------------------------------------------------------------------------
 
+
 def _server_entry(name: str, script: str, env: dict = None) -> dict:
     """Builds a Gemini MCP server entry."""
     entry = {
@@ -86,6 +87,7 @@ SAGE_MCP_SERVERS = {
 # Main Setup Logic
 # ---------------------------------------------------------------------------
 
+
 def setup():
     print("=" * 60)
     print("  SAGE[ai] — Gemini CLI MCP Setup")
@@ -101,7 +103,9 @@ def setup():
             try:
                 settings = json.load(f)
             except json.JSONDecodeError:
-                print(f"  WARNING: Existing {SETTINGS_PATH} is invalid JSON. Starting fresh.")
+                print(
+                    f"  WARNING: Existing {SETTINGS_PATH} is invalid JSON. Starting fresh."
+                )
                 settings = {}
         print(f"  Loaded existing settings: {SETTINGS_PATH}")
     else:
@@ -112,7 +116,7 @@ def setup():
     if "mcpServers" not in settings:
         settings["mcpServers"] = {}
 
-    existing_count = len(settings["mcpServers"])
+    len(settings["mcpServers"])
     added = []
     updated = []
 

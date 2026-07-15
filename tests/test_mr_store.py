@@ -1,4 +1,5 @@
 """Tests for the Merge-Gate Governance MRStore."""
+
 import pytest
 
 from src.core.mr_store import MRStore, MR_STATES

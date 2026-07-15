@@ -50,9 +50,20 @@ class GitHubConnector(BaseConnector):
 
     def _fetch_issues(self, repo: str, limit: int) -> list[dict]:
         result = subprocess.run(
-            ["gh", "issue", "list", "--repo", repo, "--limit", str(limit), "--json",
-             "number,title,state,body,labels,createdAt"],
-            capture_output=True, text=True, timeout=30,
+            [
+                "gh",
+                "issue",
+                "list",
+                "--repo",
+                repo,
+                "--limit",
+                str(limit),
+                "--json",
+                "number,title,state,body,labels,createdAt",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
         )
         if result.returncode != 0:
             logger.warning("gh issue list failed: %s", result.stderr)
@@ -61,9 +72,20 @@ class GitHubConnector(BaseConnector):
 
     def _fetch_pulls(self, repo: str, limit: int) -> list[dict]:
         result = subprocess.run(
-            ["gh", "pr", "list", "--repo", repo, "--limit", str(limit), "--json",
-             "number,title,state,body,createdAt"],
-            capture_output=True, text=True, timeout=30,
+            [
+                "gh",
+                "pr",
+                "list",
+                "--repo",
+                repo,
+                "--limit",
+                str(limit),
+                "--json",
+                "number,title,state,body,createdAt",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
         )
         if result.returncode != 0:
             return []
@@ -71,9 +93,16 @@ class GitHubConnector(BaseConnector):
 
     def _fetch_commits(self, repo: str, limit: int) -> list[dict]:
         result = subprocess.run(
-            ["gh", "api", f"repos/{repo}/commits", "--jq",
-             f".[:{limit}] | [.[] | {{sha: .sha, message: .commit.message, date: .commit.author.date}}]"],
-            capture_output=True, text=True, timeout=30,
+            [
+                "gh",
+                "api",
+                f"repos/{repo}/commits",
+                "--jq",
+                f".[:{limit}] | [.[] | {{sha: .sha, message: .commit.message, date: .commit.author.date}}]",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
         )
         if result.returncode != 0:
             return []

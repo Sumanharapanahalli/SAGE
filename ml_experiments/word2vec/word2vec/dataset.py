@@ -18,7 +18,8 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Built-in sample corpus (royalty / geography / grammar analogies guaranteed)
 # ---------------------------------------------------------------------------
-_SAMPLE_CORPUS = """\
+_SAMPLE_CORPUS = (
+    """\
 The king ruled the kingdom with wisdom and justice. The queen was beloved by all the people
 in the land. A man walked through the forest searching for his family. The woman carried
 her child safely home through the dark forest path at night.
@@ -94,7 +95,9 @@ He is running to the store because she asked him to buy milk and bread for dinne
 They are going to Paris next summer to visit the museums and eat traditional French food.
 She has been living in London since moving from the countryside of England last year.
 We visited Rome last spring and fell in love with the beauty of Italy's ancient city.
-""" * 8   # repeat to increase training signal for rare words
+"""
+    * 8
+)  # repeat to increase training signal for rare words
 
 # ---------------------------------------------------------------------------
 
@@ -120,8 +123,11 @@ def load_corpus(path: Optional[str] = None) -> List[str]:
 
         for resource in ("brown", "reuters", "punkt_tab"):
             try:
-                nltk.data.find(f"corpora/{resource}" if resource != "punkt_tab"
-                               else f"tokenizers/{resource}")
+                nltk.data.find(
+                    f"corpora/{resource}"
+                    if resource != "punkt_tab"
+                    else f"tokenizers/{resource}"
+                )
             except LookupError:
                 nltk.download(resource, quiet=True)
 
@@ -146,6 +152,7 @@ def _tokenise(text: str) -> List[str]:
 # ---------------------------------------------------------------------------
 # Skip-gram pair generation
 # ---------------------------------------------------------------------------
+
 
 def build_skipgram_pairs(
     token_ids: List[int],
@@ -174,6 +181,7 @@ def build_skipgram_pairs(
 # ---------------------------------------------------------------------------
 # PyTorch Dataset
 # ---------------------------------------------------------------------------
+
 
 class SkipGramDataset(Dataset):
     """PyTorch Dataset for skip-gram with negative sampling.
@@ -205,7 +213,7 @@ class SkipGramDataset(Dataset):
         negatives = self.vocab.sample_negatives(center, self.num_negatives)
 
         return (
-            torch.tensor(center,   dtype=torch.long),
-            torch.tensor(context,  dtype=torch.long),
+            torch.tensor(center, dtype=torch.long),
+            torch.tensor(context, dtype=torch.long),
             torch.tensor(negatives, dtype=torch.long),
         )

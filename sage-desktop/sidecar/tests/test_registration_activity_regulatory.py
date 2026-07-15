@@ -6,6 +6,7 @@ NDJSON event loop (io.StringIO in/out, same as test_main.py) so a regression
 that drops a registration, or drops the ``activity._logger`` injection in
 ``_wire_handlers``, fails here.
 """
+
 from __future__ import annotations
 
 import io
@@ -86,6 +87,7 @@ def _seed_audit(tmp_path, **kw) -> None:
 
 # ---------- activity ----------
 
+
 def test_activity_list_is_registered_and_wired(tmp_path, solution_argv):
     # First pass: creates .sage/audit_log.db (AuditLogger CREATEs the table).
     out = _drive([_req("a0", "activity.list")], argv=solution_argv)
@@ -94,11 +96,20 @@ def test_activity_list_is_registered_and_wired(tmp_path, solution_argv):
     assert out[0]["result"]["category"] == "all"
 
     # Second pass: with real rows, the triage feed classifies them.
-    _seed_audit(tmp_path, event_type="TASK_COMPLETED", action_type="ANALYSIS",
-                output_content="Board analysis finished", trace_id="tr-ok")
-    _seed_audit(tmp_path, event_type="ANALYSIS", action_type="ANALYSIS",
-                output_content="Traceback: connection error contacting provider",
-                trace_id="tr-bad")
+    _seed_audit(
+        tmp_path,
+        event_type="TASK_COMPLETED",
+        action_type="ANALYSIS",
+        output_content="Board analysis finished",
+        trace_id="tr-ok",
+    )
+    _seed_audit(
+        tmp_path,
+        event_type="ANALYSIS",
+        action_type="ANALYSIS",
+        output_content="Traceback: connection error contacting provider",
+        trace_id="tr-bad",
+    )
     out = _drive(
         [
             _req("a1", "activity.list"),
@@ -116,7 +127,9 @@ def test_activity_list_is_registered_and_wired(tmp_path, solution_argv):
 
 
 def test_activity_list_rejects_unknown_category(solution_argv):
-    out = _drive([_req("a4", "activity.list", {"category": "nope"})], argv=solution_argv)
+    out = _drive(
+        [_req("a4", "activity.list", {"category": "nope"})], argv=solution_argv
+    )
     assert out[0]["error"]["code"] == -32602
 
 
@@ -136,6 +149,7 @@ def test_activity_list_without_a_solution_reports_the_missing_logger(monkeypatch
 
 # ---------- regulatory ----------
 # Stateless singleton over a static registry — no solution needed.
+
 
 def test_regulatory_standards_is_registered():
     out = _drive([_req("r1", "regulatory.standards")])
@@ -175,8 +189,13 @@ def test_regulatory_assess_requires_a_product():
 
 def test_regulatory_gap_analysis_is_registered():
     out = _drive(
-        [_req("r7", "regulatory.gap_analysis",
-              {"product": PRODUCT, "standard_id": "iec_62304"})]
+        [
+            _req(
+                "r7",
+                "regulatory.gap_analysis",
+                {"product": PRODUCT, "standard_id": "iec_62304"},
+            )
+        ]
     )
     assert out[0]["result"]["standard_id"] == "iec_62304"
     assert len(out[0]["result"]["gaps"]) > 0

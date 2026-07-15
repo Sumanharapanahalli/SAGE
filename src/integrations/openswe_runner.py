@@ -97,7 +97,9 @@ class OpenSWERunner:
     # Tier 1: External Open SWE service
     # ------------------------------------------------------------------
 
-    def _try_external_swe(self, task: dict, repo_path: str, sandbox_handle) -> Optional[dict]:
+    def _try_external_swe(
+        self, task: dict, repo_path: str, sandbox_handle
+    ) -> Optional[dict]:
         """Try the external Open SWE service."""
         if not self._openswe_url:
             return None
@@ -106,12 +108,14 @@ class OpenSWERunner:
             import urllib.request
             import urllib.error
 
-            payload = json.dumps({
-                "task": task.get("description", ""),
-                "task_type": task.get("task_type", ""),
-                "repo_path": repo_path,
-                "payload": task.get("payload", {}),
-            }).encode()
+            payload = json.dumps(
+                {
+                    "task": task.get("description", ""),
+                    "task_type": task.get("task_type", ""),
+                    "repo_path": repo_path,
+                    "payload": task.get("payload", {}),
+                }
+            ).encode()
 
             req = urllib.request.Request(
                 f"{self._openswe_url}/task",
@@ -142,14 +146,17 @@ class OpenSWERunner:
         try:
             from src.integrations.langgraph_runner import langgraph_runner
 
-            if not callable(getattr(langgraph_runner, 'run', None)):
+            if not callable(getattr(langgraph_runner, "run", None)):
                 return None
 
-            result = langgraph_runner.run("swe_workflow", {
-                "task": task.get("description", ""),
-                "task_type": task.get("task_type", ""),
-                "repo_path": repo_path,
-            })
+            result = langgraph_runner.run(
+                "swe_workflow",
+                {
+                    "task": task.get("description", ""),
+                    "task_type": task.get("task_type", ""),
+                    "repo_path": repo_path,
+                },
+            )
 
             if isinstance(result, dict) and "error" not in result:
                 return {
@@ -170,15 +177,18 @@ class OpenSWERunner:
 
     def _sanitize_prompt_input(self, text: str) -> str:
         """Strip prompt injection patterns from user-provided text."""
-        lines = text.split('\n')
+        lines = text.split("\n")
         sanitized = []
         for line in lines:
             stripped = line.strip().upper()
-            if any(stripped.startswith(p) for p in ['IGNORE', 'BREAK', 'SYSTEM:', 'ASSISTANT:', 'HUMAN:']):
-                sanitized.append(f'[FILTERED: {line[:50]}]')
+            if any(
+                stripped.startswith(p)
+                for p in ["IGNORE", "BREAK", "SYSTEM:", "ASSISTANT:", "HUMAN:"]
+            ):
+                sanitized.append(f"[FILTERED: {line[:50]}]")
             else:
                 sanitized.append(line)
-        return '\n'.join(sanitized)
+        return "\n".join(sanitized)
 
     def _try_llm_fallback(self, task: dict, repo_path: str) -> dict:
         """
@@ -228,9 +238,7 @@ class OpenSWERunner:
                 )
 
             user_prompt = (
-                f"Task Type: {task_type}\n"
-                f"Description: {description}\n"
-                f"{criteria_str}\n"
+                f"Task Type: {task_type}\nDescription: {description}\n{criteria_str}\n"
             )
             if payload:
                 user_prompt += f"\nAdditional Context: {json.dumps(payload)}\n"
@@ -246,7 +254,9 @@ class OpenSWERunner:
 
             for iteration in range(1, max_iterations + 1):
                 if time.monotonic() - start > MAX_TOTAL_SECONDS:
-                    self.logger.warning("ReAct loop timeout after %.0fs", time.monotonic() - start)
+                    self.logger.warning(
+                        "ReAct loop timeout after %.0fs", time.monotonic() - start
+                    )
                     break
 
                 if iteration > 1:
@@ -291,7 +301,10 @@ class OpenSWERunner:
 
                 self.logger.info(
                     "ReAct iteration %d/%d — status: %s, files: %d",
-                    iteration, max_iterations, status, len(all_files),
+                    iteration,
+                    max_iterations,
+                    status,
+                    len(all_files),
                 )
 
                 # If the agent says DONE, stop iterating
@@ -335,12 +348,12 @@ class OpenSWERunner:
         result = {"thought": "", "files": [], "observation": "", "status": "DONE"}
 
         # Extract THOUGHT
-        thought_match = re.search(r'THOUGHT:\s*(.*?)(?=ACTION:|$)', response, re.DOTALL)
+        thought_match = re.search(r"THOUGHT:\s*(.*?)(?=ACTION:|$)", response, re.DOTALL)
         if thought_match:
             result["thought"] = thought_match.group(1).strip()
 
         # Extract JSON from ACTION block
-        json_match = re.search(r'```json\s*([\s\S]*?)```', response)
+        json_match = re.search(r"```json\s*([\s\S]*?)```", response)
         if json_match:
             try:
                 data = json.loads(json_match.group(1).strip())
@@ -353,7 +366,9 @@ class OpenSWERunner:
             obj_match = re.search(r'\{[\s\S]*"files"[\s\S]*\}', response)
             if obj_match:
                 try:
-                    cleaned = obj_match.group(0).replace("```json", "").replace("```", "")
+                    cleaned = (
+                        obj_match.group(0).replace("```json", "").replace("```", "")
+                    )
                     data = json.loads(cleaned)
                     result["files"] = data.get("files", [])
                     if result["files"]:
@@ -362,12 +377,12 @@ class OpenSWERunner:
                     result["parse_error"] = True
 
         # Extract OBSERVATION
-        obs_match = re.search(r'OBSERVATION:\s*(.*?)(?=STATUS:|$)', response, re.DOTALL)
+        obs_match = re.search(r"OBSERVATION:\s*(.*?)(?=STATUS:|$)", response, re.DOTALL)
         if obs_match:
             result["observation"] = obs_match.group(1).strip()
 
         # Extract STATUS
-        status_match = re.search(r'STATUS:\s*(.*?)$', response, re.MULTILINE)
+        status_match = re.search(r"STATUS:\s*(.*?)$", response, re.MULTILINE)
         if status_match:
             result["status"] = status_match.group(1).strip()
 

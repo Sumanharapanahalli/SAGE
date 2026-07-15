@@ -9,6 +9,7 @@ In production (iot_mock_mode=False), uses boto3 to:
 
 In development (iot_mock_mode=True), returns realistic-looking mock credentials.
 """
+
 from __future__ import annotations
 
 import logging

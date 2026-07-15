@@ -1,6 +1,7 @@
 """Hardened Flask application — remediates all 6 OWASP findings.
 Production-ready patterns for each vulnerability class.
 """
+
 import hashlib
 import hmac
 import ipaddress
@@ -28,15 +29,15 @@ _PRIVATE_NETWORKS = [
     ipaddress.ip_network("10.0.0.0/8"),
     ipaddress.ip_network("172.16.0.0/12"),
     ipaddress.ip_network("192.168.0.0/16"),
-    ipaddress.ip_network("169.254.0.0/16"),   # AWS/GCP IMDS
+    ipaddress.ip_network("169.254.0.0/16"),  # AWS/GCP IMDS
     ipaddress.ip_network("127.0.0.0/8"),
     ipaddress.ip_network("::1/128"),
     ipaddress.ip_network("fc00::/7"),
 ]
 
 _VALID_HOST_RE = re.compile(
-    r'^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$'
-    r'|^(\d{1,3}\.){3}\d{1,3}$'
+    r"^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$"
+    r"|^(\d{1,3}\.){3}\d{1,3}$"
 )
 
 
@@ -77,14 +78,22 @@ def init_db():
     try:
         admin_hash = _hash_password("admin-strong-passphrase-2024!")
         alice_hash = _hash_password("alice-passphrase-2024!")
-        c.execute("INSERT INTO users (username, password_hash, role, email) VALUES (?, ?, ?, ?)",
-                  ("admin", admin_hash, "admin", "admin@example.com"))
-        c.execute("INSERT INTO users (username, password_hash, role, email) VALUES (?, ?, ?, ?)",
-                  ("alice", alice_hash, "user", "alice@example.com"))
-        c.execute("INSERT INTO documents (owner_id, title, content, is_private) VALUES (?, ?, ?, ?)",
-                  (1, "Admin Secret", "Top secret admin content", 1))
-        c.execute("INSERT INTO documents (owner_id, title, content, is_private) VALUES (?, ?, ?, ?)",
-                  (2, "Alice's Note", "Alice private note", 1))
+        c.execute(
+            "INSERT INTO users (username, password_hash, role, email) VALUES (?, ?, ?, ?)",
+            ("admin", admin_hash, "admin", "admin@example.com"),
+        )
+        c.execute(
+            "INSERT INTO users (username, password_hash, role, email) VALUES (?, ?, ?, ?)",
+            ("alice", alice_hash, "user", "alice@example.com"),
+        )
+        c.execute(
+            "INSERT INTO documents (owner_id, title, content, is_private) VALUES (?, ?, ?, ?)",
+            (1, "Admin Secret", "Top secret admin content", 1),
+        )
+        c.execute(
+            "INSERT INTO documents (owner_id, title, content, is_private) VALUES (?, ?, ?, ?)",
+            (2, "Alice's Note", "Alice private note", 1),
+        )
     except sqlite3.IntegrityError:
         pass
     conn.commit()
@@ -100,6 +109,7 @@ def login_required(f):
         if "user_id" not in session:
             return jsonify({"error": "login required"}), 401
         return f(*args, **kwargs)
+
     return decorated
 
 
@@ -110,6 +120,7 @@ def admin_required(f):
         if session.get("role") != "admin":
             return jsonify({"error": "forbidden"}), 403
         return f(*args, **kwargs)
+
     return decorated
 
 
@@ -135,9 +146,9 @@ def login():
 
     if row and _check_password(password, row[3]):
         session.clear()
-        session["user_id"]  = row[0]
+        session["user_id"] = row[0]
         session["username"] = row[1]
-        session["role"]     = row[2]
+        session["role"] = row[2]
         return jsonify({"status": "ok", "username": row[1]})
     return jsonify({"status": "fail"}), 401
 
@@ -170,7 +181,10 @@ def admin_panel():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("SELECT id, username, email, role FROM users")
-    users = [{"id": r[0], "username": r[1], "email": r[2], "role": r[3]} for r in c.fetchall()]
+    users = [
+        {"id": r[0], "username": r[1], "email": r[2], "role": r[3]}
+        for r in c.fetchall()
+    ]
     conn.close()
     return jsonify({"users": users})
 
@@ -185,7 +199,9 @@ def get_document(doc_id):
     c = conn.cursor()
     # SECURE: WHERE clause enforces ownership — admin may read all
     if session.get("role") == "admin":
-        c.execute("SELECT id, owner_id, title, content FROM documents WHERE id = ?", (doc_id,))
+        c.execute(
+            "SELECT id, owner_id, title, content FROM documents WHERE id = ?", (doc_id,)
+        )
     else:
         # Regular users only see their own documents
         c.execute(
@@ -261,7 +277,9 @@ def ping_host():
     host = request.args.get("host", "").strip()
     # SECURE: strict allowlist regex — reject anything with special chars
     if not _VALID_HOST_RE.match(host):
-        return jsonify({"error": "invalid host — only hostnames and IPv4 addresses accepted"}), 400
+        return jsonify(
+            {"error": "invalid host — only hostnames and IPv4 addresses accepted"}
+        ), 400
 
     # SECURE: shell=False, args as a list — no shell expansion possible
     result = subprocess.run(

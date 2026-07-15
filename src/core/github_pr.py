@@ -56,7 +56,9 @@ _PR_URL_RE = re.compile(r"https?://\S+/pull/\d+")
 _PR_NUM_RE = re.compile(r"/pull/(\d+)")
 
 
-def _default_runner(argv: list, cwd: str, timeout: int, stdin: Optional[str] = None) -> RunResult:
+def _default_runner(
+    argv: list, cwd: str, timeout: int, stdin: Optional[str] = None
+) -> RunResult:
     """Default runner: run *argv* via subprocess and capture stdout/stderr.
 
     ``text=True`` + ``errors="replace"`` keeps decoding robust across locales.
@@ -78,7 +80,9 @@ def _default_runner(argv: list, cwd: str, timeout: int, stdin: Optional[str] = N
 class GitHubPR:
     """Thin, fully-testable adapter over the ``gh`` CLI (and ``git push``)."""
 
-    def __init__(self, cwd: str, gh_path: str = "gh", runner: Optional[Callable] = None):
+    def __init__(
+        self, cwd: str, gh_path: str = "gh", runner: Optional[Callable] = None
+    ):
         """
         Args:
             cwd: Working directory (a git checkout) all commands run in.
@@ -96,7 +100,9 @@ class GitHubPR:
     # ------------------------------------------------------------------ #
     # Internal helpers
     # ------------------------------------------------------------------ #
-    def _run(self, argv: list, timeout: int = _DEFAULT_TIMEOUT, stdin: Optional[str] = None) -> RunResult:
+    def _run(
+        self, argv: list, timeout: int = _DEFAULT_TIMEOUT, stdin: Optional[str] = None
+    ) -> RunResult:
         """Invoke the runner, converting *any* exception into an error tuple.
 
         Guarantees no method built on top of this ever raises because of a
@@ -163,16 +169,24 @@ class GitHubPR:
         # 2. Open the PR; body goes via stdin (--body-file -), never argv.
         create_rc, create_out, create_err = self._run(
             [
-                self._gh, "pr", "create",
-                "--base", base,
-                "--head", branch,
-                "--title", title,
-                "--body-file", "-",
+                self._gh,
+                "pr",
+                "create",
+                "--base",
+                base,
+                "--head",
+                branch,
+                "--title",
+                title,
+                "--body-file",
+                "-",
             ],
             stdin=body,
         )
         if create_rc != 0:
-            result["error"] = create_err.strip() or f"gh pr create failed (rc={create_rc})"
+            result["error"] = (
+                create_err.strip() or f"gh pr create failed (rc={create_rc})"
+            )
             return result
 
         # 3. Parse url/number from create output.
@@ -212,7 +226,14 @@ class GitHubPR:
         """Return ``{"state", "review_decision", "merged_sha", "error"}``."""
         result = {"state": "", "review_decision": "", "merged_sha": "", "error": ""}
         rc, out, err = self._run(
-            [self._gh, "pr", "view", str(number), "--json", "state,reviewDecision,mergeCommit"]
+            [
+                self._gh,
+                "pr",
+                "view",
+                str(number),
+                "--json",
+                "state,reviewDecision,mergeCommit",
+            ]
         )
         if rc != 0:
             result["error"] = err.strip() or f"gh pr view failed (rc={rc})"
@@ -256,11 +277,13 @@ class GitHubPR:
                 continue
             author = item.get("author") or {}
             login = author.get("login", "") if isinstance(author, dict) else ""
-            parsed.append({
-                "state": str(item.get("state", "") or ""),
-                "author": str(login or ""),
-                "body": str(item.get("body", "") or ""),
-            })
+            parsed.append(
+                {
+                    "state": str(item.get("state", "") or ""),
+                    "author": str(login or ""),
+                    "body": str(item.get("body", "") or ""),
+                }
+            )
         return parsed
 
     def get_comments(self, number: int) -> list:
@@ -286,11 +309,13 @@ class GitHubPR:
                 continue
             author = item.get("author") or {}
             login = author.get("login", "") if isinstance(author, dict) else ""
-            parsed.append({
-                "author": str(login or ""),
-                "body": str(item.get("body", "") or ""),
-                "created": str(item.get("createdAt", "") or ""),
-            })
+            parsed.append(
+                {
+                    "author": str(login or ""),
+                    "body": str(item.get("body", "") or ""),
+                    "created": str(item.get("createdAt", "") or ""),
+                }
+            )
         return parsed
 
     # ------------------------------------------------------------------ #
@@ -303,7 +328,10 @@ class GitHubPR:
             stdin=body,
         )
         if rc != 0:
-            return {"ok": False, "error": err.strip() or f"gh pr comment failed (rc={rc})"}
+            return {
+                "ok": False,
+                "error": err.strip() or f"gh pr comment failed (rc={rc})",
+            }
         return {"ok": True, "error": ""}
 
     # ------------------------------------------------------------------ #
@@ -316,7 +344,11 @@ class GitHubPR:
             [self._gh, "pr", "merge", str(number), flag, "--delete-branch"]
         )
         if rc != 0:
-            return {"ok": False, "sha": "", "error": err.strip() or f"gh pr merge failed (rc={rc})"}
+            return {
+                "ok": False,
+                "sha": "",
+                "error": err.strip() or f"gh pr merge failed (rc={rc})",
+            }
 
         # Read the resulting merge commit sha via state().
         st = self.state(number)

@@ -72,7 +72,9 @@ class InvoiceClassifier:
             if elapsed_ms > self.SLA_MS:
                 logger.warning(
                     "SLA breach: sample %d took %.2f ms (budget %d ms)",
-                    i, elapsed_ms, self.SLA_MS,
+                    i,
+                    elapsed_ms,
+                    self.SLA_MS,
                 )
 
             results.append(
@@ -119,7 +121,9 @@ class InvoiceClassifier:
 
         logger.info(
             "Batch predict: %d samples in %.2f ms (%.3f ms/sample)",
-            len(df), elapsed_ms, elapsed_ms / len(df),
+            len(df),
+            elapsed_ms,
+            elapsed_ms / len(df),
         )
         return results
 
@@ -129,7 +133,8 @@ class InvoiceClassifier:
         latency percentiles (p50, p95, p99).
         """
         from train import generate_synthetic_data, load_config
-        cfg = load_config()
+
+        load_config()
         df = generate_synthetic_data(n_samples=n_trials, seed=0)
 
         latencies = []

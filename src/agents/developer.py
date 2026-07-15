@@ -49,27 +49,34 @@ class DeveloperAgent:
 
         # GitLab connection settings (env vars take priority over config)
         self.gitlab_url = os.environ.get(
-            "GITLAB_URL",
-            str(gitlab_cfg.get("url", "")).replace("${GITLAB_URL}", "")
+            "GITLAB_URL", str(gitlab_cfg.get("url", "")).replace("${GITLAB_URL}", "")
         ).rstrip("/")
 
         self.gitlab_token = os.environ.get(
             "GITLAB_TOKEN",
-            str(gitlab_cfg.get("token", "")).replace("${GITLAB_TOKEN}", "")
+            str(gitlab_cfg.get("token", "")).replace("${GITLAB_TOKEN}", ""),
         )
 
         self.default_project_id = os.environ.get(
             "GITLAB_PROJECT_ID",
-            str(gitlab_cfg.get("default_project_id", "")).replace("${GITLAB_PROJECT_ID}", "")
+            str(gitlab_cfg.get("default_project_id", "")).replace(
+                "${GITLAB_PROJECT_ID}", ""
+            ),
         )
 
         if not self.gitlab_url:
-            self.logger.warning("GITLAB_URL not configured. GitLab operations will fail.")
+            self.logger.warning(
+                "GITLAB_URL not configured. GitLab operations will fail."
+            )
         if not self.gitlab_token:
-            self.logger.warning("GITLAB_TOKEN not configured. GitLab operations will fail.")
+            self.logger.warning(
+                "GITLAB_TOKEN not configured. GitLab operations will fail."
+            )
 
         self._api_base = f"{self.gitlab_url}/api/v4" if self.gitlab_url else ""
-        self._headers = {"Private-Token": self.gitlab_token} if self.gitlab_token else {}
+        self._headers = (
+            {"Private-Token": self.gitlab_token} if self.gitlab_token else {}
+        )
 
         # Lazy-load shared singletons to avoid circular import at module level
         self._llm_gateway = None
@@ -79,6 +86,7 @@ class DeveloperAgent:
     def llm(self):
         if self._llm_gateway is None:
             from src.core.llm_gateway import llm_gateway
+
             self._llm_gateway = llm_gateway
         return self._llm_gateway
 
@@ -86,6 +94,7 @@ class DeveloperAgent:
     def audit(self):
         if self._audit_logger is None:
             from src.memory.audit_logger import audit_logger
+
             self._audit_logger = audit_logger
         return self._audit_logger
 
@@ -109,7 +118,9 @@ class DeveloperAgent:
             )
         except Exception:
             # Never let error reporting mask the original failure.
-            self.logger.critical("Failed to emit agent_error event: %s", json.dumps(event))
+            self.logger.critical(
+                "Failed to emit agent_error event: %s", json.dumps(event)
+            )
         return event
 
     # -----------------------------------------------------------------------
@@ -157,13 +168,18 @@ class DeveloperAgent:
         try:
             from src.core.repo_map import generate_repo_map
             import os as _os
-            _PROJECT_ROOT = _os.path.dirname(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
+
+            _PROJECT_ROOT = _os.path.dirname(
+                _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+            )
             _repo_map = generate_repo_map(_PROJECT_ROOT, max_files=40)
             system_prompt = system_prompt + "\n\n" + _repo_map
         except Exception as _rme:
             # Repo map is an optional augmentation — record the failure as a
             # structured event but continue with the un-augmented prompt.
-            self._emit_agent_error(task_id=task[:200], exc=_rme, trace_id=str(uuid.uuid4()))
+            self._emit_agent_error(
+                task_id=task[:200], exc=_rme, trace_id=str(uuid.uuid4())
+            )
 
         history: list[str] = [f"Task: {task}"]
 
@@ -175,28 +191,40 @@ class DeveloperAgent:
             # Check for FinalAnswer
             if "FinalAnswer:" in response:
                 idx = response.index("FinalAnswer:")
-                return response[idx + len("FinalAnswer:"):].strip()
+                return response[idx + len("FinalAnswer:") :].strip()
 
             # Parse Action: tool_name({...})
             if "Action:" in response:
                 action_idx = response.index("Action:")
-                action_line = response[action_idx + len("Action:"):].split("\n")[0].strip()
+                action_line = (
+                    response[action_idx + len("Action:") :].split("\n")[0].strip()
+                )
                 try:
                     tool_name = action_line[: action_line.index("(")].strip()
-                    args_str = action_line[action_line.index("(") + 1 : action_line.rindex(")")].strip()
+                    args_str = action_line[
+                        action_line.index("(") + 1 : action_line.rindex(")")
+                    ].strip()
                     tool_args = json.loads(args_str) if args_str else {}
                 except (ValueError, json.JSONDecodeError) as exc:
-                    history.append(f"Observation: Error parsing action '{action_line}': {exc}")
+                    history.append(
+                        f"Observation: Error parsing action '{action_line}': {exc}"
+                    )
                     continue
 
                 if tool_name in tools:
                     try:
                         obs = tools[tool_name](**tool_args)
-                        observation = json.dumps(obs, indent=2) if isinstance(obs, (dict, list)) else str(obs)
+                        observation = (
+                            json.dumps(obs, indent=2)
+                            if isinstance(obs, (dict, list))
+                            else str(obs)
+                        )
                     except Exception as exc:
                         observation = f"Error executing {tool_name}: {exc}"
                 else:
-                    observation = f"Unknown tool '{tool_name}'. Available: {list(tools.keys())}"
+                    observation = (
+                        f"Unknown tool '{tool_name}'. Available: {list(tools.keys())}"
+                    )
 
                 history.append(f"Observation: {observation}")
             # If neither FinalAnswer nor Action, loop continues with accumulated history
@@ -209,7 +237,7 @@ class DeveloperAgent:
         response = self.llm.generate(forced_prompt, system_prompt)
         if "FinalAnswer:" in response:
             idx = response.index("FinalAnswer:")
-            return response[idx + len("FinalAnswer:"):].strip()
+            return response[idx + len("FinalAnswer:") :].strip()
         return response
 
     # -----------------------------------------------------------------------
@@ -279,14 +307,18 @@ class DeveloperAgent:
         author = mr_data.get("author", {}).get("name", "Unknown")
 
         # 2. Fetch diff
-        diff_data, err = self._gl_get(f"/projects/{project_id}/merge_requests/{mr_iid}/diffs")
+        diff_data, err = self._gl_get(
+            f"/projects/{project_id}/merge_requests/{mr_iid}/diffs"
+        )
         if err:
             self.logger.warning("Could not fetch diff: %s", err)
             diff_text = "(diff unavailable)"
         else:
             diff_parts = []
-            for d in (diff_data if isinstance(diff_data, list) else []):
-                diff_parts.append(f"--- {d.get('old_path', '')}\n+++ {d.get('new_path', '')}\n{d.get('diff', '')}")
+            for d in diff_data if isinstance(diff_data, list) else []:
+                diff_parts.append(
+                    f"--- {d.get('old_path', '')}\n+++ {d.get('new_path', '')}\n{d.get('diff', '')}"
+                )
             diff_text = "\n\n".join(diff_parts) or "(no diff changes)"
 
         # 3. Run ReAct loop — agent reasons over pipeline status + diff before reviewing
@@ -332,7 +364,9 @@ class DeveloperAgent:
         response_text = self._react_loop(react_task, tools, max_steps=5)
 
         try:
-            response_text = response_text.replace("```json", "").replace("```", "").strip()
+            response_text = (
+                response_text.replace("```json", "").replace("```", "").strip()
+            )
             review = json.loads(response_text)
         except json.JSONDecodeError:
             self.logger.error("LLM did not return valid JSON for MR review.")
@@ -350,16 +384,27 @@ class DeveloperAgent:
             action_type="MR_REVIEW",
             input_context=f"project={project_id} mr_iid={mr_iid} title={mr_title}",
             output_content=json.dumps(review),
-            metadata={"project_id": project_id, "mr_iid": mr_iid, "source_branch": source_branch},
+            metadata={
+                "project_id": project_id,
+                "mr_iid": mr_iid,
+                "source_branch": source_branch,
+            },
         )
 
         review["trace_id"] = trace_id
         review["mr_iid"] = mr_iid
         review["mr_title"] = mr_title
-        self.logger.info("MR !%d review complete. Approved: %s (trace: %s)", mr_iid, review.get("approved"), trace_id)
+        self.logger.info(
+            "MR !%d review complete. Approved: %s (trace: %s)",
+            mr_iid,
+            review.get("approved"),
+            trace_id,
+        )
         return review
 
-    def create_mr_from_issue(self, project_id: int, issue_iid: int, source_branch: Optional[str] = None) -> dict:
+    def create_mr_from_issue(
+        self, project_id: int, issue_iid: int, source_branch: Optional[str] = None
+    ) -> dict:
         """
         Gets an issue's details, uses LLM to draft an MR, and creates it in GitLab.
 
@@ -371,7 +416,9 @@ class DeveloperAgent:
         Returns:
             dict with MR URL, title, and trace_id, or 'error'.
         """
-        self.logger.info("Creating MR from issue #%d in project %d", issue_iid, project_id)
+        self.logger.info(
+            "Creating MR from issue #%d in project %d", issue_iid, project_id
+        )
 
         # 1. Fetch issue
         issue_data, err = self._gl_get(f"/projects/{project_id}/issues/{issue_iid}")
@@ -393,6 +440,7 @@ class DeveloperAgent:
         # Prefer solution-level mr_create_system_prompt from prompts.yaml / SKILL.md
         try:
             from src.core.project_loader import project_config
+
             _dev_prompts = project_config.get_prompts().get("developer", {})
             system_prompt = _dev_prompts.get(
                 "mr_create_system_prompt",
@@ -402,7 +450,7 @@ class DeveloperAgent:
                     "Output strict JSON with keys: 'mr_title' (string) and 'mr_description' (string, markdown). "
                     "The description should reference the issue, explain the proposed changes, and list testing steps. "
                     "Do not output markdown fences."
-                )
+                ),
             )
             _sol_ctx = project_config.solution_context
             if _sol_ctx:
@@ -429,12 +477,18 @@ class DeveloperAgent:
         response_text = self.llm.generate(user_prompt, system_prompt)
 
         try:
-            response_text = response_text.replace("```json", "").replace("```", "").strip()
+            response_text = (
+                response_text.replace("```json", "").replace("```", "").strip()
+            )
             mr_draft = json.loads(response_text)
             mr_title = mr_draft.get("mr_title", f"Fix: {issue_title}")
-            mr_description = mr_draft.get("mr_description", f"Resolves #{issue_iid}\n\n{issue_description}")
+            mr_description = mr_draft.get(
+                "mr_description", f"Resolves #{issue_iid}\n\n{issue_description}"
+            )
         except json.JSONDecodeError:
-            self.logger.warning("LLM output not valid JSON, using fallback MR title/description.")
+            self.logger.warning(
+                "LLM output not valid JSON, using fallback MR title/description."
+            )
             mr_title = f"Fix: {issue_title}"
             mr_description = f"Resolves #{issue_iid}\n\n{issue_description}"
 
@@ -471,8 +525,14 @@ class DeveloperAgent:
             actor="DeveloperAgent",
             action_type="MR_CREATED",
             input_context=f"project={project_id} issue_iid={issue_iid}",
-            output_content=json.dumps({"mr_iid": mr_iid, "mr_url": mr_url, "mr_title": mr_title}),
-            metadata={"project_id": project_id, "issue_iid": issue_iid, "mr_iid": mr_iid},
+            output_content=json.dumps(
+                {"mr_iid": mr_iid, "mr_url": mr_url, "mr_title": mr_title}
+            ),
+            metadata={
+                "project_id": project_id,
+                "issue_iid": issue_iid,
+                "mr_iid": mr_iid,
+            },
         )
 
         self.logger.info("MR !%s created from issue #%d: %s", mr_iid, issue_iid, mr_url)
@@ -496,23 +556,29 @@ class DeveloperAgent:
         Returns:
             dict with 'merge_requests' list and 'count'.
         """
-        data, err = self._gl_get(f"/projects/{project_id}/merge_requests", params={"state": "opened"})
+        data, err = self._gl_get(
+            f"/projects/{project_id}/merge_requests", params={"state": "opened"}
+        )
         if err:
             return {"error": err}
 
         mrs = []
-        for mr in (data or []):
-            mrs.append({
-                "iid": mr.get("iid"),
-                "title": mr.get("title"),
-                "author": mr.get("author", {}).get("name", "Unknown"),
-                "source_branch": mr.get("source_branch"),
-                "target_branch": mr.get("target_branch"),
-                "created_at": mr.get("created_at", ""),
-                "web_url": mr.get("web_url", ""),
-                "labels": mr.get("labels", []),
-                "pipeline_status": mr.get("pipeline", {}).get("status", "none") if mr.get("pipeline") else "none",
-            })
+        for mr in data or []:
+            mrs.append(
+                {
+                    "iid": mr.get("iid"),
+                    "title": mr.get("title"),
+                    "author": mr.get("author", {}).get("name", "Unknown"),
+                    "source_branch": mr.get("source_branch"),
+                    "target_branch": mr.get("target_branch"),
+                    "created_at": mr.get("created_at", ""),
+                    "web_url": mr.get("web_url", ""),
+                    "labels": mr.get("labels", []),
+                    "pipeline_status": mr.get("pipeline", {}).get("status", "none")
+                    if mr.get("pipeline")
+                    else "none",
+                }
+            )
 
         self.logger.info("Listed %d open MRs for project %d", len(mrs), project_id)
         return {"merge_requests": mrs, "count": len(mrs), "project_id": project_id}
@@ -535,12 +601,18 @@ class DeveloperAgent:
 
         pipeline = mr_data.get("pipeline") or mr_data.get("head_pipeline")
         if not pipeline:
-            return {"status": "no_pipeline", "mr_iid": mr_iid, "message": "No pipeline associated with this MR."}
+            return {
+                "status": "no_pipeline",
+                "mr_iid": mr_iid,
+                "message": "No pipeline associated with this MR.",
+            }
 
         pipeline_id = pipeline.get("id")
 
         # Get detailed pipeline info
-        pipeline_detail, err = self._gl_get(f"/projects/{project_id}/pipelines/{pipeline_id}")
+        pipeline_detail, err = self._gl_get(
+            f"/projects/{project_id}/pipelines/{pipeline_id}"
+        )
         if err:
             return {
                 "status": pipeline.get("status", "unknown"),
@@ -549,18 +621,22 @@ class DeveloperAgent:
             }
 
         # Get jobs
-        jobs_data, _ = self._gl_get(f"/projects/{project_id}/pipelines/{pipeline_id}/jobs")
+        jobs_data, _ = self._gl_get(
+            f"/projects/{project_id}/pipelines/{pipeline_id}/jobs"
+        )
         stages = {}
-        for job in (jobs_data or []):
+        for job in jobs_data or []:
             stage = job.get("stage", "unknown")
             if stage not in stages:
                 stages[stage] = []
-            stages[stage].append({
-                "name": job.get("name"),
-                "status": job.get("status"),
-                "duration": job.get("duration"),
-                "web_url": job.get("web_url", ""),
-            })
+            stages[stage].append(
+                {
+                    "name": job.get("name"),
+                    "status": job.get("status"),
+                    "duration": job.get("duration"),
+                    "web_url": job.get("web_url", ""),
+                }
+            )
 
         return {
             "mr_iid": mr_iid,
@@ -597,7 +673,9 @@ class DeveloperAgent:
         Returns:
             dict with 'patch' (unified diff format), 'explanation', and 'trace_id'.
         """
-        self.logger.info("Proposing patch for %s: %s", file_path, error_description[:80])
+        self.logger.info(
+            "Proposing patch for %s: %s", file_path, error_description[:80]
+        )
 
         system_prompt = (
             "You are a Senior Embedded Software Engineer. "
@@ -630,19 +708,29 @@ class DeveloperAgent:
             action_type="CODE_PATCH_PROPOSAL",
             input_context=f"file={file_path} error={error_description[:200]}",
             output_content=json.dumps(patch_result),
-            metadata={"file_path": file_path, "confidence": patch_result.get("confidence", "unknown")},
+            metadata={
+                "file_path": file_path,
+                "confidence": patch_result.get("confidence", "unknown"),
+            },
         )
 
         patch_result["trace_id"] = trace_id
         patch_result["file_path"] = file_path
-        self.logger.info("Patch proposed for %s (confidence: %s, trace: %s)", file_path, patch_result.get("confidence"), trace_id)
+        self.logger.info(
+            "Patch proposed for %s (confidence: %s, trace: %s)",
+            file_path,
+            patch_result.get("confidence"),
+            trace_id,
+        )
         return patch_result
 
     def _generate_patch_once(self, user_prompt: str, system_prompt: str) -> dict:
         """Single LLM call → parse strict-JSON patch proposal."""
         response_text = self.llm.generate(user_prompt, system_prompt)
         try:
-            response_text = response_text.replace("```json", "").replace("```", "").strip()
+            response_text = (
+                response_text.replace("```json", "").replace("```", "").strip()
+            )
             return json.loads(response_text)
         except json.JSONDecodeError:
             self.logger.error("LLM did not return valid JSON for patch proposal.")
@@ -685,15 +773,22 @@ class DeveloperAgent:
             wt_trace_id = uuid.uuid4().hex
             wt_path = wt_mgr.create(wt_trace_id)
             try:
-                applied, apply_msg = self._apply_patch_in_worktree(wt_path, patch.get("patch", ""))
+                applied, apply_msg = self._apply_patch_in_worktree(
+                    wt_path, patch.get("patch", "")
+                )
                 patch["_verification"] = {"applied": applied, "tests_passed": None}
                 if not applied:
-                    return {"score": 0.0, "feedback": f"Disqualified — patch does not apply: {apply_msg}"}
+                    return {
+                        "score": 0.0,
+                        "feedback": f"Disqualified — patch does not apply: {apply_msg}",
+                    }
 
                 tests_passed, test_output = self._run_tests_in_worktree(wt_path)
                 patch["_verification"]["tests_passed"] = tests_passed
 
-                review = critic_agent.multi_critic_review("code", patch.get("patch", ""), error_description)
+                review = critic_agent.multi_critic_review(
+                    "code", patch.get("patch", ""), error_description
+                )
                 llm_score = review.get("score", 0)
                 final = llm_score if tests_passed else llm_score * 0.3
                 feedback = f"{review.get('summary', '')} | tests {'passed' if tests_passed else 'FAILED'}: {test_output[:300]}"
@@ -710,10 +805,16 @@ class DeveloperAgent:
 
         best = result.candidates[result.selected_index] if result.candidates else None
         if not best or not best.plan:
-            return {"patch": "", "explanation": "All candidates failed to generate.", "confidence": "low"}
+            return {
+                "patch": "",
+                "explanation": "All candidates failed to generate.",
+                "confidence": "low",
+            }
 
         winner = best.plan
-        verification = winner.pop("_verification", {"applied": False, "tests_passed": None})
+        verification = winner.pop(
+            "_verification", {"applied": False, "tests_passed": None}
+        )
         verification["candidates_scored"] = candidates_scored["n"]
         verification["winning_score"] = best.score
         winner["verification"] = verification
@@ -737,7 +838,10 @@ class DeveloperAgent:
             for p_level in ("-p1", "-p0"):
                 result = subprocess.run(
                     ["git", "apply", p_level, patch_file],
-                    cwd=wt_path, capture_output=True, text=True, timeout=15,
+                    cwd=wt_path,
+                    capture_output=True,
+                    text=True,
+                    timeout=15,
                 )
                 if result.returncode == 0:
                     return True, "applied cleanly"
@@ -755,7 +859,10 @@ class DeveloperAgent:
         try:
             result = subprocess.run(
                 [venv_python, "-m", "pytest", "tests/", "-x", "-q", "--tb=short"],
-                capture_output=True, text=True, timeout=180, cwd=wt_path,
+                capture_output=True,
+                text=True,
+                timeout=180,
+                cwd=wt_path,
             )
             ok = result.returncode == 0
             return ok, (result.stdout + result.stderr)[-3000:]

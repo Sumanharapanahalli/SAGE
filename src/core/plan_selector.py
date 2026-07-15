@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class PlanCandidate:
     """A candidate plan with its score."""
+
     candidate_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     plan: Any = None
     score: float = 0.0
@@ -40,6 +41,7 @@ class PlanCandidate:
 @dataclass
 class SelectionResult:
     """Result of plan selection."""
+
     selection_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     candidates: list = field(default_factory=list)
     selected_index: int = 0
@@ -53,8 +55,9 @@ class SelectionResult:
         return {
             "selection_id": self.selection_id,
             "beam_width": self.beam_width,
-            "candidates": [c.to_dict() if hasattr(c, 'to_dict') else c
-                           for c in self.candidates],
+            "candidates": [
+                c.to_dict() if hasattr(c, "to_dict") else c for c in self.candidates
+            ],
             "selected_index": self.selected_index,
             "selected_score": self.selected_score,
             "reflected": self.reflected,
@@ -109,10 +112,13 @@ class PlanSelector:
             started_at=datetime.now(timezone.utc).isoformat(),
         )
 
-        self._emit("plan.candidates_generated", {
-            "selection_id": result.selection_id,
-            "beam_width": beam_width,
-        })
+        self._emit(
+            "plan.candidates_generated",
+            {
+                "selection_id": result.selection_id,
+                "beam_width": beam_width,
+            },
+        )
 
         # Generate N candidates
         candidates: list[PlanCandidate] = []
@@ -128,9 +134,13 @@ class PlanSelector:
                 candidates.append(PlanCandidate(plan=plan))
             except Exception as exc:
                 logger.warning("Plan generation %d failed: %s", i, exc)
-                candidates.append(PlanCandidate(
-                    plan=None, score=0.0, feedback=f"Generation failed: {exc}",
-                ))
+                candidates.append(
+                    PlanCandidate(
+                        plan=None,
+                        score=0.0,
+                        feedback=f"Generation failed: {exc}",
+                    )
+                )
 
         # Score each candidate
         for c in candidates:
@@ -154,11 +164,18 @@ class PlanSelector:
         result.selected_score = candidates[0].score if candidates else 0.0
 
         # Apply reflection to best candidate if below threshold
-        if (apply_reflection and candidates and
-                candidates[0].score < reflection_threshold and
-                candidates[0].plan is not None):
+        if (
+            apply_reflection
+            and candidates
+            and candidates[0].score < reflection_threshold
+            and candidates[0].plan is not None
+        ):
             try:
-                from src.core.reflection_engine import ReflectionEngine, ReflectionConfig
+                from src.core.reflection_engine import (
+                    ReflectionEngine,
+                    ReflectionConfig,
+                )
+
                 reflector = ReflectionEngine()
                 ref_result = reflector.reflect(
                     generator=generator,
@@ -188,13 +205,16 @@ class PlanSelector:
 
         result.completed_at = datetime.now(timezone.utc).isoformat()
 
-        self._emit("plan.selected", {
-            "selection_id": result.selection_id,
-            "selected_score": result.selected_score,
-            "beam_width": beam_width,
-            "reflected": result.reflected,
-            "candidate_scores": [c.score for c in candidates],
-        })
+        self._emit(
+            "plan.selected",
+            {
+                "selection_id": result.selection_id,
+                "selected_score": result.selected_score,
+                "beam_width": beam_width,
+                "reflected": result.reflected,
+                "candidate_scores": [c.score for c in candidates],
+            },
+        )
 
         with self._lock:
             self._results[result.selection_id] = result
@@ -210,8 +230,12 @@ class PlanSelector:
         with self._lock:
             results = list(self._results.values())
         if not results:
-            return {"total_selections": 0, "avg_beam_width": 0,
-                    "avg_selected_score": 0, "reflection_rate": 0}
+            return {
+                "total_selections": 0,
+                "avg_beam_width": 0,
+                "avg_selected_score": 0,
+                "reflection_rate": 0,
+            }
         reflected = sum(1 for r in results if r.reflected)
         return {
             "total_selections": len(results),
@@ -237,6 +261,7 @@ class PlanSelector:
     def _emit(event_type: str, data: dict) -> None:
         try:
             from src.core.event_bus import get_event_bus
+
             get_event_bus().publish(event_type, data, source="plan_selector")
         except Exception:
             pass

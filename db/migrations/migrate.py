@@ -68,8 +68,10 @@ class MigrationEntry(NamedTuple):
 # ── Migration manifest (ordered) ─────────────────────────────────────────────
 # Add new migrations here in version order. Never reorder existing entries.
 MIGRATIONS: list[MigrationEntry] = [
-    MigrationEntry("V001", "001_up.sql",                       "001_down.sql"),
-    MigrationEntry("V002", "V002__psp_payment_gateway.up.sql", "V002__psp_payment_gateway.down.sql"),
+    MigrationEntry("V001", "001_up.sql", "001_down.sql"),
+    MigrationEntry(
+        "V002", "V002__psp_payment_gateway.up.sql", "V002__psp_payment_gateway.down.sql"
+    ),
 ]
 
 
@@ -149,9 +151,9 @@ def migrate_up(engine: sa.Engine, target: str | None = None) -> None:
         applied = _applied_versions(conn)
 
         pending = [
-            m for m in MIGRATIONS
-            if m.version not in applied
-            and (target is None or m.version <= target)
+            m
+            for m in MIGRATIONS
+            if m.version not in applied and (target is None or m.version <= target)
         ]
         if not pending:
             logger.info("No pending migrations — database is up to date.")
@@ -212,7 +214,7 @@ def migrate_status(engine: sa.Engine) -> None:
 
     print("\nMigration status:")
     print(f"  {'Version':<12}  {'State':<10}  File")
-    print(f"  {'-'*12}  {'-'*10}  {'-'*45}")
+    print(f"  {'-' * 12}  {'-' * 10}  {'-' * 45}")
     for entry in MIGRATIONS:
         state = "applied" if entry.version in applied else "pending"
         print(f"  {entry.version:<12}  {state:<10}  {entry.up_file}")
@@ -223,7 +225,9 @@ def migrate_status(engine: sa.Engine) -> None:
 if __name__ == "__main__":
     valid_commands = {"up", "down", "status"}
     if len(sys.argv) < 2 or sys.argv[1] not in valid_commands:
-        print(f"Usage: python {Path(__file__).name} <{'|'.join(sorted(valid_commands))}>")
+        print(
+            f"Usage: python {Path(__file__).name} <{'|'.join(sorted(valid_commands))}>"
+        )
         sys.exit(1)
 
     command = sys.argv[1]

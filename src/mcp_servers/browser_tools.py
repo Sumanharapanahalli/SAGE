@@ -18,6 +18,7 @@ logger = logging.getLogger("browser_tools_mcp")
 
 try:
     from fastmcp import FastMCP
+
     mcp = FastMCP("browser-tools")
 except ImportError:
     logger.warning("fastmcp not installed — MCP server cannot start standalone")
@@ -49,6 +50,7 @@ def _get_screenshot_dir() -> str:
     """Return a directory for storing browser screenshots."""
     try:
         from src.core.project_loader import project_config, _SOLUTIONS_DIR
+
         sage_dir = os.path.join(_SOLUTIONS_DIR, project_config.project_name, ".sage")
         screenshots = os.path.join(sage_dir, "screenshots")
         os.makedirs(screenshots, exist_ok=True)
@@ -58,6 +60,7 @@ def _get_screenshot_dir() -> str:
 
 
 if mcp:
+
     @mcp.tool()
     def browse_page(
         url: str,
@@ -107,7 +110,7 @@ if mcp:
                 if extract_links:
                     links = page.eval_on_selector_all(
                         "a[href]",
-                        "els => els.map(e => ({text: e.innerText.trim().slice(0,100), href: e.href}))"
+                        "els => els.map(e => ({text: e.innerText.trim().slice(0,100), href: e.href}))",
                     )
                     result["links"] = links[:200]
 
@@ -285,5 +288,6 @@ if __name__ == "__main__":
     if mcp is None:
         print("ERROR: fastmcp not installed. Run: pip install fastmcp")
         import sys
+
         sys.exit(1)
     mcp.run()

@@ -15,6 +15,7 @@ The sidecar's dispatch loop is serial (`for raw in stdin`), and the two
 background action types are multi-minute LLM work, so they run on a worker
 thread and return a job_id rather than stalling every other RPC.
 """
+
 from __future__ import annotations
 
 import time
@@ -65,6 +66,7 @@ def _make(store, action_type="yaml_edit"):
 
 # ---------- the job runner ----------
 
+
 def test_job_runs_an_async_coroutine_and_records_the_result():
     async def _work():
         return {"ok": True}
@@ -106,6 +108,7 @@ def _wait(job_id, timeout=5.0):
 
 
 # ---------- approve -> execute ----------
+
 
 def test_approving_a_fast_proposal_executes_it_inline(store, monkeypatch):
     executed = []
@@ -181,6 +184,7 @@ def test_an_unregistered_action_type_is_reported_not_swallowed(store, monkeypatc
 
 # ---------- reject -> revert ----------
 
+
 def test_rejecting_a_code_diff_reverts_the_working_tree(store, monkeypatch):
     """The agent already wrote its edits to disk. Rejecting must undo them —
     otherwise "no" leaves the change in place, which is the opposite of a gate."""
@@ -211,6 +215,7 @@ def test_rejecting_a_non_code_diff_does_not_revert(store, monkeypatch):
 
 
 # ---------- registration ----------
+
 
 def test_jobs_rpcs_are_registered():
     import app

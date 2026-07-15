@@ -28,7 +28,7 @@ class FallEventInput:
     event_id: str
     device_id: str
     user_id: str
-    event_type: str                          # fall_detected | sos_button | impact
+    event_type: str  # fall_detected | sos_button | impact
     accelerometer_data: Optional[dict] = None
     gyroscope_data: Optional[dict] = None
     impact_force_g: Optional[float] = None
@@ -43,7 +43,7 @@ class AlertClassification:
     device_id: str
     user_id: str
     severity: FallSeverity
-    confidence: float                        # 0.0–1.0
+    confidence: float  # 0.0–1.0
     requires_immediate_dispatch: bool
     grace_period_seconds: int
     reasoning: str
@@ -62,9 +62,9 @@ class FallClassifierAgent:
     """
 
     # g-force thresholds
-    IMPACT_HIGH: float = 3.0       # hard fall
-    IMPACT_MODERATE: float = 1.8   # possible fall
-    IMPACT_LOW: float = 1.0        # likely noise
+    IMPACT_HIGH: float = 3.0  # hard fall
+    IMPACT_MODERATE: float = 1.8  # possible fall
+    IMPACT_LOW: float = 1.0  # likely noise
 
     def classify(self, event: FallEventInput) -> AlertClassification:
         logger.info(

@@ -37,6 +37,7 @@ def test_monitor_initializes():
     """MonitorAgent() must instantiate without raising any exception."""
     try:
         from src.agents.monitor import MonitorAgent
+
         agent = MonitorAgent()
     except Exception as exc:
         pytest.fail(f"MonitorAgent() raised an exception: {exc}")
@@ -46,11 +47,16 @@ def test_monitor_initializes():
 def test_register_callback_stores_handler():
     """register_callback() must store the callback for the given event type."""
     from src.agents.monitor import MonitorAgent
+
     agent = MonitorAgent()
     mock_fn = MagicMock()
     agent.register_callback("teams_error", mock_fn)
-    assert "teams_error" in agent._callbacks, "Callback event type must be stored in _callbacks."
-    assert mock_fn in agent._callbacks["teams_error"], "Callback function must be in the stored list."
+    assert "teams_error" in agent._callbacks, (
+        "Callback event type must be stored in _callbacks."
+    )
+    assert mock_fn in agent._callbacks["teams_error"], (
+        "Callback function must be in the stored list."
+    )
 
 
 def test_start_creates_daemon_threads(tmp_audit_db):
@@ -59,6 +65,7 @@ def test_start_creates_daemon_threads(tmp_audit_db):
     When Teams/Metabase/GitLab are all configured, threads should be alive.
     """
     import os
+
     env = {
         "TEAMS_TEAM_ID": "team-123",
         "TEAMS_CHANNEL_ID": "channel-456",
@@ -69,6 +76,7 @@ def test_start_creates_daemon_threads(tmp_audit_db):
     }
     with patch.dict(os.environ, env):
         from src.agents.monitor import MonitorAgent
+
         agent = MonitorAgent()
         agent._audit_logger = tmp_audit_db
 
@@ -85,13 +93,17 @@ def test_start_creates_daemon_threads(tmp_audit_db):
             while agent._running:
                 time.sleep(0.05)
 
-        with patch.object(agent, "_poll_teams", fake_poll_teams), \
-             patch.object(agent, "_poll_metabase", fake_poll_metabase), \
-             patch.object(agent, "_poll_gitlab_issues", fake_poll_gitlab):
+        with (
+            patch.object(agent, "_poll_teams", fake_poll_teams),
+            patch.object(agent, "_poll_metabase", fake_poll_metabase),
+            patch.object(agent, "_poll_gitlab_issues", fake_poll_gitlab),
+        ):
             agent.start()
             time.sleep(0.1)  # Let threads start
             alive = [t for t in agent._threads if t.is_alive()]
-            assert len(alive) > 0, "At least one polling thread must be alive after start()."
+            assert len(alive) > 0, (
+                "At least one polling thread must be alive after start()."
+            )
             for t in agent._threads:
                 assert t.daemon, f"Thread {t.name} must be a daemon thread."
             agent.stop()
@@ -100,12 +112,14 @@ def test_start_creates_daemon_threads(tmp_audit_db):
 def test_stop_terminates_threads(tmp_audit_db):
     """After stop(), polling threads must no longer be alive."""
     import os
+
     env = {
         "TEAMS_TEAM_ID": "team-123",
         "TEAMS_CHANNEL_ID": "channel-456",
     }
     with patch.dict(os.environ, env):
         from src.agents.monitor import MonitorAgent
+
         agent = MonitorAgent()
         agent._audit_logger = tmp_audit_db
 
@@ -119,12 +133,15 @@ def test_stop_terminates_threads(tmp_audit_db):
             agent.stop()
             time.sleep(0.2)  # Give threads time to finish
             alive = [t for t in agent._threads if t.is_alive()]
-            assert len(alive) == 0, f"Expected no alive threads after stop(), but {len(alive)} are still alive."
+            assert len(alive) == 0, (
+                f"Expected no alive threads after stop(), but {len(alive)} are still alive."
+            )
 
 
 def test_on_event_calls_registered_callback(tmp_audit_db):
     """When a callback is registered for 'teams_error', _on_event() must call it with the payload."""
     from src.agents.monitor import MonitorAgent
+
     agent = MonitorAgent()
     agent._audit_logger = tmp_audit_db
     mock_fn = MagicMock()
@@ -146,6 +163,7 @@ def test_on_event_calls_registered_callback(tmp_audit_db):
 def test_on_event_creates_audit_record(tmp_audit_db):
     """_on_event() must create an EVENT_TEAMS_ERROR audit record when called with 'teams_error'."""
     from src.agents.monitor import MonitorAgent
+
     agent = MonitorAgent()
     agent._audit_logger = tmp_audit_db
 
@@ -165,6 +183,7 @@ def test_on_event_creates_audit_record(tmp_audit_db):
 def test_get_status_returns_dict(tmp_audit_db):
     """get_status() must return a dict containing at least the 'running' key."""
     from src.agents.monitor import MonitorAgent
+
     agent = MonitorAgent()
     agent._audit_logger = tmp_audit_db
     status = agent.get_status()
@@ -177,6 +196,7 @@ def test_poll_metabase_handles_no_errors(tmp_audit_db):
     When get_new_errors returns empty list, no callback must be fired.
     """
     from src.agents.monitor import MonitorAgent
+
     agent = MonitorAgent()
     agent._audit_logger = tmp_audit_db
     agent._running = True
@@ -187,9 +207,11 @@ def test_poll_metabase_handles_no_errors(tmp_audit_db):
     empty_result = {"has_new_errors": False, "new_errors": [], "count": 0}
 
     try:
-        import mcp_servers.metabase_server  # ensure module is imported for patch
-        with patch("mcp_servers.metabase_server.get_new_errors", return_value=empty_result):
+        with patch(
+            "mcp_servers.metabase_server.get_new_errors", return_value=empty_result
+        ):
             from mcp_servers.metabase_server import get_new_errors
+
             result = get_new_errors(since_hours=1)
             if "error" not in result and result.get("has_new_errors"):
                 for error_row in result.get("new_errors", []):
@@ -197,7 +219,9 @@ def test_poll_metabase_handles_no_errors(tmp_audit_db):
     except Exception:
         pass  # MCP server deps not installed — test passes vacuously
 
-    assert not mock_callback.called, "Callback must not be called when there are no new errors."
+    assert not mock_callback.called, (
+        "Callback must not be called when there are no new errors."
+    )
 
 
 def test_poll_teams_handles_no_messages(tmp_audit_db):
@@ -205,6 +229,7 @@ def test_poll_teams_handles_no_messages(tmp_audit_db):
     When get_messages_since returns empty messages list, no 'teams_error' callback should fire.
     """
     from src.agents.monitor import MonitorAgent
+
     agent = MonitorAgent()
     agent._audit_logger = tmp_audit_db
 
@@ -214,9 +239,11 @@ def test_poll_teams_handles_no_messages(tmp_audit_db):
     empty_result = {"messages": [], "count": 0}
 
     try:
-        import mcp_servers.teams_server  # ensure module is imported for patch
-        with patch("mcp_servers.teams_server.get_messages_since", return_value=empty_result):
+        with patch(
+            "mcp_servers.teams_server.get_messages_since", return_value=empty_result
+        ):
             from mcp_servers.teams_server import get_messages_since
+
             result = get_messages_since(team_id="t", channel_id="c", since_minutes=2)
             if "error" not in result:
                 for msg in result.get("messages", []):
@@ -226,4 +253,6 @@ def test_poll_teams_handles_no_messages(tmp_audit_db):
     except Exception:
         pass  # MCP server deps not installed — test passes vacuously
 
-    assert not mock_callback.called, "Callback must not be called when there are no messages."
+    assert not mock_callback.called, (
+        "Callback must not be called when there are no messages."
+    )

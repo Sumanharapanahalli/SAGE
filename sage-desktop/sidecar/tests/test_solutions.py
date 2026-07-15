@@ -1,4 +1,5 @@
 """Tests for the sidecar solutions handler."""
+
 import sys
 from pathlib import Path
 
@@ -88,7 +89,9 @@ def test_remove_archives_by_default(solutions_dir):
     # which list_solutions skips.
     assert archived.parent == solutions_dir / ".archive"
     assert (archived / "project.yaml").is_file()
-    assert (archived / "src.py").read_text(encoding="utf-8") == "# precious source code\n"
+    assert (archived / "src.py").read_text(
+        encoding="utf-8"
+    ) == "# precious source code\n"
     # The other solution is untouched.
     assert (solutions_dir / "beta" / "project.yaml").is_file()
 
@@ -115,9 +118,7 @@ def test_remove_delete_requires_matching_confirm(solutions_dir):
 
 
 def test_remove_delete_with_confirm_erases_the_dir(solutions_dir):
-    result = solutions.remove(
-        {"name": "alpha", "mode": "delete", "confirm": "alpha"}
-    )
+    result = solutions.remove({"name": "alpha", "mode": "delete", "confirm": "alpha"})
     assert result["mode"] == "delete"
     assert not (solutions_dir / "alpha").exists()
     assert not (solutions_dir / ".archive").exists()

@@ -35,26 +35,44 @@ log = logging.getLogger(__name__)
 
 # ── CLI options ───────────────────────────────────────────────────────────────
 
+
 def pytest_addoption(parser: pytest.Parser) -> None:
-    parser.addoption("--hil-port",    default=os.environ.get("HIL_PORT",    "/dev/ttyACM0"))
-    parser.addoption("--hil-baud",    default=int(os.environ.get("HIL_BAUD", "115200")),
-                     type=int)
-    parser.addoption("--hil-timeout", default=float(os.environ.get("HIL_TIMEOUT", "5.0")),
-                     type=float)
-    parser.addoption("--dataset-dir", default=os.environ.get("DATASET_DIR",
-                     str(Path(__file__).parent.parent / "datasets")))
-    parser.addoption("--dhf-output",  default=os.environ.get("DHF_OUTPUT",
-                     str(Path(__file__).parent.parent / "dhf" / "HIL_Test_Report.json")))
-    parser.addoption("--skip-hil",    action="store_true", default=False,
-                     help="Skip tests requiring physical HIL board")
+    parser.addoption("--hil-port", default=os.environ.get("HIL_PORT", "/dev/ttyACM0"))
+    parser.addoption(
+        "--hil-baud", default=int(os.environ.get("HIL_BAUD", "115200")), type=int
+    )
+    parser.addoption(
+        "--hil-timeout", default=float(os.environ.get("HIL_TIMEOUT", "5.0")), type=float
+    )
+    parser.addoption(
+        "--dataset-dir",
+        default=os.environ.get(
+            "DATASET_DIR", str(Path(__file__).parent.parent / "datasets")
+        ),
+    )
+    parser.addoption(
+        "--dhf-output",
+        default=os.environ.get(
+            "DHF_OUTPUT",
+            str(Path(__file__).parent.parent / "dhf" / "HIL_Test_Report.json"),
+        ),
+    )
+    parser.addoption(
+        "--skip-hil",
+        action="store_true",
+        default=False,
+        help="Skip tests requiring physical HIL board",
+    )
+
 
 # ── HIL board fixtures ────────────────────────────────────────────────────────
+
 
 @pytest.fixture(scope="session")
 def hil_config(request: pytest.FixtureRequest) -> Dict[str, object]:
     return {
-        "port":    request.config.getoption("--hil-port"),
-        "baud":    request.config.getoption("--hil-baud"),
+        "port": request.config.getoption("--hil-port"),
+        "baud": request.config.getoption("--hil-baud"),
         "timeout": request.config.getoption("--hil-timeout"),
     }
 
@@ -67,7 +85,7 @@ def hil(hil_config: Dict[str, object], request: pytest.FixtureRequest) -> HILCon
 
     ctrl = HILController(
         port=str(hil_config["port"]),
-        baud=int(hil_config["baud"]),      # type: ignore[arg-type]
+        baud=int(hil_config["baud"]),  # type: ignore[arg-type]
         timeout=float(hil_config["timeout"]),  # type: ignore[arg-type]
     )
     ctrl.connect()
@@ -83,7 +101,9 @@ def hil_fresh(hil: HILController) -> HILController:
     hil.ping()
     yield hil
 
+
 # ── Dataset fixtures ──────────────────────────────────────────────────────────
+
 
 def _load_dataset(path: Path) -> List[Dict[str, int]]:
     """Load CSV accelerometer dataset. Columns: ax,ay,az,gx,gy,gz (mg/mdps)."""
@@ -91,14 +111,16 @@ def _load_dataset(path: Path) -> List[Dict[str, int]]:
     with open(path, newline="") as f:
         reader = csv.DictReader(f)
         for row in reader:
-            samples.append({
-                "ax": int(row["ax"]),
-                "ay": int(row["ay"]),
-                "az": int(row["az"]),
-                "gx": int(row.get("gx", "0")),
-                "gy": int(row.get("gy", "0")),
-                "gz": int(row.get("gz", "0")),
-            })
+            samples.append(
+                {
+                    "ax": int(row["ax"]),
+                    "ay": int(row["ay"]),
+                    "az": int(row["az"]),
+                    "gx": int(row.get("gx", "0")),
+                    "gy": int(row.get("gy", "0")),
+                    "gz": int(row.get("gz", "0")),
+                }
+            )
     return samples
 
 
@@ -154,9 +176,11 @@ def raw_samples(dataset_dir: Path) -> Dict[str, List[Dict[str, int]]]:
             cache[event_id] = _load_dataset(p)
         return cache[event_id]
 
-    return _get   # type: ignore[return-value]
+    return _get  # type: ignore[return-value]
+
 
 # ── DHF reporter fixture ──────────────────────────────────────────────────────
+
 
 @pytest.fixture(scope="session")
 def dhf(request: pytest.FixtureRequest) -> DHFReporter:
@@ -167,7 +191,9 @@ def dhf(request: pytest.FixtureRequest) -> DHFReporter:
     reporter.save()
     log.info("DHF report saved to %s", output)
 
+
 # ── Timing helper ─────────────────────────────────────────────────────────────
+
 
 @pytest.fixture
 def stopwatch():

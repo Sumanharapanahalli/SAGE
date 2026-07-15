@@ -15,7 +15,7 @@ Features
 
 import math
 import logging
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 import numpy as np
 
@@ -119,7 +119,7 @@ class LinearRegressionGD:
         if self.lr_schedule == "step":
             return lr0 * (self.lr_decay ** (iteration // self.step_size))
         if self.lr_schedule == "exponential":
-            return lr0 * (self.lr_decay ** iteration)
+            return lr0 * (self.lr_decay**iteration)
         if self.lr_schedule == "cosine":
             lr_min = lr0 / 100.0
             return lr_min + 0.5 * (lr0 - lr_min) * (
@@ -192,7 +192,7 @@ class LinearRegressionGD:
             Xb, yb = X_norm[idx], y_train[idx]
 
             # ── Gradients (MSE) ───────────────────────────────────────────────
-            err = self._forward(Xb) - yb          # (batch,)
+            err = self._forward(Xb) - yb  # (batch,)
             grad_w = (2.0 / effective_bs) * (Xb.T @ err)
             grad_b = (2.0 / effective_bs) * err.sum()
 
@@ -228,7 +228,9 @@ class LinearRegressionGD:
             else:
                 patience_ctr += 1
 
-            rel_improvement = abs(prev_train_loss - train_loss) / (prev_train_loss + 1e-12)
+            rel_improvement = abs(prev_train_loss - train_loss) / (
+                prev_train_loss + 1e-12
+            )
             prev_train_loss = train_loss
 
             if patience_ctr >= self.patience and rel_improvement < self.tol:
@@ -243,7 +245,9 @@ class LinearRegressionGD:
                     )
                 break
 
-            if self.verbose and (i % self.log_interval == 0 or i == self.n_iterations - 1):
+            if self.verbose and (
+                i % self.log_interval == 0 or i == self.n_iterations - 1
+            ):
                 logger.info(
                     "Iter %6d | lr=%.3e | train_loss=%.4f | eval_loss=%.4f",
                     i,
@@ -277,10 +281,10 @@ class LinearRegressionGD:
         y_pred = self.predict(X)
         residuals = y - y_pred
 
-        mse = float(np.mean(residuals ** 2))
+        mse = float(np.mean(residuals**2))
         rmse = float(np.sqrt(mse))
         mae = float(np.mean(np.abs(residuals)))
-        ss_res = float(np.sum(residuals ** 2))
+        ss_res = float(np.sum(residuals**2))
         ss_tot = float(np.sum((y - y.mean()) ** 2))
         r2 = 1.0 - ss_res / (ss_tot + 1e-12)
 

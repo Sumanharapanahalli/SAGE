@@ -31,14 +31,14 @@ logger = logging.getLogger(__name__)
 
 # ── Input dimensions ─────────────────────────────────────────────────────────
 WINDOW_SAMPLES = 400
-CHANNELS       = 6
+CHANNELS = 6
 
 
 def build_fallnet_micro(
     input_shape: Tuple[int, int] = (WINDOW_SAMPLES, CHANNELS),
     dropout_rate: float = 0.30,
     l2_reg: float = 1e-4,
-) -> "tf.keras.Model":
+) -> "tf.keras.Model":  # noqa: F821
     """
     Build the FallNet-Micro CNN-1D model.
 
@@ -58,40 +58,59 @@ def build_fallnet_micro(
     inp = tf.keras.Input(shape=input_shape, name="imu_window")
 
     # ── Block 1 ──────────────────────────────────────────────────────────
-    x = layers.Conv1D(16, kernel_size=5, padding="same",
-                      kernel_regularizer=reg, use_bias=False,
-                      name="conv1")(inp)
+    x = layers.Conv1D(
+        16,
+        kernel_size=5,
+        padding="same",
+        kernel_regularizer=reg,
+        use_bias=False,
+        name="conv1",
+    )(inp)
     x = layers.BatchNormalization(name="bn1")(x)
     x = layers.ReLU(name="relu1")(x)
     x = layers.MaxPooling1D(pool_size=2, name="pool1")(x)
 
     # ── Block 2 ──────────────────────────────────────────────────────────
-    x = layers.Conv1D(32, kernel_size=5, padding="same",
-                      kernel_regularizer=reg, use_bias=False,
-                      name="conv2")(x)
+    x = layers.Conv1D(
+        32,
+        kernel_size=5,
+        padding="same",
+        kernel_regularizer=reg,
+        use_bias=False,
+        name="conv2",
+    )(x)
     x = layers.BatchNormalization(name="bn2")(x)
     x = layers.ReLU(name="relu2")(x)
     x = layers.MaxPooling1D(pool_size=2, name="pool2")(x)
 
     # ── Block 3 ──────────────────────────────────────────────────────────
-    x = layers.Conv1D(64, kernel_size=3, padding="same",
-                      kernel_regularizer=reg, use_bias=False,
-                      name="conv3")(x)
+    x = layers.Conv1D(
+        64,
+        kernel_size=3,
+        padding="same",
+        kernel_regularizer=reg,
+        use_bias=False,
+        name="conv3",
+    )(x)
     x = layers.BatchNormalization(name="bn3")(x)
     x = layers.ReLU(name="relu3")(x)
     x = layers.MaxPooling1D(pool_size=2, name="pool3")(x)
 
     # ── Block 4 ──────────────────────────────────────────────────────────
-    x = layers.Conv1D(32, kernel_size=3, padding="same",
-                      kernel_regularizer=reg, use_bias=False,
-                      name="conv4")(x)
+    x = layers.Conv1D(
+        32,
+        kernel_size=3,
+        padding="same",
+        kernel_regularizer=reg,
+        use_bias=False,
+        name="conv4",
+    )(x)
     x = layers.BatchNormalization(name="bn4")(x)
     x = layers.ReLU(name="relu4")(x)
     x = layers.GlobalAveragePooling1D(name="gap")(x)
 
     # ── Classification head ───────────────────────────────────────────────
-    x = layers.Dense(32, activation="relu", kernel_regularizer=reg,
-                     name="dense1")(x)
+    x = layers.Dense(32, activation="relu", kernel_regularizer=reg, name="dense1")(x)
     x = layers.Dropout(dropout_rate, name="dropout")(x)
     out = layers.Dense(1, activation="sigmoid", name="output")(x)
 
@@ -111,25 +130,25 @@ def build_fallnet_micro(
     return model
 
 
-def model_summary_str(model: "tf.keras.Model") -> str:
+def model_summary_str(model: "tf.keras.Model") -> str:  # noqa: F821
     """Return model summary as a string for logging / reports."""
     lines = []
     model.summary(print_fn=lambda s: lines.append(s))
     return "\n".join(lines)
 
 
-def count_params(model: "tf.keras.Model") -> dict:
+def count_params(model: "tf.keras.Model") -> dict:  # noqa: F821
     """Return parameter counts for the model card."""
-    total     = model.count_params()
+    total = model.count_params()
     trainable = sum(np.prod(v.shape) for v in model.trainable_variables)
     return {
-        "total_params":     int(total),
+        "total_params": int(total),
         "trainable_params": int(trainable),
-        "int8_size_kb":     round(total / 1024, 1),
+        "int8_size_kb": round(total / 1024, 1),
     }
 
 
-def estimate_macs(model: "tf.keras.Model") -> int:
+def estimate_macs(model: "tf.keras.Model") -> int:  # noqa: F821
     """
     Estimate multiply-accumulate operations for a Conv1D model.
     MACs(conv) = L_out × C_in × C_out × kernel
@@ -140,12 +159,15 @@ def estimate_macs(model: "tf.keras.Model") -> int:
         if "Conv1D" in type(layer).__name__:
             # Approximate: ignores stride details
             try:
-                filters   = cfg["filters"]
-                kernel    = cfg["kernel_size"][0] if isinstance(
-                    cfg["kernel_size"], (list, tuple)) else cfg["kernel_size"]
-                in_ch     = layer.input_shape[-1]
-                out_len   = layer.output_shape[-2]
-                macs     += out_len * in_ch * filters * kernel
+                filters = cfg["filters"]
+                kernel = (
+                    cfg["kernel_size"][0]
+                    if isinstance(cfg["kernel_size"], (list, tuple))
+                    else cfg["kernel_size"]
+                )
+                in_ch = layer.input_shape[-1]
+                out_len = layer.output_shape[-2]
+                macs += out_len * in_ch * filters * kernel
             except Exception:
                 pass
     return macs

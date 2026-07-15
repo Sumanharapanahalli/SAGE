@@ -25,20 +25,25 @@ pytestmark = pytest.mark.unit
 # LLMGateway.generate_stream() unit tests
 # ---------------------------------------------------------------------------
 
-class TestGenerateStream:
 
+class TestGenerateStream:
     def _fresh_gateway(self):
         """Return a fresh LLMGateway with a mock provider."""
         from src.core.llm_gateway import LLMGateway
+
         gw = LLMGateway.__new__(LLMGateway)
         gw._initialized = True
         gw.logger = __import__("logging").getLogger("test")
         gw._usage = {
-            "calls": 0, "calls_today": 0,
-            "estimated_tokens": 0, "errors": 0,
-            "started_at": 0, "day_started_at": 0,
+            "calls": 0,
+            "calls_today": 0,
+            "estimated_tokens": 0,
+            "errors": 0,
+            "started_at": 0,
+            "day_started_at": 0,
         }
         import threading
+
         gw._lock = threading.Lock()
         return gw
 
@@ -91,10 +96,11 @@ class TestGenerateStream:
 # API SSE endpoint tests
 # ---------------------------------------------------------------------------
 
-class TestSSEEndpoints:
 
+class TestSSEEndpoints:
     def _client(self):
         from src.interface.api import app
+
         return TestClient(app, raise_server_exceptions=False)
 
     def _parse_sse_events(self, content: bytes) -> list[dict]:
@@ -111,11 +117,14 @@ class TestSSEEndpoints:
     def test_analyze_stream_returns_200(self):
         """POST /analyze/stream must return 200 with text/event-stream content type."""
         from src.core import llm_gateway as gw_module
+
         mock_gw = MagicMock()
         mock_gw.generate_stream.return_value = iter(["Hello ", "world."])
 
-        with patch.object(gw_module, "llm_gateway", mock_gw), \
-             patch("src.interface.api._get_audit_logger", return_value=MagicMock()):
+        with (
+            patch.object(gw_module, "llm_gateway", mock_gw),
+            patch("src.interface.api._get_audit_logger", return_value=MagicMock()),
+        ):
             resp = self._client().post(
                 "/analyze/stream",
                 json={"log_entry": "Error: disk full on /dev/sda1"},
@@ -132,11 +141,14 @@ class TestSSEEndpoints:
     def test_analyze_stream_contains_meta_and_done_events(self):
         """SSE response must contain meta, at least one token, and done events."""
         from src.core import llm_gateway as gw_module
+
         mock_gw = MagicMock()
         mock_gw.generate_stream.return_value = iter(["Analysis ", "complete."])
 
-        with patch.object(gw_module, "llm_gateway", mock_gw), \
-             patch("src.interface.api._get_audit_logger", return_value=MagicMock()):
+        with (
+            patch.object(gw_module, "llm_gateway", mock_gw),
+            patch("src.interface.api._get_audit_logger", return_value=MagicMock()),
+        ):
             resp = self._client().post(
                 "/analyze/stream",
                 json={"log_entry": "sample log"},
@@ -151,11 +163,14 @@ class TestSSEEndpoints:
     def test_analyze_stream_token_events_contain_content(self):
         """Every token event must have a non-empty 'content' field."""
         from src.core import llm_gateway as gw_module
+
         mock_gw = MagicMock()
         mock_gw.generate_stream.return_value = iter(["chunk1", "chunk2"])
 
-        with patch.object(gw_module, "llm_gateway", mock_gw), \
-             patch("src.interface.api._get_audit_logger", return_value=MagicMock()):
+        with (
+            patch.object(gw_module, "llm_gateway", mock_gw),
+            patch("src.interface.api._get_audit_logger", return_value=MagicMock()),
+        ):
             resp = self._client().post("/analyze/stream", json={"log_entry": "log"})
 
         events = self._parse_sse_events(resp.content)
@@ -167,11 +182,14 @@ class TestSSEEndpoints:
     def test_analyze_stream_meta_contains_trace_id(self):
         """The meta event must include a trace_id."""
         from src.core import llm_gateway as gw_module
+
         mock_gw = MagicMock()
         mock_gw.generate_stream.return_value = iter(["ok"])
 
-        with patch.object(gw_module, "llm_gateway", mock_gw), \
-             patch("src.interface.api._get_audit_logger", return_value=MagicMock()):
+        with (
+            patch.object(gw_module, "llm_gateway", mock_gw),
+            patch("src.interface.api._get_audit_logger", return_value=MagicMock()),
+        ):
             resp = self._client().post("/analyze/stream", json={"log_entry": "log"})
 
         events = self._parse_sse_events(resp.content)
@@ -182,11 +200,14 @@ class TestSSEEndpoints:
     def test_agent_stream_returns_200(self):
         """POST /agent/stream with valid role and task must return 200."""
         from src.core import llm_gateway as gw_module
+
         mock_gw = MagicMock()
         mock_gw.generate_stream.return_value = iter(["Agent response."])
 
-        with patch.object(gw_module, "llm_gateway", mock_gw), \
-             patch("src.interface.api._get_audit_logger", return_value=MagicMock()):
+        with (
+            patch.object(gw_module, "llm_gateway", mock_gw),
+            patch("src.interface.api._get_audit_logger", return_value=MagicMock()),
+        ):
             resp = self._client().post(
                 "/agent/stream",
                 json={"role": "analyst", "task": "Review the error log"},

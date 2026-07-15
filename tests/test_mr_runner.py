@@ -4,6 +4,7 @@ Covers the paths that matter for the compliance gate: a PR is never opened while
 red; approval triggers a signed merge; changes-requested reworks then merges; a manual GitHub
 merge is detected and recorded; gh-unavailable fails cleanly without creating a worktree.
 """
+
 from __future__ import annotations
 
 import pytest
@@ -15,11 +16,22 @@ pytestmark = pytest.mark.unit
 
 
 class FakeGitHub:
-    def __init__(self, *, available=True, decisions=None, states=None,
-                 create_ok=True, merge_ok=True):
+    def __init__(
+        self,
+        *,
+        available=True,
+        decisions=None,
+        states=None,
+        create_ok=True,
+        merge_ok=True,
+    ):
         self._available = available
-        self._decisions = list(decisions or [])   # consumed per poll: review_decision values
-        self._states = list(states or [])          # consumed per poll: state values (default OPEN)
+        self._decisions = list(
+            decisions or []
+        )  # consumed per poll: review_decision values
+        self._states = list(
+            states or []
+        )  # consumed per poll: state values (default OPEN)
         self.create_ok = create_ok
         self.merge_ok = merge_ok
         self.created = None
@@ -38,7 +50,12 @@ class FakeGitHub:
     def state(self, number):
         st = self._states.pop(0) if self._states else "OPEN"
         dec = self._decisions.pop(0) if self._decisions else "REVIEW_REQUIRED"
-        return {"state": st, "review_decision": dec, "merged_sha": "sha-manual", "error": ""}
+        return {
+            "state": st,
+            "review_decision": dec,
+            "merged_sha": "sha-manual",
+            "error": "",
+        }
 
     def get_comments(self, number):
         return [{"author": "harish", "body": "handle the null case", "created": "t"}]
@@ -49,7 +66,11 @@ class FakeGitHub:
 
     def merge(self, number, method="squash"):
         self.merged = True
-        return {"ok": self.merge_ok, "sha": "sha-merged", "error": "" if self.merge_ok else "no"}
+        return {
+            "ok": self.merge_ok,
+            "sha": "sha-merged",
+            "error": "" if self.merge_ok else "no",
+        }
 
 
 class FakeWorktree:
@@ -88,8 +109,11 @@ def _runner(tmp_path, github, *, gate_sequence, merges):
 
     def gate_fn(path):
         green = seq.pop(0) if seq else True
-        return {"green": green, "evidence": {"gate_green": green, "summary": "did work"},
-                "output": "FAILED: x" if not green else "ok"}
+        return {
+            "green": green,
+            "evidence": {"gate_green": green, "summary": "did work"},
+            "output": "FAILED: x" if not green else "ok",
+        }
 
     def git_fn(path, *args, timeout=30):
         return 0, "1 file changed"
@@ -98,10 +122,20 @@ def _runner(tmp_path, github, *, gate_sequence, merges):
         merges.append({"approver": approver, "mr_id": mr_id, "sha": sha})
         return "sig-" + sha
 
-    r = MRRunner(store=store, github=github, worktree=FakeWorktree(tmp_path),
-                 code_fn=code_fn, gate_fn=gate_fn, package=FakePackage(),
-                 record_merge=record_merge, git_fn=git_fn, sleep_fn=lambda *_: None,
-                 rework_max=2, poll_max=5, poll_interval=0)
+    r = MRRunner(
+        store=store,
+        github=github,
+        worktree=FakeWorktree(tmp_path),
+        code_fn=code_fn,
+        gate_fn=gate_fn,
+        package=FakePackage(),
+        record_merge=record_merge,
+        git_fn=git_fn,
+        sleep_fn=lambda *_: None,
+        rework_max=2,
+        poll_max=5,
+        poll_interval=0,
+    )
     return r, store
 
 
@@ -162,15 +196,20 @@ def test_manual_github_merge_is_detected_and_recorded(tmp_path):
 
 
 def test_gh_unavailable_fails_without_worktree(tmp_path):
-    merges = []
     gh = FakeGitHub(available=False)
     wt = FakeWorktree(tmp_path)
     store = MRStore(str(tmp_path / "mr.db"))
-    r = MRRunner(store=store, github=gh, worktree=wt,
-                 code_fn=lambda p, c: {"summary": "", "written_files": []},
-                 gate_fn=lambda p: {"green": True, "evidence": {}, "output": ""},
-                 package=FakePackage(), record_merge=lambda *a: "s",
-                 git_fn=lambda p, *a, timeout=30: (0, ""), sleep_fn=lambda *_: None)
+    r = MRRunner(
+        store=store,
+        github=gh,
+        worktree=wt,
+        code_fn=lambda p, c: {"summary": "", "written_files": []},
+        gate_fn=lambda p: {"green": True, "evidence": {}, "output": ""},
+        package=FakePackage(),
+        record_merge=lambda *a: "s",
+        git_fn=lambda p, *a, timeout=30: (0, ""),
+        sleep_fn=lambda *_: None,
+    )
     mr = store.create("x", "sage/mr-6")
     res = r.run(mr)
     assert res["state"] == "failed"
@@ -192,16 +231,26 @@ def test_commit_stages_only_the_agents_files_not_add_A(tmp_path):
     ONLY the agent's declared files, never `git add -A` (PR #12 leaked chroma/gym binaries)."""
     from src.core.mr_runner import MRRunner
     from src.core.mr_store import MRStore
+
     calls = []
 
     def git_fn(path, *args, timeout=30):
         calls.append(args)
         return 0, "ok"
 
-    r = MRRunner(store=MRStore(str(tmp_path / "mr.db")), github=None, worktree=None,
-                 code_fn=lambda p, c: {}, gate_fn=lambda p: {"green": True}, package=None,
-                 record_merge=lambda *a: "s", git_fn=git_fn)
-    ok, _ = r._commit_and_push("/wt", "sage/mr-x", "msg", files=["CLAUDE.md", "src/x.py"])
+    r = MRRunner(
+        store=MRStore(str(tmp_path / "mr.db")),
+        github=None,
+        worktree=None,
+        code_fn=lambda p, c: {},
+        gate_fn=lambda p: {"green": True},
+        package=None,
+        record_merge=lambda *a: "s",
+        git_fn=git_fn,
+    )
+    ok, _ = r._commit_and_push(
+        "/wt", "sage/mr-x", "msg", files=["CLAUDE.md", "src/x.py"]
+    )
     assert ok
     add_args = [a for a in calls if a and a[0] == "add"]
     # Every add is scoped with `--` to a declared file; none is a bare `add -A`.

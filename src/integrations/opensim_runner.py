@@ -12,9 +12,13 @@ Docker: sage/hw-simulation:latest
 import logging
 
 from src.integrations.base_runner import (
-    BaseRunner, RunResult, VerificationReport, VerificationFinding,
-    VerificationSeverity, Exercise, ExerciseScore,
-    register_runner, SIM_ROLES,
+    BaseRunner,
+    VerificationReport,
+    VerificationFinding,
+    VerificationSeverity,
+    Exercise,
+    register_runner,
+    SIM_ROLES,
 )
 
 logger = logging.getLogger("Runner.opensim")
@@ -46,9 +50,9 @@ class OpenSimRunner(BaseRunner):
                 "- Include testbench with stimulus\n"
                 "- Specify simulation parameters (time, step, accuracy)\n"
                 "- Include expected output waveform descriptions\n\n"
-                "Output as JSON: {\"files\": [{\"path\": \"...\", \"content\": \"...\"}], "
-                "\"sim_type\": \"spice|verilog\", \"sim_time_us\": N, "
-                "\"expected_outputs\": [\"...\"]}\n"
+                'Output as JSON: {"files": [{"path": "...", "content": "..."}], '
+                '"sim_type": "spice|verilog", "sim_time_us": N, '
+                '"expected_outputs": ["..."]}\n'
             )
 
             response = llm_gateway.generate_for_task(
@@ -62,6 +66,7 @@ class OpenSimRunner(BaseRunner):
             metrics = {}
             try:
                 import json
+
                 start = response.find("{")
                 end = response.rfind("}") + 1
                 if start >= 0 and end > start:
@@ -73,8 +78,12 @@ class OpenSimRunner(BaseRunner):
                 pass
 
             return self._make_result(
-                run_id=run_id, status="completed", tier="direct",
-                output=response, files_changed=files_changed, metrics=metrics,
+                run_id=run_id,
+                status="completed",
+                tier="direct",
+                output=response,
+                files_changed=files_changed,
+                metrics=metrics,
             )
         except Exception as exc:
             self.logger.error("OpenSim execute failed: %s", exc)
@@ -85,9 +94,15 @@ class OpenSimRunner(BaseRunner):
         score = 30.0
 
         if result.status == "error":
-            return VerificationReport(passed=False, score=0.0, findings=[
-                VerificationFinding("execution", VerificationSeverity.ERROR, "Failed"),
-            ])
+            return VerificationReport(
+                passed=False,
+                score=0.0,
+                findings=[
+                    VerificationFinding(
+                        "execution", VerificationSeverity.ERROR, "Failed"
+                    ),
+                ],
+            )
 
         metrics = result.metrics or {}
 
@@ -95,28 +110,42 @@ class OpenSimRunner(BaseRunner):
         converged = metrics.get("converged", None)
         if converged is True:
             score += 25
-            findings.append(VerificationFinding(
-                "convergence", VerificationSeverity.PASS, "Simulation converged",
-            ))
+            findings.append(
+                VerificationFinding(
+                    "convergence",
+                    VerificationSeverity.PASS,
+                    "Simulation converged",
+                )
+            )
         elif converged is False:
-            findings.append(VerificationFinding(
-                "convergence", VerificationSeverity.ERROR, "Simulation did not converge",
-            ))
+            findings.append(
+                VerificationFinding(
+                    "convergence",
+                    VerificationSeverity.ERROR,
+                    "Simulation did not converge",
+                )
+            )
 
         # Timing check
         timing_slack = metrics.get("timing_slack_ns")
         if isinstance(timing_slack, (int, float)):
             if timing_slack >= 0:
                 score += 20
-                findings.append(VerificationFinding(
-                    "timing", VerificationSeverity.PASS,
-                    f"Timing met: {timing_slack}ns slack",
-                ))
+                findings.append(
+                    VerificationFinding(
+                        "timing",
+                        VerificationSeverity.PASS,
+                        f"Timing met: {timing_slack}ns slack",
+                    )
+                )
             else:
-                findings.append(VerificationFinding(
-                    "timing", VerificationSeverity.ERROR,
-                    f"Timing violation: {timing_slack}ns slack",
-                ))
+                findings.append(
+                    VerificationFinding(
+                        "timing",
+                        VerificationSeverity.ERROR,
+                        f"Timing violation: {timing_slack}ns slack",
+                    )
+                )
 
         # Files produced
         if result.files_changed:
@@ -124,16 +153,28 @@ class OpenSimRunner(BaseRunner):
 
         # Simulation keywords
         output_lower = (result.output or "").lower()
-        sim_kws = ["spice", "verilog", "module", "wire", "reg", "netlist", "testbench", "stimulus"]
+        sim_kws = [
+            "spice",
+            "verilog",
+            "module",
+            "wire",
+            "reg",
+            "netlist",
+            "testbench",
+            "stimulus",
+        ]
         if sum(1 for k in sim_kws if k in output_lower) >= 2:
             score += 10
 
         score = min(score, 100.0)
-        return VerificationReport(passed=score >= 40.0, score=score, findings=findings, metrics=metrics)
+        return VerificationReport(
+            passed=score >= 40.0, score=score, findings=findings, metrics=metrics
+        )
 
     def get_toolchain(self):
         return {
-            "runner": self.name, "docker_image": self.docker_image,
+            "runner": self.name,
+            "docker_image": self.docker_image,
             "roles": self.roles,
             "tools": ["ngspice", "iverilog", "verilator", "gtkwave", "yosys"],
             "packages": ["ngspice", "iverilog", "gtkwave", "yosys", "verilator"],
@@ -141,14 +182,42 @@ class OpenSimRunner(BaseRunner):
 
     def get_workflow(self):
         return [
-            {"step": 1, "name": "spec_review", "description": "Parse circuit/HDL specification"},
-            {"step": 2, "name": "model", "description": "Create SPICE netlist or Verilog module"},
-            {"step": 3, "name": "testbench", "description": "Create testbench with stimulus"},
+            {
+                "step": 1,
+                "name": "spec_review",
+                "description": "Parse circuit/HDL specification",
+            },
+            {
+                "step": 2,
+                "name": "model",
+                "description": "Create SPICE netlist or Verilog module",
+            },
+            {
+                "step": 3,
+                "name": "testbench",
+                "description": "Create testbench with stimulus",
+            },
             {"step": 4, "name": "simulate", "description": "Run simulation engine"},
-            {"step": 5, "name": "run_simulation", "description": "Execute simulation with parameters"},
-            {"step": 6, "name": "waveform_analysis", "description": "Analyze output waveforms"},
-            {"step": 7, "name": "timing_check", "description": "Verify timing constraints"},
-            {"step": 8, "name": "synthesis", "description": "Synthesize to gate-level (digital only)"},
+            {
+                "step": 5,
+                "name": "run_simulation",
+                "description": "Execute simulation with parameters",
+            },
+            {
+                "step": 6,
+                "name": "waveform_analysis",
+                "description": "Analyze output waveforms",
+            },
+            {
+                "step": 7,
+                "name": "timing_check",
+                "description": "Verify timing constraints",
+            },
+            {
+                "step": 8,
+                "name": "synthesis",
+                "description": "Synthesize to gate-level (digital only)",
+            },
         ]
 
     def get_experience_keys(self):
@@ -161,25 +230,52 @@ class OpenSimRunner(BaseRunner):
             return catalog
         fallback = {
             "beginner": [
-                Exercise(id="sim-b01", role="hardware_sim_engineer", task_type="HARDWARE_SIM",
-                         difficulty="beginner",
-                         description="Simulate an RC low-pass filter with cutoff at 1kHz using SPICE",
-                         acceptance_criteria=["SPICE netlist valid", "Simulation converges", "-3dB at 1kHz"],
-                         expected_artifacts=["rc_filter.spice"], tags=["spice", "analog"]),
+                Exercise(
+                    id="sim-b01",
+                    role="hardware_sim_engineer",
+                    task_type="HARDWARE_SIM",
+                    difficulty="beginner",
+                    description="Simulate an RC low-pass filter with cutoff at 1kHz using SPICE",
+                    acceptance_criteria=[
+                        "SPICE netlist valid",
+                        "Simulation converges",
+                        "-3dB at 1kHz",
+                    ],
+                    expected_artifacts=["rc_filter.spice"],
+                    tags=["spice", "analog"],
+                ),
             ],
             "intermediate": [
-                Exercise(id="sim-i01", role="hardware_sim_engineer", task_type="HARDWARE_SIM",
-                         difficulty="intermediate",
-                         description="Write Verilog for a synchronous FIFO (depth 16, width 8)",
-                         acceptance_criteria=["Verilog valid", "Testbench covers edge cases", "100MHz timing met"],
-                         expected_artifacts=["fifo.v", "fifo_tb.v"], tags=["verilog", "digital"]),
+                Exercise(
+                    id="sim-i01",
+                    role="hardware_sim_engineer",
+                    task_type="HARDWARE_SIM",
+                    difficulty="intermediate",
+                    description="Write Verilog for a synchronous FIFO (depth 16, width 8)",
+                    acceptance_criteria=[
+                        "Verilog valid",
+                        "Testbench covers edge cases",
+                        "100MHz timing met",
+                    ],
+                    expected_artifacts=["fifo.v", "fifo_tb.v"],
+                    tags=["verilog", "digital"],
+                ),
             ],
             "advanced": [
-                Exercise(id="sim-a01", role="hardware_sim_engineer", task_type="HARDWARE_SIM",
-                         difficulty="advanced",
-                         description="Design a PLL with 100MHz output from 25MHz reference",
-                         acceptance_criteria=["PLL model complete", "Lock time measured", "Phase noise analysis"],
-                         expected_artifacts=["pll.spice", "analysis.txt"], tags=["pll", "mixed-signal"]),
+                Exercise(
+                    id="sim-a01",
+                    role="hardware_sim_engineer",
+                    task_type="HARDWARE_SIM",
+                    difficulty="advanced",
+                    description="Design a PLL with 100MHz output from 25MHz reference",
+                    acceptance_criteria=[
+                        "PLL model complete",
+                        "Lock time measured",
+                        "Phase noise analysis",
+                    ],
+                    expected_artifacts=["pll.spice", "analysis.txt"],
+                    tags=["pll", "mixed-signal"],
+                ),
             ],
         }
         return fallback.get(difficulty, fallback["intermediate"])
@@ -204,8 +300,21 @@ class OpenSimRunner(BaseRunner):
 
         # Simulation keywords
         output_lower = (result.output or "").lower()
-        sim_kws = ["spice", "verilog", "module", "testbench", ".tran", ".ac", "wire",
-                    "reg", "assign", "always", "initial", "netlist", "subckt"]
+        sim_kws = [
+            "spice",
+            "verilog",
+            "module",
+            "testbench",
+            ".tran",
+            ".ac",
+            "wire",
+            "reg",
+            "assign",
+            "always",
+            "initial",
+            "netlist",
+            "subckt",
+        ]
         kw_hits = sum(1 for k in sim_kws if k in output_lower)
         if kw_hits >= 3:
             score += 20
@@ -214,8 +323,16 @@ class OpenSimRunner(BaseRunner):
             score += 10
 
         # Waveform / measurement patterns
-        measure_kws = ["waveform", "frequency", "phase", "amplitude", "delay",
-                       "rise time", "overshoot", "bandwidth"]
+        measure_kws = [
+            "waveform",
+            "frequency",
+            "phase",
+            "amplitude",
+            "delay",
+            "rise time",
+            "overshoot",
+            "bandwidth",
+        ]
         if sum(1 for k in measure_kws if k in output_lower) >= 1:
             score += 10
             criteria["has_measurements"] = True
@@ -232,7 +349,11 @@ class OpenSimRunner(BaseRunner):
             criteria["verification_passed"] = True
 
         return self._combined_grade(
-            exercise, result, min(score, 100.0), criteria, hints,
+            exercise,
+            result,
+            min(score, 100.0),
+            criteria,
+            hints,
             domain_context=(
                 "Grade as a senior HW simulation engineer. Check for:\n"
                 "- Correct SPICE syntax or synthesizable Verilog\n"

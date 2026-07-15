@@ -38,10 +38,10 @@ import json
 import logging
 import os
 import warnings
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import joblib
 import mlflow
@@ -52,7 +52,6 @@ import pandas as pd
 from imblearn.over_sampling import SMOTENC
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.compose import ColumnTransformer
-from sklearn.ensemble import GradientBoostingClassifier, VotingClassifier
 from sklearn.impute import SimpleImputer
 from sklearn.metrics import (
     accuracy_score,
@@ -90,29 +89,48 @@ logging.basicConfig(
 )
 
 # ── Triage categories (MIMIC-IV ESI scale 1–5, mapped to 3 classes) ──────────
-LABEL_MAP = {1: "critical", 2: "critical", 3: "urgent", 4: "non-urgent", 5: "non-urgent"}
+LABEL_MAP = {
+    1: "critical",
+    2: "critical",
+    3: "urgent",
+    4: "non-urgent",
+    5: "non-urgent",
+}
 CLASSES = ["non-urgent", "urgent", "critical"]
 
 # ── Feature sets (no post-discharge or future-derived columns) ────────────────
 NUMERIC_FEATURES = [
-    "age", "heart_rate", "resp_rate", "o2_sat", "sbp", "dbp",
-    "temperature", "pain_score", "n_prior_admissions", "n_active_diagnoses",
+    "age",
+    "heart_rate",
+    "resp_rate",
+    "o2_sat",
+    "sbp",
+    "dbp",
+    "temperature",
+    "pain_score",
+    "n_prior_admissions",
+    "n_active_diagnoses",
     "charlson_comorbidity_index",
 ]
 CATEGORICAL_FEATURES = [
-    "gender", "race", "insurance", "arrival_transport", "chief_complaint_category",
+    "gender",
+    "race",
+    "insurance",
+    "arrival_transport",
+    "chief_complaint_category",
 ]
 PROTECTED_ATTRIBUTES = ["gender", "race", "age_group", "insurance"]
 
 RANDOM_STATE = 42
 TEST_SIZE = 0.20
-VAL_SIZE = 0.20   # fraction of train set used for validation
+VAL_SIZE = 0.20  # fraction of train set used for validation
 N_CV_FOLDS = 5
 N_OPTUNA_TRIALS = 50
 MLFLOW_EXPERIMENT = "samed_symptom_checker_v1"
 
 
 # ── Dataclasses ───────────────────────────────────────────────────────────────
+
 
 @dataclass
 class SplitStats:
@@ -126,6 +144,7 @@ class SplitStats:
 @dataclass
 class ClinicalMetrics:
     """Clinical performance metrics for SaMD 510(k) performance summary."""
+
     accuracy: float
     balanced_accuracy: float
     macro_f1: float
@@ -135,8 +154,8 @@ class ClinicalMetrics:
     macro_precision: float
     macro_recall: float
     cohen_kappa: float
-    brier_score: float           # calibration quality
-    average_precision: float     # area under PR curve
+    brier_score: float  # calibration quality
+    average_precision: float  # area under PR curve
     sensitivity_per_class: dict[str, float]
     specificity_per_class: dict[str, float]
     ppv_per_class: dict[str, float]
@@ -160,6 +179,7 @@ class PipelineResult:
 
 # ── Main pipeline ─────────────────────────────────────────────────────────────
 
+
 class SymptomCheckerPipeline:
     """
     End-to-end SaMD ML pipeline.
@@ -175,7 +195,7 @@ class SymptomCheckerPipeline:
     """
 
     # FDA-negotiated performance thresholds (to be set per 510(k) submission)
-    MIN_SENSITIVITY = 0.80       # critical class must achieve ≥0.85 in practice
+    MIN_SENSITIVITY = 0.80  # critical class must achieve ≥0.85 in practice
     MIN_AUROC = 0.85
     MIN_CRITICAL_SENSITIVITY = 0.85  # safety-critical: must not miss critical cases
 
@@ -199,17 +219,23 @@ class SymptomCheckerPipeline:
 
     def run(self) -> PipelineResult:
         logger.info("═══ SaMD Symptom Checker Pipeline ═══")
-        logger.info("IRB: %s  Dataset: %s", self.irb_record.irb_number, self.irb_record.dataset_name)
+        logger.info(
+            "IRB: %s  Dataset: %s",
+            self.irb_record.irb_number,
+            self.irb_record.dataset_name,
+        )
 
         with mlflow.start_run() as run:
             run_id = run.info.run_id
-            mlflow.set_tags({
-                "irb_number": self.irb_record.irb_number,
-                "dataset": self.irb_record.dataset_name,
-                "iec62304_class": "B",
-                "fda_pathway": "510k",
-                "pipeline_version": "1.0.0",
-            })
+            mlflow.set_tags(
+                {
+                    "irb_number": self.irb_record.irb_number,
+                    "dataset": self.irb_record.dataset_name,
+                    "iec62304_class": "B",
+                    "fda_pathway": "510k",
+                    "pipeline_version": "1.0.0",
+                }
+            )
 
             # ── Stage 1: Load + validate ──────────────────────────────────────
             df = self._load_and_validate()
@@ -218,20 +244,22 @@ class SymptomCheckerPipeline:
             df = self._engineer_features(df)
 
             # ── Stage 3: Subject-level stratified split ───────────────────────
-            X_train, X_val, X_test, y_train, y_val, y_test, split_stats = self._split(df)
+            X_train, X_val, X_test, y_train, y_val, y_test, split_stats = self._split(
+                df
+            )
             self._log_split_stats(split_stats)
 
             # ── Stage 4: Preprocessing (fit on train ONLY) ────────────────────
             preprocessor, cat_idx = self._build_preprocessor(X_train)
             X_train_proc = preprocessor.fit_transform(X_train)
-            X_val_proc   = preprocessor.transform(X_val)
-            X_test_proc  = preprocessor.transform(X_test)
+            X_val_proc = preprocessor.transform(X_val)
+            X_test_proc = preprocessor.transform(X_test)
 
             # ── Stage 5: Class imbalance handling (train only) ────────────────
             le = LabelEncoder()
             y_train_enc = le.fit_transform(y_train)
-            y_val_enc   = le.transform(y_val)
-            y_test_enc  = le.transform(y_test)
+            y_val_enc = le.transform(y_val)
+            y_test_enc = le.transform(y_test)
 
             X_train_bal, y_train_bal = self._handle_imbalance(
                 X_train_proc, y_train_enc, cat_idx
@@ -274,8 +302,11 @@ class SymptomCheckerPipeline:
             # ── Stage 11: Save artifacts ──────────────────────────────────────
             artifacts = self._save_artifacts(calibrated, preprocessor, le, run_id)
             mlflow.sklearn.log_model(
-                calibrated, "model",
-                input_example=pd.DataFrame(X_test_proc[:1], columns=self._feature_names()),
+                calibrated,
+                "model",
+                input_example=pd.DataFrame(
+                    X_test_proc[:1], columns=self._feature_names()
+                ),
             )
 
             result = PipelineResult(
@@ -294,7 +325,9 @@ class SymptomCheckerPipeline:
             )
             logger.info(
                 "Pipeline complete. run_id=%s  perf_gate=%s  bias_gate=%s",
-                run_id, passes_perf, passes_bias,
+                run_id,
+                passes_perf,
+                passes_bias,
             )
             return result
 
@@ -307,9 +340,13 @@ class SymptomCheckerPipeline:
         elif self.data_path.suffix == ".csv":
             df = pd.read_csv(self.data_path)
         else:
-            raise ValueError(f"Unsupported format: {self.data_path.suffix}. Use .parquet or .csv")
+            raise ValueError(
+                f"Unsupported format: {self.data_path.suffix}. Use .parquet or .csv"
+            )
 
-        validator = DataValidator(self.irb_record, artifact_dir=str(self.artifact_dir / "validation"))
+        validator = DataValidator(
+            self.irb_record, artifact_dir=str(self.artifact_dir / "validation")
+        )
         # Map ESI scores to triage categories before validation
         if "esi" in df.columns:
             df["triage_category"] = df["esi"].map(LABEL_MAP)
@@ -317,11 +354,15 @@ class SymptomCheckerPipeline:
         report = validator.validate(df, label_col="triage_category")
         if not report.passes_all_checks:
             raise RuntimeError(
-                f"Dataset validation failed:\n" + "\n".join(report.errors)
+                "Dataset validation failed:\n" + "\n".join(report.errors)
             )
         for w in report.warnings:
             logger.warning("DataValidator: %s", w)
-        logger.info("Dataset validated: %d rows, %d columns.", report.row_count, report.column_count)
+        logger.info(
+            "Dataset validated: %d rows, %d columns.",
+            report.row_count,
+            report.column_count,
+        )
         return df
 
     def _engineer_features(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -331,7 +372,11 @@ class SymptomCheckerPipeline:
         Never include discharge diagnoses, lab results ordered after triage,
         or any variable that leaks the outcome.
         """
-        if "age" not in df.columns and "dob" in df.columns and "admittime" in df.columns:
+        if (
+            "age" not in df.columns
+            and "dob" in df.columns
+            and "admittime" in df.columns
+        ):
             df["age"] = (
                 pd.to_datetime(df["admittime"]) - pd.to_datetime(df["dob"])
             ).dt.days / 365.25
@@ -340,8 +385,10 @@ class SymptomCheckerPipeline:
         # Age group for bias analysis (not used as training feature — only for slicing)
         if "age" in df.columns:
             df["age_group"] = pd.cut(
-                df["age"], bins=[0, 18, 40, 65, 80, 200],
-                labels=["0-17", "18-39", "40-64", "65-79", "80+"], right=False
+                df["age"],
+                bins=[0, 18, 40, 65, 80, 200],
+                labels=["0-17", "18-39", "40-64", "65-79", "80+"],
+                right=False,
             )
 
         # Clip physiological values to plausible ranges
@@ -358,14 +405,23 @@ class SymptomCheckerPipeline:
 
     def _split(
         self, df: pd.DataFrame
-    ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame,
-               pd.Series, pd.Series, pd.Series, SplitStats]:
+    ) -> tuple[
+        pd.DataFrame,
+        pd.DataFrame,
+        pd.DataFrame,
+        pd.Series,
+        pd.Series,
+        pd.Series,
+        SplitStats,
+    ]:
         """
         Subject-level split to prevent data leakage from repeated admissions.
         Same patient must NOT appear in both train and test.
         Uses GroupShuffleSplit on subject_id to guarantee this.
         """
-        available_features = [f for f in NUMERIC_FEATURES + CATEGORICAL_FEATURES if f in df.columns]
+        available_features = [
+            f for f in NUMERIC_FEATURES + CATEGORICAL_FEATURES if f in df.columns
+        ]
         X = df[available_features + ["subject_id"]].copy()
         y = df["triage_category"]
 
@@ -374,7 +430,9 @@ class SymptomCheckerPipeline:
         logger.info("Label distribution: %s", label_counts.to_dict())
 
         # Step 1: hold out test set (subject-level)
-        gss = GroupShuffleSplit(n_splits=1, test_size=TEST_SIZE, random_state=RANDOM_STATE)
+        gss = GroupShuffleSplit(
+            n_splits=1, test_size=TEST_SIZE, random_state=RANDOM_STATE
+        )
         train_val_idx, test_idx = next(gss.split(X, y, groups=X["subject_id"]))
 
         X_trainval = X.iloc[train_val_idx].drop(columns=["subject_id"])
@@ -389,14 +447,17 @@ class SymptomCheckerPipeline:
             random_state=RANDOM_STATE,
         )
         train_idx, val_idx = next(
-            gss_val.split(X_trainval, y_trainval,
-                          groups=X.iloc[train_val_idx]["subject_id"].values)
+            gss_val.split(
+                X_trainval,
+                y_trainval,
+                groups=X.iloc[train_val_idx]["subject_id"].values,
+            )
         )
 
         X_train = X_trainval.iloc[train_idx]
         y_train = y_trainval.iloc[train_idx]
-        X_val   = X_trainval.iloc[val_idx]
-        y_val   = y_trainval.iloc[val_idx]
+        X_val = X_trainval.iloc[val_idx]
+        y_val = y_trainval.iloc[val_idx]
 
         stats = SplitStats(
             train_n=len(X_train),
@@ -407,7 +468,9 @@ class SymptomCheckerPipeline:
         )
         logger.info(
             "Split: train=%d  val=%d  test=%d  (subject-level, no overlap)",
-            stats.train_n, stats.val_n, stats.test_n,
+            stats.train_n,
+            stats.val_n,
+            stats.test_n,
         )
         return X_train, X_val, X_test, y_train, y_val, y_test, stats
 
@@ -421,14 +484,23 @@ class SymptomCheckerPipeline:
         num_cols = [c for c in NUMERIC_FEATURES if c in X_train.columns]
         cat_cols = [c for c in CATEGORICAL_FEATURES if c in X_train.columns]
 
-        num_pipeline = Pipeline([
-            ("imputer", SimpleImputer(strategy="median")),
-            ("scaler", StandardScaler()),
-        ])
-        cat_pipeline = Pipeline([
-            ("imputer", SimpleImputer(strategy="most_frequent")),
-            ("encoder", OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1)),
-        ])
+        num_pipeline = Pipeline(
+            [
+                ("imputer", SimpleImputer(strategy="median")),
+                ("scaler", StandardScaler()),
+            ]
+        )
+        cat_pipeline = Pipeline(
+            [
+                ("imputer", SimpleImputer(strategy="most_frequent")),
+                (
+                    "encoder",
+                    OrdinalEncoder(
+                        handle_unknown="use_encoded_value", unknown_value=-1
+                    ),
+                ),
+            ]
+        )
 
         preprocessor = ColumnTransformer(
             transformers=[
@@ -463,7 +535,10 @@ class SymptomCheckerPipeline:
                 )
             else:
                 from imblearn.over_sampling import SMOTE
-                smote = SMOTE(k_neighbors=min(5, counts.min() - 1), random_state=RANDOM_STATE)
+
+                smote = SMOTE(
+                    k_neighbors=min(5, counts.min() - 1), random_state=RANDOM_STATE
+                )
             X_bal, y_bal = smote.fit_resample(X, y)
             logger.info("SMOTE-NC: %d → %d samples.", len(y), len(y_bal))
             return X_bal, y_bal
@@ -480,7 +555,9 @@ class SymptomCheckerPipeline:
             params = {
                 "n_estimators": trial.suggest_int("n_estimators", 200, 1000, step=100),
                 "max_depth": trial.suggest_int("max_depth", 3, 10),
-                "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.3, log=True),
+                "learning_rate": trial.suggest_float(
+                    "learning_rate", 0.01, 0.3, log=True
+                ),
                 "subsample": trial.suggest_float("subsample", 0.6, 1.0),
                 "colsample_bytree": trial.suggest_float("colsample_bytree", 0.5, 1.0),
                 "min_child_weight": trial.suggest_int("min_child_weight", 1, 10),
@@ -492,11 +569,17 @@ class SymptomCheckerPipeline:
                 "n_jobs": -1,
             }
             clf = XGBClassifier(**params)
-            cv = StratifiedKFold(n_splits=N_CV_FOLDS, shuffle=True, random_state=RANDOM_STATE)
-            scores = cross_val_score(clf, X_train, y_train, cv=cv, scoring="f1_weighted", n_jobs=1)
+            cv = StratifiedKFold(
+                n_splits=N_CV_FOLDS, shuffle=True, random_state=RANDOM_STATE
+            )
+            scores = cross_val_score(
+                clf, X_train, y_train, cv=cv, scoring="f1_weighted", n_jobs=1
+            )
             return float(scores.mean())
 
-        study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(seed=RANDOM_STATE))
+        study = optuna.create_study(
+            direction="maximize", sampler=optuna.samplers.TPESampler(seed=RANDOM_STATE)
+        )
         study.optimize(objective, n_trials=N_OPTUNA_TRIALS, show_progress_bar=False)
         best = study.best_params
         logger.info("Best params (val F1=%.4f): %s", study.best_value, best)
@@ -505,8 +588,13 @@ class SymptomCheckerPipeline:
     def _train_final_model(
         self, params: dict[str, Any], X_train: np.ndarray, y_train: np.ndarray
     ) -> XGBClassifier:
-        params = {**params, "use_label_encoder": False, "eval_metric": "mlogloss",
-                  "random_state": RANDOM_STATE, "n_jobs": -1}
+        params = {
+            **params,
+            "use_label_encoder": False,
+            "eval_metric": "mlogloss",
+            "random_state": RANDOM_STATE,
+            "n_jobs": -1,
+        }
         model = XGBClassifier(**params)
         model.fit(X_train, y_train)
         logger.info("Final model trained on %d samples.", len(y_train))
@@ -531,16 +619,24 @@ class SymptomCheckerPipeline:
         ap = float(average_precision_score(y_test, y_prob, average="weighted"))
 
         try:
-            macro_auroc = float(roc_auc_score(y_test, y_prob, multi_class="ovr", average="macro"))
-            wgt_auroc = float(roc_auc_score(y_test, y_prob, multi_class="ovr", average="weighted"))
+            macro_auroc = float(
+                roc_auc_score(y_test, y_prob, multi_class="ovr", average="macro")
+            )
+            wgt_auroc = float(
+                roc_auc_score(y_test, y_prob, multi_class="ovr", average="weighted")
+            )
         except Exception:
             macro_auroc = wgt_auroc = float("nan")
 
         # Brier score (multi-class: mean over classes)
-        brier = float(np.mean([
-            brier_score_loss((y_test == i).astype(int), y_prob[:, i])
-            for i in range(len(classes))
-        ]))
+        brier = float(
+            np.mean(
+                [
+                    brier_score_loss((y_test == i).astype(int), y_prob[:, i])
+                    for i in range(len(classes))
+                ]
+            )
+        )
 
         # Per-class sensitivity / specificity / PPV / NPV
         sensitivity_pc, specificity_pc, ppv_pc, npv_pc = {}, {}, {}, {}
@@ -548,16 +644,22 @@ class SymptomCheckerPipeline:
             binary_true = (y_test == i).astype(int)
             binary_pred = (y_pred == i).astype(int)
             try:
-                tn, fp, fn, tp = confusion_matrix(binary_true, binary_pred, labels=[0, 1]).ravel()
+                tn, fp, fn, tp = confusion_matrix(
+                    binary_true, binary_pred, labels=[0, 1]
+                ).ravel()
                 sensitivity_pc[cls] = round(tp / max(tp + fn, 1), 4)
                 specificity_pc[cls] = round(tn / max(tn + fp, 1), 4)
-                ppv_pc[cls]         = round(tp / max(tp + fp, 1), 4)
-                npv_pc[cls]         = round(tn / max(tn + fn, 1), 4)
+                ppv_pc[cls] = round(tp / max(tp + fp, 1), 4)
+                npv_pc[cls] = round(tn / max(tn + fn, 1), 4)
             except Exception:
-                sensitivity_pc[cls] = specificity_pc[cls] = ppv_pc[cls] = npv_pc[cls] = float("nan")
+                sensitivity_pc[cls] = specificity_pc[cls] = ppv_pc[cls] = npv_pc[
+                    cls
+                ] = float("nan")
 
         cm = confusion_matrix(y_test, y_pred).tolist()
-        cr = classification_report(y_test, y_pred, target_names=list(classes), zero_division=0)
+        cr = classification_report(
+            y_test, y_pred, target_names=list(classes), zero_division=0
+        )
         logger.info("\n%s", cr)
 
         return ClinicalMetrics(
@@ -567,8 +669,15 @@ class SymptomCheckerPipeline:
             weighted_f1=round(wgt_f1, 4),
             macro_auroc=round(macro_auroc, 4),
             weighted_auroc=round(wgt_auroc, 4),
-            macro_precision=round(float(precision_score(y_test, y_pred, average="macro", zero_division=0)), 4),
-            macro_recall=round(float(recall_score(y_test, y_pred, average="macro", zero_division=0)), 4),
+            macro_precision=round(
+                float(
+                    precision_score(y_test, y_pred, average="macro", zero_division=0)
+                ),
+                4,
+            ),
+            macro_recall=round(
+                float(recall_score(y_test, y_pred, average="macro", zero_division=0)), 4
+            ),
             cohen_kappa=round(kappa, 4),
             brier_score=round(brier, 4),
             average_precision=round(ap, 4),
@@ -584,12 +693,20 @@ class SymptomCheckerPipeline:
     def _check_performance_gates(self, m: ClinicalMetrics) -> bool:
         passed = True
         if m.macro_auroc < self.MIN_AUROC:
-            logger.error("GATE FAIL: macro AUROC %.4f < %.4f", m.macro_auroc, self.MIN_AUROC)
+            logger.error(
+                "GATE FAIL: macro AUROC %.4f < %.4f", m.macro_auroc, self.MIN_AUROC
+            )
             passed = False
         for cls, sens in m.sensitivity_per_class.items():
-            threshold = self.MIN_CRITICAL_SENSITIVITY if cls == "critical" else self.MIN_SENSITIVITY
+            threshold = (
+                self.MIN_CRITICAL_SENSITIVITY
+                if cls == "critical"
+                else self.MIN_SENSITIVITY
+            )
             if sens < threshold:
-                logger.error("GATE FAIL: sensitivity[%s]=%.4f < %.4f", cls, sens, threshold)
+                logger.error(
+                    "GATE FAIL: sensitivity[%s]=%.4f < %.4f", cls, sens, threshold
+                )
                 passed = False
         if passed:
             logger.info("All performance gates PASSED.")
@@ -606,7 +723,10 @@ class SymptomCheckerPipeline:
         paths: list[str] = []
 
         model_path = self.artifact_dir / f"model_{ts}.joblib"
-        joblib.dump({"model": model, "preprocessor": preprocessor, "label_encoder": le}, model_path)
+        joblib.dump(
+            {"model": model, "preprocessor": preprocessor, "label_encoder": le},
+            model_path,
+        )
         paths.append(str(model_path))
         # Stable symlink for downstream services
         symlink = self.artifact_dir / "model.joblib"
@@ -640,30 +760,31 @@ class SymptomCheckerPipeline:
     # ── Logging helpers ───────────────────────────────────────────────────────
 
     def _log_split_stats(self, s: SplitStats) -> None:
-        mlflow.log_params({
-            "train_n": s.train_n, "val_n": s.val_n, "test_n": s.test_n
-        })
+        mlflow.log_params({"train_n": s.train_n, "val_n": s.val_n, "test_n": s.test_n})
 
     def _log_metrics(self, m: ClinicalMetrics) -> None:
-        mlflow.log_metrics({
-            "accuracy": m.accuracy,
-            "balanced_accuracy": m.balanced_accuracy,
-            "macro_f1": m.macro_f1,
-            "weighted_f1": m.weighted_f1,
-            "macro_auroc": m.macro_auroc,
-            "weighted_auroc": m.weighted_auroc,
-            "cohen_kappa": m.cohen_kappa,
-            "brier_score": m.brier_score,
-            "average_precision": m.average_precision,
-            **{f"sensitivity_{k}": v for k, v in m.sensitivity_per_class.items()},
-            **{f"specificity_{k}": v for k, v in m.specificity_per_class.items()},
-        })
+        mlflow.log_metrics(
+            {
+                "accuracy": m.accuracy,
+                "balanced_accuracy": m.balanced_accuracy,
+                "macro_f1": m.macro_f1,
+                "weighted_f1": m.weighted_f1,
+                "macro_auroc": m.macro_auroc,
+                "weighted_auroc": m.weighted_auroc,
+                "cohen_kappa": m.cohen_kappa,
+                "brier_score": m.brier_score,
+                "average_precision": m.average_precision,
+                **{f"sensitivity_{k}": v for k, v in m.sensitivity_per_class.items()},
+                **{f"specificity_{k}": v for k, v in m.specificity_per_class.items()},
+            }
+        )
 
     def _feature_names(self) -> list[str]:
         return [f for f in NUMERIC_FEATURES + CATEGORICAL_FEATURES if True]
 
 
 # ── Entry point ───────────────────────────────────────────────────────────────
+
 
 def main() -> None:
     """
@@ -707,7 +828,9 @@ def main() -> None:
     print(f"  Macro AUROC     : {result.metrics.macro_auroc:.4f}")
     print(f"  Cohen Kappa     : {result.metrics.cohen_kappa:.4f}")
     print(f"  Brier Score     : {result.metrics.brier_score:.4f}")
-    print(f"  Performance Gate: {'PASS' if result.passes_minimum_performance else 'FAIL'}")
+    print(
+        f"  Performance Gate: {'PASS' if result.passes_minimum_performance else 'FAIL'}"
+    )
     print(f"  Bias Gate       : {'PASS' if result.passes_bias_checks else 'FAIL'}")
     print("═" * 60)
 

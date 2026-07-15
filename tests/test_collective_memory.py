@@ -6,8 +6,6 @@ search/indexing, and statistics.
 """
 
 import os
-import shutil
-import threading
 import uuid
 
 import pytest
@@ -18,10 +16,12 @@ import yaml
 # FIXTURES
 # ═══════════════════════════════════════════════════════════════════════
 
+
 @pytest.fixture
 def collective(tmp_path):
     """Create a CollectiveMemory instance with a temporary Git repo."""
     from src.core.collective_memory import CollectiveMemory
+
     cm = CollectiveMemory(
         repo_path=str(tmp_path / "collective"),
         remote_url="",
@@ -60,6 +60,7 @@ def sample_help_request():
 # GIT REPO MANAGEMENT
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestGitRepoManagement:
     """Git repository initialization and operations."""
 
@@ -75,8 +76,12 @@ class TestGitRepoManagement:
     def test_ensure_repo_creates_directory_structure(self, collective):
         """Repo has learnings/ and help-requests/open/ directories."""
         assert os.path.isdir(os.path.join(collective.repo_path, "learnings"))
-        assert os.path.isdir(os.path.join(collective.repo_path, "help-requests", "open"))
-        assert os.path.isdir(os.path.join(collective.repo_path, "help-requests", "closed"))
+        assert os.path.isdir(
+            os.path.join(collective.repo_path, "help-requests", "open")
+        )
+        assert os.path.isdir(
+            os.path.join(collective.repo_path, "help-requests", "closed")
+        )
 
     def test_commit_creates_git_commit(self, collective, tmp_path):
         """_commit creates a real git commit with the file."""
@@ -96,6 +101,7 @@ class TestGitRepoManagement:
 # LEARNING CRUD
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestLearningCRUD:
     """Publishing, retrieving, listing, and validating learnings."""
 
@@ -110,7 +116,8 @@ class TestLearningCRUD:
         """Publishing creates a YAML file in the correct directory."""
         learning_id = collective.publish_learning(sample_learning)
         path = os.path.join(
-            collective.repo_path, "learnings",
+            collective.repo_path,
+            "learnings",
             sample_learning["author_solution"],
             sample_learning["topic"],
             f"{learning_id}.yaml",
@@ -124,12 +131,17 @@ class TestLearningCRUD:
     def test_publish_learning_commits_to_git(self, collective, sample_learning):
         """Publishing creates a git commit."""
         import subprocess
+
         collective.publish_learning(sample_learning)
         result = subprocess.run(
             ["git", "log", "--oneline", "-1"],
-            cwd=collective.repo_path, capture_output=True, text=True,
+            cwd=collective.repo_path,
+            capture_output=True,
+            text=True,
         )
-        assert "learning:" in result.stdout.lower() or "publish" in result.stdout.lower()
+        assert (
+            "learning:" in result.stdout.lower() or "publish" in result.stdout.lower()
+        )
 
     def test_get_learning_returns_correct_data(self, collective, sample_learning):
         """get_learning retrieves the published learning."""
@@ -148,7 +160,11 @@ class TestLearningCRUD:
     def test_list_learnings_returns_all(self, collective, sample_learning):
         """list_learnings returns all published learnings."""
         collective.publish_learning(sample_learning)
-        learning2 = {**sample_learning, "title": "Second learning", "topic": "spi-config"}
+        learning2 = {
+            **sample_learning,
+            "title": "Second learning",
+            "topic": "spi-config",
+        }
         collective.publish_learning(learning2)
         results = collective.list_learnings()
         assert len(results) == 2
@@ -198,6 +214,7 @@ class TestLearningCRUD:
 # HELP REQUESTS
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestHelpRequests:
     """Creating, listing, claiming, responding to, and closing help requests."""
 
@@ -210,7 +227,9 @@ class TestHelpRequests:
     def test_create_help_request_creates_yaml(self, collective, sample_help_request):
         """Creates YAML in help-requests/open/."""
         req_id = collective.create_help_request(sample_help_request)
-        path = os.path.join(collective.repo_path, "help-requests", "open", f"{req_id}.yaml")
+        path = os.path.join(
+            collective.repo_path, "help-requests", "open", f"{req_id}.yaml"
+        )
         assert os.path.isfile(path)
 
     def test_list_help_requests_returns_open(self, collective, sample_help_request):
@@ -220,10 +239,16 @@ class TestHelpRequests:
         assert len(results) == 1
         assert results[0]["status"] == "open"
 
-    def test_list_help_requests_filters_by_expertise(self, collective, sample_help_request):
+    def test_list_help_requests_filters_by_expertise(
+        self, collective, sample_help_request
+    ):
         """list_help_requests can filter by required_expertise."""
         collective.create_help_request(sample_help_request)  # i2c, stm32
-        other = {**sample_help_request, "title": "Other", "required_expertise": ["python"]}
+        other = {
+            **sample_help_request,
+            "title": "Other",
+            "required_expertise": ["python"],
+        }
         collective.create_help_request(other)
         results = collective.list_help_requests(expertise=["i2c"])
         assert len(results) == 1
@@ -232,7 +257,9 @@ class TestHelpRequests:
     def test_claim_help_request_updates_status(self, collective, sample_help_request):
         """Claiming sets claimed_by and changes status."""
         req_id = collective.create_help_request(sample_help_request)
-        result = collective.claim_help_request(req_id, agent="firmware_expert", solution="iot")
+        result = collective.claim_help_request(
+            req_id, agent="firmware_expert", solution="iot"
+        )
         assert result["status"] == "claimed"
         assert result["claimed_by"]["agent"] == "firmware_expert"
 
@@ -247,11 +274,14 @@ class TestHelpRequests:
         """respond_to_help_request appends a response."""
         req_id = collective.create_help_request(sample_help_request)
         collective.claim_help_request(req_id, agent="expert", solution="iot")
-        result = collective.respond_to_help_request(req_id, {
-            "responder_agent": "expert",
-            "responder_solution": "iot",
-            "content": "Try the H7 errata workaround for I2C analog filter.",
-        })
+        result = collective.respond_to_help_request(
+            req_id,
+            {
+                "responder_agent": "expert",
+                "responder_solution": "iot",
+                "content": "Try the H7 errata workaround for I2C analog filter.",
+            },
+        )
         assert len(result["responses"]) == 1
         assert "errata" in result["responses"][0]["content"]
 
@@ -259,8 +289,12 @@ class TestHelpRequests:
         """Closing moves the file from open/ to closed/."""
         req_id = collective.create_help_request(sample_help_request)
         collective.close_help_request(req_id)
-        open_path = os.path.join(collective.repo_path, "help-requests", "open", f"{req_id}.yaml")
-        closed_path = os.path.join(collective.repo_path, "help-requests", "closed", f"{req_id}.yaml")
+        open_path = os.path.join(
+            collective.repo_path, "help-requests", "open", f"{req_id}.yaml"
+        )
+        closed_path = os.path.join(
+            collective.repo_path, "help-requests", "closed", f"{req_id}.yaml"
+        )
         assert not os.path.exists(open_path)
         assert os.path.isfile(closed_path)
 
@@ -268,6 +302,7 @@ class TestHelpRequests:
 # ═══════════════════════════════════════════════════════════════════════
 # SEARCH & SYNC
 # ═══════════════════════════════════════════════════════════════════════
+
 
 class TestSearchAndSync:
     """Search indexing and sync operations."""
@@ -277,8 +312,10 @@ class TestSearchAndSync:
         collective.publish_learning(sample_learning)
         results = collective.search_learnings(query="UART buffer overflow")
         assert len(results) >= 1
-        assert any("UART" in r.get("title", "") or "UART" in r.get("content", "")
-                    for r in results)
+        assert any(
+            "UART" in r.get("title", "") or "UART" in r.get("content", "")
+            for r in results
+        )
 
     def test_search_learnings_empty_on_no_match(self, collective, sample_learning):
         """search_learnings returns empty for unrelated queries."""
@@ -290,8 +327,13 @@ class TestSearchAndSync:
     def test_search_learnings_filters_by_tags(self, collective, sample_learning):
         """search_learnings can filter by tags."""
         collective.publish_learning(sample_learning)  # tags: uart, embedded, recovery
-        other = {**sample_learning, "tags": ["python", "web"], "title": "Web stuff",
-                 "topic": "web-dev", "content": "Flask patterns"}
+        other = {
+            **sample_learning,
+            "tags": ["python", "web"],
+            "title": "Web stuff",
+            "topic": "web-dev",
+            "content": "Flask patterns",
+        }
         collective.publish_learning(other)
         results = collective.search_learnings(query="patterns", tags=["embedded"])
         # Should only return the embedded-tagged one
@@ -301,7 +343,9 @@ class TestSearchAndSync:
     def test_rebuild_index_counts_all(self, collective, sample_learning):
         """_rebuild_index returns count of all indexed learnings."""
         collective.publish_learning(sample_learning)
-        collective.publish_learning({**sample_learning, "title": "Second", "topic": "spi"})
+        collective.publish_learning(
+            {**sample_learning, "title": "Second", "topic": "spi"}
+        )
         count = collective._rebuild_index()
         assert count == 2
 
@@ -334,8 +378,12 @@ class TestSearchAndSync:
     def test_search_learnings_filters_by_solution(self, collective, sample_learning):
         """search_learnings filters by solution."""
         collective.publish_learning(sample_learning)
-        other = {**sample_learning, "author_solution": "automotive",
-                 "title": "Auto stuff", "topic": "can-bus"}
+        other = {
+            **sample_learning,
+            "author_solution": "automotive",
+            "title": "Auto stuff",
+            "topic": "can-bus",
+        }
         collective.publish_learning(other)
         results = collective.search_learnings(query="", solution="medtech")
         for r in results:
@@ -345,6 +393,7 @@ class TestSearchAndSync:
 # ═══════════════════════════════════════════════════════════════════════
 # STATISTICS
 # ═══════════════════════════════════════════════════════════════════════
+
 
 class TestStats:
     """Collective intelligence statistics."""
@@ -358,7 +407,9 @@ class TestStats:
     def test_stats_counts_learnings(self, collective, sample_learning):
         """Stats accurately counts learnings."""
         collective.publish_learning(sample_learning)
-        collective.publish_learning({**sample_learning, "title": "Second", "topic": "spi"})
+        collective.publish_learning(
+            {**sample_learning, "title": "Second", "topic": "spi"}
+        )
         stats = collective.get_stats()
         assert stats["learning_count"] == 2
 
@@ -372,7 +423,9 @@ class TestStats:
         """Stats shows topic distribution."""
         collective.publish_learning(sample_learning)
         collective.publish_learning({**sample_learning, "topic": "spi", "title": "SPI"})
-        collective.publish_learning({**sample_learning, "topic": "spi", "title": "SPI 2"})
+        collective.publish_learning(
+            {**sample_learning, "topic": "spi", "title": "SPI 2"}
+        )
         stats = collective.get_stats()
         assert stats["topics"]["spi"] == 2
         assert stats["topics"]["uart-debugging"] == 1
@@ -391,6 +444,7 @@ class TestStats:
 # CORNER CASES & ERROR PATHS
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestCornerCases:
     """Edge cases, error paths, and concurrent access."""
 
@@ -407,9 +461,14 @@ class TestCornerCases:
     def test_respond_nonexistent_help_request_raises(self, collective):
         """respond_to_help_request raises ValueError for missing ID."""
         with pytest.raises(ValueError, match="not found"):
-            collective.respond_to_help_request("hr-nonexistent", {
-                "responder_agent": "a", "responder_solution": "s", "content": "x",
-            })
+            collective.respond_to_help_request(
+                "hr-nonexistent",
+                {
+                    "responder_agent": "a",
+                    "responder_solution": "s",
+                    "content": "x",
+                },
+            )
 
     def test_claim_nonexistent_help_request_raises(self, collective):
         """claim_help_request raises ValueError for missing ID."""
@@ -426,11 +485,13 @@ class TestCornerCases:
     def test_list_learnings_pagination(self, collective, sample_learning):
         """list_learnings respects offset and limit."""
         for i in range(5):
-            collective.publish_learning({
-                **sample_learning,
-                "title": f"Learning {i}",
-                "topic": f"topic-{i}",
-            })
+            collective.publish_learning(
+                {
+                    **sample_learning,
+                    "title": f"Learning {i}",
+                    "topic": f"topic-{i}",
+                }
+            )
         page1 = collective.list_learnings(limit=2, offset=0)
         page2 = collective.list_learnings(limit=2, offset=2)
         page3 = collective.list_learnings(limit=2, offset=4)
@@ -438,32 +499,44 @@ class TestCornerCases:
         assert len(page2) == 2
         assert len(page3) == 1
         # No overlap between pages
-        ids1 = {l["id"] for l in page1}
-        ids2 = {l["id"] for l in page2}
+        ids1 = {l["id"] for l in page1}  # noqa: E741
+        ids2 = {l["id"] for l in page2}  # noqa: E741
         assert ids1.isdisjoint(ids2)
 
     def test_search_combined_tags_and_solution(self, collective, sample_learning):
         """search_learnings with both tags and solution filter."""
-        collective.publish_learning(sample_learning)  # medtech, tags: uart,embedded,recovery
-        other = {**sample_learning, "author_solution": "automotive",
-                 "tags": ["uart", "can"], "title": "Auto UART", "topic": "auto-uart"}
+        collective.publish_learning(
+            sample_learning
+        )  # medtech, tags: uart,embedded,recovery
+        other = {
+            **sample_learning,
+            "author_solution": "automotive",
+            "tags": ["uart", "can"],
+            "title": "Auto UART",
+            "topic": "auto-uart",
+        }
         collective.publish_learning(other)
         # Filter: tag=uart + solution=medtech → only medtech learning
-        results = collective.search_learnings(query="", tags=["uart"], solution="medtech")
+        results = collective.search_learnings(
+            query="", tags=["uart"], solution="medtech"
+        )
         assert len(results) == 1
         assert results[0]["author_solution"] == "medtech"
 
     def test_extract_learning_uses_analysis_field(self):
         """extract_learning_from_result falls back to 'analysis' field."""
         from src.core.collective_memory import CollectiveMemory
+
         result = {
             "task_type": "ANALYZE_LOG",
             "task_id": "t-001",
             "analysis": "Detailed analysis of the log output showing a timing issue "
-                        "in the SPI driver when clock frequency exceeds 10MHz.",
+            "in the SPI driver when clock frequency exceeds 10MHz.",
         }
         learning = CollectiveMemory.extract_learning_from_result(
-            result, agent_role="analyst", solution="embedded",
+            result,
+            agent_role="analyst",
+            solution="embedded",
         )
         assert learning is not None
         assert "timing issue" in learning["content"]
@@ -471,6 +544,7 @@ class TestCornerCases:
     def test_write_and_commit_without_git(self, tmp_path):
         """_write_and_commit_learning works when git is unavailable."""
         from src.core.collective_memory import CollectiveMemory
+
         cm = CollectiveMemory(
             repo_path=str(tmp_path / "nogit"),
             require_approval=False,
@@ -499,10 +573,11 @@ class TestCornerCases:
     def test_concurrent_publish_safety(self, collective, sample_learning):
         """Multiple threads publishing simultaneously don't corrupt data."""
         import concurrent.futures
+
         results = []
 
         def publish(i):
-            l = {**sample_learning, "title": f"Concurrent {i}", "topic": f"topic-{i}"}
+            l = {**sample_learning, "title": f"Concurrent {i}", "topic": f"topic-{i}"}  # noqa: E741
             return collective.publish_learning(l)
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
@@ -515,12 +590,16 @@ class TestCornerCases:
         all_learnings = collective.list_learnings(limit=100)
         assert len(all_learnings) == 8
 
-    def test_multiple_validations_compound_confidence(self, collective, sample_learning):
+    def test_multiple_validations_compound_confidence(
+        self, collective, sample_learning
+    ):
         """Multiple validations monotonically increase confidence."""
         learning_id = collective.publish_learning(sample_learning)
         confidences = [sample_learning["confidence"]]
         for i in range(5):
-            result = collective.validate_learning(learning_id, validated_by=f"validator_{i}")
+            result = collective.validate_learning(
+                learning_id, validated_by=f"validator_{i}"
+            )
             confidences.append(result["confidence"])
         # Each validation should increase confidence
         for i in range(1, len(confidences)):
@@ -535,11 +614,14 @@ class TestCornerCases:
         req_id = collective.create_help_request(sample_help_request)
         collective.claim_help_request(req_id, agent="expert1", solution="sol1")
         for i in range(3):
-            collective.respond_to_help_request(req_id, {
-                "responder_agent": f"expert{i}",
-                "responder_solution": f"sol{i}",
-                "content": f"Response {i}",
-            })
+            collective.respond_to_help_request(
+                req_id,
+                {
+                    "responder_agent": f"expert{i}",
+                    "responder_solution": f"sol{i}",
+                    "content": f"Response {i}",
+                },
+            )
         data = collective._read_help_request(req_id)
         assert len(data["responses"]) == 3
 
@@ -553,13 +635,15 @@ class TestCornerCases:
 
     def test_empty_content_publish(self, collective):
         """Publishing with empty content still creates valid entry."""
-        learning_id = collective.publish_learning({
-            "author_agent": "test",
-            "author_solution": "test",
-            "topic": "general",
-            "title": "Empty content test",
-            "content": "",
-        })
+        learning_id = collective.publish_learning(
+            {
+                "author_agent": "test",
+                "author_solution": "test",
+                "topic": "general",
+                "title": "Empty content test",
+                "content": "",
+            }
+        )
         result = collective.get_learning(learning_id)
         assert result is not None
         assert result["content"] == ""

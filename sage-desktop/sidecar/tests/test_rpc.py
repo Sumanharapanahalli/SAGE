@@ -1,4 +1,5 @@
 """Unit tests for the JSON-RPC 2.0 / NDJSON framing layer."""
+
 from __future__ import annotations
 
 import io
@@ -124,6 +125,7 @@ def test_write_ndjson_response_appends_newline():
 
 def test_write_ndjson_response_flushes():
     """Flush is important so NDJSON frames reach the Rust reader promptly."""
+
     class TrackedIO(io.StringIO):
         def __init__(self):
             super().__init__()

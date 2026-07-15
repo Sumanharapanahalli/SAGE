@@ -12,6 +12,7 @@ hundred-and-first.
 
 These tests pin the loop closed.
 """
+
 from __future__ import annotations
 
 import pytest
@@ -65,7 +66,9 @@ def _make(store, action_type="analysis", payload=None):
     return store.create(
         action_type=action_type,
         risk_class=RiskClass.INFORMATIONAL,
-        payload=payload if payload is not None else {
+        payload=payload
+        if payload is not None
+        else {
             "log_entry": "NullPointerException in PumpDriver",
             "analysis": {"root_cause_hypothesis": "race condition"},
         },
@@ -74,6 +77,7 @@ def _make(store, action_type="analysis", payload=None):
 
 
 # ---------- the analysis path: the correction reaches the vector store ----------
+
 
 def test_rejecting_an_analysis_teaches_the_analyst(store, analyst, memory):
     p = _make(store)
@@ -107,6 +111,7 @@ def test_approval_does_not_teach(store, analyst, memory):
 
 # ---------- the generic path: every other action type still compounds ----------
 
+
 def test_rejecting_a_non_analysis_proposal_falls_back_to_long_term_memory(
     store, analyst, memory
 ):
@@ -139,6 +144,7 @@ def test_a_learning_failure_does_not_lose_the_rejection(store, monkeypatch):
 
 # ---------- trace_id correlation (X6) ----------
 
+
 def test_analyze_threads_its_audit_trace_id_into_the_proposal(tmp_path, monkeypatch):
     """The trace_id the operator sees on a proposal must resolve in
     audit.get_by_trace. ProposalStore.create() was minting a fresh uuid4, so the
@@ -151,7 +157,11 @@ def test_analyze_threads_its_audit_trace_id_into_the_proposal(tmp_path, monkeypa
 
     class _Analyst:
         def analyze_log(self, log_entry):
-            return {"severity": "HIGH", "root_cause_hypothesis": "x", "trace_id": "trace-abc"}
+            return {
+                "severity": "HIGH",
+                "root_cause_hypothesis": "x",
+                "trace_id": "trace-abc",
+            }
 
     monkeypatch.setattr(analyze, "_analyst_factory", lambda: _Analyst())
 

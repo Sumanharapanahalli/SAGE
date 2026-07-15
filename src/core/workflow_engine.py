@@ -22,7 +22,7 @@ import uuid
 from collections import defaultdict, deque
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Optional
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +35,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class WorkflowNode:
     """A single step in a workflow DAG."""
+
     id: str
     task_type: str
     payload: dict = field(default_factory=dict)
@@ -56,6 +57,7 @@ class WorkflowNode:
 @dataclass
 class WorkflowEdge:
     """A dependency between two nodes with optional condition."""
+
     source: str
     target: str
     condition: str = "on_success"  # always | on_success | on_failure
@@ -100,9 +102,7 @@ class WorkflowGraph:
 
         # Check for cycle
         if self._would_create_cycle(edge.source, edge.target):
-            raise ValueError(
-                f"Edge {edge.source}→{edge.target} would create a cycle"
-            )
+            raise ValueError(f"Edge {edge.source}→{edge.target} would create a cycle")
 
         self.edges.append(edge)
         self._adjacency[edge.source].append(edge.target)
@@ -211,20 +211,24 @@ class WorkflowGraph:
     def from_dict(cls, data: dict) -> "WorkflowGraph":
         g = cls(name=data.get("name", ""), description=data.get("description", ""))
         for nd in data.get("nodes", []):
-            g.add_node(WorkflowNode(
-                id=nd["id"],
-                task_type=nd.get("task_type", ""),
-                payload=nd.get("payload", {}),
-                agent_role=nd.get("agent_role", ""),
-                description=nd.get("description", ""),
-                timeout=nd.get("timeout", 300),
-            ))
+            g.add_node(
+                WorkflowNode(
+                    id=nd["id"],
+                    task_type=nd.get("task_type", ""),
+                    payload=nd.get("payload", {}),
+                    agent_role=nd.get("agent_role", ""),
+                    description=nd.get("description", ""),
+                    timeout=nd.get("timeout", 300),
+                )
+            )
         for ed in data.get("edges", []):
-            g.add_edge(WorkflowEdge(
-                source=ed["source"],
-                target=ed["target"],
-                condition=ed.get("condition", "on_success"),
-            ))
+            g.add_edge(
+                WorkflowEdge(
+                    source=ed["source"],
+                    target=ed["target"],
+                    condition=ed.get("condition", "on_success"),
+                )
+            )
         return g
 
     def to_mermaid(self) -> str:
@@ -321,16 +325,24 @@ class WorkflowEngine:
                     elif edge and edge.condition == "always":
                         pass  # always execute
 
-                    if pred_id in failed_nodes and (not edge or edge.condition == "on_success"):
+                    if pred_id in failed_nodes and (
+                        not edge or edge.condition == "on_success"
+                    ):
                         should_block = True
 
                 if should_block:
-                    results[node_id] = {"status": "blocked", "reason": "predecessor failed"}
+                    results[node_id] = {
+                        "status": "blocked",
+                        "reason": "predecessor failed",
+                    }
                     failed_nodes.add(node_id)
                     continue
 
                 if should_skip:
-                    results[node_id] = {"status": "skipped", "reason": "condition not met"}
+                    results[node_id] = {
+                        "status": "skipped",
+                        "reason": "condition not met",
+                    }
                     skipped_nodes.add(node_id)
                     continue
 
@@ -353,9 +365,11 @@ class WorkflowEngine:
 
         # Determine overall status
         if failed_nodes:
-            overall = "partial" if any(
-                r.get("status") == "completed" for r in results.values()
-            ) else "failed"
+            overall = (
+                "partial"
+                if any(r.get("status") == "completed" for r in results.values())
+                else "failed"
+            )
         else:
             overall = "completed"
 
@@ -378,9 +392,24 @@ class WorkflowEngine:
                 "name": "code-review",
                 "description": "Automated code review workflow: analyze → review → report",
                 "nodes": [
-                    {"id": "analyze", "task_type": "ANALYZE_LOG", "description": "Analyze code changes", "payload": {}},
-                    {"id": "review", "task_type": "REVIEW_MR", "description": "Review merge request", "payload": {}},
-                    {"id": "report", "task_type": "CODE_TASK", "description": "Generate review report", "payload": {}},
+                    {
+                        "id": "analyze",
+                        "task_type": "ANALYZE_LOG",
+                        "description": "Analyze code changes",
+                        "payload": {},
+                    },
+                    {
+                        "id": "review",
+                        "task_type": "REVIEW_MR",
+                        "description": "Review merge request",
+                        "payload": {},
+                    },
+                    {
+                        "id": "report",
+                        "task_type": "CODE_TASK",
+                        "description": "Generate review report",
+                        "payload": {},
+                    },
                 ],
                 "edges": [
                     {"source": "analyze", "target": "review"},
@@ -391,10 +420,30 @@ class WorkflowEngine:
                 "name": "bug-triage",
                 "description": "Bug triage workflow: reproduce → diagnose → fix → verify",
                 "nodes": [
-                    {"id": "reproduce", "task_type": "ANALYZE_LOG", "description": "Reproduce the bug", "payload": {}},
-                    {"id": "diagnose", "task_type": "ANALYZE_LOG", "description": "Root cause analysis", "payload": {}},
-                    {"id": "fix", "task_type": "CODE_TASK", "description": "Implement fix", "payload": {}},
-                    {"id": "verify", "task_type": "REVIEW_MR", "description": "Verify fix with tests", "payload": {}},
+                    {
+                        "id": "reproduce",
+                        "task_type": "ANALYZE_LOG",
+                        "description": "Reproduce the bug",
+                        "payload": {},
+                    },
+                    {
+                        "id": "diagnose",
+                        "task_type": "ANALYZE_LOG",
+                        "description": "Root cause analysis",
+                        "payload": {},
+                    },
+                    {
+                        "id": "fix",
+                        "task_type": "CODE_TASK",
+                        "description": "Implement fix",
+                        "payload": {},
+                    },
+                    {
+                        "id": "verify",
+                        "task_type": "REVIEW_MR",
+                        "description": "Verify fix with tests",
+                        "payload": {},
+                    },
                 ],
                 "edges": [
                     {"source": "reproduce", "target": "diagnose"},
@@ -406,11 +455,36 @@ class WorkflowEngine:
                 "name": "feature-plan",
                 "description": "Feature planning: brainstorm → plan → design → implement → review",
                 "nodes": [
-                    {"id": "brainstorm", "task_type": "PLAN_TASK", "description": "Brainstorm approaches", "payload": {}},
-                    {"id": "plan", "task_type": "PLAN_TASK", "description": "Create implementation plan", "payload": {}},
-                    {"id": "design", "task_type": "CODE_TASK", "description": "Design architecture", "payload": {}},
-                    {"id": "implement", "task_type": "CODE_TASK", "description": "Implement feature", "payload": {}},
-                    {"id": "review", "task_type": "REVIEW_MR", "description": "Code review", "payload": {}},
+                    {
+                        "id": "brainstorm",
+                        "task_type": "PLAN_TASK",
+                        "description": "Brainstorm approaches",
+                        "payload": {},
+                    },
+                    {
+                        "id": "plan",
+                        "task_type": "PLAN_TASK",
+                        "description": "Create implementation plan",
+                        "payload": {},
+                    },
+                    {
+                        "id": "design",
+                        "task_type": "CODE_TASK",
+                        "description": "Design architecture",
+                        "payload": {},
+                    },
+                    {
+                        "id": "implement",
+                        "task_type": "CODE_TASK",
+                        "description": "Implement feature",
+                        "payload": {},
+                    },
+                    {
+                        "id": "review",
+                        "task_type": "REVIEW_MR",
+                        "description": "Code review",
+                        "payload": {},
+                    },
                 ],
                 "edges": [
                     {"source": "brainstorm", "target": "plan"},
@@ -424,8 +498,11 @@ class WorkflowEngine:
     def list_templates(self) -> list[dict]:
         """List available workflow templates."""
         return [
-            {"name": t["name"], "description": t["description"],
-             "node_count": len(t["nodes"])}
+            {
+                "name": t["name"],
+                "description": t["description"],
+                "node_count": len(t["nodes"]),
+            }
             for t in self._templates.values()
         ]
 

@@ -29,7 +29,6 @@ from __future__ import annotations
 
 import argparse
 import logging
-import os
 import random
 import sys
 import time
@@ -64,6 +63,7 @@ log = logging.getLogger("train_ner")
 
 # ── Seqeval metric computation ────────────────────────────────────────────────
 
+
 def _build_compute_metrics(label_list: list[str]):
     """Return a compute_metrics function closed over label_list."""
     try:
@@ -73,6 +73,7 @@ def _build_compute_metrics(label_list: list[str]):
             precision_score,
             recall_score,
         )
+
         _seqeval_ok = True
     except ImportError:
         log.warning("seqeval not installed — eval will use token accuracy only.")
@@ -87,7 +88,7 @@ def _build_compute_metrics(label_list: list[str]):
         for pred_row, label_row in zip(predictions, labels):
             row_true, row_pred = [], []
             for pred_id, label_id in zip(pred_row, label_row):
-                if label_id == -100:       # padding / subword continuation
+                if label_id == -100:  # padding / subword continuation
                     continue
                 row_true.append(label_list[label_id])
                 row_pred.append(label_list[pred_id])
@@ -97,8 +98,8 @@ def _build_compute_metrics(label_list: list[str]):
         if _seqeval_ok:
             results = {
                 "precision": precision_score(true_labels, true_preds),
-                "recall":    recall_score(true_labels, true_preds),
-                "f1":        f1_score(true_labels, true_preds),
+                "recall": recall_score(true_labels, true_preds),
+                "f1": f1_score(true_labels, true_preds),
             }
             log.info(
                 "\n%s",
@@ -106,10 +107,10 @@ def _build_compute_metrics(label_list: list[str]):
             )
         else:
             # Fallback: flat token accuracy (ignores O-class dominance)
-            flat_true  = [l for row in true_labels for l in row]
-            flat_pred  = [l for row in true_preds  for l in row]
-            correct    = sum(t == p for t, p in zip(flat_true, flat_pred))
-            results    = {"accuracy": correct / max(len(flat_true), 1)}
+            flat_true = [l for row in true_labels for l in row]  # noqa: E741
+            flat_pred = [l for row in true_preds for l in row]  # noqa: E741
+            correct = sum(t == p for t, p in zip(flat_true, flat_pred))
+            results = {"accuracy": correct / max(len(flat_true), 1)}
 
         return results
 
@@ -117,6 +118,7 @@ def _build_compute_metrics(label_list: list[str]):
 
 
 # ── CoNLL loader ──────────────────────────────────────────────────────────────
+
 
 def _load_conll_file(path: Path) -> list[dict]:
     """
@@ -127,23 +129,25 @@ def _load_conll_file(path: Path) -> list[dict]:
     """
     sentences: list[dict] = []
     current_tokens: list[str] = []
-    current_tags:   list[str] = []
+    current_tags: list[str] = []
 
     with open(path, encoding="utf-8") as fh:
         for raw_line in fh:
             line = raw_line.rstrip("\n")
             if not line or line.startswith("-DOCSTART-"):
                 if current_tokens:
-                    sentences.append({
-                        "tokens":   current_tokens,
-                        "ner_tags": current_tags,
-                    })
+                    sentences.append(
+                        {
+                            "tokens": current_tokens,
+                            "ner_tags": current_tags,
+                        }
+                    )
                     current_tokens, current_tags = [], []
                 continue
             parts = line.split()
             if len(parts) >= 2:
                 current_tokens.append(parts[0])
-                current_tags.append(parts[-1])   # last column = NER tag
+                current_tags.append(parts[-1])  # last column = NER tag
             else:
                 log.debug("Skipping malformed CoNLL line: %r", line)
 
@@ -160,19 +164,21 @@ def _load_conll_dataset(cfg: dict) -> Optional[DatasetDict]:
     """
     base = Path(__file__).parent
     train_path = (base / cfg["data"]["train_path"]).resolve()
-    val_path   = (base / cfg["data"]["val_path"]).resolve()
-    test_path  = (base / cfg["data"]["test_path"]).resolve()
+    val_path = (base / cfg["data"]["val_path"]).resolve()
+    test_path = (base / cfg["data"]["test_path"]).resolve()
 
     if not all(p.exists() for p in [train_path, val_path, test_path]):
         log.info("Local CoNLL files not found — will use HuggingFace fallback.")
         return None
 
     log.info("Loading local CoNLL splits …")
-    ds = DatasetDict({
-        "train": Dataset.from_list(_load_conll_file(train_path)),
-        "validation": Dataset.from_list(_load_conll_file(val_path)),
-        "test": Dataset.from_list(_load_conll_file(test_path)),
-    })
+    ds = DatasetDict(
+        {
+            "train": Dataset.from_list(_load_conll_file(train_path)),
+            "validation": Dataset.from_list(_load_conll_file(val_path)),
+            "test": Dataset.from_list(_load_conll_file(test_path)),
+        }
+    )
     return ds
 
 
@@ -188,6 +194,7 @@ def _load_hf_fallback(cfg: dict) -> DatasetDict:
 
 
 # ── Label map builder — TRAIN-ONLY (anti-leakage) ───────────────────────────
+
 
 def _build_label_map(train_tags: list[list[str]]) -> tuple[dict, dict, list]:
     """
@@ -214,6 +221,7 @@ def _build_label_map(train_tags: list[list[str]]) -> tuple[dict, dict, list]:
 
 # ── Tokenization + label alignment ────────────────────────────────────────────
 
+
 def _make_tokenize_fn(tokenizer, label2id: dict, cfg: dict):
     """
     Return a batched tokenize function that:
@@ -231,19 +239,19 @@ def _make_tokenize_fn(tokenizer, label2id: dict, cfg: dict):
             truncation=True,
             max_length=max_len,
             is_split_into_words=True,
-            padding=False,              # DataCollator handles padding
+            padding=False,  # DataCollator handles padding
         )
         all_labels = []
         for i, word_labels in enumerate(batch["ner_tags"]):
             word_ids = tokenized.word_ids(batch_index=i)
             aligned, prev_word_id = [], None
             for word_id in word_ids:
-                if word_id is None:                    # [CLS] / [SEP] / padding
+                if word_id is None:  # [CLS] / [SEP] / padding
                     aligned.append(-100)
-                elif word_id != prev_word_id:          # first subword of a word
+                elif word_id != prev_word_id:  # first subword of a word
                     tag = word_labels[word_id]
                     aligned.append(label2id.get(tag, label2id.get("O", 0)))
-                else:                                  # continuation subword
+                else:  # continuation subword
                     if label_all:
                         tag = word_labels[word_id]
                         aligned.append(label2id.get(tag, label2id.get("O", 0)))
@@ -259,6 +267,7 @@ def _make_tokenize_fn(tokenizer, label2id: dict, cfg: dict):
 
 
 # ── Dataset preprocessing ─────────────────────────────────────────────────────
+
 
 def _prepare_datasets(
     raw: DatasetDict,
@@ -280,11 +289,13 @@ def _prepare_datasets(
     if use_hf_labels:
         # HF conll2003 has integer ner_tags; convert to string labels first
         hf_id2label = raw["train"].features["ner_tags"].feature.names
+
         def int_to_str(batch):
             batch["ner_tags"] = [
                 [hf_id2label[t] for t in sent] for sent in batch["ner_tags"]
             ]
             return batch
+
         raw = raw.map(int_to_str, batched=True)
 
     tokenize_fn = _make_tokenize_fn(tokenizer, label2id, cfg)
@@ -298,6 +309,7 @@ def _prepare_datasets(
 
 # ── Training ──────────────────────────────────────────────────────────────────
 
+
 def train(cfg: dict) -> dict:
     """
     Full training pipeline. Returns a dict of final test-set metrics.
@@ -309,22 +321,24 @@ def train(cfg: dict) -> dict:
     torch.manual_seed(seed)
 
     base_dir = Path(__file__).parent
-    model_dir   = (base_dir / cfg["output"]["model_dir"]).resolve()
+    model_dir = (base_dir / cfg["output"]["model_dir"]).resolve()
     reports_dir = (base_dir / cfg["output"]["reports_dir"]).resolve()
-    log_dir     = (base_dir / cfg["output"]["log_dir"]).resolve()
+    log_dir = (base_dir / cfg["output"]["log_dir"]).resolve()
     model_dir.mkdir(parents=True, exist_ok=True)
     reports_dir.mkdir(parents=True, exist_ok=True)
 
     exp = ExperimentLogger("ner_training", log_dir=log_dir)
-    run_id = exp.start_run(params={
-        "base_model":  cfg["model"]["base_model"],
-        "max_length":  cfg["model"]["max_length"],
-        "epochs":      cfg["training"]["num_epochs"],
-        "batch_size":  cfg["training"]["batch_size"],
-        "lr":          cfg["training"]["learning_rate"],
-        "seed":        seed,
-        "fp16":        cfg["training"]["fp16"],
-    })
+    run_id = exp.start_run(
+        params={
+            "base_model": cfg["model"]["base_model"],
+            "max_length": cfg["model"]["max_length"],
+            "epochs": cfg["training"]["num_epochs"],
+            "batch_size": cfg["training"]["batch_size"],
+            "lr": cfg["training"]["learning_rate"],
+            "seed": seed,
+            "fp16": cfg["training"]["fp16"],
+        }
+    )
 
     # ── Load data ──────────────────────────────────────────────────────────────
     raw_ds = _load_conll_dataset(cfg)
@@ -335,8 +349,7 @@ def train(cfg: dict) -> dict:
     # ── Build label map — TRAIN-ONLY (anti-leakage) ───────────────────────────
     if use_hf:
         train_str_tags = [
-            [raw_ds["train"].features["ner_tags"].feature.names[t]
-             for t in sent]
+            [raw_ds["train"].features["ner_tags"].feature.names[t] for t in sent]
             for sent in raw_ds["train"]["ner_tags"]
         ]
     else:
@@ -354,7 +367,9 @@ def train(cfg: dict) -> dict:
 
     # ── Tokenize all splits (val/test only processed, never fit on) ────────────
     log.info("Tokenizing dataset splits …")
-    processed_ds = _prepare_datasets(raw_ds, tokenizer, label2id, cfg, use_hf_labels=use_hf)
+    processed_ds = _prepare_datasets(
+        raw_ds, tokenizer, label2id, cfg, use_hf_labels=use_hf
+    )
 
     # ── Model ──────────────────────────────────────────────────────────────────
     log.info("Loading model: %s  (num_labels=%d)", model_name, num_labels)
@@ -386,8 +401,8 @@ def train(cfg: dict) -> dict:
         greater_is_better=cfg["training"]["greater_is_better"],
         save_total_limit=cfg["training"]["save_total_limit"],
         seed=seed,
-        report_to="none",           # disable W&B/MLflow automatic reporting
-        dataloader_num_workers=0,   # safe default; increase for larger datasets
+        report_to="none",  # disable W&B/MLflow automatic reporting
+        dataloader_num_workers=0,  # safe default; increase for larger datasets
         logging_steps=50,
     )
 
@@ -432,20 +447,29 @@ def train(cfg: dict) -> dict:
     }
 
     # ── Log experiment ─────────────────────────────────────────────────────────
-    exp.log_metrics(run_id, {
-        "train_loss":      train_result.training_loss,
-        "train_duration_s": train_duration,
-        **{f"test_{k}": v for k, v in test_metrics.items()
-           if isinstance(v, (int, float))},
-    })
+    exp.log_metrics(
+        run_id,
+        {
+            "train_loss": train_result.training_loss,
+            "train_duration_s": train_duration,
+            **{
+                f"test_{k}": v
+                for k, v in test_metrics.items()
+                if isinstance(v, (int, float))
+            },
+        },
+    )
     exp.end_run(run_id, status="completed")
 
     # ── Persist label map alongside model ─────────────────────────────────────
     import json
+
     label_map_path = model_dir / "label_map.json"
     label_map_path.write_text(
-        json.dumps({"label2id": label2id, "id2label": id2label,
-                    "label_list": label_list}, indent=2),
+        json.dumps(
+            {"label2id": label2id, "id2label": id2label, "label_list": label_list},
+            indent=2,
+        ),
         encoding="utf-8",
     )
     log.info("Label map saved → %s", label_map_path)
@@ -455,16 +479,17 @@ def train(cfg: dict) -> dict:
 
 # ── CLI ───────────────────────────────────────────────────────────────────────
 
+
 def _parse_args():
     p = argparse.ArgumentParser(
         description="NER Model Trainer",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     p.add_argument("--config", type=Path, default=Path(__file__).parent / "config.yaml")
-    p.add_argument("--epochs", type=int,   help="Override num_epochs")
-    p.add_argument("--lr",     type=float, help="Override learning_rate")
-    p.add_argument("--batch",  type=int,   help="Override batch_size")
-    p.add_argument("--fp16",   action="store_true", help="Enable fp16 training")
+    p.add_argument("--epochs", type=int, help="Override num_epochs")
+    p.add_argument("--lr", type=float, help="Override learning_rate")
+    p.add_argument("--batch", type=int, help="Override batch_size")
+    p.add_argument("--fp16", action="store_true", help="Enable fp16 training")
     return p.parse_args()
 
 
@@ -475,10 +500,14 @@ def main():
         cfg = yaml.safe_load(f)
 
     # CLI overrides
-    if args.epochs: cfg["training"]["num_epochs"]      = args.epochs
-    if args.lr:     cfg["training"]["learning_rate"]   = args.lr
-    if args.batch:  cfg["training"]["batch_size"]      = args.batch
-    if args.fp16:   cfg["training"]["fp16"]            = True
+    if args.epochs:
+        cfg["training"]["num_epochs"] = args.epochs
+    if args.lr:
+        cfg["training"]["learning_rate"] = args.lr
+    if args.batch:
+        cfg["training"]["batch_size"] = args.batch
+    if args.fp16:
+        cfg["training"]["fp16"] = True
 
     log.info("Config: %s", cfg)
     results = train(cfg)

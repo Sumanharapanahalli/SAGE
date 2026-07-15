@@ -7,6 +7,7 @@ Improvements over original paper:
   - Xavier uniform init for all weight matrices
   - Beam search decoding in addition to greedy
 """
+
 from __future__ import annotations
 import math
 from typing import Optional
@@ -32,10 +33,10 @@ class MultiHeadAttention(nn.Module):
             raise ValueError(
                 f"d_model ({d_model}) must be divisible by num_heads ({num_heads})"
             )
-        self.d_model   = d_model
+        self.d_model = d_model
         self.num_heads = num_heads
-        self.d_k       = d_model // num_heads
-        self.scale     = math.sqrt(self.d_k)
+        self.d_k = d_model // num_heads
+        self.scale = math.sqrt(self.d_k)
 
         # No bias — matches original paper
         self.W_q = nn.Linear(d_model, d_model, bias=False)
@@ -56,14 +57,14 @@ class MultiHeadAttention(nn.Module):
 
     def forward(
         self,
-        query: torch.Tensor,                   # (B, tgt_len, d_model)
-        key:   torch.Tensor,                   # (B, src_len, d_model)
-        value: torch.Tensor,                   # (B, src_len, d_model)
-        mask:  Optional[torch.Tensor] = None,  # bool, broadcastable to (B,h,tgt,src)
+        query: torch.Tensor,  # (B, tgt_len, d_model)
+        key: torch.Tensor,  # (B, src_len, d_model)
+        value: torch.Tensor,  # (B, src_len, d_model)
+        mask: Optional[torch.Tensor] = None,  # bool, broadcastable to (B,h,tgt,src)
     ) -> tuple[torch.Tensor, torch.Tensor]:
-        Q = self._split_heads(self.W_q(query))   # (B,h,tgt,d_k)
-        K = self._split_heads(self.W_k(key))     # (B,h,src,d_k)
-        V = self._split_heads(self.W_v(value))   # (B,h,src,d_k)
+        Q = self._split_heads(self.W_q(query))  # (B,h,tgt,d_k)
+        K = self._split_heads(self.W_k(key))  # (B,h,src,d_k)
+        V = self._split_heads(self.W_v(value))  # (B,h,src,d_k)
 
         scores = torch.matmul(Q, K.transpose(-2, -1)) / self.scale  # (B,h,tgt,src)
 
@@ -74,8 +75,8 @@ class MultiHeadAttention(nn.Module):
         attn_weights = torch.nan_to_num(attn_weights, nan=0.0)  # guard all-masked rows
         attn_weights = self.attn_dropout(attn_weights)
 
-        context = torch.matmul(attn_weights, V)   # (B,h,tgt,d_k)
-        output  = self.W_o(self._merge_heads(context))
+        context = torch.matmul(attn_weights, V)  # (B,h,tgt,d_k)
+        output = self.W_o(self._merge_heads(context))
         return output, attn_weights
 
 
@@ -94,7 +95,7 @@ class PositionalEncoding(nn.Module):
         super().__init__()
         self.dropout = nn.Dropout(dropout)
 
-        pe  = torch.zeros(max_seq_len, d_model)
+        pe = torch.zeros(max_seq_len, d_model)
         pos = torch.arange(0, max_seq_len, dtype=torch.float).unsqueeze(1)
         div = torch.exp(
             torch.arange(0, d_model, 2, dtype=torch.float)
@@ -136,14 +137,14 @@ class EncoderLayer(nn.Module):
     def __init__(self, d_model: int, num_heads: int, d_ff: int, dropout: float = 0.1):
         super().__init__()
         self.self_attn = MultiHeadAttention(d_model, num_heads, dropout)
-        self.ffn       = FeedForward(d_model, d_ff, dropout)
-        self.norm1     = nn.LayerNorm(d_model, eps=1e-6)
-        self.norm2     = nn.LayerNorm(d_model, eps=1e-6)
-        self.dropout   = nn.Dropout(dropout)
+        self.ffn = FeedForward(d_model, d_ff, dropout)
+        self.norm1 = nn.LayerNorm(d_model, eps=1e-6)
+        self.norm2 = nn.LayerNorm(d_model, eps=1e-6)
+        self.dropout = nn.Dropout(dropout)
 
     def forward(
         self,
-        x:        torch.Tensor,
+        x: torch.Tensor,
         src_mask: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
         normed = self.norm1(x)
@@ -164,23 +165,23 @@ class DecoderLayer(nn.Module):
 
     def __init__(self, d_model: int, num_heads: int, d_ff: int, dropout: float = 0.1):
         super().__init__()
-        self.self_attn  = MultiHeadAttention(d_model, num_heads, dropout)
+        self.self_attn = MultiHeadAttention(d_model, num_heads, dropout)
         self.cross_attn = MultiHeadAttention(d_model, num_heads, dropout)
-        self.ffn        = FeedForward(d_model, d_ff, dropout)
-        self.norm1      = nn.LayerNorm(d_model, eps=1e-6)
-        self.norm2      = nn.LayerNorm(d_model, eps=1e-6)
-        self.norm3      = nn.LayerNorm(d_model, eps=1e-6)
-        self.dropout    = nn.Dropout(dropout)
+        self.ffn = FeedForward(d_model, d_ff, dropout)
+        self.norm1 = nn.LayerNorm(d_model, eps=1e-6)
+        self.norm2 = nn.LayerNorm(d_model, eps=1e-6)
+        self.norm3 = nn.LayerNorm(d_model, eps=1e-6)
+        self.dropout = nn.Dropout(dropout)
 
     def forward(
         self,
-        x:          torch.Tensor,
+        x: torch.Tensor,
         enc_output: torch.Tensor,
-        src_mask:   Optional[torch.Tensor] = None,
-        tgt_mask:   Optional[torch.Tensor] = None,
+        src_mask: Optional[torch.Tensor] = None,
+        tgt_mask: Optional[torch.Tensor] = None,
     ) -> tuple[torch.Tensor, torch.Tensor]:
         normed = self.norm1(x)
-        attn_out, _        = self.self_attn(normed, normed, normed, tgt_mask)
+        attn_out, _ = self.self_attn(normed, normed, normed, tgt_mask)
         x = x + self.dropout(attn_out)
 
         normed = self.norm2(x)
@@ -194,27 +195,27 @@ class DecoderLayer(nn.Module):
 class Encoder(nn.Module):
     def __init__(
         self,
-        vocab_size:  int,
-        d_model:     int,
-        num_heads:   int,
-        num_layers:  int,
-        d_ff:        int,
+        vocab_size: int,
+        d_model: int,
+        num_heads: int,
+        num_layers: int,
+        d_ff: int,
         max_seq_len: int,
-        dropout:     float = 0.1,
-        pad_idx:     int   = 0,
+        dropout: float = 0.1,
+        pad_idx: int = 0,
     ):
         super().__init__()
-        self.d_model      = d_model
-        self.embedding    = nn.Embedding(vocab_size, d_model, padding_idx=pad_idx)
+        self.d_model = d_model
+        self.embedding = nn.Embedding(vocab_size, d_model, padding_idx=pad_idx)
         self.pos_encoding = PositionalEncoding(d_model, max_seq_len, dropout)
-        self.layers       = nn.ModuleList(
+        self.layers = nn.ModuleList(
             [EncoderLayer(d_model, num_heads, d_ff, dropout) for _ in range(num_layers)]
         )
         self.norm = nn.LayerNorm(d_model, eps=1e-6)
 
     def forward(
         self,
-        src:      torch.Tensor,
+        src: torch.Tensor,
         src_mask: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
         x = self.pos_encoding(self.embedding(src) * math.sqrt(self.d_model))
@@ -226,30 +227,30 @@ class Encoder(nn.Module):
 class Decoder(nn.Module):
     def __init__(
         self,
-        vocab_size:  int,
-        d_model:     int,
-        num_heads:   int,
-        num_layers:  int,
-        d_ff:        int,
+        vocab_size: int,
+        d_model: int,
+        num_heads: int,
+        num_layers: int,
+        d_ff: int,
         max_seq_len: int,
-        dropout:     float = 0.1,
-        pad_idx:     int   = 0,
+        dropout: float = 0.1,
+        pad_idx: int = 0,
     ):
         super().__init__()
-        self.d_model      = d_model
-        self.embedding    = nn.Embedding(vocab_size, d_model, padding_idx=pad_idx)
+        self.d_model = d_model
+        self.embedding = nn.Embedding(vocab_size, d_model, padding_idx=pad_idx)
         self.pos_encoding = PositionalEncoding(d_model, max_seq_len, dropout)
-        self.layers       = nn.ModuleList(
+        self.layers = nn.ModuleList(
             [DecoderLayer(d_model, num_heads, d_ff, dropout) for _ in range(num_layers)]
         )
         self.norm = nn.LayerNorm(d_model, eps=1e-6)
 
     def forward(
         self,
-        tgt:        torch.Tensor,
+        tgt: torch.Tensor,
         enc_output: torch.Tensor,
-        src_mask:   Optional[torch.Tensor] = None,
-        tgt_mask:   Optional[torch.Tensor] = None,
+        src_mask: Optional[torch.Tensor] = None,
+        tgt_mask: Optional[torch.Tensor] = None,
     ) -> tuple[torch.Tensor, list[torch.Tensor]]:
         x = self.pos_encoding(self.embedding(tgt) * math.sqrt(self.d_model))
         cross_weights: list[torch.Tensor] = []
@@ -288,28 +289,40 @@ class Transformer(nn.Module):
 
     def __init__(
         self,
-        src_vocab_size:     int,
-        tgt_vocab_size:     int,
-        d_model:            int   = 512,
-        num_heads:          int   = 8,
-        num_encoder_layers: int   = 6,
-        num_decoder_layers: int   = 6,
-        d_ff:               int   = 2048,
-        max_seq_len:        int   = 512,
-        dropout:            float = 0.1,
-        pad_idx:            int   = 0,
-        tie_weights:        bool  = True,
+        src_vocab_size: int,
+        tgt_vocab_size: int,
+        d_model: int = 512,
+        num_heads: int = 8,
+        num_encoder_layers: int = 6,
+        num_decoder_layers: int = 6,
+        d_ff: int = 2048,
+        max_seq_len: int = 512,
+        dropout: float = 0.1,
+        pad_idx: int = 0,
+        tie_weights: bool = True,
     ):
         super().__init__()
         self.pad_idx = pad_idx
 
         self.encoder = Encoder(
-            src_vocab_size, d_model, num_heads, num_encoder_layers,
-            d_ff, max_seq_len, dropout, pad_idx,
+            src_vocab_size,
+            d_model,
+            num_heads,
+            num_encoder_layers,
+            d_ff,
+            max_seq_len,
+            dropout,
+            pad_idx,
         )
         self.decoder = Decoder(
-            tgt_vocab_size, d_model, num_heads, num_decoder_layers,
-            d_ff, max_seq_len, dropout, pad_idx,
+            tgt_vocab_size,
+            d_model,
+            num_heads,
+            num_decoder_layers,
+            d_ff,
+            max_seq_len,
+            dropout,
+            pad_idx,
         )
         self.output_projection = nn.Linear(d_model, tgt_vocab_size, bias=False)
 
@@ -331,7 +344,7 @@ class Transformer(nn.Module):
         """
         B, tgt_len = tgt.shape
         pad_mask = (tgt != self.pad_idx).unsqueeze(1).unsqueeze(2)  # (B,1,1,T)
-        causal   = torch.tril(
+        causal = torch.tril(
             torch.ones(tgt_len, tgt_len, dtype=torch.bool, device=tgt.device)
         )
         return pad_mask & causal  # (B,1,T,T)
@@ -361,9 +374,9 @@ class Transformer(nn.Module):
         src_mask = self.make_src_mask(src)
         tgt_mask = self.make_tgt_mask(tgt)
 
-        enc_output             = self.encoder(src, src_mask)
+        enc_output = self.encoder(src, src_mask)
         dec_output, cross_attn = self.decoder(tgt, enc_output, src_mask, tgt_mask)
-        logits                 = self.output_projection(dec_output)
+        logits = self.output_projection(dec_output)
         return logits, cross_attn
 
     # ---------------------------------------------------------- greedy decode
@@ -371,7 +384,7 @@ class Transformer(nn.Module):
     @torch.no_grad()
     def greedy_decode(
         self,
-        src:     torch.Tensor,
+        src: torch.Tensor,
         bos_idx: int,
         eos_idx: int,
         max_len: int = 128,
@@ -383,22 +396,22 @@ class Transformer(nn.Module):
         Returns decoded token sequences: (B, decoded_len)  incl. leading BOS.
         """
         self.eval()
-        device   = src.device
-        B        = src.size(0)
+        device = src.device
+        B = src.size(0)
         src_mask = self.make_src_mask(src)
-        enc_out  = self.encoder(src, src_mask)
+        enc_out = self.encoder(src, src_mask)
 
-        tgt      = torch.full((B, 1), bos_idx, dtype=torch.long, device=device)
+        tgt = torch.full((B, 1), bos_idx, dtype=torch.long, device=device)
         finished = torch.zeros(B, dtype=torch.bool, device=device)
 
         for _ in range(max_len - 1):
-            tgt_mask    = self.make_tgt_mask(tgt)
-            dec_out, _  = self.decoder(tgt, enc_out, src_mask, tgt_mask)
+            tgt_mask = self.make_tgt_mask(tgt)
+            dec_out, _ = self.decoder(tgt, enc_out, src_mask, tgt_mask)
             next_logits = self.output_projection(dec_out[:, -1, :])
-            next_token  = next_logits.argmax(dim=-1, keepdim=True)           # (B,1)
-            next_token  = next_token.masked_fill(finished.unsqueeze(1), self.pad_idx)
-            tgt         = torch.cat([tgt, next_token], dim=1)
-            finished    = finished | (next_token.squeeze(1) == eos_idx)
+            next_token = next_logits.argmax(dim=-1, keepdim=True)  # (B,1)
+            next_token = next_token.masked_fill(finished.unsqueeze(1), self.pad_idx)
+            tgt = torch.cat([tgt, next_token], dim=1)
+            finished = finished | (next_token.squeeze(1) == eos_idx)
             if finished.all():
                 break
 
@@ -409,11 +422,11 @@ class Transformer(nn.Module):
     @torch.no_grad()
     def beam_decode(
         self,
-        src:            torch.Tensor,
-        bos_idx:        int,
-        eos_idx:        int,
-        beam_size:      int   = 4,
-        max_len:        int   = 128,
+        src: torch.Tensor,
+        bos_idx: int,
+        eos_idx: int,
+        beam_size: int = 4,
+        max_len: int = 128,
         length_penalty: float = 0.6,
     ) -> torch.Tensor:
         """
@@ -422,36 +435,38 @@ class Transformer(nn.Module):
         """
         assert src.size(0) == 1, "beam_decode supports batch_size=1"
         self.eval()
-        device   = src.device
+        device = src.device
         src_mask = self.make_src_mask(src)
-        enc_out  = self.encoder(src, src_mask)
+        enc_out = self.encoder(src, src_mask)
 
-        enc_out  = enc_out.expand(beam_size, -1, -1)
+        enc_out = enc_out.expand(beam_size, -1, -1)
         src_mask = src_mask.expand(beam_size, -1, -1, -1)
 
-        beams       = torch.full((beam_size, 1), bos_idx, dtype=torch.long, device=device)
+        beams = torch.full((beam_size, 1), bos_idx, dtype=torch.long, device=device)
         beam_scores = torch.zeros(beam_size, device=device)
-        completed:  list[tuple[float, torch.Tensor]] = []
+        completed: list[tuple[float, torch.Tensor]] = []
 
         for step in range(max_len - 1):
-            tgt_mask        = self.make_tgt_mask(beams)
-            dec_out, _      = self.decoder(beams, enc_out, src_mask, tgt_mask)
-            logits          = self.output_projection(dec_out[:, -1, :])
-            log_probs       = F.log_softmax(logits, dim=-1)            # (beams, V)
+            tgt_mask = self.make_tgt_mask(beams)
+            dec_out, _ = self.decoder(beams, enc_out, src_mask, tgt_mask)
+            logits = self.output_projection(dec_out[:, -1, :])
+            log_probs = F.log_softmax(logits, dim=-1)  # (beams, V)
 
-            V            = log_probs.size(-1)
-            total        = (beam_scores.unsqueeze(1) + log_probs).view(-1)
+            V = log_probs.size(-1)
+            total = (beam_scores.unsqueeze(1) + log_probs).view(-1)
             top_scores, top_idx = total.topk(beam_size)
-            beam_ids     = top_idx // V
-            token_ids    = top_idx %  V
+            beam_ids = top_idx // V
+            token_ids = top_idx % V
 
-            new_beams    = torch.cat([beams[beam_ids], token_ids.unsqueeze(1)], dim=1)
-            beam_scores  = top_scores
+            new_beams = torch.cat([beams[beam_ids], token_ids.unsqueeze(1)], dim=1)
+            beam_scores = top_scores
 
             for i in range(beam_size):
                 if token_ids[i] == eos_idx:
                     penalty = (step + 1) ** length_penalty
-                    completed.append((beam_scores[i].item() / penalty, new_beams[i].clone()))
+                    completed.append(
+                        (beam_scores[i].item() / penalty, new_beams[i].clone())
+                    )
 
             if len(completed) >= beam_size:
                 break

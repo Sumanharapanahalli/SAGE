@@ -16,6 +16,7 @@ Usage::
     steps = registry.pipeline_for("invoice")
     # -> [ModelConfig(name='document_classifier'), ModelConfig(name='ner'), ...]
 """
+
 from __future__ import annotations
 
 import os
@@ -32,6 +33,7 @@ _ENV_VAR_RE = re.compile(r"\$\{([^}]+)\}")
 
 def _expand_env_vars(value: str) -> str:
     """Replace ${VAR_NAME} tokens with their environment variable values."""
+
     def _replace(match: re.Match) -> str:  # type: ignore[type-arg]
         var = match.group(1)
         resolved = os.environ.get(var, "")
@@ -171,8 +173,7 @@ class ModelRegistry:
 
         # Load pipeline routing.
         self._pipelines = {
-            doc_type: steps
-            for doc_type, steps in data.get("pipelines", {}).items()
+            doc_type: steps for doc_type, steps in data.get("pipelines", {}).items()
         }
         # Validate pipeline references.
         for doc_type, steps in self._pipelines.items():

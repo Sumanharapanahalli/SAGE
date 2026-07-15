@@ -9,22 +9,21 @@ import io
 import copy
 
 # Force UTF-8 output
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
 
-from pptx import Presentation
-from pptx.util import Inches, Pt, Emu
-from pptx.dml.color import RGBColor
-from lxml import etree
+from pptx import Presentation  # noqa: E402
 
-TECH_PITCH_PATH = 'C:/sandbox/SAGE/docs/SageAI_Tech_Pitch.pptx'
-BUSINESS_CASE_PATH = 'C:/sandbox/SAGE/docs/SageAI_Business_Case.pptx'
-INVESTOR_PITCH_PATH = 'C:/sandbox/SAGE/docs/SageAI_Investor_Pitch.pptx'
+TECH_PITCH_PATH = "C:/sandbox/SAGE/docs/SageAI_Tech_Pitch.pptx"
+BUSINESS_CASE_PATH = "C:/sandbox/SAGE/docs/SageAI_Business_Case.pptx"
+INVESTOR_PITCH_PATH = "C:/sandbox/SAGE/docs/SageAI_Investor_Pitch.pptx"
 
 changes_log = []
+
 
 def log(msg):
     print(msg)
     changes_log.append(msg)
+
 
 # ─────────────────────────────────────────────
 # Helper: find shape by exact text match
@@ -36,12 +35,14 @@ def find_shape_by_text(slide, target_text):
                 return shape
     return None
 
+
 def find_shape_containing(slide, substring):
     for shape in slide.shapes:
         if shape.has_text_frame:
             if substring in shape.text_frame.text:
                 return shape
     return None
+
 
 # ─────────────────────────────────────────────
 # Helper: replace text in a shape preserving runs
@@ -64,15 +65,16 @@ def replace_text_in_shape(shape, old_text, new_text):
 
     # If not found in a single run, try full paragraph text replacement
     for para in tf.paragraphs:
-        para_text = ''.join(r.text for r in para.runs)
+        para_text = "".join(r.text for r in para.runs)
         if old_text in para_text:
             # Put new text in first run, clear others
             if para.runs:
                 para.runs[0].text = para_text.replace(old_text, new_text)
                 for run in para.runs[1:]:
-                    run.text = ''
+                    run.text = ""
                 return True
     return False
+
 
 def set_shape_text(shape, new_text):
     """Set all text in a shape's text frame to new_text, preserving first run's formatting."""
@@ -81,7 +83,7 @@ def set_shape_text(shape, new_text):
     tf = shape.text_frame
     if tf.paragraphs and tf.paragraphs[0].runs:
         # Save font from first run
-        first_run = tf.paragraphs[0].runs[0]
+        tf.paragraphs[0].runs[0]
         # Clear all paragraphs except first
         for para in tf.paragraphs[1:]:
             p_elem = para._p
@@ -89,9 +91,10 @@ def set_shape_text(shape, new_text):
         # Set text in first paragraph first run
         tf.paragraphs[0].runs[0].text = new_text
         for run in tf.paragraphs[0].runs[1:]:
-            run.text = ''
+            run.text = ""
     elif tf.paragraphs:
         tf.paragraphs[0].text = new_text
+
 
 # ─────────────────────────────────────────────
 # Helper: copy a slide
@@ -110,6 +113,7 @@ def copy_slide(prs, slide_index):
 
     return copied_slide
 
+
 def move_slide_to_index(prs, current_index, target_index):
     """
     Move slide from current_index to target_index in the presentation.
@@ -123,6 +127,7 @@ def move_slide_to_index(prs, current_index, target_index):
     xml_slides.remove(slide_elem)
     xml_slides.insert(target_index, slide_elem)
 
+
 # ─────────────────────────────────────────────
 # Clear all text from copied slide and set new content
 # ─────────────────────────────────────────────
@@ -132,7 +137,8 @@ def clear_slide_text(slide):
         if shape.has_text_frame:
             for para in shape.text_frame.paragraphs:
                 for run in para.runs:
-                    run.text = ''
+                    run.text = ""
+
 
 def get_shapes_with_text(slide):
     """Get shapes that have non-empty text."""
@@ -141,6 +147,7 @@ def get_shapes_with_text(slide):
         if shape.has_text_frame and shape.text_frame.text.strip():
             result.append((shape.name, shape.text_frame.text.strip()[:80]))
     return result
+
 
 # ─────────────────────────────────────────────
 # NEW SLIDE: Composio Integration
@@ -169,30 +176,32 @@ def build_composio_slide(prs, template_slide_index=14):
         if not shape.has_text_frame:
             continue
         t = shape.text_frame.text.strip()
-        if 'Real-Time Token Streaming' in t:
+        if "Real-Time Token Streaming" in t:
             title_shape = shape
-        elif 'Server-Sent Events for progressive' in t:
+        elif "Server-Sent Events for progressive" in t:
             subtitle_shape = shape
-        elif 'SAGE[ai] — Confidential' in t and 'March 2026' in t:
+        elif "SAGE[ai] — Confidential" in t and "March 2026" in t:
             footer_shape = shape
 
     if title_shape:
         # Replace title
         for para in title_shape.text_frame.paragraphs:
             for run in para.runs:
-                if 'Real-Time Token Streaming' in run.text:
+                if "Real-Time Token Streaming" in run.text:
                     run.text = run.text.replace(
-                        'Real-Time Token Streaming (Phase 5)',
-                        'Composio Integration — 100+ Tools in One Package'
+                        "Real-Time Token Streaming (Phase 5)",
+                        "Composio Integration — 100+ Tools in One Package",
                     )
                     break
-        log("  [Composio slide] Set title: 'Composio Integration — 100+ Tools in One Package'")
+        log(
+            "  [Composio slide] Set title: 'Composio Integration — 100+ Tools in One Package'"
+        )
 
     if subtitle_shape:
         for para in subtitle_shape.text_frame.paragraphs:
             for run in para.runs:
                 if run.text.strip():
-                    run.text = 'Connect any SaaS tool to SAGE agents — OAuth handled, no per-integration credential code'
+                    run.text = "Connect any SaaS tool to SAGE agents — OAuth handled, no per-integration credential code"
                     break
         log("  [Composio slide] Set subtitle")
 
@@ -200,18 +209,42 @@ def build_composio_slide(prs, template_slide_index=14):
     # In slide 15 structure: blocks go FastAPI StreamingResponse, generate_stream(),
     # Claude API provider, CLI providers, Ollama provider, Two endpoints
     content_data = [
-        ('FastAPI StreamingResponse', 'text/event-stream content-type; browser-native SSE protocol',
-         '100+ Apps', 'GitHub, GitLab, Jira, Linear, Slack, Notion, Confluence, Salesforce, HubSpot, Zendesk, Stripe, Google Workspace, and 90+ more'),
-        ('generate_stream() method', 'Yields chunks from LLMGateway — same thread-safe singleton, streaming path',
-         'OAuth Handled', 'Composio manages auth flows — SAGE never stores third-party credentials'),
-        ('Claude API provider', 'Native token-by-token streaming via Anthropic SDK stream context',
-         'LangChain Native', 'Uses existing langchain_tools.py — composio:github in project.yaml integrations'),
-        ('CLI providers (Gemini, etc)', 'Full generation runs then output is split into 4-word chunks — progressive feel',
-         'Web UI', 'New Integrations page: connect apps via OAuth, see active tools per solution'),
-        ('Ollama provider', 'stream=True to local REST API — true token-level streaming offline',
-         'HITL Connect', 'POST /integrations/composio/connect creates a proposal — approve on Dashboard'),
-        ('Two endpoints', 'POST /analyze/stream · POST /agent/stream — both support X-SAGE-Tenant',
-         'Zero Code', 'pip install composio-langchain + COMPOSIO_API_KEY — no per-tool code'),
+        (
+            "FastAPI StreamingResponse",
+            "text/event-stream content-type; browser-native SSE protocol",
+            "100+ Apps",
+            "GitHub, GitLab, Jira, Linear, Slack, Notion, Confluence, Salesforce, HubSpot, Zendesk, Stripe, Google Workspace, and 90+ more",
+        ),
+        (
+            "generate_stream() method",
+            "Yields chunks from LLMGateway — same thread-safe singleton, streaming path",
+            "OAuth Handled",
+            "Composio manages auth flows — SAGE never stores third-party credentials",
+        ),
+        (
+            "Claude API provider",
+            "Native token-by-token streaming via Anthropic SDK stream context",
+            "LangChain Native",
+            "Uses existing langchain_tools.py — composio:github in project.yaml integrations",
+        ),
+        (
+            "CLI providers (Gemini, etc)",
+            "Full generation runs then output is split into 4-word chunks — progressive feel",
+            "Web UI",
+            "New Integrations page: connect apps via OAuth, see active tools per solution",
+        ),
+        (
+            "Ollama provider",
+            "stream=True to local REST API — true token-level streaming offline",
+            "HITL Connect",
+            "POST /integrations/composio/connect creates a proposal — approve on Dashboard",
+        ),
+        (
+            "Two endpoints",
+            "POST /analyze/stream · POST /agent/stream — both support X-SAGE-Tenant",
+            "Zero Code",
+            "pip install composio-langchain + COMPOSIO_API_KEY — no per-tool code",
+        ),
     ]
 
     replaced_labels = 0
@@ -222,7 +255,7 @@ def build_composio_slide(prs, template_slide_index=14):
                 if shape.text_frame.paragraphs and shape.text_frame.paragraphs[0].runs:
                     shape.text_frame.paragraphs[0].runs[0].text = new_label
                     for run in shape.text_frame.paragraphs[0].runs[1:]:
-                        run.text = ''
+                        run.text = ""
                     replaced_labels += 1
                     break
         # Find and replace description
@@ -231,13 +264,17 @@ def build_composio_slide(prs, template_slide_index=14):
                 if shape.text_frame.paragraphs and shape.text_frame.paragraphs[0].runs:
                     shape.text_frame.paragraphs[0].runs[0].text = new_desc
                     for run in shape.text_frame.paragraphs[0].runs[1:]:
-                        run.text = ''
+                        run.text = ""
                     break
 
-    log(f"  [Composio slide] Replaced {replaced_labels} content block labels and descriptions")
+    log(
+        f"  [Composio slide] Replaced {replaced_labels} content block labels and descriptions"
+    )
 
     if footer_shape:
-        log("  [Composio slide] Footer preserved: 'SAGE[ai] — Confidential | March 2026'")
+        log(
+            "  [Composio slide] Footer preserved: 'SAGE[ai] — Confidential | March 2026'"
+        )
 
     return new_slide
 
@@ -261,29 +298,31 @@ def build_hire_agent_slide(prs, template_slide_index=14):
         if not shape.has_text_frame:
             continue
         t = shape.text_frame.text.strip()
-        if 'Real-Time Token Streaming' in t:
+        if "Real-Time Token Streaming" in t:
             title_shape = shape
-        elif 'Server-Sent Events for progressive' in t:
+        elif "Server-Sent Events for progressive" in t:
             subtitle_shape = shape
-        elif 'SAGE[ai] — Confidential' in t and 'March 2026' in t:
+        elif "SAGE[ai] — Confidential" in t and "March 2026" in t:
             footer_shape = shape
 
     if title_shape:
         for para in title_shape.text_frame.paragraphs:
             for run in para.runs:
-                if 'Real-Time Token Streaming' in run.text:
+                if "Real-Time Token Streaming" in run.text:
                     run.text = run.text.replace(
-                        'Real-Time Token Streaming (Phase 5)',
-                        'Hire Agent & Solution Theming — Runtime Customisation'
+                        "Real-Time Token Streaming (Phase 5)",
+                        "Hire Agent & Solution Theming — Runtime Customisation",
                     )
                     break
-        log("  [Hire Agent slide] Set title: 'Hire Agent & Solution Theming — Runtime Customisation'")
+        log(
+            "  [Hire Agent slide] Set title: 'Hire Agent & Solution Theming — Runtime Customisation'"
+        )
 
     if subtitle_shape:
         for para in subtitle_shape.text_frame.paragraphs:
             for run in para.runs:
                 if run.text.strip():
-                    run.text = 'Extend agents and brand the UI without touching code or YAML files'
+                    run.text = "Extend agents and brand the UI without touching code or YAML files"
                     break
         log("  [Hire Agent slide] Set subtitle")
 
@@ -291,18 +330,42 @@ def build_hire_agent_slide(prs, template_slide_index=14):
     # We reuse the 6 label+description slots, 3 per column conceptually
     # Left column: Hire Agent items, Right column: Theming items
     content_data = [
-        ('FastAPI StreamingResponse', 'text/event-stream content-type; browser-native SSE protocol',
-         'Hire Agent (Web UI)', 'From the web UI, click Hire Agent — choose icon, name, description, system prompt'),
-        ('generate_stream() method', 'Yields chunks from LLMGateway — same thread-safe singleton, streaming path',
-         'HITL Approval', 'Creates HITL proposal — approve on Dashboard — role appears in Agents page immediately'),
-        ('Claude API provider', 'Native token-by-token streaming via Anthropic SDK stream context',
-         'API Backed', 'Backed by POST /agents/hire — optionally add task types (written to tasks.yaml)'),
-        ('CLI providers (Gemini, etc)', 'Full generation runs then output is split into 4-word chunks — progressive feel',
-         'Solution Theming', 'theme: block in project.yaml — sidebar_bg, accent, badge_bg CSS colour strings'),
-        ('Ollama provider', 'stream=True to local REST API — true token-level streaming offline',
-         'CSS Variables', 'ThemeProvider writes CSS variables to document.documentElement — switches instantly'),
-        ('Two endpoints', 'POST /analyze/stream · POST /agent/stream — both support X-SAGE-Tenant',
-         'Example Themes', 'Medical blue, game studio purple, startup green — no Tailwind dependency'),
+        (
+            "FastAPI StreamingResponse",
+            "text/event-stream content-type; browser-native SSE protocol",
+            "Hire Agent (Web UI)",
+            "From the web UI, click Hire Agent — choose icon, name, description, system prompt",
+        ),
+        (
+            "generate_stream() method",
+            "Yields chunks from LLMGateway — same thread-safe singleton, streaming path",
+            "HITL Approval",
+            "Creates HITL proposal — approve on Dashboard — role appears in Agents page immediately",
+        ),
+        (
+            "Claude API provider",
+            "Native token-by-token streaming via Anthropic SDK stream context",
+            "API Backed",
+            "Backed by POST /agents/hire — optionally add task types (written to tasks.yaml)",
+        ),
+        (
+            "CLI providers (Gemini, etc)",
+            "Full generation runs then output is split into 4-word chunks — progressive feel",
+            "Solution Theming",
+            "theme: block in project.yaml — sidebar_bg, accent, badge_bg CSS colour strings",
+        ),
+        (
+            "Ollama provider",
+            "stream=True to local REST API — true token-level streaming offline",
+            "CSS Variables",
+            "ThemeProvider writes CSS variables to document.documentElement — switches instantly",
+        ),
+        (
+            "Two endpoints",
+            "POST /analyze/stream · POST /agent/stream — both support X-SAGE-Tenant",
+            "Example Themes",
+            "Medical blue, game studio purple, startup green — no Tailwind dependency",
+        ),
     ]
 
     replaced_labels = 0
@@ -312,7 +375,7 @@ def build_hire_agent_slide(prs, template_slide_index=14):
                 if shape.text_frame.paragraphs and shape.text_frame.paragraphs[0].runs:
                     shape.text_frame.paragraphs[0].runs[0].text = new_label
                     for run in shape.text_frame.paragraphs[0].runs[1:]:
-                        run.text = ''
+                        run.text = ""
                     replaced_labels += 1
                     break
         for shape in new_slide.shapes:
@@ -320,13 +383,17 @@ def build_hire_agent_slide(prs, template_slide_index=14):
                 if shape.text_frame.paragraphs and shape.text_frame.paragraphs[0].runs:
                     shape.text_frame.paragraphs[0].runs[0].text = new_desc
                     for run in shape.text_frame.paragraphs[0].runs[1:]:
-                        run.text = ''
+                        run.text = ""
                     break
 
-    log(f"  [Hire Agent slide] Replaced {replaced_labels} content block labels and descriptions")
+    log(
+        f"  [Hire Agent slide] Replaced {replaced_labels} content block labels and descriptions"
+    )
 
     if footer_shape:
-        log("  [Hire Agent slide] Footer preserved: 'SAGE[ai] — Confidential | March 2026'")
+        log(
+            "  [Hire Agent slide] Footer preserved: 'SAGE[ai] — Confidential | March 2026'"
+        )
 
     return new_slide
 
@@ -335,9 +402,9 @@ def build_hire_agent_slide(prs, template_slide_index=14):
 #  UPDATE: SageAI_Tech_Pitch.pptx
 # ═══════════════════════════════════════════════════════════
 def update_tech_pitch():
-    log("\n" + "="*60)
+    log("\n" + "=" * 60)
     log("UPDATING: SageAI_Tech_Pitch.pptx")
-    log("="*60)
+    log("=" * 60)
 
     prs = Presentation(TECH_PITCH_PATH)
 
@@ -346,34 +413,40 @@ def update_tech_pitch():
     log("\nSlide 11 - Developer Experience:")
 
     # Find "New agent role: add YAML block..." shape and append new line
-    shape_agent_role = find_shape_containing(slide11, 'New agent role: add YAML block to prompts.yaml')
+    shape_agent_role = find_shape_containing(
+        slide11, "New agent role: add YAML block to prompts.yaml"
+    )
     if shape_agent_role:
         # Add new text after existing
         tf = shape_agent_role.text_frame
-        current_text = tf.text.strip()
+        tf.text.strip()
         # Replace the text in runs
         for para in tf.paragraphs:
             for run in para.runs:
-                if 'New agent role: add YAML block to prompts.yaml' in run.text:
+                if "New agent role: add YAML block to prompts.yaml" in run.text:
                     run.text = run.text.replace(
-                        'New agent role: add YAML block to prompts.yaml + entry to tasks.yaml — no Python required',
-                        'New agent role: add YAML block to prompts.yaml + entry to tasks.yaml — no Python required — or use Hire Agent in the web UI, no YAML editing required'
+                        "New agent role: add YAML block to prompts.yaml + entry to tasks.yaml — no Python required",
+                        "New agent role: add YAML block to prompts.yaml + entry to tasks.yaml — no Python required — or use Hire Agent in the web UI, no YAML editing required",
                     )
-                    log("  [OK] Updated 'New agent role' text to add Hire Agent mention")
+                    log(
+                        "  [OK] Updated 'New agent role' text to add Hire Agent mention"
+                    )
                     break
     else:
         log("  [WARN] Could not find 'New agent role' shape on slide 11")
 
     # Find "Hot-reload YAML" shape and append Solution Theming info
-    shape_hotreload = find_shape_containing(slide11, 'Hot-reload YAML via /edit-solution-yaml skill')
+    shape_hotreload = find_shape_containing(
+        slide11, "Hot-reload YAML via /edit-solution-yaml skill"
+    )
     if shape_hotreload:
         tf = shape_hotreload.text_frame
         for para in tf.paragraphs:
             for run in para.runs:
-                if 'Hot-reload YAML via /edit-solution-yaml skill' in run.text:
+                if "Hot-reload YAML via /edit-solution-yaml skill" in run.text:
                     run.text = run.text.replace(
-                        'Hot-reload YAML via /edit-solution-yaml skill — backend reloads without restart',
-                        'Hot-reload YAML via /edit-solution-yaml skill — backend reloads without restart'
+                        "Hot-reload YAML via /edit-solution-yaml skill — backend reloads without restart",
+                        "Hot-reload YAML via /edit-solution-yaml skill — backend reloads without restart",
                     )
                     break
         # We need to find or add the theming line — check if there's a shape after it
@@ -382,9 +455,14 @@ def update_tech_pitch():
         # Since the slide layout may not have room, we update the shape text itself
         for para in tf.paragraphs:
             for run in para.runs:
-                if 'Hot-reload YAML via /edit-solution-yaml skill — backend reloads without restart' in run.text:
-                    run.text = 'Hot-reload YAML via /edit-solution-yaml skill — backend reloads without restart | Solution theming: add theme: block to project.yaml — sidebar, buttons, badges update instantly'
-                    log("  [OK] Updated 'Hot-reload YAML' shape to add Solution Theming mention")
+                if (
+                    "Hot-reload YAML via /edit-solution-yaml skill — backend reloads without restart"
+                    in run.text
+                ):
+                    run.text = "Hot-reload YAML via /edit-solution-yaml skill — backend reloads without restart | Solution theming: add theme: block to project.yaml — sidebar, buttons, badges update instantly"
+                    log(
+                        "  [OK] Updated 'Hot-reload YAML' shape to add Solution Theming mention"
+                    )
                     break
     else:
         log("  [WARN] Could not find 'Hot-reload YAML' shape on slide 11")
@@ -394,15 +472,20 @@ def update_tech_pitch():
     log("\nSlide 16 - Onboarding Wizard:")
 
     # Find step 1 shape: "POST /onboarding/generate..."
-    shape_step1_desc = find_shape_containing(slide16, 'POST /onboarding/generate with a plain-language')
+    shape_step1_desc = find_shape_containing(
+        slide16, "POST /onboarding/generate with a plain-language"
+    )
     if shape_step1_desc:
         tf = shape_step1_desc.text_frame
         for para in tf.paragraphs:
             for run in para.runs:
-                if 'POST /onboarding/generate with a plain-language description' in run.text:
+                if (
+                    "POST /onboarding/generate with a plain-language description"
+                    in run.text
+                ):
                     run.text = run.text.replace(
-                        'POST /onboarding/generate with a plain-language description + compliance standards',
-                        'POST /onboarding/generate with a plain-language description + compliance standards | Web UI path: visit /onboarding — guided multi-turn conversation, LLM extracts domain info, Generate Solution button appears when ready'
+                        "POST /onboarding/generate with a plain-language description + compliance standards",
+                        "POST /onboarding/generate with a plain-language description + compliance standards | Web UI path: visit /onboarding — guided multi-turn conversation, LLM extracts domain info, Generate Solution button appears when ready",
                     )
                     log("  [OK] Updated step 1 (DESCRIBE) to add web UI path note")
                     break
@@ -416,15 +499,15 @@ def update_tech_pitch():
 
     log("\nAdding new slides (Composio, Hire Agent) after slide 21:")
 
-    original_slide_count = len(prs.slides)
+    len(prs.slides)
 
     # Add Composio slide (copies slide 15/index 14 as template)
-    composio_slide = build_composio_slide(prs, template_slide_index=14)
-    composio_idx_current = len(prs.slides) - 1  # just appended at end
+    build_composio_slide(prs, template_slide_index=14)
+    len(prs.slides) - 1  # just appended at end
 
     # Add Hire Agent slide
-    hire_slide = build_hire_agent_slide(prs, template_slide_index=14)
-    hire_idx_current = len(prs.slides) - 1  # just appended at end
+    build_hire_agent_slide(prs, template_slide_index=14)
+    len(prs.slides) - 1  # just appended at end
 
     # Now reorder: we want Composio at position 21 (after index 20 = Temporal)
     # and Hire Agent at position 22 (after Composio)
@@ -434,11 +517,11 @@ def update_tech_pitch():
 
     # Move composio_slide to index 21
     move_slide_to_index(prs, len(prs.slides) - 2, 21)
-    log(f"  [OK] Composio slide inserted at position 22 (index 21)")
+    log("  [OK] Composio slide inserted at position 22 (index 21)")
 
     # After moving composio, hire_slide is now at len-1
     move_slide_to_index(prs, len(prs.slides) - 1, 22)
-    log(f"  [OK] Hire Agent slide inserted at position 23 (index 22)")
+    log("  [OK] Hire Agent slide inserted at position 23 (index 22)")
 
     # ── Slide 22 now becomes Slide 24 (Platform Completeness) ──
     # After inserting 2 slides, slide 22 (old) = index 21 → now index 23
@@ -450,15 +533,17 @@ def update_tech_pitch():
     for shape in slide_platform.shapes:
         if shape.has_text_frame:
             t = shape.text_frame.text
-            if 'Platform Completeness' in t and '12 Integration Phases' in t:
+            if "Platform Completeness" in t and "12 Integration Phases" in t:
                 for para in shape.text_frame.paragraphs:
                     for run in para.runs:
-                        if '12 Integration Phases' in run.text:
+                        if "12 Integration Phases" in run.text:
                             run.text = run.text.replace(
-                                'Platform Completeness — 12 Integration Phases',
-                                'Platform Completeness — 12+ Integration Phases'
+                                "Platform Completeness — 12 Integration Phases",
+                                "Platform Completeness — 12+ Integration Phases",
                             )
-                            log("  [OK] Updated Platform Completeness title to '12+ Integration Phases'")
+                            log(
+                                "  [OK] Updated Platform Completeness title to '12+ Integration Phases'"
+                            )
                             break
 
     prs.save(TECH_PITCH_PATH)
@@ -469,9 +554,9 @@ def update_tech_pitch():
 #  UPDATE: SageAI_Business_Case.pptx
 # ═══════════════════════════════════════════════════════════
 def update_business_case():
-    log("\n" + "="*60)
+    log("\n" + "=" * 60)
     log("UPDATING: SageAI_Business_Case.pptx")
-    log("="*60)
+    log("=" * 60)
 
     prs = Presentation(BUSINESS_CASE_PATH)
 
@@ -484,24 +569,24 @@ def update_business_case():
     # and add one new item
 
     old_bullets = [
-        'Analyzes error logs in under 60 seconds  (vs 45-60 min manual)',
-        'AI code reviews with multi-step ReAct reasoning loop',
-        'Monitors Teams, Metabase, GitLab — real-time event detection',
-        'Every decision logged to immutable ISO 13485 audit trail',
-        'Human-in-the-loop: AI advises, humans decide — always',
-        'Learns from every correction via vector memory (RAG)',
-        'Web dashboard for all stakeholders — zero CLI required',
+        "Analyzes error logs in under 60 seconds  (vs 45-60 min manual)",
+        "AI code reviews with multi-step ReAct reasoning loop",
+        "Monitors Teams, Metabase, GitLab — real-time event detection",
+        "Every decision logged to immutable ISO 13485 audit trail",
+        "Human-in-the-loop: AI advises, humans decide — always",
+        "Learns from every correction via vector memory (RAG)",
+        "Web dashboard for all stakeholders — zero CLI required",
     ]
 
     new_bullets = [
-        'Analyzes error logs in under 60 seconds  (vs 45-60 min manual)',
-        'AI code reviews with multi-step ReAct reasoning loop',
-        'Monitors Teams, Metabase, GitLab — real-time event detection',
-        'Every decision logged to immutable ISO 13485 audit trail',
-        'Human-in-the-loop: AI advises, humans decide — always',
-        'Learns from every correction via vector memory (RAG)',
-        '100+ tool integrations via Composio — GitHub, Jira, Salesforce, Slack and more',
-        'Web dashboard for all stakeholders — hire new agent roles, connect tools, approve proposals',
+        "Analyzes error logs in under 60 seconds  (vs 45-60 min manual)",
+        "AI code reviews with multi-step ReAct reasoning loop",
+        "Monitors Teams, Metabase, GitLab — real-time event detection",
+        "Every decision logged to immutable ISO 13485 audit trail",
+        "Human-in-the-loop: AI advises, humans decide — always",
+        "Learns from every correction via vector memory (RAG)",
+        "100+ tool integrations via Composio — GitHub, Jira, Salesforce, Slack and more",
+        "Web dashboard for all stakeholders — hire new agent roles, connect tools, approve proposals",
     ]
 
     # Find each old bullet shape and update it
@@ -517,7 +602,9 @@ def update_business_case():
                         new_text = new_bullets[idx]
                         if old_text != new_text:
                             run.text = run.text.replace(old_text, new_text)
-                            log(f"  [OK] Updated bullet: '{old_text[:50]}...' → '{new_text[:50]}...'")
+                            log(
+                                f"  [OK] Updated bullet: '{old_text[:50]}...' → '{new_text[:50]}...'"
+                            )
                         updated_count += 1
                         break
         else:
@@ -551,8 +638,10 @@ def update_business_case():
     # For now, let's find the shape that now has Composio text and look for any unused shape
 
     # Find the shape with '100+ tool integrations' (just set) to get its position
-    composio_shape = find_shape_containing(slide3, '100+ tool integrations via Composio')
-    web_dashboard_old_shape = find_shape_containing(slide3, 'Web dashboard for all stakeholders — zero CLI required')
+    find_shape_containing(slide3, "100+ tool integrations via Composio")
+    web_dashboard_old_shape = find_shape_containing(
+        slide3, "Web dashboard for all stakeholders — zero CLI required"
+    )
 
     if web_dashboard_old_shape:
         # This shape still has old text (not yet updated since old[6] was replaced with new[6]=composio)
@@ -567,11 +656,14 @@ def update_business_case():
         pass
 
     # Find the current last bullet shape (should now have Composio text)
-    current_last_bullet = find_shape_containing(slide3, '100+ tool integrations via Composio')
+    current_last_bullet = find_shape_containing(
+        slide3, "100+ tool integrations via Composio"
+    )
 
     if current_last_bullet:
         # Clone this shape and position it below
         from pptx.util import Emu
+
         el = current_last_bullet.element
         newel = copy.deepcopy(el)
         slide3.shapes._spTree.append(newel)
@@ -579,20 +671,27 @@ def update_business_case():
         # Find the newly added shape (last one appended)
         new_shape = None
         for s in slide3.shapes:
-            if s.has_text_frame and '100+ tool integrations via Composio' in s.text_frame.text:
+            if (
+                s.has_text_frame
+                and "100+ tool integrations via Composio" in s.text_frame.text
+            ):
                 if s != current_last_bullet:
                     new_shape = s
                     break
 
         if new_shape is None:
             # If same text, get all matching and pick the second
-            matches = [s for s in slide3.shapes if s.has_text_frame and '100+ tool integrations' in s.text_frame.text]
+            matches = [
+                s
+                for s in slide3.shapes
+                if s.has_text_frame and "100+ tool integrations" in s.text_frame.text
+            ]
             if len(matches) > 1:
                 new_shape = matches[-1]
 
         if new_shape:
             # Set text to 8th bullet
-            eighth_text = 'Web dashboard for all stakeholders — hire new agent roles, connect tools, approve proposals'
+            eighth_text = "Web dashboard for all stakeholders — hire new agent roles, connect tools, approve proposals"
             for para in new_shape.text_frame.paragraphs:
                 for run in para.runs:
                     if run.text.strip():
@@ -614,17 +713,24 @@ def update_business_case():
     slide8 = prs.slides[7]
     log("\nSlide 8 - What SAGE Does Today (subtitle update):")
 
-    shape_subtitle = find_shape_containing(slide8, 'Production-ready capabilities across 12 integration phases')
+    shape_subtitle = find_shape_containing(
+        slide8, "Production-ready capabilities across 12 integration phases"
+    )
     if shape_subtitle:
         tf = shape_subtitle.text_frame
         for para in tf.paragraphs:
             for run in para.runs:
-                if 'Production-ready capabilities across 12 integration phases' in run.text:
+                if (
+                    "Production-ready capabilities across 12 integration phases"
+                    in run.text
+                ):
                     run.text = run.text.replace(
-                        'Production-ready capabilities across 12 integration phases — available now',
-                        'Production-ready capabilities — agents, tools, approvals, and 100+ integrations — available now'
+                        "Production-ready capabilities across 12 integration phases — available now",
+                        "Production-ready capabilities — agents, tools, approvals, and 100+ integrations — available now",
                     )
-                    log("  [OK] Updated subtitle: 'Production-ready capabilities — agents, tools, approvals, and 100+ integrations — available now'")
+                    log(
+                        "  [OK] Updated subtitle: 'Production-ready capabilities — agents, tools, approvals, and 100+ integrations — available now'"
+                    )
                     break
     else:
         log("  [WARN] Could not find subtitle shape on slide 8")
@@ -637,9 +743,9 @@ def update_business_case():
 #  UPDATE: SageAI_Investor_Pitch.pptx
 # ═══════════════════════════════════════════════════════════
 def update_investor_pitch():
-    log("\n" + "="*60)
+    log("\n" + "=" * 60)
     log("UPDATING: SageAI_Investor_Pitch.pptx")
-    log("="*60)
+    log("=" * 60)
 
     prs = Presentation(INVESTOR_PITCH_PATH)
 
@@ -652,8 +758,10 @@ def update_investor_pitch():
     # We need to add: 'Integration Network Effect' after it
 
     # Find the 'Provider Agnostic' label shape
-    provider_agnostic_shape = find_shape_containing(slide7, 'Provider Agnostic')
-    provider_agnostic_desc = find_shape_containing(slide7, 'A single config change swaps LLM providers')
+    provider_agnostic_shape = find_shape_containing(slide7, "Provider Agnostic")
+    provider_agnostic_desc = find_shape_containing(
+        slide7, "A single config change swaps LLM providers"
+    )
 
     if provider_agnostic_shape and provider_agnostic_desc:
         # Clone the rect + label + desc pattern from Provider Agnostic moat
@@ -665,28 +773,33 @@ def update_investor_pitch():
 
         # Get positions
         label_top = provider_agnostic_shape.top
-        label_height = provider_agnostic_shape.height
-        desc_top = provider_agnostic_desc.top
 
         # Find the associated rectangle (should be just above the label)
         moat_rect = None
         for shape in slide7.shapes:
             if not shape.has_text_frame:
                 # Check if this rectangle is near Provider Agnostic label
-                if abs(shape.top - label_top) < Emu(200000) and abs(shape.left - provider_agnostic_shape.left) < Emu(200000):
+                if abs(shape.top - label_top) < Emu(200000) and abs(
+                    shape.left - provider_agnostic_shape.left
+                ) < Emu(200000):
                     moat_rect = shape
                     break
 
         # Calculate new positions (below existing moat)
-        new_top_offset = provider_agnostic_shape.top - provider_agnostic_desc.top
+        provider_agnostic_shape.top - provider_agnostic_desc.top
         # Estimate row height from existing moats
         # Moat rows seem to be about 600000 EMU tall (rough estimate)
         # Let's use the gap between consecutive label tops
 
         # Find all moat labels to compute spacing
         moat_labels = []
-        moat_names = ['Compliance by Design', 'Compounding Intelligence', 'YAML-First Architecture',
-                      'No API Key Lock-In', 'Provider Agnostic']
+        moat_names = [
+            "Compliance by Design",
+            "Compounding Intelligence",
+            "YAML-First Architecture",
+            "No API Key Lock-In",
+            "Provider Agnostic",
+        ]
         for name in moat_names:
             s = find_shape_containing(slide7, name)
             if s:
@@ -720,13 +833,21 @@ def update_investor_pitch():
         # Find new label shape and update
         new_label_shape = None
         for s in slide7.shapes:
-            if s.has_text_frame and 'Provider Agnostic' in s.text_frame.text and s.element is new_label_el:
+            if (
+                s.has_text_frame
+                and "Provider Agnostic" in s.text_frame.text
+                and s.element is new_label_el
+            ):
                 new_label_shape = s
                 break
 
         if new_label_shape is None:
             # Try finding by element identity more carefully
-            all_provider_shapes = [s for s in slide7.shapes if s.has_text_frame and 'Provider Agnostic' in s.text_frame.text]
+            all_provider_shapes = [
+                s
+                for s in slide7.shapes
+                if s.has_text_frame and "Provider Agnostic" in s.text_frame.text
+            ]
             if len(all_provider_shapes) > 1:
                 new_label_shape = all_provider_shapes[-1]
 
@@ -735,7 +856,7 @@ def update_investor_pitch():
             for para in new_label_shape.text_frame.paragraphs:
                 for run in para.runs:
                     if run.text.strip():
-                        run.text = 'Integration Network Effect'
+                        run.text = "Integration Network Effect"
                         break
             log("  [OK] Added 6th moat label: 'Integration Network Effect'")
         else:
@@ -748,16 +869,25 @@ def update_investor_pitch():
 
         new_desc_shape = None
         for s in slide7.shapes:
-            if s.has_text_frame and 'A single config change swaps LLM providers' in s.text_frame.text and s.element is new_desc_el:
+            if (
+                s.has_text_frame
+                and "A single config change swaps LLM providers" in s.text_frame.text
+                and s.element is new_desc_el
+            ):
                 new_desc_shape = s
                 break
 
         if new_desc_shape is None:
-            all_provider_desc = [s for s in slide7.shapes if s.has_text_frame and 'A single config change swaps LLM providers' in s.text_frame.text]
+            all_provider_desc = [
+                s
+                for s in slide7.shapes
+                if s.has_text_frame
+                and "A single config change swaps LLM providers" in s.text_frame.text
+            ]
             if len(all_provider_desc) > 1:
                 new_desc_shape = all_provider_desc[-1]
 
-        new_moat_text = '100+ pre-built tool integrations via Composio. Each new connector increases platform value for all customers. Solution marketplace (APM vision) creates community flywheel — share YAML configs across industries.'
+        new_moat_text = "100+ pre-built tool integrations via Composio. Each new connector increases platform value for all customers. Solution marketplace (APM vision) creates community flywheel — share YAML configs across industries."
 
         if new_desc_shape:
             new_desc_shape.top = new_desc_top
@@ -766,9 +896,11 @@ def update_investor_pitch():
                     if run.text.strip():
                         run.text = new_moat_text
                         for r2 in para.runs[1:]:
-                            r2.text = ''
+                            r2.text = ""
                         break
-            log("  [OK] Added 6th moat description: 'Integration Network Effect — 100+ pre-built...'")
+            log(
+                "  [OK] Added 6th moat description: 'Integration Network Effect — 100+ pre-built...'"
+            )
         else:
             log("  [WARN] Could not find new description shape after cloning")
     else:
@@ -779,30 +911,32 @@ def update_investor_pitch():
     log("\nSlide 11 - Traction (metrics update):")
 
     # Find "383+" shape
-    shape_383 = find_shape_containing(slide11, '383+')
+    shape_383 = find_shape_containing(slide11, "383+")
     if shape_383:
         log("  [OK] Found '383+' metric shape — keeping as-is (still accurate)")
     else:
         log("  [WARN] Could not find '383+' metric shape on slide 11")
 
     # Find "12 integrations live:" text shape
-    shape_integrations = find_shape_containing(slide11, '12 integrations live:')
+    shape_integrations = find_shape_containing(slide11, "12 integrations live:")
     if shape_integrations:
         tf = shape_integrations.text_frame
         for para in tf.paragraphs:
             for run in para.runs:
-                if '12 integrations live:' in run.text:
+                if "12 integrations live:" in run.text:
                     run.text = run.text.replace(
-                        '12 integrations live: SSE streaming, onboarding wizard, Slack, LangGraph, Temporal, eval, multi-tenant',
-                        'New capabilities live: Composio (100+ tool integrations), Hire Agent (web UI role creation), conversational onboarding wizard, solution theming system'
+                        "12 integrations live: SSE streaming, onboarding wizard, Slack, LangGraph, Temporal, eval, multi-tenant",
+                        "New capabilities live: Composio (100+ tool integrations), Hire Agent (web UI role creation), conversational onboarding wizard, solution theming system",
                     )
-                    log("  [OK] Updated '12 integrations live:' to new capabilities text")
+                    log(
+                        "  [OK] Updated '12 integrations live:' to new capabilities text"
+                    )
                     break
     else:
         log("  [WARN] Could not find '12 integrations live:' shape on slide 11")
 
     # Find "Pilot in progress" — keep as-is but verify it's there
-    shape_pilot = find_shape_containing(slide11, 'Pilot in progress')
+    shape_pilot = find_shape_containing(slide11, "Pilot in progress")
     if shape_pilot:
         log("  [OK] Found 'Pilot in progress' shape — keeping as-is")
     else:
@@ -815,7 +949,7 @@ def update_investor_pitch():
 # ═══════════════════════════════════════════════════════════
 #  MAIN
 # ═══════════════════════════════════════════════════════════
-if __name__ == '__main__':
+if __name__ == "__main__":
     print("Starting SAGE PowerPoint update script...")
     print()
 
@@ -824,6 +958,7 @@ if __name__ == '__main__':
     except Exception as e:
         print(f"\n[ERROR] Tech Pitch update failed: {e}")
         import traceback
+
         traceback.print_exc()
 
     try:
@@ -831,6 +966,7 @@ if __name__ == '__main__':
     except Exception as e:
         print(f"\n[ERROR] Business Case update failed: {e}")
         import traceback
+
         traceback.print_exc()
 
     try:
@@ -838,9 +974,10 @@ if __name__ == '__main__':
     except Exception as e:
         print(f"\n[ERROR] Investor Pitch update failed: {e}")
         import traceback
+
         traceback.print_exc()
 
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("SCRIPT COMPLETE")
-    print("="*60)
+    print("=" * 60)
     print(f"\nTotal changes logged: {len(changes_log)}")

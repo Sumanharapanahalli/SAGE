@@ -13,7 +13,7 @@ JWT library: python-jose[cryptography]
 import logging
 import os
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
 
 from fastapi import Request
@@ -24,20 +24,21 @@ logger = logging.getLogger(__name__)
 # UserIdentity
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class UserIdentity:
-    sub:      str           # unique subject ID
-    email:    str
-    name:     str
-    role:     str           # resolved via RBAC lookup
-    provider: str           # "oidc" | "api_key" | "anonymous"
+    sub: str  # unique subject ID
+    email: str
+    name: str
+    role: str  # resolved via RBAC lookup
+    provider: str  # "oidc" | "api_key" | "anonymous"
 
 
 _ANONYMOUS = UserIdentity(
     sub="anonymous",
     email="anonymous@sage.local",
     name="Anonymous",
-    role="admin",           # when auth disabled, allow everything
+    role="admin",  # when auth disabled, allow everything
     provider="anonymous",
 )
 
@@ -46,13 +47,18 @@ _ANONYMOUS = UserIdentity(
 # Config helpers
 # ---------------------------------------------------------------------------
 
+
 def _auth_config() -> dict:
     """Return the auth section from config.yaml. Cached for the process lifetime."""
     try:
         import yaml
+
         cfg_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-            "config", "config.yaml",
+            os.path.dirname(
+                os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            ),
+            "config",
+            "config.yaml",
         )
         with open(cfg_path) as f:
             cfg = yaml.safe_load(f) or {}
@@ -69,6 +75,7 @@ def _auth_enabled() -> bool:
 def _active_solution() -> str:
     try:
         from src.core.project_loader import project_config
+
         return project_config.project_name
     except Exception:
         return os.environ.get("SAGE_PROJECT", "default")
@@ -93,6 +100,7 @@ def _get_jwks(issuer_url: str) -> dict:
         return _jwks_cache["keys"]
 
     import httpx
+
     url = f"{issuer_url.rstrip('/')}/.well-known/jwks.json"
     try:
         resp = httpx.get(url, timeout=10)
@@ -111,6 +119,7 @@ def _get_jwks(issuer_url: str) -> dict:
 # ---------------------------------------------------------------------------
 # Token verification
 # ---------------------------------------------------------------------------
+
 
 async def verify_token(token: str) -> Optional[UserIdentity]:
     """
@@ -133,14 +142,15 @@ async def verify_token(token: str) -> Optional[UserIdentity]:
     auth_cfg = _auth_config()
     oidc = auth_cfg.get("oidc", {})
     issuer_url = oidc.get("issuer_url", "")
-    audience   = oidc.get("audience", "")
+    audience = oidc.get("audience", "")
 
     if not issuer_url:
         logger.warning("JWT received but auth.oidc.issuer_url is not configured")
         return None
 
     try:
-        from jose import jwt, JWTError, ExpiredSignatureError
+        from jose import jwt, ExpiredSignatureError
+
         jwks = _get_jwks(issuer_url)
         payload = jwt.decode(
             token,
@@ -158,11 +168,12 @@ async def verify_token(token: str) -> Optional[UserIdentity]:
         return None
 
     email = payload.get("email") or payload.get("upn") or ""
-    name  = payload.get("name") or payload.get("preferred_username") or email
-    sub   = payload.get("sub", "")
+    name = payload.get("name") or payload.get("preferred_username") or email
+    sub = payload.get("sub", "")
 
     solution = _active_solution()
     from src.core.rbac import get_user_role
+
     role = get_user_role(email, solution).value
 
     return UserIdentity(
@@ -178,6 +189,7 @@ async def verify_token(token: str) -> Optional[UserIdentity]:
 # FastAPI dependencies
 # ---------------------------------------------------------------------------
 
+
 async def get_current_user(request: Request) -> UserIdentity:
     """
     FastAPI dependency — returns authenticated UserIdentity.
@@ -189,11 +201,14 @@ async def get_current_user(request: Request) -> UserIdentity:
         return _ANONYMOUS
 
     from fastapi import HTTPException
+
     auth_header = request.headers.get("Authorization", "")
     if not auth_header.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Missing or invalid Authorization header.")
+        raise HTTPException(
+            status_code=401, detail="Missing or invalid Authorization header."
+        )
 
-    token = auth_header[len("Bearer "):]
+    token = auth_header[len("Bearer ") :]
     identity = await verify_token(token)
     if identity is None:
         raise HTTPException(status_code=401, detail="Invalid or expired token.")
@@ -212,5 +227,5 @@ async def optional_auth(request: Request) -> Optional[UserIdentity]:
     if not auth_header.startswith("Bearer "):
         return None
 
-    token = auth_header[len("Bearer "):]
+    token = auth_header[len("Bearer ") :]
     return await verify_token(token)

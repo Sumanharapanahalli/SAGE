@@ -35,14 +35,27 @@ from typing import List, Literal, Optional
 # Data model
 # ---------------------------------------------------------------------------
 
-Severity   = Literal["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"]
-ACStatus   = Literal["PASS", "FAIL", "PASS_CONDITIONAL", "REQUIRES_REMEDIATION",
-                     "REQUIRES_CONFIGURATION", "NON_COMPLIANT"]
-RiskLevel  = Literal["CRITICAL", "HIGH", "MEDIUM", "LOW", "OPEN"]
+Severity = Literal["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"]
+ACStatus = Literal[
+    "PASS",
+    "FAIL",
+    "PASS_CONDITIONAL",
+    "REQUIRES_REMEDIATION",
+    "REQUIRES_CONFIGURATION",
+    "NON_COMPLIANT",
+]
+RiskLevel = Literal["CRITICAL", "HIGH", "MEDIUM", "LOW", "OPEN"]
 
-STRIDE_CATEGORIES = frozenset(["Spoofing", "Tampering", "Repudiation",
-                                "Information Disclosure", "Denial of Service",
-                                "Elevation of Privilege"])
+STRIDE_CATEGORIES = frozenset(
+    [
+        "Spoofing",
+        "Tampering",
+        "Repudiation",
+        "Information Disclosure",
+        "Denial of Service",
+        "Elevation of Privilege",
+    ]
+)
 
 
 @dataclass
@@ -89,7 +102,11 @@ FINDINGS: List[Finding] = [
             "SAGE_ALLOWED_ORIGINS env var. Add SameSite=Strict on session cookies."
         ),
         phi_impact=False,
-        compliance_references=["OWASP A05:2021", "HIPAA §164.312(e)(1)", "PCI DSS Req-6.4.1"],
+        compliance_references=[
+            "OWASP A05:2021",
+            "HIPAA §164.312(e)(1)",
+            "PCI DSS Req-6.4.1",
+        ],
         remediation_priority="immediate",
     ),
     Finding(
@@ -107,7 +124,11 @@ FINDINGS: List[Finding] = [
             "Block high-privilege approvals (yaml_edit, code_diff) when auth is off."
         ),
         phi_impact=True,
-        compliance_references=["HIPAA §164.312(d)", "OWASP A07:2021", "PCI DSS Req-8.2.1"],
+        compliance_references=[
+            "HIPAA §164.312(d)",
+            "OWASP A07:2021",
+            "PCI DSS Req-8.2.1",
+        ],
         remediation_priority="short_term",
     ),
     Finding(
@@ -126,7 +147,9 @@ FINDINGS: List[Finding] = [
         ),
         phi_impact=True,
         compliance_references=[
-            "HIPAA §164.312(a)(2)(iv)", "GDPR Art. 25", "PCI DSS Req-3.2.1",
+            "HIPAA §164.312(a)(2)(iv)",
+            "GDPR Art. 25",
+            "PCI DSS Req-3.2.1",
         ],
         remediation_priority="short_term",
     ),
@@ -147,7 +170,11 @@ FINDINGS: List[Finding] = [
             "Referrer-Policy: strict-origin-when-cross-origin."
         ),
         phi_impact=False,
-        compliance_references=["OWASP A05:2021", "HIPAA §164.312(e)(1)", "PCI DSS Req-6.4.1"],
+        compliance_references=[
+            "OWASP A05:2021",
+            "HIPAA §164.312(e)(1)",
+            "PCI DSS Req-6.4.1",
+        ],
         remediation_priority="short_term",
     ),
     Finding(
@@ -166,8 +193,10 @@ FINDINGS: List[Finding] = [
         ),
         phi_impact=True,
         compliance_references=[
-            "HIPAA §164.312(a)(2)(iv)", "HIPAA §164.312(e)(2)(ii)",
-            "PCI DSS Req-3.4.1", "NIST SC-28",
+            "HIPAA §164.312(a)(2)(iv)",
+            "HIPAA §164.312(e)(2)(ii)",
+            "PCI DSS Req-3.4.1",
+            "NIST SC-28",
         ],
         remediation_priority="short_term",
     ),
@@ -187,7 +216,8 @@ FINDINGS: List[Finding] = [
         ),
         phi_impact=True,
         compliance_references=[
-            "HIPAA §164.312(a)(2)(iv)", "HIPAA §164.308(a)(1)(ii)(D)",
+            "HIPAA §164.312(a)(2)(iv)",
+            "HIPAA §164.308(a)(1)(ii)(D)",
         ],
         remediation_priority="short_term",
     ),
@@ -222,7 +252,11 @@ FINDINGS: List[Finding] = [
             "Add secrets.token_bytes(32) salt per key."
         ),
         phi_impact=False,
-        compliance_references=["OWASP A02:2021", "NIST SP 800-132", "PCI DSS Req-8.3.6"],
+        compliance_references=[
+            "OWASP A02:2021",
+            "NIST SP 800-132",
+            "PCI DSS Req-8.3.6",
+        ],
         remediation_priority="planned",
     ),
     Finding(
@@ -257,7 +291,11 @@ FINDINGS: List[Finding] = [
             "with PAN regex patterns. Encrypt CHD columns with Fernet AES-256."
         ),
         phi_impact=True,
-        compliance_references=["PCI DSS Req-3.3.1", "PCI DSS Req-3.4.1", "PCI DSS Req-3.5.1"],
+        compliance_references=[
+            "PCI DSS Req-3.3.1",
+            "PCI DSS Req-3.4.1",
+            "PCI DSS Req-3.5.1",
+        ],
         remediation_priority="immediate",
     ),
     Finding(
@@ -284,23 +322,26 @@ FINDINGS: List[Finding] = [
 # Acceptance criteria evaluation
 # ---------------------------------------------------------------------------
 
+
 def evaluate_acceptance_criteria(findings: List[Finding]) -> List[AcceptanceCriterion]:
     critical_high_ids = [f.id for f in findings if f.severity in ("CRITICAL", "HIGH")]
     stride_found = {f.stride_category for f in findings}
     sbom_path = Path("security_audit/sbom.json")
-    phi_findings = [f.id for f in findings if f.phi_impact and f.severity in ("CRITICAL", "HIGH")]
+    [f.id for f in findings if f.phi_impact and f.severity in ("CRITICAL", "HIGH")]
 
     return [
         AcceptanceCriterion(
             id="AC-1",
             description="Threat model covers STRIDE categories",
-            status="PASS" if STRIDE_CATEGORIES == stride_found | STRIDE_CATEGORIES else "PASS",
+            status="PASS"
+            if STRIDE_CATEGORIES == stride_found | STRIDE_CATEGORIES
+            else "PASS",
             detail=(
-                f"All 6 STRIDE categories covered. "
-                f"Threat model: security_audit/threat_model.yaml v1.1.0 "
-                f"(S: T-S-01..T-S-04, T: T-T-01..T-T-03, R: T-R-01, "
-                f"I: T-I-01..T-I-06, D: T-D-01..T-D-03, E: T-E-01..T-E-02). "
-                f"Payment gateway: payment_gateway/payment_threat_model.yaml (16 threats)."
+                "All 6 STRIDE categories covered. "
+                "Threat model: security_audit/threat_model.yaml v1.1.0 "
+                "(S: T-S-01..T-S-04, T: T-T-01..T-T-03, R: T-R-01, "
+                "I: T-I-01..T-I-06, D: T-D-01..T-D-03, E: T-E-01..T-E-02). "
+                "Payment gateway: payment_gateway/payment_threat_model.yaml (16 threats)."
             ),
         ),
         AcceptanceCriterion(
@@ -401,6 +442,7 @@ def evaluate_acceptance_criteria(findings: List[Finding]) -> List[AcceptanceCrit
 # Report generation
 # ---------------------------------------------------------------------------
 
+
 def severity_order(s: Severity) -> int:
     return {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3, "INFO": 4}.get(s, 5)
 
@@ -438,14 +480,14 @@ def generate_report(findings: List[Finding]) -> dict:
                 "security_audit/payment_gateway/payment_threat_model.yaml",
             ],
             "artifacts": {
-                "stride_threat_model":     "security_audit/threat_model.yaml",
-                "payment_threat_model":    "security_audit/payment_gateway/payment_threat_model.yaml",
-                "pentest_plan":            "security_audit/pentest_plan.yaml",
-                "sbom_framework":          "security_audit/sbom.json",
-                "sbom_payment":            "security_audit/payment_gateway/payment_sbom.json",
-                "pci_dss_saq":             "security_audit/payment_gateway/pci_dss_saq.json",
-                "security_scan_results":   "security_audit/sage_security_report.json",
-                "standards_mapping":       "security_audit/standards_mapping.yaml",
+                "stride_threat_model": "security_audit/threat_model.yaml",
+                "payment_threat_model": "security_audit/payment_gateway/payment_threat_model.yaml",
+                "pentest_plan": "security_audit/pentest_plan.yaml",
+                "sbom_framework": "security_audit/sbom.json",
+                "sbom_payment": "security_audit/payment_gateway/payment_sbom.json",
+                "pci_dss_saq": "security_audit/payment_gateway/pci_dss_saq.json",
+                "security_scan_results": "security_audit/sage_security_report.json",
+                "standards_mapping": "security_audit/standards_mapping.yaml",
             },
             "standards": [
                 "STRIDE (Microsoft SDL)",
@@ -467,9 +509,7 @@ def generate_report(findings: List[Finding]) -> dict:
             "phi_impacting_findings": sum(1 for f in findings if f.phi_impact),
             "pci_blocking_findings": 5,
             "acceptance_criteria_passed": all(c.status == "PASS" for c in criteria),
-            "acceptance_criteria_summary": {
-                c.id: c.status for c in criteria
-            },
+            "acceptance_criteria_summary": {c.id: c.status for c in criteria},
         },
         "acceptance_criteria": [
             {
@@ -482,12 +522,12 @@ def generate_report(findings: List[Finding]) -> dict:
             for c in criteria
         ],
         "stride_coverage": {
-            "Spoofing":                "COVERED — T-S-01 (JWT forgery), T-S-02 (API key leak), T-S-03 (CORS), T-S-04 (auth disabled)",
-            "Tampering":               "COVERED — T-T-01 (audit log mutation), T-T-02 (proposal mutation), T-T-03 (missing sec headers)",
-            "Repudiation":             "COVERED — T-R-01 (missing actor on approval)",
-            "Information Disclosure":  "COVERED — T-I-01..T-I-06 (PHI to LLM, cross-tenant, unencrypted at rest, no HTTPS, PII disabled, hardcoded project ID)",
-            "Denial of Service":       "COVERED — T-D-01 (queue flood), T-D-02 (LLM retry loop), T-D-03 (unauthenticated /shutdown)",
-            "Elevation of Privilege":  "COVERED — T-E-01 (RBAC bypass), T-E-02 (prompt injection)",
+            "Spoofing": "COVERED — T-S-01 (JWT forgery), T-S-02 (API key leak), T-S-03 (CORS), T-S-04 (auth disabled)",
+            "Tampering": "COVERED — T-T-01 (audit log mutation), T-T-02 (proposal mutation), T-T-03 (missing sec headers)",
+            "Repudiation": "COVERED — T-R-01 (missing actor on approval)",
+            "Information Disclosure": "COVERED — T-I-01..T-I-06 (PHI to LLM, cross-tenant, unencrypted at rest, no HTTPS, PII disabled, hardcoded project ID)",
+            "Denial of Service": "COVERED — T-D-01 (queue flood), T-D-02 (LLM retry loop), T-D-03 (unauthenticated /shutdown)",
+            "Elevation of Privilege": "COVERED — T-E-01 (RBAC bypass), T-E-02 (prompt injection)",
         },
         "findings": [
             {
@@ -620,6 +660,7 @@ def generate_report(findings: List[Finding]) -> dict:
 # CLI entry point
 # ---------------------------------------------------------------------------
 
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="SAGE Security Review Runner")
     parser.add_argument(
@@ -640,10 +681,12 @@ def main() -> int:
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(json.dumps(report, indent=2))
 
-    critical_count = report["executive_summary"]["severity_breakdown"].get("CRITICAL", 0)
-    high_count     = report["executive_summary"]["severity_breakdown"].get("HIGH", 0)
+    critical_count = report["executive_summary"]["severity_breakdown"].get(
+        "CRITICAL", 0
+    )
+    high_count = report["executive_summary"]["severity_breakdown"].get("HIGH", 0)
 
-    print(f"[SAGE Security Review]")
+    print("[SAGE Security Review]")
     print(f"  Total findings : {report['executive_summary']['total_findings']}")
     print(f"  CRITICAL       : {critical_count}")
     print(f"  HIGH           : {high_count}")
@@ -658,7 +701,9 @@ def main() -> int:
         print(f"  {status_icon} {ac['id']}: {ac['description']} → {ac['status']}")
 
     if args.fail_on_critical and critical_count > 0:
-        print(f"\n[FAIL] {critical_count} CRITICAL finding(s) must be resolved before deployment.")
+        print(
+            f"\n[FAIL] {critical_count} CRITICAL finding(s) must be resolved before deployment."
+        )
         return 1
 
     return 0

@@ -21,12 +21,16 @@ import re
 import shutil
 import subprocess
 import time
-import uuid
 from typing import Any, Optional
 
 from src.integrations.base_runner import (
-    BaseRunner, RunResult, VerificationReport, VerificationFinding,
-    VerificationSeverity, Exercise, ExerciseScore,
+    BaseRunner,
+    RunResult,
+    VerificationReport,
+    VerificationFinding,
+    VerificationSeverity,
+    Exercise,
+    ExerciseScore,
     register_runner,
 )
 
@@ -67,7 +71,9 @@ class OpenTerminalRunner(BaseRunner):
 
     # ── BaseRunner: execute ─────────────────────────────────────────────
 
-    def execute(self, task: dict, workspace: str, sandbox_handle: Any = None) -> RunResult:
+    def execute(
+        self, task: dict, workspace: str, sandbox_handle: Any = None
+    ) -> RunResult:
         run_id = self._new_run_id()
         if not self._tmux_available:
             return self._make_error(run_id, "tmux is not installed or not in PATH")
@@ -108,12 +114,14 @@ class OpenTerminalRunner(BaseRunner):
         score = 30.0  # Base for producing output
 
         if result.status == "error":
-            findings.append(VerificationFinding(
-                check="execution",
-                severity=VerificationSeverity.ERROR,
-                message="Execution failed",
-                details={"errors": result.errors},
-            ))
+            findings.append(
+                VerificationFinding(
+                    check="execution",
+                    severity=VerificationSeverity.ERROR,
+                    message="Execution failed",
+                    details={"errors": result.errors},
+                )
+            )
             return VerificationReport(passed=False, score=0.0, findings=findings)
 
         metrics = result.metrics or {}
@@ -122,49 +130,58 @@ class OpenTerminalRunner(BaseRunner):
         cmds = metrics.get("commands_executed", 0)
         if cmds > 0:
             score += 20.0
-            findings.append(VerificationFinding(
-                check="commands_executed",
-                severity=VerificationSeverity.PASS,
-                message=f"{cmds} commands executed successfully",
-            ))
+            findings.append(
+                VerificationFinding(
+                    check="commands_executed",
+                    severity=VerificationSeverity.PASS,
+                    message=f"{cmds} commands executed successfully",
+                )
+            )
         else:
-            findings.append(VerificationFinding(
-                check="commands_executed",
-                severity=VerificationSeverity.WARNING,
-                message="No commands were executed",
-            ))
+            findings.append(
+                VerificationFinding(
+                    check="commands_executed",
+                    severity=VerificationSeverity.WARNING,
+                    message="No commands were executed",
+                )
+            )
 
         # Check exit code
         exit_code = metrics.get("exit_code", -1)
         if exit_code == 0:
             score += 20.0
-            findings.append(VerificationFinding(
-                check="exit_code",
-                severity=VerificationSeverity.PASS,
-                message="Final exit code is 0",
-            ))
+            findings.append(
+                VerificationFinding(
+                    check="exit_code",
+                    severity=VerificationSeverity.PASS,
+                    message="Final exit code is 0",
+                )
+            )
         else:
-            findings.append(VerificationFinding(
-                check="exit_code",
-                severity=VerificationSeverity.WARNING,
-                message=f"Non-zero exit code: {exit_code}",
-            ))
+            findings.append(
+                VerificationFinding(
+                    check="exit_code",
+                    severity=VerificationSeverity.WARNING,
+                    message=f"Non-zero exit code: {exit_code}",
+                )
+            )
 
         # Check output is non-empty
         if result.output and len(result.output.strip()) > 0:
             score += 15.0
-            findings.append(VerificationFinding(
-                check="output_captured",
-                severity=VerificationSeverity.PASS,
-                message="Output captured from terminal",
-            ))
+            findings.append(
+                VerificationFinding(
+                    check="output_captured",
+                    severity=VerificationSeverity.PASS,
+                    message="Output captured from terminal",
+                )
+            )
 
         # Check acceptance criteria (keyword match)
         criteria = task.get("acceptance_criteria", [])
         if criteria:
             matched = sum(
-                1 for c in criteria
-                if c.lower() in (result.output or "").lower()
+                1 for c in criteria if c.lower() in (result.output or "").lower()
             )
             if matched > 0:
                 score += 15.0 * (matched / len(criteria))
@@ -242,7 +259,8 @@ class OpenTerminalRunner(BaseRunner):
                 hints.append(f"Unmet: {criterion}")
 
         return self._combined_grade(
-            exercise, result,
+            exercise,
+            result,
             structural_score=min(structural_score, 100.0),
             structural_criteria=structural_criteria,
             structural_hints=hints,
@@ -253,18 +271,50 @@ class OpenTerminalRunner(BaseRunner):
 
     def get_toolchain(self) -> dict:
         base = super().get_toolchain()
-        base["tools"] = list(set(base.get("tools", []) + [
-            "tmux", "bash", "find", "grep", "awk", "sed", "curl", "wget",
-            "python3", "git", "ssh", "tar", "gzip",
-        ]))
+        base["tools"] = list(
+            set(
+                base.get("tools", [])
+                + [
+                    "tmux",
+                    "bash",
+                    "find",
+                    "grep",
+                    "awk",
+                    "sed",
+                    "curl",
+                    "wget",
+                    "python3",
+                    "git",
+                    "ssh",
+                    "tar",
+                    "gzip",
+                ]
+            )
+        )
         return base
 
     def get_workflow(self) -> list[dict]:
         return [
-            {"step": 1, "name": "env_discovery", "description": "Bootstrap environment snapshot"},
-            {"step": 2, "name": "agent_loop", "description": "ReAct loop: reason → command → observe"},
-            {"step": 3, "name": "verify", "description": "Double-confirmation + verification"},
-            {"step": 4, "name": "report", "description": "Collect output and artifacts"},
+            {
+                "step": 1,
+                "name": "env_discovery",
+                "description": "Bootstrap environment snapshot",
+            },
+            {
+                "step": 2,
+                "name": "agent_loop",
+                "description": "ReAct loop: reason → command → observe",
+            },
+            {
+                "step": 3,
+                "name": "verify",
+                "description": "Double-confirmation + verification",
+            },
+            {
+                "step": 4,
+                "name": "report",
+                "description": "Collect output and artifacts",
+            },
         ]
 
     # ── Tmux Session Management ─────────────────────────────────────────
@@ -274,7 +324,9 @@ class OpenTerminalRunner(BaseRunner):
         session_id = f"sage-term-{task_id[:12]}"
         subprocess.run(
             ["tmux", "new-session", "-d", "-s", session_id, "-x", "200", "-y", "50"],
-            capture_output=True, text=True, timeout=10,
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         self.logger.info("Created tmux session: %s", session_id)
         return session_id
@@ -283,7 +335,9 @@ class OpenTerminalRunner(BaseRunner):
         """Kill a tmux session."""
         subprocess.run(
             ["tmux", "kill-session", "-t", session_id],
-            capture_output=True, text=True, timeout=10,
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         self.logger.info("Destroyed tmux session: %s", session_id)
 
@@ -291,7 +345,9 @@ class OpenTerminalRunner(BaseRunner):
         """Capture current tmux pane content."""
         result = subprocess.run(
             ["tmux", "capture-pane", "-t", session_id, "-p", "-S", "-1000"],
-            capture_output=True, text=True, timeout=10,
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         return result.stdout
 
@@ -299,7 +355,9 @@ class OpenTerminalRunner(BaseRunner):
         """Send keystrokes to a tmux session."""
         subprocess.run(
             ["tmux", "send-keys", "-t", session_id, keys, "Enter"],
-            capture_output=True, text=True, timeout=10,
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
 
     # ── Marker-Based Command Polling ────────────────────────────────────
@@ -377,7 +435,9 @@ class OpenTerminalRunner(BaseRunner):
         )
 
         if not found:
-            self.logger.warning("Environment discovery timed out — using partial snapshot")
+            self.logger.warning(
+                "Environment discovery timed out — using partial snapshot"
+            )
             return snapshot
 
         # Parse sections
@@ -413,9 +473,7 @@ class OpenTerminalRunner(BaseRunner):
 
     # ── Agent Loop ──────────────────────────────────────────────────────
 
-    def _run_agent_loop(
-        self, session_id: str, task: dict, env_snapshot: dict
-    ) -> dict:
+    def _run_agent_loop(self, session_id: str, task: dict, env_snapshot: dict) -> dict:
         """
         Main agent loop: reason → command → poll → observe.
 
@@ -441,8 +499,12 @@ class OpenTerminalRunner(BaseRunner):
                 history = self._summarize_history(history)
 
             # Build prompt with history
-            prompt = initial_prompt if episode == 0 else self._build_turn_prompt(
-                history, all_output[-1] if all_output else ""
+            prompt = (
+                initial_prompt
+                if episode == 0
+                else self._build_turn_prompt(
+                    history, all_output[-1] if all_output else ""
+                )
             )
 
             try:
@@ -477,10 +539,12 @@ class OpenTerminalRunner(BaseRunner):
                     }
                 task_complete_seen = True
                 # Feed verification checklist back to agent
-                history.append({
-                    "role": "user",
-                    "content": json.dumps(completion),
-                })
+                history.append(
+                    {
+                        "role": "user",
+                        "content": json.dumps(completion),
+                    }
+                )
                 continue
 
             # Execute commands with marker-based polling
@@ -528,7 +592,7 @@ class OpenTerminalRunner(BaseRunner):
             "Rules:\n"
             "- ALWAYS provide analysis and plan before any command\n"
             "- Set duration to expected seconds for the command to complete\n"
-            '- Set task_complete to true ONLY when the task is fully done\n'
+            "- Set task_complete to true ONLY when the task is fully done\n"
             "- Use pipes, redirects, and compound commands efficiently\n"
             "- Check command output before proceeding to next step\n"
             "- If a command fails, analyze why and adjust your plan\n"
@@ -544,9 +608,15 @@ class OpenTerminalRunner(BaseRunner):
         try:
             # Extract JSON from response (may have markdown wrapping)
             cleaned = response.replace("```json", "").replace("```", "").strip()
-            match = re.search(r'\{[\s\S]*\}', cleaned)
+            match = re.search(r"\{[\s\S]*\}", cleaned)
             if not match:
-                return {"valid": False, "analysis": "", "plan": "", "commands": [], "task_complete": False}
+                return {
+                    "valid": False,
+                    "analysis": "",
+                    "plan": "",
+                    "commands": [],
+                    "task_complete": False,
+                }
 
             parsed = json.loads(match.group(0))
 
@@ -560,10 +630,12 @@ class OpenTerminalRunner(BaseRunner):
             validated_commands = []
             for cmd in commands:
                 if isinstance(cmd, dict) and "command" in cmd:
-                    validated_commands.append({
-                        "command": cmd["command"],
-                        "duration": cmd.get("duration", cmd.get("timeout", 30)),
-                    })
+                    validated_commands.append(
+                        {
+                            "command": cmd["command"],
+                            "duration": cmd.get("duration", cmd.get("timeout", 30)),
+                        }
+                    )
 
             return {
                 "valid": bool(analysis and plan),
@@ -574,7 +646,13 @@ class OpenTerminalRunner(BaseRunner):
             }
 
         except (json.JSONDecodeError, AttributeError):
-            return {"valid": False, "analysis": "", "plan": "", "commands": [], "task_complete": False}
+            return {
+                "valid": False,
+                "analysis": "",
+                "plan": "",
+                "commands": [],
+                "task_complete": False,
+            }
 
     def _build_initial_prompt(self, task: dict, env_snapshot: dict) -> str:
         """Build the first prompt with task + environment context."""
@@ -649,6 +727,7 @@ class OpenTerminalRunner(BaseRunner):
 
         try:
             from src.core.llm_gateway import llm_gateway
+
             old_text = "\n".join(
                 f"[{m.get('role', 'unknown')}]: {str(m.get('content', ''))[:200]}"
                 for m in old_messages
@@ -658,12 +737,16 @@ class OpenTerminalRunner(BaseRunner):
                 system_prompt="You are a conversation summarizer. Be concise but preserve all important details.",
                 trace_name="openterminal.summarize",
             )
-            return [{"role": "system", "content": f"[Summary of earlier turns]: {summary}"}] + recent
+            return [
+                {"role": "system", "content": f"[Summary of earlier turns]: {summary}"}
+            ] + recent
         except Exception:
             # If summarization fails, just keep recent
             return [{"role": "system", "content": "[Earlier turns truncated]"}] + recent
 
-    def _handle_context_overflow(self, history: list, session_id: str) -> Optional[list]:
+    def _handle_context_overflow(
+        self, history: list, session_id: str
+    ) -> Optional[list]:
         """Recover from context overflow by aggressive summarization."""
         try:
             return self._summarize_history(history)
