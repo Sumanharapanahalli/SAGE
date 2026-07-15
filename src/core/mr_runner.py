@@ -197,7 +197,8 @@ class MRRunner:
                 if not ok:
                     return self._fail(mr_id, f"rework push failed: {out[:300]}")
                 self.github.comment(number, "Reworked and pushed: addressed the review "
-                                            "comments; evidence gate is green again.")
+                                            "comments; evidence gate is green again.",
+                                    role="dev")
                 self.store.update(mr_id, state="review")
 
             self.sleep_fn(self.poll_interval)

@@ -55,6 +55,28 @@ _MERGE_FLAGS = {
 _PR_URL_RE = re.compile(r"https?://\S+/pull/\d+")
 _PR_NUM_RE = re.compile(r"/pull/(\d+)")
 
+# Identity tag stamped on every PR comment SAGE authors. SAGE posts under the
+# operator's own gh/GitHub identity, so a human reading the PR thread otherwise
+# cannot tell an agent's comment from their own. Every SAGE comment is prefixed
+#   [Sage][<role>] : <body>
+# and this is enforced in GitHubPR.comment() so no code path can post untagged.
+SAGE_COMMENT_TAG = "[Sage]"
+
+
+def format_sage_comment(body: str, role: str = "agent") -> str:
+    """Prefix *body* with the SAGE identity tag ``[Sage][<role>] : ``.
+
+    ``role`` is the authoring agent's role (``dev``, ``test``, ``critic`` …).
+    Idempotent: a body already carrying the tag is returned unchanged, so a
+    re-post never yields ``[Sage][dev] : [Sage]…``. Blank/absent role falls back
+    to ``agent``.
+    """
+    role = str(role or "agent").strip() or "agent"
+    text = (body or "").strip()
+    if text.startswith(SAGE_COMMENT_TAG):
+        return text
+    return f"{SAGE_COMMENT_TAG}[{role}] : {text}"
+
 
 def _default_runner(argv: list, cwd: str, timeout: int, stdin: Optional[str] = None) -> RunResult:
     """Default runner: run *argv* via subprocess and capture stdout/stderr.
@@ -296,11 +318,17 @@ class GitHubPR:
     # ------------------------------------------------------------------ #
     # Comment
     # ------------------------------------------------------------------ #
-    def comment(self, number: int, body: str) -> dict:
-        """Post a PR comment (body via stdin). Returns ``{"ok", "error"}``."""
+    def comment(self, number: int, body: str, role: str = "agent") -> dict:
+        """Post a PR comment (body via stdin). Returns ``{"ok", "error"}``.
+
+        The body is stamped ``[Sage][<role>] : …`` (see :func:`format_sage_comment`)
+        so a human reading the thread can always tell SAGE's comments from their
+        own — SAGE posts under the operator's gh identity. ``role`` names the
+        authoring agent (``dev``, ``test`` …).
+        """
         rc, _out, err = self._run(
             [self._gh, "pr", "comment", str(number), "--body-file", "-"],
-            stdin=body,
+            stdin=format_sage_comment(body, role),
         )
         if rc != 0:
             return {"ok": False, "error": err.strip() or f"gh pr comment failed (rc={rc})"}

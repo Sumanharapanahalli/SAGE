@@ -43,8 +43,8 @@ class FakeGitHub:
     def get_comments(self, number):
         return [{"author": "harish", "body": "handle the null case", "created": "t"}]
 
-    def comment(self, number, body):
-        self.comments.append(body)
+    def comment(self, number, body, role="agent"):
+        self.comments.append({"body": body, "role": role})
         return {"ok": True, "error": ""}
 
     def merge(self, number, method="squash"):
@@ -148,6 +148,8 @@ def test_changes_requested_then_approved(tmp_path):
     res = r.run(mr)
     assert res["state"] == "merged"
     assert gh.comments, "a rework comment should be posted"
+    # the rework comment is authored by the dev agent (drives the [Sage][dev] tag)
+    assert gh.comments[0]["role"] == "dev"
     assert len(merges) == 1
 
 
