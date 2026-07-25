@@ -21,25 +21,42 @@ Page = _playwright.Page
 pytestmark = pytest.mark.e2e
 
 
-def _backend_up() -> bool:
-    """Fast probe that returns True only if the SAGE FastAPI backend answers /health."""
+def _url_up(url: str) -> bool:
+    """Fast probe that returns True only if *url* answers within the timeout."""
     try:
         import urllib.request
 
-        with urllib.request.urlopen("http://localhost:8000/health", timeout=0.5) as r:
-            return r.status == 200
+        with urllib.request.urlopen(url, timeout=0.5) as r:
+            return 200 <= r.status < 500
     except Exception:
         return False
 
 
+def _backend_up() -> bool:
+    """True only if the SAGE FastAPI backend answers /health on :8000."""
+    return _url_up("http://localhost:8000/health")
+
+
+def _frontend_up() -> bool:
+    """True only if the Vite frontend answers on :5173."""
+    return _url_up("http://localhost:5173/")
+
+
 @pytest.fixture(scope="session", autouse=True)
 def _require_live_stack():
-    """Skip the whole module when backend:8000 is not reachable — these tests
-    drive a real browser against a live backend + frontend and cannot pass
-    otherwise."""
+    """Skip the whole module unless BOTH backend:8000 and frontend:5173 are
+    reachable — every test here drives a real browser against the live frontend
+    and calls the live backend, so a missing half means the tests cannot pass
+    and must skip (not fail)."""
+    missing = []
     if not _backend_up():
+        missing.append("backend :8000")
+    if not _frontend_up():
+        missing.append("frontend :5173")
+    if missing:
         pytest.skip(
-            "SAGE backend not reachable on :8000 — live-stack e2e tests skipped"
+            "SAGE live stack not reachable (" + ", ".join(missing) + ") — "
+            "live-stack e2e tests skipped"
         )
 
 
