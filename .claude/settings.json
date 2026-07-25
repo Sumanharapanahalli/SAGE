@@ -81,7 +81,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cd /home/shetty/sandbox/SAGE && .venv/bin/pytest tests/ -q --tb=short -x 2>&1 | tail -15"
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && .venv/bin/python -m pytest tests/ -q --tb=short -x 2>&1 | tail -15"
           }
         ]
       }
