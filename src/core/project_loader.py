@@ -433,6 +433,11 @@ class ProjectConfig:
     """
 
     def __init__(self, project_name: str | None = None):
+        self._reset()
+        self.reload(project_name)
+
+    def _reset(self) -> None:
+        """Set every config field to its empty default (no I/O, no validation)."""
         self._name: str = ""
         self._base: dict = {}
         self._project: dict = {}
@@ -440,7 +445,19 @@ class ProjectConfig:
         self._tasks: dict = {}
         self._skill_content: str = ""
         self._skill_md_path: str = ""
-        self.reload(project_name)
+
+    @classmethod
+    def _unconfigured(cls) -> "ProjectConfig":
+        """Build an empty ProjectConfig without loading or validating any solution.
+
+        Used as the import-time fallback: a malformed *tenant* solution must never
+        break the *framework's* import (SOUL.md — "solutions are tenants, not
+        children"). Callers still get a live object; loading an explicit project
+        via :meth:`reload` re-runs strict validation.
+        """
+        obj = cls.__new__(cls)
+        obj._reset()
+        return obj
 
     # ------------------------------------------------------------------
     # Reload / initialisation
@@ -782,7 +799,16 @@ _DEFAULT_TASK_TYPES = [
 # Module-level singleton — import this everywhere
 # ---------------------------------------------------------------------------
 
-project_config = ProjectConfig()
+try:
+    project_config = ProjectConfig()
+except ConfigValidationError as exc:
+    # A malformed default/auto-discovered tenant must not break framework import.
+    logger.warning(
+        "Default solution failed validation at import (%s); starting with an "
+        "unconfigured ProjectConfig. Load an explicit project to proceed.",
+        exc,
+    )
+    project_config = ProjectConfig._unconfigured()
 
 
 def list_solutions(sage_root):
