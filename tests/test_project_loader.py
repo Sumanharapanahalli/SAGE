@@ -2,7 +2,11 @@
 
 from pathlib import Path
 
-from src.core.project_loader import list_solutions
+from src.core.project_loader import (
+    ConfigValidationError,
+    ProjectConfig,
+    list_solutions,
+)
 
 
 def test_list_solutions_returns_dirs_with_project_yaml(tmp_path):
@@ -80,3 +84,34 @@ def test_list_solutions_without_override_scans_sage_root_solutions_dir(
 
     names = [r["name"] for r in list_solutions(tmp_path)]
     assert names == ["a"]
+
+
+def test_unconfigured_builds_empty_config_without_loading():
+    """A malformed default tenant must not break framework import: the
+    import-time fallback yields a live, empty ProjectConfig with no I/O."""
+    cfg = ProjectConfig._unconfigured()
+    assert cfg._name == ""
+    assert cfg._project == {}
+    assert cfg._prompts == {}
+    assert cfg._tasks == {}
+
+
+def test_reload_still_raises_on_invalid_config(tmp_path, monkeypatch):
+    """The fallback does not weaken strict validation: an explicit reload of a
+    malformed solution still raises ConfigValidationError."""
+    import src.core.project_loader as pl
+
+    monkeypatch.setattr(pl, "_SOLUTIONS_DIR", str(tmp_path))
+    bad = tmp_path / "bad"
+    bad.mkdir()
+    (bad / "project.yaml").write_text("description: no name field\n")
+    (bad / "prompts.yaml").write_text("roles: {}\n")
+    (bad / "tasks.yaml").write_text("task_types: {}\n")
+
+    cfg = ProjectConfig._unconfigured()
+    try:
+        cfg.reload("bad")
+        raised = False
+    except ConfigValidationError:
+        raised = True
+    assert raised, "reload must still validate strictly"
