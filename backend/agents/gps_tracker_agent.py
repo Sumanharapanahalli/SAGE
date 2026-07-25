@@ -9,12 +9,12 @@ Specialist agent responsible for:
 
 ReAct trace is logged via standard logging at INFO level.
 """
+
 from __future__ import annotations
 
 import logging
 import time
 from dataclasses import dataclass
-from datetime import datetime, timezone
 from typing import Optional
 
 from backend.services.gps_store import GpsRecord, GpsStore, get_gps_store
@@ -149,11 +149,15 @@ class GpsTrackerAgent:
     def _haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
         """Return distance in metres between two GPS points."""
         import math
+
         r = 6_371_000.0
         phi1, phi2 = math.radians(lat1), math.radians(lat2)
         dphi = math.radians(lat2 - lat1)
         dlam = math.radians(lon2 - lon1)
-        a = math.sin(dphi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlam / 2) ** 2
+        a = (
+            math.sin(dphi / 2) ** 2
+            + math.cos(phi1) * math.cos(phi2) * math.sin(dlam / 2) ** 2
+        )
         return 2 * r * math.asin(math.sqrt(a))
 
 

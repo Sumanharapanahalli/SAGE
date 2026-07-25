@@ -7,17 +7,41 @@ Walks a directory, reads text files, chunks them, and calls bulk_import().
 
 import logging
 import os
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-_SKIP_DIRS = {".venv", "venv", ".git", "__pycache__", "node_modules", ".sage", "dist", "build", ".sage_worktrees"}
-_TEXT_EXTENSIONS = {
-    ".py", ".ts", ".tsx", ".js", ".jsx", ".md", ".txt", ".yaml", ".yml",
-    ".json", ".toml", ".cfg", ".ini", ".sh", ".rst", ".html", ".css",
+_SKIP_DIRS = {
+    ".venv",
+    "venv",
+    ".git",
+    "__pycache__",
+    "node_modules",
+    ".sage",
+    "dist",
+    "build",
+    ".sage_worktrees",
 }
-_MAX_FILE_BYTES = 100_000   # skip files larger than 100KB
-_CHUNK_SIZE     = 1_500     # characters per knowledge chunk
+_TEXT_EXTENSIONS = {
+    ".py",
+    ".ts",
+    ".tsx",
+    ".js",
+    ".jsx",
+    ".md",
+    ".txt",
+    ".yaml",
+    ".yml",
+    ".json",
+    ".toml",
+    ".cfg",
+    ".ini",
+    ".sh",
+    ".rst",
+    ".html",
+    ".css",
+}
+_MAX_FILE_BYTES = 100_000  # skip files larger than 100KB
+_CHUNK_SIZE = 1_500  # characters per knowledge chunk
 
 
 def _chunk_text(text: str, chunk_size: int = _CHUNK_SIZE) -> list:
@@ -38,6 +62,7 @@ def sync_directory(root: str, vector_store=None, extensions: set = None) -> int:
     """
     if vector_store is None:
         from src.memory.vector_store import vector_memory
+
         vector_store = vector_memory
 
     if extensions is None:
@@ -45,7 +70,9 @@ def sync_directory(root: str, vector_store=None, extensions: set = None) -> int:
 
     entries = []
     for dirpath, dirnames, filenames in os.walk(root):
-        dirnames[:] = [d for d in dirnames if d not in _SKIP_DIRS and not d.startswith(".")]
+        dirnames[:] = [
+            d for d in dirnames if d not in _SKIP_DIRS and not d.startswith(".")
+        ]
         for fname in filenames:
             ext = os.path.splitext(fname)[1].lower()
             if ext not in extensions:
@@ -60,10 +87,12 @@ def sync_directory(root: str, vector_store=None, extensions: set = None) -> int:
                     continue
                 rel = os.path.relpath(fpath, root).replace("\\", "/")
                 for chunk in _chunk_text(text):
-                    entries.append({
-                        "text": chunk,
-                        "metadata": {"source": rel, "type": "knowledge_sync"},
-                    })
+                    entries.append(
+                        {
+                            "text": chunk,
+                            "metadata": {"source": rel, "type": "knowledge_sync"},
+                        }
+                    )
             except OSError as exc:
                 logger.debug("Skipping %s: %s", fpath, exc)
 

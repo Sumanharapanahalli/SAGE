@@ -39,7 +39,7 @@ import logging
 import os
 import sqlite3
 import uuid
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Optional
@@ -61,20 +61,20 @@ CCPA_DEADLINE_DAYS = 45  # CCPA allows 45 days (15-day extension available)
 
 # Data categories under GDPR Article 9 (special category health data)
 HEALTH_DATA_CATEGORIES = [
-    "mood_entries",           # Article 9 — mental health indicators
-    "heart_rate_sessions",    # Article 9 — biometric data
-    "breathing_sessions",     # Article 9 — health activity
-    "sleep_sessions",         # Article 9 — health data
+    "mood_entries",  # Article 9 — mental health indicators
+    "heart_rate_sessions",  # Article 9 — biometric data
+    "breathing_sessions",  # Article 9 — health activity
+    "sleep_sessions",  # Article 9 — health data
 ]
 
 # Standard personal data categories
 PII_DATA_CATEGORIES = [
-    "user_profile",           # name, email, preferences
-    "chat_history",           # chat messages containing PII
-    "audit_log_references",   # audit log rows referencing user_id
-    "vector_memory",          # ChromaDB embeddings (may encode health context)
-    "api_keys",               # user-issued API keys
-    "streaks",                # session completion metadata
+    "user_profile",  # name, email, preferences
+    "chat_history",  # chat messages containing PII
+    "audit_log_references",  # audit log rows referencing user_id
+    "vector_memory",  # ChromaDB embeddings (may encode health context)
+    "api_keys",  # user-issued API keys
+    "streaks",  # session completion metadata
 ]
 
 ALL_DATA_CATEGORIES = HEALTH_DATA_CATEGORIES + PII_DATA_CATEGORIES
@@ -88,11 +88,11 @@ class DeletionRequest:
     request_id: str
     user_id: str
     email: str
-    reason: str                   # gdpr_erasure | ccpa_delete | user_request | test
-    regulation: str               # GDPR | CCPA | BOTH
-    requested_at: str             # ISO 8601 UTC
-    deadline: str                 # ISO 8601 UTC (30 or 45 days from request)
-    status: str = "PENDING"       # PENDING | IN_PROGRESS | COMPLETED | FAILED
+    reason: str  # gdpr_erasure | ccpa_delete | user_request | test
+    regulation: str  # GDPR | CCPA | BOTH
+    requested_at: str  # ISO 8601 UTC
+    deadline: str  # ISO 8601 UTC (30 or 45 days from request)
+    status: str = "PENDING"  # PENDING | IN_PROGRESS | COMPLETED | FAILED
     completed_at: Optional[str] = None
     receipt_hash: Optional[str] = None
 
@@ -102,9 +102,9 @@ class DeletionStep:
     step_id: str
     request_id: str
     category: str
-    store: str                    # sqlite | chromadb | s3 | localStorage_notify
+    store: str  # sqlite | chromadb | s3 | localStorage_notify
     records_deleted: int = 0
-    status: str = "PENDING"       # PENDING | COMPLETED | SKIPPED | FAILED
+    status: str = "PENDING"  # PENDING | COMPLETED | SKIPPED | FAILED
     error: Optional[str] = None
     executed_at: Optional[str] = None
 
@@ -112,6 +112,7 @@ class DeletionStep:
 @dataclass
 class DeletionReceipt:
     """Signed deletion receipt — proof of GDPR compliance for regulators."""
+
     receipt_id: str
     request_id: str
     user_id: str
@@ -121,7 +122,7 @@ class DeletionReceipt:
     completed_at: str
     deadline: str
     completed_within_deadline: bool
-    signature: str                # HMAC-SHA256 of receipt content
+    signature: str  # HMAC-SHA256 of receipt content
 
 
 # ---------------------------------------------------------------------------
@@ -185,13 +186,22 @@ class DeletionQueueDB:
                     requested_at, deadline, status)
                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
                 (
-                    request.request_id, request.user_id, request.email,
-                    request.reason, request.regulation, request.requested_at,
-                    request.deadline, request.status,
+                    request.request_id,
+                    request.user_id,
+                    request.email,
+                    request.reason,
+                    request.regulation,
+                    request.requested_at,
+                    request.deadline,
+                    request.status,
                 ),
             )
-        logger.info("Deletion request enqueued: %s (user=%s, deadline=%s)",
-                    request.request_id, request.user_id, request.deadline)
+        logger.info(
+            "Deletion request enqueued: %s (user=%s, deadline=%s)",
+            request.request_id,
+            request.user_id,
+            request.deadline,
+        )
 
     def get_pending_past_deadline(self) -> list[DeletionRequest]:
         now = datetime.now(timezone.utc).isoformat()
@@ -209,9 +219,13 @@ class DeletionQueueDB:
             ).fetchall()
         return [DeletionRequest(**dict(r)) for r in rows]
 
-    def update_status(self, request_id: str, status: str,
-                      completed_at: Optional[str] = None,
-                      receipt_hash: Optional[str] = None) -> None:
+    def update_status(
+        self,
+        request_id: str,
+        status: str,
+        completed_at: Optional[str] = None,
+        receipt_hash: Optional[str] = None,
+    ) -> None:
         with self._conn() as conn:
             conn.execute(
                 """UPDATE deletion_requests
@@ -228,8 +242,14 @@ class DeletionQueueDB:
                     records_deleted, status, error, executed_at)
                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
                 (
-                    step.step_id, step.request_id, step.category, step.store,
-                    step.records_deleted, step.status, step.error, step.executed_at,
+                    step.step_id,
+                    step.request_id,
+                    step.category,
+                    step.store,
+                    step.records_deleted,
+                    step.status,
+                    step.error,
+                    step.executed_at,
                 ),
             )
 
@@ -272,9 +292,7 @@ class SQLiteHealthDataDeleter:
 
             # API keys belonging to user
             if not dry_run:
-                cur = conn.execute(
-                    "DELETE FROM api_keys WHERE email=?", (user_id,)
-                )
+                cur = conn.execute("DELETE FROM api_keys WHERE email=?", (user_id,))
                 results["api_keys"] = cur.rowcount
             else:
                 cur = conn.execute(
@@ -284,7 +302,9 @@ class SQLiteHealthDataDeleter:
 
             # Audit log rows referencing user — PSEUDONYMIZE, not hard delete
             # (audit log is compliance record — we replace user_id with pseudonym)
-            pseudonym = "DELETED_USER_" + hashlib.sha256(user_id.encode()).hexdigest()[:12]
+            pseudonym = (
+                "DELETED_USER_" + hashlib.sha256(user_id.encode()).hexdigest()[:12]
+            )
             if not dry_run:
                 cur = conn.execute(
                     """UPDATE compliance_audit_log
@@ -331,8 +351,13 @@ class ChromaDBHealthDataDeleter:
                         collection.delete(ids=results["ids"])
                     deleted += count
                     action = "Would delete" if dry_run else "Deleted"
-                    logger.info("%s %d embeddings from collection '%s' for user %s",
-                                action, count, collection.name, user_id)
+                    logger.info(
+                        "%s %d embeddings from collection '%s' for user %s",
+                        action,
+                        count,
+                        collection.name,
+                        user_id,
+                    )
             return deleted
         except ImportError:
             logger.warning("chromadb not installed — vector memory deletion skipped")
@@ -372,12 +397,15 @@ class S3HealthDataDeleter:
                 # Batch delete (up to 1000 per request)
                 for i in range(0, len(keys), 1000):
                     batch = keys[i : i + 1000]
-                    s3.delete_objects(
-                        Bucket=self.bucket, Delete={"Objects": batch}
-                    )
+                    s3.delete_objects(Bucket=self.bucket, Delete={"Objects": batch})
             action = "Would delete" if dry_run else "Deleted"
-            logger.info("%s %d S3 objects for user %s (prefix: %s)",
-                        action, len(keys), user_id, prefix)
+            logger.info(
+                "%s %d S3 objects for user %s (prefix: %s)",
+                action,
+                len(keys),
+                user_id,
+                prefix,
+            )
             return len(keys)
         except ImportError:
             logger.warning("boto3 not installed — S3 deletion skipped")
@@ -425,9 +453,7 @@ class DeletionReceiptGenerator:
         steps: list[DeletionStep],
         completed_at: str,
     ) -> DeletionReceipt:
-        categories_deleted = [
-            s.category for s in steps if s.status == "COMPLETED"
-        ]
+        categories_deleted = [s.category for s in steps if s.status == "COMPLETED"]
         total_deleted = sum(s.records_deleted for s in steps if s.status == "COMPLETED")
 
         deadline_dt = datetime.fromisoformat(request.deadline.replace("Z", "+00:00"))
@@ -532,7 +558,9 @@ class GDPRDeletionOrchestrator:
             immediate:   If True, execute now (no waiting for deadline)
         """
         now = datetime.now(timezone.utc)
-        deadline_days = GDPR_DEADLINE_DAYS if "GDPR" in regulation else CCPA_DEADLINE_DAYS
+        deadline_days = (
+            GDPR_DEADLINE_DAYS if "GDPR" in regulation else CCPA_DEADLINE_DAYS
+        )
         deadline = now + timedelta(days=deadline_days)
 
         request = DeletionRequest(
@@ -559,7 +587,9 @@ class GDPRDeletionOrchestrator:
         """Execute all deletion steps for a request."""
         logger.info(
             "Starting deletion for user=%s request=%s dry_run=%s",
-            request.user_id, request.request_id, dry_run,
+            request.user_id,
+            request.request_id,
+            dry_run,
         )
 
         if not dry_run:
@@ -729,7 +759,8 @@ class GDPRDeletionOrchestrator:
             except Exception as exc:
                 logger.error(
                     "Failed to execute deletion for request %s: %s",
-                    request.request_id, exc,
+                    request.request_id,
+                    exc,
                 )
         return receipts
 
@@ -764,24 +795,37 @@ def main() -> None:
     req_parser = subparsers.add_parser("request", help="Submit a deletion request")
     req_parser.add_argument("--user-id", required=True, help="User subject ID")
     req_parser.add_argument("--email", required=True, help="User email for receipt")
-    req_parser.add_argument("--reason", default="gdpr_erasure",
-                            choices=["gdpr_erasure", "ccpa_delete", "user_request", "test"])
-    req_parser.add_argument("--regulation", default="GDPR",
-                            choices=["GDPR", "CCPA", "BOTH"])
-    req_parser.add_argument("--immediate", action="store_true",
-                            help="Execute immediately (don't wait for deadline)")
-    req_parser.add_argument("--dry-run", action="store_true",
-                            help="Show what would be deleted without executing")
+    req_parser.add_argument(
+        "--reason",
+        default="gdpr_erasure",
+        choices=["gdpr_erasure", "ccpa_delete", "user_request", "test"],
+    )
+    req_parser.add_argument(
+        "--regulation", default="GDPR", choices=["GDPR", "CCPA", "BOTH"]
+    )
+    req_parser.add_argument(
+        "--immediate",
+        action="store_true",
+        help="Execute immediately (don't wait for deadline)",
+    )
+    req_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Show what would be deleted without executing",
+    )
     req_parser.add_argument("--solution", default="meditation_app")
 
     # Process pending
-    proc_parser = subparsers.add_parser("process-pending",
-                                         help="Process all requests past their deadline")
+    proc_parser = subparsers.add_parser(
+        "process-pending", help="Process all requests past their deadline"
+    )
     proc_parser.add_argument("--dry-run", action="store_true")
     proc_parser.add_argument("--solution", default="meditation_app")
 
     # Status check
-    status_parser = subparsers.add_parser("status", help="Check deletion request status")
+    status_parser = subparsers.add_parser(
+        "status", help="Check deletion request status"
+    )
     status_parser.add_argument("--request-id", required=True)
     status_parser.add_argument("--solution", default="meditation_app")
 
@@ -800,9 +844,16 @@ def main() -> None:
             receipt = orchestrator.execute_deletion(request, dry_run=True)
             print(json.dumps(asdict(receipt), indent=2))
         else:
-            print(json.dumps({"request_id": request.request_id,
-                               "deadline": request.deadline,
-                               "status": request.status}, indent=2))
+            print(
+                json.dumps(
+                    {
+                        "request_id": request.request_id,
+                        "deadline": request.deadline,
+                        "status": request.status,
+                    },
+                    indent=2,
+                )
+            )
 
     elif args.command == "process-pending":
         orchestrator = GDPRDeletionOrchestrator(solution_name=args.solution)

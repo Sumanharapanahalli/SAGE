@@ -3,6 +3,7 @@ SAGE Framework — OrgLoader
 Loads org.yaml, detects cycles, merges prompts/tasks across parent chain, resolves channels.
 Gracefully degrades when org.yaml is absent.
 """
+
 import logging
 import os
 import re
@@ -47,7 +48,9 @@ class OrgLoader:
                 raise OrgLoaderError(f"Cycle at '{current}' in parent chain")
             visited.add(current)
             chain.append(current)
-            project = self._load_yaml(os.path.join(self._solutions_dir, current, "project.yaml"))
+            project = self._load_yaml(
+                os.path.join(self._solutions_dir, current, "project.yaml")
+            )
             current = project.get("parent")
         return chain
 
@@ -55,7 +58,9 @@ class OrgLoader:
         """Merge prompts.yaml root→child. Child key wins on conflict."""
         merged: dict = {}
         for name in reversed(self.get_parent_chain(solution_name)):
-            data = self._load_yaml(os.path.join(self._solutions_dir, name, "prompts.yaml"))
+            data = self._load_yaml(
+                os.path.join(self._solutions_dir, name, "prompts.yaml")
+            )
             merged.update(data)
         return merged
 
@@ -67,7 +72,9 @@ class OrgLoader:
         merged_hooks: dict = {}
         merged_policies: dict = {}
         for name in reversed(self.get_parent_chain(solution_name)):
-            data = self._load_yaml(os.path.join(self._solutions_dir, name, "tasks.yaml"))
+            data = self._load_yaml(
+                os.path.join(self._solutions_dir, name, "tasks.yaml")
+            )
             for t in data.get("task_types", []):
                 if t not in merged_types:
                     merged_types.append(t)
@@ -102,7 +109,9 @@ class OrgLoader:
         path = os.path.join(self._solutions_dir, root, ".sage", "chroma_db")
         return path
 
-    def get_producer_channel_name(self, solution_name: str, channel_label: str) -> Optional[str]:
+    def get_producer_channel_name(
+        self, solution_name: str, channel_label: str
+    ) -> Optional[str]:
         """Return normalized collection name if solution is a producer for channel_label, else None."""
         channels = self._org.get("org", {}).get("knowledge_channels", {})
         if channel_label not in channels:
@@ -117,7 +126,10 @@ class OrgLoader:
         project = self._load_yaml(
             os.path.join(self._solutions_dir, source_solution, "project.yaml")
         )
-        return any(r.get("target") == target_solution for r in project.get("cross_team_routes", []))
+        return any(
+            r.get("target") == target_solution
+            for r in project.get("cross_team_routes", [])
+        )
 
     def get_all_routes(self) -> list:
         """Return all cross_team_routes across all solutions as [{source, target}]."""
@@ -163,7 +175,7 @@ class OrgLoader:
 
     @staticmethod
     def _normalize_channel(name: str) -> str:
-        return "channel_" + re.sub(r'[^a-z0-9_]', '_', name.lower())
+        return "channel_" + re.sub(r"[^a-z0-9_]", "_", name.lower())
 
     @staticmethod
     def _load_yaml(path: str) -> dict:

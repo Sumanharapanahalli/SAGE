@@ -25,12 +25,12 @@ from __future__ import annotations
 import argparse
 import datetime
 import logging
-import sys
 from pathlib import Path
 
 logger = logging.getLogger("fall_detector.gen_header")
-logging.basicConfig(level=logging.INFO,
-                    format="%(asctime)s  %(levelname)-8s  %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s  %(levelname)-8s  %(message)s"
+)
 
 
 HEADER_TEMPLATE = """\
@@ -107,7 +107,7 @@ def tflite_to_c_array(data: bytes, bytes_per_line: int = 12) -> str:
     """Format raw bytes as a C hex literal array, 12 bytes per line."""
     lines = []
     for i in range(0, len(data), bytes_per_line):
-        chunk = data[i: i + bytes_per_line]
+        chunk = data[i : i + bytes_per_line]
         hex_vals = ", ".join(f"0x{b:02x}" for b in chunk)
         trailing = "," if (i + bytes_per_line) < len(data) else ""
         lines.append(f"  {hex_vals}{trailing}")
@@ -127,7 +127,8 @@ def generate_header(
 
     if len(data) > 100 * 1024:
         raise ValueError(
-            f"Model size {len(data) / 1024:.1f} KB exceeds 100 KB STM32L4 budget")
+            f"Model size {len(data) / 1024:.1f} KB exceeds 100 KB STM32L4 budget"
+        )
 
     hex_array = tflite_to_c_array(data)
     header = HEADER_TEMPLATE.format(
@@ -141,18 +142,23 @@ def generate_header(
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(header, encoding="utf-8")
-    logger.info("C header written → %s (%d lines)", output_path,
-                header.count("\n"))
+    logger.info("C header written → %s (%d lines)", output_path, header.count("\n"))
 
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Convert TFLite model to C header")
-    p.add_argument("--tflite",    type=Path,
-                   default=Path("models/fall_detector.tflite"))
-    p.add_argument("--output",    type=Path,
-                   default=Path("firmware/fall_detection/fall_detector_model.h"))
-    p.add_argument("--threshold", type=float, default=0.50,
-                   help="Classification threshold embedded as macro")
+    p.add_argument("--tflite", type=Path, default=Path("models/fall_detector.tflite"))
+    p.add_argument(
+        "--output",
+        type=Path,
+        default=Path("firmware/fall_detection/fall_detector_model.h"),
+    )
+    p.add_argument(
+        "--threshold",
+        type=float,
+        default=0.50,
+        help="Classification threshold embedded as macro",
+    )
     return p.parse_args()
 
 

@@ -1,6 +1,7 @@
 """
 core/security.py — JWT token creation and verification.
 """
+
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
@@ -11,7 +12,9 @@ from jose import JWTError, jwt
 from backend.core.config import get_settings
 
 
-def create_access_token(subject: str | Any, expires_delta: timedelta | None = None) -> str:
+def create_access_token(
+    subject: str | Any, expires_delta: timedelta | None = None
+) -> str:
     settings = get_settings()
     expire = datetime.now(timezone.utc) + (
         expires_delta or timedelta(minutes=settings.access_token_expire_minutes)

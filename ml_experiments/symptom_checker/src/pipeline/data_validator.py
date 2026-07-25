@@ -21,11 +21,9 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
-import os
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -35,22 +33,23 @@ logger = logging.getLogger(__name__)
 # ── Required demographic columns (MIMIC-IV schema names) ─────────────────────
 REQUIRED_DEMOGRAPHIC_COLS = ["age", "gender", "race", "insurance"]
 REQUIRED_CLINICAL_COLS = ["subject_id", "hadm_id", "icd_code", "icd_version"]
-MIN_SAMPLE_SIZE = 500          # FDA guidance: statistically powered held-out set
-MIN_DEMOGRAPHIC_GROUPS = 3     # at least age / sex / race represented
+MIN_SAMPLE_SIZE = 500  # FDA guidance: statistically powered held-out set
+MIN_DEMOGRAPHIC_GROUPS = 3  # at least age / sex / race represented
 ACCEPTABLE_MISSING_RATE = 0.10  # ≤10 % missingness per critical column
 
 
 @dataclass
 class IRBRecord:
     """Proof-of-IRB required before data is loaded into the pipeline."""
-    irb_number: str           # e.g. "IRB-2024-XXXX"
+
+    irb_number: str  # e.g. "IRB-2024-XXXX"
     institution: str
-    approval_date: str        # ISO-8601
-    expiry_date: str          # ISO-8601 — pipeline refuses data after this date
-    dataset_name: str         # e.g. "MIMIC-IV v2.2"
-    data_use_agreement: str   # DUA reference number
+    approval_date: str  # ISO-8601
+    expiry_date: str  # ISO-8601 — pipeline refuses data after this date
+    dataset_name: str  # e.g. "MIMIC-IV v2.2"
+    data_use_agreement: str  # DUA reference number
     de_identification_method: str  # e.g. "Safe Harbor (45 CFR §164.514(b))"
-    irb_document_hash: str    # SHA-256 of the scanned PDF for audit trail
+    irb_document_hash: str  # SHA-256 of the scanned PDF for audit trail
 
 
 @dataclass
@@ -85,7 +84,7 @@ class ValidationReport:
     label_distribution: dict[str, int]
     demographic_coverage: DemographicCoverage
     leakage_risk: bool
-    class_imbalance: bool          # True if majority/minority ratio > 10
+    class_imbalance: bool  # True if majority/minority ratio > 10
     imbalance_ratio: float
     passes_all_checks: bool
     warnings: list[str]
@@ -120,7 +119,9 @@ class DataValidator:
         dup_count = self._check_duplicate_subjects(df, warnings)
         label_dist = self._check_label_distribution(df, label_col, errors, warnings)
         demo = self._build_demographic_coverage(df, warnings)
-        imbalance_ratio, class_imbalance = self._check_class_imbalance(label_dist, warnings)
+        imbalance_ratio, class_imbalance = self._check_class_imbalance(
+            label_dist, warnings
+        )
         leakage_risk = self._check_leakage_signals(df, label_col, errors)
 
         if len(df) < MIN_SAMPLE_SIZE:
@@ -165,7 +166,9 @@ class DataValidator:
         if not self.irb.irb_number or not self.irb.data_use_agreement:
             errors.append("IRB number and DUA reference are both required.")
             return False
-        logger.info("IRB %s validated (expires %s).", self.irb.irb_number, self.irb.expiry_date)
+        logger.info(
+            "IRB %s validated (expires %s).", self.irb.irb_number, self.irb.expiry_date
+        )
         return True
 
     def _check_required_columns(self, df: pd.DataFrame, errors: list[str]) -> None:
@@ -174,7 +177,9 @@ class DataValidator:
         if missing:
             errors.append(f"Missing required columns: {missing}")
 
-    def _check_missing_rates(self, df: pd.DataFrame, warnings: list[str]) -> dict[str, float]:
+    def _check_missing_rates(
+        self, df: pd.DataFrame, warnings: list[str]
+    ) -> dict[str, float]:
         rates = (df.isnull().sum() / len(df)).to_dict()
         for col, rate in rates.items():
             if rate > ACCEPTABLE_MISSING_RATE:
@@ -189,7 +194,9 @@ class DataValidator:
         # Same subject appearing in both train & test would be leakage
         dup = df["subject_id"].duplicated().sum()
         if dup:
-            warnings.append(f"{dup} duplicate subject_id rows — verify train/test split uses subject-level grouping.")
+            warnings.append(
+                f"{dup} duplicate subject_id rows — verify train/test split uses subject-level grouping."
+            )
         return int(dup)
 
     def _check_label_distribution(
@@ -204,10 +211,14 @@ class DataValidator:
             return {}
         dist = df[label_col].value_counts().to_dict()
         if len(dist) < 2:
-            errors.append(f"Label column has only {len(dist)} class — need ≥2 for classification.")
+            errors.append(
+                f"Label column has only {len(dist)} class — need ≥2 for classification."
+            )
         for cls, cnt in dist.items():
             if cnt < 30:
-                warnings.append(f"Class '{cls}' has only {cnt} samples — insufficient for reliable evaluation.")
+                warnings.append(
+                    f"Class '{cls}' has only {cnt} samples — insufficient for reliable evaluation."
+                )
         return {str(k): int(v) for k, v in dist.items()}
 
     def _build_demographic_coverage(
@@ -280,9 +291,17 @@ class DataValidator:
         return leakage
 
     def _persist_report(self, report: ValidationReport) -> None:
-        path = self.artifact_dir / f"validation_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        path = (
+            self.artifact_dir
+            / f"validation_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        )
         with open(path, "w") as fh:
-            json.dump(report.__dict__ | {"demographic_coverage": report.demographic_coverage.__dict__}, fh, indent=2)
+            json.dump(
+                report.__dict__
+                | {"demographic_coverage": report.demographic_coverage.__dict__},
+                fh,
+                indent=2,
+            )
         logger.info("Validation report saved → %s", path)
 
 

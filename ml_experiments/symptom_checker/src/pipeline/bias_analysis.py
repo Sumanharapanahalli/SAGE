@@ -32,6 +32,7 @@ from pathlib import Path
 from typing import Any
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
@@ -45,9 +46,9 @@ from sklearn.metrics import (
 
 logger = logging.getLogger(__name__)
 
-FAIRNESS_THRESHOLD_DPD = 0.05   # FDA-informed threshold for triage SaMD
+FAIRNESS_THRESHOLD_DPD = 0.05  # FDA-informed threshold for triage SaMD
 FAIRNESS_THRESHOLD_EOD = 0.10
-FAIRNESS_THRESHOLD_DIR = 0.80   # EEOC 4/5 rule
+FAIRNESS_THRESHOLD_DIR = 0.80  # EEOC 4/5 rule
 
 
 @dataclass
@@ -55,10 +56,10 @@ class GroupMetrics:
     group_name: str
     group_value: str
     n_samples: int
-    prevalence: float          # % positive in this group
-    sensitivity: float         # TPR
-    specificity: float         # TNR
-    ppv: float                 # precision
+    prevalence: float  # % positive in this group
+    sensitivity: float  # TPR
+    specificity: float  # TNR
+    ppv: float  # precision
     npv: float
     f1: float
     auroc: float
@@ -79,7 +80,9 @@ class FairnessReport:
     passes_dir: bool
     statistical_significance: dict[str, float]  # group → p-value vs reference
     recommendations: list[str]
-    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp: str = field(
+        default_factory=lambda: datetime.now(timezone.utc).isoformat()
+    )
 
 
 class BiasAnalyzer:
@@ -110,8 +113,11 @@ class BiasAnalyzer:
         Saves JSON + PNG artifacts for regulatory submission.
         """
         if protected_attributes is None:
-            protected_attributes = [c for c in ["race", "gender", "age_group", "insurance"]
-                                     if c in df.columns]
+            protected_attributes = [
+                c
+                for c in ["race", "gender", "age_group", "insurance"]
+                if c in df.columns
+            ]
 
         reports: dict[str, FairnessReport] = {}
         for attr in protected_attributes:
@@ -119,7 +125,9 @@ class BiasAnalyzer:
                 logger.warning("Attribute '%s' not in dataframe — skipping.", attr)
                 continue
             logger.info("Bias analysis: attribute=%s", attr)
-            report = self._analyze_attribute(df, y_true_col, y_pred_col, y_prob_col, attr)
+            report = self._analyze_attribute(
+                df, y_true_col, y_pred_col, y_prob_col, attr
+            )
             reports[attr] = report
             self._save_report(report)
             self._plot_group_metrics(report)
@@ -144,13 +152,22 @@ class BiasAnalyzer:
             mask = df[attr] == grp
             gdf = df[mask]
             if len(gdf) < 10:
-                logger.warning("Group %s=%s has only %d samples — metrics unreliable.", attr, grp, len(gdf))
+                logger.warning(
+                    "Group %s=%s has only %d samples — metrics unreliable.",
+                    attr,
+                    grp,
+                    len(gdf),
+                )
                 continue
-            gm = self._compute_group_metrics(attr, str(grp), gdf, y_true_col, y_pred_col, y_prob_col)
+            gm = self._compute_group_metrics(
+                attr, str(grp), gdf, y_true_col, y_pred_col, y_prob_col
+            )
             group_metrics.append(gm)
 
         if not group_metrics:
-            raise ValueError(f"No groups with sufficient samples for attribute '{attr}'.")
+            raise ValueError(
+                f"No groups with sufficient samples for attribute '{attr}'."
+            )
 
         # Choose reference group = largest group
         ref_group = max(group_metrics, key=lambda g: g.n_samples)
@@ -213,20 +230,26 @@ class BiasAnalyzer:
             if y_prob is not None and len(unique_classes) == 2:
                 auroc = float(roc_auc_score(y_true, y_prob))
             elif y_prob is not None:
-                auroc = float(roc_auc_score(y_true, y_prob, multi_class="ovr", average="weighted"))
+                auroc = float(
+                    roc_auc_score(y_true, y_prob, multi_class="ovr", average="weighted")
+                )
             else:
                 auroc = float("nan")
         except Exception:
             auroc = float("nan")
 
-        pos_preds = int((y_pred == 1).sum()) if len(unique_classes) == 2 else int(len(y_pred))
+        pos_preds = (
+            int((y_pred == 1).sum()) if len(unique_classes) == 2 else int(len(y_pred))
+        )
         pos_rate = pos_preds / max(len(y_pred), 1)
 
         return GroupMetrics(
             group_name=attr,
             group_value=grp,
             n_samples=len(gdf),
-            prevalence=float(y_true.mean()) if len(unique_classes) == 2 else float("nan"),
+            prevalence=float(y_true.mean())
+            if len(unique_classes) == 2
+            else float("nan"),
             sensitivity=round(float(sensitivity), 4),
             specificity=round(float(specificity), 4),
             ppv=round(float(ppv), 4),
@@ -244,8 +267,12 @@ class BiasAnalyzer:
         return round(max(rates) - min(rates), 4)
 
     def _equalized_odds_diff(self, groups: list[GroupMetrics]) -> float:
-        tpr_diff = max(g.sensitivity for g in groups) - min(g.sensitivity for g in groups)
-        fpr_diff = max(1 - g.specificity for g in groups) - min(1 - g.specificity for g in groups)
+        tpr_diff = max(g.sensitivity for g in groups) - min(
+            g.sensitivity for g in groups
+        )
+        fpr_diff = max(1 - g.specificity for g in groups) - min(
+            1 - g.specificity for g in groups
+        )
         return round(max(tpr_diff, fpr_diff), 4)
 
     def _disparate_impact_ratio(self, groups: list[GroupMetrics]) -> float:
@@ -264,18 +291,24 @@ class BiasAnalyzer:
     ) -> dict[str, float]:
         """Chi-squared test: error rate of reference vs each other group."""
         ref_mask = df[attr] == ref_group
-        ref_errors = (df.loc[ref_mask, y_true_col] != df.loc[ref_mask, y_pred_col]).astype(int)
+        ref_errors = (
+            df.loc[ref_mask, y_true_col] != df.loc[ref_mask, y_pred_col]
+        ).astype(int)
         results: dict[str, float] = {}
         for grp in df[attr].unique():
             if str(grp) == ref_group:
                 continue
             g_mask = df[attr] == grp
-            g_errors = (df.loc[g_mask, y_true_col] != df.loc[g_mask, y_pred_col]).astype(int)
+            g_errors = (
+                df.loc[g_mask, y_true_col] != df.loc[g_mask, y_pred_col]
+            ).astype(int)
             # 2×2 contingency: correct vs error, ref vs group
-            table = np.array([
-                [(ref_errors == 0).sum(), (ref_errors == 1).sum()],
-                [(g_errors == 0).sum(),   (g_errors == 1).sum()],
-            ])
+            table = np.array(
+                [
+                    [(ref_errors == 0).sum(), (ref_errors == 1).sum()],
+                    [(g_errors == 0).sum(), (g_errors == 1).sum()],
+                ]
+            )
             try:
                 chi2, p, _, _ = stats.chi2_contingency(table)
                 results[str(grp)] = round(float(p), 4)
@@ -381,7 +414,9 @@ class BiasAnalyzer:
         ax.set_xticklabels(labels, rotation=30, ha="right")
         ax.set_ylim(0, 1.1)
         ax.legend()
-        ax.axhline(0.9, color="gray", linestyle="--", linewidth=0.8, label="0.90 reference")
+        ax.axhline(
+            0.9, color="gray", linestyle="--", linewidth=0.8, label="0.90 reference"
+        )
         plt.tight_layout()
         path = self.artifact_dir / f"bias_{report.protected_attribute}.png"
         plt.savefig(path, dpi=150)

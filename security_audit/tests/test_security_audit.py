@@ -3,6 +3,7 @@
 Runs against the secure_app (port 5002) in-process using Flask test client.
 Does NOT require a live network connection.
 """
+
 import json
 import os
 import sys
@@ -18,12 +19,14 @@ sys.path.insert(0, os.path.join(_REPO_ROOT, "audit"))
 # Ensure markupsafe is importable (may not be installed in all envs)
 try:
     from markupsafe import escape as _escape  # noqa: F401
+
     _HAS_MARKUPSAFE = True
 except ImportError:
     _HAS_MARKUPSAFE = False
 
 try:
     from secure_app import app, init_db
+
     _HAS_SECURE_APP = True
     _IMPORT_ERR = None
 except ImportError as _imp_err:
@@ -43,28 +46,37 @@ class TestSQLInjectionFix(unittest.TestCase):
 
     def test_sqli_bypass_rejected(self):
         """Classic ' OR '1'='1 should not log in."""
-        resp = self.client.post("/login", data={
-            "username": "' OR '1'='1",
-            "password": "' OR '1'='1",
-        })
+        resp = self.client.post(
+            "/login",
+            data={
+                "username": "' OR '1'='1",
+                "password": "' OR '1'='1",
+            },
+        )
         self.assertEqual(resp.status_code, 401)
         body = json.loads(resp.data)
         self.assertEqual(body["status"], "fail")
 
     def test_sqli_union_rejected(self):
         """UNION-based injection should not log in."""
-        resp = self.client.post("/login", data={
-            "username": "admin' UNION SELECT 1,'admin','admin','x'--",
-            "password": "anything",
-        })
+        resp = self.client.post(
+            "/login",
+            data={
+                "username": "admin' UNION SELECT 1,'admin','admin','x'--",
+                "password": "anything",
+            },
+        )
         self.assertIn(resp.status_code, (400, 401))
 
     def test_legitimate_login_works(self):
         """Valid credentials must still work after the fix."""
-        resp = self.client.post("/login", data={
-            "username": "admin",
-            "password": "admin-strong-passphrase-2024!",
-        })
+        resp = self.client.post(
+            "/login",
+            data={
+                "username": "admin",
+                "password": "admin-strong-passphrase-2024!",
+            },
+        )
         self.assertEqual(resp.status_code, 200)
         body = json.loads(resp.data)
         self.assertEqual(body["status"], "ok")
@@ -89,7 +101,7 @@ class TestXSSFix(unittest.TestCase):
         self.assertNotIn("<script>", response_text)
 
     def test_img_onerror_not_reflected(self):
-        payload = '<img src=x onerror=alert(1)>'
+        payload = "<img src=x onerror=alert(1)>"
         resp = self.client.get(f"/search?q={payload}")
         body = json.loads(resp.data)
         response_text = json.dumps(body)
@@ -240,6 +252,7 @@ class TestAuditReportStructure(unittest.TestCase):
         """Report must contain at least 5 findings."""
         try:
             from owasp_audit import OWASPAuditor
+
             auditor = OWASPAuditor(base_url="http://127.0.0.1:9999")  # offline
             report = auditor.run_full_audit()
             self.assertGreaterEqual(report["total_findings"], 5)
@@ -250,12 +263,16 @@ class TestAuditReportStructure(unittest.TestCase):
         """Every finding must have a valid severity."""
         try:
             from owasp_audit import OWASPAuditor
+
             auditor = OWASPAuditor(base_url="http://127.0.0.1:9999")
             report = auditor.run_full_audit()
             valid_severities = {"Critical", "High", "Medium", "Low"}
             for finding in report["findings"]:
-                self.assertIn(finding["severity"], valid_severities,
-                              f"{finding['vuln_id']} has invalid severity")
+                self.assertIn(
+                    finding["severity"],
+                    valid_severities,
+                    f"{finding['vuln_id']} has invalid severity",
+                )
         except ImportError:
             self.skipTest("owasp_audit not importable")
 
@@ -263,12 +280,17 @@ class TestAuditReportStructure(unittest.TestCase):
         """Every finding must have poc_payload and remediation_summary."""
         try:
             from owasp_audit import OWASPAuditor
+
             auditor = OWASPAuditor(base_url="http://127.0.0.1:9999")
             report = auditor.run_full_audit()
             for finding in report["findings"]:
-                self.assertTrue(finding["poc_payload"], f"{finding['vuln_id']} missing PoC")
-                self.assertTrue(finding["remediation_summary"],
-                                f"{finding['vuln_id']} missing remediation")
+                self.assertTrue(
+                    finding["poc_payload"], f"{finding['vuln_id']} missing PoC"
+                )
+                self.assertTrue(
+                    finding["remediation_summary"],
+                    f"{finding['vuln_id']} missing remediation",
+                )
         except ImportError:
             self.skipTest("owasp_audit not importable")
 
@@ -276,6 +298,7 @@ class TestAuditReportStructure(unittest.TestCase):
         """Must have at least one Critical severity finding."""
         try:
             from owasp_audit import OWASPAuditor
+
             auditor = OWASPAuditor(base_url="http://127.0.0.1:9999")
             report = auditor.run_full_audit()
             critical_count = report["severity_summary"].get("Critical", 0)
@@ -287,6 +310,7 @@ class TestAuditReportStructure(unittest.TestCase):
         """All CVSS scores must be between 0.0 and 10.0."""
         try:
             from owasp_audit import OWASPAuditor
+
             auditor = OWASPAuditor(base_url="http://127.0.0.1:9999")
             report = auditor.run_full_audit()
             for finding in report["findings"]:

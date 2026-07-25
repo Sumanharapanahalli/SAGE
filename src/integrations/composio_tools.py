@@ -86,6 +86,7 @@ def list_connected_apps() -> list[dict]:
         return []
     try:
         from composio import ComposioToolSet
+
         toolset = ComposioToolSet(api_key=api_key)
         accounts = toolset.get_connected_accounts()
         return [
@@ -101,7 +102,9 @@ def list_connected_apps() -> list[dict]:
         return []
 
 
-def get_connection_url(app_name: str, redirect_url: Optional[str] = None) -> Optional[str]:
+def get_connection_url(
+    app_name: str, redirect_url: Optional[str] = None
+) -> Optional[str]:
     """
     Initiate a Composio OAuth connection for an app.
     Returns the URL the user should visit to authorise the connection.
@@ -111,12 +114,15 @@ def get_connection_url(app_name: str, redirect_url: Optional[str] = None) -> Opt
         return None
     try:
         from composio import ComposioToolSet
+
         toolset = ComposioToolSet(api_key=api_key)
         connection = toolset.initiate_connection(
             app_name=app_name.upper(),
             redirect_url=redirect_url,
         )
-        return getattr(connection, "redirectUrl", None) or getattr(connection, "redirect_url", None)
+        return getattr(connection, "redirectUrl", None) or getattr(
+            connection, "redirect_url", None
+        )
     except Exception as exc:
         logger.warning("Composio get_connection_url failed for %s: %s", app_name, exc)
         return None
@@ -128,6 +134,7 @@ def is_available() -> bool:
         return False
     try:
         import composio_langchain  # noqa: F401
+
         return True
     except ImportError:
         return False

@@ -9,6 +9,7 @@ Covers:
   → reject.
 - missing ``_orch`` module var → SidecarDown.
 """
+
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -263,9 +264,13 @@ def test_get_can_still_display_a_failed_run(monkeypatch):
     monkeypatch.setattr(
         builds,
         "_orch",
-        _orch_stub(get_status=lambda _r: {
-            "run_id": "r1", "state": "failed", "error": "decomposer crashed",
-        }),
+        _orch_stub(
+            get_status=lambda _r: {
+                "run_id": "r1",
+                "state": "failed",
+                "error": "decomposer crashed",
+            }
+        ),
     )
     out = builds.get({"run_id": "r1"})
     assert out["state"] == "failed"
@@ -353,6 +358,7 @@ def test_reject_maps_unknown_run_to_invalid_params(monkeypatch, wired):
 
 def test_reject_survives_a_dead_vector_store(monkeypatch, wired):
     """Compounding memory must never cost us a decision the human already made."""
+
     def _boom():
         raise RuntimeError("chromadb is down")
 

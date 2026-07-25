@@ -21,14 +21,15 @@ import os
 import threading
 import time
 import uuid
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
 logger = logging.getLogger(__name__)
 
 # Path for persisted critic prompts (editable by founder)
 _CRITIC_PROMPTS_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-    "config", "critic_prompts.json",
+    "config",
+    "critic_prompts.json",
 )
 
 
@@ -60,6 +61,7 @@ class CriticAgent:
     def llm(self):
         if self._llm_gateway is None:
             from src.core.llm_gateway import llm_gateway
+
             self._llm_gateway = llm_gateway
         return self._llm_gateway
 
@@ -67,6 +69,7 @@ class CriticAgent:
     def audit(self):
         if self._audit_logger is None:
             from src.memory.audit_logger import audit_logger
+
             self._audit_logger = audit_logger
         return self._audit_logger
 
@@ -80,7 +83,9 @@ class CriticAgent:
             if os.path.isfile(_CRITIC_PROMPTS_PATH):
                 with open(_CRITIC_PROMPTS_PATH) as f:
                     self._custom_prompts = json.load(f)
-                self.logger.info("Loaded custom critic prompts from %s", _CRITIC_PROMPTS_PATH)
+                self.logger.info(
+                    "Loaded custom critic prompts from %s", _CRITIC_PROMPTS_PATH
+                )
         except Exception as exc:
             self.logger.debug("No custom critic prompts: %s", exc)
 
@@ -119,7 +124,9 @@ class CriticAgent:
             os.makedirs(os.path.dirname(_CRITIC_PROMPTS_PATH), exist_ok=True)
             with open(_CRITIC_PROMPTS_PATH, "w") as f:
                 json.dump(self._custom_prompts, f, indent=2)
-            self.logger.info("Saved custom critic prompt: %s (%d chars)", key, len(prompt))
+            self.logger.info(
+                "Saved custom critic prompt: %s (%d chars)", key, len(prompt)
+            )
         except Exception as exc:
             self.logger.error("Failed to persist critic prompt: %s", exc)
 
@@ -219,7 +226,9 @@ class CriticAgent:
 
         self.logger.info(
             "Human review submitted: %s score=%d turnaround=%.0fs",
-            review_id[:8], score, review["turnaround_s"],
+            review_id[:8],
+            score,
+            review["turnaround_s"],
         )
         return review
 
@@ -326,7 +335,9 @@ class CriticAgent:
         if context:
             user_prompt += f"\n## Additional Context\n{context}\n"
 
-        result = self._call_llm(user_prompt, self._get_prompt("PLAN_REVIEW_PROMPT"), "PLAN_REVIEW")
+        result = self._call_llm(
+            user_prompt, self._get_prompt("PLAN_REVIEW_PROMPT"), "PLAN_REVIEW"
+        )
         return result
 
     def review_code(
@@ -352,7 +363,9 @@ class CriticAgent:
         if context:
             user_prompt += f"\n## Additional Context\n{context}\n"
 
-        return self._call_llm(user_prompt, self._get_prompt("CODE_REVIEW_PROMPT"), "CODE_REVIEW")
+        return self._call_llm(
+            user_prompt, self._get_prompt("CODE_REVIEW_PROMPT"), "CODE_REVIEW"
+        )
 
     def review_integration(
         self,
@@ -378,7 +391,9 @@ class CriticAgent:
             user_prompt += f"\n## Additional Context\n{context}\n"
 
         return self._call_llm(
-            user_prompt, self._get_prompt("INTEGRATION_REVIEW_PROMPT"), "INTEGRATION_REVIEW"
+            user_prompt,
+            self._get_prompt("INTEGRATION_REVIEW_PROMPT"),
+            "INTEGRATION_REVIEW",
         )
 
     # ------------------------------------------------------------------
@@ -399,15 +414,20 @@ class CriticAgent:
                 "specific, checkable requirements, each phrased so it can be "
                 "objectively verified. Output ONLY the rubric as plain text."
             )
-            rubric = (self.llm.generate(
-                prompt,
-                "You are a meticulous test-rubric author. Output only the rubric, no preamble.",
-                trace_name="critic.generate_rubric",
-            ) or "").strip()
+            rubric = (
+                self.llm.generate(
+                    prompt,
+                    "You are a meticulous test-rubric author. Output only the rubric, no preamble.",
+                    trace_name="critic.generate_rubric",
+                )
+                or ""
+            ).strip()
             if rubric and len(rubric) > 20:
                 return rubric
         except Exception as exc:
-            self.logger.warning("Rubric generation failed, proceeding without it: %s", exc)
+            self.logger.warning(
+                "Rubric generation failed, proceeding without it: %s", exc
+            )
         return ""
 
     def review_with_loop(
@@ -450,7 +470,11 @@ class CriticAgent:
         if reviewer is None:
             return {"error": f"Unknown review type: {review_fn}", "score": 0}
 
-        committed_rubric = self._generate_review_rubric(review_fn, description) if generate_rubric else ""
+        committed_rubric = (
+            self._generate_review_rubric(review_fn, description)
+            if generate_rubric
+            else ""
+        )
 
         history = []
         current_artifact = artifact
@@ -462,9 +486,15 @@ class CriticAgent:
                 context += f"Committed rubric (judge every iteration against this fixed bar):\n{committed_rubric}\n\n"
             if history:
                 context += "Prior critic feedback (address these):\n" + json.dumps(
-                    [{"iteration": h["iteration"], "score": h["score"],
-                      "flaws": h.get("flaws", []), "issues": h.get("issues", [])}
-                     for h in history],
+                    [
+                        {
+                            "iteration": h["iteration"],
+                            "score": h["score"],
+                            "flaws": h.get("flaws", []),
+                            "issues": h.get("issues", []),
+                        }
+                        for h in history
+                    ],
                     indent=2,
                 )
 
@@ -489,7 +519,10 @@ class CriticAgent:
             score = review.get("score", 0)
             self.logger.info(
                 "Critic loop iteration %d/%d — score: %d (threshold: %d)",
-                iteration, max_iterations, score, threshold,
+                iteration,
+                max_iterations,
+                score,
+                threshold,
             )
 
             # Pass?
@@ -553,9 +586,13 @@ class CriticAgent:
             user_prompt += f"\n## Additional Context\n{context}\n"
 
         from src.core.llm_gateway import generate_parallel
+
         result = generate_parallel(
-            pool, user_prompt, self.PLAN_REVIEW_PROMPT,
-            strategy=strategy, provider_names=provider_names,
+            pool,
+            user_prompt,
+            self.PLAN_REVIEW_PROMPT,
+            strategy=strategy,
+            provider_names=provider_names,
         )
         if "error" in result:
             return {"error": result["error"], "score": 0}
@@ -587,9 +624,13 @@ class CriticAgent:
             user_prompt += f"\n## Additional Context\n{context}\n"
 
         from src.core.llm_gateway import generate_parallel
+
         result = generate_parallel(
-            pool, user_prompt, self.CODE_REVIEW_PROMPT,
-            strategy=strategy, provider_names=provider_names,
+            pool,
+            user_prompt,
+            self.CODE_REVIEW_PROMPT,
+            strategy=strategy,
+            provider_names=provider_names,
         )
         if "error" in result:
             return {"error": result["error"], "score": 0}
@@ -620,9 +661,13 @@ class CriticAgent:
             user_prompt += f"\n## Additional Context\n{context}\n"
 
         from src.core.llm_gateway import generate_parallel
+
         result = generate_parallel(
-            pool, user_prompt, self.INTEGRATION_REVIEW_PROMPT,
-            strategy=strategy, provider_names=provider_names,
+            pool,
+            user_prompt,
+            self.INTEGRATION_REVIEW_PROMPT,
+            strategy=strategy,
+            provider_names=provider_names,
         )
         if "error" in result:
             return {"error": result["error"], "score": 0}
@@ -643,7 +688,9 @@ class CriticAgent:
         if not scored:
             return 0
         weights = weights or {}
-        pairs = sorted((float(s), float(weights.get(n, 1.0))) for n, s in scored.items())
+        pairs = sorted(
+            (float(s), float(weights.get(n, 1.0))) for n, s in scored.items()
+        )
         half = sum(w for _, w in pairs) / 2.0
         cum = 0.0
         for value, w in pairs:
@@ -704,7 +751,9 @@ class CriticAgent:
         if "gemini" not in pool_names:
             self._ensure_gemini_registered(pool)
             if pool.get("gemini"):
-                pool_names = pool.list_providers() if not provider_names else provider_names
+                pool_names = (
+                    pool.list_providers() if not provider_names else provider_names
+                )
 
         # Same for a local Ollama critic (Qwen). A cross-VENDOR panel is the whole point:
         # the primary is Claude and the auto-registered judge was Gemini, so without this
@@ -714,11 +763,16 @@ class CriticAgent:
         if "ollama" not in pool_names:
             self._ensure_ollama_registered(pool)
             if pool.get("ollama"):
-                pool_names = pool.list_providers() if not provider_names else provider_names
+                pool_names = (
+                    pool.list_providers() if not provider_names else provider_names
+                )
 
         # 3. Call primary + all pool providers in parallel
         def _call_primary():
-            return ("primary", self._get_single_review(review_type, artifact, description, context))
+            return (
+                "primary",
+                self._get_single_review(review_type, artifact, description, context),
+            )
 
         def _call_pool_provider(name):
             provider = pool.get(name)
@@ -731,7 +785,9 @@ class CriticAgent:
                 self.logger.warning("Critic provider '%s' failed: %s", name, exc)
                 return (name, {"score": 0, "error": str(exc)})
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=len(pool_names) + 1) as executor:
+        with concurrent.futures.ThreadPoolExecutor(
+            max_workers=len(pool_names) + 1
+        ) as executor:
             futures = [executor.submit(_call_primary)]
             for name in pool_names:
                 futures.append(executor.submit(_call_pool_provider, name))
@@ -774,7 +830,11 @@ class CriticAgent:
             # itself actually answered — otherwise this is a panel-wide outage, and
             # reporting 0 would again invent a verdict nobody reached.
             primary = reviews.get("primary", {})
-            if primary and not primary.get("llm_parse_error") and "error" not in primary:
+            if (
+                primary
+                and not primary.get("llm_parse_error")
+                and "error" not in primary
+            ):
                 scored = {"primary": primary.get("score", 0)}
             else:
                 self.logger.warning(
@@ -829,7 +889,11 @@ class CriticAgent:
         # optimizer) cannot otherwise tell a critic that judged the work worthless from one
         # that never ran.
         provider_scores = {
-            n: ("failed" if (r.get("llm_parse_error") or "error" in r) else r.get("score", 0))
+            n: (
+                "failed"
+                if (r.get("llm_parse_error") or "error" in r)
+                else r.get("score", 0)
+            )
             for n, r in reviews.items()
         }
         summary_parts = ", ".join(f"{n}={s}" for n, s in provider_scores.items())
@@ -862,11 +926,13 @@ class CriticAgent:
             actor="CriticAgent",
             action_type=f"MULTI_CRITIC_{review_type.upper()}",
             input_context=description[:300],
-            output_content=json.dumps({
-                "final_score": final_score,
-                "provider_scores": provider_scores,
-                "disagreements": len(disagreements),
-            }),
+            output_content=json.dumps(
+                {
+                    "final_score": final_score,
+                    "provider_scores": provider_scores,
+                    "disagreements": len(disagreements),
+                }
+            ),
             metadata={"score": final_score, **provider_scores},
         )
 
@@ -927,13 +993,16 @@ class CriticAgent:
             return
         try:
             from src.core.llm_gateway import GeminiCLIProvider, _load_config
+
             cfg = _load_config()
             llm_cfg = cfg.get("llm", {})
             # 300s, not 30s: a critic prompt (artifact + criteria) routinely exceeds 20KB,
             # and Gemini's latency is super-linear in prompt size. At 30s it timed out and
             # silently left the pool, degrading an N-critic panel to a single critic.
             gemini_timeout = llm_cfg.get("gemini_timeout", llm_cfg.get("timeout", 300))
-            temp = GeminiCLIProvider({"gemini_model": "gemini-2.5-flash", "gemini_timeout": gemini_timeout})
+            temp = GeminiCLIProvider(
+                {"gemini_model": "gemini-2.5-flash", "gemini_timeout": gemini_timeout}
+            )
             if temp.gemini_path:
                 pool.register("gemini", temp)
                 self.logger.info("Auto-registered Gemini as critic provider")
@@ -968,23 +1037,26 @@ class CriticAgent:
             if model not in served:
                 self.logger.info(
                     "Ollama critic '%s' not served by %s — skipping (available: %s)",
-                    model, host, ", ".join(sorted(served)) or "none",
+                    model,
+                    host,
+                    ", ".join(sorted(served)) or "none",
                 )
                 return
 
             timeout = int(llm_cfg.get("ollama_timeout", llm_cfg.get("timeout", 300)))
-            pool.register("ollama", OllamaProvider({"ollama_model": model, "timeout": timeout}))
+            pool.register(
+                "ollama", OllamaProvider({"ollama_model": model, "timeout": timeout})
+            )
             self.logger.info("Auto-registered Ollama (%s) as critic provider", model)
         except Exception as exc:  # noqa: BLE001
             self.logger.debug("Ollama auto-register failed: %s", exc)
 
-    def _parse_critic_json(
-        self, response_text: str, meta: dict
-    ) -> Dict[str, Any]:
+    def _parse_critic_json(self, response_text: str, meta: dict) -> Dict[str, Any]:
         """Parse JSON from a critic response, attach multi-LLM metadata."""
         import re
+
         response_text = response_text.replace("```json", "").replace("```", "").strip()
-        obj_match = re.search(r'\{[\s\S]*\}', response_text)
+        obj_match = re.search(r"\{[\s\S]*\}", response_text)
         if obj_match:
             response_text = obj_match.group(0)
         try:
@@ -1019,11 +1091,14 @@ class CriticAgent:
                 user_prompt, system_prompt, trace_name=f"critic.{action_type.lower()}"
             )
             # Clean markdown fences
-            response_text = response_text.replace("```json", "").replace("```", "").strip()
+            response_text = (
+                response_text.replace("```json", "").replace("```", "").strip()
+            )
 
             # Extract JSON object
             import re
-            obj_match = re.search(r'\{[\s\S]*\}', response_text)
+
+            obj_match = re.search(r"\{[\s\S]*\}", response_text)
             if obj_match:
                 response_text = obj_match.group(0)
 
@@ -1039,7 +1114,7 @@ class CriticAgent:
             result = {
                 "score": 0,
                 "summary": "Critic output parsing error — manual review required",
-                "raw_output": response_text[:500] if 'response_text' in dir() else "",
+                "raw_output": response_text[:500] if "response_text" in dir() else "",
                 "flaws": ["Critic could not parse LLM output"],
                 "llm_parse_error": True,
             }
@@ -1087,7 +1162,9 @@ class CriticAgent:
                 },
             )
         except Exception as exc:
-            self.logger.warning("Critic vector store feedback failed (non-fatal): %s", exc)
+            self.logger.warning(
+                "Critic vector store feedback failed (non-fatal): %s", exc
+            )
 
 
 # Module-level singleton

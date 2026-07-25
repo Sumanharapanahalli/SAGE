@@ -23,7 +23,7 @@ Reference Standards:
 import logging
 import uuid
 from datetime import datetime, timezone
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 logger = logging.getLogger(__name__)
 
@@ -36,34 +36,66 @@ logger = logging.getLogger(__name__)
 ASIL_MATRIX = {
     # (severity, exposure, controllability) → ASIL
     # S0 = no injuries → always QM
-    ("S0", "E1", "C1"): "QM", ("S0", "E1", "C2"): "QM", ("S0", "E1", "C3"): "QM",
-    ("S0", "E2", "C1"): "QM", ("S0", "E2", "C2"): "QM", ("S0", "E2", "C3"): "QM",
-    ("S0", "E3", "C1"): "QM", ("S0", "E3", "C2"): "QM", ("S0", "E3", "C3"): "QM",
-    ("S0", "E4", "C1"): "QM", ("S0", "E4", "C2"): "QM", ("S0", "E4", "C3"): "QM",
+    ("S0", "E1", "C1"): "QM",
+    ("S0", "E1", "C2"): "QM",
+    ("S0", "E1", "C3"): "QM",
+    ("S0", "E2", "C1"): "QM",
+    ("S0", "E2", "C2"): "QM",
+    ("S0", "E2", "C3"): "QM",
+    ("S0", "E3", "C1"): "QM",
+    ("S0", "E3", "C2"): "QM",
+    ("S0", "E3", "C3"): "QM",
+    ("S0", "E4", "C1"): "QM",
+    ("S0", "E4", "C2"): "QM",
+    ("S0", "E4", "C3"): "QM",
     # S1 = light injuries
-    ("S1", "E1", "C1"): "QM", ("S1", "E1", "C2"): "QM", ("S1", "E1", "C3"): "QM",
-    ("S1", "E2", "C1"): "QM", ("S1", "E2", "C2"): "QM", ("S1", "E2", "C3"): "QM",
-    ("S1", "E3", "C1"): "QM", ("S1", "E3", "C2"): "QM", ("S1", "E3", "C3"): "A",
-    ("S1", "E4", "C1"): "QM", ("S1", "E4", "C2"): "A",  ("S1", "E4", "C3"): "B",
+    ("S1", "E1", "C1"): "QM",
+    ("S1", "E1", "C2"): "QM",
+    ("S1", "E1", "C3"): "QM",
+    ("S1", "E2", "C1"): "QM",
+    ("S1", "E2", "C2"): "QM",
+    ("S1", "E2", "C3"): "QM",
+    ("S1", "E3", "C1"): "QM",
+    ("S1", "E3", "C2"): "QM",
+    ("S1", "E3", "C3"): "A",
+    ("S1", "E4", "C1"): "QM",
+    ("S1", "E4", "C2"): "A",
+    ("S1", "E4", "C3"): "B",
     # S2 = severe injuries
-    ("S2", "E1", "C1"): "QM", ("S2", "E1", "C2"): "QM", ("S2", "E1", "C3"): "QM",
-    ("S2", "E2", "C1"): "QM", ("S2", "E2", "C2"): "QM", ("S2", "E2", "C3"): "A",
-    ("S2", "E3", "C1"): "QM", ("S2", "E3", "C2"): "A",  ("S2", "E3", "C3"): "B",
-    ("S2", "E4", "C1"): "A",  ("S2", "E4", "C2"): "B",  ("S2", "E4", "C3"): "C",
+    ("S2", "E1", "C1"): "QM",
+    ("S2", "E1", "C2"): "QM",
+    ("S2", "E1", "C3"): "QM",
+    ("S2", "E2", "C1"): "QM",
+    ("S2", "E2", "C2"): "QM",
+    ("S2", "E2", "C3"): "A",
+    ("S2", "E3", "C1"): "QM",
+    ("S2", "E3", "C2"): "A",
+    ("S2", "E3", "C3"): "B",
+    ("S2", "E4", "C1"): "A",
+    ("S2", "E4", "C2"): "B",
+    ("S2", "E4", "C3"): "C",
     # S3 = life-threatening / fatal
-    ("S3", "E1", "C1"): "QM", ("S3", "E1", "C2"): "QM", ("S3", "E1", "C3"): "A",
-    ("S3", "E2", "C1"): "QM", ("S3", "E2", "C2"): "A",  ("S3", "E2", "C3"): "B",
-    ("S3", "E3", "C1"): "A",  ("S3", "E3", "C2"): "B",  ("S3", "E3", "C3"): "C",
-    ("S3", "E4", "C1"): "B",  ("S3", "E4", "C2"): "C",  ("S3", "E4", "C3"): "D",
+    ("S3", "E1", "C1"): "QM",
+    ("S3", "E1", "C2"): "QM",
+    ("S3", "E1", "C3"): "A",
+    ("S3", "E2", "C1"): "QM",
+    ("S3", "E2", "C2"): "A",
+    ("S3", "E2", "C3"): "B",
+    ("S3", "E3", "C1"): "A",
+    ("S3", "E3", "C2"): "B",
+    ("S3", "E3", "C3"): "C",
+    ("S3", "E4", "C1"): "B",
+    ("S3", "E4", "C2"): "C",
+    ("S3", "E4", "C3"): "D",
 }
 
 # SIL ranges per IEC 61508 (continuous mode, per hour)
 SIL_RANGES = [
     # (max_pfh, sil_level)
-    (1e-8, 4),   # SIL 4: < 1e-8
-    (1e-7, 3),   # SIL 3: 1e-8 to 1e-7
-    (1e-6, 2),   # SIL 2: 1e-7 to 1e-6
-    (1e-5, 1),   # SIL 1: 1e-6 to 1e-5
+    (1e-8, 4),  # SIL 4: < 1e-8
+    (1e-7, 3),  # SIL 3: 1e-8 to 1e-7
+    (1e-6, 2),  # SIL 2: 1e-7 to 1e-6
+    (1e-5, 1),  # SIL 1: 1e-6 to 1e-5
 ]
 
 
@@ -101,7 +133,11 @@ class FunctionalSafetyEngine:
         Returns:
             Dict with RPN, risk level, and recommended action priority.
         """
-        for name, val in [("severity", severity), ("occurrence", occurrence), ("detection", detection)]:
+        for name, val in [
+            ("severity", severity),
+            ("occurrence", occurrence),
+            ("detection", detection),
+        ]:
             if not (1 <= val <= 10):
                 raise ValueError(f"{name} must be 1-10, got {val}")
 
@@ -133,14 +169,16 @@ class FunctionalSafetyEngine:
         """Generate complete FMEA table sorted by RPN descending."""
         computed = []
         for entry in entries:
-            computed.append(self.calculate_fmea_entry(
-                component=entry["component"],
-                failure_mode=entry["failure_mode"],
-                effect=entry["effect"],
-                severity=entry["severity"],
-                occurrence=entry["occurrence"],
-                detection=entry["detection"],
-            ))
+            computed.append(
+                self.calculate_fmea_entry(
+                    component=entry["component"],
+                    failure_mode=entry["failure_mode"],
+                    effect=entry["effect"],
+                    severity=entry["severity"],
+                    occurrence=entry["occurrence"],
+                    detection=entry["detection"],
+                )
+            )
 
         computed.sort(key=lambda e: e["rpn"], reverse=True)
 
@@ -189,7 +227,9 @@ class FunctionalSafetyEngine:
             return node["probability"]
 
         gate = node.get("gate", "OR")
-        children_probs = [self._compute_gate_probability(c) for c in node.get("children", [])]
+        children_probs = [
+            self._compute_gate_probability(c) for c in node.get("children", [])
+        ]
 
         if not children_probs:
             return 0.0
@@ -202,7 +242,7 @@ class FunctionalSafetyEngine:
         else:  # OR
             result = 1.0
             for p in children_probs:
-                result *= (1.0 - p)
+                result *= 1.0 - p
             return 1.0 - result
 
     def _compute_minimal_cut_sets(self, node: Dict) -> List[List[str]]:
@@ -211,7 +251,9 @@ class FunctionalSafetyEngine:
             return [[node["event"]]]
 
         gate = node.get("gate", "OR")
-        children_cuts = [self._compute_minimal_cut_sets(c) for c in node.get("children", [])]
+        children_cuts = [
+            self._compute_minimal_cut_sets(c) for c in node.get("children", [])
+        ]
 
         if not children_cuts:
             return []
@@ -334,12 +376,31 @@ class FunctionalSafetyEngine:
 
         class_requirements = {
             "A": ["development_plan", "requirements", "release", "maintenance"],
-            "B": ["development_plan", "requirements", "architecture", "architecture_verification",
-                   "integration_testing", "system_testing", "release", "maintenance"],
-            "C": ["development_plan", "requirements", "architecture", "architecture_verification",
-                   "detailed_design", "unit_implementation", "unit_verification",
-                   "integration_testing", "system_testing", "release", "maintenance",
-                   "code_review", "full_traceability"],
+            "B": [
+                "development_plan",
+                "requirements",
+                "architecture",
+                "architecture_verification",
+                "integration_testing",
+                "system_testing",
+                "release",
+                "maintenance",
+            ],
+            "C": [
+                "development_plan",
+                "requirements",
+                "architecture",
+                "architecture_verification",
+                "detailed_design",
+                "unit_implementation",
+                "unit_verification",
+                "integration_testing",
+                "system_testing",
+                "release",
+                "maintenance",
+                "code_review",
+                "full_traceability",
+            ],
         }
 
         return {
@@ -363,37 +424,43 @@ class FunctionalSafetyEngine:
         reqs = []
 
         # Detection requirement
-        reqs.append({
-            "id": f"SR-{hazard_id}-DET",
-            "description": f"The system shall detect the condition: {description}",
-            "type": "detection",
-            "asil": asil,
-            "iec62304_class": safety_class,
-            "traces_to": hazard_id,
-            "verification_method": "test",
-        })
+        reqs.append(
+            {
+                "id": f"SR-{hazard_id}-DET",
+                "description": f"The system shall detect the condition: {description}",
+                "type": "detection",
+                "asil": asil,
+                "iec62304_class": safety_class,
+                "traces_to": hazard_id,
+                "verification_method": "test",
+            }
+        )
 
         # Mitigation requirement
-        reqs.append({
-            "id": f"SR-{hazard_id}-MIT",
-            "description": f"The system shall mitigate the hazard: {description} within safe operating limits",
-            "type": "mitigation",
-            "asil": asil,
-            "iec62304_class": safety_class,
-            "traces_to": hazard_id,
-            "verification_method": "test",
-        })
+        reqs.append(
+            {
+                "id": f"SR-{hazard_id}-MIT",
+                "description": f"The system shall mitigate the hazard: {description} within safe operating limits",
+                "type": "mitigation",
+                "asil": asil,
+                "iec62304_class": safety_class,
+                "traces_to": hazard_id,
+                "verification_method": "test",
+            }
+        )
 
         # Notification requirement
-        reqs.append({
-            "id": f"SR-{hazard_id}-NOT",
-            "description": f"The system shall alert the operator when: {description} is detected",
-            "type": "notification",
-            "asil": asil,
-            "iec62304_class": safety_class,
-            "traces_to": hazard_id,
-            "verification_method": "demonstration",
-        })
+        reqs.append(
+            {
+                "id": f"SR-{hazard_id}-NOT",
+                "description": f"The system shall alert the operator when: {description} is detected",
+                "type": "notification",
+                "asil": asil,
+                "iec62304_class": safety_class,
+                "traces_to": hazard_id,
+                "verification_method": "demonstration",
+            }
+        )
 
         return reqs
 
@@ -423,11 +490,13 @@ class FunctionalSafetyEngine:
                 exposure=hazard.get("exposure", "E4"),
                 controllability=hazard.get("controllability", "C3"),
             )
-            asil_results.append({
-                "hazard_id": hazard["id"],
-                "hazard_description": hazard["description"],
-                **asil_result,
-            })
+            asil_results.append(
+                {
+                    "hazard_id": hazard["id"],
+                    "hazard_description": hazard["description"],
+                    **asil_result,
+                }
+            )
             if asil_order.get(asil_result["asil"], 0) > asil_order.get(max_asil, 0):
                 max_asil = asil_result["asil"]
 
@@ -435,11 +504,13 @@ class FunctionalSafetyEngine:
         fmea_table = self.generate_fmea_table(fmea_entries)
 
         # 3. IEC 62304 class (worst case from hazards)
-        worst_risk = "death_possible" if any(
-            h.get("severity") == "S3" for h in hazards
-        ) else "injury_possible" if any(
-            h.get("severity") == "S2" for h in hazards
-        ) else "no_injury"
+        worst_risk = (
+            "death_possible"
+            if any(h.get("severity") == "S3" for h in hazards)
+            else "injury_possible"
+            if any(h.get("severity") == "S2" for h in hazards)
+            else "no_injury"
+        )
 
         iec62304 = self.classify_iec62304(worst_risk)
 
@@ -450,7 +521,7 @@ class FunctionalSafetyEngine:
                 **hazard,
                 "asil": next(
                     (a["asil"] for a in asil_results if a["hazard_id"] == hazard["id"]),
-                    max_asil
+                    max_asil,
                 ),
                 "iec62304_class": iec62304["safety_class"],
             }

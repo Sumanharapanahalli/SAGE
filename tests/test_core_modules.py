@@ -8,9 +8,7 @@ Functional and edge-case tests for previously untested core modules:
 """
 
 import hashlib
-import os
 import sqlite3
-import tempfile
 
 import pytest
 
@@ -19,17 +17,20 @@ import pytest
 # DB MODULE
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestDBModule:
     """Tests for src.core.db.get_connection."""
 
     def test_returns_connection(self, tmp_path):
         from src.core.db import get_connection
+
         conn = get_connection(str(tmp_path / "test.db"), row_factory=None)
         assert conn is not None
         conn.close()
 
     def test_wal_mode_enabled(self, tmp_path):
         from src.core.db import get_connection
+
         db = str(tmp_path / "wal_test.db")
         conn = get_connection(db, row_factory=None)
         mode = conn.execute("PRAGMA journal_mode").fetchone()[0]
@@ -38,6 +39,7 @@ class TestDBModule:
 
     def test_row_factory_default(self, tmp_path):
         from src.core.db import get_connection
+
         db = str(tmp_path / "row.db")
         conn = get_connection(db)  # default row_factory = sqlite3.Row
         conn.execute("CREATE TABLE t (id INTEGER, name TEXT)")
@@ -50,6 +52,7 @@ class TestDBModule:
 
     def test_row_factory_none(self, tmp_path):
         from src.core.db import get_connection
+
         db = str(tmp_path / "tuple.db")
         conn = get_connection(db, row_factory=None)
         conn.execute("CREATE TABLE t (id INTEGER)")
@@ -61,6 +64,7 @@ class TestDBModule:
 
     def test_busy_timeout_set(self, tmp_path):
         from src.core.db import get_connection
+
         db = str(tmp_path / "busy.db")
         conn = get_connection(db, busy_timeout_ms=10000, row_factory=None)
         timeout = conn.execute("PRAGMA busy_timeout").fetchone()[0]
@@ -72,11 +76,13 @@ class TestDBModule:
 # PII FILTER
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestPIIFilter:
     """Tests for src.core.pii_filter."""
 
     def test_disabled_returns_unchanged(self):
         from src.core.pii_filter import scrub_text
+
         text = "My email is test@example.com"
         result, detected = scrub_text(text, {"pii": {"enabled": False}})
         assert result == text
@@ -84,6 +90,7 @@ class TestPIIFilter:
 
     def test_no_pii_config_returns_unchanged(self):
         from src.core.pii_filter import scrub_text
+
         text = "My email is test@example.com"
         result, detected = scrub_text(text, {})
         assert result == text
@@ -91,60 +98,71 @@ class TestPIIFilter:
 
     def test_detect_email_regex(self):
         from src.core.pii_filter import scrub_text
+
         text = "Contact me at user@domain.org for details"
-        result, detected = scrub_text(text, {
-            "pii": {"enabled": True, "mode": "redact", "redaction_char": "[REDACTED]"}
-        })
+        result, detected = scrub_text(
+            text,
+            {
+                "pii": {
+                    "enabled": True,
+                    "mode": "redact",
+                    "redaction_char": "[REDACTED]",
+                }
+            },
+        )
         assert "EMAIL_ADDRESS" in detected
         assert "user@domain.org" not in result
         assert "[REDACTED]" in result
 
     def test_detect_ssn_regex(self):
         from src.core.pii_filter import scrub_text
+
         # SSN pattern also matches PHONE_NUMBER regex (7-15 digits),
         # so both may be detected. Verify the number is redacted.
         text = "SSN is 123-45-6789"
-        result, detected = scrub_text(text, {
-            "pii": {"enabled": True, "mode": "redact"}
-        })
+        result, detected = scrub_text(
+            text, {"pii": {"enabled": True, "mode": "redact"}}
+        )
         # At least one PII entity detected and the number is redacted
         assert len(detected) >= 1
         assert "123-45-6789" not in result
 
     def test_flag_only_mode(self):
         from src.core.pii_filter import scrub_text
+
         text = "Email: test@example.com"
-        result, detected = scrub_text(text, {
-            "pii": {"enabled": True, "mode": "flag_only"}
-        })
+        result, detected = scrub_text(
+            text, {"pii": {"enabled": True, "mode": "flag_only"}}
+        )
         assert "EMAIL_ADDRESS" in detected
         # flag_only should NOT redact
         assert "test@example.com" in result
 
     def test_mask_mode(self):
         from src.core.pii_filter import scrub_text
+
         text = "Call me at test@example.com"
-        result, detected = scrub_text(text, {
-            "pii": {"enabled": True, "mode": "mask"}
-        })
+        result, detected = scrub_text(text, {"pii": {"enabled": True, "mode": "mask"}})
         assert "EMAIL_ADDRESS" in detected
         assert "[EMAIL_ADDRESS]" in result
 
     def test_no_pii_in_text(self):
         from src.core.pii_filter import scrub_text
+
         text = "This is a normal sentence with no personal data"
-        result, detected = scrub_text(text, {
-            "pii": {"enabled": True, "mode": "redact"}
-        })
+        result, detected = scrub_text(
+            text, {"pii": {"enabled": True, "mode": "redact"}}
+        )
         assert detected == []
         assert result == text
 
     def test_multiple_pii_types(self):
         from src.core.pii_filter import scrub_text
+
         text = "Email: a@b.com, SSN: 123-45-6789"
-        result, detected = scrub_text(text, {
-            "pii": {"enabled": True, "mode": "redact", "redaction_char": "***"}
-        })
+        result, detected = scrub_text(
+            text, {"pii": {"enabled": True, "mode": "redact", "redaction_char": "***"}}
+        )
         assert "EMAIL_ADDRESS" in detected
         # SSN overlaps with PHONE_NUMBER regex, at least one detects the number
         assert len(detected) >= 2
@@ -153,29 +171,37 @@ class TestPIIFilter:
 
     def test_custom_entity_filter(self):
         from src.core.pii_filter import scrub_text
+
         text = "Email: a@b.com, SSN: 123-45-6789"
         # Only detect EMAIL, not SSN
-        result, detected = scrub_text(text, {
-            "pii": {"enabled": True, "mode": "redact", "entities": ["EMAIL_ADDRESS"]}
-        })
+        result, detected = scrub_text(
+            text,
+            {"pii": {"enabled": True, "mode": "redact", "entities": ["EMAIL_ADDRESS"]}},
+        )
         assert "EMAIL_ADDRESS" in detected
         assert "US_SSN" not in detected
         assert "123-45-6789" in result  # SSN not redacted
 
     def test_data_residency_allowed(self):
         from src.core.pii_filter import check_data_residency
-        assert check_data_residency("ollama", {"pii": {"data_residency": ["local"]}}) is True
+
+        assert (
+            check_data_residency("ollama", {"pii": {"data_residency": ["local"]}})
+            is True
+        )
 
     def test_data_residency_blocked(self):
         from src.core.pii_filter import check_data_residency
+
         # EU region only allows eu_providers (ollama, local by default)
-        result = check_data_residency("openai", {
-            "data_residency": {"enabled": True, "region": "eu"}
-        })
+        result = check_data_residency(
+            "openai", {"data_residency": {"enabled": True, "region": "eu"}}
+        )
         assert result is False
 
     def test_data_residency_no_config(self):
         from src.core.pii_filter import check_data_residency
+
         assert check_data_residency("anything", {}) is True
 
 
@@ -183,39 +209,46 @@ class TestPIIFilter:
 # COST TRACKER
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestCostTracker:
     """Tests for src.core.cost_tracker."""
 
     def test_estimate_cost_known_model(self):
         from src.core.cost_tracker import _estimate_cost
+
         # claude-opus-4-6: input=0.015/1K, output=0.075/1K
         cost = _estimate_cost("claude-opus-4-6", 1000, 1000)
         assert cost == pytest.approx(0.015 + 0.075, abs=0.001)
 
     def test_estimate_cost_free_model(self):
         from src.core.cost_tracker import _estimate_cost
+
         cost = _estimate_cost("ollama", 10000, 5000)
         assert cost == 0.0
 
     def test_estimate_cost_unknown_model_uses_default(self):
         from src.core.cost_tracker import _estimate_cost
+
         cost = _estimate_cost("unknown-model-xyz", 1000, 1000)
         # default: input=0.002/1K, output=0.008/1K
         assert cost == pytest.approx(0.002 + 0.008, abs=0.001)
 
     def test_estimate_cost_prefix_match(self):
         from src.core.cost_tracker import _estimate_cost
+
         # "claude-sonnet" should prefix-match "claude-sonnet-4-6"
         cost = _estimate_cost("claude-sonnet-4-6", 1000, 0)
         assert cost > 0
 
     def test_estimate_cost_zero_tokens(self):
         from src.core.cost_tracker import _estimate_cost
+
         cost = _estimate_cost("claude-opus-4-6", 0, 0)
         assert cost == 0.0
 
     def test_estimate_cost_provider_prefix_stripped(self):
         from src.core.cost_tracker import _estimate_cost
+
         # "ollama/llama3.2" should strip to "llama3.2" then fall back to default
         cost = _estimate_cost("ollama/llama3.2", 1000, 1000)
         assert cost >= 0
@@ -224,6 +257,7 @@ class TestCostTracker:
 # ═══════════════════════════════════════════════════════════════════════
 # API KEYS
 # ═══════════════════════════════════════════════════════════════════════
+
 
 class TestAPIKeys:
     """Tests for src.core.api_keys."""
@@ -236,13 +270,17 @@ class TestAPIKeys:
 
     def test_create_key_format(self):
         from src.core.api_keys import create_api_key
-        plain_key, key_id = create_api_key("Test Key", "test@example.com", "medtech", "developer")
+
+        plain_key, key_id = create_api_key(
+            "Test Key", "test@example.com", "medtech", "developer"
+        )
         assert plain_key.startswith("sk-sage-")
         assert len(plain_key) == 8 + 64  # prefix + 32 hex bytes
         assert len(key_id) == 36  # UUID
 
     def test_verify_valid_key(self):
         from src.core.api_keys import create_api_key, verify_api_key
+
         plain_key, _ = create_api_key("Valid", "v@test.com", "medtech", "admin")
         identity = verify_api_key(plain_key)
         assert identity is not None
@@ -252,31 +290,44 @@ class TestAPIKeys:
 
     def test_verify_invalid_key_returns_none(self):
         from src.core.api_keys import verify_api_key
-        assert verify_api_key("sk-sage-invalidkeythatdoesnotexist1234567890abcdef1234567890abcdef") is None
+
+        assert (
+            verify_api_key(
+                "sk-sage-invalidkeythatdoesnotexist1234567890abcdef1234567890abcdef"
+            )
+            is None
+        )
 
     def test_verify_wrong_prefix_returns_none(self):
         from src.core.api_keys import verify_api_key
+
         assert verify_api_key("not-a-real-key") is None
 
     def test_revoke_key(self):
         from src.core.api_keys import create_api_key, verify_api_key, revoke_api_key
-        plain_key, key_id = create_api_key("Revokable", "r@test.com", "medtech", "viewer")
+
+        plain_key, key_id = create_api_key(
+            "Revokable", "r@test.com", "medtech", "viewer"
+        )
         assert verify_api_key(plain_key) is not None
         assert revoke_api_key(key_id, "admin") is True
         assert verify_api_key(plain_key) is None  # revoked
 
     def test_revoke_nonexistent_key(self):
         from src.core.api_keys import revoke_api_key
+
         assert revoke_api_key("nonexistent-id", "admin") is False
 
     def test_revoke_already_revoked(self):
         from src.core.api_keys import create_api_key, revoke_api_key
+
         _, key_id = create_api_key("Double", "d@test.com", "medtech", "viewer")
         assert revoke_api_key(key_id, "admin") is True
         assert revoke_api_key(key_id, "admin") is False  # already revoked
 
     def test_list_keys(self):
         from src.core.api_keys import create_api_key, list_api_keys
+
         create_api_key("Key1", "a@test.com", "medtech", "dev")
         create_api_key("Key2", "b@test.com", "medtech", "admin")
         create_api_key("Key3", "c@test.com", "other_solution", "dev")
@@ -288,13 +339,17 @@ class TestAPIKeys:
 
     def test_list_empty_solution(self):
         from src.core.api_keys import list_api_keys
+
         assert list_api_keys("nonexistent") == []
 
     def test_key_hash_stored_not_plain(self):
         from src.core.api_keys import create_api_key, _db_path
+
         plain_key, key_id = create_api_key("Hash", "h@test.com", "medtech", "dev")
         conn = sqlite3.connect(_db_path())
-        row = conn.execute("SELECT key_hash FROM api_keys WHERE id=?", (key_id,)).fetchone()
+        row = conn.execute(
+            "SELECT key_hash FROM api_keys WHERE id=?", (key_id,)
+        ).fetchone()
         conn.close()
         assert row is not None
         assert row[0] == hashlib.sha256(plain_key.encode()).hexdigest()
@@ -305,12 +360,14 @@ class TestAPIKeys:
 # EDGE CASES — TRACEABILITY
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestTraceabilityEdgeCases:
     """Edge cases for traceability matrix."""
 
     @pytest.fixture(autouse=True)
     def setup(self, tmp_path):
         from src.core.traceability import TraceabilityMatrix, TraceLevel
+
         self.tm = TraceabilityMatrix(db_path=str(tmp_path / "edge.db"))
         self.TL = TraceLevel
 
@@ -323,7 +380,7 @@ class TestTraceabilityEdgeCases:
         item = self.tm.add_item(level=self.TL.SYSTEM_REQ, title="Real")
         # SQLite foreign key enforcement depends on PRAGMA; link may succeed
         # but forward_links should return empty for nonexistent target
-        link = self.tm.add_link(item.id, "NONEXISTENT", link_type="derives")
+        self.tm.add_link(item.id, "NONEXISTENT", link_type="derives")
         forward = self.tm.get_forward_links(item.id)
         # The join won't find the target item, so result is empty
         assert len(forward) == 0
@@ -343,6 +400,7 @@ class TestTraceabilityEdgeCases:
 
     def test_all_trace_levels_valid(self):
         from src.core.traceability import TraceLevel
+
         for level in TraceLevel:
             item = self.tm.add_item(level=level, title=f"Test {level.value}")
             assert item.level == level
@@ -362,12 +420,14 @@ class TestTraceabilityEdgeCases:
 # EDGE CASES — AUDIT INTEGRITY
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestAuditIntegrityEdgeCases:
     """Edge cases for HMAC hash chain."""
 
     @pytest.fixture(autouse=True)
     def setup(self, tmp_path):
         from src.core.audit_integrity import AuditIntegrityManager
+
         self.mgr = AuditIntegrityManager(db_path=str(tmp_path / "edge_audit.db"))
 
     def test_large_event_data(self):
@@ -378,7 +438,7 @@ class TestAuditIntegrityEdgeCases:
         assert self.mgr.verify_chain()["valid"]
 
     def test_unicode_in_event_data(self):
-        entry = self.mgr.append_entry("EVT-UNI", {"text": "Hello"})
+        self.mgr.append_entry("EVT-UNI", {"text": "Hello"})
         assert self.mgr.verify_chain()["valid"]
 
     def test_empty_event_data(self):
@@ -396,16 +456,17 @@ class TestAuditIntegrityEdgeCases:
 # EDGE CASES — CHANGE CONTROL
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestChangeControlEdgeCases:
     """Edge cases for change control workflow."""
 
     @pytest.fixture(autouse=True)
     def setup(self, tmp_path):
         from src.core.change_control import ChangeControlManager
+
         self.ccm = ChangeControlManager(db_path=str(tmp_path / "edge_cc.db"))
 
     def test_invalid_status_transition(self):
-        from src.core.change_control import ChangeStatus
         cr = self.ccm.create_request("X", "desc", "corrective", "high", "dev")
         with pytest.raises(ValueError):
             self.ccm.update_status(cr["id"], "not_a_valid_status", "dev")
@@ -420,7 +481,9 @@ class TestChangeControlEdgeCases:
         cr = self.ccm.create_request("X", "desc", "corrective", "high", "dev")
         self.ccm.add_approval(cr["id"], "qa", "QA", "approved")
         self.ccm.add_approval(cr["id"], "mgr", "Manager", "approved")
-        self.ccm.add_approval(cr["id"], "reg", "Regulatory", "needs_info", "Need more data")
+        self.ccm.add_approval(
+            cr["id"], "reg", "Regulatory", "needs_info", "Need more data"
+        )
         fetched = self.ccm.get_request(cr["id"])
         assert len(fetched["approvals"]) == 3
 
@@ -435,14 +498,20 @@ class TestChangeControlEdgeCases:
 
     def test_all_categories_valid(self):
         from src.core.change_control import ChangeCategory
+
         for cat in ChangeCategory:
-            cr = self.ccm.create_request(f"Cat {cat.value}", "desc", cat.value, "low", "dev")
+            cr = self.ccm.create_request(
+                f"Cat {cat.value}", "desc", cat.value, "low", "dev"
+            )
             assert cr["id"].startswith("CR-")
 
     def test_all_priorities_valid(self):
         from src.core.change_control import ChangePriority
+
         for pri in ChangePriority:
-            cr = self.ccm.create_request(f"Pri {pri.value}", "desc", "corrective", pri.value, "dev")
+            cr = self.ccm.create_request(
+                f"Pri {pri.value}", "desc", "corrective", pri.value, "dev"
+            )
             assert cr["id"].startswith("CR-")
 
 
@@ -450,12 +519,14 @@ class TestChangeControlEdgeCases:
 # EDGE CASES — DOCUMENT GENERATOR
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestDocGeneratorEdgeCases:
     """Edge cases for document generation."""
 
     @pytest.fixture(autouse=True)
     def setup(self):
         from src.core.doc_generator import DocumentGenerator
+
         self.gen = DocumentGenerator(project_name="edge_test")
 
     def test_srs_empty_requirements(self):
@@ -493,12 +564,24 @@ class TestDocGeneratorEdgeCases:
 
     def test_risk_high_risk_section(self):
         risks = [
-            {"id": "R1", "hazard": "Fire", "severity": "HIGH",
-             "probability": "LOW", "risk_level": "HIGH",
-             "mitigation": "Extinguisher", "residual_risk": "LOW"},
-            {"id": "R2", "hazard": "Scratch", "severity": "LOW",
-             "probability": "HIGH", "risk_level": "LOW",
-             "mitigation": "", "residual_risk": "LOW"},
+            {
+                "id": "R1",
+                "hazard": "Fire",
+                "severity": "HIGH",
+                "probability": "LOW",
+                "risk_level": "HIGH",
+                "mitigation": "Extinguisher",
+                "residual_risk": "LOW",
+            },
+            {
+                "id": "R2",
+                "hazard": "Scratch",
+                "severity": "LOW",
+                "probability": "HIGH",
+                "risk_level": "LOW",
+                "mitigation": "",
+                "residual_risk": "LOW",
+            },
         ]
         doc = self.gen.generate_risk_management(risks)
         assert "High/Critical Risks" in doc
@@ -509,12 +592,14 @@ class TestDocGeneratorEdgeCases:
 # EDGE CASES — COMPLIANCE VERIFIER
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestComplianceVerifierEdgeCases:
     """Edge cases for compliance verification."""
 
     @pytest.fixture(autouse=True)
     def setup(self):
         from src.core.compliance_verifier import ComplianceVerifier
+
         self.v = ComplianceVerifier()
 
     def test_verify_unknown_standard_ignored(self):
@@ -527,20 +612,24 @@ class TestComplianceVerifierEdgeCases:
         assert "fake_standard" not in result["per_standard"]
 
     def test_requirements_without_acceptance_criteria(self):
-        results = self.v.verify_iec62304({
-            "requirements": [{"id": "R1"}]  # no acceptance_criteria key
-        })
+        results = self.v.verify_iec62304(
+            {
+                "requirements": [{"id": "R1"}]  # no acceptance_criteria key
+            }
+        )
         req_check = next(r for r in results if r["check_id"] == "IEC62304-5.2")
         assert not req_check["passed"]
 
     def test_partial_trace_coverage(self):
         """50% traced should fail the >50% threshold."""
-        results = self.v.verify_iec62304({
-            "trace_data": [
-                {"id": "A", "traces_to": [{"target_id": "B"}], "traced_from": []},
-                {"id": "B", "traces_to": [], "traced_from": []},  # orphan
-            ]
-        })
+        results = self.v.verify_iec62304(
+            {
+                "trace_data": [
+                    {"id": "A", "traces_to": [{"target_id": "B"}], "traced_from": []},
+                    {"id": "B", "traces_to": [], "traced_from": []},  # orphan
+                ]
+            }
+        )
         trace_check = next(r for r in results if r["check_id"] == "IEC62304-5.1.1")
         assert not trace_check["passed"]  # 1/2 = 50%, threshold is >50% so this fails
 

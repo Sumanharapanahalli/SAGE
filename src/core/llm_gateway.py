@@ -35,6 +35,7 @@ try:
 except Exception:
     project_config = None  # type: ignore[assignment]
 
+
 def _init_langfuse(cfg: dict[str, Any]) -> None:
     """Initialise Langfuse if enabled and credentials are available."""
     global _langfuse_client
@@ -43,7 +44,7 @@ def _init_langfuse(cfg: dict[str, Any]) -> None:
         return
     pub_key = os.environ.get("LANGFUSE_PUBLIC_KEY", obs.get("langfuse_public_key", ""))
     sec_key = os.environ.get("LANGFUSE_SECRET_KEY", obs.get("langfuse_secret_key", ""))
-    host    = obs.get("langfuse_host", "https://cloud.langfuse.com")
+    host = obs.get("langfuse_host", "https://cloud.langfuse.com")
     if not pub_key or not sec_key:
         logging.getLogger("LLMGateway").warning(
             "Langfuse enabled in config but LANGFUSE_PUBLIC_KEY / LANGFUSE_SECRET_KEY "
@@ -52,17 +53,22 @@ def _init_langfuse(cfg: dict[str, Any]) -> None:
         return
     try:
         from langfuse import Langfuse
+
         _langfuse_client = Langfuse(public_key=pub_key, secret_key=sec_key, host=host)
-        logging.getLogger("LLMGateway").info("Langfuse observability active (host: %s)", host)
+        logging.getLogger("LLMGateway").info(
+            "Langfuse observability active (host: %s)", host
+        )
     except ImportError:
         logging.getLogger("LLMGateway").warning(
             "langfuse package not installed — observability disabled. "
             "Install with: pip install langfuse"
         )
 
+
 CONFIG_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-    "config", "config.yaml"
+    "config",
+    "config.yaml",
 )
 
 
@@ -85,31 +91,31 @@ def _load_config() -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 _MODEL_LIMITS: dict[str, dict[str, int]] = {
     # Gemini (Google free tier)
-    "gemini-3.5-flash":         {"daily_requests": 500,  "context_tokens": 1_048_576},
-    "gemini-3.1-flash-lite":  {"daily_requests": 1500, "context_tokens": 1_048_576},
-    "gemini-2.5-flash":       {"daily_requests": 500,  "context_tokens": 1_048_576},
-    "gemini-2.5-pro":         {"daily_requests": 25,   "context_tokens": 1_048_576},
-    "gemini-2.0-flash":       {"daily_requests": 1500, "context_tokens": 1_048_576},
+    "gemini-3.5-flash": {"daily_requests": 500, "context_tokens": 1_048_576},
+    "gemini-3.1-flash-lite": {"daily_requests": 1500, "context_tokens": 1_048_576},
+    "gemini-2.5-flash": {"daily_requests": 500, "context_tokens": 1_048_576},
+    "gemini-2.5-pro": {"daily_requests": 25, "context_tokens": 1_048_576},
+    "gemini-2.0-flash": {"daily_requests": 1500, "context_tokens": 1_048_576},
     # Claude (via Claude Code CLI or Anthropic API — no hard daily limit, track calls)
-    "claude-sonnet-4-5":          {"daily_requests": 0, "context_tokens": 200_000},
-    "claude-sonnet-4-6":          {"daily_requests": 0, "context_tokens": 200_000},
-    "claude-opus-4-5":            {"daily_requests": 0, "context_tokens": 200_000},
-    "claude-haiku-4-5":           {"daily_requests": 0, "context_tokens": 200_000},
+    "claude-sonnet-4-5": {"daily_requests": 0, "context_tokens": 200_000},
+    "claude-sonnet-4-6": {"daily_requests": 0, "context_tokens": 200_000},
+    "claude-opus-4-5": {"daily_requests": 0, "context_tokens": 200_000},
+    "claude-haiku-4-5": {"daily_requests": 0, "context_tokens": 200_000},
     "claude-3-5-sonnet-20241022": {"daily_requests": 0, "context_tokens": 200_000},
-    "claude-3-haiku-20240307":    {"daily_requests": 0, "context_tokens": 200_000},
+    "claude-3-haiku-20240307": {"daily_requests": 0, "context_tokens": 200_000},
     # Local (unlimited)
-    "local":                  {"daily_requests": 0,    "context_tokens": 2048},
+    "local": {"daily_requests": 0, "context_tokens": 2048},
     # Ollama local models (unlimited — runs on your hardware)
-    "llama3.2":               {"daily_requests": 0,    "context_tokens": 128_000},
-    "llama3.1":               {"daily_requests": 0,    "context_tokens": 128_000},
-    "llama3":                 {"daily_requests": 0,    "context_tokens": 8_192},
-    "mistral":                {"daily_requests": 0,    "context_tokens": 32_768},
-    "phi3":                   {"daily_requests": 0,    "context_tokens": 128_000},
-    "qwen2.5":                {"daily_requests": 0,    "context_tokens": 128_000},
-    "deepseek-r1":            {"daily_requests": 0,    "context_tokens": 64_000},
-    "codellama":              {"daily_requests": 0,    "context_tokens": 16_384},
+    "llama3.2": {"daily_requests": 0, "context_tokens": 128_000},
+    "llama3.1": {"daily_requests": 0, "context_tokens": 128_000},
+    "llama3": {"daily_requests": 0, "context_tokens": 8_192},
+    "mistral": {"daily_requests": 0, "context_tokens": 32_768},
+    "phi3": {"daily_requests": 0, "context_tokens": 128_000},
+    "qwen2.5": {"daily_requests": 0, "context_tokens": 128_000},
+    "deepseek-r1": {"daily_requests": 0, "context_tokens": 64_000},
+    "codellama": {"daily_requests": 0, "context_tokens": 16_384},
     # Generic CLI (unlimited — provider-defined)
-    "generic":                {"daily_requests": 0,    "context_tokens": 8_192},
+    "generic": {"daily_requests": 0, "context_tokens": 8_192},
 }
 
 
@@ -141,7 +147,11 @@ class GeminiCLIProvider(LLMProvider):
         self.model = config.get("gemini_model", "gemini-3.5-flash")
         self.timeout = config.get("gemini_timeout", config.get("timeout", 120))
         self.gemini_path = self._find_gemini()
-        self.logger.info("Gemini CLI provider ready (model: %s, path: %s)", self.model, self.gemini_path)
+        self.logger.info(
+            "Gemini CLI provider ready (model: %s, path: %s)",
+            self.model,
+            self.gemini_path,
+        )
 
     def _find_gemini(self) -> str | None:
         """Locate the gemini CLI executable."""
@@ -164,7 +174,9 @@ class GeminiCLIProvider(LLMProvider):
         if npx:
             return "__npx__"  # Sentinel: use npx invocation
 
-        self.logger.warning("Gemini CLI not found. Install with: npm install -g @google/gemini-cli")
+        self.logger.warning(
+            "Gemini CLI not found. Install with: npm install -g @google/gemini-cli"
+        )
         return None
 
     def provider_name(self) -> str:
@@ -215,19 +227,28 @@ class GeminiCLIProvider(LLMProvider):
                 encoding="utf-8",
                 errors="replace",
                 env=env,
-                cwd=os.path.expanduser("~"),  # avoid picking up CLAUDE.md/GEMINI.md from project dir
+                cwd=os.path.expanduser(
+                    "~"
+                ),  # avoid picking up CLAUDE.md/GEMINI.md from project dir
             )
 
             if result.returncode != 0:
                 err = result.stderr.strip() if result.stderr else "Unknown error"
-                self.logger.error("Gemini CLI error (rc=%d): %s", result.returncode, err)
+                self.logger.error(
+                    "Gemini CLI error (rc=%d): %s", result.returncode, err
+                )
                 return "Error from Gemini CLI: " + err
 
             output = result.stdout.strip()
             # Filter out non-content lines (hook registry messages, etc.)
-            lines = output.split('\n')
-            filtered = [l for l in lines if not l.startswith("Loaded cached") and not l.startswith("Hook registry")]
-            output = '\n'.join(filtered).strip()
+            lines = output.split("\n")
+            filtered = [
+                l
+                for l in lines  # noqa: E741
+                if not l.startswith("Loaded cached")
+                and not l.startswith("Hook registry")
+            ]
+            output = "\n".join(filtered).strip()
 
             return output if output else "Error: Gemini CLI returned empty output."
 
@@ -293,9 +314,18 @@ class LocalLlamaProvider(LLMProvider):
         AST_OPEN = "<" + "|assistant|" + ">"
 
         full_prompt = (
-            SYS_OPEN + "\n" + system_prompt + SYS_CLOSE + "\n"
-            + USR_OPEN + "\n" + prompt + USR_CLOSE + "\n"
-            + AST_OPEN + "\n"
+            SYS_OPEN
+            + "\n"
+            + system_prompt
+            + SYS_CLOSE
+            + "\n"
+            + USR_OPEN
+            + "\n"
+            + prompt
+            + USR_CLOSE
+            + "\n"
+            + AST_OPEN
+            + "\n"
         )
 
         output = self._model(
@@ -335,14 +365,18 @@ class ClaudeCodeCLIProvider(LLMProvider):
             self.claude_path = explicit_path
         else:
             self.claude_path = self._find_claude()
-        self.logger.info("Claude Code CLI provider ready (model: %s, path: %s)", self.model, self.claude_path)
+        self.logger.info(
+            "Claude Code CLI provider ready (model: %s, path: %s)",
+            self.model,
+            self.claude_path,
+        )
 
     def _find_claude(self) -> str | None:
         import shutil
+
         # 1. Well-known install location (Windows Claude Code default)
         known = os.path.join(
-            os.environ.get("USERPROFILE", ""),
-            ".local", "bin", "claude.exe"
+            os.environ.get("USERPROFILE", ""), ".local", "bin", "claude.exe"
         )
         if os.path.exists(known):
             return known
@@ -368,9 +402,11 @@ class ClaudeCodeCLIProvider(LLMProvider):
 
         combined = (
             "SYSTEM INSTRUCTION (follow strictly):\n"
-            + system_prompt + "\n\n"
+            + system_prompt
+            + "\n\n"
             + "USER REQUEST:\n"
-            + prompt + "\n"
+            + prompt
+            + "\n"
         )
 
         env = os.environ.copy()
@@ -402,7 +438,9 @@ class ClaudeCodeCLIProvider(LLMProvider):
             )
             if result.returncode != 0:
                 err = result.stderr.strip() if result.stderr else "Unknown error"
-                self.logger.error("Claude Code CLI error (rc=%d): %s", result.returncode, err)
+                self.logger.error(
+                    "Claude Code CLI error (rc=%d): %s", result.returncode, err
+                )
                 return "Error from Claude Code CLI: " + err
             output = result.stdout.strip()
             return output if output else "Error: Claude Code CLI returned empty output."
@@ -431,17 +469,22 @@ class ClaudeAPIProvider(LLMProvider):
         self.timeout = config.get("timeout", 120)
         self._client = None
 
-        api_key = os.environ.get("ANTHROPIC_API_KEY", config.get("anthropic_api_key", ""))
+        api_key = os.environ.get(
+            "ANTHROPIC_API_KEY", config.get("anthropic_api_key", "")
+        )
         if not api_key:
             self.logger.error("ANTHROPIC_API_KEY not set. Claude provider unavailable.")
             return
 
         try:
             import anthropic
+
             self._client = anthropic.Anthropic(api_key=api_key)
             self.logger.info("Claude API provider ready (model: %s)", self.model)
         except ImportError:
-            self.logger.critical("anthropic SDK not installed. Run: pip install anthropic")
+            self.logger.critical(
+                "anthropic SDK not installed. Run: pip install anthropic"
+            )
 
     def provider_name(self) -> str:
         return f"Claude API ({self.model})"
@@ -478,10 +521,12 @@ class OllamaProvider(LLMProvider):
 
     def __init__(self, config: dict[str, Any]) -> None:
         self.logger = logging.getLogger("OllamaProvider")
-        self.model   = config.get("ollama_model", "llama3.2")
-        self.host    = config.get("ollama_host", "http://localhost:11434")
+        self.model = config.get("ollama_model", "llama3.2")
+        self.host = config.get("ollama_host", "http://localhost:11434")
         self.timeout = config.get("timeout", 120)
-        self.logger.info("Ollama provider ready (model: %s, host: %s)", self.model, self.host)
+        self.logger.info(
+            "Ollama provider ready (model: %s, host: %s)", self.model, self.host
+        )
 
     def provider_name(self) -> str:
         return f"Ollama ({self.model})"
@@ -491,13 +536,15 @@ class OllamaProvider(LLMProvider):
         import urllib.request as _req
         import urllib.error
 
-        payload = _json.dumps({
-            "model":  self.model,
-            "prompt": prompt,
-            "system": system_prompt,
-            "stream": False,
-            "options": {"temperature": 0.1},
-        }).encode()
+        payload = _json.dumps(
+            {
+                "model": self.model,
+                "prompt": prompt,
+                "system": system_prompt,
+                "stream": False,
+                "options": {"temperature": 0.1},
+            }
+        ).encode()
 
         try:
             request = _req.Request(
@@ -510,7 +557,9 @@ class OllamaProvider(LLMProvider):
                 data = _json.loads(resp.read().decode())
                 return data.get("response", "").strip()
         except urllib.error.URLError as e:
-            self.logger.error("Ollama connection failed (is `ollama serve` running?): %s", e)
+            self.logger.error(
+                "Ollama connection failed (is `ollama serve` running?): %s", e
+            )
             return f"Error: Cannot reach Ollama at {self.host}. Run: ollama serve"
         except Exception as e:
             self.logger.error("Ollama generate failed: %s", e)
@@ -536,16 +585,18 @@ class GenericCLIProvider(LLMProvider):
     """
 
     def __init__(self, config: dict[str, Any]) -> None:
-        self.logger  = logging.getLogger("GenericCLI")
-        self.path    = config.get("generic_cli_path", "")
-        self.args    = config.get("generic_cli_args", ["-p", "{prompt}"])
-        self.model   = config.get("generic_cli_model", "generic")
+        self.logger = logging.getLogger("GenericCLI")
+        self.path = config.get("generic_cli_path", "")
+        self.args = config.get("generic_cli_args", ["-p", "{prompt}"])
+        self.model = config.get("generic_cli_model", "generic")
         self.timeout = config.get("timeout", 120)
 
         if not self.path:
             self.logger.error("generic_cli_path not set in config.yaml")
         else:
-            self.logger.info("Generic CLI provider: %s (model: %s)", self.path, self.model)
+            self.logger.info(
+                "Generic CLI provider: %s (model: %s)", self.path, self.model
+            )
 
     def provider_name(self) -> str:
         return f"GenericCLI ({self.model})"
@@ -573,7 +624,9 @@ class GenericCLIProvider(LLMProvider):
             )
             if result.returncode != 0:
                 err = result.stderr.strip() or "non-zero exit"
-                self.logger.error("Generic CLI error (rc=%d): %s", result.returncode, err)
+                self.logger.error(
+                    "Generic CLI error (rc=%d): %s", result.returncode, err
+                )
                 return f"Error from {self.model}: {err}"
             output = result.stdout.strip()
             return output if output else f"Error: {self.model} returned empty output."
@@ -618,8 +671,14 @@ class CircuitBreaker:
     OPEN = "OPEN"
     HALF_OPEN = "HALF_OPEN"
 
-    def __init__(self, name: str, failure_threshold: int = 3, reset_timeout: float = 60.0,
-                 logger: logging.Logger | None = None, clock: Any = None) -> None:
+    def __init__(
+        self,
+        name: str,
+        failure_threshold: int = 3,
+        reset_timeout: float = 60.0,
+        logger: logging.Logger | None = None,
+        clock: Any = None,
+    ) -> None:
         self.name = name
         self.failure_threshold = max(1, int(failure_threshold))
         self.reset_timeout = float(reset_timeout)
@@ -693,7 +752,9 @@ class CircuitBreaker:
         with self._lock:
             remaining = 0.0
             if self._state == self.OPEN:
-                remaining = max(0.0, self.reset_timeout - (self._clock() - self._opened_at))
+                remaining = max(
+                    0.0, self.reset_timeout - (self._clock() - self._opened_at)
+                )
             return {
                 "name": self.name,
                 "state": self._state,
@@ -792,6 +853,7 @@ def generate_parallel(
       - quality:  pick longest (richest) response
     """
     import concurrent.futures
+
     logger = logging.getLogger("ProviderPool")
     names = provider_names or pool.list_providers()
     start = time.time()
@@ -858,6 +920,7 @@ def generate_parallel(
 
     if strategy == "voting":
         from collections import Counter
+
         votes = Counter(r for _, r in successes)
         winner = votes.most_common(1)[0][0]
         winning_provider = next(n for n, r in successes if r == winner)
@@ -915,16 +978,16 @@ class LLMGateway:
     """
 
     _instance: LLMGateway | None = None
-    _lock = threading.Lock()   # singleton creation lock only
+    _lock = threading.Lock()  # singleton creation lock only
 
     # Provider-aware concurrency limits
     PROVIDER_CONCURRENCY: dict[str, int] = {
-        "local": 1,         # Single GPU — must serialise
-        "generic-cli": 1,   # Unknown CLI — conservative
-        "ollama": 2,        # Ollama HTTP — moderate concurrency
-        "gemini": 4,        # Cloud API — server-side concurrency
-        "claude": 4,        # Cloud API
-        "claude-code": 2,   # CLI tool — moderate
+        "local": 1,  # Single GPU — must serialise
+        "generic-cli": 1,  # Unknown CLI — conservative
+        "ollama": 2,  # Ollama HTTP — moderate concurrency
+        "gemini": 4,  # Cloud API — server-side concurrency
+        "claude": 4,  # Cloud API
+        "claude-code": 2,  # CLI tool — moderate
     }
 
     def __new__(cls) -> LLMGateway:
@@ -974,7 +1037,9 @@ class LLMGateway:
         elif backend == "generic-cli":
             self.provider = GenericCLIProvider(llm_cfg)
         else:
-            self.logger.error("Unknown provider '%s'. Defaulting to claude-code.", backend)
+            self.logger.error(
+                "Unknown provider '%s'. Defaulting to claude-code.", backend
+            )
             self.provider = ClaudeCodeCLIProvider(llm_cfg)
 
         # ── Provider-aware inference semaphore ──────────────────────────
@@ -984,7 +1049,8 @@ class LLMGateway:
         self._inference_semaphore = threading.Semaphore(_concurrency)
         self.logger.info(
             "LLM Gateway active: %s (concurrency=%d)",
-            self.provider.provider_name(), _concurrency,
+            self.provider.provider_name(),
+            _concurrency,
         )
 
         # ── Resilience: retry transient LLM failures (backoff + jitter) ──
@@ -1002,7 +1068,9 @@ class LLMGateway:
         # calls fail fast for a cooldown window instead of repeatedly hitting
         # a dead/over-quota backend. Spec defaults: 3 failures -> open 60s.
         # Configurable via llm.circuit_breaker; set "enabled: false" to disable.
-        _cb_cfg = llm_cfg.get("circuit_breaker", {}) if isinstance(llm_cfg, dict) else {}
+        _cb_cfg = (
+            llm_cfg.get("circuit_breaker", {}) if isinstance(llm_cfg, dict) else {}
+        )
         self._cb_enabled = bool(_cb_cfg.get("enabled", True))
         self._cb_failure_threshold = int(_cb_cfg.get("failure_threshold", 3))
         self._cb_reset_timeout = float(_cb_cfg.get("reset_timeout", 60.0))
@@ -1012,8 +1080,19 @@ class LLMGateway:
     # Substrings that mark a *retryable* failure (vs a permanent one like
     # "not configured" / "not installed", which must NOT be retried).
     _TRANSIENT_ERROR_MARKERS: tuple[str, ...] = (
-        "timed out", "timeout", "rate limit", "429", "500", "502", "503", "504",
-        "temporarily", "unavailable", "connection", "reset by peer", "overloaded",
+        "timed out",
+        "timeout",
+        "rate limit",
+        "429",
+        "500",
+        "502",
+        "503",
+        "504",
+        "temporarily",
+        "unavailable",
+        "connection",
+        "reset by peer",
+        "overloaded",
         "empty output",
     )
 
@@ -1032,7 +1111,7 @@ class LLMGateway:
 
     def _retry_delay(self, attempt: int) -> float:
         """Exponential backoff with full jitter, capped at max_delay."""
-        capped = min(self._retry_max_delay, self._retry_base_delay * (2 ** attempt))
+        capped = min(self._retry_max_delay, self._retry_base_delay * (2**attempt))
         return capped * (0.5 + random.random() * 0.5)  # 50–100% jitter
 
     def _generate_with_retry(self, prompt: str, system_prompt: str) -> str:
@@ -1049,15 +1128,25 @@ class LLMGateway:
             except Exception as e:  # noqa: BLE001 — provider may raise anything
                 if attempt < self._retry_max:
                     delay = self._retry_delay(attempt)
-                    self.logger.warning("provider raised (%s); retry %d/%d in %.2fs",
-                                        e, attempt + 1, self._retry_max, delay)
+                    self.logger.warning(
+                        "provider raised (%s); retry %d/%d in %.2fs",
+                        e,
+                        attempt + 1,
+                        self._retry_max,
+                        delay,
+                    )
                     time.sleep(delay)
                     continue
                 raise
             if self._is_transient_error(result) and attempt < self._retry_max:
                 delay = self._retry_delay(attempt)
-                self.logger.warning("transient provider error (%r); retry %d/%d in %.2fs",
-                                    (result or "")[:80], attempt + 1, self._retry_max, delay)
+                self.logger.warning(
+                    "transient provider error (%r); retry %d/%d in %.2fs",
+                    (result or "")[:80],
+                    attempt + 1,
+                    self._retry_max,
+                    delay,
+                )
                 time.sleep(delay)
                 continue
             return result
@@ -1102,9 +1191,14 @@ class LLMGateway:
             f"Retry shortly."
         )
 
-    def generate_stream(self, prompt: str, system_prompt: str = "You are a helpful AI assistant.",
-                        trace_name: str = "llm_stream", metadata: dict[str, Any] | None = None,
-                        request_id: str = "") -> Iterator[str]:
+    def generate_stream(
+        self,
+        prompt: str,
+        system_prompt: str = "You are a helpful AI assistant.",
+        trace_name: str = "llm_stream",
+        metadata: dict[str, Any] | None = None,
+        request_id: str = "",
+    ) -> Iterator[str]:
         """
         Streaming variant of generate().  Yields str chunks as they become available.
 
@@ -1130,22 +1224,32 @@ class LLMGateway:
         if not request_id:
             try:
                 from src.core.request_context import get_request_id
+
                 request_id = get_request_id()
             except Exception:
                 request_id = ""
 
         with self._inference_semaphore:
-            self.logger.debug("Streaming generation started. Provider: %s", self.provider.provider_name())
+            self.logger.debug(
+                "Streaming generation started. Provider: %s",
+                self.provider.provider_name(),
+            )
             start = time.time()
 
             # ── Circuit breaker: fail fast if this provider's circuit is open ──
             provider_name = self.provider.provider_name()
-            breaker = self._get_circuit_breaker(provider_name) if self._cb_enabled else None
+            breaker = (
+                self._get_circuit_breaker(provider_name) if self._cb_enabled else None
+            )
             if breaker is not None and not breaker.allow_request():
                 self.logger.warning(
                     "Circuit OPEN for '%s' — rejecting stream without calling provider.",
                     provider_name,
-                    extra={"event": "circuit_breaker", "provider": provider_name, "status": "open_rejected"},
+                    extra={
+                        "event": "circuit_breaker",
+                        "provider": provider_name,
+                        "status": "open_rejected",
+                    },
                 )
                 self._usage["errors"] += 1
                 yield self._circuit_open_message(provider_name)
@@ -1153,9 +1257,11 @@ class LLMGateway:
 
             result = ""
             # Claude API supports real streaming
-            if isinstance(self.provider, ClaudeAPIProvider) and self.provider._client is not None:
+            if (
+                isinstance(self.provider, ClaudeAPIProvider)
+                and self.provider._client is not None
+            ):
                 try:
-                    import anthropic
                     with self.provider._client.messages.stream(
                         model=self.provider.model,
                         max_tokens=1024,
@@ -1180,7 +1286,7 @@ class LLMGateway:
                 words = result.split(" ")
                 chunk_size = 4
                 for i in range(0, len(words), chunk_size):
-                    chunk = " ".join(words[i:i + chunk_size])
+                    chunk = " ".join(words[i : i + chunk_size])
                     if i + chunk_size < len(words):
                         chunk += " "
                     yield chunk
@@ -1194,7 +1300,8 @@ class LLMGateway:
 
             elapsed = time.time() - start
             self.logger.info(
-                "Streaming generation done in %.2fs", elapsed,
+                "Streaming generation done in %.2fs",
+                elapsed,
                 extra={
                     "event": "generation_stream",
                     "provider": provider_name,
@@ -1206,11 +1313,20 @@ class LLMGateway:
             self._maybe_reset_daily()
             self._usage["calls"] += 1
             self._usage["calls_today"] += 1
-            self._usage["estimated_tokens"] += (len(prompt) + len(system_prompt) + len(result)) // 4
+            self._usage["estimated_tokens"] += (
+                len(prompt) + len(system_prompt) + len(result)
+            ) // 4
 
-    def generate(self, prompt: str, system_prompt: str = "You are a helpful AI assistant.",
-                 trace_name: str = "llm_generate", metadata: dict[str, Any] | None = None,
-                 trace_id: str = "", agent_name: str = "", request_id: str = "") -> str:
+    def generate(
+        self,
+        prompt: str,
+        system_prompt: str = "You are a helpful AI assistant.",
+        trace_name: str = "llm_generate",
+        metadata: dict[str, Any] | None = None,
+        trace_id: str = "",
+        agent_name: str = "",
+        request_id: str = "",
+    ) -> str:
         """Thread-safe generation. Only ONE call at a time.
 
         Args:
@@ -1230,6 +1346,7 @@ class LLMGateway:
         if not request_id:
             try:
                 from src.core.request_context import get_request_id
+
                 request_id = get_request_id()
             except Exception:
                 request_id = ""
@@ -1243,7 +1360,9 @@ class LLMGateway:
         self.logger.debug("Acquiring inference lock...")
 
         with self._inference_semaphore:
-            self.logger.debug("Semaphore acquired. Provider: %s", self.provider.provider_name())
+            self.logger.debug(
+                "Semaphore acquired. Provider: %s", self.provider.provider_name()
+            )
 
             # ----------------------------------------------------------------
             # T1-002: PII detection and data residency check
@@ -1251,7 +1370,10 @@ class LLMGateway:
             config = _load_config()
             try:
                 from src.core import pii_filter
-                scrubbed_prompt, detected_entities = pii_filter.scrub_text(prompt, config)
+
+                scrubbed_prompt, detected_entities = pii_filter.scrub_text(
+                    prompt, config
+                )
                 if detected_entities:
                     self.logger.warning(
                         "PII detected and redacted: %s", detected_entities
@@ -1263,7 +1385,9 @@ class LLMGateway:
                         )
                 prompt = scrubbed_prompt
 
-                if not pii_filter.check_data_residency(self.provider.provider_name(), config):
+                if not pii_filter.check_data_residency(
+                    self.provider.provider_name(), config
+                ):
                     raise ValueError(
                         "Provider not allowed for configured data residency region"
                     )
@@ -1275,8 +1399,11 @@ class LLMGateway:
             # ----------------------------------------------------------------
             try:
                 from src.core.complexity_classifier import complexity_classifier
+
                 _complexity = complexity_classifier.classify(prompt, system_prompt)
-                self._routing_stats[_complexity.value] = self._routing_stats.get(_complexity.value, 0) + 1
+                self._routing_stats[_complexity.value] = (
+                    self._routing_stats.get(_complexity.value, 0) + 1
+                )
             except Exception:
                 pass  # classifier failure is non-fatal
 
@@ -1286,10 +1413,12 @@ class LLMGateway:
             try:
                 from src.core import cost_tracker as _ct
                 from src.core.tenant import get_current_tenant
+
                 _tenant = get_current_tenant()
                 _solution = ""
                 try:
                     from src.core.project_loader import project_config as _pc
+
                     _solution = _pc.project_name or ""
                 except Exception:
                     pass
@@ -1308,16 +1437,22 @@ class LLMGateway:
                         if _agent_budget is not None:
                             _limit = _agent_budget.get("monthly_calls", 0)
                             if _limit > 0:
-                                _agent_calls = self._usage.get(f"agent_{agent_name}_calls", 0)
+                                _agent_calls = self._usage.get(
+                                    f"agent_{agent_name}_calls", 0
+                                )
                                 if _agent_calls >= _limit:
                                     raise RuntimeError(
                                         f"Agent '{agent_name}' monthly call budget ({_limit}) exceeded."
                                     )
-                                self._usage[f"agent_{agent_name}_calls"] = _agent_calls + 1
+                                self._usage[f"agent_{agent_name}_calls"] = (
+                                    _agent_calls + 1
+                                )
                 except RuntimeError:
                     raise
                 except Exception as _bexc:
-                    self.logger.warning("Agent budget check failed (non-fatal): %s", _bexc)
+                    self.logger.warning(
+                        "Agent budget check failed (non-fatal): %s", _bexc
+                    )
 
             # ----------------------------------------------------------------
             # Circuit breaker: if this provider's circuit is OPEN, fail fast
@@ -1325,12 +1460,18 @@ class LLMGateway:
             # allow_request() atomically admits at most one HALF_OPEN probe.
             # ----------------------------------------------------------------
             provider_name = self.provider.provider_name()
-            breaker = self._get_circuit_breaker(provider_name) if self._cb_enabled else None
+            breaker = (
+                self._get_circuit_breaker(provider_name) if self._cb_enabled else None
+            )
             if breaker is not None and not breaker.allow_request():
                 self.logger.warning(
                     "Circuit OPEN for '%s' — rejecting call without contacting provider.",
                     provider_name,
-                    extra={"event": "circuit_breaker", "provider": provider_name, "status": "open_rejected"},
+                    extra={
+                        "event": "circuit_breaker",
+                        "provider": provider_name,
+                        "status": "open_rejected",
+                    },
                 )
                 self._usage["errors"] += 1
                 return self._circuit_open_message(provider_name)
@@ -1341,7 +1482,10 @@ class LLMGateway:
                 try:
                     _lf_trace = _langfuse_client.trace(
                         name=trace_name,
-                        metadata={**(metadata or {}), "provider": self.provider.provider_name()},
+                        metadata={
+                            **(metadata or {}),
+                            "provider": self.provider.provider_name(),
+                        },
                     )
                     _lf_generation = _lf_trace.generation(
                         name="generate",
@@ -1349,7 +1493,9 @@ class LLMGateway:
                         input={"system": system_prompt, "prompt": prompt},
                     )
                 except Exception as lf_err:
-                    self.logger.debug("Langfuse trace init failed (non-fatal): %s", lf_err)
+                    self.logger.debug(
+                        "Langfuse trace init failed (non-fatal): %s", lf_err
+                    )
 
             # --- OpenTelemetry span (no-op if SDK not installed) ---
             from src.core.tracing import trace_llm_call as _otel_trace
@@ -1385,7 +1531,8 @@ class LLMGateway:
 
                     elapsed = time.time() - start
                     self.logger.info(
-                        "Generation done in %.2fs", elapsed,
+                        "Generation done in %.2fs",
+                        elapsed,
                         extra={
                             "event": "generation",
                             "provider": self.provider.provider_name(),
@@ -1397,7 +1544,7 @@ class LLMGateway:
                     # Roll daily counter over at UTC midnight
                     self._maybe_reset_daily()
                     # Estimate tokens as (input + output chars) / 4
-                    input_tokens  = (len(prompt) + len(system_prompt)) // 4
+                    input_tokens = (len(prompt) + len(system_prompt)) // 4
                     output_tokens = len(result) // 4
                     self._usage["calls"] += 1
                     self._usage["calls_today"] += 1
@@ -1414,15 +1561,24 @@ class LLMGateway:
                     try:
                         from src.core import cost_tracker as _ct
                         from src.core.tenant import get_current_tenant
+
                         _tenant = get_current_tenant()
                         _solution = ""
                         try:
                             from src.core.project_loader import project_config as _pc
+
                             _solution = _pc.project_name or ""
                         except Exception:
                             pass
                         _model = getattr(self.provider, "model", "unknown")
-                        _ct.record_usage(_tenant, _solution, _model, input_tokens, output_tokens, trace_id or request_id)
+                        _ct.record_usage(
+                            _tenant,
+                            _solution,
+                            _model,
+                            input_tokens,
+                            output_tokens,
+                            trace_id or request_id,
+                        )
                     except Exception:
                         pass  # cost tracking is non-fatal
 
@@ -1434,7 +1590,9 @@ class LLMGateway:
                                 usage={"total_tokens": input_tokens + output_tokens},
                             )
                         except Exception as lf_err:
-                            self.logger.debug("Langfuse generation.end failed (non-fatal): %s", lf_err)
+                            self.logger.debug(
+                                "Langfuse generation.end failed (non-fatal): %s", lf_err
+                            )
 
                     return result
                 except ValueError:
@@ -1442,7 +1600,8 @@ class LLMGateway:
                     raise
                 except Exception as e:
                     self.logger.error(
-                        "Generation failed: %s", e,
+                        "Generation failed: %s",
+                        e,
                         extra={
                             "event": "generation",
                             "provider": self.provider.provider_name(),
@@ -1458,10 +1617,16 @@ class LLMGateway:
                             pass
                     return "Error: " + str(e)
 
-    def generate_for_task(self, task_type: str, prompt: str,
-                          system_prompt: str = "You are a helpful AI assistant.",
-                          trace_name: str = "llm_generate", metadata: dict[str, Any] | None = None,
-                          trace_id: str = "", request_id: str = "") -> str:
+    def generate_for_task(
+        self,
+        task_type: str,
+        prompt: str,
+        system_prompt: str = "You are a helpful AI assistant.",
+        trace_name: str = "llm_generate",
+        metadata: dict[str, Any] | None = None,
+        trace_id: str = "",
+        request_id: str = "",
+    ) -> str:
         """
         Route to a task-specific model if task_routing is configured.
 
@@ -1479,13 +1644,27 @@ class LLMGateway:
         routing_cfg = config.get("llm", {}).get("task_routing", {})
 
         if not routing_cfg.get("enabled", False):
-            return self.generate(prompt, system_prompt, trace_name, metadata, trace_id, request_id=request_id)
+            return self.generate(
+                prompt,
+                system_prompt,
+                trace_name,
+                metadata,
+                trace_id,
+                request_id=request_id,
+            )
 
         routes: dict[str, str] = routing_cfg.get("routes", {})
         route_value: str = routes.get(task_type, "")
 
         if not route_value:
-            return self.generate(prompt, system_prompt, trace_name, metadata, trace_id, request_id=request_id)
+            return self.generate(
+                prompt,
+                system_prompt,
+                trace_name,
+                metadata,
+                trace_id,
+                request_id=request_id,
+            )
 
         # Parse "provider/model" or just "model"
         if "/" in route_value:
@@ -1496,14 +1675,25 @@ class LLMGateway:
 
         # If current provider matches routed provider (or no provider given),
         # temporarily override the model if it differs
-        current_provider_name = self.provider.provider_name().lower() if self.provider else ""
+        current_provider_name = (
+            self.provider.provider_name().lower() if self.provider else ""
+        )
         if not routed_provider or routed_provider.lower() in current_provider_name:
-            return self.generate(prompt, system_prompt, trace_name, metadata, trace_id, request_id=request_id)
+            return self.generate(
+                prompt,
+                system_prompt,
+                trace_name,
+                metadata,
+                trace_id,
+                request_id=request_id,
+            )
 
         # Different provider requested — build a temporary provider instance
         self.logger.info(
             "Task routing: task_type=%s → provider=%s model=%s",
-            task_type, routed_provider, routed_model,
+            task_type,
+            routed_provider,
+            routed_model,
         )
         llm_cfg = config.get("llm", {}).copy()
         try:
@@ -1518,15 +1708,30 @@ class LLMGateway:
                 tmp_provider = GeminiCLIProvider(llm_cfg)
             else:
                 self.logger.warning(
-                    "Task routing: unknown provider '%s' — using default", routed_provider
+                    "Task routing: unknown provider '%s' — using default",
+                    routed_provider,
                 )
-                return self.generate(prompt, system_prompt, trace_name, metadata, trace_id, request_id=request_id)
+                return self.generate(
+                    prompt,
+                    system_prompt,
+                    trace_name,
+                    metadata,
+                    trace_id,
+                    request_id=request_id,
+                )
 
             # Run with the temporary provider (still under the main lock via generate())
             saved_provider = self.provider
             self.provider = tmp_provider
             try:
-                result = self.generate(prompt, system_prompt, trace_name, metadata, trace_id, request_id=request_id)
+                result = self.generate(
+                    prompt,
+                    system_prompt,
+                    trace_name,
+                    metadata,
+                    trace_id,
+                    request_id=request_id,
+                )
             finally:
                 self.provider = saved_provider
             return result
@@ -1534,9 +1739,17 @@ class LLMGateway:
         except Exception as exc:
             self.logger.warning(
                 "Task routing provider init failed (%s) — falling back to default: %s",
-                routed_provider, exc,
+                routed_provider,
+                exc,
             )
-            return self.generate(prompt, system_prompt, trace_name, metadata, trace_id, request_id=request_id)
+            return self.generate(
+                prompt,
+                system_prompt,
+                trace_name,
+                metadata,
+                trace_id,
+                request_id=request_id,
+            )
 
     def generate_multi(
         self,
@@ -1548,8 +1761,11 @@ class LLMGateway:
     ) -> dict[str, Any]:
         """Delegate to generate_parallel using this gateway's provider_pool."""
         return generate_parallel(
-            self.provider_pool, prompt, system_prompt,
-            strategy=strategy, provider_names=provider_names,
+            self.provider_pool,
+            prompt,
+            system_prompt,
+            strategy=strategy,
+            provider_names=provider_names,
         )
 
     def generate_with_fallback(
@@ -1597,6 +1813,7 @@ class LLMGateway:
     def _maybe_reset_daily(self) -> None:
         """Reset calls_today when we cross a UTC midnight boundary."""
         import datetime as _dt
+
         day_start = _dt.datetime.fromtimestamp(
             self._usage["day_started_at"], tz=_dt.timezone.utc
         ).date()
@@ -1615,6 +1832,7 @@ class LLMGateway:
     def get_usage(self) -> dict[str, Any]:
         """Return current session + daily usage stats."""
         import datetime as _dt
+
         started = _dt.datetime.fromtimestamp(
             self._usage["started_at"], tz=_dt.timezone.utc
         ).isoformat()
@@ -1635,7 +1853,7 @@ class LLMGateway:
         model = "unknown"
         if self.provider is not None:
             if hasattr(self.provider, "model"):
-                model = self.provider.model      # type: ignore[attr-defined]  # GeminiCLIProvider / ClaudeAPIProvider
+                model = self.provider.model  # type: ignore[attr-defined]  # GeminiCLIProvider / ClaudeAPIProvider
             elif hasattr(self.provider, "_model") and self.provider._model is not None:  # type: ignore[attr-defined]  # LocalLlamaProvider
                 model = "local"
         limits = _MODEL_LIMITS.get(model, {"daily_requests": 0, "context_tokens": 4096})

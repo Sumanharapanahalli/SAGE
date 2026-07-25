@@ -10,9 +10,8 @@ All constants match bms_types.h exactly — update both files together.
 from __future__ import annotations
 
 import enum
-import math
 from dataclasses import dataclass, field
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 # ---------------------------------------------------------------------------
 # Constants (mirrors bms_types.h)
@@ -28,7 +27,7 @@ BMS_CELL_UV_THRESHOLD_MV: int = 2800
 BMS_OC_THRESHOLD_MA: int = 50_000  # 50 A
 
 # Temperature thresholds (degC × 10)
-BMS_MAX_TEMP_DEGC_X10: int = 600   # 60.0 °C
+BMS_MAX_TEMP_DEGC_X10: int = 600  # 60.0 °C
 BMS_MIN_TEMP_DEGC_X10: int = -200  # -20.0 °C
 
 # Balancing delta (mV)
@@ -42,32 +41,32 @@ BMS_ADC_TIMEOUT_MS: int = 10
 # Enumerations
 # ---------------------------------------------------------------------------
 class BMSState(enum.IntEnum):
-    INIT        = 0x00
-    IDLE        = 0x01
-    CHARGING    = 0x02
+    INIT = 0x00
+    IDLE = 0x01
+    CHARGING = 0x02
     DISCHARGING = 0x03
-    FAULT       = 0x04
-    SHUTDOWN    = 0x05
+    FAULT = 0x04
+    SHUTDOWN = 0x05
 
 
 class BMSFault(enum.IntFlag):
-    NONE         = 0x000
-    OVERVOLTAGE  = 0x001
+    NONE = 0x000
+    OVERVOLTAGE = 0x001
     UNDERVOLTAGE = 0x002
-    OVERCURRENT  = 0x004
-    OVERTEMP     = 0x008
-    UNDERTEMP    = 0x010
-    COMM         = 0x020
-    ADC          = 0x040
-    INTERNAL     = 0x080
-    BALANCER     = 0x100
-    PRECHARGE    = 0x200
+    OVERCURRENT = 0x004
+    OVERTEMP = 0x008
+    UNDERTEMP = 0x010
+    COMM = 0x020
+    ADC = 0x040
+    INTERNAL = 0x080
+    BALANCER = 0x100
+    PRECHARGE = 0x200
 
 
 class BMSStatus(enum.IntEnum):
-    OK      = 0x00
-    ERROR   = 0x01
-    BUSY    = 0x02
+    OK = 0x00
+    ERROR = 0x01
+    BUSY = 0x02
     TIMEOUT = 0x03
 
 
@@ -117,10 +116,10 @@ class BMSConfig:
 class BMSData:
     cell_voltage_mv: List[int] = field(default_factory=list)
     temperature_degc_x10: List[int] = field(default_factory=list)
-    pack_current_ma: int = 0   # positive = discharge
+    pack_current_ma: int = 0  # positive = discharge
     pack_voltage_mv: int = 0
-    soc_percent: int = 0       # 0-100
-    soh_percent: int = 100     # 0-100
+    soc_percent: int = 0  # 0-100
+    soh_percent: int = 100  # 0-100
     state: BMSState = BMSState.INIT
     fault_flags: BMSFault = BMSFault.NONE
     timestamp_ms: int = 0
@@ -267,7 +266,7 @@ class BMSCore:
         """
         # (mV, soc%) breakpoints — typical LFP/NMC blend
         breakpoints: List[Tuple[float, float]] = [
-            (2800.0,  0.0),
+            (2800.0, 0.0),
             (3200.0, 10.0),
             (3500.0, 30.0),
             (3700.0, 60.0),
@@ -305,7 +304,7 @@ class BMSCore:
         mask = 0
         for i, v in enumerate(voltages):
             if (v - v_min) > self._cfg.balancing_threshold_mv:
-                mask |= (1 << i)
+                mask |= 1 << i
         return mask
 
     # ------------------------------------------------------------------

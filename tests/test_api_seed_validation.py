@@ -13,10 +13,7 @@ Coverage:
 from __future__ import annotations
 
 import json
-import logging
 import sqlite3
-import tempfile
-import os
 
 import pytest
 
@@ -37,6 +34,7 @@ from tests.seed_api_test_data import (
 # Helpers
 # =============================================================================
 
+
 def _checks_passed(checks: list[_Check]) -> bool:
     return all(c.passed for c in checks)
 
@@ -49,13 +47,14 @@ def _blocking_failures(checks: list[_Check]) -> list[_Check]:
 # _validate_record — compliance_audit_log
 # =============================================================================
 
+
 class TestValidateAuditLog:
     TABLE = "compliance_audit_log"
 
     def _row(self, **overrides):
         base = {
-            "id":          "00000000-ffff-4000-8000-000000000001",
-            "actor":       "test_AI_Agent",
+            "id": "00000000-ffff-4000-8000-000000000001",
+            "actor": "test_AI_Agent",
             "action_type": "ANALYSIS",
         }
         base.update(overrides)
@@ -85,11 +84,14 @@ class TestValidateAuditLog:
         )
         assert any("enum:action_type" in c.rule for c in blocks)
 
-    @pytest.mark.parametrize("action_type", [
-        "ANALYSIS", "PROPOSAL", "APPROVAL", "REJECTION", "ACCESS", "EXECUTION"
-    ])
+    @pytest.mark.parametrize(
+        "action_type",
+        ["ANALYSIS", "PROPOSAL", "APPROVAL", "REJECTION", "ACCESS", "EXECUTION"],
+    )
     def test_all_allowed_action_types(self, action_type):
-        assert _checks_passed(_validate_record(self.TABLE, self._row(action_type=action_type)))
+        assert _checks_passed(
+            _validate_record(self.TABLE, self._row(action_type=action_type))
+        )
 
     def test_invalid_event_type_enum(self):
         blocks = _blocking_failures(
@@ -97,11 +99,14 @@ class TestValidateAuditLog:
         )
         assert any("enum:event_type" in c.rule for c in blocks)
 
-    @pytest.mark.parametrize("event_type", [
-        "ACCESS", "ANALYSIS", "PROPOSAL", "APPROVAL", "REJECTION", "EXECUTION"
-    ])
+    @pytest.mark.parametrize(
+        "event_type",
+        ["ACCESS", "ANALYSIS", "PROPOSAL", "APPROVAL", "REJECTION", "EXECUTION"],
+    )
     def test_all_allowed_event_types(self, event_type):
-        assert _checks_passed(_validate_record(self.TABLE, self._row(event_type=event_type)))
+        assert _checks_passed(
+            _validate_record(self.TABLE, self._row(event_type=event_type))
+        )
 
     def test_invalid_status_enum(self):
         blocks = _blocking_failures(
@@ -114,7 +119,9 @@ class TestValidateAuditLog:
         assert _checks_passed(_validate_record(self.TABLE, self._row(status=status)))
 
     def test_valid_json_metadata(self):
-        row = self._row(metadata=json.dumps({"solution": "medtech_team", "test_marker": True}))
+        row = self._row(
+            metadata=json.dumps({"solution": "medtech_team", "test_marker": True})
+        )
         assert _checks_passed(_validate_record(self.TABLE, row))
 
     def test_invalid_json_metadata_fails(self):
@@ -132,17 +139,18 @@ class TestValidateAuditLog:
 # _validate_record — chat_messages
 # =============================================================================
 
+
 class TestValidateChatMessages:
     TABLE = "chat_messages"
 
     def _row(self, **overrides):
         base = {
-            "id":         "cc000000-ffff-4000-8000-000000000001",
-            "user_id":    "test_alice",
+            "id": "cc000000-ffff-4000-8000-000000000001",
+            "user_id": "test_alice",
             "session_id": "test_session_001",
-            "solution":   "medtech_team",
-            "role":       "user",
-            "content":    "Hello",
+            "solution": "medtech_team",
+            "role": "user",
+            "content": "Hello",
             "created_at": "2026-03-28T10:00:00+00:00",
         }
         base.update(overrides)
@@ -202,12 +210,15 @@ class TestValidateChatMessages:
 
     @pytest.mark.parametrize("message_type", ["user", "assistant", "system"])
     def test_allowed_message_types(self, message_type):
-        assert _checks_passed(_validate_record(self.TABLE, self._row(message_type=message_type)))
+        assert _checks_passed(
+            _validate_record(self.TABLE, self._row(message_type=message_type))
+        )
 
 
 # =============================================================================
 # _is_valid — severity routing
 # =============================================================================
+
 
 class TestIsValid:
     def test_valid_audit_row_returns_true(self):
@@ -242,12 +253,12 @@ class TestIsValid:
 
     def test_valid_chat_message_returns_true(self):
         row = {
-            "id":         "cc000000-ffff-4000-8000-000000000001",
-            "user_id":    "test_alice",
+            "id": "cc000000-ffff-4000-8000-000000000001",
+            "user_id": "test_alice",
             "session_id": "test_session_x",
-            "solution":   "starter",
-            "role":       "user",
-            "content":    "ping",
+            "solution": "starter",
+            "role": "user",
+            "content": "ping",
             "created_at": "2026-03-28T10:00:00+00:00",
         }
         assert _is_valid("chat_messages", row, row["id"]) is True
@@ -256,6 +267,7 @@ class TestIsValid:
 # =============================================================================
 # Seed constants — schema contract: zero invalid rows in the shipped seeds
 # =============================================================================
+
 
 class TestSeedConstantsAreValid:
     def test_all_audit_events_pass_validation(self):
@@ -298,6 +310,7 @@ class TestSeedConstantsAreValid:
 # ApiTestDataSeeder — idempotency via in-memory SQLite
 # =============================================================================
 
+
 @pytest.fixture()
 def tmp_db(tmp_path):
     """Return path to a fresh temporary SQLite database."""
@@ -308,7 +321,11 @@ class TestApiTestDataSeederIdempotency:
     def test_seed_all_returns_stats_for_all_tables(self, tmp_db):
         seeder = ApiTestDataSeeder(tmp_db)
         stats = seeder.seed_all()
-        assert set(stats.keys()) == {"compliance_audit_log", "chat_messages", "proposals"}
+        assert set(stats.keys()) == {
+            "compliance_audit_log",
+            "chat_messages",
+            "proposals",
+        }
 
     def test_seed_all_inserts_expected_row_counts(self, tmp_db):
         seeder = ApiTestDataSeeder(tmp_db)
@@ -329,7 +346,7 @@ class TestApiTestDataSeederIdempotency:
         """Running seed_all() twice must not produce duplicate rows."""
         seeder = ApiTestDataSeeder(tmp_db)
         seeder.seed_all()
-        stats2 = seeder.seed_all()   # second run
+        stats2 = seeder.seed_all()  # second run
 
         # INSERT OR IGNORE — second run must insert 0 new rows
         assert stats2["compliance_audit_log"]["inserted"] == 0, (
@@ -421,6 +438,7 @@ class TestApiTestDataSeederIdempotency:
 # Module-level helper functions
 # =============================================================================
 
+
 class TestModuleLevelHelpers:
     def test_seed_all_helper_returns_stats(self, tmp_db):
         stats = seed_all(tmp_db)
@@ -441,6 +459,7 @@ class TestModuleLevelHelpers:
 # =============================================================================
 # Trace-group coherence (mirrors verify_api_seed_idempotency.sql checks in Python)
 # =============================================================================
+
 
 class TestTraceGroupCoherence:
     @pytest.fixture(autouse=True)
@@ -495,7 +514,9 @@ class TestTraceGroupCoherence:
             "WHERE actor LIKE 'test_%' AND action_type = 'APPROVAL'"
         ).fetchall()
         for row_id, provider in rows:
-            assert provider is not None, f"APPROVAL row {row_id} missing approver_provider"
+            assert provider is not None, (
+                f"APPROVAL row {row_id} missing approver_provider"
+            )
 
     def test_rejection_rows_have_approver_provider(self):
         rows = self.conn.execute(
@@ -503,12 +524,15 @@ class TestTraceGroupCoherence:
             "WHERE actor LIKE 'test_%' AND action_type = 'REJECTION'"
         ).fetchall()
         for row_id, provider in rows:
-            assert provider is not None, f"REJECTION row {row_id} missing approver_provider"
+            assert provider is not None, (
+                f"REJECTION row {row_id} missing approver_provider"
+            )
 
 
 # =============================================================================
 # Chat session coherence
 # =============================================================================
+
 
 class TestChatSessionCoherence:
     @pytest.fixture(autouse=True)
@@ -533,7 +557,8 @@ class TestChatSessionCoherence:
     def test_each_session_has_user_and_assistant_turns(self):
         for session_id in ("test_session_001", "test_session_002"):
             roles = {
-                r[0] for r in self.conn.execute(
+                r[0]
+                for r in self.conn.execute(
                     "SELECT DISTINCT role FROM chat_messages WHERE session_id = ?",
                     (session_id,),
                 ).fetchall()
@@ -553,20 +578,21 @@ class TestChatSessionCoherence:
 # _validate_record — proposals
 # =============================================================================
 
+
 class TestValidateProposals:
     TABLE = "proposals"
 
     def _row(self, **overrides):
         base = {
-            "trace_id":    "test-proposal-x",
-            "created_at":  "2026-03-28T10:00:00+00:00",
+            "trace_id": "test-proposal-x",
+            "created_at": "2026-03-28T10:00:00+00:00",
             "action_type": "yaml_edit",
-            "risk_class":  "STATEFUL",
-            "reversible":  1,
+            "risk_class": "STATEFUL",
+            "reversible": 1,
             "proposed_by": "test_AI_Agent",
             "description": "Test proposal",
-            "payload":     json.dumps({"file": "project.yaml"}),
-            "status":      "pending",
+            "payload": json.dumps({"file": "project.yaml"}),
+            "status": "pending",
         }
         base.update(overrides)
         return base
@@ -595,12 +621,21 @@ class TestValidateProposals:
         )
         assert any("enum:action_type" in c.rule for c in blocks)
 
-    @pytest.mark.parametrize("action_type", [
-        "yaml_edit", "code_diff", "implementation_plan",
-        "knowledge_add", "knowledge_delete", "agent_hire",
-    ])
+    @pytest.mark.parametrize(
+        "action_type",
+        [
+            "yaml_edit",
+            "code_diff",
+            "implementation_plan",
+            "knowledge_add",
+            "knowledge_delete",
+            "agent_hire",
+        ],
+    )
     def test_all_allowed_action_types(self, action_type):
-        assert _checks_passed(_validate_record(self.TABLE, self._row(action_type=action_type)))
+        assert _checks_passed(
+            _validate_record(self.TABLE, self._row(action_type=action_type))
+        )
 
     def test_invalid_risk_class_enum(self):
         blocks = _blocking_failures(
@@ -608,11 +643,20 @@ class TestValidateProposals:
         )
         assert any("enum:risk_class" in c.rule for c in blocks)
 
-    @pytest.mark.parametrize("risk_class", [
-        "INFORMATIONAL", "EPHEMERAL", "STATEFUL", "EXTERNAL", "DESTRUCTIVE",
-    ])
+    @pytest.mark.parametrize(
+        "risk_class",
+        [
+            "INFORMATIONAL",
+            "EPHEMERAL",
+            "STATEFUL",
+            "EXTERNAL",
+            "DESTRUCTIVE",
+        ],
+    )
     def test_all_allowed_risk_classes(self, risk_class):
-        assert _checks_passed(_validate_record(self.TABLE, self._row(risk_class=risk_class)))
+        assert _checks_passed(
+            _validate_record(self.TABLE, self._row(risk_class=risk_class))
+        )
 
     @pytest.mark.parametrize("status", ["pending", "approved", "rejected", "expired"])
     def test_all_allowed_statuses(self, status):
@@ -638,12 +682,15 @@ class TestValidateProposals:
         # (payload IS required — this row should fail required, not json)
         checks = _validate_record(self.TABLE, row)
         json_checks = [c for c in checks if "json:payload" in c.rule]
-        assert all(c.passed for c in json_checks), "json check should pass when payload is None"
+        assert all(c.passed for c in json_checks), (
+            "json check should pass when payload is None"
+        )
 
 
 # =============================================================================
 # Seed constants — proposals schema contract
 # =============================================================================
+
 
 class TestSeedProposalsAreValid:
     def test_all_proposals_pass_validation(self):
@@ -660,7 +707,9 @@ class TestSeedProposalsAreValid:
             try:
                 json.loads(row["payload"])
             except (TypeError, json.JSONDecodeError) as exc:
-                pytest.fail(f"SEED_PROPOSALS row {row['trace_id']} has invalid payload JSON: {exc}")
+                pytest.fail(
+                    f"SEED_PROPOSALS row {row['trace_id']} has invalid payload JSON: {exc}"
+                )
 
     def test_approved_rows_have_decided_by(self):
         for row in SEED_PROPOSALS:
@@ -683,9 +732,10 @@ class TestSeedProposalsAreValid:
                     f"Expired proposal {row['trace_id']} missing expires_at"
                 )
                 # expires_at must be in the past relative to seed timestamp
-                assert row["expires_at"] < row["created_at"] or row["expires_at"] <= "2026-03-28T10:00:00+00:00", (
-                    f"Expired proposal {row['trace_id']} has future expires_at"
-                )
+                assert (
+                    row["expires_at"] < row["created_at"]
+                    or row["expires_at"] <= "2026-03-28T10:00:00+00:00"
+                ), f"Expired proposal {row['trace_id']} has future expires_at"
 
     def test_all_risk_classes_represented(self):
         risk_classes = {r["risk_class"] for r in SEED_PROPOSALS}
@@ -701,6 +751,7 @@ class TestSeedProposalsAreValid:
 # =============================================================================
 # Proposal group coherence (seeded via in-memory SQLite)
 # =============================================================================
+
 
 class TestProposalGroupCoherence:
     @pytest.fixture(autouse=True)
@@ -718,7 +769,7 @@ class TestProposalGroupCoherence:
     def test_pending_yaml_edit_exists(self):
         row = self._proposal("test-proposal-001")
         assert row is not None
-        assert row[8] == "pending"    # status column index
+        assert row[8] == "pending"  # status column index
         assert row[2] == "yaml_edit"  # action_type
 
     def test_pending_code_diff_has_required_role(self):
@@ -732,7 +783,7 @@ class TestProposalGroupCoherence:
         row = self._proposal("test-proposal-003")
         assert row is not None
         assert row[8] == "approved"
-        assert row[9] == "carol_test"   # decided_by
+        assert row[9] == "carol_test"  # decided_by
 
     def test_rejected_proposal_has_feedback(self):
         row = self._proposal("test-proposal-004")
@@ -760,4 +811,6 @@ class TestProposalGroupCoherence:
             "WHERE proposed_by LIKE 'test_%' AND status = 'pending'"
         ).fetchall()
         for trace_id, decided_at in rows:
-            assert decided_at is None, f"Pending proposal {trace_id} should not have decided_at"
+            assert decided_at is None, (
+                f"Pending proposal {trace_id} should not have decided_at"
+            )

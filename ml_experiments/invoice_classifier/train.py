@@ -14,7 +14,6 @@ Production-grade training pipeline with:
 
 import json
 import logging
-import os
 import time
 import warnings
 from pathlib import Path
@@ -27,7 +26,6 @@ import pandas as pd
 import shap
 import yaml
 from imblearn.over_sampling import SMOTE
-from sklearn.compose import ColumnTransformer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import (
     accuracy_score,
@@ -37,7 +35,6 @@ from sklearn.metrics import (
     roc_auc_score,
 )
 from sklearn.model_selection import StratifiedKFold, train_test_split
-from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder, StandardScaler
 from xgboost import XGBClassifier
 
@@ -84,18 +81,21 @@ def generate_synthetic_data(n_samples: int = 5_000, seed: int = 42) -> pd.DataFr
     labels = rng.choice(INVOICE_TYPES, size=n, p=[0.40, 0.20, 0.15, 0.15, 0.10])
 
     def _total(label):
-        base = {"vendor_invoice": 5000, "credit_note": -2000, "proforma": 3000,
-                "recurring_subscription": 500, "expense_report": 300}
+        base = {
+            "vendor_invoice": 5000,
+            "credit_note": -2000,
+            "proforma": 3000,
+            "recurring_subscription": 500,
+            "expense_report": 300,
+        }
         return rng.normal(base[label], abs(base[label]) * 0.3)
 
     df = pd.DataFrame(
         {
             "invoice_type": labels,
-            "vendor_name": [
-                f"Vendor_{rng.integers(1, 200)}" for _ in range(n)
-            ],
+            "vendor_name": [f"Vendor_{rng.integers(1, 200)}" for _ in range(n)],
             "line_items_text": [
-                f"software license consulting services {rng.integers(1,50)} units"
+                f"software license consulting services {rng.integers(1, 50)} units"
                 if t in ("vendor_invoice", "recurring_subscription")
                 else f"credit adjustment refund #{rng.integers(1000, 9999)}"
                 if t == "credit_note"
@@ -121,11 +121,12 @@ def generate_synthetic_data(n_samples: int = 5_000, seed: int = 42) -> pd.DataFr
 # Feature engineering
 # ---------------------------------------------------------------------------
 
+
 def build_preprocessor(cfg: dict):
     """ColumnTransformer that fits ONLY on training data."""
     text_cols = cfg["data"]["text_columns"]
-    num_cols = cfg["data"]["numeric_columns"]
-    cat_cols = cfg["data"]["categorical_columns"]
+    cfg["data"]["numeric_columns"]
+    cfg["data"]["categorical_columns"]
     tfidf_params = cfg["text"]
 
     # Combine all text columns into one string per row
@@ -161,6 +162,7 @@ def prepare_features(df: pd.DataFrame, cfg: dict):
 # Model builder
 # ---------------------------------------------------------------------------
 
+
 def build_model(cfg: dict) -> XGBClassifier:
     hp = cfg["model"]["hyperparams"]
     return XGBClassifier(
@@ -178,12 +180,14 @@ def build_model(cfg: dict) -> XGBClassifier:
 # Evaluation helpers
 # ---------------------------------------------------------------------------
 
+
 def evaluate(y_true, y_pred, y_proba, label_encoder, split_name: str) -> dict:
     acc = accuracy_score(y_true, y_pred)
     macro_f1 = f1_score(y_true, y_pred, average="macro")
     weighted_f1 = f1_score(y_true, y_pred, average="weighted")
     report = classification_report(
-        y_true, y_pred,
+        y_true,
+        y_pred,
         target_names=label_encoder.classes_,
         output_dict=True,
     )
@@ -202,11 +206,15 @@ def evaluate(y_true, y_pred, y_proba, label_encoder, split_name: str) -> dict:
     }
     logger.info(
         "%s  acc=%.4f  macro_f1=%.4f  auc=%.4f",
-        split_name.upper(), acc, macro_f1, auc if not np.isnan(auc) else -1,
+        split_name.upper(),
+        acc,
+        macro_f1,
+        auc if not np.isnan(auc) else -1,
     )
-    logger.info("\n%s", classification_report(
-        y_true, y_pred, target_names=label_encoder.classes_
-    ))
+    logger.info(
+        "\n%s",
+        classification_report(y_true, y_pred, target_names=label_encoder.classes_),
+    )
     return metrics, cm, report
 
 
@@ -222,6 +230,7 @@ def check_class_imbalance(y_series: pd.Series) -> bool:
 # ---------------------------------------------------------------------------
 # Main training pipeline
 # ---------------------------------------------------------------------------
+
 
 def train(cfg: dict):
     seed = cfg["experiment"]["seed"]
@@ -257,22 +266,41 @@ def train(cfg: dict):
     test_size = cfg["data"]["test_size"]
     val_ratio = cfg["data"]["val_size"]
 
-    X_text_trval, X_text_test, X_num_trval, X_num_test, X_cat_trval, X_cat_test, y_trval, y_test = (
-        train_test_split(
-            X_text, X_num, X_cat, y,
-            test_size=test_size, stratify=y, random_state=seed,
-        )
+    (
+        X_text_trval,
+        X_text_test,
+        X_num_trval,
+        X_num_test,
+        X_cat_trval,
+        X_cat_test,
+        y_trval,
+        y_test,
+    ) = train_test_split(
+        X_text,
+        X_num,
+        X_cat,
+        y,
+        test_size=test_size,
+        stratify=y,
+        random_state=seed,
     )
     val_size_adj = val_ratio / (1 - test_size)
     X_text_tr, X_text_val, X_num_tr, X_num_val, X_cat_tr, X_cat_val, y_tr, y_val = (
         train_test_split(
-            X_text_trval, X_num_trval, X_cat_trval, y_trval,
-            test_size=val_size_adj, stratify=y_trval, random_state=seed,
+            X_text_trval,
+            X_num_trval,
+            X_cat_trval,
+            y_trval,
+            test_size=val_size_adj,
+            stratify=y_trval,
+            random_state=seed,
         )
     )
     logger.info(
         "Split sizes — train: %d  val: %d  test: %d",
-        len(y_tr), len(y_val), len(y_test),
+        len(y_tr),
+        len(y_val),
+        len(y_test),
     )
 
     # ------------------------------------------------------------------
@@ -327,7 +355,8 @@ def train(cfg: dict):
 
         logger.info("Fitting model…")
         model.fit(
-            X_tr, y_tr,
+            X_tr,
+            y_tr,
             eval_set=[(X_val, y_val)],
             verbose=50,
         )
@@ -351,13 +380,23 @@ def train(cfg: dict):
         # Inference latency check
         sla_ms = cfg["sla"]["inference_latency_ms"]
         latency_p99 = _measure_latency(
-            model, tfidf, scaler, ohe, X_text_test.iloc[:100], X_num_test.iloc[:100], X_cat_test.iloc[:100]
+            model,
+            tfidf,
+            scaler,
+            ohe,
+            X_text_test.iloc[:100],
+            X_num_test.iloc[:100],
+            X_cat_test.iloc[:100],
         )
         mlflow.log_metric("inference_latency_p99_ms", latency_p99)
         sla_ok = latency_p99 <= sla_ms
         mlflow.log_param("sla_met", sla_ok)
-        logger.info("Inference latency p99=%.2f ms  SLA=%d ms  [%s]",
-                    latency_p99, sla_ms, "PASS" if sla_ok else "FAIL")
+        logger.info(
+            "Inference latency p99=%.2f ms  SLA=%d ms  [%s]",
+            latency_p99,
+            sla_ms,
+            "PASS" if sla_ok else "FAIL",
+        )
 
         # ------------------------------------------------------------------
         # 7. Persist artifacts
@@ -395,6 +434,7 @@ def train(cfg: dict):
 # Latency measurement
 # ---------------------------------------------------------------------------
 
+
 def _measure_latency(model, tfidf, scaler, ohe, X_text, X_num, X_cat) -> float:
     """Return p99 single-sample inference latency in ms (100 trials)."""
     latencies = []
@@ -413,11 +453,16 @@ def _measure_latency(model, tfidf, scaler, ohe, X_text, X_num, X_cat) -> float:
 # SHAP importance
 # ---------------------------------------------------------------------------
 
+
 def _compute_shap(model, X_sample, artifact_dir: Path):
     try:
         explainer = shap.TreeExplainer(model)
         shap_values = explainer.shap_values(X_sample)
-        mean_abs = np.abs(shap_values).mean(axis=(0, 2)) if shap_values.ndim == 3 else np.abs(shap_values).mean(axis=0)
+        mean_abs = (
+            np.abs(shap_values).mean(axis=(0, 2))
+            if shap_values.ndim == 3
+            else np.abs(shap_values).mean(axis=0)
+        )
         top_idx = np.argsort(mean_abs)[::-1][:20]
         importance = {f"feature_{i}": float(mean_abs[i]) for i in top_idx}
         with open(artifact_dir / "shap_importance.json", "w") as f:
@@ -430,6 +475,7 @@ def _compute_shap(model, X_sample, artifact_dir: Path):
 # ---------------------------------------------------------------------------
 # Cross-validation diagnostic (optional — call separately)
 # ---------------------------------------------------------------------------
+
 
 def cross_validate_model(cfg: dict, n_splits: int = 5):
     """Stratified k-fold CV for robust estimate before final training."""
@@ -451,17 +497,23 @@ def cross_validate_model(cfg: dict, n_splits: int = 5):
         scaler = StandardScaler()
         ohe = OneHotEncoder(handle_unknown="ignore", sparse_output=False)
 
-        X_t = np.hstack([
-            tfidf.fit_transform(X_t_text).toarray(),
-            scaler.fit_transform(X_t_num),
-            ohe.fit_transform(X_t_cat),
-        ])
-        X_v = np.hstack([
-            tfidf.transform(X_v_text).toarray(),
-            scaler.transform(X_v_num),
-            ohe.transform(X_v_cat),
-        ])
-        model = XGBClassifier(n_estimators=100, random_state=seed, verbosity=0, n_jobs=-1)
+        X_t = np.hstack(
+            [
+                tfidf.fit_transform(X_t_text).toarray(),
+                scaler.fit_transform(X_t_num),
+                ohe.fit_transform(X_t_cat),
+            ]
+        )
+        X_v = np.hstack(
+            [
+                tfidf.transform(X_v_text).toarray(),
+                scaler.transform(X_v_num),
+                ohe.transform(X_v_cat),
+            ]
+        )
+        model = XGBClassifier(
+            n_estimators=100, random_state=seed, verbosity=0, n_jobs=-1
+        )
         model.fit(X_t, y_t)
         pred = model.predict(X_v)
         f1 = f1_score(y_v, pred, average="macro")

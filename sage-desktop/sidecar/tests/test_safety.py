@@ -9,6 +9,7 @@ a flat `gates` list to a path written with backslashes), and the result field
 names are the engine's real ones (`asil`, `sil`, `required_processes`), not
 the names the web page reads (`asil_level`, `sil_level`, `requirements`).
 """
+
 from __future__ import annotations
 
 import pytest
@@ -19,13 +20,30 @@ from rpc import RpcError
 
 # ── FMEA ───────────────────────────────────────────────────────────────────
 
+
 def test_fmea_computes_rpn_and_sorts_descending():
-    out = safety.fmea({"entries": [
-        {"component": "sensor", "failure_mode": "drift", "effect": "bad reading",
-         "severity": 2, "occurrence": 2, "detection": 2},
-        {"component": "pump", "failure_mode": "stall", "effect": "no flow",
-         "severity": 9, "occurrence": 5, "detection": 6},
-    ]})
+    out = safety.fmea(
+        {
+            "entries": [
+                {
+                    "component": "sensor",
+                    "failure_mode": "drift",
+                    "effect": "bad reading",
+                    "severity": 2,
+                    "occurrence": 2,
+                    "detection": 2,
+                },
+                {
+                    "component": "pump",
+                    "failure_mode": "stall",
+                    "effect": "no flow",
+                    "severity": 9,
+                    "occurrence": 5,
+                    "detection": 6,
+                },
+            ]
+        }
+    )
     rpns = [e["rpn"] for e in out["entries"]]
     assert rpns == [270, 8]
     assert out["entries"][0]["risk_level"] == "critical"
@@ -37,19 +55,39 @@ def test_fmea_computes_rpn_and_sorts_descending():
 
 def test_fmea_rejects_out_of_range_score():
     with pytest.raises(RpcError) as ei:
-        safety.fmea({"entries": [
-            {"component": "c", "failure_mode": "f", "effect": "e",
-             "severity": 11, "occurrence": 1, "detection": 1},
-        ]})
+        safety.fmea(
+            {
+                "entries": [
+                    {
+                        "component": "c",
+                        "failure_mode": "f",
+                        "effect": "e",
+                        "severity": 11,
+                        "occurrence": 1,
+                        "detection": 1,
+                    },
+                ]
+            }
+        )
     assert ei.value.code == -32602  # invalid params, not a generic sidecar error
 
 
 def test_fmea_rejects_non_integer_score():
     with pytest.raises(RpcError):
-        safety.fmea({"entries": [
-            {"component": "c", "failure_mode": "f", "effect": "e",
-             "severity": "high", "occurrence": 1, "detection": 1},
-        ]})
+        safety.fmea(
+            {
+                "entries": [
+                    {
+                        "component": "c",
+                        "failure_mode": "f",
+                        "effect": "e",
+                        "severity": "high",
+                        "occurrence": 1,
+                        "detection": 1,
+                    },
+                ]
+            }
+        )
 
 
 def test_fmea_requires_non_empty_entries():
@@ -60,6 +98,7 @@ def test_fmea_requires_non_empty_entries():
 
 
 # ── FTA ────────────────────────────────────────────────────────────────────
+
 
 def _tree() -> dict:
     # Leaves carry BOTH "event" and "probability": the engine keys probability
@@ -101,6 +140,7 @@ def test_fta_rejects_a_non_dict_tree():
 
 # ── ASIL (ISO 26262) ───────────────────────────────────────────────────────
 
+
 def test_asil_derives_d_at_the_worst_corner_of_the_matrix():
     out = safety.asil({"severity": "S3", "exposure": "E4", "controllability": "C3"})
     assert out["asil"] == "D"
@@ -119,6 +159,7 @@ def test_asil_requires_all_three_parameters():
 
 # ── SIL (IEC 61508) ────────────────────────────────────────────────────────
 
+
 def test_sil_classifies_from_the_failure_rate():
     assert safety.sil({"probability_dangerous_failure_per_hour": 1e-7})["sil"] == 3
     assert safety.sil({"probability_dangerous_failure_per_hour": 1e-9})["sil"] == 4
@@ -134,6 +175,7 @@ def test_sil_rejects_a_non_numeric_rate():
 
 
 # ── IEC 62304 ──────────────────────────────────────────────────────────────
+
 
 def test_iec62304_derives_class_c_for_death_possible():
     out = safety.iec62304({"risk_level": "death_possible"})

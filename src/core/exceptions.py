@@ -14,6 +14,7 @@ class SAGEError(Exception):
 
 # ── LLM / Provider errors ────────────────────────────────────────────
 
+
 class LLMProviderError(SAGEError):
     """An LLM provider returned an error or is unreachable."""
 
@@ -28,6 +29,7 @@ class LLMRateLimitError(LLMProviderError):
 
 # ── Proposal / Approval errors ───────────────────────────────────────
 
+
 class ProposalError(SAGEError):
     """Base for proposal-related errors."""
 
@@ -41,6 +43,7 @@ class ProposalExpiredError(ProposalError):
 
 
 # ── Runner / Execution errors ────────────────────────────────────────
+
 
 class RunnerError(SAGEError):
     """Base for runner execution errors."""
@@ -59,6 +62,7 @@ class SandboxError(RunnerError):
 
 
 # ── Configuration errors ─────────────────────────────────────────────
+
 
 class ConfigError(SAGEError):
     """Invalid or missing configuration."""

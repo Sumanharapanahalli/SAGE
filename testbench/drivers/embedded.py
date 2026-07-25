@@ -16,6 +16,7 @@ Config (suites.embedded):
     port: "COM3" | "/dev/ttyUSB0"
     script: "..."
 """
+
 from __future__ import annotations
 
 import re
@@ -29,23 +30,36 @@ def run(cfg: dict) -> dict:
     checks = []
 
     def ck(name, ok, detail=""):
-        checks.append({"name": name, "status": "PASS" if ok else "FAIL", "detail": detail})
+        checks.append(
+            {"name": name, "status": "PASS" if ok else "FAIL", "detail": detail}
+        )
 
     cmd = cfg.get("unit_test_cmd")
     if cmd:
         cwd = REPO / cfg["cwd"] if cfg.get("cwd") else REPO
         try:
-            p = subprocess.run(cmd, shell=True, cwd=str(cwd), capture_output=True,
-                               text=True, timeout=cfg.get("timeout", 1800))
-            out = (p.stdout + p.stderr)
+            p = subprocess.run(
+                cmd,
+                shell=True,
+                cwd=str(cwd),
+                capture_output=True,
+                text=True,
+                timeout=cfg.get("timeout", 1800),
+            )
+            out = p.stdout + p.stderr
             # CTest: "100% tests passed, 0 tests failed out of N"
-            m = re.search(cfg.get("pass_regex", r"(\d+)% tests passed,\s*(\d+) tests failed"), out)
+            m = re.search(
+                cfg.get("pass_regex", r"(\d+)% tests passed,\s*(\d+) tests failed"), out
+            )
             if m and m.lastindex and m.lastindex >= 2:
                 failed = int(m.group(2))
                 ck("firmware unit tests", failed == 0 and p.returncode == 0, m.group(0))
             else:
-                ck("firmware unit tests", p.returncode == 0,
-                   f"exit {p.returncode}; {out.strip()[-160:]}")
+                ck(
+                    "firmware unit tests",
+                    p.returncode == 0,
+                    f"exit {p.returncode}; {out.strip()[-160:]}",
+                )
         except Exception as e:  # noqa: BLE001
             ck("firmware unit tests", False, f"{type(e).__name__}: {e}")
     else:
@@ -54,10 +68,19 @@ def run(cfg: dict) -> dict:
     hil = cfg.get("hil")
     if hil:
         # Extension point: drive real hardware via SAGE's serial / J-Link MCP servers.
-        ck("HIL", True, f"declared ({hil.get('transport')}@{hil.get('port')}) — "
-                        "wire to SAGE serial/J-Link MCP to run; skipped for now")
+        ck(
+            "HIL",
+            True,
+            f"declared ({hil.get('transport')}@{hil.get('port')}) — "
+            "wire to SAGE serial/J-Link MCP to run; skipped for now",
+        )
 
     passed = sum(1 for c in checks if c["status"] == "PASS")
     failed = sum(1 for c in checks if c["status"] == "FAIL")
-    return {"passed": passed, "failed": failed, "skipped": 0, "checks": checks,
-            "note": "embedded: host unit tests run; HIL is a wired-on-demand extension"}
+    return {
+        "passed": passed,
+        "failed": failed,
+        "skipped": 0,
+        "checks": checks,
+        "note": "embedded: host unit tests run; HIL is a wired-on-demand extension",
+    }

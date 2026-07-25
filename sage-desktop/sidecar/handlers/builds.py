@@ -11,6 +11,7 @@ Error mapping:
     Python exception (e.g. decomposer failure) → ``RPC_SIDECAR_ERROR``
     Missing module var → ``RPC_SIDECAR_ERROR``
 """
+
 import logging
 from typing import Any, Optional
 
@@ -65,7 +66,8 @@ def _compound(run_id: str, state: str, feedback: str) -> None:
     except Exception as e:  # noqa: BLE001
         logger.error(
             "compounding-memory write failed for run %s (decision stands): %s",
-            run_id, e,
+            run_id,
+            e,
         )
 
 
@@ -150,7 +152,9 @@ def start(params: Any):
             hitl_level=p.get("hitl_level") or "standard",
         )
     except Exception as e:  # noqa: BLE001
-        raise RpcError(RPC_SIDECAR_ERROR, f"build_orchestrator.start failed: {e}") from e
+        raise RpcError(
+            RPC_SIDECAR_ERROR, f"build_orchestrator.start failed: {e}"
+        ) from e
 
     if isinstance(result, dict) and result.get("error"):
         raise RpcError(RPC_SIDECAR_ERROR, result["error"])
@@ -162,7 +166,9 @@ def list_runs(_params: Any):
     try:
         return orch.list_runs()
     except Exception as e:  # noqa: BLE001
-        raise RpcError(RPC_SIDECAR_ERROR, f"build_orchestrator.list_runs failed: {e}") from e
+        raise RpcError(
+            RPC_SIDECAR_ERROR, f"build_orchestrator.list_runs failed: {e}"
+        ) from e
 
 
 def get(params: Any):
@@ -175,7 +181,9 @@ def get(params: Any):
     try:
         result = orch.get_status(run_id)
     except Exception as e:  # noqa: BLE001
-        raise RpcError(RPC_SIDECAR_ERROR, f"build_orchestrator.get_status failed: {e}") from e
+        raise RpcError(
+            RPC_SIDECAR_ERROR, f"build_orchestrator.get_status failed: {e}"
+        ) from e
 
     # NOT `result.get("error")` — a failed/rejected run is a run the operator
     # most needs to look at, and that check made the detail view refuse to show it.

@@ -21,6 +21,7 @@ Usage:
     python scripts/run_optimizer_until_done.py
     python scripts/run_optimizer_until_done.py --out-dir docs/proposals/20260628-self-improvement
 """
+
 from __future__ import annotations
 
 import argparse
@@ -41,9 +42,17 @@ SCRIPT = ROOT / "scripts" / "self_improve.py"
 # Trust / config errors deliberately do NOT appear here (a real 'not been
 # trusted' / stale-tool failure must still trip the no-progress guard).
 OUTAGE_MARKERS = (
-    "unknown error", "temporarily unavailable", "overloaded",
-    "service unavailable", "bad gateway", "gateway timeout",
-    "529", "503", "502", "empty output", "timed out",
+    "unknown error",
+    "temporarily unavailable",
+    "overloaded",
+    "service unavailable",
+    "bad gateway",
+    "gateway timeout",
+    "529",
+    "503",
+    "502",
+    "empty output",
+    "timed out",
 )
 
 # Load self_improve as a module so we reuse its task list + slug + done-check.
@@ -78,26 +87,52 @@ def convergence(out_dir: Path, threshold: float, only=None):
         if only is not None and t["id"] not in only:
             continue
         f = out_dir / (si.slugify(t["title"], t["id"]) + ".md")
-        (done if (f.exists() and si.proposal_is_done(f, threshold)) else todo).append(t["id"])
+        (done if (f.exists() and si.proposal_is_done(f, threshold)) else todo).append(
+            t["id"]
+        )
     return done, todo
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="Run the SAGE optimizer loop until all tasks converge.")
-    ap.add_argument("--out-dir", default="", help="Proposal dir to continue (auto-detected if omitted)")
-    ap.add_argument("--only-ids", default="", help="Comma-separated task ids to run (default: all remaining)")
+    ap = argparse.ArgumentParser(
+        description="Run the SAGE optimizer loop until all tasks converge."
+    )
+    ap.add_argument(
+        "--out-dir",
+        default="",
+        help="Proposal dir to continue (auto-detected if omitted)",
+    )
+    ap.add_argument(
+        "--only-ids",
+        default="",
+        help="Comma-separated task ids to run (default: all remaining)",
+    )
     ap.add_argument("--threshold", type=float, default=8.0)
     ap.add_argument("--max-iterations", type=int, default=3)
     ap.add_argument("--limit-wait-min", type=float, default=30)
     ap.add_argument("--limit-max-retries", type=int, default=12)
-    ap.add_argument("--between-min", type=float, default=2, help="Pause between outer attempts")
-    ap.add_argument("--max-no-progress", type=int, default=2,
-                    help="Stop after this many consecutive attempts that converge nothing new")
+    ap.add_argument(
+        "--between-min", type=float, default=2, help="Pause between outer attempts"
+    )
+    ap.add_argument(
+        "--max-no-progress",
+        type=int,
+        default=2,
+        help="Stop after this many consecutive attempts that converge nothing new",
+    )
     ap.add_argument("--max-attempts", type=int, default=50)
-    ap.add_argument("--outage-wait-min", type=float, default=15,
-                    help="Minutes to wait when a transient provider outage (mass 'Unknown error') is detected")
-    ap.add_argument("--max-outage-waits", type=int, default=24,
-                    help="Max outage wait-and-retry cycles before giving up (default 24 ~ 6h of dips)")
+    ap.add_argument(
+        "--outage-wait-min",
+        type=float,
+        default=15,
+        help="Minutes to wait when a transient provider outage (mass 'Unknown error') is detected",
+    )
+    ap.add_argument(
+        "--max-outage-waits",
+        type=int,
+        default=24,
+        help="Max outage wait-and-retry cycles before giving up (default 24 ~ 6h of dips)",
+    )
     args = ap.parse_args()
 
     out_dir = Path(args.out_dir) if args.out_dir else detect_out_dir()
@@ -110,29 +145,43 @@ def main() -> int:
     if only:
         print(f"[driver] Scoped to task ids: {sorted(only)}", flush=True)
     done, todo = convergence(out_dir, args.threshold, only)
-    print(f"[driver] Start: {len(done)}/{scope} converged, {len(todo)} remaining -> {todo}", flush=True)
+    print(
+        f"[driver] Start: {len(done)}/{scope} converged, {len(todo)} remaining -> {todo}",
+        flush=True,
+    )
 
     no_progress = 0
     outage_waits = 0
     attempt = 0
     while todo and attempt < args.max_attempts and no_progress < args.max_no_progress:
         attempt += 1
-        print(f"\n[driver] === attempt {attempt} | {len(todo)} remaining: {todo} ===", flush=True)
+        print(
+            f"\n[driver] === attempt {attempt} | {len(todo)} remaining: {todo} ===",
+            flush=True,
+        )
         cmd = [
-            sys.executable, "-u", str(SCRIPT),
+            sys.executable,
+            "-u",
+            str(SCRIPT),
             "--resume",
-            "--out-dir", str(out_dir),
-            "--threshold", str(args.threshold),
-            "--max-iterations", str(args.max_iterations),
-            "--limit-wait-min", str(args.limit_wait_min),
-            "--limit-max-retries", str(args.limit_max_retries),
+            "--out-dir",
+            str(out_dir),
+            "--threshold",
+            str(args.threshold),
+            "--max-iterations",
+            str(args.max_iterations),
+            "--limit-wait-min",
+            str(args.limit_wait_min),
+            "--limit-max-retries",
+            str(args.limit_max_retries),
         ]
         if only:
             cmd += ["--task-ids", ",".join(str(i) for i in sorted(only))]
         # Capture output so we can tell a transient provider outage apart from a
         # genuinely stuck task; still echo it so the driver log keeps everything.
-        proc = subprocess.run(cmd, capture_output=True, text=True,
-                              encoding="utf-8", errors="replace")
+        proc = subprocess.run(
+            cmd, capture_output=True, text=True, encoding="utf-8", errors="replace"
+        )
         out = (proc.stdout or "") + "\n" + (proc.stderr or "")
         print(out, flush=True)
         print(f"[driver] attempt {attempt} exited rc={proc.returncode}", flush=True)
@@ -143,8 +192,11 @@ def main() -> int:
 
         if gained > 0:
             no_progress = 0
-            outage_waits = 0   # real progress clears the outage counter
-            print(f"[driver] +{gained} converged this attempt -> {len(done)}/{scope} total", flush=True)
+            outage_waits = 0  # real progress clears the outage counter
+            print(
+                f"[driver] +{gained} converged this attempt -> {len(done)}/{scope} total",
+                flush=True,
+            )
             continue
 
         # Nothing converged. Was it a transient provider outage (wait it out) or
@@ -152,29 +204,48 @@ def main() -> int:
         outage_hits = sum(out.lower().count(m) for m in OUTAGE_MARKERS)
         if outage_hits >= 3 and outage_waits < args.max_outage_waits:
             outage_waits += 1
-            print(f"[driver] transient provider outage detected ({outage_hits} marker hits, "
-                  f"e.g. 'Unknown error'/overloaded) — waiting {args.outage_wait_min:g} min then "
-                  f"retrying (outage wait {outage_waits}/{args.max_outage_waits}; NOT a no-progress strike)",
-                  flush=True)
+            print(
+                f"[driver] transient provider outage detected ({outage_hits} marker hits, "
+                f"e.g. 'Unknown error'/overloaded) — waiting {args.outage_wait_min:g} min then "
+                f"retrying (outage wait {outage_waits}/{args.max_outage_waits}; NOT a no-progress strike)",
+                flush=True,
+            )
             time.sleep(args.outage_wait_min * 60)
             continue
 
         no_progress += 1
-        print(f"[driver] no new convergence ({no_progress}/{args.max_no_progress}); rc={proc.returncode}", flush=True)
+        print(
+            f"[driver] no new convergence ({no_progress}/{args.max_no_progress}); rc={proc.returncode}",
+            flush=True,
+        )
         if todo and no_progress < args.max_no_progress:
-            print(f"[driver] pausing {args.between_min:g} min before retry...", flush=True)
+            print(
+                f"[driver] pausing {args.between_min:g} min before retry...", flush=True
+            )
             time.sleep(args.between_min * 60)
 
     if not todo:
-        print(f"\n[driver] DONE — all {len(si.TASKS)} tasks converged. Proposals in {out_dir}", flush=True)
+        print(
+            f"\n[driver] DONE — all {len(si.TASKS)} tasks converged. Proposals in {out_dir}",
+            flush=True,
+        )
         return 0
     if no_progress >= args.max_no_progress:
-        print(f"\n[driver] STOPPED — {len(todo)} task(s) made no progress in "
-              f"{args.max_no_progress} attempts: {todo}", flush=True)
-        print("[driver] This looks like a real error (NOT a usage limit, which the runner waits out). "
-              "Inspect the last attempt's output above before re-running.", flush=True)
+        print(
+            f"\n[driver] STOPPED — {len(todo)} task(s) made no progress in "
+            f"{args.max_no_progress} attempts: {todo}",
+            flush=True,
+        )
+        print(
+            "[driver] This looks like a real error (NOT a usage limit, which the runner waits out). "
+            "Inspect the last attempt's output above before re-running.",
+            flush=True,
+        )
         return 2
-    print(f"\n[driver] STOPPED — hit max attempts ({args.max_attempts}). Remaining: {todo}", flush=True)
+    print(
+        f"\n[driver] STOPPED — hit max attempts ({args.max_attempts}). Remaining: {todo}",
+        flush=True,
+    )
     return 3
 
 

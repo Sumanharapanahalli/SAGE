@@ -4,6 +4,7 @@ Handlers are plain functions that take the `params` dict and return any
 JSON-serializable value. RpcError from a handler propagates unchanged;
 anything else becomes an RPC_INTERNAL_ERROR so the wire stays clean.
 """
+
 from __future__ import annotations
 
 from typing import Callable, Dict, List

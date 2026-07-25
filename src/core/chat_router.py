@@ -5,6 +5,7 @@ Builds a structured system prompt that instructs the LLM to classify the
 user's message as either a plain answer or an actionable intent, then parses
 the LLM's JSON response into a dict consumed by the /chat endpoint.
 """
+
 import json
 import logging
 
@@ -41,10 +42,10 @@ Available actions (use ONLY these action names):
 
 
 def build_router_system_prompt(solution: str, domain: str, page_context: str) -> str:
-    return f"""You are SAGE's embedded action-aware assistant for the '{solution}' solution (domain: {domain or 'general'}).
+    return f"""You are SAGE's embedded action-aware assistant for the '{solution}' solution (domain: {domain or "general"}).
 
 Current page context:
-{page_context or 'No page context provided.'}
+{page_context or "No page context provided."}
 
 Your job is to classify the user's message and respond with PURE JSON — no markdown, no code fences, no explanation outside the JSON.
 
@@ -105,4 +106,7 @@ def route(
         return parse_router_response(raw)
     except Exception as exc:
         logger.error("chat_router LLM error: %s", exc)
-        return {"type": "answer", "reply": "Sorry, I could not process your message right now. Please try again."}
+        return {
+            "type": "answer",
+            "reply": "Sorry, I could not process your message right now. Please try again.",
+        }

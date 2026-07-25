@@ -17,11 +17,10 @@ from __future__ import annotations
 import abc
 import logging
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 import numpy as np
 import torch
-import torch.nn as nn
 from PIL import Image
 
 from src.dataset import DOCUMENT_CLASSES
@@ -33,8 +32,8 @@ logger = logging.getLogger(__name__)
 # Abstract base
 # ---------------------------------------------------------------------------
 
-class BaseDocumentClassifier(abc.ABC):
 
+class BaseDocumentClassifier(abc.ABC):
     @abc.abstractmethod
     def predict(self, image: np.ndarray | Image.Image) -> str:
         """Return the predicted document class name."""
@@ -54,6 +53,7 @@ class BaseDocumentClassifier(abc.ABC):
 # ---------------------------------------------------------------------------
 # LayoutLM classifier
 # ---------------------------------------------------------------------------
+
 
 class LayoutLMClassifier(BaseDocumentClassifier):
     """
@@ -158,6 +158,7 @@ class LayoutLMClassifier(BaseDocumentClassifier):
     @classmethod
     def load(cls, path: str | Path) -> "LayoutLMClassifier":
         from transformers import LayoutLMForSequenceClassification, LayoutLMTokenizer
+
         path = Path(path)
         obj = cls.__new__(cls)
         obj._log = logging.getLogger(cls.__name__)
@@ -165,13 +166,16 @@ class LayoutLMClassifier(BaseDocumentClassifier):
         obj.classes = DOCUMENT_CLASSES
         obj.max_seq_length = 512
         obj.tokenizer = LayoutLMTokenizer.from_pretrained(str(path))
-        obj.model = LayoutLMForSequenceClassification.from_pretrained(str(path)).to(obj.device)
+        obj.model = LayoutLMForSequenceClassification.from_pretrained(str(path)).to(
+            obj.device
+        )
         return obj
 
 
 # ---------------------------------------------------------------------------
 # CNN classifier (EfficientNet-B0)
 # ---------------------------------------------------------------------------
+
 
 class CNNDocumentClassifier(BaseDocumentClassifier):
     """
@@ -210,15 +214,20 @@ class CNNDocumentClassifier(BaseDocumentClassifier):
                     param.requires_grad = False
             self._log.info("Backbone frozen; training head only.")
 
-        self.transform = transforms.Compose([
-            transforms.Resize((image_size, image_size)),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-        ])
+        self.transform = transforms.Compose(
+            [
+                transforms.Resize((image_size, image_size)),
+                transforms.ToTensor(),
+                transforms.Normalize(
+                    mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+                ),
+            ]
+        )
 
     def _to_tensor(self, image: np.ndarray | Image.Image) -> torch.Tensor:
         if isinstance(image, np.ndarray):
             import cv2
+
             image = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
         tensor = self.transform(image).unsqueeze(0).to(self.device)
         return tensor
@@ -247,13 +256,16 @@ class CNNDocumentClassifier(BaseDocumentClassifier):
     def load(cls, path: str | Path) -> "CNNDocumentClassifier":
         path = Path(path)
         obj = cls(pretrained=False)
-        obj.model.load_state_dict(torch.load(path / "cnn_weights.pt", map_location=obj.device))
+        obj.model.load_state_dict(
+            torch.load(path / "cnn_weights.pt", map_location=obj.device)
+        )
         return obj
 
 
 # ---------------------------------------------------------------------------
 # Factory
 # ---------------------------------------------------------------------------
+
 
 def build_classifier(
     model_type: str = "layoutlm",
@@ -264,4 +276,6 @@ def build_classifier(
     elif model_type == "cnn":
         return CNNDocumentClassifier(**kwargs)
     else:
-        raise ValueError(f"Unknown model_type: {model_type}. Choose 'layoutlm' or 'cnn'.")
+        raise ValueError(
+            f"Unknown model_type: {model_type}. Choose 'layoutlm' or 'cnn'."
+        )

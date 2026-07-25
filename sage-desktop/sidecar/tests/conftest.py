@@ -3,6 +3,7 @@
 Adds the sidecar package and the SAGE repo root to sys.path so that
 `from rpc import ...` and `from src.core.proposal_store import ...` both work.
 """
+
 from __future__ import annotations
 
 import sys

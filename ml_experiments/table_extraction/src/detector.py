@@ -16,7 +16,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-import numpy as np
 import pdfplumber
 from PIL import Image
 
@@ -28,7 +27,7 @@ class TableRegion:
     """Detected table bounding box in a document page."""
 
     page_index: int
-    bbox: tuple[float, float, float, float]   # x0, y0, x1, y1 (pixels or PDF units)
+    bbox: tuple[float, float, float, float]  # x0, y0, x1, y1 (pixels or PDF units)
     confidence: float
     source: str  # "transformer" | "pdfplumber_lattice" | "pdfplumber_stream"
     raw_meta: dict[str, Any] = field(default_factory=dict)
@@ -72,12 +71,19 @@ class TableDetector:
             return
         try:
             import torch
-            from transformers import AutoImageProcessor, TableTransformerForObjectDetection
+            from transformers import (
+                AutoImageProcessor,
+                TableTransformerForObjectDetection,
+            )
 
-            self._device = "cuda" if (self.use_gpu and torch.cuda.is_available()) else "cpu"
+            self._device = (
+                "cuda" if (self.use_gpu and torch.cuda.is_available()) else "cpu"
+            )
             logger.info("Loading TableTransformer on %s …", self._device)
             self._processor = AutoImageProcessor.from_pretrained(self.model_name)
-            self._model = TableTransformerForObjectDetection.from_pretrained(self.model_name)
+            self._model = TableTransformerForObjectDetection.from_pretrained(
+                self.model_name
+            )
             self._model.to(self._device)
             self._model.eval()
             logger.info("TableTransformer loaded.")
@@ -105,14 +111,18 @@ class TableDetector:
                 native = self._detect_native_pdf(page, page_idx)
                 if native:
                     regions.extend(native)
-                    logger.debug("Page %d: %d native tables found.", page_idx, len(native))
+                    logger.debug(
+                        "Page %d: %d native tables found.", page_idx, len(native)
+                    )
                 else:
                     # Rasterize and run vision model
                     img = page.to_image(resolution=150).original
                     image_regions = self._detect_from_pil(img, page_idx)
                     regions.extend(image_regions)
                     logger.debug(
-                        "Page %d: %d transformer-detected tables.", page_idx, len(image_regions)
+                        "Page %d: %d transformer-detected tables.",
+                        page_idx,
+                        len(image_regions),
                     )
         return regions
 
@@ -156,10 +166,16 @@ class TableDetector:
                     )
                 )
         except Exception:
-            logger.warning("pdfplumber native detection failed on page %d.", page_index, exc_info=True)
+            logger.warning(
+                "pdfplumber native detection failed on page %d.",
+                page_index,
+                exc_info=True,
+            )
         return regions
 
-    def _detect_from_pil(self, image: Image.Image, page_index: int) -> list[TableRegion]:
+    def _detect_from_pil(
+        self, image: Image.Image, page_index: int
+    ) -> list[TableRegion]:
         """Run TableTransformer on a PIL image and return detected regions."""
         import torch
 
@@ -172,7 +188,9 @@ class TableDetector:
         with torch.no_grad():
             outputs = self._model(**inputs)
 
-        target_sizes = torch.tensor([[image_rgb.height, image_rgb.width]]).to(self._device)
+        target_sizes = torch.tensor([[image_rgb.height, image_rgb.width]]).to(
+            self._device
+        )
         results = self._processor.post_process_object_detection(
             outputs, threshold=self.detection_threshold, target_sizes=target_sizes
         )[0]
@@ -195,10 +213,14 @@ class TableDetector:
             )
         return regions
 
-    def detect_from_bytes(self, data: bytes, mime_type: str = "application/pdf") -> list[TableRegion]:
+    def detect_from_bytes(
+        self, data: bytes, mime_type: str = "application/pdf"
+    ) -> list[TableRegion]:
         """Convenience: detect from raw bytes."""
         if mime_type == "application/pdf":
-            import tempfile, os
+            import tempfile
+            import os
+
             with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
                 tmp.write(data)
                 tmp_path = tmp.name

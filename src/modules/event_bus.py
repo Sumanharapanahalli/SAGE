@@ -4,6 +4,7 @@ Nano-module: Event Bus
 Lightweight synchronous publish/subscribe bus for decoupled agent communication.
 Zero dependencies — pure Python. Thread-safe.
 """
+
 import logging
 import threading
 from collections import defaultdict
@@ -48,8 +49,9 @@ class EventBus:
         """
         with self._lock:
             handlers = list(self._handlers.get(event_type, []))
-            handlers += [h for h in self._handlers.get(_WILDCARD, [])
-                         if h not in handlers]
+            handlers += [
+                h for h in self._handlers.get(_WILDCARD, []) if h not in handlers
+            ]
 
         called = 0
         for handler in handlers:

@@ -23,11 +23,11 @@ Three deliberate divergences from the web API's equivalents:
   single local operator is not a DoS vector). The task *sanitisation* it sits
   next to IS ported, because that one is about what reaches the LLM.
 """
+
 from __future__ import annotations
 
 import logging
 import re
-from typing import Optional
 
 from rpc import RPC_INVALID_PARAMS, RPC_SIDECAR_ERROR, RpcError
 
@@ -50,6 +50,7 @@ _CONTROL_CHARS = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
 
 
 # ---------- wiring / helpers ----------
+
 
 def _require_store():
     if _store is None:
@@ -77,7 +78,9 @@ def _roles() -> dict:
     try:
         roles = (project.get_prompts() or {}).get("roles", {})
     except Exception as exc:  # noqa: BLE001
-        raise RpcError(RPC_SIDECAR_ERROR, f"could not read prompts.yaml: {exc}") from exc
+        raise RpcError(
+            RPC_SIDECAR_ERROR, f"could not read prompts.yaml: {exc}"
+        ) from exc
     return roles if isinstance(roles, dict) else {}
 
 
@@ -98,6 +101,7 @@ def _solution() -> str:
 
 
 # ---------- handlers ----------
+
 
 def run(params: dict) -> dict:
     """Run a solution-defined UniversalAgent role and persist a real proposal.
@@ -168,7 +172,9 @@ def hire(params: dict) -> dict:
     description = params.get("description", "")
     icon = params.get("icon") or "🤖"
     task_types = params.get("task_types", []) or []
-    if not isinstance(task_types, list) or any(not isinstance(t, str) for t in task_types):
+    if not isinstance(task_types, list) or any(
+        not isinstance(t, str) for t in task_types
+    ):
         raise RpcError(RPC_INVALID_PARAMS, "'task_types' must be a list of strings")
 
     if role_id in _roles():
@@ -224,7 +230,9 @@ def analyze_jd(params: dict) -> dict:
     try:
         return jd_to_role_config(jd_text, solution_context=solution_context)
     except ValueError as exc:
-        raise RpcError(RPC_INVALID_PARAMS, f"could not extract a role config: {exc}") from exc
+        raise RpcError(
+            RPC_INVALID_PARAMS, f"could not extract a role config: {exc}"
+        ) from exc
     except Exception as exc:  # noqa: BLE001
         raise RpcError(RPC_SIDECAR_ERROR, f"JD analysis failed: {exc}") from exc
 
@@ -243,7 +251,9 @@ def get_project(params: dict) -> dict:
     try:
         meta = dict(project.metadata or {})
     except Exception as exc:  # noqa: BLE001
-        raise RpcError(RPC_SIDECAR_ERROR, f"could not read project.yaml: {exc}") from exc
+        raise RpcError(
+            RPC_SIDECAR_ERROR, f"could not read project.yaml: {exc}"
+        ) from exc
 
     meta["agents"] = [
         {

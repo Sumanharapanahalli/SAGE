@@ -7,12 +7,14 @@ router = APIRouter(tags=["research"])
 
 # ── Meta-Optimizer ───────────────────────────────────────────────────
 
+
 @router.post("/meta/optimize")
 async def meta_optimize(request: Request):
     """Run a meta-optimization iteration for a runner."""
     body = await request.json()
     runner_name = body.get("runner_name", "openswe")
     from src.core.meta_optimizer import MetaOptimizer
+
     optimizer = MetaOptimizer()
     result = optimizer.run_iteration(runner_name=runner_name)
     return result
@@ -22,6 +24,7 @@ async def meta_optimize(request: Request):
 async def meta_history(runner_name: str = ""):
     """Get meta-optimization iteration history."""
     from src.core.meta_optimizer import MetaOptimizer
+
     optimizer = MetaOptimizer()
     return {"history": optimizer.get_history(runner_name=runner_name)}
 
@@ -30,6 +33,7 @@ async def meta_history(runner_name: str = ""):
 async def meta_stats(runner_name: str = ""):
     """Get meta-optimizer statistics."""
     from src.core.meta_optimizer import MetaOptimizer
+
     optimizer = MetaOptimizer()
     return optimizer.stats(runner_name=runner_name)
 
@@ -38,12 +42,14 @@ async def meta_stats(runner_name: str = ""):
 async def meta_best(runner_name: str = ""):
     """Get the best optimization iteration for a runner."""
     from src.core.meta_optimizer import MetaOptimizer
+
     optimizer = MetaOptimizer()
     best = optimizer.get_best_iteration(runner_name=runner_name)
     return best or {"message": "No iterations found"}
 
 
 # ── AutoResearch ─────────────────────────────────────────────────────
+
 
 @router.post("/research/experiment")
 async def research_experiment(request: Request):
@@ -55,6 +61,7 @@ async def research_experiment(request: Request):
     budget_s = body.get("budget_s")
     direction = body.get("direction", "lower")
     from src.core.auto_research import AutoResearchEngine
+
     engine = AutoResearchEngine()
     result = engine.run_experiment(
         workspace=workspace,
@@ -77,6 +84,7 @@ async def research_session(request: Request, background_tasks: BackgroundTasks):
     budget_s = body.get("budget_s")
     direction = body.get("direction", "lower")
     from src.core.auto_research import AutoResearchEngine
+
     engine = AutoResearchEngine()
     result = engine.run_session(
         workspace=workspace,
@@ -93,6 +101,7 @@ async def research_session(request: Request, background_tasks: BackgroundTasks):
 async def research_results(limit: int = 100):
     """Get experiment results."""
     from src.core.auto_research import AutoResearchEngine
+
     engine = AutoResearchEngine()
     return {"results": engine.get_results(limit=limit)}
 
@@ -101,6 +110,7 @@ async def research_results(limit: int = 100):
 async def research_best(direction: str = "lower"):
     """Get the best experiment result."""
     from src.core.auto_research import AutoResearchEngine
+
     engine = AutoResearchEngine()
     best = engine.get_best_result(direction=direction)
     return best or {"message": "No experiments found"}
@@ -110,6 +120,7 @@ async def research_best(direction: str = "lower"):
 async def research_stats():
     """Get experiment analytics."""
     from src.core.auto_research import AutoResearchEngine
+
     engine = AutoResearchEngine()
     return engine.stats()
 
@@ -119,11 +130,15 @@ async def research_load_program(path: str = "program.md"):
     """Load a research program (Markdown-as-skill) to guide experiment hypotheses."""
     try:
         from src.core.auto_research import AutoResearchEngine
+
         engine = AutoResearchEngine()
         program = engine.load_program(path)
         return {"path": path, "program": program, "loaded": bool(program)}
     except FileNotFoundError:
         from fastapi import HTTPException
-        raise HTTPException(status_code=404, detail=f"Research program not found: {path}")
+
+        raise HTTPException(
+            status_code=404, detail=f"Research program not found: {path}"
+        )
     except Exception as exc:
         return {"error": str(exc)}

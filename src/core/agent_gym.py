@@ -40,7 +40,7 @@ import threading
 import time
 import uuid
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Optional
 
 from src.core.db import get_connection
 
@@ -51,9 +51,11 @@ logger = logging.getLogger("AgentGym")
 # Data classes
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class TrainingSession:
     """A single training session for an agent."""
+
     session_id: str
     agent_role: str
     runner_name: str
@@ -110,10 +112,13 @@ class SkillRating:
       - failed_exercises: exercise IDs that need spaced repetition
       - next_review_at: session count thresholds for spaced repetition
     """
+
     agent_role: str
     skill_name: str
     rating: float = 1000.0
-    rating_deviation: float = 350.0  # Glicko-2 RD — starts high (uncertain), shrinks with data
+    rating_deviation: float = (
+        350.0  # Glicko-2 RD — starts high (uncertain), shrinks with data
+    )
     volatility: float = 0.06  # Glicko-2 σ — performance consistency
     sessions: int = 0
     wins: int = 0
@@ -141,14 +146,17 @@ class SkillRating:
             "streak": self.streak,
             "best_score": round(self.best_score, 1),
             "current_difficulty": self.current_difficulty,
-            "pending_reviews": len([
-                eid for eid, threshold in (
-                    self.failed_exercises.items()
-                    if isinstance(self.failed_exercises, dict)
-                    else []
-                )
-                if self.sessions >= threshold
-            ]),
+            "pending_reviews": len(
+                [
+                    eid
+                    for eid, threshold in (
+                        self.failed_exercises.items()
+                        if isinstance(self.failed_exercises, dict)
+                        else []
+                    )
+                    if self.sessions >= threshold
+                ]
+            ),
         }
 
 
@@ -181,6 +189,7 @@ GLICKO2_RD_DECAY = 1.02  # RD increases slightly per inactive period (uncertaint
 # SQLite Persistence
 # ---------------------------------------------------------------------------
 
+
 class GymDB:
     """SQLite persistence for Agent Gym data."""
 
@@ -191,6 +200,7 @@ class GymDB:
             # same single-source-of-truth ProjectConfig.sage_data_dir every
             # other per-solution store resolves through.
             from src.core.project_loader import project_config
+
             db_path = os.path.join(project_config.sage_data_dir, "gym_data.db")
         self.db_path = db_path
         self._lock = threading.Lock()
@@ -265,25 +275,49 @@ class GymDB:
         with self._lock:
             conn = get_connection(self.db_path, row_factory=None)
             try:
-                conn.execute("""
+                conn.execute(
+                    """
                     INSERT OR REPLACE INTO training_sessions
                     (session_id, agent_role, runner_name, skill_name, exercise_id,
                      difficulty, status, score, passed, elo_before, elo_after,
                      duration_s, started_at, completed_at, grade_json, critic_json,
                      peer_json, reflection, improvement_json)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, (
-                    session.session_id, session.agent_role, session.runner_name,
-                    session.skill_name, session.exercise_id, session.difficulty,
-                    session.status, session.grade.get("score", 0),
-                    1 if session.grade.get("passed") else 0,
-                    session.elo_before, session.elo_after,
-                    session.duration_s, session.started_at, session.completed_at,
-                    json.dumps(session.grade),
-                    json.dumps({k: v for k, v in session.critic_reviews.items() if isinstance(v, dict)}),
-                    json.dumps({k: v for k, v in session.peer_reviews.items() if isinstance(v, dict)}),
-                    session.reflection, json.dumps(session.improvement_plan),
-                ))
+                """,
+                    (
+                        session.session_id,
+                        session.agent_role,
+                        session.runner_name,
+                        session.skill_name,
+                        session.exercise_id,
+                        session.difficulty,
+                        session.status,
+                        session.grade.get("score", 0),
+                        1 if session.grade.get("passed") else 0,
+                        session.elo_before,
+                        session.elo_after,
+                        session.duration_s,
+                        session.started_at,
+                        session.completed_at,
+                        json.dumps(session.grade),
+                        json.dumps(
+                            {
+                                k: v
+                                for k, v in session.critic_reviews.items()
+                                if isinstance(v, dict)
+                            }
+                        ),
+                        json.dumps(
+                            {
+                                k: v
+                                for k, v in session.peer_reviews.items()
+                                if isinstance(v, dict)
+                            }
+                        ),
+                        session.reflection,
+                        json.dumps(session.improvement_plan),
+                    ),
+                )
                 conn.commit()
             finally:
                 conn.close()
@@ -292,19 +326,31 @@ class GymDB:
         with self._lock:
             conn = get_connection(self.db_path, row_factory=None)
             try:
-                conn.execute("""
+                conn.execute(
+                    """
                     INSERT OR REPLACE INTO skill_ratings
                     (rating_key, agent_role, skill_name, rating, rating_deviation,
                      volatility, sessions, wins, losses, streak, best_score,
                      current_difficulty, last_session_id, failed_exercises_json)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, (
-                    key, rating.agent_role, rating.skill_name, rating.rating,
-                    rating.rating_deviation, rating.volatility,
-                    rating.sessions, rating.wins, rating.losses, rating.streak,
-                    rating.best_score, rating.current_difficulty, rating.last_session_id,
-                    json.dumps(rating.failed_exercises),
-                ))
+                """,
+                    (
+                        key,
+                        rating.agent_role,
+                        rating.skill_name,
+                        rating.rating,
+                        rating.rating_deviation,
+                        rating.volatility,
+                        rating.sessions,
+                        rating.wins,
+                        rating.losses,
+                        rating.streak,
+                        rating.best_score,
+                        rating.current_difficulty,
+                        rating.last_session_id,
+                        json.dumps(rating.failed_exercises),
+                    ),
+                )
                 conn.commit()
             finally:
                 conn.close()
@@ -323,7 +369,9 @@ class GymDB:
                     key = row_dict["rating_key"]
                     failed_ex = {}
                     try:
-                        failed_ex = json.loads(row_dict.get("failed_exercises_json", "{}") or "{}")
+                        failed_ex = json.loads(
+                            row_dict.get("failed_exercises_json", "{}") or "{}"
+                        )
                     except (json.JSONDecodeError, TypeError):
                         pass
                     ratings[key] = SkillRating(
@@ -337,7 +385,9 @@ class GymDB:
                         losses=row_dict.get("losses", 0),
                         streak=row_dict.get("streak", 0),
                         best_score=row_dict.get("best_score", 0),
-                        current_difficulty=row_dict.get("current_difficulty", "beginner"),
+                        current_difficulty=row_dict.get(
+                            "current_difficulty", "beginner"
+                        ),
                         last_session_id=row_dict.get("last_session_id", ""),
                         failed_exercises=failed_ex,
                     )
@@ -351,7 +401,7 @@ class GymDB:
             try:
                 row = conn.execute(
                     "SELECT * FROM training_sessions WHERE session_id = ?",
-                    (session_id,)
+                    (session_id,),
                 ).fetchone()
                 return dict(row) if row else None
             finally:
@@ -375,13 +425,21 @@ class GymDB:
                 ).fetchone()
                 count = (existing[0] + 1) if existing else 1
 
-                conn.execute("""
+                conn.execute(
+                    """
                     INSERT OR REPLACE INTO refined_criteria
                     (exercise_id, criteria_json, rationale, based_on_sessions,
                      refinement_count, updated_at)
                     VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-                """, (exercise_id, json.dumps(criteria), rationale,
-                      based_on_sessions, count))
+                """,
+                    (
+                        exercise_id,
+                        json.dumps(criteria),
+                        rationale,
+                        based_on_sessions,
+                        count,
+                    ),
+                )
                 conn.commit()
             finally:
                 conn.close()
@@ -463,8 +521,13 @@ class GymDB:
                     params,
                 ).fetchall()
                 return [
-                    {"session_id": r[0], "score": r[1], "elo": r[2],
-                     "difficulty": r[3], "timestamp": r[4]}
+                    {
+                        "session_id": r[0],
+                        "score": r[1],
+                        "elo": r[2],
+                        "difficulty": r[3],
+                        "timestamp": r[4],
+                    }
                     for r in rows
                 ]
             finally:
@@ -475,7 +538,8 @@ class GymDB:
         with self._lock:
             conn = get_connection(self.db_path, row_factory=None)
             try:
-                rows = conn.execute("""
+                rows = conn.execute(
+                    """
                     SELECT exercise_id, skill_name, difficulty,
                            COUNT(*) as attempts,
                            AVG(score) as avg_score,
@@ -488,13 +552,19 @@ class GymDB:
                     HAVING attempts >= 2
                     ORDER BY avg_score ASC
                     LIMIT 20
-                """, (role,)).fetchall()
+                """,
+                    (role,),
+                ).fetchall()
                 return [
                     {
-                        "exercise_id": r[0], "skill_name": r[1], "difficulty": r[2],
-                        "attempts": r[3], "avg_score": round(r[4], 1),
+                        "exercise_id": r[0],
+                        "skill_name": r[1],
+                        "difficulty": r[2],
+                        "attempts": r[3],
+                        "avg_score": round(r[4], 1),
                         "pass_rate": round(r[5] / r[3], 3),
-                        "worst_score": r[6], "best_score": r[7],
+                        "worst_score": r[6],
+                        "best_score": r[7],
                         "is_weakness": r[4] < 50,
                     }
                     for r in rows
@@ -507,12 +577,15 @@ class GymDB:
         with self._lock:
             conn = get_connection(self.db_path, row_factory=None)
             try:
-                rows = conn.execute("""
+                rows = conn.execute(
+                    """
                     SELECT score, elo_after, started_at
                     FROM training_sessions
                     WHERE agent_role = ? AND status = 'completed'
                     ORDER BY started_at ASC
-                """, (role,)).fetchall()
+                """,
+                    (role,),
+                ).fetchall()
 
                 if len(rows) < 2:
                     return {"sessions": len(rows), "improving": False, "rate": 0.0}
@@ -521,8 +594,8 @@ class GymDB:
                 elos = [r[1] for r in rows]
 
                 # Calculate moving averages
-                early_window = scores[:min(window, len(scores))]
-                late_window = scores[max(0, len(scores) - window):]
+                early_window = scores[: min(window, len(scores))]
+                late_window = scores[max(0, len(scores) - window) :]
                 early_avg = statistics.mean(early_window)
                 late_avg = statistics.mean(late_window)
 
@@ -530,7 +603,9 @@ class GymDB:
                 n = len(scores)
                 x_mean = (n - 1) / 2
                 y_mean = statistics.mean(scores)
-                numerator = sum((i - x_mean) * (s - y_mean) for i, s in enumerate(scores))
+                numerator = sum(
+                    (i - x_mean) * (s - y_mean) for i, s in enumerate(scores)
+                )
                 denominator = sum((i - x_mean) ** 2 for i in range(n))
                 slope = numerator / denominator if denominator else 0
 
@@ -553,11 +628,14 @@ class GymDB:
         with self._lock:
             conn = get_connection(self.db_path, row_factory=None)
             try:
-                rows = conn.execute("""
+                rows = conn.execute(
+                    """
                     SELECT critic_json FROM training_sessions
                     WHERE status = 'completed' AND critic_json != '{}'
                     ORDER BY started_at DESC LIMIT ?
-                """, (limit,)).fetchall()
+                """,
+                    (limit,),
+                ).fetchall()
 
                 agreements = 0
                 disagreements = 0
@@ -567,7 +645,8 @@ class GymDB:
                     try:
                         critics = json.loads(row[0])
                         scores = [
-                            v.get("score", 0) for v in critics.values()
+                            v.get("score", 0)
+                            for v in critics.values()
                             if isinstance(v, dict) and "score" in v
                         ]
                         if len(scores) >= 2:
@@ -594,16 +673,20 @@ class GymDB:
         with self._lock:
             conn = get_connection(self.db_path, row_factory=None)
             try:
-                rows = conn.execute("""
+                rows = conn.execute(
+                    """
                     SELECT difficulty, COUNT(*) as attempts,
                            AVG(score) as avg_score, SUM(passed) as passes
                     FROM training_sessions
                     WHERE agent_role = ? AND status = 'completed'
                     GROUP BY difficulty
-                """, (role,)).fetchall()
+                """,
+                    (role,),
+                ).fetchall()
                 return {
                     r[0]: {
-                        "attempts": r[1], "avg_score": round(r[2], 1),
+                        "attempts": r[1],
+                        "avg_score": round(r[2], 1),
                         "win_rate": round(r[3] / r[1], 3),
                     }
                     for r in rows
@@ -616,7 +699,9 @@ class GymDB:
         with self._lock:
             conn = get_connection(self.db_path, row_factory=None)
             try:
-                total = conn.execute("SELECT COUNT(*) FROM training_sessions").fetchone()[0]
+                total = conn.execute(
+                    "SELECT COUNT(*) FROM training_sessions"
+                ).fetchone()[0]
                 completed = conn.execute(
                     "SELECT COUNT(*) FROM training_sessions WHERE status='completed'"
                 ).fetchone()[0]
@@ -652,6 +737,7 @@ class GymDB:
 # Agent Gym
 # ---------------------------------------------------------------------------
 
+
 class AgentGym:
     """
     Self-play training environment for SAGE agents.
@@ -674,7 +760,9 @@ class AgentGym:
         self._history: list[str] = []
 
         if self._ratings:
-            self.logger.info("Restored %d skill ratings from SQLite", len(self._ratings))
+            self.logger.info(
+                "Restored %d skill ratings from SQLite", len(self._ratings)
+            )
 
     # ── Training loop ────────────────────────────────────────────────────
 
@@ -696,9 +784,12 @@ class AgentGym:
 
         # 1. Find the runner and exercise
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role(role)
         if not runner:
-            return self._failed_session(session_id, role, f"No runner for role '{role}'")
+            return self._failed_session(
+                session_id, role, f"No runner for role '{role}'"
+            )
 
         # Get skill name from registry — prefer skill that lists this role
         if not skill_name:
@@ -726,7 +817,7 @@ class AgentGym:
             exercises = runner.get_exercises(difficulty="intermediate")
             difficulty = "intermediate"
         if not exercises:
-            return self._failed_session(session_id, role, f"No exercises available")
+            return self._failed_session(session_id, role, "No exercises available")
 
         # Select exercise (prefer one not recently attempted)
         exercise = None
@@ -740,7 +831,9 @@ class AgentGym:
         if refined:
             self.logger.info(
                 "Using refined criteria for %s (%d criteria, was %d)",
-                exercise.id, len(refined), len(exercise.acceptance_criteria),
+                exercise.id,
+                len(refined),
+                len(exercise.acceptance_criteria),
             )
             exercise.acceptance_criteria = refined
 
@@ -767,6 +860,7 @@ class AgentGym:
                 "payload": {"exercise_id": exercise.id, "training": True},
             }
             import tempfile
+
             workspace = tempfile.mkdtemp(prefix=f"sage_gym_{role}_")
             result = runner.execute(task=task, workspace=workspace)
             # Store workspace path so experimental verification can find it
@@ -789,7 +883,9 @@ class AgentGym:
             # 4. CRITIQUE — N critics review (including experimental results)
             session.status = "critiquing"
             session.critic_reviews = self._get_critic_reviews(
-                result, exercise, role,
+                result,
+                exercise,
+                role,
                 experimental_grade=session.grade,
             )
 
@@ -805,8 +901,12 @@ class AgentGym:
 
             # 6. Update Glicko-2 rating
             session.elo_after = self._update_rating(
-                rating_key, current_rating, score.score, score.passed,
-                session_id, exercise.id,
+                rating_key,
+                current_rating,
+                score.score,
+                score.passed,
+                session_id,
+                exercise.id,
             )
 
             # 7. Curriculum check — advance or demote difficulty
@@ -836,9 +936,12 @@ class AgentGym:
 
         self.logger.info(
             "Training %s: role=%s, skill=%s, score=%.1f, elo=%.1f→%.1f, diff=%s",
-            session_id[:8], role, skill_name,
+            session_id[:8],
+            role,
+            skill_name,
             session.grade.get("score", 0),
-            session.elo_before, session.elo_after,
+            session.elo_before,
+            session.elo_after,
             difficulty,
         )
 
@@ -869,16 +972,20 @@ class AgentGym:
 
         if roles is None:
             from src.integrations.base_runner import get_role_to_runner_map
+
             roles = list(get_role_to_runner_map().keys())
 
-        self.logger.info("Batch training %d roles (parallel=%d)", len(roles), max_parallel)
+        self.logger.info(
+            "Batch training %d roles (parallel=%d)", len(roles), max_parallel
+        )
 
         sessions = []
-        with concurrent.futures.ThreadPoolExecutor(max_workers=max_parallel) as executor:
+        with concurrent.futures.ThreadPoolExecutor(
+            max_workers=max_parallel
+        ) as executor:
             futures = {
                 executor.submit(
-                    self.train, role, difficulty,
-                    enable_peer_review=enable_peer_review
+                    self.train, role, difficulty, enable_peer_review=enable_peer_review
                 ): role
                 for role in roles
             }
@@ -916,17 +1023,22 @@ class AgentGym:
         # Tier 1: Spaced repetition — failed exercises due for review
         if current_rating and current_rating.failed_exercises:
             due_ids = [
-                eid for eid, threshold in current_rating.failed_exercises.items()
+                eid
+                for eid, threshold in current_rating.failed_exercises.items()
                 if current_rating.sessions >= threshold and eid in exercise_ids
             ]
             if due_ids:
                 match = next((e for e in exercises if e.id == due_ids[0]), None)
                 if match:
-                    self.logger.info("Spaced repetition: retrying %s for %s", match.id, role)
+                    self.logger.info(
+                        "Spaced repetition: retrying %s for %s", match.id, role
+                    )
                     return match
 
         # Get per-exercise success rates from history
-        recent_sessions = self._db.query_sessions(role=role, status="completed", limit=50)
+        recent_sessions = self._db.query_sessions(
+            role=role, status="completed", limit=50
+        )
         exercise_stats: dict[str, dict] = {}  # exercise_id → {attempts, passes}
         recent_ids = set()
         for s in recent_sessions:
@@ -947,7 +1059,9 @@ class AgentGym:
                 if OPTIMAL_ZONE_LOW <= rate <= OPTIMAL_ZONE_HIGH:
                     optimal.append(e)
         if optimal:
-            self.logger.info("Optimal zone: selecting from %d exercises for %s", len(optimal), role)
+            self.logger.info(
+                "Optimal zone: selecting from %d exercises for %s", len(optimal), role
+            )
             return optimal[0]
 
         # Tier 3: Unseen exercises (exploration)
@@ -962,27 +1076,40 @@ class AgentGym:
 
     def _curriculum_check(self, key: str, rating: SkillRating) -> None:
         """Auto-advance or demote difficulty based on recent performance."""
-        current_idx = DIFFICULTY_ORDER.index(rating.current_difficulty) \
-            if rating.current_difficulty in DIFFICULTY_ORDER else 0
+        current_idx = (
+            DIFFICULTY_ORDER.index(rating.current_difficulty)
+            if rating.current_difficulty in DIFFICULTY_ORDER
+            else 0
+        )
 
         # Calculate win rate at current difficulty
         recent = self._db.query_sessions(
-            role=rating.agent_role, skill=rating.skill_name,
-            status="completed", limit=20,
+            role=rating.agent_role,
+            skill=rating.skill_name,
+            status="completed",
+            limit=20,
         )
-        at_current = [s for s in recent if s.get("difficulty") == rating.current_difficulty]
+        at_current = [
+            s for s in recent if s.get("difficulty") == rating.current_difficulty
+        ]
 
         if len(at_current) >= CURRICULUM_ADVANCE_MIN_SESSIONS:
             wins = sum(1 for s in at_current if s.get("passed"))
             win_rate = wins / len(at_current)
 
             # Advance
-            if win_rate >= CURRICULUM_ADVANCE_WIN_RATE and current_idx < len(DIFFICULTY_ORDER) - 1:
+            if (
+                win_rate >= CURRICULUM_ADVANCE_WIN_RATE
+                and current_idx < len(DIFFICULTY_ORDER) - 1
+            ):
                 old = rating.current_difficulty
                 rating.current_difficulty = DIFFICULTY_ORDER[current_idx + 1]
                 self.logger.info(
                     "Curriculum advance: %s %s → %s (win_rate=%.0f%%)",
-                    key, old, rating.current_difficulty, win_rate * 100,
+                    key,
+                    old,
+                    rating.current_difficulty,
+                    win_rate * 100,
                 )
 
         if len(at_current) >= CURRICULUM_DEMOTE_MIN_SESSIONS:
@@ -995,24 +1122,40 @@ class AgentGym:
                 rating.current_difficulty = DIFFICULTY_ORDER[current_idx - 1]
                 self.logger.info(
                     "Curriculum demote: %s %s → %s (win_rate=%.0f%%)",
-                    key, old, rating.current_difficulty, win_rate * 100,
+                    key,
+                    old,
+                    rating.current_difficulty,
+                    win_rate * 100,
                 )
 
     # ── Peer review ──────────────────────────────────────────────────────
 
-    def _get_peer_reviews(
-        self, result, exercise, role: str
-    ) -> dict[str, dict]:
+    def _get_peer_reviews(self, result, exercise, role: str) -> dict[str, dict]:
         """Get reviews from agents in different roles (cross-discipline feedback)."""
         peer_reviews = {}
 
         # Map roles to review focus areas
         PEER_ROLES = {
-            "firmware_engineer": {"focus": "security and memory safety", "checks": ["buffer overflow", "null pointer", "stack usage"]},
-            "qa_engineer": {"focus": "test coverage and edge cases", "checks": ["error handling", "boundary conditions", "failure modes"]},
-            "data_scientist": {"focus": "data handling and metrics", "checks": ["data validation", "metric correctness", "reproducibility"]},
-            "technical_writer": {"focus": "documentation quality", "checks": ["comments", "API docs", "README"]},
-            "ux_designer": {"focus": "user experience", "checks": ["error messages", "feedback clarity", "accessibility"]},
+            "firmware_engineer": {
+                "focus": "security and memory safety",
+                "checks": ["buffer overflow", "null pointer", "stack usage"],
+            },
+            "qa_engineer": {
+                "focus": "test coverage and edge cases",
+                "checks": ["error handling", "boundary conditions", "failure modes"],
+            },
+            "data_scientist": {
+                "focus": "data handling and metrics",
+                "checks": ["data validation", "metric correctness", "reproducibility"],
+            },
+            "technical_writer": {
+                "focus": "documentation quality",
+                "checks": ["comments", "API docs", "README"],
+            },
+            "ux_designer": {
+                "focus": "user experience",
+                "checks": ["error messages", "feedback clarity", "accessibility"],
+            },
         }
 
         # Select 1-2 peer roles that differ from the current role
@@ -1022,6 +1165,7 @@ class AgentGym:
             peer_info = PEER_ROLES[peer_role]
             try:
                 from src.core.llm_gateway import llm_gateway
+
                 code_output = result.output[:3000] if result.output else "No output"
 
                 prompt = (
@@ -1030,7 +1174,7 @@ class AgentGym:
                     f"Check for: {peer_info['checks']}\n\n"
                     f"Exercise: {exercise.description}\n"
                     f"Output:\n{code_output}\n\n"
-                    f"Return JSON: {{\"score\": 0-100, \"issues\": [...], \"suggestions\": [...]}}"
+                    f'Return JSON: {{"score": 0-100, "issues": [...], "suggestions": [...]}}'
                 )
 
                 response = llm_gateway.generate(
@@ -1041,8 +1185,9 @@ class AgentGym:
                 )
 
                 import re
+
                 response = response.replace("```json", "").replace("```", "").strip()
-                match = re.search(r'\{[\s\S]*\}', response)
+                match = re.search(r"\{[\s\S]*\}", response)
                 if match:
                     review = json.loads(match.group(0))
                     review["score"] = int(review.get("score", 0))
@@ -1059,7 +1204,10 @@ class AgentGym:
     # ── Critic reviews ───────────────────────────────────────────────────
 
     def _get_critic_reviews(
-        self, result, exercise, role: str,
+        self,
+        result,
+        exercise,
+        role: str,
         experimental_grade: dict | None = None,
     ) -> dict[str, dict]:
         """
@@ -1073,6 +1221,7 @@ class AgentGym:
         reviews = {}
         try:
             from src.agents.critic import critic_agent
+
             code_output = result.output[:4000] if result.output else "No output"
 
             # Build experimental context for the critic
@@ -1081,8 +1230,14 @@ class AgentGym:
                 criteria = experimental_grade.get("criteria", {})
                 feedback = experimental_grade.get("feedback", "")
                 hints = experimental_grade.get("hints", [])
-                exp_passed = [k for k, v in criteria.items() if v is True and k.startswith("exp:")]
-                exp_failed = [k for k, v in criteria.items() if v is False and k.startswith("exp:")]
+                exp_passed = [
+                    k for k, v in criteria.items() if v is True and k.startswith("exp:")
+                ]
+                exp_failed = [
+                    k
+                    for k, v in criteria.items()
+                    if v is False and k.startswith("exp:")
+                ]
 
                 exp_context = (
                     f"\n\n## Experimental Results (Real Execution)\n"
@@ -1090,11 +1245,19 @@ class AgentGym:
                     f"Passed: {experimental_grade.get('passed', 'N/A')}\n"
                 )
                 if exp_passed:
-                    exp_context += f"Experimental checks PASSED: {', '.join(exp_passed)}\n"
+                    exp_context += (
+                        f"Experimental checks PASSED: {', '.join(exp_passed)}\n"
+                    )
                 if exp_failed:
-                    exp_context += f"Experimental checks FAILED: {', '.join(exp_failed)}\n"
+                    exp_context += (
+                        f"Experimental checks FAILED: {', '.join(exp_failed)}\n"
+                    )
                 if hints:
-                    exp_context += f"Execution errors:\n" + "\n".join(f"  - {h}" for h in hints[:5]) + "\n"
+                    exp_context += (
+                        "Execution errors:\n"
+                        + "\n".join(f"  - {h}" for h in hints[:5])
+                        + "\n"
+                    )
                 if feedback:
                     exp_context += f"Grading summary: {feedback}\n"
                 exp_context += (
@@ -1114,8 +1277,8 @@ class AgentGym:
                     f"Acceptance criteria: {exercise.acceptance_criteria}"
                 ),
                 context=f"This is a training exercise (difficulty: {exercise.difficulty}). "
-                        f"Grade the agent's output strictly. "
-                        f"{'Experimental execution results are included — weigh them heavily.' if exp_context else ''}",
+                f"Grade the agent's output strictly. "
+                f"{'Experimental execution results are included — weigh them heavily.' if exp_context else ''}",
             )
 
             if review.get("multi_critic"):
@@ -1144,16 +1307,21 @@ class AgentGym:
                 if isinstance(r, dict)
             )
 
-            peer_summary = "\n".join(
-                f"- {name} (peer): focus={r.get('focus', 'general')}, issues={r.get('issues', [])}"
-                for name, r in peer_reviews.items()
-                if isinstance(r, dict) and "score" in r
-            ) if peer_reviews else "No peer reviews."
+            peer_summary = (
+                "\n".join(
+                    f"- {name} (peer): focus={r.get('focus', 'general')}, issues={r.get('issues', [])}"
+                    for name, r in peer_reviews.items()
+                    if isinstance(r, dict) and "score" in r
+                )
+                if peer_reviews
+                else "No peer reviews."
+            )
 
             # Search vector memory for prior learnings on this exercise
             prior_context = ""
             try:
                 from src.memory.vector_store import vector_memory
+
                 prior = vector_memory.search(
                     f"training {role} {exercise.id}",
                     n_results=3,
@@ -1176,7 +1344,7 @@ class AgentGym:
                 f"Peer reviews:\n{peer_summary}\n"
                 f"{prior_context}\n\n"
                 f"Reflect honestly. What specific things would you do differently next time?\n"
-                f"Return JSON: {{\"reflection\": \"...\", \"improvement_plan\": [\"step1\", ...]}}"
+                f'Return JSON: {{"reflection": "...", "improvement_plan": ["step1", ...]}}'
             )
 
             response = llm_gateway.generate(
@@ -1188,8 +1356,9 @@ class AgentGym:
             )
 
             import re
+
             response = response.replace("```json", "").replace("```", "").strip()
-            match = re.search(r'\{[\s\S]*\}', response)
+            match = re.search(r"\{[\s\S]*\}", response)
             if match:
                 data = json.loads(match.group(0))
                 return (
@@ -1205,8 +1374,13 @@ class AgentGym:
     # ── Glicko-2 Rating ─────────────────────────────────────────────────
 
     def _update_rating(
-        self, key: str, current: SkillRating, score: float, passed: bool,
-        session_id: str = "", exercise_id: str = "",
+        self,
+        key: str,
+        current: SkillRating,
+        score: float,
+        passed: bool,
+        session_id: str = "",
+        exercise_id: str = "",
     ) -> float:
         """
         Update rating using Glicko-2 inspired algorithm.
@@ -1235,18 +1409,18 @@ class AgentGym:
 
         # g(φ) function
         def g(phi_val):
-            return 1 / math.sqrt(1 + 3 * phi_val ** 2 / (math.pi ** 2))
+            return 1 / math.sqrt(1 + 3 * phi_val**2 / (math.pi**2))
 
         # E(μ, μj, φj) — expected score
         g_phi_j = g(phi_j)
         e_val = 1 / (1 + math.exp(-g_phi_j * (mu - mu_j)))
 
         # Variance (v)
-        v = 1 / (g_phi_j ** 2 * e_val * (1 - e_val))
+        v = 1 / (g_phi_j**2 * e_val * (1 - e_val))
 
         # Actual outcome: 1 for pass, 0 for fail
         outcome = 1.0 if passed else 0.0
-        delta = v * g_phi_j * (outcome - e_val)
+        v * g_phi_j * (outcome - e_val)
 
         # Simplified volatility update (avoid full iterative Glicko-2 for speed)
         # If result is unexpected, volatility increases; if expected, it decreases
@@ -1255,11 +1429,11 @@ class AgentGym:
         sigma_new = max(0.01, min(0.15, sigma_new))  # clamp
 
         # Update phi (rating deviation)
-        phi_star = math.sqrt(phi ** 2 + sigma_new ** 2)
-        phi_new = 1 / math.sqrt(1 / phi_star ** 2 + 1 / v)
+        phi_star = math.sqrt(phi**2 + sigma_new**2)
+        phi_new = 1 / math.sqrt(1 / phi_star**2 + 1 / v)
 
         # Update mu (rating)
-        mu_new = mu + phi_new ** 2 * g_phi_j * (outcome - e_val)
+        mu_new = mu + phi_new**2 * g_phi_j * (outcome - e_val)
 
         # Convert back to ELO scale
         new_rating = mu_new * MU_SCALE + 1500
@@ -1267,7 +1441,9 @@ class AgentGym:
 
         # Clamp
         new_rating = max(100, min(3000, new_rating))
-        new_rd = max(30, min(350, new_rd))  # RD floor 30 (very confident), cap 350 (uncertain)
+        new_rd = max(
+            30, min(350, new_rd)
+        )  # RD floor 30 (very confident), cap 350 (uncertain)
 
         current.rating = new_rating
         current.rating_deviation = new_rd
@@ -1284,7 +1460,9 @@ class AgentGym:
             current.streak = min(current.streak - 1, -1)
             # Schedule for spaced repetition
             if exercise_id:
-                fail_count = sum(1 for eid in current.failed_exercises if eid == exercise_id)
+                fail_count = sum(
+                    1 for eid in current.failed_exercises if eid == exercise_id
+                )
                 interval_idx = min(fail_count, len(SPACED_REPETITION_INTERVALS) - 1)
                 interval = SPACED_REPETITION_INTERVALS[interval_idx]
                 current.failed_exercises[exercise_id] = current.sessions + interval
@@ -1346,7 +1524,9 @@ class AgentGym:
 
             # Check if we have enough data to refine (at least 2 attempts at this exercise)
             prior_sessions = self._db.query_sessions(
-                exercise_id=exercise.id, status="completed", limit=10,
+                exercise_id=exercise.id,
+                status="completed",
+                limit=10,
             )
             if len(prior_sessions) < 2:
                 return  # Need multiple attempts to learn what criteria matter
@@ -1360,12 +1540,14 @@ class AgentGym:
                 criteria = grade.get("criteria", {})
                 exp_checks = {k: v for k, v in criteria.items() if k.startswith("exp:")}
                 if exp_checks:
-                    exp_evidence.append({
-                        "score": grade.get("score", 0),
-                        "passed": grade.get("passed", False),
-                        "experimental_checks": exp_checks,
-                        "feedback": grade.get("feedback", "")[:200],
-                    })
+                    exp_evidence.append(
+                        {
+                            "score": grade.get("score", 0),
+                            "passed": grade.get("passed", False),
+                            "experimental_checks": exp_checks,
+                            "feedback": grade.get("feedback", "")[:200],
+                        }
+                    )
 
             if not exp_evidence:
                 return  # No experimental data yet
@@ -1386,14 +1568,14 @@ class AgentGym:
                     for e in exp_evidence
                 )
                 + "\n\n## Task\n"
-                f"Based on the experimental evidence, refine the acceptance criteria.\n"
-                f"- Add criteria that experiments revealed are important but were missing\n"
-                f"- Make vague criteria more specific based on what actually fails\n"
-                f"- Remove criteria that are always trivially met (not discriminating)\n"
-                f"- Keep criteria grounded in measurable, experimentally verifiable outcomes\n\n"
-                f"Return JSON only:\n"
-                f'{{"refined_criteria": ["criterion1", "criterion2", ...], '
-                f'"rationale": "why these changes"}}'
+                "Based on the experimental evidence, refine the acceptance criteria.\n"
+                "- Add criteria that experiments revealed are important but were missing\n"
+                "- Make vague criteria more specific based on what actually fails\n"
+                "- Remove criteria that are always trivially met (not discriminating)\n"
+                "- Keep criteria grounded in measurable, experimentally verifiable outcomes\n\n"
+                "Return JSON only:\n"
+                '{"refined_criteria": ["criterion1", "criterion2", ...], '
+                '"rationale": "why these changes"}'
             )
 
             response = llm_gateway.generate(
@@ -1404,8 +1586,9 @@ class AgentGym:
 
             import json as _json
             import re as _re
+
             cleaned = response.replace("```json", "").replace("```", "").strip()
-            match = _re.search(r'\{[\s\S]*\}', cleaned)
+            match = _re.search(r"\{[\s\S]*\}", cleaned)
             if match:
                 parsed = _json.loads(match.group(0))
                 refined = parsed.get("refined_criteria", [])
@@ -1421,7 +1604,9 @@ class AgentGym:
                     )
                     self.logger.info(
                         "Refined criteria for %s: %d → %d criteria. Rationale: %s",
-                        exercise.id, len(current_criteria), len(refined),
+                        exercise.id,
+                        len(current_criteria),
+                        len(refined),
                         rationale[:100],
                     )
 
@@ -1430,7 +1615,9 @@ class AgentGym:
 
     # ── Helpers ──────────────────────────────────────────────────────────
 
-    def _failed_session(self, session_id: str, role: str, error: str) -> TrainingSession:
+    def _failed_session(
+        self, session_id: str, role: str, error: str
+    ) -> TrainingSession:
         session = TrainingSession(
             session_id=session_id,
             agent_role=role,
@@ -1469,7 +1656,9 @@ class AgentGym:
 
     def get_leaderboard(self) -> list[dict]:
         """Return all ratings sorted by ELO descending."""
-        sorted_ratings = sorted(self._ratings.values(), key=lambda r: r.rating, reverse=True)
+        sorted_ratings = sorted(
+            self._ratings.values(), key=lambda r: r.rating, reverse=True
+        )
         return [r.to_dict() for r in sorted_ratings]
 
     # ── Analytics ────────────────────────────────────────────────────────
@@ -1505,7 +1694,9 @@ class AgentGym:
                 if rating:
                     result["current_rating"] = rating.to_dict()
             else:
-                result["role_ratings"] = [r.to_dict() for r in self.get_ratings_for_role(role)]
+                result["role_ratings"] = [
+                    r.to_dict() for r in self.get_ratings_for_role(role)
+                ]
 
         return result
 

@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import logging
 import re
-from typing import ClassVar, Literal
+from typing import ClassVar
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -60,9 +60,7 @@ class EntitySpan(BaseModel):
     @model_validator(mode="after")
     def span_is_non_empty(self) -> "EntitySpan":
         if self.end <= self.start:
-            raise ValueError(
-                f"Span end ({self.end}) must be > start ({self.start})."
-            )
+            raise ValueError(f"Span end ({self.end}) must be > start ({self.start}).")
         return self
 
 
@@ -145,14 +143,10 @@ class LabeledToken(BaseModel):
             return v
         parts = v.split("-", 1)
         if len(parts) != 2 or parts[0] not in ("B", "I"):
-            raise ValueError(
-                f"BIO tag {v!r} must be 'O', 'B-<TYPE>', or 'I-<TYPE>'."
-            )
+            raise ValueError(f"BIO tag {v!r} must be 'O', 'B-<TYPE>', or 'I-<TYPE>'.")
         label = parts[1].upper()
         if label not in ALLOWED_ENTITY_TYPES:
-            raise ValueError(
-                f"Entity type {label!r} in tag {v!r} not in allowed set."
-            )
+            raise ValueError(f"Entity type {label!r} in tag {v!r} not in allowed set.")
         return f"{parts[0]}-{label}"
 
 
@@ -172,8 +166,7 @@ class LabeledSentence(BaseModel):
             if tag.startswith("I-"):
                 entity_type = tag.split("-", 1)[1]
                 if not (
-                    prev_tag == f"B-{entity_type}"
-                    or prev_tag == f"I-{entity_type}"
+                    prev_tag == f"B-{entity_type}" or prev_tag == f"I-{entity_type}"
                 ):
                     raise ValueError(
                         f"Sentence {self.sentence_id!r}: invalid BIO transition "
@@ -186,9 +179,7 @@ class LabeledSentence(BaseModel):
     @property
     def entity_types_present(self) -> set[str]:
         return {
-            tok.bio_tag.split("-", 1)[1]
-            for tok in self.tokens
-            if tok.bio_tag != "O"
+            tok.bio_tag.split("-", 1)[1] for tok in self.tokens if tok.bio_tag != "O"
         }
 
     @property

@@ -5,6 +5,7 @@ and returns a structured processing result.  Actual transcription/ML inference
 is out-of-scope for this layer; the handler delegates to a thin processing
 function that can be swapped for a real provider (Whisper, Google STT, etc.).
 """
+
 from __future__ import annotations
 
 import base64
@@ -28,7 +29,7 @@ router = APIRouter(tags=["Voice Data"])
 # ---------------------------------------------------------------------------
 
 _SUPPORTED_FORMATS = {"wav", "mp3", "flac", "ogg", "webm", "m4a"}
-_MIN_SAMPLE_RATE = 8_000   # 8 kHz — telephony minimum
+_MIN_SAMPLE_RATE = 8_000  # 8 kHz — telephony minimum
 _MAX_SAMPLE_RATE = 96_000  # 96 kHz — hi-fi maximum
 _MAX_DURATION_SECONDS = 300.0  # 5-minute clip limit
 _MAX_CONTENT_BYTES = 50 * 1024 * 1024  # 50 MB decoded limit
@@ -39,6 +40,7 @@ _MAX_METADATA_KEYS = 32
 # Enums
 # ---------------------------------------------------------------------------
 
+
 class AudioEncoding(str, Enum):
     base64 = "base64"
     raw_bytes = "raw_bytes"  # future-proofing; not decoded in this handler
@@ -47,6 +49,7 @@ class AudioEncoding(str, Enum):
 # ---------------------------------------------------------------------------
 # Request model
 # ---------------------------------------------------------------------------
+
 
 class AudioDataPayload(BaseModel):
     """Structured audio payload embedded inside VoiceDataRequest."""
@@ -120,7 +123,9 @@ class AudioDataPayload(BaseModel):
 
     @field_validator("metadata")
     @classmethod
-    def metadata_size_limit(cls, v: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    def metadata_size_limit(
+        cls, v: Optional[Dict[str, Any]]
+    ) -> Optional[Dict[str, Any]]:
         if v is not None and len(v) > _MAX_METADATA_KEYS:
             raise ValueError(
                 f"'metadata' exceeds the maximum of {_MAX_METADATA_KEYS} keys."
@@ -163,6 +168,7 @@ class VoiceDataRequest(BaseModel):
 # Response models
 # ---------------------------------------------------------------------------
 
+
 class ProcessingResult(BaseModel):
     decoded_size_bytes: int
     format: str
@@ -193,6 +199,7 @@ class ErrorDetail(BaseModel):
 # ---------------------------------------------------------------------------
 # Processing logic (stub — swap for a real STT provider)
 # ---------------------------------------------------------------------------
+
 
 def _process_audio(payload: AudioDataPayload) -> ProcessingResult:
     """Decode and inspect the audio clip.
@@ -229,6 +236,7 @@ def _process_audio(payload: AudioDataPayload) -> ProcessingResult:
 # ---------------------------------------------------------------------------
 # Route
 # ---------------------------------------------------------------------------
+
 
 @router.post(
     "/voice_data",
@@ -272,7 +280,9 @@ async def voice_data(
     - ``metadata`` must have <= 32 top-level keys
     """
     request_id = (body.request_id or "").strip() or str(uuid.uuid4())
-    client_ip = getattr(request.client, "host", "unknown") if request.client else "unknown"
+    client_ip = (
+        getattr(request.client, "host", "unknown") if request.client else "unknown"
+    )
     logger.info(
         "voice_data received",
         extra={

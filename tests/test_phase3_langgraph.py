@@ -17,7 +17,6 @@ Tests for:
   - TaskWorker dispatches WORKFLOW task type correctly
 """
 
-import os
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -30,13 +29,16 @@ pytestmark = pytest.mark.unit
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _fresh_runner():
     from src.integrations.langgraph_runner import LangGraphRunner
+
     return LangGraphRunner()
 
 
 def _client():
     from src.interface.api import app
+
     return TestClient(app, raise_server_exceptions=False)
 
 
@@ -69,12 +71,14 @@ def _mock_interrupting_graph(return_value: dict):
 # LangGraphRunner unit tests
 # ---------------------------------------------------------------------------
 
-class TestLangGraphRunner:
 
+class TestLangGraphRunner:
     def test_list_workflows_empty_when_no_dir(self):
         """list_workflows() must return [] when no workflows/ dir exists."""
         runner = _fresh_runner()
-        with patch.object(runner, "_get_workflows_dir", return_value="/nonexistent/path"):
+        with patch.object(
+            runner, "_get_workflows_dir", return_value="/nonexistent/path"
+        ):
             workflows = runner.list_workflows()
         assert isinstance(workflows, list)
         assert len(workflows) == 0
@@ -82,7 +86,9 @@ class TestLangGraphRunner:
     def test_run_unknown_workflow_returns_error(self):
         """run() with unknown workflow name must return an error dict."""
         runner = _fresh_runner()
-        with patch.object(runner, "_get_workflows_dir", return_value="/nonexistent/path"):
+        with patch.object(
+            runner, "_get_workflows_dir", return_value="/nonexistent/path"
+        ):
             result = runner.run("nonexistent_workflow", {})
         assert "error" in result
         assert "nonexistent_workflow" in result["error"]
@@ -94,8 +100,10 @@ class TestLangGraphRunner:
         runner._workflows["simple"] = _mock_completed_graph({"analysis": "done"})
         runner._checkpointer = None  # no checkpointer needed for mock
 
-        with patch.object(runner, "load", return_value=1), \
-             patch.object(runner, "_audit"):
+        with (
+            patch.object(runner, "load", return_value=1),
+            patch.object(runner, "_audit"),
+        ):
             result = runner.run("simple", {"task": "test input"})
 
         assert result["status"] == "completed"
@@ -106,11 +114,15 @@ class TestLangGraphRunner:
         """run() with a graph that interrupts must return status=awaiting_approval."""
         runner = _fresh_runner()
         runner._loaded_solution = "test"
-        runner._workflows["review"] = _mock_interrupting_graph({"analysis": "needs review"})
+        runner._workflows["review"] = _mock_interrupting_graph(
+            {"analysis": "needs review"}
+        )
         runner._checkpointer = None
 
-        with patch.object(runner, "load", return_value=1), \
-             patch.object(runner, "_audit"):
+        with (
+            patch.object(runner, "load", return_value=1),
+            patch.object(runner, "_audit"),
+        ):
             result = runner.run("review", {"task": "test"})
 
         assert result["status"] == "awaiting_approval"
@@ -123,8 +135,10 @@ class TestLangGraphRunner:
         graph = _mock_interrupting_graph({"analysis": "reviewed"})
         runner._workflows["review"] = graph
 
-        with patch.object(runner, "load", return_value=1), \
-             patch.object(runner, "_audit"):
+        with (
+            patch.object(runner, "load", return_value=1),
+            patch.object(runner, "_audit"),
+        ):
             first = runner.run("review", {"task": "check this"})
 
         run_id = first["run_id"]
@@ -149,8 +163,10 @@ class TestLangGraphRunner:
         runner._workflows["simple"] = _mock_completed_graph({"analysis": "done"})
         runner._checkpointer = None
 
-        with patch.object(runner, "load", return_value=1), \
-             patch.object(runner, "_audit"):
+        with (
+            patch.object(runner, "load", return_value=1),
+            patch.object(runner, "_audit"),
+        ):
             first = runner.run("simple", {})
 
         result = runner.resume(first["run_id"], {})
@@ -163,8 +179,10 @@ class TestLangGraphRunner:
         runner._workflows["simple"] = _mock_completed_graph({"done": True})
         runner._checkpointer = None
 
-        with patch.object(runner, "load", return_value=1), \
-             patch.object(runner, "_audit"):
+        with (
+            patch.object(runner, "load", return_value=1),
+            patch.object(runner, "_audit"),
+        ):
             run = runner.run("simple", {})
 
         status = runner.get_status(run["run_id"])
@@ -183,11 +201,12 @@ class TestLangGraphRunner:
 # API endpoint tests
 # ---------------------------------------------------------------------------
 
-class TestWorkflowAPIEndpoints:
 
+class TestWorkflowAPIEndpoints:
     def test_workflow_list_returns_json(self):
         """GET /workflow/list must return JSON with 'workflows' and 'count'."""
         import src.integrations.langgraph_runner as lr_module
+
         mock_runner = MagicMock()
         mock_runner.list_workflows.return_value = [{"name": "analysis_workflow"}]
         with patch.object(lr_module, "langgraph_runner", mock_runner):
@@ -201,6 +220,7 @@ class TestWorkflowAPIEndpoints:
     def test_workflow_run_returns_200(self):
         """POST /workflow/run with valid body must return 200."""
         import src.integrations.langgraph_runner as lr_module
+
         mock_runner = MagicMock()
         mock_runner.run.return_value = {
             "run_id": "run_abc",
@@ -209,10 +229,13 @@ class TestWorkflowAPIEndpoints:
             "result": {"analysis": "ok"},
         }
         with patch.object(lr_module, "langgraph_runner", mock_runner):
-            resp = _client().post("/workflow/run", json={
-                "workflow_name": "analysis_workflow",
-                "state": {"task": "check logs"},
-            })
+            resp = _client().post(
+                "/workflow/run",
+                json={
+                    "workflow_name": "analysis_workflow",
+                    "state": {"task": "check logs"},
+                },
+            )
         assert resp.status_code == 200
         data = resp.json()
         assert data["run_id"] == "run_abc"
@@ -226,6 +249,7 @@ class TestWorkflowAPIEndpoints:
     def test_workflow_run_error_returns_400(self):
         """POST /workflow/run when runner returns error must return 400."""
         import src.integrations.langgraph_runner as lr_module
+
         mock_runner = MagicMock()
         mock_runner.run.return_value = {"error": "Workflow not found", "run_id": "x"}
         with patch.object(lr_module, "langgraph_runner", mock_runner):
@@ -235,6 +259,7 @@ class TestWorkflowAPIEndpoints:
     def test_workflow_resume_returns_200(self):
         """POST /workflow/resume returns 200 when runner succeeds."""
         import src.integrations.langgraph_runner as lr_module
+
         mock_runner = MagicMock()
         mock_runner.resume.return_value = {
             "run_id": "run_abc",
@@ -243,10 +268,13 @@ class TestWorkflowAPIEndpoints:
             "result": {"final_output": "approved"},
         }
         with patch.object(lr_module, "langgraph_runner", mock_runner):
-            resp = _client().post("/workflow/resume", json={
-                "run_id": "run_abc",
-                "feedback": {"approved": True},
-            })
+            resp = _client().post(
+                "/workflow/resume",
+                json={
+                    "run_id": "run_abc",
+                    "feedback": {"approved": True},
+                },
+            )
         assert resp.status_code == 200
         assert resp.json()["status"] == "completed"
 
@@ -258,6 +286,7 @@ class TestWorkflowAPIEndpoints:
     def test_workflow_status_known_run_returns_200(self):
         """GET /workflow/status/{run_id} for known run must return 200."""
         import src.integrations.langgraph_runner as lr_module
+
         mock_runner = MagicMock()
         mock_runner.get_status.return_value = {
             "run_id": "run_abc",
@@ -272,6 +301,7 @@ class TestWorkflowAPIEndpoints:
     def test_workflow_status_unknown_run_returns_404(self):
         """GET /workflow/status/{run_id} for unknown run must return 404."""
         import src.integrations.langgraph_runner as lr_module
+
         mock_runner = MagicMock()
         mock_runner.get_status.return_value = {
             "error": "Run 'xyz' not found",
@@ -286,8 +316,8 @@ class TestWorkflowAPIEndpoints:
 # TaskWorker WORKFLOW dispatch
 # ---------------------------------------------------------------------------
 
-class TestWorkflowTaskDispatch:
 
+class TestWorkflowTaskDispatch:
     def test_workflow_task_dispatched_to_langgraph_runner(self):
         """WORKFLOW task type must call langgraph_runner.run() and return result."""
         from src.core.queue_manager import TaskWorker, TaskQueue
@@ -300,9 +330,13 @@ class TestWorkflowTaskDispatch:
 
         task = Task.__new__(Task)
         task.task_type = "WORKFLOW"
-        task.payload = {"workflow_name": "analysis_workflow", "state": {"task": "check"}}
+        task.payload = {
+            "workflow_name": "analysis_workflow",
+            "state": {"task": "check"},
+        }
 
         import src.integrations.langgraph_runner as lr_module
+
         mock_runner = MagicMock()
         mock_runner.run.return_value = {"run_id": "r1", "status": "completed"}
 

@@ -37,7 +37,7 @@ class MemoryPlanner:
         learnings = self._search_learnings(task_description, solution)
         if learnings:
             lines = []
-            for l in learnings:
+            for l in learnings:  # noqa: E741
                 lines.append(
                     f"- [{l.get('topic', 'general')}] {l.get('title', '')}: "
                     f"{l.get('content', '')[:200]}"
@@ -68,9 +68,7 @@ class MemoryPlanner:
         domain_hits = self._search_domain_memory(task_description, solution)
         if domain_hits:
             lines = [f"- {h[:200]}" for h in domain_hits]
-            sections.append(
-                "## Domain knowledge from memory\n" + "\n".join(lines)
-            )
+            sections.append("## Domain knowledge from memory\n" + "\n".join(lines))
 
         if not sections:
             return ""
@@ -111,13 +109,16 @@ class MemoryPlanner:
         """Search collective memory for relevant learnings."""
         try:
             from src.core.collective_memory import get_collective_memory
+
             cm = get_collective_memory()
             results = cm.search_learnings(
-                query=query, solution=solution or None,
+                query=query,
+                solution=solution or None,
                 limit=self._max_examples,
             )
-            return [r for r in results
-                    if r.get("confidence", 0) >= self._min_confidence]
+            return [
+                r for r in results if r.get("confidence", 0) >= self._min_confidence
+            ]
         except Exception:
             return []
 
@@ -129,19 +130,24 @@ class MemoryPlanner:
         scored = []
         with self._lock:
             for plan in self._plan_history:
-                plan_text = f"{plan.get('name', '')} {plan.get('description', '')}".lower()
+                plan_text = (
+                    f"{plan.get('name', '')} {plan.get('description', '')}".lower()
+                )
                 overlap = sum(1 for kw in keywords if kw in plan_text)
                 if overlap > 0:
                     scored.append((overlap, plan))
 
         scored.sort(key=lambda x: x[0], reverse=True)
-        return [p for _, p in scored[:self._max_examples]]
+        return [p for _, p in scored[: self._max_examples]]
 
     def _search_domain_memory(self, query: str, solution: str = "") -> list[str]:
         """Search solution-specific vector memory."""
         try:
             from src.memory.vector_store import VectorMemory
-            vm = VectorMemory(explicit_solution=solution) if solution else VectorMemory()
+
+            vm = (
+                VectorMemory(explicit_solution=solution) if solution else VectorMemory()
+            )
             return vm.search(query, k=3)
         except Exception:
             return []

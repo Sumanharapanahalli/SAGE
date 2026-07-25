@@ -20,7 +20,6 @@ import numpy as np
 import torch
 from PIL import Image
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
 from torch.utils.data import Dataset
 from torchvision import transforms
 
@@ -32,6 +31,7 @@ DOCUMENT_CLASSES = ["invoice", "receipt", "contract"]
 # ---------------------------------------------------------------------------
 # Dataset
 # ---------------------------------------------------------------------------
+
 
 class DocumentDataset(Dataset):
     """
@@ -121,30 +121,36 @@ class DocumentDataset(Dataset):
 # Transforms
 # ---------------------------------------------------------------------------
 
+
 def build_train_transforms(image_size: int = 224) -> transforms.Compose:
     """Augmented transforms for training (fit on train only)."""
-    return transforms.Compose([
-        transforms.Resize((image_size, image_size)),
-        transforms.RandomRotation(degrees=5),
-        transforms.ColorJitter(brightness=0.2, contrast=0.2),
-        transforms.RandomHorizontalFlip(p=0.1),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-    ])
+    return transforms.Compose(
+        [
+            transforms.Resize((image_size, image_size)),
+            transforms.RandomRotation(degrees=5),
+            transforms.ColorJitter(brightness=0.2, contrast=0.2),
+            transforms.RandomHorizontalFlip(p=0.1),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ]
+    )
 
 
 def build_eval_transforms(image_size: int = 224) -> transforms.Compose:
     """Deterministic transforms for validation and test (no augmentation)."""
-    return transforms.Compose([
-        transforms.Resize((image_size, image_size)),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-    ])
+    return transforms.Compose(
+        [
+            transforms.Resize((image_size, image_size)),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ]
+    )
 
 
 # ---------------------------------------------------------------------------
 # Stratified split (no leakage)
 # ---------------------------------------------------------------------------
+
 
 def stratified_split(
     samples: List[Tuple[str, int]],
@@ -190,11 +196,13 @@ def stratified_split(
 
     logger.info(
         "Split — train: %d | val: %d | test: %d",
-        len(train), len(val), len(test),
+        len(train),
+        len(val),
+        len(test),
     )
     _log_class_distribution("Train", train)
-    _log_class_distribution("Val",   val)
-    _log_class_distribution("Test",  test)
+    _log_class_distribution("Val", val)
+    _log_class_distribution("Test", test)
 
     return train, val, test
 
@@ -209,6 +217,7 @@ def compute_class_weights(
     Fitted exclusively on train_samples to prevent data leakage.
     """
     from sklearn.utils.class_weight import compute_class_weight
+
     labels = [s[1] for s in train_samples]
     weights = compute_class_weight(
         class_weight="balanced",
@@ -223,8 +232,10 @@ def compute_class_weights(
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _log_class_distribution(split_name: str, samples: List[Tuple[str, int]]) -> None:
     from collections import Counter
+
     dist = Counter(s[1] for s in samples)
     logger.info(
         "  %s class distribution: %s",

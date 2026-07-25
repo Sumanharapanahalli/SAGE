@@ -38,16 +38,16 @@ logging.basicConfig(
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Run full fall detection ML pipeline")
-    p.add_argument("--mobiact",    type=Path, default=None)
-    p.add_argument("--sisfall",    type=Path, default=None)
+    p.add_argument("--mobiact", type=Path, default=None)
+    p.add_argument("--sisfall", type=Path, default=None)
     p.add_argument("--output-dir", type=Path, default=Path("models"))
-    p.add_argument("--firmware-dir", type=Path,
-                   default=Path("firmware/fall_detection"))
-    p.add_argument("--epochs",     type=int, default=100)
+    p.add_argument("--firmware-dir", type=Path, default=Path("firmware/fall_detection"))
+    p.add_argument("--epochs", type=int, default=100)
     p.add_argument("--batch-size", type=int, default=128)
-    p.add_argument("--seed",       type=int, default=42)
-    p.add_argument("--reviewer",   type=str,
-                   default="[Pending — IEC 62304 Verification Engineer]")
+    p.add_argument("--seed", type=int, default=42)
+    p.add_argument(
+        "--reviewer", type=str, default="[Pending — IEC 62304 Verification Engineer]"
+    )
     return p.parse_args()
 
 
@@ -65,13 +65,15 @@ def run_pipeline(args: argparse.Namespace) -> int:
     # ── Step 1: Build dataset ─────────────────────────────────────────────
     _separator("STEP 1/5: Dataset assembly")
     from data_pipeline import build_dataset, train_val_test_split
+
     X, y, stats = build_dataset(
         mobiact_root=args.mobiact,
         sisfall_root=args.sisfall,
         rng_seed=args.seed,
     )
     X_train, y_train, X_val, y_val, X_test, y_test = train_val_test_split(
-        X, y, seed=args.seed)
+        X, y, seed=args.seed
+    )
 
     # Save test split for validation step
     test_npz = args.output_dir / "test_data.npz"
@@ -81,6 +83,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
     # ── Step 2: Train model ───────────────────────────────────────────────
     _separator("STEP 2/5: Model training")
     import train as train_module
+
     train_args = argparse.Namespace(
         mobiact=args.mobiact,
         sisfall=args.sisfall,
@@ -100,22 +103,24 @@ def run_pipeline(args: argparse.Namespace) -> int:
     model_path = Path(train_result["checkpoint_path"])
     calib_data = quant_module.get_calibration_data(1000, None, args.seed)
 
-    int8_path  = quant_module.quantize_to_int8(model_path, calib_data, args.output_dir)
-    fp32_path  = quant_module.export_fp32(model_path, args.output_dir)
-    latency    = quant_module.estimate_latency_cycles(int8_path)
+    int8_path = quant_module.quantize_to_int8(model_path, calib_data, args.output_dir)
+    fp32_path = quant_module.export_fp32(model_path, args.output_dir)
+    latency = quant_module.estimate_latency_cycles(int8_path)
 
     quant_result = {
-        "int8_path":        str(int8_path),
-        "fp32_path":        str(fp32_path),
-        "int8_size_kb":     round(int8_path.stat().st_size / 1024, 1),
-        "fp32_size_kb":     round(fp32_path.stat().st_size / 1024, 1),
+        "int8_path": str(int8_path),
+        "fp32_path": str(fp32_path),
+        "int8_size_kb": round(int8_path.stat().st_size / 1024, 1),
+        "fp32_size_kb": round(fp32_path.stat().st_size / 1024, 1),
         "latency_estimate": latency,
     }
     quant_json = args.output_dir / "quantization_result.json"
     quant_json.write_text(json.dumps(quant_result, indent=2))
-    logger.info("INT8 model: %.1f KB  |  latency est. %.2f ms",
-                quant_result["int8_size_kb"],
-                latency["latency_ms_at_80mhz"])
+    logger.info(
+        "INT8 model: %.1f KB  |  latency est. %.2f ms",
+        quant_result["int8_size_kb"],
+        latency["latency_ms_at_80mhz"],
+    )
 
     # ── Step 4: Validate ──────────────────────────────────────────────────
     _separator("STEP 4/5: IEC 62304 validation")
@@ -133,8 +138,10 @@ def run_pipeline(args: argparse.Namespace) -> int:
     report = validate_module.validate(validate_args)
 
     if report["summary"]["failed"] > 0:
-        logger.error("PIPELINE FAILED: %d acceptance criteria not met",
-                     report["summary"]["failed"])
+        logger.error(
+            "PIPELINE FAILED: %d acceptance criteria not met",
+            report["summary"]["failed"],
+        )
         return 1
 
     # ── Step 5: Generate C header ─────────────────────────────────────────
@@ -155,23 +162,39 @@ def run_pipeline(args: argparse.Namespace) -> int:
     logger.info("Deliverables:")
     logger.info("  %-45s  INT8 TFLite model", str(int8_path))
     logger.info("  %-45s  Validation report (JSON)", str(validate_args.output))
-    logger.info("  %-45s  Validation report (Markdown)", str(validate_args.output.with_suffix(".md")))
+    logger.info(
+        "  %-45s  Validation report (Markdown)",
+        str(validate_args.output.with_suffix(".md")),
+    )
     logger.info("  %-45s  C firmware header", str(header_path))
     logger.info("")
     m = report["performance_metrics"]
     logger.info("Key metrics:")
-    logger.info("  Sensitivity: %.4f  (target ≥0.95)  [%s]",
-                m["sensitivity"], "PASS" if m["sensitivity"] >= 0.95 else "FAIL")
-    logger.info("  Specificity: %.4f  (target ≥0.90)  [%s]",
-                m["specificity"], "PASS" if m["specificity"] >= 0.90 else "FAIL")
-    logger.info("  FP/day est.: %.2f   (target ≤2.0)   [%s]",
-                m["fp_per_day"], "PASS" if m["fp_per_day"] <= 2.0 else "WARN")
-    logger.info("  Model size:  %.1f KB (target ≤100 KB) [%s]",
-                quant_result["int8_size_kb"],
-                "PASS" if quant_result["int8_size_kb"] <= 100 else "FAIL")
-    logger.info("  Latency est: %.2f ms (target ≤20 ms)  [%s]",
-                latency["latency_ms_at_80mhz"],
-                "PASS" if latency["latency_ms_at_80mhz"] <= 20 else "FAIL")
+    logger.info(
+        "  Sensitivity: %.4f  (target ≥0.95)  [%s]",
+        m["sensitivity"],
+        "PASS" if m["sensitivity"] >= 0.95 else "FAIL",
+    )
+    logger.info(
+        "  Specificity: %.4f  (target ≥0.90)  [%s]",
+        m["specificity"],
+        "PASS" if m["specificity"] >= 0.90 else "FAIL",
+    )
+    logger.info(
+        "  FP/day est.: %.2f   (target ≤2.0)   [%s]",
+        m["fp_per_day"],
+        "PASS" if m["fp_per_day"] <= 2.0 else "WARN",
+    )
+    logger.info(
+        "  Model size:  %.1f KB (target ≤100 KB) [%s]",
+        quant_result["int8_size_kb"],
+        "PASS" if quant_result["int8_size_kb"] <= 100 else "FAIL",
+    )
+    logger.info(
+        "  Latency est: %.2f ms (target ≤20 ms)  [%s]",
+        latency["latency_ms_at_80mhz"],
+        "PASS" if latency["latency_ms_at_80mhz"] <= 20 else "FAIL",
+    )
 
     return 0
 

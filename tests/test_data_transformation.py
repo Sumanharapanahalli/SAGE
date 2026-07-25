@@ -1,4 +1,5 @@
 """Unit tests for the data_transformation endpoint and transformer module."""
+
 from __future__ import annotations
 
 import pytest
@@ -17,6 +18,7 @@ from src.modules.data_transformer import (
 # Transformer unit tests
 # ---------------------------------------------------------------------------
 
+
 class TestAvailableOperations:
     def test_returns_list_of_strings(self):
         ops = available_operations()
@@ -25,7 +27,13 @@ class TestAvailableOperations:
 
     def test_includes_core_operations(self):
         ops = available_operations()
-        for name in ("rename_keys", "filter_keys", "cast_types", "add_metadata", "flatten"):
+        for name in (
+            "rename_keys",
+            "filter_keys",
+            "cast_types",
+            "add_metadata",
+            "flatten",
+        ):
             assert name in ops
 
 
@@ -33,7 +41,12 @@ class TestRenameKeys:
     def test_renames_specified_keys(self):
         result = apply_pipeline(
             {"old_name": 1, "keep": 2},
-            [{"operation": "rename_keys", "params": {"mapping": {"old_name": "new_name"}}}],
+            [
+                {
+                    "operation": "rename_keys",
+                    "params": {"mapping": {"old_name": "new_name"}},
+                }
+            ],
         )
         assert "new_name" in result
         assert "old_name" not in result
@@ -140,18 +153,32 @@ class TestRegexReplace:
     def test_replaces_pattern(self):
         result = apply_pipeline(
             {"email": "user@example.com"},
-            [{"operation": "regex_replace", "params": {
-                "field": "email", "pattern": r"@.*", "replacement": "@redacted"
-            }}],
+            [
+                {
+                    "operation": "regex_replace",
+                    "params": {
+                        "field": "email",
+                        "pattern": r"@.*",
+                        "replacement": "@redacted",
+                    },
+                }
+            ],
         )
         assert result["email"] == "user@redacted"
 
     def test_missing_field_no_error(self):
         result = apply_pipeline(
             {"name": "Alice"},
-            [{"operation": "regex_replace", "params": {
-                "field": "nonexistent", "pattern": "x", "replacement": ""
-            }}],
+            [
+                {
+                    "operation": "regex_replace",
+                    "params": {
+                        "field": "nonexistent",
+                        "pattern": "x",
+                        "replacement": "",
+                    },
+                }
+            ],
         )
         assert result == {"name": "Alice"}
 
@@ -159,9 +186,12 @@ class TestRegexReplace:
         with pytest.raises(TransformationError):
             apply_pipeline(
                 {"val": "test"},
-                [{"operation": "regex_replace", "params": {
-                    "field": "val", "pattern": "[", "replacement": ""
-                }}],
+                [
+                    {
+                        "operation": "regex_replace",
+                        "params": {"field": "val", "pattern": "[", "replacement": ""},
+                    }
+                ],
             )
 
 
@@ -171,7 +201,10 @@ class TestPipeline:
             {"first_name": "Bob", "age": "25", "ignored": True},
             [
                 {"operation": "filter_keys", "params": {"keys": ["first_name", "age"]}},
-                {"operation": "rename_keys", "params": {"mapping": {"first_name": "name"}}},
+                {
+                    "operation": "rename_keys",
+                    "params": {"mapping": {"first_name": "name"}},
+                },
                 {"operation": "cast_types", "params": {"casts": {"age": "int"}}},
             ],
         )
@@ -191,6 +224,7 @@ class TestPipeline:
 # API integration tests
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture(scope="module")
 def client() -> TestClient:
     app = FastAPI()
@@ -200,10 +234,15 @@ def client() -> TestClient:
 
 class TestEndpointHappyPath:
     def test_simple_rename(self, client: TestClient):
-        resp = client.post("/data_transformation", json={
-            "data": {"old": "value"},
-            "pipeline": [{"operation": "rename_keys", "params": {"mapping": {"old": "new"}}}],
-        })
+        resp = client.post(
+            "/data_transformation",
+            json={
+                "data": {"old": "value"},
+                "pipeline": [
+                    {"operation": "rename_keys", "params": {"mapping": {"old": "new"}}}
+                ],
+            },
+        )
         assert resp.status_code == 200
         body = resp.json()
         assert body["status"] == "success"
@@ -213,44 +252,59 @@ class TestEndpointHappyPath:
         assert body["duration_ms"] >= 0
 
     def test_caller_request_id_preserved(self, client: TestClient):
-        resp = client.post("/data_transformation", json={
-            "data": {"x": 1},
-            "pipeline": [{"operation": "filter_keys", "params": {"keys": ["x"]}}],
-            "request_id": "caller-abc-123",
-        })
+        resp = client.post(
+            "/data_transformation",
+            json={
+                "data": {"x": 1},
+                "pipeline": [{"operation": "filter_keys", "params": {"keys": ["x"]}}],
+                "request_id": "caller-abc-123",
+            },
+        )
         assert resp.json()["request_id"] == "caller-abc-123"
 
     def test_multi_step_pipeline(self, client: TestClient):
-        resp = client.post("/data_transformation", json={
-            "data": {"a": "1", "b": "drop"},
-            "pipeline": [
-                {"operation": "filter_keys", "params": {"keys": ["a"]}},
-                {"operation": "cast_types", "params": {"casts": {"a": "int"}}},
-            ],
-        })
+        resp = client.post(
+            "/data_transformation",
+            json={
+                "data": {"a": "1", "b": "drop"},
+                "pipeline": [
+                    {"operation": "filter_keys", "params": {"keys": ["a"]}},
+                    {"operation": "cast_types", "params": {"casts": {"a": "int"}}},
+                ],
+            },
+        )
         assert resp.status_code == 200
         assert resp.json()["result"] == {"a": 1}
 
 
 class TestEndpointValidation:
     def test_empty_pipeline_rejected(self, client: TestClient):
-        resp = client.post("/data_transformation", json={
-            "data": {"x": 1},
-            "pipeline": [],
-        })
+        resp = client.post(
+            "/data_transformation",
+            json={
+                "data": {"x": 1},
+                "pipeline": [],
+            },
+        )
         assert resp.status_code == 422
 
     def test_unknown_operation_rejected_at_validation(self, client: TestClient):
-        resp = client.post("/data_transformation", json={
-            "data": {"x": 1},
-            "pipeline": [{"operation": "not_real", "params": {}}],
-        })
+        resp = client.post(
+            "/data_transformation",
+            json={
+                "data": {"x": 1},
+                "pipeline": [{"operation": "not_real", "params": {}}],
+            },
+        )
         assert resp.status_code == 422
 
     def test_missing_data_field_rejected(self, client: TestClient):
-        resp = client.post("/data_transformation", json={
-            "pipeline": [{"operation": "filter_keys", "params": {"keys": []}}],
-        })
+        resp = client.post(
+            "/data_transformation",
+            json={
+                "pipeline": [{"operation": "filter_keys", "params": {"keys": []}}],
+            },
+        )
         assert resp.status_code == 422
 
     def test_missing_pipeline_field_rejected(self, client: TestClient):
@@ -260,10 +314,15 @@ class TestEndpointValidation:
 
 class TestEndpointTransformationErrors:
     def test_invalid_cast_returns_400(self, client: TestClient):
-        resp = client.post("/data_transformation", json={
-            "data": {"val": "not-a-number"},
-            "pipeline": [{"operation": "cast_types", "params": {"casts": {"val": "int"}}}],
-        })
+        resp = client.post(
+            "/data_transformation",
+            json={
+                "data": {"val": "not-a-number"},
+                "pipeline": [
+                    {"operation": "cast_types", "params": {"casts": {"val": "int"}}}
+                ],
+            },
+        )
         assert resp.status_code == 400
         body = resp.json()
         assert body["status"] == "error"
@@ -271,10 +330,16 @@ class TestEndpointTransformationErrors:
         assert "request_id" in body
 
     def test_invalid_regex_returns_400(self, client: TestClient):
-        resp = client.post("/data_transformation", json={
-            "data": {"text": "hello"},
-            "pipeline": [{"operation": "regex_replace", "params": {
-                "field": "text", "pattern": "[", "replacement": ""
-            }}],
-        })
+        resp = client.post(
+            "/data_transformation",
+            json={
+                "data": {"text": "hello"},
+                "pipeline": [
+                    {
+                        "operation": "regex_replace",
+                        "params": {"field": "text", "pattern": "[", "replacement": ""},
+                    }
+                ],
+            },
+        )
         assert resp.status_code == 400

@@ -8,6 +8,7 @@ originates from an agent.
 
 Module vars wired at startup by ``app._wire_handlers``.
 """
+
 from __future__ import annotations
 
 from pathlib import Path

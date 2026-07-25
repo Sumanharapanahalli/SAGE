@@ -3,6 +3,7 @@
 Stateless singleton over a static standards registry — no store to inject,
 so the handler imports it lazily at call time and these tests call it directly.
 """
+
 from __future__ import annotations
 
 import pytest
@@ -57,9 +58,14 @@ def test_assess_auto_detects_standards_from_the_profile():
     assert isinstance(out["overall_score"], float)
     assert out["standards_assessed"] == len(out["assessments"])
     # us + eu + international + AI/ML standards must all be auto-detected.
-    assert {"iec_62304", "iso_14971", "fda_swv", "eu_mdr", "eu_ai_act", "fda_aiml"} <= set(
-        out["assessments"]
-    )
+    assert {
+        "iec_62304",
+        "iso_14971",
+        "fda_swv",
+        "eu_mdr",
+        "eu_ai_act",
+        "fda_aiml",
+    } <= set(out["assessments"])
     a = out["assessments"]["iec_62304"]
     assert a["standard_name"]
     assert 0 <= a["compliance_score"] <= 100
@@ -129,7 +135,9 @@ def test_roadmap_returns_phases_and_total_weeks():
     assert out["product_name"] == "CardioRisk CDS"
     assert out["target_regions"] == ["us", "eu"]
     assert len(out["phases"]) > 0
-    assert out["total_estimated_weeks"] == sum(p["estimated_weeks"] for p in out["phases"])
+    assert out["total_estimated_weeks"] == sum(
+        p["estimated_weeks"] for p in out["phases"]
+    )
     for p in out["phases"]:
         assert p["phase_name"] and p["description"]
         assert p["standards"]  # empty phases are filtered out

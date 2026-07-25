@@ -22,6 +22,7 @@ with two deliberate divergences:
    parent's children silently vanish from the response. Same query, durable
    source.
 """
+
 from __future__ import annotations
 
 import json
@@ -39,13 +40,15 @@ _LIMIT_MAX = 1000
 _STATUSES = ("pending", "in_progress", "completed", "failed", "blocked", "cancelled")
 
 # Injected by app._wire_handlers. Tests monkey-patch these.
-_db_path: Optional[str] = None           # <solution>/.sage/queue.db
-_feature_db_path: Optional[str] = None   # <solution>/.sage/audit_log.db
+_db_path: Optional[str] = None  # <solution>/.sage/queue.db
+_feature_db_path: Optional[str] = None  # <solution>/.sage/audit_log.db
 
 
 def _require_db() -> str:
     if not _db_path:
-        raise RpcError(RPC_SIDECAR_ERROR, "queue database is not wired (no solution active)")
+        raise RpcError(
+            RPC_SIDECAR_ERROR, "queue database is not wired (no solution active)"
+        )
     return _db_path
 
 
@@ -63,7 +66,9 @@ def _coerce_limit(value: Any) -> int:
     if isinstance(value, bool) or not isinstance(value, int):
         raise RpcError(RPC_INVALID_PARAMS, "'limit' must be an integer")
     if value < 1 or value > _LIMIT_MAX:
-        raise RpcError(RPC_INVALID_PARAMS, f"'limit' must be between 1 and {_LIMIT_MAX}")
+        raise RpcError(
+            RPC_INVALID_PARAMS, f"'limit' must be between 1 and {_LIMIT_MAX}"
+        )
     return value
 
 

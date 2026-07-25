@@ -3,6 +3,7 @@ core/config.py — Application settings via pydantic-settings.
 
 All values can be overridden by environment variables or a .env file.
 """
+
 from __future__ import annotations
 
 from functools import lru_cache

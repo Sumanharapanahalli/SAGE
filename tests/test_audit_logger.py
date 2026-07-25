@@ -26,7 +26,9 @@ def _query_all(db_path):
     """Helper: query all rows from compliance_audit_log."""
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
-    rows = conn.execute("SELECT * FROM compliance_audit_log ORDER BY timestamp ASC").fetchall()
+    rows = conn.execute(
+        "SELECT * FROM compliance_audit_log ORDER BY timestamp ASC"
+    ).fetchall()
     conn.close()
     return [dict(r) for r in rows]
 
@@ -44,7 +46,15 @@ def test_db_initialized_with_correct_schema(tmp_audit_db):
     columns = {row[1] for row in cursor.fetchall()}
     conn.close()
 
-    required_columns = {"id", "timestamp", "actor", "action_type", "input_context", "output_content", "metadata"}
+    required_columns = {
+        "id",
+        "timestamp",
+        "actor",
+        "action_type",
+        "input_context",
+        "output_content",
+        "metadata",
+    }
     missing = required_columns - columns
     assert not missing, f"Missing columns in audit table: {missing}"
 
@@ -58,7 +68,9 @@ def test_log_event_returns_uuid(tmp_audit_db):
         output_content="test output",
     )
     assert isinstance(event_id, str), "log_event() must return a string."
-    assert UUID4_PATTERN.match(event_id), f"Returned ID is not a valid UUID v4: {event_id!r}"
+    assert UUID4_PATTERN.match(event_id), (
+        f"Returned ID is not a valid UUID v4: {event_id!r}"
+    )
 
 
 def test_log_event_persists_to_db(tmp_audit_db):
@@ -80,7 +92,7 @@ def test_log_event_persists_to_db(tmp_audit_db):
 def test_log_event_all_fields_stored(tmp_audit_db):
     """All fields passed to log_event() must be stored correctly in the database."""
     metadata = {"trace_id": "abc-123", "source": "test"}
-    event_id = tmp_audit_db.log_event(
+    tmp_audit_db.log_event(
         actor="DeveloperAgent",
         action_type="MR_REVIEW",
         input_context="project=1 mr_iid=7",
@@ -173,10 +185,16 @@ def test_timestamp_format(tmp_audit_db):
 def test_audit_log_is_append_only(tmp_audit_db):
     """Logging two events must result in both being present — no overwrite."""
     id1 = tmp_audit_db.log_event(
-        actor="Agent1", action_type="ACTION_A", input_context="in1", output_content="out1"
+        actor="Agent1",
+        action_type="ACTION_A",
+        input_context="in1",
+        output_content="out1",
     )
     id2 = tmp_audit_db.log_event(
-        actor="Agent2", action_type="ACTION_B", input_context="in2", output_content="out2"
+        actor="Agent2",
+        action_type="ACTION_B",
+        input_context="in2",
+        output_content="out2",
     )
     rows = _query_all(tmp_audit_db.db_path)
     assert len(rows) == 2, f"Expected 2 rows (append-only), found {len(rows)}."

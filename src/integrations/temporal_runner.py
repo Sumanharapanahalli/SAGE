@@ -35,11 +35,12 @@ logger = logging.getLogger("TemporalRunner")
 _HAS_TEMPORAL = False
 try:
     import temporalio  # noqa: F401
+
     _HAS_TEMPORAL = True
 except ImportError:
     pass
 
-_DEFAULT_HOST      = "localhost:7233"
+_DEFAULT_HOST = "localhost:7233"
 _DEFAULT_NAMESPACE = "default"
 _DEFAULT_TASK_QUEUE = "sage-task-queue"
 
@@ -52,7 +53,7 @@ class TemporalRunner:
 
     def __init__(self):
         self._client = None
-        self._runs: dict[str, dict] = {}   # workflow_id -> metadata
+        self._runs: dict[str, dict] = {}  # workflow_id -> metadata
 
     async def _get_client(self):
         """Lazily connect to the Temporal server."""
@@ -62,7 +63,8 @@ class TemporalRunner:
             return None
         try:
             from temporalio.client import Client
-            host      = os.environ.get("TEMPORAL_HOST", _DEFAULT_HOST)
+
+            host = os.environ.get("TEMPORAL_HOST", _DEFAULT_HOST)
             namespace = os.environ.get("TEMPORAL_NAMESPACE", _DEFAULT_NAMESPACE)
             self._client = await Client.connect(host, namespace=namespace)
             logger.info("Connected to Temporal at %s (namespace: %s)", host, namespace)
@@ -71,7 +73,9 @@ class TemporalRunner:
             logger.warning("Cannot connect to Temporal: %s", exc)
             return None
 
-    def start(self, workflow_name: str, args: dict = None, workflow_id: str = None) -> dict:
+    def start(
+        self, workflow_name: str, args: dict = None, workflow_id: str = None
+    ) -> dict:
         """
         Start a durable Temporal workflow (sync wrapper).
 
@@ -90,7 +94,9 @@ class TemporalRunner:
         args = args or {}
 
         if not _HAS_TEMPORAL:
-            return self._fallback(workflow_name, args, workflow_id, "temporalio not installed")
+            return self._fallback(
+                workflow_name, args, workflow_id, "temporalio not installed"
+            )
 
         try:
             loop = asyncio.new_event_loop()
@@ -103,10 +109,14 @@ class TemporalRunner:
             logger.warning("Temporal start failed (%s) — using LangGraph fallback", exc)
             return self._fallback(workflow_name, args, workflow_id, str(exc))
 
-    async def _async_start(self, workflow_name: str, args: dict, workflow_id: str) -> dict:
+    async def _async_start(
+        self, workflow_name: str, args: dict, workflow_id: str
+    ) -> dict:
         client = await self._get_client()
         if client is None:
-            return self._fallback(workflow_name, args, workflow_id, "Temporal server unreachable")
+            return self._fallback(
+                workflow_name, args, workflow_id, "Temporal server unreachable"
+            )
 
         task_queue = os.environ.get("TEMPORAL_TASK_QUEUE", _DEFAULT_TASK_QUEUE)
         try:
@@ -119,42 +129,45 @@ class TemporalRunner:
                 task_queue=task_queue,
             )
             self._runs[workflow_id] = {
-                "workflow_id":   workflow_id,
+                "workflow_id": workflow_id,
                 "workflow_name": workflow_name,
-                "status":        "started",
-                "fallback":      False,
-                "handle":        handle,
+                "status": "started",
+                "fallback": False,
+                "handle": handle,
             }
             self._audit(workflow_id, workflow_name, "started")
             return {
-                "workflow_id":   workflow_id,
+                "workflow_id": workflow_id,
                 "workflow_name": workflow_name,
-                "status":        "started",
-                "fallback":      False,
+                "status": "started",
+                "fallback": False,
             }
         except Exception as exc:
             logger.error("Temporal workflow start error: %s", exc)
             return self._fallback(workflow_name, args, workflow_id, str(exc))
 
-    def _fallback(self, workflow_name: str, args: dict, workflow_id: str, reason: str) -> dict:
+    def _fallback(
+        self, workflow_name: str, args: dict, workflow_id: str, reason: str
+    ) -> dict:
         """Fall back to LangGraph runner for the same workflow."""
         logger.info("Temporal fallback for '%s': %s", workflow_name, reason)
         try:
             from src.integrations.langgraph_runner import langgraph_runner
+
             lg_result = langgraph_runner.run(workflow_name, args)
             self._runs[workflow_id] = {
-                "workflow_id":   workflow_id,
+                "workflow_id": workflow_id,
                 "workflow_name": workflow_name,
-                "status":        lg_result.get("status", "completed"),
-                "fallback":      True,
+                "status": lg_result.get("status", "completed"),
+                "fallback": True,
                 "langgraph_run": lg_result,
             }
             return {
-                "workflow_id":   workflow_id,
+                "workflow_id": workflow_id,
                 "workflow_name": workflow_name,
-                "status":        lg_result.get("status", "completed"),
-                "fallback":      True,
-                "reason":        reason,
+                "status": lg_result.get("status", "completed"),
+                "fallback": True,
+                "reason": reason,
             }
         except Exception as lg_exc:
             self._runs[workflow_id] = {
@@ -164,11 +177,11 @@ class TemporalRunner:
                 "fallback": True,
             }
             return {
-                "workflow_id":   workflow_id,
+                "workflow_id": workflow_id,
                 "workflow_name": workflow_name,
-                "status":        "error",
-                "fallback":      True,
-                "reason":        reason,
+                "status": "error",
+                "fallback": True,
+                "reason": reason,
                 "fallback_error": str(lg_exc),
             }
 
@@ -183,14 +196,17 @@ class TemporalRunner:
 
         meta = self._runs.get(workflow_id)
         if meta is None:
-            return {"error": f"Workflow '{workflow_id}' not found", "workflow_id": workflow_id}
+            return {
+                "error": f"Workflow '{workflow_id}' not found",
+                "workflow_id": workflow_id,
+            }
 
         if meta.get("fallback") or not _HAS_TEMPORAL:
             return {
-                "workflow_id":   meta["workflow_id"],
+                "workflow_id": meta["workflow_id"],
                 "workflow_name": meta["workflow_name"],
-                "status":        meta["status"],
-                "fallback":      True,
+                "status": meta["status"],
+                "fallback": True,
             }
 
         # Poll Temporal for live status
@@ -208,28 +224,28 @@ class TemporalRunner:
             status = str(desc.status).lower().replace("workflowexecutionstatus.", "")
             meta["status"] = status
             return {
-                "workflow_id":   workflow_id,
+                "workflow_id": workflow_id,
                 "workflow_name": meta["workflow_name"],
-                "status":        status,
-                "fallback":      False,
+                "status": status,
+                "fallback": False,
             }
         except Exception as exc:
             logger.warning("Temporal describe failed: %s", exc)
             return {
                 "workflow_id": workflow_id,
-                "status":      meta.get("status", "unknown"),
-                "fallback":    False,
-                "error":       str(exc),
+                "status": meta.get("status", "unknown"),
+                "fallback": False,
+                "error": str(exc),
             }
 
     def list_runs(self) -> list[dict]:
         """Return metadata for all workflow runs in this process session."""
         return [
             {
-                "workflow_id":   v["workflow_id"],
+                "workflow_id": v["workflow_id"],
                 "workflow_name": v["workflow_name"],
-                "status":        v["status"],
-                "fallback":      v.get("fallback", False),
+                "status": v["status"],
+                "fallback": v.get("fallback", False),
             }
             for v in self._runs.values()
         ]
@@ -238,6 +254,7 @@ class TemporalRunner:
         """Write workflow event to the audit log."""
         try:
             from src.memory.audit_logger import audit_logger
+
             audit_logger.log_event(
                 actor="TemporalRunner",
                 action_type="TEMPORAL_WORKFLOW",

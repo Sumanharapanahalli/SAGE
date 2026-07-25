@@ -10,12 +10,12 @@ Usage:
 
 Exit codes: 0 = pass, 1 = regression detected, 2 = no baselines found.
 """
+
 import argparse
 import asyncio
 import json
 import sys
 from datetime import datetime, timezone
-from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from tests.system.performance.baseline_collector import (
@@ -71,7 +71,11 @@ def print_report(comparisons: List[Dict]) -> None:
     improvements = [c for c in comparisons if c["improved"]]
 
     for c in comparisons:
-        status = "REGRESSED" if c["regressed"] else ("IMPROVED " if c["improved"] else "OK       ")
+        status = (
+            "REGRESSED"
+            if c["regressed"]
+            else ("IMPROVED " if c["improved"] else "OK       ")
+        )
         sla_flag = " [SLA BREACH]" if c["sla_breach"] else ""
         print(
             f"  {status}  {c['name']:<25} "
@@ -117,14 +121,23 @@ def save_comparison_report(comparisons: List[Dict]) -> None:
     print(f"\nReport saved to: {report_file}")
 
 
-async def detect(threshold_pct: float = REGRESSION_THRESHOLD_PCT) -> Tuple[bool, List[Dict]]:
+async def detect(
+    threshold_pct: float = REGRESSION_THRESHOLD_PCT,
+) -> Tuple[bool, List[Dict]]:
     # Check baselines exist
-    existing = [p for p in CRITICAL_PATHS if (BASELINE_DIR / f"{p['name']}.json").exists()]
+    existing = [
+        p for p in CRITICAL_PATHS if (BASELINE_DIR / f"{p['name']}.json").exists()
+    ]
     if not existing:
-        print("ERROR: No baselines found. Run baseline_collector.py first.", file=sys.stderr)
+        print(
+            "ERROR: No baselines found. Run baseline_collector.py first.",
+            file=sys.stderr,
+        )
         sys.exit(2)
 
-    print(f"Running fresh measurements for {len(existing)} endpoints (threshold: {threshold_pct}%)...")
+    print(
+        f"Running fresh measurements for {len(existing)} endpoints (threshold: {threshold_pct}%)..."
+    )
     current_results = await collect_all()
     current_map = {r["name"]: r for r in current_results if not r.get("skipped")}
 
@@ -144,7 +157,9 @@ async def detect(threshold_pct: float = REGRESSION_THRESHOLD_PCT) -> Tuple[bool,
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Detect performance regressions vs baseline")
+    parser = argparse.ArgumentParser(
+        description="Detect performance regressions vs baseline"
+    )
     parser.add_argument(
         "--threshold",
         type=float,

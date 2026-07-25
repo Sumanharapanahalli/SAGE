@@ -23,7 +23,8 @@ logger = logging.getLogger(__name__)
 
 _CONFIG_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-    "config", "config.yaml",
+    "config",
+    "config.yaml",
 )
 
 
@@ -32,7 +33,9 @@ def _get_sage_solutions_dir() -> str:
     return os.environ.get(
         "SAGE_SOLUTIONS_DIR",
         os.path.join(
-            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+            os.path.dirname(
+                os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            ),
             "solutions",
         ),
     )
@@ -45,6 +48,7 @@ def _load_base_config() -> dict:
     except Exception:
         return {}
 
+
 # ---------------------------------------------------------------------------
 # Minimal-mode flag — set SAGE_MINIMAL=1 to skip all heavy vector deps
 # ---------------------------------------------------------------------------
@@ -53,15 +57,16 @@ _MINIMAL = os.environ.get("SAGE_MINIMAL", "").strip() in ("1", "true", "yes")
 # ---------------------------------------------------------------------------
 # Graceful imports — each dependency checked individually
 # ---------------------------------------------------------------------------
-_HAS_CHROMADB   = False
+_HAS_CHROMADB = False
 _HAS_EMBEDDINGS = False
-Chroma          = None
-EmbeddingClass  = None
+Chroma = None
+EmbeddingClass = None
 _embedding_source = None
 
 if not _MINIMAL:
     try:
         import chromadb  # noqa: F401
+
         _HAS_CHROMADB = True
     except ImportError:
         pass
@@ -76,12 +81,14 @@ if not _MINIMAL:
 
     try:
         from langchain_huggingface import HuggingFaceEmbeddings
-        EmbeddingClass    = HuggingFaceEmbeddings
+
+        EmbeddingClass = HuggingFaceEmbeddings
         _embedding_source = "langchain_huggingface"
     except ImportError:
         try:
             from langchain_community.embeddings import HuggingFaceEmbeddings
-            EmbeddingClass    = HuggingFaceEmbeddings
+
+            EmbeddingClass = HuggingFaceEmbeddings
             _embedding_source = "langchain_community"
         except ImportError:
             pass
@@ -90,6 +97,7 @@ if not _MINIMAL:
 # ---------------------------------------------------------------------------
 # VectorMemory
 # ---------------------------------------------------------------------------
+
 
 class VectorMemory:
     """
@@ -104,17 +112,21 @@ class VectorMemory:
     """
 
     def __init__(self, explicit_solution: str = None):
-        self._explicit_solution = explicit_solution  # MUST be set before _initialize_db()
-        self._embedding_function  = None   # lazy-loaded on first use
-        self._vector_store        = None
-        self._llamaindex_index    = None   # set when backend == "llamaindex"
+        self._explicit_solution = (
+            explicit_solution  # MUST be set before _initialize_db()
+        )
+        self._embedding_function = None  # lazy-loaded on first use
+        self._vector_store = None
+        self._llamaindex_index = None  # set when backend == "llamaindex"
         self._fallback_memory: List[str] = []
         self._fallback_lock = threading.Lock()  # protects _fallback_memory
         self._ready = False
-        self._mode  = "minimal"
+        self._mode = "minimal"
 
         if _MINIMAL:
-            logger.info("VectorMemory: minimal mode (SAGE_MINIMAL=1) — keyword fallback only")
+            logger.info(
+                "VectorMemory: minimal mode (SAGE_MINIMAL=1) — keyword fallback only"
+            )
             return
 
         if _HAS_CHROMADB and Chroma is not None:
@@ -128,13 +140,15 @@ class VectorMemory:
             logger.warning(
                 "VectorMemory: ChromaDB unavailable (%s). "
                 "Using keyword fallback. Install with: pip install %s",
-                ", ".join(missing), " ".join(missing),
+                ", ".join(missing),
+                " ".join(missing),
             )
 
     def _get_collection_name(self) -> str:
         """Use solution-specific collection name so solutions never share vectors."""
         try:
             from src.core.project_loader import project_config
+
             # 1. Solution project.yaml settings.memory.collection_name
             solution_name = (
                 project_config.get_project_setting("settings", {})
@@ -144,7 +158,9 @@ class VectorMemory:
             if solution_name:
                 return solution_name
             # 2. Base config.yaml memory.collection_name (if non-empty)
-            cfg_name = _load_base_config().get("memory", {}).get("collection_name", "").strip()
+            cfg_name = (
+                _load_base_config().get("memory", {}).get("collection_name", "").strip()
+            )
             if cfg_name:
                 return cfg_name
             # 3. Default: <solution>_knowledge — always domain-scoped
@@ -174,6 +190,7 @@ class VectorMemory:
 
         try:
             from src.core.project_loader import project_config
+
             # Solution-level override (project.yaml settings.memory.vector_db_path)
             solution_path = (
                 project_config.get_project_setting("settings", {})
@@ -186,8 +203,11 @@ class VectorMemory:
             return os.path.join(project_config.sage_data_dir, "chroma_db")
         except Exception:
             return os.path.join(
-                os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-                ".sage", "chroma_db",
+                os.path.dirname(
+                    os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                ),
+                ".sage",
+                "chroma_db",
             )
 
     def _lazy_load_embeddings(self):
@@ -211,39 +231,45 @@ class VectorMemory:
             self._initialize_chroma_db()
 
     def _initialize_chroma_db(self):
-        persist_path    = self._get_vector_db_path()
+        persist_path = self._get_vector_db_path()
         collection_name = self._get_collection_name()
         try:
             self._lazy_load_embeddings()
             kwargs: dict = {
-                "collection_name":  collection_name,
+                "collection_name": collection_name,
                 "persist_directory": persist_path,
             }
             if self._embedding_function:
                 kwargs["embedding_function"] = self._embedding_function
             self._vector_store = Chroma(**kwargs)
             self._ready = True
-            self._mode  = "full" if self._embedding_function else "lite"
-            logger.info("VectorMemory ready (chroma/%s) at %s", self._mode, persist_path)
+            self._mode = "full" if self._embedding_function else "lite"
+            logger.info(
+                "VectorMemory ready (chroma/%s) at %s", self._mode, persist_path
+            )
         except Exception as exc:
-            logger.error("VectorMemory init failed (%s) — keyword fallback active.", exc)
+            logger.error(
+                "VectorMemory init failed (%s) — keyword fallback active.", exc
+            )
 
     def _initialize_llamaindex_db(self):
         """LlamaIndex backend with ChromaDB vector store — better chunking and re-ranking."""
-        persist_path    = self._get_vector_db_path()
+        persist_path = self._get_vector_db_path()
         collection_name = self._get_collection_name()
         try:
             import chromadb
             from llama_index.core import VectorStoreIndex, StorageContext
             from llama_index.vector_stores.chroma import ChromaVectorStore
 
-            chroma_client     = chromadb.PersistentClient(path=persist_path)
+            chroma_client = chromadb.PersistentClient(path=persist_path)
             chroma_collection = chroma_client.get_or_create_collection(collection_name)
-            lf_vector_store   = ChromaVectorStore(chroma_collection=chroma_collection)
-            storage_context   = StorageContext.from_defaults(vector_store=lf_vector_store)
-            self._llamaindex_index = VectorStoreIndex([], storage_context=storage_context)
+            lf_vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
+            storage_context = StorageContext.from_defaults(vector_store=lf_vector_store)
+            self._llamaindex_index = VectorStoreIndex(
+                [], storage_context=storage_context
+            )
             self._ready = True
-            self._mode  = "llamaindex"
+            self._mode = "llamaindex"
             logger.info("VectorMemory ready (llamaindex) at %s", persist_path)
         except ImportError as exc:
             logger.warning(
@@ -283,7 +309,8 @@ class VectorMemory:
             if self._fallback_memory:
                 query_lower = query.lower()
                 matches = [
-                    m for m in self._fallback_memory
+                    m
+                    for m in self._fallback_memory
                     if any(word in m.lower() for word in query_lower.split()[:5])
                 ]
                 return matches[:k]
@@ -327,6 +354,7 @@ class VectorMemory:
         Returns the assigned entry ID.
         """
         import uuid as _uuid
+
         entry_id = str(_uuid.uuid4())
         with self._fallback_lock:
             self._fallback_memory.append(text)
@@ -334,8 +362,11 @@ class VectorMemory:
         if self._mode == "llamaindex" and self._ready:
             try:
                 from llama_index.core import Document
+
                 self._llamaindex_index.insert(
-                    Document(text=text, metadata={**(metadata or {}), "entry_id": entry_id})
+                    Document(
+                        text=text, metadata={**(metadata or {}), "entry_id": entry_id}
+                    )
                 )
                 return entry_id
             except Exception as exc:
@@ -397,13 +428,16 @@ class VectorMemory:
     def add_feedback(self, text: str, metadata: dict = None):
         """Learn from human feedback — saved to vector DB or fallback list."""
         with self._fallback_lock:
-            self._fallback_memory.append(text)   # always save (cheap)
+            self._fallback_memory.append(text)  # always save (cheap)
 
         # LlamaIndex path
         if self._mode == "llamaindex" and self._ready:
             try:
                 from llama_index.core import Document
-                self._llamaindex_index.insert(Document(text=text, metadata=metadata or {}))
+
+                self._llamaindex_index.insert(
+                    Document(text=text, metadata=metadata or {})
+                )
                 logger.info("Feedback saved to LlamaIndex store.")
                 return
             except Exception as exc:

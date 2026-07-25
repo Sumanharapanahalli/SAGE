@@ -6,7 +6,6 @@ MR create/review, monitor status, and Teams webhook.
 All agent calls are mocked.
 """
 
-import json
 import os
 import re
 import sqlite3
@@ -55,6 +54,7 @@ MOCK_MR_CREATED = {
 def clear_pending_proposals():
     """Clear the in-memory pending proposals store before each test."""
     from src.interface import api
+
     api._pending_proposals.clear()
     yield
     api._pending_proposals.clear()
@@ -65,6 +65,7 @@ def client(tmp_audit_db):
     """TestClient with tmp_audit_db injected into the API."""
     with patch("src.interface.api._get_audit_logger", return_value=tmp_audit_db):
         from src.interface.api import app
+
         with TestClient(app) as c:
             yield c, tmp_audit_db
 
@@ -78,7 +79,9 @@ def test_health_returns_200(client):
     """GET /health must return HTTP 200."""
     c, _ = client
     with patch("src.interface.api._get_llm_gateway") as mock_llm:
-        mock_llm.return_value.get_provider_name.return_value = "GeminiCLI (gemini-2.5-flash)"
+        mock_llm.return_value.get_provider_name.return_value = (
+            "GeminiCLI (gemini-2.5-flash)"
+        )
         resp = c.get("/health")
     assert resp.status_code == 200
     data = resp.json()
@@ -89,7 +92,9 @@ def test_health_contains_provider_info(client):
     """GET /health must include 'llm_provider' in the response body."""
     c, _ = client
     with patch("src.interface.api._get_llm_gateway") as mock_llm:
-        mock_llm.return_value.get_provider_name.return_value = "GeminiCLI (gemini-2.5-flash)"
+        mock_llm.return_value.get_provider_name.return_value = (
+            "GeminiCLI (gemini-2.5-flash)"
+        )
         resp = c.get("/health")
     data = resp.json()
     assert "llm_provider" in data, f"Expected 'llm_provider' in health response: {data}"
@@ -102,6 +107,7 @@ def test_health_single_route_not_shadowed(client):
     """Exactly one /health route — guards against a duplicate shadowing the new fields."""
     c, _ = client
     from src.interface.api import app
+
     paths = [r.path for r in app.routes if getattr(r, "path", None) == "/health"]
     assert len(paths) == 1, f"expected one /health route, found {len(paths)}"
 
@@ -111,14 +117,18 @@ def test_health_new_fields_present_with_correct_types(client):
     uptime_seconds — without breaking the existing shape."""
     c, _ = client
     with patch("src.interface.api._get_llm_gateway") as mock_llm:
-        mock_llm.return_value.get_provider_name.return_value = "GeminiCLI (gemini-2.5-flash)"
+        mock_llm.return_value.get_provider_name.return_value = (
+            "GeminiCLI (gemini-2.5-flash)"
+        )
         mock_llm.return_value.get_usage.return_value = {"calls": 10, "errors": 0}
         resp = c.get("/health")
     body = resp.json()
     assert isinstance(body["queue_depth"], int)
     assert not isinstance(body["queue_depth"], bool)
     assert isinstance(body["llm_provider"], str)
-    assert isinstance(body["llm_status"], str) and body["llm_status"] in VALID_LLM_STATUSES
+    assert (
+        isinstance(body["llm_status"], str) and body["llm_status"] in VALID_LLM_STATUSES
+    )
     assert isinstance(body["memory_entries"], int)
     assert not isinstance(body["memory_entries"], bool)
     assert isinstance(body["uptime_seconds"], float)
@@ -129,6 +139,7 @@ def test_health_degraded_llm(client, monkeypatch):
     """A high error ratio must surface as llm_status='degraded', still HTTP 200."""
     c, _ = client
     import src.interface.api as api
+
     monkeypatch.setattr(api, "_probe_llm", lambda: ("openai", "degraded"))
     resp = c.get("/health")
     assert resp.status_code == 200
@@ -178,8 +189,10 @@ def test_health_shows_configured_integrations(client):
         "METABASE_URL": "https://metabase.local",
         "SPIRA_URL": "https://spira.local",
     }
-    with patch.dict(os.environ, env), \
-         patch("src.interface.api._get_llm_gateway") as mock_llm:
+    with (
+        patch.dict(os.environ, env),
+        patch("src.interface.api._get_llm_gateway") as mock_llm,
+    ):
         mock_llm.return_value.get_provider_name.return_value = "GeminiCLI"
         resp = c.get("/health")
     data = resp.json()
@@ -211,7 +224,9 @@ def test_analyze_rejects_empty_log(client):
     """POST /analyze with empty log_entry must return 400."""
     c, _ = client
     resp = c.post("/analyze", json={"log_entry": ""})
-    assert resp.status_code == 400, f"Expected 400 for empty log_entry, got {resp.status_code}"
+    assert resp.status_code == 400, (
+        f"Expected 400 for empty log_entry, got {resp.status_code}"
+    )
 
 
 def test_analyze_stores_pending_proposal(client):
@@ -227,7 +242,9 @@ def test_analyze_stores_pending_proposal(client):
     trace_id = resp.json()["trace_id"]
     # Now approve it
     resp2 = c.post(f"/approve/{trace_id}")
-    assert resp2.status_code == 200, f"Expected 200 on approve, got {resp2.status_code}: {resp2.text}"
+    assert resp2.status_code == 200, (
+        f"Expected 200 on approve, got {resp2.status_code}: {resp2.text}"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -292,7 +309,9 @@ def test_approve_removes_from_pending(client):
     c.post(f"/approve/{trace_id}")
     # Second approval must fail
     resp2 = c.post(f"/approve/{trace_id}")
-    assert resp2.status_code == 404, f"Expected 404 on second approve, got {resp2.status_code}"
+    assert resp2.status_code == 404, (
+        f"Expected 404 on second approve, got {resp2.status_code}"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -312,8 +331,12 @@ def test_reject_valid_trace_id(client):
         resp = c.post("/analyze", json={"log_entry": "ERROR: test reject"})
     trace_id = resp.json()["trace_id"]
     with patch("src.interface.api._get_analyst", return_value=mock_analyst):
-        resp2 = c.post(f"/reject/{trace_id}", json={"feedback": "Real cause is hardware fault."})
-    assert resp2.status_code == 200, f"Expected 200 on reject, got {resp2.status_code}: {resp2.text}"
+        resp2 = c.post(
+            f"/reject/{trace_id}", json={"feedback": "Real cause is hardware fault."}
+        )
+    assert resp2.status_code == 200, (
+        f"Expected 200 on reject, got {resp2.status_code}: {resp2.text}"
+    )
     data = resp2.json()
     assert data.get("status") == "rejected"
 
@@ -339,7 +362,9 @@ def test_reject_triggers_learning(client):
     feedback_text = "The actual root cause was a hardware short circuit."
     with patch("src.interface.api._get_analyst", return_value=mock_analyst):
         c.post(f"/reject/{trace_id}", json={"feedback": feedback_text})
-    assert mock_analyst.learn_from_feedback.called, "learn_from_feedback() must be called on rejection."
+    assert mock_analyst.learn_from_feedback.called, (
+        "learn_from_feedback() must be called on rejection."
+    )
     call_kwargs = mock_analyst.learn_from_feedback.call_args
     assert feedback_text in str(call_kwargs), (
         f"Feedback text must be passed to learn_from_feedback(). Call args: {call_kwargs}"
@@ -371,7 +396,9 @@ def test_audit_pagination(client):
     resp = c.get("/audit?limit=2&offset=0")
     assert resp.status_code == 200
     data = resp.json()
-    assert len(data["entries"]) <= 2, f"Expected at most 2 entries with limit=2, got {len(data['entries'])}"
+    assert len(data["entries"]) <= 2, (
+        f"Expected at most 2 entries with limit=2, got {len(data['entries'])}"
+    )
     # Request 2 with offset 2
     resp2 = c.get("/audit?limit=2&offset=2")
     assert resp2.status_code == 200
@@ -389,7 +416,9 @@ def test_audit_max_limit_500(client):
     resp = c.get("/audit?limit=9999")
     assert resp.status_code == 200
     data = resp.json()
-    assert data.get("limit") == 500, f"Expected limit capped at 500, got {data.get('limit')}"
+    assert data.get("limit") == 500, (
+        f"Expected limit capped at 500, got {data.get('limit')}"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -404,14 +433,18 @@ def test_mr_create_valid_request(client):
     mock_dev.create_mr_from_issue.return_value = MOCK_MR_CREATED.copy()
     with patch("src.interface.api._get_developer", return_value=mock_dev):
         resp = c.post("/mr/create", json={"project_id": 123, "issue_iid": 45})
-    assert resp.status_code == 200, f"Expected 200 for valid MR create, got {resp.status_code}: {resp.text}"
+    assert resp.status_code == 200, (
+        f"Expected 200 for valid MR create, got {resp.status_code}: {resp.text}"
+    )
 
 
 def test_mr_create_missing_fields(client):
     """POST /mr/create without project_id must return 422 (validation error)."""
     c, _ = client
     resp = c.post("/mr/create", json={"issue_iid": 45})
-    assert resp.status_code == 422, f"Expected 422 for missing project_id, got {resp.status_code}"
+    assert resp.status_code == 422, (
+        f"Expected 422 for missing project_id, got {resp.status_code}"
+    )
 
 
 def test_mr_create_propagates_error(client):
@@ -421,7 +454,9 @@ def test_mr_create_propagates_error(client):
     mock_dev.create_mr_from_issue.return_value = {"error": "GitLab unreachable"}
     with patch("src.interface.api._get_developer", return_value=mock_dev):
         resp = c.post("/mr/create", json={"project_id": 123, "issue_iid": 45})
-    assert resp.status_code == 500, f"Expected 500 for agent error, got {resp.status_code}"
+    assert resp.status_code == 500, (
+        f"Expected 500 for agent error, got {resp.status_code}"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -436,7 +471,9 @@ def test_mr_review_valid_request(client):
     mock_dev.review_merge_request.return_value = MOCK_REVIEW.copy()
     with patch("src.interface.api._get_developer", return_value=mock_dev):
         resp = c.post("/mr/review", json={"project_id": 123, "mr_iid": 7})
-    assert resp.status_code == 200, f"Expected 200 for valid MR review, got {resp.status_code}: {resp.text}"
+    assert resp.status_code == 200, (
+        f"Expected 200 for valid MR review, got {resp.status_code}: {resp.text}"
+    )
 
 
 def test_mr_review_returns_approved_flag(client):
@@ -485,7 +522,11 @@ def test_monitor_status_returns_dict(client):
 def test_teams_webhook_accepts_json(client):
     """POST /webhook/teams with valid JSON body must return 200."""
     c, _ = client
-    payload = {"type": "message", "text": "ERROR sensor failure detected", "from": "AlertBot"}
+    payload = {
+        "type": "message",
+        "text": "ERROR sensor failure detected",
+        "from": "AlertBot",
+    }
     resp = c.post("/webhook/teams", json=payload)
     assert resp.status_code == 200, f"Expected 200, got {resp.status_code}: {resp.text}"
 
@@ -501,7 +542,9 @@ def test_teams_webhook_creates_audit_record(client):
         "SELECT * FROM compliance_audit_log WHERE action_type = 'WEBHOOK_RECEIVED'"
     ).fetchall()
     conn.close()
-    assert len(rows) >= 1, "Expected at least 1 WEBHOOK_RECEIVED record in the audit log."
+    assert len(rows) >= 1, (
+        "Expected at least 1 WEBHOOK_RECEIVED record in the audit log."
+    )
 
 
 def test_teams_webhook_rejects_invalid_json(client):

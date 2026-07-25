@@ -7,6 +7,7 @@ skills/public/*.yaml on import, so these tests exercise the real registry
 rather than a mock. Tests that mutate visibility restore state via
 reload() so ordering never matters.
 """
+
 from __future__ import annotations
 
 import pytest
@@ -20,6 +21,7 @@ def _reset_registry():
     """Reload skills from disk before and after each test so visibility
     mutations in one test never leak into another."""
     from src.core.skill_loader import skill_registry
+
     skill_registry.reload()
     yield
     skill_registry.reload()
@@ -27,6 +29,7 @@ def _reset_registry():
 
 def _any_known_skill_name() -> str:
     from src.core.skill_loader import skill_registry
+
     all_skills = skill_registry.list_all(include_disabled=True)
     assert all_skills, "expected at least one skill to be loaded from skills/public/"
     return all_skills[0].name
@@ -50,6 +53,7 @@ def test_list_defaults_include_disabled_to_false():
 def test_list_with_include_disabled_true_returns_more_or_equal_skills():
     name = _any_known_skill_name()
     from src.core.skill_loader import skill_registry
+
     skill_registry.set_visibility(name, "disabled")
 
     without_disabled = skills.list({"include_disabled": False})
@@ -66,6 +70,7 @@ def test_set_visibility_happy_path_updates_the_skill():
     assert out == {"status": "updated", "name": name, "visibility": "private"}
 
     from src.core.skill_loader import skill_registry
+
     updated = skill_registry.get_including_disabled(name)
     assert updated.visibility == "private"
 
@@ -101,6 +106,7 @@ def test_reload_reloads_skills_from_disk_and_returns_stats():
 def test_reload_resets_a_visibility_change_made_in_memory():
     name = _any_known_skill_name()
     from src.core.skill_loader import skill_registry
+
     original_visibility = skill_registry.get_including_disabled(name).visibility
     skill_registry.set_visibility(name, "disabled")
 

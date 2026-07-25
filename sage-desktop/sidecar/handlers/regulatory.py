@@ -19,6 +19,7 @@ Porting notes vs. the web routes:
     those into HTTP 404; here they become RpcError(RPC_INVALID_PARAMS) rather
     than leaking an error-shaped success result to the UI.
 """
+
 from __future__ import annotations
 
 from typing import List, Optional
@@ -28,13 +29,16 @@ from rpc import RPC_INVALID_PARAMS, RPC_SIDECAR_ERROR, RpcError
 
 def _framework():
     from src.core.regulatory_compliance import regulatory_compliance
+
     return regulatory_compliance
 
 
 def _require_product(params: dict) -> dict:
     product = params.get("product")
     if not isinstance(product, dict):
-        raise RpcError(RPC_INVALID_PARAMS, "missing or invalid 'product' (expected object)")
+        raise RpcError(
+            RPC_INVALID_PARAMS, "missing or invalid 'product' (expected object)"
+        )
     return product
 
 
@@ -49,7 +53,9 @@ def _optional_standard_ids(params: dict) -> Optional[List[str]]:
     standard_ids = params.get("standard_ids")
     if standard_ids is None:
         return None
-    if not isinstance(standard_ids, list) or not all(isinstance(s, str) for s in standard_ids):
+    if not isinstance(standard_ids, list) or not all(
+        isinstance(s, str) for s in standard_ids
+    ):
         raise RpcError(RPC_INVALID_PARAMS, "'standard_ids' must be a list of strings")
     # An explicitly empty list means "auto-detect" — otherwise the operator
     # would get a zero-standard assessment with a meaningless 0.0 score.
@@ -84,7 +90,9 @@ def assess(params: dict) -> dict:
     try:
         product = _require_product(params)
         standard_ids = _optional_standard_ids(params)
-        return _framework().assess_compliance(product=product, standard_ids=standard_ids)
+        return _framework().assess_compliance(
+            product=product, standard_ids=standard_ids
+        )
     except RpcError:
         raise
     except Exception as e:  # noqa: BLE001
@@ -95,7 +103,9 @@ def gap_analysis(params: dict) -> dict:
     try:
         product = _require_product(params)
         standard_id = _require_standard_id(params)
-        result = _framework().generate_gap_analysis(product=product, standard_id=standard_id)
+        result = _framework().generate_gap_analysis(
+            product=product, standard_id=standard_id
+        )
         if "error" in result:
             raise RpcError(RPC_INVALID_PARAMS, result["error"])
         return result

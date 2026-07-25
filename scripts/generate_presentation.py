@@ -21,13 +21,12 @@ import sys
 
 try:
     from pptx import Presentation
-    from pptx.util import Inches, Pt, Emu
+    from pptx.util import Inches, Pt, Emu  # noqa: F401
     from pptx.dml.color import RGBColor
     from pptx.enum.text import PP_ALIGN
-    from pptx.oxml.ns import qn
-    from pptx.util import Inches, Pt
-    import copy
-    from lxml import etree
+    from pptx.oxml.ns import qn  # noqa: F401
+    import copy  # noqa: F401
+    from lxml import etree  # noqa: F401
 except ImportError as e:
     print(f"ERROR: Missing dependency — {e}")
     print("Install with:  pip install python-pptx")
@@ -36,16 +35,16 @@ except ImportError as e:
 # ---------------------------------------------------------------------------
 # Brand colours
 # ---------------------------------------------------------------------------
-GREEN  = RGBColor(0x16, 0xA3, 0x4A)
-DARK   = RGBColor(0x1F, 0x29, 0x37)
-GRAY   = RGBColor(0x37, 0x41, 0x51)
-LIGHT  = RGBColor(0xF9, 0xFA, 0xFB)
-WHITE  = RGBColor(0xFF, 0xFF, 0xFF)
-AMBER  = RGBColor(0xF5, 0x9E, 0x0B)
-RED_C  = RGBColor(0xDC, 0x26, 0x26)
-BLUE   = RGBColor(0x25, 0x63, 0xEB)
+GREEN = RGBColor(0x16, 0xA3, 0x4A)
+DARK = RGBColor(0x1F, 0x29, 0x37)
+GRAY = RGBColor(0x37, 0x41, 0x51)
+LIGHT = RGBColor(0xF9, 0xFA, 0xFB)
+WHITE = RGBColor(0xFF, 0xFF, 0xFF)
+AMBER = RGBColor(0xF5, 0x9E, 0x0B)
+RED_C = RGBColor(0xDC, 0x26, 0x26)
+BLUE = RGBColor(0x25, 0x63, 0xEB)
 GREEN_LIGHT = RGBColor(0xDC, 0xFC, 0xE7)
-DARK_GREEN  = RGBColor(0x14, 0x53, 0x2D)
+DARK_GREEN = RGBColor(0x14, 0x53, 0x2D)
 
 SLIDE_W = Inches(13.33)
 SLIDE_H = Inches(7.5)
@@ -53,15 +52,16 @@ SLIDE_H = Inches(7.5)
 # ---------------------------------------------------------------------------
 # Output paths
 # ---------------------------------------------------------------------------
-SCRIPT_DIR   = os.path.dirname(os.path.abspath(__file__))
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
-DOCS_DIR     = os.path.join(PROJECT_ROOT, "docs")
-PPTX_PATH    = os.path.join(DOCS_DIR, "SageAI_Business_Case.pptx")
-MD_PATH      = os.path.join(DOCS_DIR, "SageAI_Business_Case_Summary.md")
+DOCS_DIR = os.path.join(PROJECT_ROOT, "docs")
+PPTX_PATH = os.path.join(DOCS_DIR, "SageAI_Business_Case.pptx")
+MD_PATH = os.path.join(DOCS_DIR, "SageAI_Business_Case_Summary.md")
 
 # ---------------------------------------------------------------------------
 # Helper utilities
 # ---------------------------------------------------------------------------
+
 
 def _rgb_to_hex(rgb: RGBColor) -> str:
     return f"#{rgb[0]:02X}{rgb[1]:02X}{rgb[2]:02X}"
@@ -78,7 +78,10 @@ def set_slide_background(slide, color: RGBColor = WHITE):
 def add_textbox(
     slide,
     text: str,
-    left, top, width, height,
+    left,
+    top,
+    width,
+    height,
     font_size: int = 16,
     bold: bool = False,
     italic: bool = False,
@@ -114,7 +117,10 @@ def add_bullet_textbox(
     slide,
     title: str,
     bullets: list,
-    left, top, width, height,
+    left,
+    top,
+    width,
+    height,
     title_size: int = 18,
     bullet_size: int = 15,
     title_color: RGBColor = DARK,
@@ -153,11 +159,16 @@ def add_bullet_textbox(
     return txBox
 
 
-def add_rect(slide, left, top, width, height, fill_color: RGBColor, line_color: RGBColor = None):
+def add_rect(
+    slide, left, top, width, height, fill_color: RGBColor, line_color: RGBColor = None
+):
     """Add a filled rectangle shape."""
     shape = slide.shapes.add_shape(
         1,  # MSO_SHAPE_TYPE.RECTANGLE
-        left, top, width, height
+        left,
+        top,
+        width,
+        height,
     )
     shape.fill.solid()
     shape.fill.fore_color.rgb = fill_color
@@ -170,8 +181,11 @@ def add_rect(slide, left, top, width, height, fill_color: RGBColor, line_color: 
 
 def add_table_to_slide(
     slide,
-    data: list,            # list of rows; first row = header
-    left, top, width, height,
+    data: list,  # list of rows; first row = header
+    left,
+    top,
+    width,
+    height,
     header_bg: RGBColor = GREEN,
     header_fg: RGBColor = WHITE,
     row_alt_bg: RGBColor = GREEN_LIGHT,
@@ -235,10 +249,15 @@ def add_slide_header(slide, heading: str, font_size: int = 28):
     add_rect(slide, Inches(0), Inches(0), SLIDE_W, Inches(0.08), GREEN)
     # Heading text
     add_textbox(
-        slide, heading,
-        left=Inches(0.5), top=Inches(0.12),
-        width=Inches(12.33), height=Inches(0.65),
-        font_size=font_size, bold=True, color=DARK,
+        slide,
+        heading,
+        left=Inches(0.5),
+        top=Inches(0.12),
+        width=Inches(12.33),
+        height=Inches(0.65),
+        font_size=font_size,
+        bold=True,
+        color=DARK,
         align=PP_ALIGN.LEFT,
     )
     # Thin separator line
@@ -249,16 +268,22 @@ def add_footer(slide, text: str = "CONFIDENTIAL — SAGE[ai] Business Case | Mar
     """Add a bottom footer bar."""
     add_rect(slide, Inches(0), Inches(7.2), SLIDE_W, Inches(0.3), DARK)
     add_textbox(
-        slide, text,
-        left=Inches(0.3), top=Inches(7.2),
-        width=Inches(12.73), height=Inches(0.3),
-        font_size=9, color=WHITE, align=PP_ALIGN.CENTER,
+        slide,
+        text,
+        left=Inches(0.3),
+        top=Inches(7.2),
+        width=Inches(12.73),
+        height=Inches(0.3),
+        font_size=9,
+        color=WHITE,
+        align=PP_ALIGN.CENTER,
     )
 
 
 # ---------------------------------------------------------------------------
 # Individual slide builders
 # ---------------------------------------------------------------------------
+
 
 def build_slide_01_title(prs: Presentation):
     """Slide 1 — Title slide."""
@@ -274,28 +299,43 @@ def build_slide_01_title(prs: Presentation):
 
     # SAGE[ai] logo-style text
     add_textbox(
-        slide, "SAGE[ai]",
-        left=Inches(0.7), top=Inches(1.6),
-        width=Inches(7.8), height=Inches(1.1),
-        font_size=52, bold=True, color=GREEN,
+        slide,
+        "SAGE[ai]",
+        left=Inches(0.7),
+        top=Inches(1.6),
+        width=Inches(7.8),
+        height=Inches(1.1),
+        font_size=52,
+        bold=True,
+        color=GREEN,
         align=PP_ALIGN.LEFT,
     )
 
     # Title
     add_textbox(
-        slide, "Autonomous Manufacturing Intelligence",
-        left=Inches(0.7), top=Inches(2.7),
-        width=Inches(7.8), height=Inches(0.9),
-        font_size=32, bold=True, color=DARK,
+        slide,
+        "Autonomous Manufacturing Intelligence",
+        left=Inches(0.7),
+        top=Inches(2.7),
+        width=Inches(7.8),
+        height=Inches(0.9),
+        font_size=32,
+        bold=True,
+        color=DARK,
         align=PP_ALIGN.LEFT,
     )
 
     # Subtitle
     add_textbox(
-        slide, "Transforming Medical Device Production with Agentic AI",
-        left=Inches(0.7), top=Inches(3.65),
-        width=Inches(7.8), height=Inches(0.65),
-        font_size=20, bold=False, color=GRAY,
+        slide,
+        "Transforming Medical Device Production with Agentic AI",
+        left=Inches(0.7),
+        top=Inches(3.65),
+        width=Inches(7.8),
+        height=Inches(0.65),
+        font_size=20,
+        bold=False,
+        color=GRAY,
         align=PP_ALIGN.LEFT,
     )
 
@@ -303,31 +343,43 @@ def build_slide_01_title(prs: Presentation):
     add_rect(slide, Inches(0.7), Inches(4.45), Inches(4.0), Inches(0.04), GREEN)
 
     # Right-panel callout text
-    for i, (line, size, bold, col) in enumerate([
-        ("ISO 13485", 18, True, DARK_GREEN),
-        ("Compliant", 14, False, DARK),
-        ("", 8, False, WHITE),
-        ("Agentic AI", 18, True, DARK_GREEN),
-        ("for MedTech", 14, False, DARK),
-        ("", 8, False, WHITE),
-        ("Human-in-the-Loop", 16, True, DARK_GREEN),
-        ("Architecture", 14, False, DARK),
-    ]):
+    for i, (line, size, bold, col) in enumerate(
+        [
+            ("ISO 13485", 18, True, DARK_GREEN),
+            ("Compliant", 14, False, DARK),
+            ("", 8, False, WHITE),
+            ("Agentic AI", 18, True, DARK_GREEN),
+            ("for MedTech", 14, False, DARK),
+            ("", 8, False, WHITE),
+            ("Human-in-the-Loop", 16, True, DARK_GREEN),
+            ("Architecture", 14, False, DARK),
+        ]
+    ):
         add_textbox(
-            slide, line,
-            left=Inches(9.0), top=Inches(1.4 + i * 0.42),
-            width=Inches(4.0), height=Inches(0.42),
-            font_size=size, bold=bold, color=col,
+            slide,
+            line,
+            left=Inches(9.0),
+            top=Inches(1.4 + i * 0.42),
+            width=Inches(4.0),
+            height=Inches(0.42),
+            font_size=size,
+            bold=bold,
+            color=col,
             align=PP_ALIGN.CENTER,
         )
 
     # Bottom green accent bar
     add_rect(slide, Inches(0), Inches(7.1), SLIDE_W, Inches(0.4), GREEN)
     add_textbox(
-        slide, "CONFIDENTIAL — Internal Business Case | March 2026",
-        left=Inches(0.3), top=Inches(7.1),
-        width=Inches(12.73), height=Inches(0.4),
-        font_size=11, bold=False, color=WHITE,
+        slide,
+        "CONFIDENTIAL — Internal Business Case | March 2026",
+        left=Inches(0.3),
+        top=Inches(7.1),
+        width=Inches(12.73),
+        height=Inches(0.4),
+        font_size=11,
+        bold=False,
+        color=WHITE,
         align=PP_ALIGN.CENTER,
     )
 
@@ -349,8 +401,10 @@ def build_slide_02_problem(prs: Presentation):
         slide,
         title="",
         bullets=bullets,
-        left=Inches(0.5), top=Inches(1.0),
-        width=Inches(7.6), height=Inches(5.5),
+        left=Inches(0.5),
+        top=Inches(1.0),
+        width=Inches(7.6),
+        height=Inches(5.5),
         bullet_size=18,
         bullet_color=DARK,
     )
@@ -358,24 +412,39 @@ def build_slide_02_problem(prs: Presentation):
     # Stat box (right side)
     add_rect(slide, Inches(8.5), Inches(1.6), Inches(4.3), Inches(3.2), DARK)
     add_textbox(
-        slide, "68 hrs/week",
-        left=Inches(8.5), top=Inches(2.0),
-        width=Inches(4.3), height=Inches(1.1),
-        font_size=38, bold=True, color=GREEN,
+        slide,
+        "68 hrs/week",
+        left=Inches(8.5),
+        top=Inches(2.0),
+        width=Inches(4.3),
+        height=Inches(1.1),
+        font_size=38,
+        bold=True,
+        color=GREEN,
         align=PP_ALIGN.CENTER,
     )
     add_textbox(
-        slide, "of preventable\nmanual work",
-        left=Inches(8.5), top=Inches(3.1),
-        width=Inches(4.3), height=Inches(0.9),
-        font_size=20, bold=False, color=WHITE,
+        slide,
+        "of preventable\nmanual work",
+        left=Inches(8.5),
+        top=Inches(3.1),
+        width=Inches(4.3),
+        height=Inches(0.9),
+        font_size=20,
+        bold=False,
+        color=WHITE,
         align=PP_ALIGN.CENTER,
     )
     add_textbox(
-        slide, "every single week",
-        left=Inches(8.5), top=Inches(3.95),
-        width=Inches(4.3), height=Inches(0.5),
-        font_size=14, bold=False, color=AMBER,
+        slide,
+        "every single week",
+        left=Inches(8.5),
+        top=Inches(3.95),
+        width=Inches(4.3),
+        height=Inches(0.5),
+        font_size=14,
+        bold=False,
+        color=AMBER,
         align=PP_ALIGN.CENTER,
     )
 
@@ -401,8 +470,10 @@ def build_slide_03_solution(prs: Presentation):
         slide,
         title="",
         bullets=bullets,
-        left=Inches(0.5), top=Inches(1.0),
-        width=Inches(12.33), height=Inches(5.8),
+        left=Inches(0.5),
+        top=Inches(1.0),
+        width=Inches(12.33),
+        height=Inches(5.8),
         bullet_size=18,
         bullet_color=DARK,
     )
@@ -418,21 +489,56 @@ def build_slide_04_evidence(prs: Presentation):
 
     data = [
         ["Company", "Implementation", "Result"],
-        ["Siemens", "AI predictive maintenance agents", "30% less unplanned downtime, €1.5B saved/yr"],
-        ["BMW", "AI quality inspection", "99.5% defect detection, 30% QC cost reduction"],
-        ["Bosch", "AI-assisted code review", "40% faster releases, 60% fewer defect escapes"],
-        ["Amazon", "CodeGuru automated review", "50% reduction in production incidents"],
-        ["Microsoft", "GitHub Copilot for developers", "55% faster code completion, 46% more PRs/day"],
-        ["Medtronic", "AI in quality management system", "35% shorter CAPA cycle, faster FDA submissions"],
-        ["Stryker", "AI regulatory documentation", "40% reduction in submission preparation time"],
-        ["J&J", "AI manufacturing analytics", "20% yield improvement, significant waste reduction"],
+        [
+            "Siemens",
+            "AI predictive maintenance agents",
+            "30% less unplanned downtime, €1.5B saved/yr",
+        ],
+        [
+            "BMW",
+            "AI quality inspection",
+            "99.5% defect detection, 30% QC cost reduction",
+        ],
+        [
+            "Bosch",
+            "AI-assisted code review",
+            "40% faster releases, 60% fewer defect escapes",
+        ],
+        [
+            "Amazon",
+            "CodeGuru automated review",
+            "50% reduction in production incidents",
+        ],
+        [
+            "Microsoft",
+            "GitHub Copilot for developers",
+            "55% faster code completion, 46% more PRs/day",
+        ],
+        [
+            "Medtronic",
+            "AI in quality management system",
+            "35% shorter CAPA cycle, faster FDA submissions",
+        ],
+        [
+            "Stryker",
+            "AI regulatory documentation",
+            "40% reduction in submission preparation time",
+        ],
+        [
+            "J&J",
+            "AI manufacturing analytics",
+            "20% yield improvement, significant waste reduction",
+        ],
     ]
 
     col_widths = [Inches(1.8), Inches(4.8), Inches(5.5)]
     add_table_to_slide(
-        slide, data,
-        left=Inches(0.5), top=Inches(1.0),
-        width=Inches(12.33), height=Inches(5.9),
+        slide,
+        data,
+        left=Inches(0.5),
+        top=Inches(1.0),
+        width=Inches(12.33),
+        height=Inches(5.9),
         col_widths=col_widths,
         font_size=12,
         header_font_size=14,
@@ -450,8 +556,14 @@ def build_slide_05_lean(prs: Presentation):
     data = [
         ["Lean Principle", "How SAGE[ai] Delivers"],
         ["Eliminate Waste (Muda)", "Removes 60+ hrs/week of repetitive analysis"],
-        ["Continuous Improvement (Kaizen)", "Learns from every rejection via RAG memory"],
-        ["Error-Proofing (Poka-yoke)", "Human-in-the-loop prevents AI errors reaching production"],
+        [
+            "Continuous Improvement (Kaizen)",
+            "Learns from every rejection via RAG memory",
+        ],
+        [
+            "Error-Proofing (Poka-yoke)",
+            "Human-in-the-loop prevents AI errors reaching production",
+        ],
         ["Visual Management", "Real-time dashboard for all stakeholders"],
         ["Single Piece Flow", "Single-lane task queue: deterministic, auditable"],
         ["Respect for People", "Amplifies engineers; never replaces human judgment"],
@@ -459,9 +571,12 @@ def build_slide_05_lean(prs: Presentation):
 
     col_widths = [Inches(4.5), Inches(7.83)]
     add_table_to_slide(
-        slide, data,
-        left=Inches(0.5), top=Inches(1.0),
-        width=Inches(12.33), height=Inches(5.8),
+        slide,
+        data,
+        left=Inches(0.5),
+        top=Inches(1.0),
+        width=Inches(12.33),
+        height=Inches(5.8),
         col_widths=col_widths,
         font_size=14,
         header_font_size=15,
@@ -478,18 +593,41 @@ def build_slide_06_roi(prs: Presentation):
 
     data = [
         ["Activity", "Before SAGE[ai]", "After SAGE[ai]", "Savings"],
-        ["Error log analysis", "45 min × 10/day × 2 eng\n= 15 hrs/day", "<5 min total", "93% reduction"],
-        ["MR code review", "3 hrs × 15 MRs/week\n= 45 hrs/week", "~4 hrs/week", "91% reduction"],
-        ["Compliance reporting", "8 hrs/week manual", "0 hrs (auto-generated)", "100% reduction"],
-        ["Knowledge capture", "Lost on attrition", "Stored in vector memory", "Permanent"],
+        [
+            "Error log analysis",
+            "45 min × 10/day × 2 eng\n= 15 hrs/day",
+            "<5 min total",
+            "93% reduction",
+        ],
+        [
+            "MR code review",
+            "3 hrs × 15 MRs/week\n= 45 hrs/week",
+            "~4 hrs/week",
+            "91% reduction",
+        ],
+        [
+            "Compliance reporting",
+            "8 hrs/week manual",
+            "0 hrs (auto-generated)",
+            "100% reduction",
+        ],
+        [
+            "Knowledge capture",
+            "Lost on attrition",
+            "Stored in vector memory",
+            "Permanent",
+        ],
         ["TOTAL SAVINGS", "68 hrs/week ≈ 1.7 FTE", "—", "~€120K/year (1 FTE cost)"],
     ]
 
     col_widths = [Inches(2.8), Inches(3.5), Inches(3.0), Inches(2.83)]
     add_table_to_slide(
-        slide, data,
-        left=Inches(0.5), top=Inches(1.0),
-        width=Inches(12.13), height=Inches(4.9),
+        slide,
+        data,
+        left=Inches(0.5),
+        top=Inches(1.0),
+        width=Inches(12.13),
+        height=Inches(4.9),
         col_widths=col_widths,
         font_size=12,
         header_font_size=13,
@@ -500,9 +638,13 @@ def build_slide_06_roi(prs: Presentation):
     add_textbox(
         slide,
         "Conservative estimate: break-even in under 2 months",
-        left=Inches(0.6), top=Inches(6.28),
-        width=Inches(12.13), height=Inches(0.55),
-        font_size=18, bold=True, color=DARK_GREEN,
+        left=Inches(0.6),
+        top=Inches(6.28),
+        width=Inches(12.13),
+        height=Inches(0.55),
+        font_size=18,
+        bold=True,
+        color=DARK_GREEN,
         align=PP_ALIGN.CENTER,
     )
 
@@ -528,10 +670,15 @@ def build_slide_07_architecture(prs: Presentation):
     for label, left in boxes:
         add_rect(slide, left, Inches(1.25), Inches(1.8), Inches(1.2), DARK, None)
         add_textbox(
-            slide, label,
-            left=left, top=Inches(1.25),
-            width=Inches(1.8), height=Inches(1.2),
-            font_size=11, bold=True, color=WHITE,
+            slide,
+            label,
+            left=left,
+            top=Inches(1.25),
+            width=Inches(1.8),
+            height=Inches(1.2),
+            font_size=11,
+            bold=True,
+            color=WHITE,
             align=PP_ALIGN.CENTER,
         )
 
@@ -539,10 +686,15 @@ def build_slide_07_architecture(prs: Presentation):
     arrow_positions = [Inches(2.1), Inches(4.3), Inches(6.5), Inches(8.7), Inches(10.9)]
     for ax in arrow_positions:
         add_textbox(
-            slide, "→",
-            left=ax, top=Inches(1.55),
-            width=Inches(0.4), height=Inches(0.6),
-            font_size=20, bold=True, color=GREEN,
+            slide,
+            "→",
+            left=ax,
+            top=Inches(1.55),
+            width=Inches(0.4),
+            height=Inches(0.6),
+            font_size=20,
+            bold=True,
+            color=GREEN,
             align=PP_ALIGN.CENTER,
         )
 
@@ -583,19 +735,33 @@ def build_slide_07_architecture(prs: Presentation):
     for col_title, col_bullets, col_left in col_data:
         add_rect(slide, col_left, Inches(2.7), Inches(4.0), Inches(3.9), LIGHT, None)
         add_textbox(
-            slide, col_title,
-            left=col_left + Inches(0.1), top=Inches(2.78),
-            width=Inches(3.8), height=Inches(0.45),
-            font_size=14, bold=True, color=GREEN,
+            slide,
+            col_title,
+            left=col_left + Inches(0.1),
+            top=Inches(2.78),
+            width=Inches(3.8),
+            height=Inches(0.45),
+            font_size=14,
+            bold=True,
+            color=GREEN,
             align=PP_ALIGN.LEFT,
         )
-        add_rect(slide, col_left + Inches(0.1), Inches(3.22), Inches(3.8), Inches(0.03), GREEN)
+        add_rect(
+            slide,
+            col_left + Inches(0.1),
+            Inches(3.22),
+            Inches(3.8),
+            Inches(0.03),
+            GREEN,
+        )
         add_bullet_textbox(
             slide,
             title="",
             bullets=col_bullets,
-            left=col_left + Inches(0.1), top=Inches(3.28),
-            width=Inches(3.8), height=Inches(2.1),
+            left=col_left + Inches(0.1),
+            top=Inches(3.28),
+            width=Inches(3.8),
+            height=Inches(2.1),
             bullet_size=12,
             bullet_color=DARK,
         )
@@ -615,16 +781,20 @@ def build_slide_08_capabilities(prs: Presentation):
         ("📋", "MR Creation", "Auto-draft from GitLab issue\nBranch naming included"),
         ("👁", "24/7 Monitor", "Teams, Metabase, GitLab\nevent detection"),
         ("📊", "Audit Trail", "Every decision traceable\nISO 13485 compliant"),
-        ("🌐", "Web Dashboard", "No CLI needed\nDashboard, Analyst, Developer, Audit, Monitor"),
+        (
+            "🌐",
+            "Web Dashboard",
+            "No CLI needed\nDashboard, Analyst, Developer, Audit, Monitor",
+        ),
     ]
 
     positions = [
-        (Inches(0.4),  Inches(1.1)),
+        (Inches(0.4), Inches(1.1)),
         (Inches(4.55), Inches(1.1)),
-        (Inches(8.7),  Inches(1.1)),
-        (Inches(0.4),  Inches(4.0)),
+        (Inches(8.7), Inches(1.1)),
+        (Inches(0.4), Inches(4.0)),
         (Inches(4.55), Inches(4.0)),
-        (Inches(8.7),  Inches(4.0)),
+        (Inches(8.7), Inches(4.0)),
     ]
 
     for idx, ((icon, title, desc), (bx, by)) in enumerate(zip(capabilities, positions)):
@@ -632,24 +802,39 @@ def build_slide_08_capabilities(prs: Presentation):
         # Top green bar for each box
         add_rect(slide, bx, by, Inches(3.8), Inches(0.07), GREEN, None)
         add_textbox(
-            slide, icon,
-            left=bx + Inches(0.15), top=by + Inches(0.12),
-            width=Inches(0.7), height=Inches(0.55),
-            font_size=26, bold=False, color=DARK,
+            slide,
+            icon,
+            left=bx + Inches(0.15),
+            top=by + Inches(0.12),
+            width=Inches(0.7),
+            height=Inches(0.55),
+            font_size=26,
+            bold=False,
+            color=DARK,
             align=PP_ALIGN.LEFT,
         )
         add_textbox(
-            slide, title,
-            left=bx + Inches(0.85), top=by + Inches(0.15),
-            width=Inches(2.8), height=Inches(0.5),
-            font_size=16, bold=True, color=GREEN,
+            slide,
+            title,
+            left=bx + Inches(0.85),
+            top=by + Inches(0.15),
+            width=Inches(2.8),
+            height=Inches(0.5),
+            font_size=16,
+            bold=True,
+            color=GREEN,
             align=PP_ALIGN.LEFT,
         )
         add_textbox(
-            slide, desc,
-            left=bx + Inches(0.15), top=by + Inches(0.75),
-            width=Inches(3.5), height=Inches(1.7),
-            font_size=13, bold=False, color=DARK,
+            slide,
+            desc,
+            left=bx + Inches(0.15),
+            top=by + Inches(0.75),
+            width=Inches(3.5),
+            height=Inches(1.7),
+            font_size=13,
+            bold=False,
+            color=DARK,
             align=PP_ALIGN.LEFT,
         )
 
@@ -665,10 +850,15 @@ def build_slide_09_compliance(prs: Presentation):
     # Left column
     add_rect(slide, Inches(0.4), Inches(1.0), Inches(5.9), Inches(5.9), LIGHT, None)
     add_textbox(
-        slide, "Standards Met",
-        left=Inches(0.5), top=Inches(1.1),
-        width=Inches(5.7), height=Inches(0.5),
-        font_size=16, bold=True, color=GREEN,
+        slide,
+        "Standards Met",
+        left=Inches(0.5),
+        top=Inches(1.1),
+        width=Inches(5.7),
+        height=Inches(0.5),
+        font_size=16,
+        bold=True,
+        color=GREEN,
         align=PP_ALIGN.LEFT,
     )
     add_rect(slide, Inches(0.5), Inches(1.6), Inches(5.7), Inches(0.03), GREEN)
@@ -684,8 +874,10 @@ def build_slide_09_compliance(prs: Presentation):
         slide,
         title="",
         bullets=standards,
-        left=Inches(0.5), top=Inches(1.65),
-        width=Inches(5.7), height=Inches(5.0),
+        left=Inches(0.5),
+        top=Inches(1.65),
+        width=Inches(5.7),
+        height=Inches(5.0),
         bullet_size=14,
         bullet_color=DARK,
     )
@@ -693,10 +885,15 @@ def build_slide_09_compliance(prs: Presentation):
     # Right column
     add_rect(slide, Inches(6.8), Inches(1.0), Inches(6.1), Inches(5.9), DARK, None)
     add_textbox(
-        slide, "How We Comply",
-        left=Inches(6.9), top=Inches(1.1),
-        width=Inches(5.9), height=Inches(0.5),
-        font_size=16, bold=True, color=GREEN,
+        slide,
+        "How We Comply",
+        left=Inches(6.9),
+        top=Inches(1.1),
+        width=Inches(5.9),
+        height=Inches(0.5),
+        font_size=16,
+        bold=True,
+        color=GREEN,
         align=PP_ALIGN.LEFT,
     )
     add_rect(slide, Inches(6.9), Inches(1.6), Inches(5.9), Inches(0.03), GREEN)
@@ -712,8 +909,10 @@ def build_slide_09_compliance(prs: Presentation):
         slide,
         title="",
         bullets=compliance,
-        left=Inches(6.9), top=Inches(1.65),
-        width=Inches(5.9), height=Inches(5.0),
+        left=Inches(6.9),
+        top=Inches(1.65),
+        width=Inches(5.9),
+        height=Inches(5.0),
         bullet_size=14,
         bullet_color=WHITE,
     )
@@ -729,64 +928,96 @@ def build_slide_10_self_improving(prs: Presentation):
 
     # Three-step cycle (horizontal arrangement)
     steps = [
-        ("1", "USER SUBMITS REQUEST",
-         "💡 Click 'Request Improvement'\non any module"),
-        ("2", "AI PLANS",
-         "Planner Agent decomposes\ninto subtasks, queued\nfor implementation"),
-        ("3", "IMPLEMENTED & LEARNED",
-         "Change deployed;\nRAG memory updated\nwith new context"),
+        ("1", "USER SUBMITS REQUEST", "💡 Click 'Request Improvement'\non any module"),
+        (
+            "2",
+            "AI PLANS",
+            "Planner Agent decomposes\ninto subtasks, queued\nfor implementation",
+        ),
+        (
+            "3",
+            "IMPLEMENTED & LEARNED",
+            "Change deployed;\nRAG memory updated\nwith new context",
+        ),
     ]
 
     step_colors = [GREEN, DARK, GREEN_LIGHT]
     text_colors = [WHITE, WHITE, DARK]
-    num_colors  = [WHITE, GREEN, GREEN]
+    num_colors = [WHITE, GREEN, GREEN]
 
     step_positions = [Inches(0.6), Inches(4.55), Inches(8.5)]
 
     for (num, title, desc), left, bg, tc, nc in zip(
-            steps, step_positions, step_colors, text_colors, num_colors):
+        steps, step_positions, step_colors, text_colors, num_colors
+    ):
         add_rect(slide, left, Inches(1.15), Inches(3.8), Inches(3.6), bg, None)
         add_textbox(
-            slide, num,
-            left=left + Inches(0.1), top=Inches(1.2),
-            width=Inches(0.6), height=Inches(0.7),
-            font_size=32, bold=True, color=nc,
+            slide,
+            num,
+            left=left + Inches(0.1),
+            top=Inches(1.2),
+            width=Inches(0.6),
+            height=Inches(0.7),
+            font_size=32,
+            bold=True,
+            color=nc,
             align=PP_ALIGN.LEFT,
         )
         add_textbox(
-            slide, title,
-            left=left + Inches(0.1), top=Inches(1.95),
-            width=Inches(3.6), height=Inches(0.65),
-            font_size=14, bold=True, color=tc,
+            slide,
+            title,
+            left=left + Inches(0.1),
+            top=Inches(1.95),
+            width=Inches(3.6),
+            height=Inches(0.65),
+            font_size=14,
+            bold=True,
+            color=tc,
             align=PP_ALIGN.LEFT,
         )
         add_textbox(
-            slide, desc,
-            left=left + Inches(0.1), top=Inches(2.65),
-            width=Inches(3.6), height=Inches(1.9),
-            font_size=13, bold=False, color=tc,
+            slide,
+            desc,
+            left=left + Inches(0.1),
+            top=Inches(2.65),
+            width=Inches(3.6),
+            height=Inches(1.9),
+            font_size=13,
+            bold=False,
+            color=tc,
             align=PP_ALIGN.LEFT,
         )
 
     # Arrows between steps
     for ax in [Inches(4.15), Inches(8.1)]:
         add_textbox(
-            slide, "→",
-            left=ax, top=Inches(2.5),
-            width=Inches(0.45), height=Inches(0.65),
-            font_size=28, bold=True, color=GREEN,
+            slide,
+            "→",
+            left=ax,
+            top=Inches(2.5),
+            width=Inches(0.45),
+            height=Inches(0.65),
+            font_size=28,
+            bold=True,
+            color=GREEN,
             align=PP_ALIGN.CENTER,
         )
 
     # Access note
-    add_rect(slide, Inches(0.5), Inches(5.0), Inches(12.33), Inches(0.95), GREEN_LIGHT, None)
+    add_rect(
+        slide, Inches(0.5), Inches(5.0), Inches(12.33), Inches(0.95), GREEN_LIGHT, None
+    )
     add_textbox(
         slide,
         "During development: open access for all engineers.\n"
         "Post-release: role-based access control (admin approval required).",
-        left=Inches(0.6), top=Inches(5.05),
-        width=Inches(12.13), height=Inches(0.85),
-        font_size=13, bold=False, color=DARK,
+        left=Inches(0.6),
+        top=Inches(5.05),
+        width=Inches(12.13),
+        height=Inches(0.85),
+        font_size=13,
+        bold=False,
+        color=DARK,
         align=PP_ALIGN.CENTER,
     )
 
@@ -794,9 +1025,13 @@ def build_slide_10_self_improving(prs: Presentation):
     add_textbox(
         slide,
         "The system improves itself through the same AI pipeline it provides to engineers.",
-        left=Inches(0.5), top=Inches(6.05),
-        width=Inches(12.33), height=Inches(0.5),
-        font_size=15, bold=True, color=GREEN,
+        left=Inches(0.5),
+        top=Inches(6.05),
+        width=Inches(12.33),
+        height=Inches(0.5),
+        font_size=15,
+        bold=True,
+        color=GREEN,
         align=PP_ALIGN.CENTER,
     )
 
@@ -811,33 +1046,46 @@ def build_slide_11_roadmap(prs: Presentation):
 
     data = [
         ["Phase", "Timeline", "Deliverable", "Status"],
-        ["Phase 1–3: Core System",
-         "Done",
-         "CLI, Analyst, Developer, Monitor, API",
-         "✅ Complete"],
-        ["Phase 4: Web UI + Agentic",
-         "Done",
-         "Dashboard, ReAct loop, Planner, Regulatory docs",
-         "✅ Complete"],
-        ["Phase 5: Pilot Deployment",
-         "Month 1",
-         "Production deploy on internal network, engineer training",
-         "🔵 Next"],
-        ["Phase 6: Measure & Iterate",
-         "Month 2",
-         "KPI tracking, RAG feedback loop, first improvements",
-         "🔵 Planned"],
-        ["Phase 7: Scale",
-         "Month 3",
-         "Multi-team rollout, Spira integration, executive dashboards",
-         "🔵 Planned"],
+        [
+            "Phase 1–3: Core System",
+            "Done",
+            "CLI, Analyst, Developer, Monitor, API",
+            "✅ Complete",
+        ],
+        [
+            "Phase 4: Web UI + Agentic",
+            "Done",
+            "Dashboard, ReAct loop, Planner, Regulatory docs",
+            "✅ Complete",
+        ],
+        [
+            "Phase 5: Pilot Deployment",
+            "Month 1",
+            "Production deploy on internal network, engineer training",
+            "🔵 Next",
+        ],
+        [
+            "Phase 6: Measure & Iterate",
+            "Month 2",
+            "KPI tracking, RAG feedback loop, first improvements",
+            "🔵 Planned",
+        ],
+        [
+            "Phase 7: Scale",
+            "Month 3",
+            "Multi-team rollout, Spira integration, executive dashboards",
+            "🔵 Planned",
+        ],
     ]
 
     col_widths = [Inches(2.8), Inches(1.5), Inches(5.83), Inches(1.9)]
     add_table_to_slide(
-        slide, data,
-        left=Inches(0.5), top=Inches(1.0),
-        width=Inches(12.03), height=Inches(5.8),
+        slide,
+        data,
+        left=Inches(0.5),
+        top=Inches(1.0),
+        width=Inches(12.03),
+        height=Inches(5.8),
         col_widths=col_widths,
         font_size=13,
         header_font_size=14,
@@ -855,10 +1103,15 @@ def build_slide_12_ask(prs: Presentation):
     # Left column
     add_rect(slide, Inches(0.4), Inches(1.05), Inches(5.9), Inches(5.4), DARK, None)
     add_textbox(
-        slide, "What We Need",
-        left=Inches(0.5), top=Inches(1.15),
-        width=Inches(5.7), height=Inches(0.5),
-        font_size=17, bold=True, color=GREEN,
+        slide,
+        "What We Need",
+        left=Inches(0.5),
+        top=Inches(1.15),
+        width=Inches(5.7),
+        height=Inches(0.5),
+        font_size=17,
+        bold=True,
+        color=GREEN,
         align=PP_ALIGN.LEFT,
     )
     add_rect(slide, Inches(0.5), Inches(1.65), Inches(5.7), Inches(0.03), GREEN)
@@ -873,19 +1126,28 @@ def build_slide_12_ask(prs: Presentation):
         slide,
         title="",
         bullets=needs,
-        left=Inches(0.5), top=Inches(1.7),
-        width=Inches(5.7), height=Inches(4.6),
+        left=Inches(0.5),
+        top=Inches(1.7),
+        width=Inches(5.7),
+        height=Inches(4.6),
         bullet_size=14,
         bullet_color=WHITE,
     )
 
     # Right column
-    add_rect(slide, Inches(6.8), Inches(1.05), Inches(6.1), Inches(5.4), GREEN_LIGHT, None)
+    add_rect(
+        slide, Inches(6.8), Inches(1.05), Inches(6.1), Inches(5.4), GREEN_LIGHT, None
+    )
     add_textbox(
-        slide, "What You Get",
-        left=Inches(6.9), top=Inches(1.15),
-        width=Inches(5.9), height=Inches(0.5),
-        font_size=17, bold=True, color=DARK_GREEN,
+        slide,
+        "What You Get",
+        left=Inches(6.9),
+        top=Inches(1.15),
+        width=Inches(5.9),
+        height=Inches(0.5),
+        font_size=17,
+        bold=True,
+        color=DARK_GREEN,
         align=PP_ALIGN.LEFT,
     )
     add_rect(slide, Inches(6.9), Inches(1.65), Inches(5.9), Inches(0.03), GREEN)
@@ -901,8 +1163,10 @@ def build_slide_12_ask(prs: Presentation):
         slide,
         title="",
         bullets=gets,
-        left=Inches(6.9), top=Inches(1.7),
-        width=Inches(5.9), height=Inches(4.6),
+        left=Inches(6.9),
+        top=Inches(1.7),
+        width=Inches(5.9),
+        height=Inches(4.6),
         bullet_size=14,
         bullet_color=DARK,
     )
@@ -912,9 +1176,13 @@ def build_slide_12_ask(prs: Presentation):
     add_textbox(
         slide,
         "SAGE[ai] is not a replacement for your engineers — it's their most productive teammate.",
-        left=Inches(0.3), top=Inches(6.62),
-        width=Inches(12.73), height=Inches(0.48),
-        font_size=15, bold=True, color=WHITE,
+        left=Inches(0.3),
+        top=Inches(6.62),
+        width=Inches(12.73),
+        height=Inches(0.48),
+        font_size=15,
+        bold=True,
+        color=WHITE,
         align=PP_ALIGN.CENTER,
     )
 
@@ -1103,6 +1371,7 @@ MARKDOWN_CONTENT = """\
 # Main entry point
 # ---------------------------------------------------------------------------
 
+
 def main():
     os.makedirs(DOCS_DIR, exist_ok=True)
 
@@ -1110,25 +1379,25 @@ def main():
     # Build presentation
     # -----------------------------------------------------------------------
     prs = Presentation()
-    prs.slide_width  = SLIDE_W
+    prs.slide_width = SLIDE_W
     prs.slide_height = SLIDE_H
 
     print("Building SAGE[ai] Business Case Presentation...")
     print(f"  Output: {PPTX_PATH}")
 
     builders = [
-        ("Slide 01 — Title",                    build_slide_01_title),
-        ("Slide 02 — The Problem",              build_slide_02_problem),
-        ("Slide 03 — The Solution",             build_slide_03_solution),
-        ("Slide 04 — Industry Evidence",        build_slide_04_evidence),
-        ("Slide 05 — Lean Alignment",           build_slide_05_lean),
-        ("Slide 06 — ROI Analysis",             build_slide_06_roi),
-        ("Slide 07 — Architecture",             build_slide_07_architecture),
-        ("Slide 08 — Key Capabilities",         build_slide_08_capabilities),
-        ("Slide 09 — Compliance",               build_slide_09_compliance),
-        ("Slide 10 — Self-Improving System",    build_slide_10_self_improving),
-        ("Slide 11 — Roadmap",                  build_slide_11_roadmap),
-        ("Slide 12 — The Ask",                  build_slide_12_ask),
+        ("Slide 01 — Title", build_slide_01_title),
+        ("Slide 02 — The Problem", build_slide_02_problem),
+        ("Slide 03 — The Solution", build_slide_03_solution),
+        ("Slide 04 — Industry Evidence", build_slide_04_evidence),
+        ("Slide 05 — Lean Alignment", build_slide_05_lean),
+        ("Slide 06 — ROI Analysis", build_slide_06_roi),
+        ("Slide 07 — Architecture", build_slide_07_architecture),
+        ("Slide 08 — Key Capabilities", build_slide_08_capabilities),
+        ("Slide 09 — Compliance", build_slide_09_compliance),
+        ("Slide 10 — Self-Improving System", build_slide_10_self_improving),
+        ("Slide 11 — Roadmap", build_slide_11_roadmap),
+        ("Slide 12 — The Ask", build_slide_12_ask),
     ]
 
     for label, fn in builders:

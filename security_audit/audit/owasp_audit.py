@@ -3,10 +3,10 @@
 This module audits the vulnerable_app and demonstrates each vulnerability
 with a PoC, assigns severity, and records findings.
 """
+
 import json
 import re
-import sys
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, asdict
 from typing import List, Optional
 from enum import Enum
 
@@ -53,7 +53,9 @@ class OWASPAuditor:
         cookies = {}
         if self.session_cookie:
             cookies["session"] = self.session_cookie
-        return requests.get(f"{self.base_url}{path}", cookies=cookies, allow_redirects=False, **kwargs)
+        return requests.get(
+            f"{self.base_url}{path}", cookies=cookies, allow_redirects=False, **kwargs
+        )
 
     def _post(self, path: str, data=None, headers=None, **kwargs):
         if requests is None:
@@ -61,13 +63,19 @@ class OWASPAuditor:
         cookies = {}
         if self.session_cookie:
             cookies["session"] = self.session_cookie
-        return requests.post(f"{self.base_url}{path}", data=data, headers=headers or {},
-                             cookies=cookies, allow_redirects=False, **kwargs)
+        return requests.post(
+            f"{self.base_url}{path}",
+            data=data,
+            headers=headers or {},
+            cookies=cookies,
+            allow_redirects=False,
+            **kwargs,
+        )
 
     def _extract_session(self, resp):
         """Extract Flask session cookie from response."""
         if "set-cookie" in resp.headers:
-            m = re.search(r'session=([^;]+)', resp.headers["set-cookie"])
+            m = re.search(r"session=([^;]+)", resp.headers["set-cookie"])
             if m:
                 self.session_cookie = m.group(1)
 
@@ -81,10 +89,13 @@ class OWASPAuditor:
         error = None
 
         try:
-            resp = self._post("/login", data={
-                "username": poc_payload,
-                "password": poc_payload,
-            })
+            resp = self._post(
+                "/login",
+                data={
+                    "username": poc_payload,
+                    "password": poc_payload,
+                },
+            )
             body = resp.json()
             if body.get("status") == "ok" or "username" in body:
                 verified = True
@@ -162,7 +173,6 @@ class OWASPAuditor:
     # FINDING 3 — Broken Authentication (header injection)
     # ------------------------------------------------------------------
     def audit_broken_auth(self) -> Finding:
-        poc_payload = "X-User-Role: admin"
         poc_result = "Could not connect to app (offline)"
         verified = False
         error = None
@@ -213,7 +223,9 @@ class OWASPAuditor:
 
         try:
             # First: login as alice
-            login_resp = self._post("/login", data={"username": "alice", "password": "password1"})
+            login_resp = self._post(
+                "/login", data={"username": "alice", "password": "password1"}
+            )
             self._extract_session(login_resp)
             alice_body = login_resp.json()
 
@@ -228,7 +240,9 @@ class OWASPAuditor:
                         f"Title: '{doc_body.get('title')}', Content: '{doc_body.get('content')}'"
                     )
                 else:
-                    poc_result = f"Document response: {doc_resp.status_code} — {doc_body}"
+                    poc_result = (
+                        f"Document response: {doc_resp.status_code} — {doc_body}"
+                    )
             else:
                 poc_result = f"Login as alice failed: {alice_body}"
         except Exception as exc:
@@ -266,9 +280,13 @@ class OWASPAuditor:
 
         try:
             # Probe for localhost file access (safe SSRF demo: localhost)
-            resp = self._get("/fetch", params={"url": "http://127.0.0.1:5001/search?q=ssrf_test"})
+            resp = self._get(
+                "/fetch", params={"url": "http://127.0.0.1:5001/search?q=ssrf_test"}
+            )
             body = resp.json()
-            if "content" in body or ("error" in body and "refused" not in body.get("error", "")):
+            if "content" in body or (
+                "error" in body and "refused" not in body.get("error", "")
+            ):
                 verified = True
                 poc_result = (
                     f"SSRF: app fetched internal URL. "
@@ -351,12 +369,12 @@ class OWASPAuditor:
     def run_full_audit(self) -> dict:
         print("[SAGE Security Audit] Starting OWASP Top 10 audit...\n")
         auditors = [
-            ("SQL Injection",       self.audit_sql_injection),
-            ("Reflected XSS",       self.audit_xss),
-            ("Broken Auth",         self.audit_broken_auth),
-            ("IDOR",                self.audit_idor),
-            ("SSRF",                self.audit_ssrf),
-            ("Command Injection",   self.audit_command_injection),
+            ("SQL Injection", self.audit_sql_injection),
+            ("Reflected XSS", self.audit_xss),
+            ("Broken Auth", self.audit_broken_auth),
+            ("IDOR", self.audit_idor),
+            ("SSRF", self.audit_ssrf),
+            ("Command Injection", self.audit_command_injection),
         ]
         for name, fn in auditors:
             print(f"  Testing: {name}...")
@@ -365,7 +383,12 @@ class OWASPAuditor:
             status = "VERIFIED" if finding.verified else "STATIC"
             print(f"    [{finding.severity.value}] {finding.vuln_id} — {status}")
 
-        severity_order = {Severity.CRITICAL: 0, Severity.HIGH: 1, Severity.MEDIUM: 2, Severity.LOW: 3}
+        severity_order = {
+            Severity.CRITICAL: 0,
+            Severity.HIGH: 1,
+            Severity.MEDIUM: 2,
+            Severity.LOW: 3,
+        }
         self.findings.sort(key=lambda f: severity_order[f.severity])
 
         report = {
@@ -374,10 +397,14 @@ class OWASPAuditor:
             "total_findings": len(self.findings),
             "verified_findings": sum(1 for f in self.findings if f.verified),
             "severity_summary": {
-                "Critical": sum(1 for f in self.findings if f.severity == Severity.CRITICAL),
-                "High":     sum(1 for f in self.findings if f.severity == Severity.HIGH),
-                "Medium":   sum(1 for f in self.findings if f.severity == Severity.MEDIUM),
-                "Low":      sum(1 for f in self.findings if f.severity == Severity.LOW),
+                "Critical": sum(
+                    1 for f in self.findings if f.severity == Severity.CRITICAL
+                ),
+                "High": sum(1 for f in self.findings if f.severity == Severity.HIGH),
+                "Medium": sum(
+                    1 for f in self.findings if f.severity == Severity.MEDIUM
+                ),
+                "Low": sum(1 for f in self.findings if f.severity == Severity.LOW),
             },
             "findings": [asdict(f) for f in self.findings],
         }
@@ -393,6 +420,7 @@ def main():
     print(f"  Severity:      {report['severity_summary']}")
     print("=" * 60)
     import os
+
     out_dir = os.path.dirname(os.path.abspath(__file__))
     out_path = os.path.join(out_dir, "audit_report.json")
     with open(out_path, "w") as f:

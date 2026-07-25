@@ -20,13 +20,14 @@ logger = logging.getLogger(__name__)
 # Data structures
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class AnalogyResult:
     quadruple: Tuple[str, str, str, str]  # (a, b, c, expected_d)
     predicted: str
     expected: str
     correct: bool
-    rank: int            # rank of expected_d in cosine-similarity list
+    rank: int  # rank of expected_d in cosine-similarity list
     top5: List[str] = field(default_factory=list)
 
 
@@ -34,21 +35,21 @@ class AnalogyResult:
 class EvalReport:
     split: str
     n_total: int
-    n_valid: int         # quadruples where all 4 words are in vocabulary
+    n_valid: int  # quadruples where all 4 words are in vocabulary
     n_correct: int
     accuracy: float
     top5_accuracy: float
-    mrr: float           # mean reciprocal rank
+    mrr: float  # mean reciprocal rank
     results: List[AnalogyResult] = field(default_factory=list)
 
     def log_to_mlflow(self, prefix: str = "eval") -> None:
         mlflow.log_metrics(
             {
-                f"{prefix}/{self.split}/accuracy":      self.accuracy,
+                f"{prefix}/{self.split}/accuracy": self.accuracy,
                 f"{prefix}/{self.split}/top5_accuracy": self.top5_accuracy,
-                f"{prefix}/{self.split}/mrr":           self.mrr,
-                f"{prefix}/{self.split}/n_valid":       self.n_valid,
-                f"{prefix}/{self.split}/n_correct":     self.n_correct,
+                f"{prefix}/{self.split}/mrr": self.mrr,
+                f"{prefix}/{self.split}/n_valid": self.n_valid,
+                f"{prefix}/{self.split}/n_correct": self.n_correct,
             }
         )
 
@@ -64,6 +65,7 @@ class EvalReport:
 # Evaluator
 # ---------------------------------------------------------------------------
 
+
 class AnalogyEvaluator:
     """Evaluates word embeddings on the word analogy task.
 
@@ -78,25 +80,25 @@ class AnalogyEvaluator:
     # Hard analogy pairs beyond user-supplied config — used when the model
     # is evaluated outside of training to keep evaluation honest.
     SEMANTIC_PAIRS: List[Tuple[str, str, str, str]] = [
-        ("king",   "man",    "woman",  "queen"),
-        ("king",   "queen",  "man",    "woman"),
-        ("paris",  "france", "berlin", "germany"),
-        ("paris",  "france", "london", "england"),
-        ("paris",  "france", "rome",   "italy"),
-        ("berlin", "germany","london", "england"),
-        ("london", "england","paris",  "france"),
-        ("rome",   "italy",  "paris",  "france"),
+        ("king", "man", "woman", "queen"),
+        ("king", "queen", "man", "woman"),
+        ("paris", "france", "berlin", "germany"),
+        ("paris", "france", "london", "england"),
+        ("paris", "france", "rome", "italy"),
+        ("berlin", "germany", "london", "england"),
+        ("london", "england", "paris", "france"),
+        ("rome", "italy", "paris", "france"),
     ]
 
     SYNTACTIC_PAIRS: List[Tuple[str, str, str, str]] = [
-        ("good",   "better", "bad",    "worse"),
-        ("big",    "bigger", "small",  "smaller"),
-        ("fast",   "faster", "slow",   "slower"),
-        ("run",    "ran",    "go",     "went"),
-        ("walk",   "walked", "talk",   "talked"),
-        ("king",   "kings",  "queen",  "queens"),
-        ("man",    "men",    "woman",  "women"),
-        ("dog",    "dogs",   "cat",    "cats"),
+        ("good", "better", "bad", "worse"),
+        ("big", "bigger", "small", "smaller"),
+        ("fast", "faster", "slow", "slower"),
+        ("run", "ran", "go", "went"),
+        ("walk", "walked", "talk", "talked"),
+        ("king", "kings", "queen", "queens"),
+        ("man", "men", "woman", "women"),
+        ("dog", "dogs", "cat", "cats"),
     ]
 
     def __init__(
@@ -129,8 +131,10 @@ class AnalogyEvaluator:
         self._categories = (
             [0] * n_sem
             + [1] * len(self.SYNTACTIC_PAIRS)
-            + [0 if extra_pairs and i < len(extra_pairs) // 2 else 1
-               for i, _ in enumerate(extra_pairs or [])]
+            + [
+                0 if extra_pairs and i < len(extra_pairs) // 2 else 1
+                for i, _ in enumerate(extra_pairs or [])
+            ]
         )[: len(unique_pairs)]
 
     # ── Splits ────────────────────────────────────────────────────────────────
@@ -192,7 +196,7 @@ class AnalogyEvaluator:
         reciprocal_ranks: List[float] = []
         top5_hits = 0
 
-        W = self.model.get_embeddings()  # (V, D) — already L2-normalised
+        self.model.get_embeddings()  # (V, D) — already L2-normalised
 
         for a, b, c, expected_d in pairs:
             # Skip if any word is OOV
@@ -234,9 +238,9 @@ class AnalogyEvaluator:
                 )
             )
 
-        accuracy     = n_correct / max(n_valid, 1)
+        accuracy = n_correct / max(n_valid, 1)
         top5_accuracy = top5_hits / max(n_valid, 1)
-        mrr          = float(np.mean(reciprocal_ranks)) if reciprocal_ranks else 0.0
+        mrr = float(np.mean(reciprocal_ranks)) if reciprocal_ranks else 0.0
 
         return EvalReport(
             split=split_name,
@@ -258,8 +262,8 @@ class AnalogyEvaluator:
         reports: Dict[str, EvalReport] = {}
         for split_name, pairs in (
             ("train", train_pairs),
-            ("val",   val_pairs),
-            ("test",  test_pairs),
+            ("val", val_pairs),
+            ("test", test_pairs),
         ):
             if not pairs:
                 continue
@@ -281,10 +285,17 @@ class AnalogyEvaluator:
             a, b, c, d = r.quadruple
             logger.info(
                 "%s  %s − %s + %s = %s  (predicted: %s, rank: %s)",
-                status, a, b, c, d, r.predicted,
+                status,
+                a,
+                b,
+                c,
+                d,
+                r.predicted,
                 r.rank if r.rank < 9999 else "OOT",
             )
         logger.info(
             "\nSummary: acc=%.3f  top5=%.3f  mrr=%.3f",
-            report.accuracy, report.top5_accuracy, report.mrr,
+            report.accuracy,
+            report.top5_accuracy,
+            report.mrr,
         )

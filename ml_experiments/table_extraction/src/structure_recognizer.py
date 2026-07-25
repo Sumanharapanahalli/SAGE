@@ -13,7 +13,6 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any
 
-import numpy as np
 from PIL import Image
 
 from .detector import TableRegion
@@ -39,7 +38,9 @@ class TableGrid:
     cells: list[CellBBox] = field(default_factory=list)
     n_rows: int = 0
     n_cols: int = 0
-    row_spans: list[tuple[int, int]] = field(default_factory=list)  # (start_row, end_row) per logical row
+    row_spans: list[tuple[int, int]] = field(
+        default_factory=list
+    )  # (start_row, end_row) per logical row
     source: str = "transformer"
     raw_cells: list[Any] = field(default_factory=list)  # pdfplumber raw rows
 
@@ -80,12 +81,21 @@ class TableStructureRecognizer:
             return
         try:
             import torch
-            from transformers import AutoImageProcessor, TableTransformerForObjectDetection
+            from transformers import (
+                AutoImageProcessor,
+                TableTransformerForObjectDetection,
+            )
 
-            self._device = "cuda" if (self.use_gpu and torch.cuda.is_available()) else "cpu"
-            logger.info("Loading TableTransformer structure model on %s …", self._device)
+            self._device = (
+                "cuda" if (self.use_gpu and torch.cuda.is_available()) else "cpu"
+            )
+            logger.info(
+                "Loading TableTransformer structure model on %s …", self._device
+            )
             self._processor = AutoImageProcessor.from_pretrained(self.model_name)
-            self._model = TableTransformerForObjectDetection.from_pretrained(self.model_name)
+            self._model = TableTransformerForObjectDetection.from_pretrained(
+                self.model_name
+            )
             self._model.to(self._device)
             self._model.eval()
         except ImportError as exc:
@@ -142,14 +152,20 @@ class TableStructureRecognizer:
         )
         return grid
 
-    def recognize_from_pdfplumber(self, pdfplumber_table: Any, region: TableRegion) -> TableGrid:
+    def recognize_from_pdfplumber(
+        self, pdfplumber_table: Any, region: TableRegion
+    ) -> TableGrid:
         """
         Build a TableGrid directly from a pdfplumber Table object.
         pdfplumber already provides a row×col matrix.
         """
         raw_rows = pdfplumber_table.extract()  # list[list[str|None]]
         if not raw_rows:
-            return TableGrid(page_index=region.page_index, region_bbox=region.bbox, source="pdfplumber")
+            return TableGrid(
+                page_index=region.page_index,
+                region_bbox=region.bbox,
+                source="pdfplumber",
+            )
 
         n_rows = len(raw_rows)
         n_cols = max(len(r) for r in raw_rows) if raw_rows else 0
@@ -157,10 +173,8 @@ class TableStructureRecognizer:
         cells: list[CellBBox] = []
         for r_idx, row in enumerate(raw_rows):
             for c_idx in range(n_cols):
-                cell_val = row[c_idx] if c_idx < len(row) else None
-                cells.append(
-                    CellBBox(row=r_idx, col=c_idx, row_span=1, col_span=1)
-                )
+                row[c_idx] if c_idx < len(row) else None
+                cells.append(CellBBox(row=r_idx, col=c_idx, row_span=1, col_span=1))
 
         grid = TableGrid(
             page_index=region.page_index,
@@ -204,9 +218,7 @@ class TableStructureRecognizer:
             if key in assigned:
                 continue
             assigned.add(key)
-            cells.append(
-                CellBBox(row=r_idx, col=c_idx, bbox=cbox[:4])
-            )
+            cells.append(CellBBox(row=r_idx, col=c_idx, bbox=cbox[:4]))
 
         # Fill gaps (cells missed by model)
         for r in range(n_rows):

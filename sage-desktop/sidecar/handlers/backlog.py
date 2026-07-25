@@ -1,4 +1,5 @@
 """Feature request (backlog) handlers."""
+
 from __future__ import annotations
 
 from typing import Any, Dict, Optional
@@ -160,10 +161,9 @@ def plan(params: dict) -> dict:
             cfg = _load_cfg()
         except Exception:  # noqa: BLE001
             cfg = {}
-        github_repo = (
-            (cfg.get("github", {}) or {}).get("repo_url", "").rstrip("/")
-            or "https://github.com/Sumanharapanahalli/SAGE"
-        )
+        github_repo = (cfg.get("github", {}) or {}).get("repo_url", "").rstrip(
+            "/"
+        ) or "https://github.com/Sumanharapanahalli/SAGE"
         issue_title = urllib.parse.quote(fr.title)
         issue_body = urllib.parse.quote(
             f"## Description\n{fr.description}\n\n"

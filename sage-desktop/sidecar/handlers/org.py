@@ -25,6 +25,7 @@ on the web API). This handler only supports viewing the enriched org state
 (including read-only cross-team routes) and editing identity fields
 (name/mission/vision/core_values), plus a reload.
 """
+
 from __future__ import annotations
 
 from pathlib import Path

@@ -13,6 +13,7 @@ Contract note (load-bearing): the FTA engine keys probability off
 ``"probability"`` and cut sets off ``"event"`` — a leaf node must carry BOTH
 or one of the two results silently degrades (0.0 probability / [] cut sets).
 """
+
 from __future__ import annotations
 
 from rpc import RPC_INVALID_PARAMS, RPC_SIDECAR_ERROR, RpcError
@@ -23,6 +24,7 @@ _FMEA_SCORES = ("severity", "occurrence", "detection")
 
 def _engine():
     from src.core.functional_safety import functional_safety
+
     return functional_safety
 
 
@@ -40,7 +42,9 @@ def _validate_entry(entry, idx: int) -> dict:
     for field in _FMEA_FIELDS:
         val = entry.get(field, "")
         if not isinstance(val, str):
-            raise RpcError(RPC_INVALID_PARAMS, f"entries[{idx}].{field} must be a string")
+            raise RpcError(
+                RPC_INVALID_PARAMS, f"entries[{idx}].{field} must be a string"
+            )
         clean[field] = val
     for field in _FMEA_SCORES:
         val = entry.get(field)

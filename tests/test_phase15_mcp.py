@@ -12,7 +12,6 @@ Tests for:
 """
 
 import os
-import json
 import tempfile
 import textwrap
 from unittest.mock import MagicMock, patch
@@ -27,10 +26,11 @@ pytestmark = pytest.mark.unit
 # MCPRegistry unit tests
 # ---------------------------------------------------------------------------
 
-class TestMCPRegistry:
 
+class TestMCPRegistry:
     def _fresh_registry(self):
         from src.integrations.mcp_registry import MCPRegistry
+
         return MCPRegistry()
 
     def test_list_tools_empty_when_no_servers_dir(self):
@@ -43,9 +43,15 @@ class TestMCPRegistry:
         MODULE discovery; the container source has its own tests in test_mcp_docker.py.
         """
         reg = self._fresh_registry()
-        with patch.object(reg, "_get_solution_mcp_dir", return_value="/nonexistent/path"), \
-             patch.object(reg, "_get_framework_mcp_dir", return_value="/nonexistent/fw"), \
-             patch("src.integrations.mcp_docker.docker_mcp.register_into", return_value=0):
+        with (
+            patch.object(
+                reg, "_get_solution_mcp_dir", return_value="/nonexistent/path"
+            ),
+            patch.object(reg, "_get_framework_mcp_dir", return_value="/nonexistent/fw"),
+            patch(
+                "src.integrations.mcp_docker.docker_mcp.register_into", return_value=0
+            ),
+        ):
             tools = reg.list_tools()
         assert isinstance(tools, list)
         assert len(tools) == 0
@@ -53,8 +59,12 @@ class TestMCPRegistry:
     def test_invoke_unknown_tool_returns_error(self):
         """invoke() with an unknown tool name must return an error dict, not raise."""
         reg = self._fresh_registry()
-        with patch.object(reg, "_get_solution_mcp_dir", return_value="/nonexistent/path"), \
-             patch.object(reg, "_get_framework_mcp_dir", return_value="/nonexistent/fw"):
+        with (
+            patch.object(
+                reg, "_get_solution_mcp_dir", return_value="/nonexistent/path"
+            ),
+            patch.object(reg, "_get_framework_mcp_dir", return_value="/nonexistent/fw"),
+        ):
             result = reg.invoke("nonexistent_tool", {})
         assert "error" in result
         assert "nonexistent_tool" in result["error"]
@@ -144,14 +154,20 @@ class TestMCPRegistry:
                 f.write(server_code)
 
             reg = self._fresh_registry()
-            with patch.object(reg, "_get_solution_mcp_dir", return_value=tmpdir), \
-                 patch.object(reg, "_get_framework_mcp_dir", return_value="/nonexistent/fw"):
+            with (
+                patch.object(reg, "_get_solution_mcp_dir", return_value=tmpdir),
+                patch.object(
+                    reg, "_get_framework_mcp_dir", return_value="/nonexistent/fw"
+                ),
+            ):
                 count = reg.load(force=True)
 
             # If FastMCP is installed and tool registration is discoverable
             # count will be 1; if not, skip rather than fail
             if count == 0:
-                pytest.skip("FastMCP tool introspection unavailable in this environment")
+                pytest.skip(
+                    "FastMCP tool introspection unavailable in this environment"
+                )
 
             assert "greet" in reg._tool_map
             with patch.object(reg, "_audit"):
@@ -163,18 +179,24 @@ class TestMCPRegistry:
 # API endpoint tests
 # ---------------------------------------------------------------------------
 
-class TestMCPAPIEndpoints:
 
+class TestMCPAPIEndpoints:
     def _client(self):
         from src.interface.api import app
+
         return TestClient(app)
 
     def test_mcp_list_tools_returns_json(self):
         """GET /mcp/tools must return JSON with 'tools' and 'count' keys."""
         from src.integrations import mcp_registry as reg_module
+
         mock_reg = MagicMock()
         mock_reg.list_tools.return_value = [
-            {"name": "flash_firmware", "description": "Flash device", "server": "jlink_server"}
+            {
+                "name": "flash_firmware",
+                "description": "Flash device",
+                "server": "jlink_server",
+            }
         ]
         with patch.object(reg_module, "mcp_registry", mock_reg):
             response = self._client().get("/mcp/tools")
@@ -187,8 +209,12 @@ class TestMCPAPIEndpoints:
     def test_mcp_invoke_returns_result(self):
         """POST /mcp/invoke must return 200 with result when tool succeeds."""
         from src.integrations import mcp_registry as reg_module
+
         mock_reg = MagicMock()
-        mock_reg.invoke.return_value = {"result": "flashed OK", "tool_name": "flash_firmware"}
+        mock_reg.invoke.return_value = {
+            "result": "flashed OK",
+            "tool_name": "flash_firmware",
+        }
         with patch.object(reg_module, "mcp_registry", mock_reg):
             response = self._client().post(
                 "/mcp/invoke",
@@ -205,8 +231,12 @@ class TestMCPAPIEndpoints:
     def test_mcp_invoke_error_returns_400(self):
         """POST /mcp/invoke when tool returns error must return 400."""
         from src.integrations import mcp_registry as reg_module
+
         mock_reg = MagicMock()
-        mock_reg.invoke.return_value = {"error": "Tool not found", "tool_name": "bad_tool"}
+        mock_reg.invoke.return_value = {
+            "error": "Tool not found",
+            "tool_name": "bad_tool",
+        }
         with patch.object(reg_module, "mcp_registry", mock_reg):
             response = self._client().post(
                 "/mcp/invoke",

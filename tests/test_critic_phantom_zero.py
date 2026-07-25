@@ -11,6 +11,7 @@ verdict, dragging the median down and able to fail work that no critic actually 
 This is the same class of bug as the evaluator-optimizer's flat-0.0 runs: a silent panel
 must look SILENT, not HARSH.
 """
+
 from __future__ import annotations
 
 import pytest
@@ -77,7 +78,9 @@ def test_two_phantoms_collapse_the_verdict_to_zero():
     spoke, and the median lands on a 0 that no critic ever gave — failing work that was
     rated 70. A panel is only robust to failures it does not COUNT."""
     agent = CriticAgent()
-    _, honest = _aggregate(agent, _reviews(gemini="failed", ollama="failed", primary=70))
+    _, honest = _aggregate(
+        agent, _reviews(gemini="failed", ollama="failed", primary=70)
+    )
 
     with_phantoms = agent._robust_aggregate(
         {"gemini": 0, "ollama": 0, "primary": 70},
@@ -98,8 +101,9 @@ def test_a_genuine_zero_is_still_counted():
 
 def test_all_critics_failing_yields_no_score_not_zero():
     agent = CriticAgent()
-    scored, final = _aggregate(agent, _reviews(gemini="failed", primary="failed",
-                                               ollama="failed"))
+    scored, final = _aggregate(
+        agent, _reviews(gemini="failed", primary="failed", ollama="failed")
+    )
     assert scored == {}, "a panel-wide outage must produce NO score"
     # _robust_aggregate({}) returns 0 — which is exactly why callers must read
     # panel_unscored rather than trust `score`.

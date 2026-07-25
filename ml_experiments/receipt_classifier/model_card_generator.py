@@ -31,6 +31,7 @@ logger = logging.getLogger(__name__)
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
+
 def _load_report(report_path: Path) -> Dict[str, Any]:
     with open(report_path) as fh:
         return json.load(fh)
@@ -51,17 +52,18 @@ def _bias_flags(bias_summary: Dict) -> list[str]:
 def _format_per_class(per_class: Dict) -> list[Dict]:
     return [
         {
-            "class":     cls,
+            "class": cls,
             "precision": m["precision"],
-            "recall":    m["recall"],
-            "f1":        m["f1"],
-            "support":   m["support"],
+            "recall": m["recall"],
+            "f1": m["f1"],
+            "support": m["support"],
         }
         for cls, m in per_class.items()
     ]
 
 
 # ── Generator ──────────────────────────────────────────────────────────────────
+
 
 def generate_model_card(
     report: Dict[str, Any],
@@ -97,7 +99,10 @@ def generate_model_card(
         },
         "intended_use": {
             "primary_use": "Automated expense categorisation for corporate T&E workflows",
-            "intended_users": ["Finance operations teams", "Expense management SaaS platforms"],
+            "intended_users": [
+                "Finance operations teams",
+                "Expense management SaaS platforms",
+            ],
             "out_of_scope": [
                 "Fraud detection",
                 "PII extraction",
@@ -108,9 +113,15 @@ def generate_model_card(
             "source": "Synthetic receipt dataset (see data.py) — replace with real data in production",
             "features": {
                 "numeric": [
-                    "amount_usd", "item_count", "discount_pct", "tip_pct",
-                    "hour_of_day", "day_of_week", "is_weekend",
-                    "days_since_last_purchase", "merchant_avg_ticket",
+                    "amount_usd",
+                    "item_count",
+                    "discount_pct",
+                    "tip_pct",
+                    "hour_of_day",
+                    "day_of_week",
+                    "is_weekend",
+                    "days_since_last_purchase",
+                    "merchant_avg_ticket",
                     "merchant_transaction_count",
                 ],
                 "categorical": ["payment_method", "merchant_type", "currency"],
@@ -124,20 +135,20 @@ def generate_model_card(
         "evaluation": {
             "dataset": "Held-out stratified 20 % test split (same seed as training)",
             "aggregate_metrics": {
-                "accuracy":         agg.get("accuracy"),
-                "f1_macro":         agg.get("f1_macro"),
-                "f1_weighted":      agg.get("f1_weighted"),
-                "precision_macro":  agg.get("precision_macro"),
-                "recall_macro":     agg.get("recall_macro"),
-                "roc_auc_macro":    agg.get("roc_auc_macro"),
-                "log_loss":         agg.get("log_loss"),
+                "accuracy": agg.get("accuracy"),
+                "f1_macro": agg.get("f1_macro"),
+                "f1_weighted": agg.get("f1_weighted"),
+                "precision_macro": agg.get("precision_macro"),
+                "recall_macro": agg.get("recall_macro"),
+                "roc_auc_macro": agg.get("roc_auc_macro"),
+                "log_loss": agg.get("log_loss"),
             },
             "per_class_metrics": _format_per_class(per_class),
             "cross_validation": "5-fold StratifiedKFold on training set (F1 macro)",
         },
         "performance_requirements": {
             "latency_sla_ms": latency.get("sla_ms"),
-            "sla_met":        latency.get("sla_met"),
+            "sla_met": latency.get("sla_met"),
             "measured_latency": {
                 "p50_ms": latency.get("p50_ms"),
                 "p95_ms": latency.get("p95_ms"),
@@ -170,9 +181,9 @@ def generate_model_card(
             "Model does not handle multi-category receipts (e.g. a single receipt spanning food + retail).",
         ],
         "data_checks": {
-            "leakage_risk":    data_checks.get("leakage_risk", False),
+            "leakage_risk": data_checks.get("leakage_risk", False),
             "class_imbalance": data_checks.get("class_imbalance", False),
-            "test_samples":    data_checks.get("test_samples"),
+            "test_samples": data_checks.get("test_samples"),
         },
         "reproducibility": {
             "random_seed": 42,
@@ -180,17 +191,19 @@ def generate_model_card(
             "deterministic": True,
         },
         "artefacts": {
-            "pipeline":          "models/pipeline.joblib",
-            "label_encoder":     "models/label_encoder.joblib",
+            "pipeline": "models/pipeline.joblib",
+            "label_encoder": "models/label_encoder.joblib",
             "classification_report": "models/classification_report.json",
             "evaluation_report": "models/evaluation_report.json",
-            "model_card":        str(out_path),
+            "model_card": str(out_path),
         },
     }
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with open(out_path, "w") as fh:
-        yaml.dump(card, fh, default_flow_style=False, sort_keys=False, allow_unicode=True)
+        yaml.dump(
+            card, fh, default_flow_style=False, sort_keys=False, allow_unicode=True
+        )
 
     logger.info("Model card written to %s", out_path)
     return card
@@ -199,6 +212,7 @@ def generate_model_card(
 def _sklearn_version() -> str:
     try:
         import sklearn
+
         return sklearn.__version__
     except ImportError:
         return "unknown"
@@ -206,8 +220,11 @@ def _sklearn_version() -> str:
 
 # ── CLI ────────────────────────────────────────────────────────────────────────
 
+
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Generate receipt classifier model card")
+    parser = argparse.ArgumentParser(
+        description="Generate receipt classifier model card"
+    )
     parser.add_argument(
         "--report",
         default="models/evaluation_report.json",
@@ -240,7 +257,9 @@ if __name__ == "__main__":
     card = generate_model_card(report, out_path=Path(args.out))
 
     print("\n=== Model Card Summary ===")
-    print(f"  Model   : {card['model_details']['name']} v{card['model_details']['version']}")
+    print(
+        f"  Model   : {card['model_details']['name']} v{card['model_details']['version']}"
+    )
     print(f"  Accuracy: {card['evaluation']['aggregate_metrics']['accuracy']}")
     print(f"  F1 macro: {card['evaluation']['aggregate_metrics']['f1_macro']}")
     print(f"  SLA met : {card['performance_requirements']['sla_met']}")

@@ -55,8 +55,15 @@ def test_run_passes_suite_through(runner, monkeypatch):
 
     def fake_run(suite=None):
         captured["suite"] = suite
-        return {"run_id": "r1", "suite": suite or "all", "total_cases": 1,
-                "passed_cases": 1, "failed_cases": 0, "mean_score": 9.0, "results": []}
+        return {
+            "run_id": "r1",
+            "suite": suite or "all",
+            "total_cases": 1,
+            "passed_cases": 1,
+            "failed_cases": 0,
+            "mean_score": 9.0,
+            "results": [],
+        }
 
     monkeypatch.setattr(runner, "run", fake_run)
     result = eval_handler.run({"suite": "smoke"})
@@ -69,8 +76,15 @@ def test_run_omitted_suite_runs_all(runner, monkeypatch):
 
     def fake_run(suite=None):
         captured["suite"] = suite
-        return {"run_id": "r2", "suite": "all", "total_cases": 0,
-                "passed_cases": 0, "failed_cases": 0, "mean_score": 0.0, "results": []}
+        return {
+            "run_id": "r2",
+            "suite": "all",
+            "total_cases": 0,
+            "passed_cases": 0,
+            "failed_cases": 0,
+            "mean_score": 0.0,
+            "results": [],
+        }
 
     monkeypatch.setattr(runner, "run", fake_run)
     eval_handler.run({})
@@ -78,7 +92,9 @@ def test_run_omitted_suite_runs_all(runner, monkeypatch):
 
 
 def test_run_translates_error_dict_to_invalid_params(runner, monkeypatch):
-    monkeypatch.setattr(runner, "run", lambda suite=None: {"error": "No eval suites found"})
+    monkeypatch.setattr(
+        runner, "run", lambda suite=None: {"error": "No eval suites found"}
+    )
     with pytest.raises(RpcError) as exc_info:
         eval_handler.run({})
     assert exc_info.value.code == -32602

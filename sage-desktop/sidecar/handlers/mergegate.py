@@ -9,6 +9,7 @@ never freezes the app.
 Distinct from the legacy `mr.py` (GitLab merge-request handler) — this is the per-MR HITL
 governance model. Wired in _wire_handlers via mr_runner.build_default_runner(<solution>).
 """
+
 from __future__ import annotations
 
 import logging
@@ -25,8 +26,10 @@ _store: Any = None
 
 def _require():
     if _runner is None or _store is None:
-        raise RpcError(RPC_SIDECAR_ERROR,
-                       "merge-gate is not available — no active solution is wired")
+        raise RpcError(
+            RPC_SIDECAR_ERROR,
+            "merge-gate is not available — no active solution is wired",
+        )
     return _runner, _store
 
 
@@ -53,8 +56,13 @@ def start(params: Any) -> dict:
 
     job_id = jobs.submit("mergegate", _job(), label=f"MR: {work_item[:48]}")
     logger.info("merge-gate started MR %s (job %s): %s", mr_id, job_id, work_item[:60])
-    return {"mr_id": mr_id, "job_id": job_id, "branch": branch,
-            "state": "coding", "work_item": work_item}
+    return {
+        "mr_id": mr_id,
+        "job_id": job_id,
+        "branch": branch,
+        "state": "coding",
+        "work_item": work_item,
+    }
 
 
 def status(params: Any) -> dict:

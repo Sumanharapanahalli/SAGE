@@ -4,6 +4,7 @@ The handler never raises for peripheral failures (LLM provider down,
 project not loaded) so the Status page always renders something. Errors
 are surfaced inline in the payload instead.
 """
+
 from __future__ import annotations
 
 from typing import Optional

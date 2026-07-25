@@ -4,6 +4,7 @@ services/user_store.py — Thread-safe in-memory user store with persistence.
 Production replacement: swap get_user / create_user to hit the PostgreSQL
 users table via SQLAlchemy (the ORM models already exist in db/models.py).
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -52,7 +53,9 @@ class UserStore:
                 )
                 """
             )
-            conn.execute("CREATE INDEX IF NOT EXISTS idx_users_email ON users(email_hash)")
+            conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_users_email ON users(email_hash)"
+            )
             conn.commit()
 
     def _ensure_default_admin(self) -> None:
@@ -67,7 +70,9 @@ class UserStore:
                 role="admin",
                 phone=None,
             )
-            logger.info("UserStore: default admin created (email=admin@falldetection.local)")
+            logger.info(
+                "UserStore: default admin created (email=admin@falldetection.local)"
+            )
 
     def create_user(
         self,

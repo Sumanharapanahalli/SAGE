@@ -113,7 +113,14 @@ def _validate_lightweight(cfg: dict) -> None:
         errors.append(f"Missing top-level keys: {sorted(missing)}")
 
     llm = cfg.get("llm", {})
-    valid_providers = {"gemini", "claude-code", "ollama", "local", "generic-cli", "claude"}
+    valid_providers = {
+        "gemini",
+        "claude-code",
+        "ollama",
+        "local",
+        "generic-cli",
+        "claude",
+    }
     if llm.get("provider") not in valid_providers:
         errors.append(
             f"llm.provider '{llm.get('provider')}' is not in {sorted(valid_providers)}"
@@ -123,16 +130,22 @@ def _validate_lightweight(cfg: dict) -> None:
         errors.append(f"llm.temperature must be a float in [0.0, 1.0], got: {temp!r}")
     max_tok = llm.get("max_tokens")
     if not isinstance(max_tok, int) or not (256 <= max_tok <= 32768):
-        errors.append(f"llm.max_tokens must be an int in [256, 32768], got: {max_tok!r}")
+        errors.append(
+            f"llm.max_tokens must be an int in [256, 32768], got: {max_tok!r}"
+        )
 
     loop = cfg.get("react_loop", {})
     max_iter = loop.get("max_iterations")
     if not isinstance(max_iter, int) or max_iter < 1:
-        errors.append(f"react_loop.max_iterations must be a positive int, got: {max_iter!r}")
+        errors.append(
+            f"react_loop.max_iterations must be a positive int, got: {max_iter!r}"
+        )
 
     prompt = cfg.get("system_prompt", {})
     if prompt.get("mode") not in {"file", "inline"}:
-        errors.append(f"system_prompt.mode must be 'file' or 'inline', got: {prompt.get('mode')!r}")
+        errors.append(
+            f"system_prompt.mode must be 'file' or 'inline', got: {prompt.get('mode')!r}"
+        )
 
     if errors:
         raise ConfigurationError(
@@ -149,7 +162,9 @@ class ReactConfig:
     system_prompt, react_loop. All values are plain Python dicts/lists.
     """
 
-    def __init__(self, yaml_path: str = _PATTERN_YAML, schema_path: str = _SCHEMA_JSON) -> None:
+    def __init__(
+        self, yaml_path: str = _PATTERN_YAML, schema_path: str = _SCHEMA_JSON
+    ) -> None:
         self._yaml_path = yaml_path
         self._schema_path = schema_path
         self._data: dict[str, Any] = {}

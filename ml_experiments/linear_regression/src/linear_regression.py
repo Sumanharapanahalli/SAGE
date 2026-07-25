@@ -23,6 +23,7 @@ logging.basicConfig(
 # Feature Normalizer
 # ---------------------------------------------------------------------------
 
+
 class StandardScaler:
     """
     Manual StandardScaler — must be fit on training data ONLY.
@@ -58,6 +59,7 @@ class StandardScaler:
 # Learning Rate Schedulers
 # ---------------------------------------------------------------------------
 
+
 class LRScheduler:
     """Collection of learning rate decay strategies."""
 
@@ -92,8 +94,8 @@ class LRScheduler:
         )
 
     REGISTRY: Dict = {
-        "constant": constant.__func__,       # type: ignore[attr-defined]
-        "step": step_decay.__func__,         # type: ignore[attr-defined]
+        "constant": constant.__func__,  # type: ignore[attr-defined]
+        "step": step_decay.__func__,  # type: ignore[attr-defined]
         "exponential": exponential_decay.__func__,  # type: ignore[attr-defined]
         "cosine": cosine_annealing.__func__,  # type: ignore[attr-defined]
     }
@@ -110,6 +112,7 @@ class LRScheduler:
 # ---------------------------------------------------------------------------
 # Linear Regression — Batch Gradient Descent
 # ---------------------------------------------------------------------------
+
 
 class LinearRegressionGD:
     """
@@ -172,11 +175,7 @@ class LinearRegressionGD:
 
     def _get_lr(self, epoch: int) -> float:
         fn = LRScheduler.get(self.lr_schedule)
-        kwargs = (
-            {"T_max": self.n_iterations}
-            if self.lr_schedule == "cosine"
-            else {}
-        )
+        kwargs = {"T_max": self.n_iterations} if self.lr_schedule == "cosine" else {}
         return float(fn(self.learning_rate, epoch, **kwargs))
 
     @staticmethod
@@ -229,18 +228,16 @@ class LinearRegressionGD:
             prev_loss = loss
 
             # Gradients
-            error = y_pred - y                    # (n,)
-            dw = (X.T @ error) / n_samples        # (p,)
-            db = np.mean(error)                   # scalar
+            error = y_pred - y  # (n,)
+            dw = (X.T @ error) / n_samples  # (p,)
+            db = np.mean(error)  # scalar
 
             # Gradient descent update
             self.weights_ -= lr * dw
             self.bias_ -= lr * db
 
             if self.verbose and epoch % self.log_every == 0:
-                self.logger.info(
-                    f"Epoch {epoch:6,d} | MSE={loss:.6f} | LR={lr:.2e}"
-                )
+                self.logger.info(f"Epoch {epoch:6,d} | MSE={loss:.6f} | LR={lr:.2e}")
 
         self.n_iter_actual_ = epoch + 1  # noqa: F821 (always assigned)
         return self

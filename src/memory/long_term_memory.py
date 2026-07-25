@@ -30,6 +30,7 @@ logger = logging.getLogger("LongTermMemory")
 _HAS_MEM0 = False
 try:
     import mem0  # noqa: F401
+
     _HAS_MEM0 = True
 except ImportError:
     pass
@@ -45,7 +46,7 @@ class LongTermMemory:
 
     def __init__(self):
         self._client = None
-        self._mode   = "fallback"
+        self._mode = "fallback"
 
         if not _HAS_MEM0:
             logger.info(
@@ -57,27 +58,38 @@ class LongTermMemory:
         # Check if mem0 is explicitly enabled (optional — enabled by default if installed)
         try:
             import yaml
+
             cfg_path = os.path.join(
-                os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-                "config", "config.yaml",
+                os.path.dirname(
+                    os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                ),
+                "config",
+                "config.yaml",
             )
             with open(cfg_path) as f:
                 cfg = yaml.safe_load(f) or {}
             if not cfg.get("memory", {}).get("mem0_enabled", True):
-                logger.info("LongTermMemory: mem0 disabled in config — using vector_memory fallback.")
+                logger.info(
+                    "LongTermMemory: mem0 disabled in config — using vector_memory fallback."
+                )
                 return
         except Exception:
             pass  # config read failure — proceed with mem0
 
         try:
             from mem0 import Memory
+
             self._client = Memory()
-            self._mode   = "mem0"
+            self._mode = "mem0"
             logger.info("LongTermMemory ready (mem0)")
         except Exception as exc:
-            logger.warning("mem0 initialisation failed (%s) — using vector_memory fallback.", exc)
+            logger.warning(
+                "mem0 initialisation failed (%s) — using vector_memory fallback.", exc
+            )
 
-    def remember(self, text: str, user_id: str = "default", metadata: dict = None) -> None:
+    def remember(
+        self, text: str, user_id: str = "default", metadata: dict = None
+    ) -> None:
         """
         Store a preference, pattern, or correction for a specific user or project.
 
@@ -92,11 +104,14 @@ class LongTermMemory:
                 logger.info("Long-term memory stored for user_id=%s", user_id)
                 return
             except Exception as exc:
-                logger.warning("mem0.add failed (%s) — falling back to vector_memory.", exc)
+                logger.warning(
+                    "mem0.add failed (%s) — falling back to vector_memory.", exc
+                )
 
         # Fallback: store in SAGE's vector memory
         try:
             from src.memory.vector_store import vector_memory
+
             vector_memory.add_feedback(
                 f"[user:{user_id}] {text}",
                 metadata={"user_id": user_id, **(metadata or {}), "type": "long_term"},
@@ -121,11 +136,14 @@ class LongTermMemory:
                 results = self._client.search(query, user_id=user_id, limit=limit)
                 return [r["memory"] for r in results.get("results", [])]
             except Exception as exc:
-                logger.warning("mem0.search failed (%s) — falling back to vector_memory.", exc)
+                logger.warning(
+                    "mem0.search failed (%s) — falling back to vector_memory.", exc
+                )
 
         # Fallback: query SAGE's vector memory with user scope prefix
         try:
             from src.memory.vector_store import vector_memory
+
             raw = vector_memory.search(f"[user:{user_id}] {query}", k=limit)
             return raw
         except Exception as exc:

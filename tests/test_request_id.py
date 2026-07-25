@@ -22,7 +22,11 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from src.core import request_context
-from src.core.request_context import get_request_id, is_valid_request_id, normalize_request_id
+from src.core.request_context import (
+    get_request_id,
+    is_valid_request_id,
+    normalize_request_id,
+)
 
 pytestmark = pytest.mark.unit
 
@@ -157,14 +161,17 @@ def test_request_id_reaches_audit_log_event(monkeypatch):
     class _FakeCursor:
         def execute(self, sql, params=()):
             captured.append((sql, params))
+
         def close(self):
             pass
 
     class _FakeConn:
         def cursor(self):
             return _FakeCursor()
+
         def commit(self):
             pass
+
         def close(self):
             pass
 
@@ -196,14 +203,17 @@ def test_explicit_request_id_kwarg_overrides_context(monkeypatch):
     class _FakeCursor:
         def execute(self, sql, params=()):
             captured.append(params)
+
         def close(self):
             pass
 
     class _FakeConn:
         def cursor(self):
             return _FakeCursor()
+
         def commit(self):
             pass
+
         def close(self):
             pass
 
@@ -229,6 +239,7 @@ def _reset_llm_gateway_singleton():
     (a shared-singleton instance may have `.provider` left in an unusable state
     by an unrelated test elsewhere in the suite — see test_phase5_streaming.py)."""
     from src.core import llm_gateway as gw_module
+
     gw_module.LLMGateway._instance = None
 
 

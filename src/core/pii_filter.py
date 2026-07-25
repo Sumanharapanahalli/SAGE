@@ -15,17 +15,11 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 _REGEX_PATTERNS: dict[str, re.Pattern] = {
     "EMAIL_ADDRESS": re.compile(
-        r'\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\b'
+        r"\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\b"
     ),
-    "PHONE_NUMBER": re.compile(
-        r'\b(?:\+?\d[\s\-.]?){7,15}\b'
-    ),
-    "US_SSN": re.compile(
-        r'\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b'
-    ),
-    "CREDIT_CARD": re.compile(
-        r'\b(?:\d[ \-]?){13,19}\b'
-    ),
+    "PHONE_NUMBER": re.compile(r"\b(?:\+?\d[\s\-.]?){7,15}\b"),
+    "US_SSN": re.compile(r"\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b"),
+    "CREDIT_CARD": re.compile(r"\b(?:\d[ \-]?){13,19}\b"),
 }
 
 # ---------------------------------------------------------------------------
@@ -35,6 +29,7 @@ _presidio_engine = None
 
 try:
     from presidio_analyzer import AnalyzerEngine  # type: ignore
+
     _presidio_engine = AnalyzerEngine()
     logger.info("PII filter: presidio AnalyzerEngine loaded.")
 except ImportError:

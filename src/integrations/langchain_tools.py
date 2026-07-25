@@ -44,6 +44,7 @@ def get_tools_for_solution(solution_name: str = None) -> dict:
     def _search_memory(query: str) -> str:
         try:
             from src.memory.vector_store import vector_memory
+
             results = vector_memory.search(query, k=3)
             return "\n---\n".join(results) if results else "No relevant memory found."
         except Exception as exc:
@@ -54,6 +55,7 @@ def get_tools_for_solution(solution_name: str = None) -> dict:
     # --- Load integrations from active project config ---
     try:
         from src.core.project_loader import project_config
+
         integrations = project_config.metadata.get("integrations", [])
     except Exception as exc:
         logger.warning("Could not load project integrations: %s", exc)
@@ -64,7 +66,7 @@ def get_tools_for_solution(solution_name: str = None) -> dict:
     for integration in integrations:
         # Handle composio:<app> prefixed entries (e.g. "composio:github")
         if integration.startswith("composio:"):
-            composio_apps.append(integration[len("composio:"):])
+            composio_apps.append(integration[len("composio:") :])
             continue
 
         loader = _LOADERS.get(integration)
@@ -74,7 +76,9 @@ def get_tools_for_solution(solution_name: str = None) -> dict:
             new_tools = loader()
             if new_tools:
                 tools.update(new_tools)
-                logger.info("Loaded %d tool(s) for integration: %s", len(new_tools), integration)
+                logger.info(
+                    "Loaded %d tool(s) for integration: %s", len(new_tools), integration
+                )
         except Exception as exc:
             logger.warning("Failed to load tools for '%s': %s", integration, exc)
 
@@ -82,6 +86,7 @@ def get_tools_for_solution(solution_name: str = None) -> dict:
     if composio_apps:
         try:
             from src.integrations.composio_tools import get_composio_tools
+
             composio_tool_dict = get_composio_tools(composio_apps)
             if composio_tool_dict:
                 tools.update(composio_tool_dict)
@@ -97,9 +102,11 @@ def get_tools_for_solution(solution_name: str = None) -> dict:
 # Returns None / empty dict if deps are missing (graceful degradation)
 # ---------------------------------------------------------------------------
 
+
 def _load_jira_tools() -> dict:
     try:
         from langchain_community.utilities.jira import JiraAPIWrapper
+
         jira = JiraAPIWrapper()
         return {
             "search_jira": lambda query: jira.run(f"Search for issues: {query}"),
@@ -118,6 +125,7 @@ def _load_jira_tools() -> dict:
 def _load_confluence_tools() -> dict:
     try:
         from langchain_community.utilities.confluence import ConfluenceAPIWrapper
+
         conf = ConfluenceAPIWrapper()
         return {
             "search_confluence": lambda query: conf.run(query),
@@ -139,7 +147,9 @@ def _load_slack_tools() -> dict:
         import requests
 
         def _send_slack(text: str, channel: str = "#general") -> str:
-            resp = requests.post(webhook_url, json={"text": text, "channel": channel}, timeout=10)
+            resp = requests.post(
+                webhook_url, json={"text": text, "channel": channel}, timeout=10
+            )
             return "sent" if resp.status_code == 200 else f"error {resp.status_code}"
 
         return {"send_slack_message": _send_slack}
@@ -156,11 +166,14 @@ def _load_database_tools() -> dict:
     try:
         from langchain_community.utilities import SQLDatabase
         from langchain_community.tools import QuerySQLDataBaseTool
-        db   = SQLDatabase.from_uri(db_url)
+
+        db = SQLDatabase.from_uri(db_url)
         tool = QuerySQLDataBaseTool(db=db)
         return {"query_database": lambda sql: tool.run(sql)}
     except ImportError:
-        logger.warning("database tools unavailable — install langchain-community sqlalchemy")
+        logger.warning(
+            "database tools unavailable — install langchain-community sqlalchemy"
+        )
         return {}
     except Exception as exc:
         logger.warning("Database tool setup failed: %s", exc)
@@ -174,12 +187,15 @@ def _load_github_tools() -> dict:
         return {}
     try:
         from langchain_community.utilities.github import GitHubAPIWrapper
+
         gh = GitHubAPIWrapper()
         return {
             "search_github_issues": lambda query: gh.run(f"search issues: {query}"),
         }
     except ImportError:
-        logger.warning("github tools unavailable — install langchain-community pygithub")
+        logger.warning(
+            "github tools unavailable — install langchain-community pygithub"
+        )
         return {}
     except Exception as exc:
         logger.warning("GitHub tool setup failed: %s", exc)
@@ -188,11 +204,11 @@ def _load_github_tools() -> dict:
 
 # Registry: integration name -> loader function
 _LOADERS = {
-    "jira":       _load_jira_tools,
+    "jira": _load_jira_tools,
     "confluence": _load_confluence_tools,
-    "slack":      _load_slack_tools,
-    "database":   _load_database_tools,
-    "github":     _load_github_tools,
+    "slack": _load_slack_tools,
+    "database": _load_database_tools,
+    "github": _load_github_tools,
     # "gitlab" is handled natively by DeveloperAgent — no LangChain wrapper needed
     # "teams" is handled natively by MonitorAgent — no LangChain wrapper needed
 }

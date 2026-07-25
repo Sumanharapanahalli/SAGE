@@ -1,13 +1,19 @@
 """Quick import + forward-pass smoke test — no training, no heavy deps."""
+
 import sys
 from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).parent))
 
 import numpy as np
 import torch
 from sklearn.preprocessing import MinMaxScaler
 
-from src.data_utils import generate_synthetic_series, temporal_split_and_scale, check_class_imbalance
+from src.data_utils import (
+    generate_synthetic_series,
+    temporal_split_and_scale,
+    check_class_imbalance,
+)
 from src.lstm_model import LSTMForecaster, teacher_forcing_ratio
 from src.metrics import compute_all
 from src.evaluate import inverse_scale

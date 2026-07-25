@@ -3,6 +3,7 @@
 Probes key SAGE imports so the UI can render a graceful-degradation banner
 if something is missing (spec §6.5). Probe failures are *warnings*, not fatal.
 """
+
 from __future__ import annotations
 
 import importlib
@@ -30,6 +31,7 @@ def _sage_version() -> str:
     """Best-effort read of the SAGE package version."""
     try:
         from src import __version__  # type: ignore
+
         return str(__version__)
     except Exception:  # noqa: BLE001
         return "unknown"

@@ -11,14 +11,15 @@ Workflow: propose hypothesis → apply code change → run experiment → measur
 
 import json
 import logging
-import os
-import re
-import tempfile
 
 from src.integrations.base_runner import (
-    BaseRunner, RunResult, VerificationReport, VerificationFinding,
-    VerificationSeverity, Exercise, ExerciseScore,
-    register_runner, RESEARCH_ROLES,
+    BaseRunner,
+    VerificationReport,
+    VerificationFinding,
+    VerificationSeverity,
+    Exercise,
+    register_runner,
+    RESEARCH_ROLES,
 )
 
 logger = logging.getLogger("Runner.autoresearch")
@@ -37,7 +38,7 @@ class AutoResearchRunner(BaseRunner):
     def execute(self, task, workspace, sandbox_handle=None):
         run_id = self._new_run_id()
         try:
-            description = task.get("description", "")
+            task.get("description", "")
             payload = task.get("payload", {})
             metric_name = payload.get("metric_name", "val_loss")
             run_command = payload.get("run_command", "")
@@ -46,6 +47,7 @@ class AutoResearchRunner(BaseRunner):
             exp_workspace = payload.get("workspace", workspace)
 
             from src.core.auto_research import AutoResearchEngine
+
             engine = AutoResearchEngine()
             result = engine.run_experiment(
                 workspace=exp_workspace,
@@ -85,10 +87,15 @@ class AutoResearchRunner(BaseRunner):
 
         if result.status == "error":
             return VerificationReport(
-                passed=False, score=0.0,
-                findings=[VerificationFinding(
-                    "execution", VerificationSeverity.ERROR, "Experiment failed",
-                )],
+                passed=False,
+                score=0.0,
+                findings=[
+                    VerificationFinding(
+                        "execution",
+                        VerificationSeverity.ERROR,
+                        "Experiment failed",
+                    )
+                ],
             )
 
         metrics = result.metrics or {}
@@ -96,60 +103,84 @@ class AutoResearchRunner(BaseRunner):
         # Experiment completed
         if result.status == "completed":
             score += 20
-            findings.append(VerificationFinding(
-                "execution", VerificationSeverity.PASS, "Experiment completed",
-            ))
+            findings.append(
+                VerificationFinding(
+                    "execution",
+                    VerificationSeverity.PASS,
+                    "Experiment completed",
+                )
+            )
 
         # Metric was extracted
         if metrics.get("metric_value") is not None:
             score += 20
-            findings.append(VerificationFinding(
-                "metric_extraction", VerificationSeverity.PASS,
-                f"Metric extracted: {metrics.get('metric_name')}={metrics['metric_value']}",
-            ))
+            findings.append(
+                VerificationFinding(
+                    "metric_extraction",
+                    VerificationSeverity.PASS,
+                    f"Metric extracted: {metrics.get('metric_name')}={metrics['metric_value']}",
+                )
+            )
         else:
-            findings.append(VerificationFinding(
-                "metric_extraction", VerificationSeverity.WARNING,
-                "No metric extracted from output",
-            ))
+            findings.append(
+                VerificationFinding(
+                    "metric_extraction",
+                    VerificationSeverity.WARNING,
+                    "No metric extracted from output",
+                )
+            )
 
         # Decision was made
         decision = metrics.get("decision", "")
         if decision in ("keep", "discard"):
             score += 15
-            findings.append(VerificationFinding(
-                "decision", VerificationSeverity.PASS,
-                f"Decision: {decision}",
-            ))
+            findings.append(
+                VerificationFinding(
+                    "decision",
+                    VerificationSeverity.PASS,
+                    f"Decision: {decision}",
+                )
+            )
 
         # Improvement check
         baseline = metrics.get("baseline")
         metric_val = metrics.get("metric_value")
         if decision == "keep" and baseline is not None and metric_val is not None:
             score += 25
-            findings.append(VerificationFinding(
-                "improvement", VerificationSeverity.PASS,
-                f"Improved from {baseline} to {metric_val}",
-            ))
+            findings.append(
+                VerificationFinding(
+                    "improvement",
+                    VerificationSeverity.PASS,
+                    f"Improved from {baseline} to {metric_val}",
+                )
+            )
         elif decision == "discard":
             score += 10
-            findings.append(VerificationFinding(
-                "improvement", VerificationSeverity.INFO,
-                "No improvement — correctly discarded",
-            ))
+            findings.append(
+                VerificationFinding(
+                    "improvement",
+                    VerificationSeverity.INFO,
+                    "No improvement — correctly discarded",
+                )
+            )
 
         # Hypothesis stated
         if metrics.get("hypothesis"):
             score += 10
-            findings.append(VerificationFinding(
-                "hypothesis", VerificationSeverity.PASS,
-                "Hypothesis stated before experiment",
-            ))
+            findings.append(
+                VerificationFinding(
+                    "hypothesis",
+                    VerificationSeverity.PASS,
+                    "Hypothesis stated before experiment",
+                )
+            )
 
         score = min(score, 100.0)
         return VerificationReport(
-            passed=score >= 30.0, score=score,
-            findings=findings, metrics=metrics,
+            passed=score >= 30.0,
+            score=score,
+            findings=findings,
+            metrics=metrics,
         )
 
     def get_toolchain(self):
@@ -163,12 +194,32 @@ class AutoResearchRunner(BaseRunner):
 
     def get_workflow(self):
         return [
-            {"step": 1, "name": "baseline", "description": "Run baseline experiment to establish metric"},
-            {"step": 2, "name": "propose", "description": "LLM proposes code change with hypothesis"},
-            {"step": 3, "name": "apply", "description": "Apply changes and commit to git"},
-            {"step": 4, "name": "execute", "description": "Run experiment with fixed budget"},
+            {
+                "step": 1,
+                "name": "baseline",
+                "description": "Run baseline experiment to establish metric",
+            },
+            {
+                "step": 2,
+                "name": "propose",
+                "description": "LLM proposes code change with hypothesis",
+            },
+            {
+                "step": 3,
+                "name": "apply",
+                "description": "Apply changes and commit to git",
+            },
+            {
+                "step": 4,
+                "name": "execute",
+                "description": "Run experiment with fixed budget",
+            },
             {"step": 5, "name": "measure", "description": "Extract metric from output"},
-            {"step": 6, "name": "decide", "description": "Keep (improved) or discard (git reset)"},
+            {
+                "step": 6,
+                "name": "decide",
+                "description": "Keep (improved) or discard (git reset)",
+            },
         ]
 
     def get_experience_keys(self):
@@ -187,7 +238,11 @@ class AutoResearchRunner(BaseRunner):
                 task_type="hyperparameter_search",
                 difficulty=difficulty,
                 description="Run a learning rate sweep [1e-5, 1e-4, 1e-3, 1e-2] and select the best",
-                acceptance_criteria=["All rates tested", "Best rate selected", "Results logged"],
+                acceptance_criteria=[
+                    "All rates tested",
+                    "Best rate selected",
+                    "Results logged",
+                ],
                 expected_artifacts=["results.json"],
                 tags=["hyperparameter", "learning-rate"],
             ),
@@ -211,7 +266,9 @@ class AutoResearchRunner(BaseRunner):
             score += 15
             criteria["metric_extracted"] = True
         else:
-            hints.append("Ensure experiment output contains the target metric in parseable format")
+            hints.append(
+                "Ensure experiment output contains the target metric in parseable format"
+            )
 
         # Decision made
         if metrics.get("decision") in ("keep", "discard"):
@@ -226,9 +283,21 @@ class AutoResearchRunner(BaseRunner):
             hints.append("State a clear hypothesis before running the experiment")
 
         # Research vocabulary
-        research_kws = ["hypothesis", "baseline", "metric", "experiment", "result",
-                        "improvement", "parameter", "training", "validation", "loss",
-                        "accuracy", "ablation", "comparison"]
+        research_kws = [
+            "hypothesis",
+            "baseline",
+            "metric",
+            "experiment",
+            "result",
+            "improvement",
+            "parameter",
+            "training",
+            "validation",
+            "loss",
+            "accuracy",
+            "ablation",
+            "comparison",
+        ]
         kw_hits = sum(1 for k in research_kws if k in output_lower)
         if kw_hits >= 4:
             score += 15
@@ -237,19 +306,32 @@ class AutoResearchRunner(BaseRunner):
             score += 8
 
         # Reproducibility markers
-        repro_kws = ["seed", "commit", "git", "checkpoint", "reproducib", "deterministic"]
+        repro_kws = [
+            "seed",
+            "commit",
+            "git",
+            "checkpoint",
+            "reproducib",
+            "deterministic",
+        ]
         if sum(1 for k in repro_kws if k in output_lower) >= 1:
             score += 10
             criteria["reproducibility"] = True
         else:
-            hints.append("Include reproducibility markers: random seed, git commit, checkpoints")
+            hints.append(
+                "Include reproducibility markers: random seed, git commit, checkpoints"
+            )
 
         if result.verification and result.verification.passed:
             score += 10
             criteria["verification_passed"] = True
 
         return self._combined_grade(
-            exercise, result, min(score, 100.0), criteria, hints,
+            exercise,
+            result,
+            min(score, 100.0),
+            criteria,
+            hints,
             domain_context=(
                 "Grade as a senior ML researcher. Check for:\n"
                 "- Clear hypothesis stated before experiment\n"

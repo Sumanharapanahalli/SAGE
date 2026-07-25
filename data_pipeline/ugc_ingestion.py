@@ -17,11 +17,11 @@ Design contracts
 Schema: ugc_schema.sql
 Config: ugc_pipeline_config.yaml
 """
+
 from __future__ import annotations
 
 import csv
 import hashlib
-import io
 import json
 import logging
 import os
@@ -41,13 +41,15 @@ import yaml
 
 # Optional dependencies — degrade gracefully so CI works without them
 try:
-    from langdetect import detect as _langdetect, LangDetectException
+    from langdetect import detect as _langdetect, LangDetectException  # noqa: F401
+
     _LANGDETECT_AVAILABLE = True
 except ImportError:
     _LANGDETECT_AVAILABLE = False
 
 try:
     import mlflow
+
     _MLFLOW_AVAILABLE = True
 except ImportError:
     _MLFLOW_AVAILABLE = False
@@ -66,10 +68,10 @@ logger = logging.getLogger("ugc_ingestion")
 # PII detection — regex-only, no ML model required at ingestion time
 # ---------------------------------------------------------------------------
 _PII_PATTERNS: dict[str, re.Pattern] = {
-    "email": re.compile(r"[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}", re.IGNORECASE),
-    "phone": re.compile(
-        r"(?:\+?1[\s.\-]?)?(?:\(?\d{3}\)?[\s.\-]?)?\d{3}[\s.\-]?\d{4}"
+    "email": re.compile(
+        r"[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}", re.IGNORECASE
     ),
+    "phone": re.compile(r"(?:\+?1[\s.\-]?)?(?:\(?\d{3}\)?[\s.\-]?)?\d{3}[\s.\-]?\d{4}"),
     "ssn": re.compile(r"\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b"),
 }
 
@@ -87,6 +89,7 @@ def detect_pii(text: str, checks: dict[str, bool] | None = None) -> bool:
 # Language detection
 # ---------------------------------------------------------------------------
 
+
 def detect_language(text: str, min_length: int = 20) -> str | None:
     """Return ISO 639-1 code or None on failure / short text."""
     if not _LANGDETECT_AVAILABLE or len(text.strip()) < min_length:
@@ -101,6 +104,7 @@ def detect_language(text: str, min_length: int = 20) -> str | None:
 # Content hash — the dedup key
 # ---------------------------------------------------------------------------
 
+
 def content_hash(platform: str, external_id: str, raw_text: str) -> str:
     payload = f"{platform}:{external_id}:{raw_text}"
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
@@ -110,6 +114,7 @@ def content_hash(platform: str, external_id: str, raw_text: str) -> str:
 # Author hash — irreversible anonymisation
 # ---------------------------------------------------------------------------
 
+
 def author_hash(platform: str, username: str) -> str:
     payload = f"{platform}:{username}"
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
@@ -118,6 +123,7 @@ def author_hash(platform: str, username: str) -> str:
 # ---------------------------------------------------------------------------
 # Config loader
 # ---------------------------------------------------------------------------
+
 
 def load_config(path: str | Path = "ugc_pipeline_config.yaml") -> dict:
     with open(path) as fh:
@@ -131,9 +137,11 @@ def _expand_env_vars(obj: Any) -> Any:
     if isinstance(obj, list):
         return [_expand_env_vars(i) for i in obj]
     if isinstance(obj, str) and "${" in obj:
+
         def replace(m: re.Match) -> str:
             var, _, default = m.group(1).partition(":-")
             return os.environ.get(var, default)
+
         return re.sub(r"\$\{([^}]+)\}", replace, obj)
     return obj
 
@@ -141,6 +149,7 @@ def _expand_env_vars(obj: Any) -> Any:
 # ---------------------------------------------------------------------------
 # Database helpers
 # ---------------------------------------------------------------------------
+
 
 @contextmanager
 def get_db(cfg: dict) -> Generator[psycopg2.extensions.connection, None, None]:
@@ -164,7 +173,9 @@ def get_db(cfg: dict) -> Generator[psycopg2.extensions.connection, None, None]:
         conn.close()
 
 
-def apply_schema(conn: psycopg2.extensions.connection, schema_file: str | Path = "ugc_schema.sql") -> None:
+def apply_schema(
+    conn: psycopg2.extensions.connection, schema_file: str | Path = "ugc_schema.sql"
+) -> None:
     sql = Path(schema_file).read_text()
     with conn.cursor() as cur:
         cur.execute(sql)
@@ -176,13 +187,14 @@ def apply_schema(conn: psycopg2.extensions.connection, schema_file: str | Path =
 # Run tracking dataclass
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class RunMetrics:
     run_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     source_platform: str = "unknown"
     records_read: int = 0
     records_loaded: int = 0
-    records_skipped: int = 0    # duplicates detected via content_hash
+    records_skipped: int = 0  # duplicates detected via content_hash
     records_failed: int = 0
     validation_failures: int = 0
     pii_flagged: int = 0
@@ -257,9 +269,13 @@ def log_run_finish(conn: psycopg2.extensions.connection, m: RunMetrics) -> None:
     logger.info(
         '"run_finish" "run_id":"%s" "status":"%s" "loaded":%d '
         '"skipped":%d "failed":%d "pass_rate":%.3f "rps":%.1f',
-        m.run_id, m.status,
-        m.records_loaded, m.records_skipped, m.records_failed,
-        m.validation_pass_rate, m.rows_per_second,
+        m.run_id,
+        m.status,
+        m.records_loaded,
+        m.records_skipped,
+        m.records_failed,
+        m.validation_pass_rate,
+        m.rows_per_second,
     )
 
 
@@ -271,8 +287,15 @@ def _persist_validation_results(
     if not results:
         return
     rows = [
-        (run_id, r["external_id"], r["platform"],
-         r["rule_name"], r["passed"], r["message"], r["severity"])
+        (
+            run_id,
+            r["external_id"],
+            r["platform"],
+            r["rule_name"],
+            r["passed"],
+            r["message"],
+            r["severity"],
+        )
         for r in results
     ]
     with conn.cursor() as cur:
@@ -291,12 +314,13 @@ def _persist_validation_results(
 # Validation layer
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class ValidationResult:
     rule_name: str
     passed: bool
     message: str
-    severity: str = "error"    # info | warning | error | critical
+    severity: str = "error"  # info | warning | error | critical
 
 
 def _validate_ugc_record(
@@ -311,52 +335,63 @@ def _validate_ugc_record(
     'overall_passed' is False if any 'error' or 'critical' check fails.
     """
     results: list[ValidationResult] = []
-    ext_id = rec.get("external_id", "<unknown>")
+    rec.get("external_id", "<unknown>")
     platform = rec.get("platform", "<unknown>")
 
     # 1. Required fields
     for f in cfg.get("required_fields", []):
         val = rec.get(f)
         missing = val is None or (isinstance(val, str) and val.strip() == "")
-        results.append(ValidationResult(
-            rule_name=f"required:{f}",
-            passed=not missing,
-            message="" if not missing else f"Required field '{f}' is missing or empty",
-            severity="critical",
-        ))
+        results.append(
+            ValidationResult(
+                rule_name=f"required:{f}",
+                passed=not missing,
+                message=""
+                if not missing
+                else f"Required field '{f}' is missing or empty",
+                severity="critical",
+            )
+        )
 
     # 2. Text length
     text = rec.get("raw_text", "")
     tl = cfg.get("text_length", {})
     min_len, max_len = tl.get("min", 5), tl.get("max", 40000)
     tlen = len(text)
-    results.append(ValidationResult(
-        rule_name="text_length",
-        passed=min_len <= tlen <= max_len,
-        message="" if min_len <= tlen <= max_len
-                else f"text_length={tlen} outside [{min_len}, {max_len}]",
-    ))
+    results.append(
+        ValidationResult(
+            rule_name="text_length",
+            passed=min_len <= tlen <= max_len,
+            message=""
+            if min_len <= tlen <= max_len
+            else f"text_length={tlen} outside [{min_len}, {max_len}]",
+        )
+    )
 
     # 3. Allowed content type
     ct = rec.get("content_type")
     allowed_ct = cfg.get("allowed_content_types", [])
     if ct is not None and allowed_ct:
         ok = ct in allowed_ct
-        results.append(ValidationResult(
-            rule_name="content_type_enum",
-            passed=ok,
-            message="" if ok else f"content_type={ct!r} not in {allowed_ct}",
-        ))
+        results.append(
+            ValidationResult(
+                rule_name="content_type_enum",
+                passed=ok,
+                message="" if ok else f"content_type={ct!r} not in {allowed_ct}",
+            )
+        )
 
     # 4. Allowed platform
     allowed_pl = cfg.get("allowed_platforms", [])
     if platform and allowed_pl:
         ok = platform in allowed_pl
-        results.append(ValidationResult(
-            rule_name="platform_enum",
-            passed=ok,
-            message="" if ok else f"platform={platform!r} not in allowed list",
-        ))
+        results.append(
+            ValidationResult(
+                rule_name="platform_enum",
+                passed=ok,
+                message="" if ok else f"platform={platform!r} not in allowed list",
+            )
+        )
 
     # 5. Star rating range (reviews only)
     sr = rec.get("star_rating")
@@ -367,12 +402,16 @@ def _validate_ugc_record(
             ok = sr_range["min"] <= numeric <= sr_range["max"]
         except (TypeError, ValueError):
             ok = False
-        results.append(ValidationResult(
-            rule_name="star_rating_range",
-            passed=ok,
-            message="" if ok else f"star_rating={sr} outside [{sr_range['min']}, {sr_range['max']}]",
-            severity="warning",
-        ))
+        results.append(
+            ValidationResult(
+                rule_name="star_rating_range",
+                passed=ok,
+                message=""
+                if ok
+                else f"star_rating={sr} outside [{sr_range['min']}, {sr_range['max']}]",
+                severity="warning",
+            )
+        )
 
     # 6. PII detection — flag, never block
     if text:
@@ -380,24 +419,28 @@ def _validate_ugc_record(
         has_pii = detect_pii(text, pii_checks)
         rec["_pii_flag"] = has_pii
         if has_pii:
-            results.append(ValidationResult(
-                rule_name="pii_detected",
-                passed=True,    # does NOT fail validation — just a flag
-                message="PII pattern detected — pii_flag=TRUE set",
-                severity="warning",
-            ))
+            results.append(
+                ValidationResult(
+                    rule_name="pii_detected",
+                    passed=True,  # does NOT fail validation — just a flag
+                    message="PII pattern detected — pii_flag=TRUE set",
+                    severity="warning",
+                )
+            )
 
     # 7. Language detection (info only, never blocks)
     if _LANGDETECT_AVAILABLE and lang_cfg.get("enabled"):
         lang = detect_language(text, lang_cfg.get("min_text_length", 20))
         if lang:
             rec["_detected_language"] = lang
-        results.append(ValidationResult(
-            rule_name="language_detected",
-            passed=True,
-            message=f"lang={lang or 'unknown'}",
-            severity="info",
-        ))
+        results.append(
+            ValidationResult(
+                rule_name="language_detected",
+                passed=True,
+                message=f"lang={lang or 'unknown'}",
+                severity="info",
+            )
+        )
 
     overall_passed = all(
         r.passed for r in results if r.severity in ("error", "critical")
@@ -408,6 +451,7 @@ def _validate_ugc_record(
 # ---------------------------------------------------------------------------
 # EXTRACT — file-system readers
 # ---------------------------------------------------------------------------
+
 
 def _extract_jsonl(path: Path) -> Iterator[dict]:
     with open(path, encoding="utf-8") as fh:
@@ -447,6 +491,7 @@ def extract_file(path: Path) -> Iterator[dict]:
 # ---------------------------------------------------------------------------
 # TRANSFORM — normalise field names, derive content_hash, strip PII metadata
 # ---------------------------------------------------------------------------
+
 
 def transform_record(raw: dict, platform: str, source_file: str) -> dict:
     """
@@ -488,10 +533,15 @@ def transform_record(raw: dict, platform: str, source_file: str) -> dict:
     # -- content_type --------------------------------------------------------
     ct_raw = (norm.get("content_type") or norm.get("type") or "").lower()
     type_map = {
-        "post": "post", "submission": "post", "tweet": "post",
-        "comment": "comment", "reply": "comment",
-        "review": "review", "rating": "review",
-        "thread": "thread", "question": "thread",
+        "post": "post",
+        "submission": "post",
+        "tweet": "post",
+        "comment": "comment",
+        "reply": "comment",
+        "review": "review",
+        "rating": "review",
+        "thread": "thread",
+        "question": "thread",
         "answer": "answer",
     }
     content_type = type_map.get(ct_raw, "post" if not ct_raw else "other")
@@ -505,37 +555,63 @@ def transform_record(raw: dict, platform: str, source_file: str) -> dict:
         or ""
     )
     rec["_author_hash"] = author_hash(platform, str(raw_author)) if raw_author else None
-    rec["_raw_author"] = str(raw_author) if raw_author else None   # used only for upsert
+    rec["_raw_author"] = str(raw_author) if raw_author else None  # used only for upsert
 
     # -- Assemble canonical record -------------------------------------------
-    rec.update({
-        "external_id":    str(ext_id),
-        "platform":       platform,
-        "content_type":   content_type,
-        "raw_text":       raw_text,
-        "content_hash":   content_hash(platform, str(ext_id), raw_text),
-        "title":          norm.get("title"),
-        "url":            norm.get("url") or norm.get("permalink"),
-        "parent_id":      str(norm["parent_id"]) if norm.get("parent_id") else None,
-        "subreddit":      norm.get("subreddit"),
-        "upvotes":        _int(norm.get("ups") or norm.get("upvotes") or norm.get("score")),
-        "downvotes":      _int(norm.get("downs") or norm.get("downvotes")),
-        "score":          _int(norm.get("score") or norm.get("upvotes")),
-        "comment_count":  _int(norm.get("num_comments") or norm.get("comment_count")),
-        "star_rating":    _float(norm.get("star_rating") or norm.get("rating") or norm.get("stars")),
-        "posted_at":      _parse_ts(norm.get("created_utc") or norm.get("posted_at")
-                                    or norm.get("created_at") or norm.get("date")),
-        "language":       norm.get("language") or norm.get("lang"),
-        "source_file":    source_file,
-        "raw_metadata":   json.dumps({
-            k: v for k, v in norm.items()
-            if k not in ("author", "username", "user_name", "reviewer_name", "text",
-                         "body", "selftext", "content", "review_text", "review_body")
-        }),
-        # internal flags — consumed by loader, not persisted as-is
-        "_pii_flag":           False,   # overwritten by validator
-        "_detected_language":  None,    # overwritten by validator
-    })
+    rec.update(
+        {
+            "external_id": str(ext_id),
+            "platform": platform,
+            "content_type": content_type,
+            "raw_text": raw_text,
+            "content_hash": content_hash(platform, str(ext_id), raw_text),
+            "title": norm.get("title"),
+            "url": norm.get("url") or norm.get("permalink"),
+            "parent_id": str(norm["parent_id"]) if norm.get("parent_id") else None,
+            "subreddit": norm.get("subreddit"),
+            "upvotes": _int(
+                norm.get("ups") or norm.get("upvotes") or norm.get("score")
+            ),
+            "downvotes": _int(norm.get("downs") or norm.get("downvotes")),
+            "score": _int(norm.get("score") or norm.get("upvotes")),
+            "comment_count": _int(
+                norm.get("num_comments") or norm.get("comment_count")
+            ),
+            "star_rating": _float(
+                norm.get("star_rating") or norm.get("rating") or norm.get("stars")
+            ),
+            "posted_at": _parse_ts(
+                norm.get("created_utc")
+                or norm.get("posted_at")
+                or norm.get("created_at")
+                or norm.get("date")
+            ),
+            "language": norm.get("language") or norm.get("lang"),
+            "source_file": source_file,
+            "raw_metadata": json.dumps(
+                {
+                    k: v
+                    for k, v in norm.items()
+                    if k
+                    not in (
+                        "author",
+                        "username",
+                        "user_name",
+                        "reviewer_name",
+                        "text",
+                        "body",
+                        "selftext",
+                        "content",
+                        "review_text",
+                        "review_body",
+                    )
+                }
+            ),
+            # internal flags — consumed by loader, not persisted as-is
+            "_pii_flag": False,  # overwritten by validator
+            "_detected_language": None,  # overwritten by validator
+        }
+    )
     return rec
 
 
@@ -568,8 +644,12 @@ def _parse_ts(v: Any) -> datetime | None:
             return None
     if isinstance(v, datetime):
         return v
-    for fmt in ("%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%d %H:%M:%S",
-                "%Y-%m-%d"):
+    for fmt in (
+        "%Y-%m-%dT%H:%M:%S%z",
+        "%Y-%m-%dT%H:%M:%SZ",
+        "%Y-%m-%d %H:%M:%S",
+        "%Y-%m-%d",
+    ):
         try:
             dt = datetime.strptime(str(v).strip(), fmt)
             return dt.replace(tzinfo=timezone.utc) if dt.tzinfo is None else dt
@@ -581,6 +661,7 @@ def _parse_ts(v: Any) -> datetime | None:
 # ---------------------------------------------------------------------------
 # LOAD — idempotent upserts
 # ---------------------------------------------------------------------------
+
 
 def _upsert_author(cur: psycopg2.extensions.cursor, rec: dict) -> str | None:
     ah = rec.get("_author_hash")
@@ -637,10 +718,10 @@ def load_ugc_record(
             """,
             {
                 **rec,
-                "author_id":  author_id,
-                "language":   language,
-                "run_id":     run_id,
-                "pii_flag":   rec.get("_pii_flag", False),
+                "author_id": author_id,
+                "language": language,
+                "run_id": run_id,
+                "pii_flag": rec.get("_pii_flag", False),
             },
         )
         row = cur.fetchone()
@@ -686,11 +767,21 @@ _TEMPLATES: dict[str, list[str]] = {
 }
 
 _TOPICS = [
-    "machine learning", "Python async", "Rust memory safety", "React hooks",
-    "Kubernetes networking", "PostgreSQL query optimisation", "LLM fine-tuning",
-    "vector databases", "CI/CD pipelines", "Docker multi-stage builds",
-    "GraphQL subscriptions", "WebAssembly performance", "edge computing",
-    "transformer architecture", "microservices orchestration",
+    "machine learning",
+    "Python async",
+    "Rust memory safety",
+    "React hooks",
+    "Kubernetes networking",
+    "PostgreSQL query optimisation",
+    "LLM fine-tuning",
+    "vector databases",
+    "CI/CD pipelines",
+    "Docker multi-stage builds",
+    "GraphQL subscriptions",
+    "WebAssembly performance",
+    "edge computing",
+    "transformer architecture",
+    "microservices orchestration",
 ]
 
 _DETAILS = [
@@ -719,12 +810,26 @@ def generate_sample_records(
     Records are flagged with platform='synthetic' override — caller must pass
     the real platform name; source distinguishability is kept via raw_metadata.
     """
-    ct_weights = cfg.get("content_type_weights", {
-        "post": 0.30, "comment": 0.35, "review": 0.20, "thread": 0.10, "answer": 0.05,
-    })
-    sr_dist = cfg.get("star_rating_distribution", {
-        "1.0": 0.10, "2.0": 0.10, "3.0": 0.20, "4.0": 0.30, "5.0": 0.30,
-    })
+    ct_weights = cfg.get(
+        "content_type_weights",
+        {
+            "post": 0.30,
+            "comment": 0.35,
+            "review": 0.20,
+            "thread": 0.10,
+            "answer": 0.05,
+        },
+    )
+    sr_dist = cfg.get(
+        "star_rating_distribution",
+        {
+            "1.0": 0.10,
+            "2.0": 0.10,
+            "3.0": 0.20,
+            "4.0": 0.30,
+            "5.0": 0.30,
+        },
+    )
     langs = cfg.get("languages", ["en"])
     lang_weights = cfg.get("language_weights", [1.0 / len(langs)] * len(langs))
 
@@ -754,13 +859,18 @@ def generate_sample_records(
         else:
             tmpl = rng.choice(_TEMPLATES["reddit_post"])
 
-        sentiment = rng.choice(["great", "decent", "mediocre", "excellent", "disappointing"])
+        sentiment = rng.choice(
+            ["great", "decent", "mediocre", "excellent", "disappointing"]
+        )
         recommend = rng.choice(["definitely", "might", "not"])
         stars_val = rng.choices(star_values, weights=star_probs, k=1)[0]
 
         text = tmpl.format(
-            topic=topic, detail=detail, sentiment=sentiment,
-            recommend=recommend, stars=int(stars_val),
+            topic=topic,
+            detail=detail,
+            sentiment=sentiment,
+            recommend=recommend,
+            stars=int(stars_val),
         )
 
         ext_id = f"syn_{platform}_{i:06d}_{rng.randint(10000, 99999)}"
@@ -769,18 +879,18 @@ def generate_sample_records(
         )
 
         rec: dict[str, Any] = {
-            "id":          ext_id,
+            "id": ext_id,
             "external_id": ext_id,
-            "platform":    platform,
+            "platform": platform,
             "content_type": ct,
-            "text":        text,
-            "author":      f"user_{rng.randint(1000, 9999)}",
-            "created_at":  posted_ts.isoformat(),
-            "language":    lang,
-            "upvotes":     rng.randint(0, 5000),
-            "downvotes":   rng.randint(0, 200),
+            "text": text,
+            "author": f"user_{rng.randint(1000, 9999)}",
+            "created_at": posted_ts.isoformat(),
+            "language": lang,
+            "upvotes": rng.randint(0, 5000),
+            "downvotes": rng.randint(0, 200),
             "comment_count": rng.randint(0, 500),
-            "_synthetic":  True,
+            "_synthetic": True,
         }
         if ct == "review":
             rec["star_rating"] = stars_val
@@ -796,6 +906,7 @@ def generate_sample_records(
 # ---------------------------------------------------------------------------
 # Stratified split utility
 # ---------------------------------------------------------------------------
+
 
 def stratified_split(
     records: list[dict],
@@ -856,6 +967,7 @@ def stratified_split(
 # Class imbalance check
 # ---------------------------------------------------------------------------
 
+
 def check_class_imbalance(
     records: list[dict],
     field: str = "content_type",
@@ -889,7 +1001,9 @@ def check_class_imbalance(
     if imbalanced:
         logger.warning(
             '"class_imbalance_detected" "field":"%s" "ratio":%.2f "threshold":%.2f',
-            field, ratio, imbalance_ratio_threshold,
+            field,
+            ratio,
+            imbalance_ratio_threshold,
         )
     return result
 
@@ -897,6 +1011,7 @@ def check_class_imbalance(
 # ---------------------------------------------------------------------------
 # MLflow experiment logger (optional)
 # ---------------------------------------------------------------------------
+
 
 def log_to_mlflow(m: RunMetrics, cfg: dict) -> None:
     mlflow_cfg = cfg.get("metrics", {}).get("mlflow", {})
@@ -906,20 +1021,24 @@ def log_to_mlflow(m: RunMetrics, cfg: dict) -> None:
         mlflow.set_tracking_uri(mlflow_cfg.get("tracking_uri", "http://localhost:5000"))
         mlflow.set_experiment(mlflow_cfg.get("experiment_name", "ugc_ingestion"))
         with mlflow.start_run(run_name=m.run_id):
-            mlflow.log_params({
-                "source_platform": m.source_platform,
-                "run_id":          m.run_id,
-            })
-            mlflow.log_metrics({
-                "records_read":         m.records_read,
-                "records_loaded":       m.records_loaded,
-                "records_skipped":      m.records_skipped,
-                "records_failed":       m.records_failed,
-                "validation_pass_rate": m.validation_pass_rate,
-                "pii_flag_rate":        m.pii_flag_rate,
-                "rows_per_second":      m.rows_per_second,
-                "duration_seconds":     m.duration_seconds,
-            })
+            mlflow.log_params(
+                {
+                    "source_platform": m.source_platform,
+                    "run_id": m.run_id,
+                }
+            )
+            mlflow.log_metrics(
+                {
+                    "records_read": m.records_read,
+                    "records_loaded": m.records_loaded,
+                    "records_skipped": m.records_skipped,
+                    "records_failed": m.records_failed,
+                    "validation_pass_rate": m.validation_pass_rate,
+                    "pii_flag_rate": m.pii_flag_rate,
+                    "rows_per_second": m.rows_per_second,
+                    "duration_seconds": m.duration_seconds,
+                }
+            )
     except Exception as exc:
         logger.warning('"mlflow_log_failed" "error":"%s"', exc)
 
@@ -927,6 +1046,7 @@ def log_to_mlflow(m: RunMetrics, cfg: dict) -> None:
 # ---------------------------------------------------------------------------
 # Main pipeline orchestrator
 # ---------------------------------------------------------------------------
+
 
 class UGCIngestionPipeline:
     """
@@ -973,8 +1093,9 @@ class UGCIngestionPipeline:
             recs = generate_sample_records(platform, n, gen_cfg, rng)
             all_records.extend((platform, r) for r in recs)
 
-        return self._process_records(all_records, source_platform="synthetic",
-                                     source_file="<sample_generator>")
+        return self._process_records(
+            all_records, source_platform="synthetic", source_file="<sample_generator>"
+        )
 
     def run_filesystem(self, platform: str | None = None) -> dict[str, RunMetrics]:
         """Process all pending files from configured watch directories."""
@@ -1005,8 +1126,9 @@ class UGCIngestionPipeline:
                 except Exception as exc:
                     logger.error('"extract_error" "file":"%s" "err":"%s"', fp, exc)
 
-            metrics = self._process_records(raw_pairs, source_platform=plt,
-                                            source_file=str(src_dir))
+            metrics = self._process_records(
+                raw_pairs, source_platform=plt, source_file=str(src_dir)
+            )
             results[str(src_dir)] = metrics
 
             # Archive processed files
@@ -1026,8 +1148,9 @@ class UGCIngestionPipeline:
         raw_pairs: list[tuple[str, dict]] = [
             (platform, raw) for raw in extract_file(path)
         ]
-        return self._process_records(raw_pairs, source_platform=platform,
-                                     source_file=str(path))
+        return self._process_records(
+            raw_pairs, source_platform=platform, source_file=str(path)
+        )
 
     # ------------------------------------------------------------------
     # Core processing
@@ -1045,7 +1168,9 @@ class UGCIngestionPipeline:
         pii_thresh = alert_cfg.get("pii_flag_rate_threshold", 0.10)
 
         with get_db(self.cfg) as conn:
-            apply_schema(conn, self.cfg["staging_db"].get("schema_file", "ugc_schema.sql"))
+            apply_schema(
+                conn, self.cfg["staging_db"].get("schema_file", "ugc_schema.sql")
+            )
             log_run_start(conn, metrics)
 
             batch: list[dict] = []
@@ -1072,17 +1197,21 @@ class UGCIngestionPipeline:
                 if fail_rate > alert_thresh:
                     logger.error(
                         '"HIGH_FAILURE_RATE" "rate":%.3f "threshold":%.3f',
-                        fail_rate, alert_thresh,
+                        fail_rate,
+                        alert_thresh,
                     )
             if metrics.records_loaded > 0 and metrics.pii_flag_rate > pii_thresh:
                 logger.warning(
                     '"HIGH_PII_RATE" "rate":%.3f "threshold":%.3f',
-                    metrics.pii_flag_rate, pii_thresh,
+                    metrics.pii_flag_rate,
+                    pii_thresh,
                 )
 
             metrics.status = (
-                "success"  if metrics.records_failed == 0
-                else "partial" if metrics.records_loaded > 0
+                "success"
+                if metrics.records_failed == 0
+                else "partial"
+                if metrics.records_loaded > 0
                 else "failed"
             )
             log_run_finish(conn, metrics)
@@ -1107,14 +1236,16 @@ class UGCIngestionPipeline:
                     rec, self.val_cfg, self.pii_cfg, self.lang_cfg
                 )
                 for r in vresults:
-                    val_results_to_persist.append({
-                        "external_id": ext_id,
-                        "platform":    platform,
-                        "rule_name":   r.rule_name,
-                        "passed":      r.passed,
-                        "message":     r.message,
-                        "severity":    r.severity,
-                    })
+                    val_results_to_persist.append(
+                        {
+                            "external_id": ext_id,
+                            "platform": platform,
+                            "rule_name": r.rule_name,
+                            "passed": r.passed,
+                            "message": r.message,
+                            "severity": r.severity,
+                        }
+                    )
                 if rec.get("_pii_flag"):
                     metrics.pii_flagged += 1
 
@@ -1123,7 +1254,8 @@ class UGCIngestionPipeline:
                     metrics.records_failed += 1
                     logger.warning(
                         '"validation_failed" "ext_id":"%s" "platform":"%s"',
-                        ext_id, platform,
+                        ext_id,
+                        platform,
                     )
                     continue
 
@@ -1141,7 +1273,7 @@ class UGCIngestionPipeline:
                         else:
                             metrics.records_skipped += 1
                         break
-                    except psycopg2.Error as db_err:
+                    except psycopg2.Error:
                         conn.rollback()
                         if attempt == self.pipeline_cfg.get("max_retries", 3) - 1:
                             raise
@@ -1181,8 +1313,9 @@ if __name__ == "__main__":
     sub_file.add_argument("path", help="Path to the file")
     sub_file.add_argument("platform", help="Platform name")
 
-    sub_split = subparsers.add_parser("split-check",
-                                       help="Check class imbalance on a JSON export")
+    sub_split = subparsers.add_parser(
+        "split-check", help="Check class imbalance on a JSON export"
+    )
     sub_split.add_argument("export_file", help="Path to JSON array export")
     sub_split.add_argument("--field", default="content_type")
     sub_split.add_argument("--threshold", type=float, default=5.0)
@@ -1207,11 +1340,14 @@ if __name__ == "__main__":
     elif args.command == "split-check":
         with open(args.export_file) as fh:
             recs = json.load(fh)
-        report = check_class_imbalance(recs, field=args.field,
-                                       imbalance_ratio_threshold=args.threshold)
+        report = check_class_imbalance(
+            recs, field=args.field, imbalance_ratio_threshold=args.threshold
+        )
         print(json.dumps(report, indent=2))
         train, val, test = stratified_split(
-            recs, stratify_field=args.field,
-            test_size=0.15, val_size=0.10,
+            recs,
+            stratify_field=args.field,
+            test_size=0.15,
+            val_size=0.10,
         )
         print(f"\nSplit sizes — train:{len(train)}  val:{len(val)}  test:{len(test)}")

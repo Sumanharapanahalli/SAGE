@@ -21,8 +21,7 @@ Features tested:
 import json
 import os
 import tempfile
-import time
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -33,9 +32,11 @@ pytestmark = pytest.mark.unit
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _fresh_engine(db_path=None):
     """Create an AutoResearchEngine with a temp database."""
     from src.core.auto_research import AutoResearchEngine
+
     if db_path is None:
         db_path = os.path.join(tempfile.mkdtemp(), "auto_research.db")
     return AutoResearchEngine(db_path=db_path)
@@ -47,7 +48,9 @@ def _mock_experiment_result(metric=2.85, status="completed", crashed=False):
         "status": "crashed" if crashed else status,
         "metric_value": metric,
         "metric_name": "val_bpb",
-        "output": f"Training complete. val_bpb: {metric}" if not crashed else "RuntimeError: CUDA OOM",
+        "output": f"Training complete. val_bpb: {metric}"
+        if not crashed
+        else "RuntimeError: CUDA OOM",
         "duration_s": 280.0,
         "memory_gb": 42.5,
         "commit_hash": "abc1234",
@@ -57,24 +60,28 @@ def _mock_experiment_result(metric=2.85, status="completed", crashed=False):
 
 def _mock_llm_code_change():
     """Mock LLM response proposing a code change."""
-    return json.dumps({
-        "description": "Increase model depth from 8 to 12 layers",
-        "hypothesis": "Deeper model should capture more complex patterns",
-        "changes": [
-            {
-                "file": "train.py",
-                "search": "DEPTH = 8",
-                "replace": "DEPTH = 12",
-            }
-        ],
-        "expected_effect": "Lower val_bpb by ~0.05",
-    })
+    return json.dumps(
+        {
+            "description": "Increase model depth from 8 to 12 layers",
+            "hypothesis": "Deeper model should capture more complex patterns",
+            "changes": [
+                {
+                    "file": "train.py",
+                    "search": "DEPTH = 8",
+                    "replace": "DEPTH = 12",
+                }
+            ],
+            "expected_effect": "Lower val_bpb by ~0.05",
+        }
+    )
 
 
 def _mock_llm_ctx(response_text=None):
     if response_text is None:
         response_text = _mock_llm_code_change()
-    return patch("src.core.llm_gateway.llm_gateway.generate", return_value=response_text)
+    return patch(
+        "src.core.llm_gateway.llm_gateway.generate", return_value=response_text
+    )
 
 
 def _mock_subprocess_ctx(returncode=0, stdout="val_bpb: 2.80"):
@@ -86,15 +93,22 @@ def _mock_subprocess_ctx(returncode=0, stdout="val_bpb: 2.80"):
 # Group 1: Experiment Loop
 # ===========================================================================
 
+
 class TestExperimentLoop:
     """Core experiment loop: modify → run → measure → keep/discard."""
 
     def test_run_experiment_returns_result(self):
         engine = _fresh_engine()
-        with _mock_llm_ctx(), \
-             patch.object(engine, "_execute_experiment", return_value=_mock_experiment_result(2.80)), \
-             patch.object(engine, "_git_commit", return_value="abc1234"), \
-             patch.object(engine, "_git_reset"):
+        with (
+            _mock_llm_ctx(),
+            patch.object(
+                engine,
+                "_execute_experiment",
+                return_value=_mock_experiment_result(2.80),
+            ),
+            patch.object(engine, "_git_commit", return_value="abc1234"),
+            patch.object(engine, "_git_reset"),
+        ):
             result = engine.run_experiment(
                 workspace="/tmp/test",
                 metric_name="val_bpb",
@@ -108,10 +122,16 @@ class TestExperimentLoop:
         """Experiment with better metric should be kept."""
         engine = _fresh_engine()
         engine._baseline_metric = 2.90
-        with _mock_llm_ctx(), \
-             patch.object(engine, "_execute_experiment", return_value=_mock_experiment_result(2.80)), \
-             patch.object(engine, "_git_commit", return_value="abc1234"), \
-             patch.object(engine, "_git_reset") as mock_reset:
+        with (
+            _mock_llm_ctx(),
+            patch.object(
+                engine,
+                "_execute_experiment",
+                return_value=_mock_experiment_result(2.80),
+            ),
+            patch.object(engine, "_git_commit", return_value="abc1234"),
+            patch.object(engine, "_git_reset") as mock_reset,
+        ):
             result = engine.run_experiment(
                 workspace="/tmp/test",
                 metric_name="val_bpb",
@@ -124,10 +144,16 @@ class TestExperimentLoop:
         """Experiment with worse metric should be discarded."""
         engine = _fresh_engine()
         engine._baseline_metric = 2.80
-        with _mock_llm_ctx(), \
-             patch.object(engine, "_execute_experiment", return_value=_mock_experiment_result(2.95)), \
-             patch.object(engine, "_git_commit", return_value="abc1234"), \
-             patch.object(engine, "_git_reset") as mock_reset:
+        with (
+            _mock_llm_ctx(),
+            patch.object(
+                engine,
+                "_execute_experiment",
+                return_value=_mock_experiment_result(2.95),
+            ),
+            patch.object(engine, "_git_commit", return_value="abc1234"),
+            patch.object(engine, "_git_reset") as mock_reset,
+        ):
             result = engine.run_experiment(
                 workspace="/tmp/test",
                 metric_name="val_bpb",
@@ -140,10 +166,16 @@ class TestExperimentLoop:
         """No improvement = discard (avoid complexity for no gain)."""
         engine = _fresh_engine()
         engine._baseline_metric = 2.85
-        with _mock_llm_ctx(), \
-             patch.object(engine, "_execute_experiment", return_value=_mock_experiment_result(2.85)), \
-             patch.object(engine, "_git_commit", return_value="abc1234"), \
-             patch.object(engine, "_git_reset") as mock_reset:
+        with (
+            _mock_llm_ctx(),
+            patch.object(
+                engine,
+                "_execute_experiment",
+                return_value=_mock_experiment_result(2.85),
+            ),
+            patch.object(engine, "_git_commit", return_value="abc1234"),
+            patch.object(engine, "_git_reset"),
+        ):
             result = engine.run_experiment(
                 workspace="/tmp/test",
                 metric_name="val_bpb",
@@ -155,10 +187,16 @@ class TestExperimentLoop:
         """After keeping, baseline should update to new metric."""
         engine = _fresh_engine()
         engine._baseline_metric = 2.90
-        with _mock_llm_ctx(), \
-             patch.object(engine, "_execute_experiment", return_value=_mock_experiment_result(2.75)), \
-             patch.object(engine, "_git_commit", return_value="abc1234"), \
-             patch.object(engine, "_git_reset"):
+        with (
+            _mock_llm_ctx(),
+            patch.object(
+                engine,
+                "_execute_experiment",
+                return_value=_mock_experiment_result(2.75),
+            ),
+            patch.object(engine, "_git_commit", return_value="abc1234"),
+            patch.object(engine, "_git_reset"),
+        ):
             engine.run_experiment(
                 workspace="/tmp/test",
                 metric_name="val_bpb",
@@ -170,6 +208,7 @@ class TestExperimentLoop:
 # ===========================================================================
 # Group 2: Git-Based Experiment Tracking
 # ===========================================================================
+
 
 class TestGitTracking:
     """Git branch, commit, and reset for experiment management."""
@@ -197,9 +236,7 @@ class TestGitTracking:
     def test_apply_code_changes(self):
         """Apply LLM-proposed changes to files."""
         engine = _fresh_engine()
-        changes = [
-            {"file": "train.py", "search": "DEPTH = 8", "replace": "DEPTH = 12"}
-        ]
+        changes = [{"file": "train.py", "search": "DEPTH = 8", "replace": "DEPTH = 12"}]
         f = tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False)
         try:
             f.write("# Model config\nDEPTH = 8\nWIDTH = 512\n")
@@ -217,6 +254,7 @@ class TestGitTracking:
 # ===========================================================================
 # Group 3: Fixed-Budget Execution
 # ===========================================================================
+
 
 class TestFixedBudgetExecution:
     """Experiments run with wall-clock time constraint."""
@@ -246,6 +284,7 @@ class TestFixedBudgetExecution:
         """Experiment exceeding budget should be marked as crashed."""
         engine = _fresh_engine()
         import subprocess
+
         with patch("subprocess.run", side_effect=subprocess.TimeoutExpired("cmd", 300)):
             result = engine._execute_experiment(
                 workspace="/tmp/test",
@@ -259,6 +298,7 @@ class TestFixedBudgetExecution:
 # ===========================================================================
 # Group 4: Metric Extraction
 # ===========================================================================
+
 
 class TestMetricExtraction:
     """Extract metrics from experiment output."""
@@ -303,47 +343,54 @@ class TestMetricExtraction:
 # Group 5: Results Logging
 # ===========================================================================
 
+
 class TestResultsLogging:
     """Structured experiment results logging."""
 
     def test_log_experiment_result(self):
         engine = _fresh_engine()
-        engine.log_result({
-            "experiment_id": "exp-001",
-            "description": "Increase depth",
-            "metric_value": 2.80,
-            "baseline": 2.90,
-            "decision": "keep",
-            "commit_hash": "abc1234",
-            "duration_s": 280,
-            "status": "completed",
-        })
+        engine.log_result(
+            {
+                "experiment_id": "exp-001",
+                "description": "Increase depth",
+                "metric_value": 2.80,
+                "baseline": 2.90,
+                "decision": "keep",
+                "commit_hash": "abc1234",
+                "duration_s": 280,
+                "status": "completed",
+            }
+        )
         results = engine.get_results()
         assert len(results) >= 1
 
     def test_results_ordered_by_time(self):
         engine = _fresh_engine()
         for i in range(3):
-            engine.log_result({
-                "experiment_id": f"exp-{i:03d}",
-                "description": f"Experiment {i}",
-                "metric_value": 2.90 - i * 0.05,
-                "decision": "keep" if i > 0 else "discard",
-                "status": "completed",
-            })
+            engine.log_result(
+                {
+                    "experiment_id": f"exp-{i:03d}",
+                    "description": f"Experiment {i}",
+                    "metric_value": 2.90 - i * 0.05,
+                    "decision": "keep" if i > 0 else "discard",
+                    "status": "completed",
+                }
+            )
         results = engine.get_results()
         assert len(results) == 3
 
     def test_results_persist_across_restarts(self):
         db_path = os.path.join(tempfile.mkdtemp(), "ar.db")
         e1 = _fresh_engine(db_path)
-        e1.log_result({
-            "experiment_id": "exp-persist",
-            "description": "Test persistence",
-            "metric_value": 2.75,
-            "decision": "keep",
-            "status": "completed",
-        })
+        e1.log_result(
+            {
+                "experiment_id": "exp-persist",
+                "description": "Test persistence",
+                "metric_value": 2.75,
+                "decision": "keep",
+                "status": "completed",
+            }
+        )
         e2 = _fresh_engine(db_path)
         results = e2.get_results()
         assert any(r.get("experiment_id") == "exp-persist" for r in results)
@@ -351,12 +398,14 @@ class TestResultsLogging:
     def test_get_best_result(self):
         engine = _fresh_engine()
         for val in [2.90, 2.75, 2.85]:
-            engine.log_result({
-                "experiment_id": f"exp-{val}",
-                "metric_value": val,
-                "decision": "keep",
-                "status": "completed",
-            })
+            engine.log_result(
+                {
+                    "experiment_id": f"exp-{val}",
+                    "metric_value": val,
+                    "decision": "keep",
+                    "status": "completed",
+                }
+            )
         best = engine.get_best_result(direction="lower")
         assert best["metric_value"] == 2.75
 
@@ -365,19 +414,26 @@ class TestResultsLogging:
 # Group 6: Continuous Training Mode
 # ===========================================================================
 
+
 class TestContinuousMode:
     """Never-stop principle: run experiments until manually stopped."""
 
     def test_run_session_with_max_experiments(self):
         """Session runs N experiments and returns all results."""
         engine = _fresh_engine()
-        with _mock_llm_ctx(), \
-             patch.object(engine, "_execute_experiment", return_value=_mock_experiment_result(2.80)), \
-             patch.object(engine, "_git_commit", return_value="abc1234"), \
-             patch.object(engine, "_git_reset"), \
-             patch.object(engine, "_create_branch", return_value="autoresearch/test"), \
-             patch.object(engine, "_run_baseline", return_value=2.90), \
-             patch.object(engine, "_apply_changes", return_value=True):
+        with (
+            _mock_llm_ctx(),
+            patch.object(
+                engine,
+                "_execute_experiment",
+                return_value=_mock_experiment_result(2.80),
+            ),
+            patch.object(engine, "_git_commit", return_value="abc1234"),
+            patch.object(engine, "_git_reset"),
+            patch.object(engine, "_create_branch", return_value="autoresearch/test"),
+            patch.object(engine, "_run_baseline", return_value=2.90),
+            patch.object(engine, "_apply_changes", return_value=True),
+        ):
             session = engine.run_session(
                 workspace="/tmp/test",
                 metric_name="val_bpb",
@@ -395,18 +451,21 @@ class TestContinuousMode:
             _mock_experiment_result(2.70),  # keep (better than 2.80)
         ]
         call_idx = [0]
+
         def mock_execute(*a, **kw):
-            r = results[min(call_idx[0], len(results)-1)]
+            r = results[min(call_idx[0], len(results) - 1)]
             call_idx[0] += 1
             return r
 
-        with _mock_llm_ctx(), \
-             patch.object(engine, "_execute_experiment", side_effect=mock_execute), \
-             patch.object(engine, "_git_commit", return_value="abc1234"), \
-             patch.object(engine, "_git_reset"), \
-             patch.object(engine, "_create_branch", return_value="autoresearch/test"), \
-             patch.object(engine, "_run_baseline", return_value=2.90), \
-             patch.object(engine, "_apply_changes", return_value=True):
+        with (
+            _mock_llm_ctx(),
+            patch.object(engine, "_execute_experiment", side_effect=mock_execute),
+            patch.object(engine, "_git_commit", return_value="abc1234"),
+            patch.object(engine, "_git_reset"),
+            patch.object(engine, "_create_branch", return_value="autoresearch/test"),
+            patch.object(engine, "_run_baseline", return_value=2.90),
+            patch.object(engine, "_apply_changes", return_value=True),
+        ):
             session = engine.run_session(
                 workspace="/tmp/test",
                 metric_name="val_bpb",
@@ -422,20 +481,23 @@ class TestContinuousMode:
         call_idx = [0]
         baselines_seen = []
 
-        original_run = engine.run_experiment
         def track_baseline(*a, **kw):
             baselines_seen.append(engine._baseline_metric)
-            result = _mock_experiment_result(improvements[min(call_idx[0], len(improvements)-1)])
+            result = _mock_experiment_result(
+                improvements[min(call_idx[0], len(improvements) - 1)]
+            )
             call_idx[0] += 1
             return result
 
-        with _mock_llm_ctx(), \
-             patch.object(engine, "_execute_experiment", side_effect=track_baseline), \
-             patch.object(engine, "_git_commit", return_value="abc"), \
-             patch.object(engine, "_git_reset"), \
-             patch.object(engine, "_create_branch", return_value="autoresearch/test"), \
-             patch.object(engine, "_run_baseline", return_value=2.90), \
-             patch.object(engine, "_apply_changes", return_value=True):
+        with (
+            _mock_llm_ctx(),
+            patch.object(engine, "_execute_experiment", side_effect=track_baseline),
+            patch.object(engine, "_git_commit", return_value="abc"),
+            patch.object(engine, "_git_reset"),
+            patch.object(engine, "_create_branch", return_value="autoresearch/test"),
+            patch.object(engine, "_run_baseline", return_value=2.90),
+            patch.object(engine, "_apply_changes", return_value=True),
+        ):
             engine.run_session(
                 workspace="/tmp/test",
                 metric_name="val_bpb",
@@ -450,6 +512,7 @@ class TestContinuousMode:
 # Group 7: Crash Recovery
 # ===========================================================================
 
+
 class TestCrashRecovery:
     """Handle experiment crashes gracefully."""
 
@@ -460,18 +523,21 @@ class TestCrashRecovery:
             _mock_experiment_result(2.80),
         ]
         call_idx = [0]
+
         def mock_execute(*a, **kw):
-            r = results[min(call_idx[0], len(results)-1)]
+            r = results[min(call_idx[0], len(results) - 1)]
             call_idx[0] += 1
             return r
 
-        with _mock_llm_ctx(), \
-             patch.object(engine, "_execute_experiment", side_effect=mock_execute), \
-             patch.object(engine, "_git_commit", return_value="abc"), \
-             patch.object(engine, "_git_reset"), \
-             patch.object(engine, "_create_branch", return_value="autoresearch/test"), \
-             patch.object(engine, "_run_baseline", return_value=2.90), \
-             patch.object(engine, "_apply_changes", return_value=True):
+        with (
+            _mock_llm_ctx(),
+            patch.object(engine, "_execute_experiment", side_effect=mock_execute),
+            patch.object(engine, "_git_commit", return_value="abc"),
+            patch.object(engine, "_git_reset"),
+            patch.object(engine, "_create_branch", return_value="autoresearch/test"),
+            patch.object(engine, "_run_baseline", return_value=2.90),
+            patch.object(engine, "_apply_changes", return_value=True),
+        ):
             session = engine.run_session(
                 workspace="/tmp/test",
                 metric_name="val_bpb",
@@ -483,11 +549,17 @@ class TestCrashRecovery:
 
     def test_crash_triggers_git_reset(self):
         engine = _fresh_engine()
-        with _mock_llm_ctx(), \
-             patch.object(engine, "_execute_experiment", return_value=_mock_experiment_result(crashed=True)), \
-             patch.object(engine, "_git_commit", return_value="abc"), \
-             patch.object(engine, "_git_reset") as mock_reset, \
-             patch.object(engine, "_apply_changes", return_value=True):
+        with (
+            _mock_llm_ctx(),
+            patch.object(
+                engine,
+                "_execute_experiment",
+                return_value=_mock_experiment_result(crashed=True),
+            ),
+            patch.object(engine, "_git_commit", return_value="abc"),
+            patch.object(engine, "_git_reset") as mock_reset,
+            patch.object(engine, "_apply_changes", return_value=True),
+        ):
             engine.run_experiment(
                 workspace="/tmp/test",
                 metric_name="val_bpb",
@@ -499,6 +571,7 @@ class TestCrashRecovery:
 # ===========================================================================
 # Group 8: Research Program Loading
 # ===========================================================================
+
 
 class TestResearchProgram:
     """Load research instructions from program.md (Markdown-as-skill)."""
@@ -537,6 +610,7 @@ class TestResearchProgram:
 # Group 9: Statistics & Analytics
 # ===========================================================================
 
+
 class TestAnalytics:
     """Experiment analytics and reporting."""
 
@@ -549,12 +623,14 @@ class TestAnalytics:
     def test_stats_with_experiments(self):
         engine = _fresh_engine()
         for i in range(5):
-            engine.log_result({
-                "experiment_id": f"exp-{i}",
-                "metric_value": 2.90 - i * 0.03,
-                "decision": "keep" if i % 2 == 0 else "discard",
-                "status": "completed",
-            })
+            engine.log_result(
+                {
+                    "experiment_id": f"exp-{i}",
+                    "metric_value": 2.90 - i * 0.03,
+                    "decision": "keep" if i % 2 == 0 else "discard",
+                    "status": "completed",
+                }
+            )
         stats = engine.stats()
         assert stats["total_experiments"] == 5
         assert stats["kept"] >= 1
@@ -563,13 +639,15 @@ class TestAnalytics:
     def test_improvement_over_time(self):
         engine = _fresh_engine()
         for i in range(5):
-            engine.log_result({
-                "experiment_id": f"exp-{i}",
-                "metric_value": 2.90 - i * 0.05,
-                "decision": "keep",
-                "status": "completed",
-                "baseline": 2.90,
-            })
+            engine.log_result(
+                {
+                    "experiment_id": f"exp-{i}",
+                    "metric_value": 2.90 - i * 0.05,
+                    "decision": "keep",
+                    "status": "completed",
+                    "baseline": 2.90,
+                }
+            )
         stats = engine.stats()
         assert "best_metric" in stats
         assert stats["best_metric"] < 2.90

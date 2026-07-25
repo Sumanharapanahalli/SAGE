@@ -9,6 +9,7 @@ record, even though it needs no approval.
 Before this, the queue was read-only from the desktop: a wedged task could be
 watched but never recovered.
 """
+
 from __future__ import annotations
 
 import logging
@@ -80,9 +81,12 @@ def list_queue_tasks(params: dict) -> List[dict]:
 
 # ---------- operator actions (framework control — immediate, no HITL) ----------
 
+
 def _require_queue():
     if _queue is None:
-        raise RpcError(RPC_SIDECAR_ERROR, "task queue is not wired (SAGE import failed)")
+        raise RpcError(
+            RPC_SIDECAR_ERROR, "task queue is not wired (SAGE import failed)"
+        )
     return _queue
 
 
@@ -101,7 +105,8 @@ def _audit(action_type: str, task_id: str, detail: str) -> None:
     if _logger is None:
         logger.error(
             "AUDIT GAP: no audit logger wired — %s on task %s was NOT recorded",
-            action_type, task_id,
+            action_type,
+            task_id,
         )
         return
     ident = _operator()
@@ -155,7 +160,8 @@ def cancel_task(params: Any) -> Dict[str, Any]:
         "TASK_CANCELLED",
         task_id,
         "cancelled while running (worker not killed)"
-        if result.get("was_running") else "cancelled before dispatch",
+        if result.get("was_running")
+        else "cancelled before dispatch",
     )
     return result
 

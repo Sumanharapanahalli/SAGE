@@ -17,22 +17,28 @@ pytestmark = pytest.mark.unit
 # Helper: create a fresh VectorMemory in fallback mode for each test
 # ---------------------------------------------------------------------------
 
+
 def _make_fallback_vm():
     """Returns a fresh VectorMemory instance forced into fallback mode."""
     import threading
-    with patch("src.memory.vector_store._HAS_CHROMADB", False), \
-         patch("src.memory.vector_store.Chroma", None):
+
+    with (
+        patch("src.memory.vector_store._HAS_CHROMADB", False),
+        patch("src.memory.vector_store.Chroma", None),
+    ):
         from src.memory.vector_store import VectorMemory
+
         vm = VectorMemory.__new__(VectorMemory)
         import logging
+
         vm.logger = logging.getLogger("VectorMemory.test")
-        vm._fallback_memory    = []
-        vm._fallback_lock      = threading.Lock()
-        vm._vector_store       = None
-        vm._llamaindex_index   = None
+        vm._fallback_memory = []
+        vm._fallback_lock = threading.Lock()
+        vm._vector_store = None
+        vm._llamaindex_index = None
         vm._embedding_function = None
         vm._ready = False
-        vm._mode  = "minimal"
+        vm._mode = "minimal"
         return vm
 
 
@@ -62,7 +68,9 @@ def test_search_k_limits_results():
     for i in range(5):
         vm.add_feedback(f"document keyword entry {i}")
     results = vm.search("document", k=2)
-    assert len(results) <= 2, f"Expected at most 2 results with k=2, got {len(results)}: {results!r}"
+    assert len(results) <= 2, (
+        f"Expected at most 2 results with k=2, got {len(results)}: {results!r}"
+    )
 
 
 def test_keyword_matching_in_fallback():
@@ -71,13 +79,19 @@ def test_keyword_matching_in_fallback():
     vm.add_feedback("connection timeout error")
     results = vm.search("timeout")
     assert len(results) >= 1, "Expected at least 1 result for 'timeout' search."
-    assert any("timeout" in r for r in results), f"Expected 'timeout' in results, got: {results!r}"
+    assert any("timeout" in r for r in results), (
+        f"Expected 'timeout' in results, got: {results!r}"
+    )
 
 
 def test_add_multiple_feedbacks():
     """All 3 documents added must be retrievable via search."""
     vm = _make_fallback_vm()
-    docs = ["uart buffer overflow fix", "watchdog timeout resolved", "flash write error patch"]
+    docs = [
+        "uart buffer overflow fix",
+        "watchdog timeout resolved",
+        "flash write error patch",
+    ]
     for doc in docs:
         vm.add_feedback(doc)
     # Each document should be findable by a unique keyword from it
@@ -99,7 +113,9 @@ def test_metadata_accepted_without_error():
     """add_feedback() with metadata kwarg must not raise any exception."""
     vm = _make_fallback_vm()
     try:
-        vm.add_feedback("test document with metadata", metadata={"type": "test", "version": "1.0"})
+        vm.add_feedback(
+            "test document with metadata", metadata={"type": "test", "version": "1.0"}
+        )
     except Exception as exc:
         pytest.fail(f"add_feedback() raised an exception with metadata: {exc}")
 
@@ -110,24 +126,35 @@ def test_fallback_used_when_chromadb_unavailable():
     and use the in-memory fallback (vector_store is None).
     """
     import threading
-    with patch("src.memory.vector_store._HAS_CHROMADB", False), \
-         patch("src.memory.vector_store.Chroma", None):
+
+    with (
+        patch("src.memory.vector_store._HAS_CHROMADB", False),
+        patch("src.memory.vector_store.Chroma", None),
+    ):
         from src.memory.vector_store import VectorMemory
+
         try:
             vm = VectorMemory.__new__(VectorMemory)
             import logging
+
             vm.logger = logging.getLogger("VectorMemory.test2")
-            vm._fallback_memory    = []
-            vm._fallback_lock      = threading.Lock()
-            vm._vector_store       = None
-            vm._llamaindex_index   = None
+            vm._fallback_memory = []
+            vm._fallback_lock = threading.Lock()
+            vm._vector_store = None
+            vm._llamaindex_index = None
             vm._embedding_function = None
             vm._ready = False
-            vm._mode  = "minimal"
+            vm._mode = "minimal"
         except Exception as exc:
-            pytest.fail(f"VectorMemory initialization raised an exception without ChromaDB: {exc}")
-        assert vm._vector_store is None, "vector_store must be None when ChromaDB is unavailable."
+            pytest.fail(
+                f"VectorMemory initialization raised an exception without ChromaDB: {exc}"
+            )
+        assert vm._vector_store is None, (
+            "vector_store must be None when ChromaDB is unavailable."
+        )
         # Should still be usable
         vm.add_feedback("test fallback doc")
         results = vm.search("test")
-        assert "test fallback doc" in results, "Fallback memory must be usable after init without ChromaDB."
+        assert "test fallback doc" in results, (
+            "Fallback memory must be usable after init without ChromaDB."
+        )

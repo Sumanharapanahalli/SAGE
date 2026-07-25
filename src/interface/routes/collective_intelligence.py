@@ -9,7 +9,7 @@ API endpoints for Git-backed agent knowledge sharing:
 """
 
 import logging
-from typing import List, Optional
+from typing import List
 
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
@@ -21,13 +21,16 @@ router = APIRouter(tags=["Collective Intelligence"])
 
 # ─── Dependency ────────────────────────────────────────────────────────
 
+
 def _get_cm():
     """Lazy-load CollectiveMemory singleton."""
     from src.core.collective_memory import get_collective_memory
+
     return get_collective_memory()
 
 
 # ─── Pydantic Models ──────────────────────────────────────────────────
+
 
 class LearningCreate(BaseModel):
     author_agent: str
@@ -66,6 +69,7 @@ class ResponseCreate(BaseModel):
 
 # ─── Learning Endpoints ───────────────────────────────────────────────
 
+
 @router.post("/collective/learnings", status_code=201)
 async def publish_learning(body: LearningCreate, cm=Depends(_get_cm)):
     """Publish a learning to the collective knowledge base."""
@@ -87,14 +91,21 @@ async def list_learnings(
 
     if query:
         results = cm.search_learnings(
-            query=query, tags=tag_list, solution=solution or None, limit=limit,
+            query=query,
+            tags=tag_list,
+            solution=solution or None,
+            limit=limit,
         )
     else:
         results = cm.list_learnings(
-            solution=solution or None, limit=limit, offset=offset,
+            solution=solution or None,
+            limit=limit,
+            offset=offset,
         )
         if tag_list:
-            results = [r for r in results if any(t in r.get("tags", []) for t in tag_list)]
+            results = [
+                r for r in results if any(t in r.get("tags", []) for t in tag_list)
+            ]
 
     return {"learnings": results, "count": len(results)}
 
@@ -110,7 +121,9 @@ async def get_learning(learning_id: str, cm=Depends(_get_cm)):
 
 @router.post("/collective/learnings/{learning_id}/validate")
 async def validate_learning(
-    learning_id: str, body: ValidateRequest, cm=Depends(_get_cm),
+    learning_id: str,
+    body: ValidateRequest,
+    cm=Depends(_get_cm),
 ):
     """Mark a learning as validated, boosting its confidence."""
     try:
@@ -121,6 +134,7 @@ async def validate_learning(
 
 
 # ─── Help Request Endpoints ───────────────────────────────────────────
+
 
 @router.post("/collective/help-requests", status_code=201)
 async def create_help_request(body: HelpRequestCreate, cm=Depends(_get_cm)):
@@ -136,18 +150,24 @@ async def list_help_requests(
     cm=Depends(_get_cm),
 ):
     """List help requests filtered by status and expertise."""
-    exp_list = [e.strip() for e in expertise.split(",") if e.strip()] if expertise else None
+    exp_list = (
+        [e.strip() for e in expertise.split(",") if e.strip()] if expertise else None
+    )
     results = cm.list_help_requests(status=status, expertise=exp_list)
     return {"requests": results, "count": len(results)}
 
 
 @router.put("/collective/help-requests/{request_id}/claim")
 async def claim_help_request(
-    request_id: str, body: ClaimRequest, cm=Depends(_get_cm),
+    request_id: str,
+    body: ClaimRequest,
+    cm=Depends(_get_cm),
 ):
     """Claim a help request."""
     try:
-        result = cm.claim_help_request(request_id, agent=body.agent, solution=body.solution)
+        result = cm.claim_help_request(
+            request_id, agent=body.agent, solution=body.solution
+        )
         return result
     except ValueError as exc:
         msg = str(exc)
@@ -158,7 +178,9 @@ async def claim_help_request(
 
 @router.put("/collective/help-requests/{request_id}/respond")
 async def respond_to_help_request(
-    request_id: str, body: ResponseCreate, cm=Depends(_get_cm),
+    request_id: str,
+    body: ResponseCreate,
+    cm=Depends(_get_cm),
 ):
     """Add a response to a help request."""
     try:
@@ -179,6 +201,7 @@ async def close_help_request(request_id: str, cm=Depends(_get_cm)):
 
 
 # ─── Sync & Stats ─────────────────────────────────────────────────────
+
 
 @router.post("/collective/sync")
 async def trigger_sync(cm=Depends(_get_cm)):

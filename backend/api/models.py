@@ -1,17 +1,18 @@
 """
 api/models.py — Pydantic request/response schemas for all API routes.
 """
+
 from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Optional
-from uuid import UUID
+from typing import Optional
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field
 
 
 # ── Auth ─────────────────────────────────────────────────────────────────────
+
 
 class TokenResponse(BaseModel):
     access_token: str
@@ -26,10 +27,13 @@ class LoginRequest(BaseModel):
 
 # ── Device ───────────────────────────────────────────────────────────────────
 
+
 class DeviceRegisterRequest(BaseModel):
     owner_user_id: str = Field(..., description="UUID of the wearer/owner user")
     firmware_version: str = Field(..., example="2.3.1")
-    device_serial: str = Field(..., description="Physical serial number from manufacturer")
+    device_serial: str = Field(
+        ..., description="Physical serial number from manufacturer"
+    )
     model_name: str = Field(default="FallGuard-1", example="FallGuard-Pro")
 
 
@@ -51,9 +55,7 @@ class DeviceRegisterResponse(BaseModel):
     firmware_version: str
     status: str
     iot_credentials: AwsIotCredentials
-    mqtt_topic_prefix: str = Field(
-        ..., description="Base topic: devices/{device_id}"
-    )
+    mqtt_topic_prefix: str = Field(..., description="Base topic: devices/{device_id}")
     provisioned_at: datetime
 
 
@@ -82,6 +84,7 @@ class DeviceUpdateRequest(BaseModel):
 
 # ── Location ─────────────────────────────────────────────────────────────────
 
+
 class GpsPoint(BaseModel):
     latitude: float = Field(..., ge=-90, le=90)
     longitude: float = Field(..., ge=-180, le=180)
@@ -100,6 +103,7 @@ class GpsHistoryResponse(BaseModel):
 
 
 # ── Alerts ───────────────────────────────────────────────────────────────────
+
 
 class AlertSeverity(str, Enum):
     low = "low"
@@ -159,8 +163,10 @@ class AlertActionResponse(BaseModel):
 
 # ── MQTT Ingestion ────────────────────────────────────────────────────────────
 
+
 class MqttFallPayload(BaseModel):
     """JSON payload expected on topic devices/{device_id}/fall"""
+
     event_id: str
     device_id: str
     user_id: str
@@ -179,6 +185,7 @@ class MqttFallPayload(BaseModel):
 
 class MqttGpsPayload(BaseModel):
     """JSON payload expected on topic devices/{device_id}/gps"""
+
     device_id: str
     latitude: float
     longitude: float
@@ -190,6 +197,7 @@ class MqttGpsPayload(BaseModel):
 
 class MqttHeartbeatPayload(BaseModel):
     """JSON payload expected on topic devices/{device_id}/heartbeat"""
+
     device_id: str
     firmware_version: Optional[str] = None
     battery_pct: Optional[float] = None
@@ -199,6 +207,7 @@ class MqttHeartbeatPayload(BaseModel):
 
 
 # ── Caregivers ────────────────────────────────────────────────────────────────
+
 
 class UserRole(str, Enum):
     wearer = "wearer"
@@ -239,6 +248,7 @@ class CaregiverAssignResponse(BaseModel):
 
 
 # ── Health / diagnostics ──────────────────────────────────────────────────────
+
 
 class HealthResponse(BaseModel):
     status: str = "ok"

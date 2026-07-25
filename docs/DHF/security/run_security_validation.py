@@ -33,7 +33,6 @@ import os
 import shutil
 import subprocess
 import sys
-import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -188,7 +187,9 @@ class FirmwareStaticAnalyzer:
             result.notes = "Undocumented mandatory or required MISRA violations found."
         elif not pc_result and not ct_result:
             result.result = "ERROR"
-            result.notes = "PC-lint Plus and clang-tidy not found — manual review required."
+            result.notes = (
+                "PC-lint Plus and clang-tidy not found — manual review required."
+            )
         else:
             result.result = "PASS"
             result.notes = "Zero mandatory/required MISRA violations. All advisory deviations documented."
@@ -202,12 +203,16 @@ class FirmwareStaticAnalyzer:
         pc_cfg = self.cfg.get("pclint", {})
         binary = pc_cfg.get("binary", "pclp64")
         if not _tool_available(binary):
-            logger.warning("[SEC-SA-FW] PC-lint Plus not found — SKIP (tool not installed)")
+            logger.warning(
+                "[SEC-SA-FW] PC-lint Plus not found — SKIP (tool not installed)"
+            )
             result.notes += " PC-lint Plus not available in this environment."
             return False
 
         config_file = pc_cfg.get("config_file", "firmware/lint/pclint_misra_c2012.lnt")
-        output_file = pc_cfg.get("output_file", f"{self.evidence_dir}/pclint_report.json")
+        output_file = pc_cfg.get(
+            "output_file", f"{self.evidence_dir}/pclint_report.json"
+        )
         source_dirs = pc_cfg.get("source_dirs", ["firmware/src/"])
 
         cmd = [binary, f"+json({output_file})", config_file] + source_dirs
@@ -252,7 +257,8 @@ class FirmwareStaticAnalyzer:
         cmd = [
             "clang-tidy",
             "--checks=clang-analyzer-*,cert-*",
-            "--export-fixes", output_file,
+            "--export-fixes",
+            output_file,
             "firmware/src/",
         ]
         rc, stdout, stderr = _run(cmd)
@@ -268,12 +274,20 @@ class BackendSastRunner:
     """Runs Bandit and Semgrep on the backend Python source tree."""
 
     # Severity hierarchy for comparison
-    _SEVERITY_RANK = {"INFORMATIONAL": 0, "LOW": 1, "MEDIUM": 2, "HIGH": 3, "CRITICAL": 4}
+    _SEVERITY_RANK = {
+        "INFORMATIONAL": 0,
+        "LOW": 1,
+        "MEDIUM": 2,
+        "HIGH": 3,
+        "CRITICAL": 4,
+    }
 
     def __init__(self, config: dict[str, Any], evidence_dir: str) -> None:
         self.cfg = config["backend_sast"]
         self.evidence_dir = evidence_dir
-        self.max_severity = config["metadata"]["acceptance_criteria"]["max_bandit_severity"]
+        self.max_severity = config["metadata"]["acceptance_criteria"][
+            "max_bandit_severity"
+        ]
         self._start = datetime.datetime.utcnow()
 
     def run(self) -> SectionResult:
@@ -290,7 +304,8 @@ class BackendSastRunner:
         # Evaluate acceptance criteria
         fail_severities = self.cfg["bandit"]["fail_on_severity"]
         failed_findings = [
-            f for f in result.findings
+            f
+            for f in result.findings
             if f.get("severity", "").upper() in fail_severities
         ]
 
@@ -302,10 +317,14 @@ class BackendSastRunner:
             )
         elif not bandit_ok and not semgrep_ok:
             result.result = "ERROR"
-            result.notes = "Bandit and Semgrep not installed. Manual SAST review required."
+            result.notes = (
+                "Bandit and Semgrep not installed. Manual SAST review required."
+            )
         else:
             result.result = "PASS"
-            result.notes = "Zero HIGH/CRITICAL findings. All medium findings must be reviewed."
+            result.notes = (
+                "Zero HIGH/CRITICAL findings. All medium findings must be reviewed."
+            )
 
         result.duration_seconds = (
             datetime.datetime.utcnow() - self._start
@@ -326,10 +345,13 @@ class BackendSastRunner:
         source_root = self.cfg.get("source_root", "src/")
         cmd = [
             "bandit",
-            "-r", source_root,
-            "-ll",           # report MEDIUM and above
-            "-f", "json",
-            "-o", output_file,
+            "-r",
+            source_root,
+            "-ll",  # report MEDIUM and above
+            "-f",
+            "json",
+            "-o",
+            output_file,
         ]
         # Add skipped paths
         for skip_path in self.cfg["bandit"].get("skipped_paths", []):
@@ -374,7 +396,7 @@ class BackendSastRunner:
             else:
                 result.low_count += 1
 
-        metrics = data.get("metrics", {}).get("_totals", {})
+        data.get("metrics", {}).get("_totals", {})
         logger.info(
             "[SEC-SA-BE] Bandit: HIGH=%d MEDIUM=%d LOW=%d",
             result.high_count,
@@ -460,8 +482,7 @@ class DependencyScanner:
 
         # Evaluate: FAIL if any CVE >= max_cvss threshold
         critical_cves = [
-            f for f in result.findings
-            if f.get("cvss_v3", 0) >= self.max_cvss
+            f for f in result.findings if f.get("cvss_v3", 0) >= self.max_cvss
         ]
 
         if critical_cves:
@@ -493,11 +514,16 @@ class DependencyScanner:
         _ensure_dir(str(Path(output_file).parent))
 
         cmd = [
-            "trivy", "fs",
-            "--security-checks", "vuln",
-            "--format", "json",
-            "--output", output_file,
-            "--severity", "CRITICAL,HIGH,MEDIUM,LOW",
+            "trivy",
+            "fs",
+            "--security-checks",
+            "vuln",
+            "--format",
+            "json",
+            "--output",
+            output_file,
+            "--severity",
+            "CRITICAL,HIGH,MEDIUM,LOW",
             ".",
         ]
         rc, stdout, stderr = _run(cmd, timeout=600)
@@ -597,7 +623,9 @@ class DependencyScanner:
             logger.warning("[SEC-DEP] npm not found — SKIP")
             return
 
-        output_file = npm_cfg.get("output_file", f"{self.evidence_dir}/npm_audit_report.json")
+        output_file = npm_cfg.get(
+            "output_file", f"{self.evidence_dir}/npm_audit_report.json"
+        )
         _ensure_dir(str(Path(output_file).parent))
         cmd = ["npm", "audit", "--json"]
         rc, stdout, stderr = _run(cmd, cwd=working_dir, timeout=120)
@@ -617,7 +645,10 @@ class DependencyScanner:
                         "package": pkg_name,
                         "severity": sev,
                         "cvss_v3": 0.0,
-                        "via": [v if isinstance(v, str) else v.get("title", "") for v in vuln_info.get("via", [])],
+                        "via": [
+                            v if isinstance(v, str) else v.get("title", "")
+                            for v in vuln_info.get("via", [])
+                        ],
                         "fixable": vuln_info.get("fixAvailable", False),
                     }
                     result.findings.append(finding)
@@ -683,42 +714,52 @@ class OtaIntegrityVerifier:
         """Verify imgtool.py and signing key are present and configured."""
         signing_cfg = self.cfg.get("signing_infrastructure", {})
         imgtool = signing_cfg.get("imgtool_path", "firmware/scripts/imgtool.py")
-        pub_key = signing_cfg.get("signing_key_public", "firmware/keys/production_signing_pub.pem")
+        pub_key = signing_cfg.get(
+            "signing_key_public", "firmware/keys/production_signing_pub.pem"
+        )
 
         findings = []
         if not Path(imgtool).exists():
-            findings.append({
-                "type": "infra_check",
-                "item": "imgtool.py",
-                "status": "MISSING",
-                "severity": "HIGH",
-                "note": f"imgtool.py not found at {imgtool}",
-            })
+            findings.append(
+                {
+                    "type": "infra_check",
+                    "item": "imgtool.py",
+                    "status": "MISSING",
+                    "severity": "HIGH",
+                    "note": f"imgtool.py not found at {imgtool}",
+                }
+            )
             result.high_count += 1
         else:
-            findings.append({
-                "type": "infra_check",
-                "item": "imgtool.py",
-                "status": "PRESENT",
-                "path": imgtool,
-            })
+            findings.append(
+                {
+                    "type": "infra_check",
+                    "item": "imgtool.py",
+                    "status": "PRESENT",
+                    "path": imgtool,
+                }
+            )
 
         if not Path(pub_key).exists():
-            findings.append({
-                "type": "infra_check",
-                "item": "production_signing_pub.pem",
-                "status": "MISSING",
-                "severity": "HIGH",
-                "note": f"Public signing key not found at {pub_key}. Cannot verify MCUboot will use correct key.",
-            })
+            findings.append(
+                {
+                    "type": "infra_check",
+                    "item": "production_signing_pub.pem",
+                    "status": "MISSING",
+                    "severity": "HIGH",
+                    "note": f"Public signing key not found at {pub_key}. Cannot verify MCUboot will use correct key.",
+                }
+            )
             result.high_count += 1
         else:
-            findings.append({
-                "type": "infra_check",
-                "item": "production_signing_pub.pem",
-                "status": "PRESENT",
-                "path": pub_key,
-            })
+            findings.append(
+                {
+                    "type": "infra_check",
+                    "item": "production_signing_pub.pem",
+                    "status": "PRESENT",
+                    "path": pub_key,
+                }
+            )
 
         result.findings.extend(findings)
 
@@ -730,15 +771,20 @@ class OtaIntegrityVerifier:
             expected = test_cfg.get("expected_result", "BOOT_REJECTED")
 
             if not script or not Path(script).exists():
-                logger.info("[SEC-OTA] %s: Script not found — recording as MANUAL_REQUIRED", test_id)
-                result.findings.append({
-                    "type": "test",
-                    "test_id": test_id,
-                    "name": test_cfg.get("name", ""),
-                    "test_result": "MANUAL_REQUIRED",
-                    "expected": expected,
-                    "note": f"Script {script} not present — test requires physical hardware.",
-                })
+                logger.info(
+                    "[SEC-OTA] %s: Script not found — recording as MANUAL_REQUIRED",
+                    test_id,
+                )
+                result.findings.append(
+                    {
+                        "type": "test",
+                        "test_id": test_id,
+                        "name": test_cfg.get("name", ""),
+                        "test_result": "MANUAL_REQUIRED",
+                        "expected": expected,
+                        "note": f"Script {script} not present — test requires physical hardware.",
+                    }
+                )
                 continue
 
             rc, stdout, stderr = _run(["bash", script], timeout=120)
@@ -750,15 +796,17 @@ class OtaIntegrityVerifier:
             if not test_pass:
                 result.critical_count += 1
 
-            result.findings.append({
-                "type": "test",
-                "test_id": test_id,
-                "name": test_cfg.get("name", ""),
-                "test_result": test_result_str,
-                "expected": expected,
-                "returncode": rc,
-                "stdout_excerpt": stdout[:300],
-            })
+            result.findings.append(
+                {
+                    "type": "test",
+                    "test_id": test_id,
+                    "name": test_cfg.get("name", ""),
+                    "test_result": test_result_str,
+                    "expected": expected,
+                    "returncode": rc,
+                    "stdout_excerpt": stdout[:300],
+                }
+            )
             logger.info("[SEC-OTA] %s: %s", test_id, test_result_str)
 
             evidence_file = test_cfg.get("evidence_file", "")
@@ -776,7 +824,9 @@ class ReportGenerator:
         self.cfg = config
         self.output_dir = output_dir
 
-    def generate(self, sections: list[SectionResult], operator: str) -> ValidationReport:
+    def generate(
+        self, sections: list[SectionResult], operator: str
+    ) -> ValidationReport:
         meta = self.cfg["metadata"]
         ac = meta["acceptance_criteria"]
 
@@ -788,7 +838,9 @@ class ReportGenerator:
         # Evaluate acceptance criteria
         ac_summary = {
             "no_high_critical_bandit": self._check_sast_ac(sections),
-            "no_cve_above_threshold": self._check_dep_ac(sections, ac["max_cvss_allowed"]),
+            "no_cve_above_threshold": self._check_dep_ac(
+                sections, ac["max_cvss_allowed"]
+            ),
             "ota_tampered_rejected": self._check_ota_ac(sections),
             "report_generated": True,
         }
@@ -897,7 +949,9 @@ def main() -> int:
         return 1
 
     config = _load_config(args.config)
-    evidence_dir = config["metadata"].get("evidence_archive", f"{args.output}/evidence/")
+    evidence_dir = config["metadata"].get(
+        "evidence_archive", f"{args.output}/evidence/"
+    )
     _ensure_dir(evidence_dir)
 
     logger.info("=" * 70)

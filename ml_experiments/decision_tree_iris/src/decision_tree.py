@@ -11,7 +11,6 @@ Design choices:
 
 from __future__ import annotations
 
-import copy
 import numpy as np
 from collections import Counter
 from typing import Optional
@@ -21,16 +20,19 @@ from typing import Optional
 # Node
 # ---------------------------------------------------------------------------
 
+
 class Node:
     """A single node in the decision tree (internal or leaf)."""
 
     __slots__ = (
-        "feature_index", "threshold",
-        "left", "right",
-        "value",           # class label — only set for leaf nodes
+        "feature_index",
+        "threshold",
+        "left",
+        "right",
+        "value",  # class label — only set for leaf nodes
         "majority_class",  # majority class of training samples at this node (all nodes)
-        "samples",         # number of training samples reaching this node
-        "impurity",        # entropy at this node
+        "samples",  # number of training samples reaching this node
+        "impurity",  # entropy at this node
     )
 
     def __init__(self) -> None:
@@ -59,6 +61,7 @@ class Node:
 # ---------------------------------------------------------------------------
 # Impurity / Information Gain
 # ---------------------------------------------------------------------------
+
 
 def entropy(y: np.ndarray) -> float:
     """Shannon entropy of label array y (in bits)."""
@@ -89,6 +92,7 @@ def information_gain(
 # ---------------------------------------------------------------------------
 # Decision Tree
 # ---------------------------------------------------------------------------
+
 
 class DecisionTreeClassifier:
     """
@@ -151,7 +155,10 @@ class DecisionTreeClassifier:
         right_mask = ~left_mask
 
         # Enforce min_samples_leaf
-        if left_mask.sum() < self.min_samples_leaf or right_mask.sum() < self.min_samples_leaf:
+        if (
+            left_mask.sum() < self.min_samples_leaf
+            or right_mask.sum() < self.min_samples_leaf
+        ):
             node.value = node.majority_class
             return node
 
@@ -161,9 +168,7 @@ class DecisionTreeClassifier:
         node.right = self._build_tree(X[right_mask], y[right_mask], depth + 1)
         return node
 
-    def _best_split(
-        self, X: np.ndarray, y: np.ndarray
-    ) -> tuple[int, float, float]:
+    def _best_split(self, X: np.ndarray, y: np.ndarray) -> tuple[int, float, float]:
         """Exhaustive search over all features and midpoint thresholds."""
         best_gain = -np.inf
         best_feat = 0
@@ -244,6 +249,7 @@ class DecisionTreeClassifier:
 # Reduced Error Pruning (REP)
 # ---------------------------------------------------------------------------
 
+
 class ReducedErrorPruner:
     """
     Post-pruning via Reduced Error Pruning (Quinlan, 1987).
@@ -311,9 +317,7 @@ class ReducedErrorPruner:
 
         return pruned
 
-    def _try_prune(
-        self, node: Node, X_val: np.ndarray, y_val: np.ndarray
-    ) -> bool:
+    def _try_prune(self, node: Node, X_val: np.ndarray, y_val: np.ndarray) -> bool:
         """
         Tentatively convert node to a leaf. Keep if val accuracy >= baseline.
         """

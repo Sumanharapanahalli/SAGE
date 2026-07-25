@@ -12,7 +12,7 @@ from __future__ import annotations
 import logging
 import threading
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
 import uvicorn
@@ -25,6 +25,7 @@ log = logging.getLogger(__name__)
 @dataclass
 class DispatchCall:
     """Records a single PSAPoP dispatch invocation."""
+
     received_at: float
     payload: Dict[str, Any]
     response_code: int
@@ -70,13 +71,18 @@ class PSAPoPMock:
                 mock._calls.append(call)
             log.info(
                 "PSAPoPMock: dispatch received — device=%s lat=%s lon=%s",
-                body.get("device_id"), body.get("latitude"), body.get("longitude"),
+                body.get("device_id"),
+                body.get("latitude"),
+                body.get("longitude"),
             )
-            return JSONResponse(status_code=202, content={
-                "incident_id": f"INC-{len(mock._calls):06d}",
-                "status": "accepted",
-                "eta_minutes": 8,
-            })
+            return JSONResponse(
+                status_code=202,
+                content={
+                    "incident_id": f"INC-{len(mock._calls):06d}",
+                    "status": "accepted",
+                    "eta_minutes": 8,
+                },
+            )
 
         @app.get("/health")
         async def health() -> JSONResponse:
@@ -99,6 +105,7 @@ class PSAPoPMock:
 
         def _run() -> None:
             import asyncio
+
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
 
@@ -108,8 +115,7 @@ class PSAPoPMock:
 
             loop.run_until_complete(_serve())
 
-        self._thread = threading.Thread(target=_run, daemon=True,
-                                        name="psapop-mock")
+        self._thread = threading.Thread(target=_run, daemon=True, name="psapop-mock")
         self._thread.start()
         if not self._ready.wait(timeout=startup_timeout):
             raise RuntimeError("PSAPoPMock did not start within timeout")
@@ -171,9 +177,7 @@ class PSAPoPMock:
             AssertionError: if call count != 1 or call fell outside window.
         """
         count = self.call_count()
-        assert count == 1, (
-            f"PSAPoP dispatch called {count} times; expected exactly 1"
-        )
+        assert count == 1, f"PSAPoP dispatch called {count} times; expected exactly 1"
         call = self.calls()[0]
         elapsed_s = call.received_at - t0_monotonic
         assert window_start_s <= elapsed_s <= window_end_s, (
@@ -184,6 +188,4 @@ class PSAPoPMock:
 
     def assert_not_called(self) -> None:
         count = self.call_count()
-        assert count == 0, (
-            f"PSAPoP dispatch was unexpectedly called {count} time(s)"
-        )
+        assert count == 0, f"PSAPoP dispatch was unexpectedly called {count} time(s)"

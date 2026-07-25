@@ -23,6 +23,7 @@ things it does not do:
   X8  QueueTile's "Done" counter is structurally always 0: the handler keys
       on "done"; TaskStatus.COMPLETED is "completed".
 """
+
 from __future__ import annotations
 
 import os
@@ -37,6 +38,7 @@ from handlers import queue as q
 
 
 # ---------- X1: the audit read path must equal the write path ----------
+
 
 def test_bootstrap_env_exports_sage_project(tmp_path, monkeypatch):
     """The sidecar must export SAGE_PROJECT before any src/ import.
@@ -91,6 +93,7 @@ def test_bootstrap_env_is_a_noop_without_a_solution(tmp_path, monkeypatch):
 
 # ---------- operator identity (the honest replacement for OIDC) ----------
 
+
 @pytest.fixture
 def operator_file(tmp_path, monkeypatch):
     sage_dir = tmp_path / ".sage"
@@ -125,6 +128,7 @@ def test_operator_set_rejects_a_blank_name(operator_file):
 
 # ---------- X2 + X3: approvals must write a signed audit record ----------
 
+
 class _FakeLogger:
     """Captures log_event kwargs so the test asserts on the signer fields."""
 
@@ -155,8 +159,13 @@ def logger(monkeypatch):
 @pytest.fixture
 def identity(monkeypatch):
     monkeypatch.setattr(
-        ap, "_operator", lambda: {"name": "Dana Scully", "email": "dana@acme.com",
-                                  "provider": "desktop-operator"}
+        ap,
+        "_operator",
+        lambda: {
+            "name": "Dana Scully",
+            "email": "dana@acme.com",
+            "provider": "desktop-operator",
+        },
     )
 
 
@@ -233,6 +242,7 @@ def test_audit_failure_does_not_lose_the_decision(store, monkeypatch, identity):
 
 # ---------- X7: agents.performance must be reachable ----------
 
+
 def test_agents_performance_is_registered_on_the_dispatcher():
     """It is called by the Rust layer and the UI, but was never registered —
     so every click on an agent card throws -32601 (method not found)."""
@@ -247,6 +257,7 @@ def test_operator_rpcs_are_registered():
 
 
 # ---------- X8: the queue "Done" counter ----------
+
 
 def test_empty_status_uses_the_real_task_status_keys():
     """TaskStatus.COMPLETED == "completed". The handler keyed on "done", so

@@ -42,13 +42,15 @@ logger = logging.getLogger("EvalRunner")
 
 _DB_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-    "data", "eval_results.db",
+    "data",
+    "eval_results.db",
 )
 
 
 def _get_evals_dir() -> str:
     try:
         from src.core.project_loader import project_config, _SOLUTIONS_DIR
+
         return os.path.join(_SOLUTIONS_DIR, project_config.project_name, "evals")
     except Exception:
         return ""
@@ -57,6 +59,7 @@ def _get_evals_dir() -> str:
 # ---------------------------------------------------------------------------
 # Scoring
 # ---------------------------------------------------------------------------
+
 
 def _score_case(response: str, case: dict) -> dict:
     """
@@ -81,17 +84,21 @@ def _score_case(response: str, case: dict) -> dict:
 
     max_len = case.get("max_response_length")
     if max_len:
-        len_score = 30 if len(response) <= max_len else max(0, 30 - (len(response) - max_len) // 100)
+        len_score = (
+            30
+            if len(response) <= max_len
+            else max(0, 30 - (len(response) - max_len) // 100)
+        )
         score += len_score
         details["length_score"] = len_score
         details["response_length"] = len(response)
     else:
         score += 30  # no length constraint — full points
 
-    passed = score >= 60   # threshold: 60/100
+    passed = score >= 60  # threshold: 60/100
     return {
-        "score":   score,
-        "passed":  passed,
+        "score": score,
+        "passed": passed,
         "details": details,
     }
 
@@ -99,6 +106,7 @@ def _score_case(response: str, case: dict) -> dict:
 # ---------------------------------------------------------------------------
 # EvalRunner
 # ---------------------------------------------------------------------------
+
 
 class EvalRunner:
     """
@@ -182,8 +190,8 @@ class EvalRunner:
             case_results = []
 
             for case in cases:
-                case_id    = case.get("id", str(uuid.uuid4())[:8])
-                role       = case.get("role", "analyst")
+                case_id = case.get("id", str(uuid.uuid4())[:8])
+                role = case.get("role", "analyst")
                 input_text = case.get("input", "")
 
                 if not input_text:
@@ -197,58 +205,70 @@ class EvalRunner:
                         trace_name=f"eval_{suite_name}_{case_id}",
                     )
                 except Exception as exc:
-                    case_results.append({
-                        "case_id": case_id,
-                        "error":   str(exc),
-                        "score":   0,
-                        "passed":  False,
-                    })
+                    case_results.append(
+                        {
+                            "case_id": case_id,
+                            "error": str(exc),
+                            "score": 0,
+                            "passed": False,
+                        }
+                    )
                     continue
 
                 scoring = _score_case(response, case)
-                case_results.append({
-                    "case_id":   case_id,
-                    "role":      role,
-                    "input":     input_text[:200],
-                    "response":  response[:500],
-                    "score":     scoring["score"],
-                    "passed":    scoring["passed"],
-                    "details":   scoring["details"],
-                })
+                case_results.append(
+                    {
+                        "case_id": case_id,
+                        "role": role,
+                        "input": input_text[:200],
+                        "response": response[:500],
+                        "score": scoring["score"],
+                        "passed": scoring["passed"],
+                        "details": scoring["details"],
+                    }
+                )
 
-            all_results.append({
-                "suite":        suite_name,
-                "name":         suite_data.get("name", suite_name),
-                "total_cases":  len(case_results),
-                "passed_cases": sum(1 for c in case_results if c.get("passed")),
-                "mean_score":   (
-                    sum(c.get("score", 0) for c in case_results) / len(case_results)
-                    if case_results else 0.0
-                ),
-                "cases":        case_results,
-            })
+            all_results.append(
+                {
+                    "suite": suite_name,
+                    "name": suite_data.get("name", suite_name),
+                    "total_cases": len(case_results),
+                    "passed_cases": sum(1 for c in case_results if c.get("passed")),
+                    "mean_score": (
+                        sum(c.get("score", 0) for c in case_results) / len(case_results)
+                        if case_results
+                        else 0.0
+                    ),
+                    "cases": case_results,
+                }
+            )
 
-        run_id    = str(uuid.uuid4())
-        total     = sum(r.get("total_cases", 0) for r in all_results)
-        passed    = sum(r.get("passed_cases", 0) for r in all_results)
-        mean_score = sum(r.get("mean_score", 0) for r in all_results) / max(len(all_results), 1)
+        run_id = str(uuid.uuid4())
+        total = sum(r.get("total_cases", 0) for r in all_results)
+        passed = sum(r.get("passed_cases", 0) for r in all_results)
+        mean_score = sum(r.get("mean_score", 0) for r in all_results) / max(
+            len(all_results), 1
+        )
 
-        self._persist_run(run_id, suite or "all", total, passed, mean_score, all_results)
+        self._persist_run(
+            run_id, suite or "all", total, passed, mean_score, all_results
+        )
 
         return {
-            "run_id":       run_id,
-            "suite":        suite or "all",
-            "total_cases":  total,
+            "run_id": run_id,
+            "suite": suite or "all",
+            "total_cases": total,
             "passed_cases": passed,
             "failed_cases": total - passed,
-            "mean_score":   round(mean_score, 1),
-            "results":      all_results,
+            "mean_score": round(mean_score, 1),
+            "results": all_results,
         }
 
     def _get_role_prompt(self, role: str) -> str:
         """Get system prompt for a role from the active solution's prompts.yaml."""
         try:
             from src.core.project_loader import project_config
+
             prompts = project_config.get_prompts()
             return prompts.get(role, {}).get(
                 "system_prompt",
@@ -258,14 +278,20 @@ class EvalRunner:
             return f"You are an expert {role}. Complete the task concisely."
 
     def _persist_run(
-        self, run_id: str, suite: str, total: int, passed: int,
-        mean_score: float, results: list,
+        self,
+        run_id: str,
+        suite: str,
+        total: int,
+        passed: int,
+        mean_score: float,
+        results: list,
     ) -> None:
         """Write eval run summary to SQLite."""
         try:
             solution = ""
             try:
                 from src.core.project_loader import project_config
+
                 solution = project_config.project_name
             except Exception:
                 pass
@@ -277,8 +303,17 @@ class EvalRunner:
                    (run_id, suite, solution, started_at, finished_at,
                     total_cases, passed_cases, mean_score, results_json)
                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                (run_id, suite, solution, now, now, total, passed, mean_score,
-                 json.dumps(results)),
+                (
+                    run_id,
+                    suite,
+                    solution,
+                    now,
+                    now,
+                    total,
+                    passed,
+                    mean_score,
+                    json.dumps(results),
+                ),
             )
             conn.commit()
             conn.close()
@@ -314,13 +349,13 @@ class EvalRunner:
             conn.close()
             return [
                 {
-                    "run_id":       r["run_id"],
-                    "suite":        r["suite"],
-                    "solution":     r["solution"],
-                    "started_at":   r["started_at"],
-                    "total_cases":  r["total_cases"],
+                    "run_id": r["run_id"],
+                    "suite": r["suite"],
+                    "solution": r["solution"],
+                    "started_at": r["started_at"],
+                    "total_cases": r["total_cases"],
                     "passed_cases": r["passed_cases"],
-                    "mean_score":   r["mean_score"],
+                    "mean_score": r["mean_score"],
                 }
                 for r in rows
             ]

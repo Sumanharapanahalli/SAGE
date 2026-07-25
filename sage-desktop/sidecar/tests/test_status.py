@@ -3,6 +3,7 @@
 Returns a combined health/LLM/project snapshot plus a pending-approval
 count so the UI can render a single-pane overview.
 """
+
 from __future__ import annotations
 
 from types import SimpleNamespace
@@ -36,6 +37,7 @@ def wired(tmp_path, monkeypatch):
 
 
 # ---------- get ----------
+
 
 def test_status_reports_ok_health(wired):
     out = status.get_status({})

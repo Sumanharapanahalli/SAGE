@@ -31,10 +31,9 @@ import logging
 import sys
 import time
 from pathlib import Path
-from statistics import mean, median, quantiles
+from statistics import mean
 from typing import Optional
 
-import numpy as np
 import torch
 import yaml
 from transformers import AutoModelForTokenClassification, AutoTokenizer
@@ -48,6 +47,7 @@ log = logging.getLogger("infer_ner")
 
 
 # ── NERPredictor ──────────────────────────────────────────────────────────────
+
 
 class NERPredictor:
     """
@@ -115,10 +115,10 @@ class NERPredictor:
         ).to(self._device)
 
         with torch.no_grad():
-            logits = self._model(**enc).logits      # (1, seq_len, num_labels)
+            logits = self._model(**enc).logits  # (1, seq_len, num_labels)
 
         pred_ids = logits.argmax(-1)[0].cpu().numpy()
-        word_ids  = enc.word_ids()
+        word_ids = enc.word_ids()
 
         # Collapse subwords → word-level predictions (first subword wins)
         word_labels: dict[int, str] = {}
@@ -135,21 +135,21 @@ class NERPredictor:
         for word_idx, word in enumerate(words):
             label = word_labels.get(word_idx, "O")
             word_start = text.index(word, char_offset)
-            word_end   = word_start + len(word)
+            word_end = word_start + len(word)
             char_offset = word_end
 
             if label.startswith("B-"):
                 if current_entity:
                     entities.append(current_entity)
                 current_entity = {
-                    "text":  word,
+                    "text": word,
                     "label": label[2:],
                     "start": word_start,
-                    "end":   word_end,
+                    "end": word_end,
                 }
             elif label.startswith("I-") and current_entity:
                 current_entity["text"] += " " + word
-                current_entity["end"]   = word_end
+                current_entity["end"] = word_end
             else:
                 if current_entity:
                     entities.append(current_entity)
@@ -199,8 +199,7 @@ def _run_latency_benchmark(
         for s in sentences:
             predictor.predict(s)
 
-    log.info("Benchmarking (%d runs × %d sentences) …",
-             benchmark_runs, len(sentences))
+    log.info("Benchmarking (%d runs × %d sentences) …", benchmark_runs, len(sentences))
     latencies_ms: list[float] = []
     for _ in range(benchmark_runs):
         for s in sentences:
@@ -210,55 +209,68 @@ def _run_latency_benchmark(
 
     latencies_ms.sort()
     n = len(latencies_ms)
-    p50  = latencies_ms[int(n * 0.50)]
-    p95  = latencies_ms[int(n * 0.95)]
-    p99  = latencies_ms[int(n * 0.99)]
+    p50 = latencies_ms[int(n * 0.50)]
+    p95 = latencies_ms[int(n * 0.95)]
+    p99 = latencies_ms[int(n * 0.99)]
     mean_ms = mean(latencies_ms)
 
     sla_pass = p99 <= sla_ms
     status = "PASS" if sla_pass else "FAIL"
     log.info(
-        "Latency — mean=%.2fms  p50=%.2fms  p95=%.2fms  p99=%.2fms  "
-        "SLA(%.0fms)=%s",
-        mean_ms, p50, p95, p99, sla_ms, status,
+        "Latency — mean=%.2fms  p50=%.2fms  p95=%.2fms  p99=%.2fms  SLA(%.0fms)=%s",
+        mean_ms,
+        p50,
+        p95,
+        p99,
+        sla_ms,
+        status,
     )
     if not sla_pass:
         log.error(
             "SLA BREACH: p99 latency %.2fms exceeds SLA threshold %.0fms.",
-            p99, sla_ms,
+            p99,
+            sla_ms,
         )
 
     return {
         "n_measurements": n,
-        "n_sentences":    len(sentences),
-        "mean_ms":        round(mean_ms, 3),
-        "p50_ms":         round(p50, 3),
-        "p95_ms":         round(p95, 3),
-        "p99_ms":         round(p99, 3),
-        "sla_ms":         sla_ms,
-        "sla_pass":       sla_pass,
+        "n_sentences": len(sentences),
+        "mean_ms": round(mean_ms, 3),
+        "p50_ms": round(p50, 3),
+        "p95_ms": round(p95, 3),
+        "p99_ms": round(p99, 3),
+        "sla_ms": sla_ms,
+        "sla_pass": sla_pass,
     }
 
 
 # ── CLI ───────────────────────────────────────────────────────────────────────
+
 
 def _parse_args():
     p = argparse.ArgumentParser(
         description="NER Model Inference + Latency Benchmark",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    p.add_argument("--config", type=Path,
-                   default=Path(__file__).parent / "config.yaml")
-    p.add_argument("--model",  type=str, default=None,
-                   help="Override model directory path")
-    p.add_argument("--text",   type=str, default=None,
-                   help="Text to run NER on (single inference)")
-    p.add_argument("--benchmark", action="store_true",
-                   help="Run latency benchmark and check SLA")
-    p.add_argument("--sentences-file", type=Path, default=None,
-                   help="File with one sentence per line (for benchmark)")
-    p.add_argument("--device", default="auto",
-                   help="Inference device: auto | cpu | cuda")
+    p.add_argument("--config", type=Path, default=Path(__file__).parent / "config.yaml")
+    p.add_argument(
+        "--model", type=str, default=None, help="Override model directory path"
+    )
+    p.add_argument(
+        "--text", type=str, default=None, help="Text to run NER on (single inference)"
+    )
+    p.add_argument(
+        "--benchmark", action="store_true", help="Run latency benchmark and check SLA"
+    )
+    p.add_argument(
+        "--sentences-file",
+        type=Path,
+        default=None,
+        help="File with one sentence per line (for benchmark)",
+    )
+    p.add_argument(
+        "--device", default="auto", help="Inference device: auto | cpu | cuda"
+    )
     return p.parse_args()
 
 
@@ -268,7 +280,7 @@ def main():
     with open(args.config, encoding="utf-8") as f:
         cfg = yaml.safe_load(f)
 
-    base_dir  = Path(__file__).parent
+    base_dir = Path(__file__).parent
     model_dir = args.model or str((base_dir / cfg["output"]["model_dir"]).resolve())
 
     predictor = NERPredictor(
@@ -283,14 +295,19 @@ def main():
         print(f"\nInput: {args.text}")
         print("Entities:")
         for ent in entities:
-            print(f"  [{ent['label']}]  \"{ent['text']}\"  "
-                  f"(chars {ent['start']}–{ent['end']})")
+            print(
+                f'  [{ent["label"]}]  "{ent["text"]}"  '
+                f"(chars {ent['start']}–{ent['end']})"
+            )
 
     # ── Benchmark ─────────────────────────────────────────────────────────────
     if args.benchmark:
         if args.sentences_file:
-            sents = [l.strip() for l in args.sentences_file.read_text().splitlines()
-                     if l.strip()]
+            sents = [
+                l.strip()
+                for l in args.sentences_file.read_text().splitlines()  # noqa: E741
+                if l.strip()
+            ]
         else:
             sents = _DEFAULT_BENCH_SENTENCES
 
@@ -305,7 +322,7 @@ def main():
         # Write benchmark result to reports
         reports_dir = (base_dir / cfg["output"]["reports_dir"]).resolve()
         reports_dir.mkdir(parents=True, exist_ok=True)
-        bench_path  = reports_dir / "latency_benchmark.json"
+        bench_path = reports_dir / "latency_benchmark.json"
         bench_path.write_text(json.dumps(bench_result, indent=2), encoding="utf-8")
         log.info("Latency report → %s", bench_path)
 
@@ -314,7 +331,7 @@ def main():
             print(f"  {k:<22} {v}")
 
         if not bench_result["sla_pass"]:
-            sys.exit(1)    # non-zero exit signals CI failure
+            sys.exit(1)  # non-zero exit signals CI failure
 
     if not args.text and not args.benchmark:
         print("Specify --text 'some text' or --benchmark. Use --help for details.")

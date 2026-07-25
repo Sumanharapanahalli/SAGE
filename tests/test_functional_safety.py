@@ -21,6 +21,7 @@ class TestFMEA:
     @pytest.fixture
     def engine(self):
         from src.core.functional_safety import FunctionalSafetyEngine
+
         return FunctionalSafetyEngine()
 
     def test_rpn_calculation(self, engine):
@@ -66,12 +67,30 @@ class TestFMEA:
     def test_fmea_table(self, engine):
         """Generate complete FMEA table from multiple entries."""
         entries = [
-            {"component": "Pulse Gen", "failure_mode": "No output", "effect": "Asystole",
-             "severity": 10, "occurrence": 3, "detection": 4},
-            {"component": "Lead", "failure_mode": "Fracture", "effect": "Intermittent pacing",
-             "severity": 8, "occurrence": 4, "detection": 5},
-            {"component": "Battery", "failure_mode": "Early depletion", "effect": "Shutdown",
-             "severity": 10, "occurrence": 2, "detection": 3},
+            {
+                "component": "Pulse Gen",
+                "failure_mode": "No output",
+                "effect": "Asystole",
+                "severity": 10,
+                "occurrence": 3,
+                "detection": 4,
+            },
+            {
+                "component": "Lead",
+                "failure_mode": "Fracture",
+                "effect": "Intermittent pacing",
+                "severity": 8,
+                "occurrence": 4,
+                "detection": 5,
+            },
+            {
+                "component": "Battery",
+                "failure_mode": "Early depletion",
+                "effect": "Shutdown",
+                "severity": 10,
+                "occurrence": 2,
+                "detection": 3,
+            },
         ]
         table = engine.generate_fmea_table(entries)
         assert len(table["entries"]) == 3
@@ -84,8 +103,12 @@ class TestFMEA:
         """Severity, occurrence, detection must be 1-10."""
         with pytest.raises(ValueError):
             engine.calculate_fmea_entry(
-                component="X", failure_mode="Y", effect="Z",
-                severity=11, occurrence=3, detection=4,
+                component="X",
+                failure_mode="Y",
+                effect="Z",
+                severity=11,
+                occurrence=3,
+                detection=4,
             )
 
 
@@ -95,6 +118,7 @@ class TestFTA:
     @pytest.fixture
     def engine(self):
         from src.core.functional_safety import FunctionalSafetyEngine
+
         return FunctionalSafetyEngine()
 
     def test_or_gate_probability(self, engine):
@@ -176,40 +200,35 @@ class TestSILASIL:
     @pytest.fixture
     def engine(self):
         from src.core.functional_safety import FunctionalSafetyEngine
+
         return FunctionalSafetyEngine()
 
     def test_asil_d_classification(self, engine):
         """Highest severity + exposure + low controllability = ASIL D."""
         result = engine.classify_asil(
-            severity="S3",       # Life-threatening
-            exposure="E4",       # High probability
-            controllability="C3" # Difficult to control
+            severity="S3",  # Life-threatening
+            exposure="E4",  # High probability
+            controllability="C3",  # Difficult to control
         )
         assert result["asil"] == "D"
 
     def test_asil_qm_classification(self, engine):
         """Low severity = QM (no safety requirement)."""
         result = engine.classify_asil(
-            severity="S0",
-            exposure="E4",
-            controllability="C3"
+            severity="S0", exposure="E4", controllability="C3"
         )
         assert result["asil"] == "QM"
 
     def test_asil_b_classification(self, engine):
         """Medium parameters = ASIL B."""
         result = engine.classify_asil(
-            severity="S2",
-            exposure="E3",
-            controllability="C2"
+            severity="S2", exposure="E3", controllability="C2"
         )
         assert result["asil"] in ("A", "B", "C")  # Mid-range
 
     def test_sil_classification(self, engine):
         """SIL from probability of dangerous failure per hour."""
-        result = engine.classify_sil(
-            probability_dangerous_failure_per_hour=1e-7
-        )
+        result = engine.classify_sil(probability_dangerous_failure_per_hour=1e-7)
         assert result["sil"] == 3  # 1e-8 to 1e-7 = SIL 3
 
     def test_sil_4_highest(self, engine):
@@ -233,6 +252,7 @@ class TestSafetyRequirements:
     @pytest.fixture
     def engine(self):
         from src.core.functional_safety import FunctionalSafetyEngine
+
         return FunctionalSafetyEngine()
 
     def test_generate_safety_requirements_from_hazard(self, engine):
@@ -259,6 +279,7 @@ class TestSafetyLifecycleE2E:
     @pytest.fixture
     def engine(self):
         from src.core.functional_safety import FunctionalSafetyEngine
+
         return FunctionalSafetyEngine()
 
     def test_pacemaker_safety_lifecycle(self, engine):
@@ -271,21 +292,37 @@ class TestSafetyLifecycleE2E:
                     "description": "Loss of pacing output",
                     "cause": "Pulse generator software fault",
                     "effect": "Patient asystole — death",
-                    "severity": "S3", "exposure": "E4", "controllability": "C3",
+                    "severity": "S3",
+                    "exposure": "E4",
+                    "controllability": "C3",
                 },
                 {
                     "id": "HAZ-002",
                     "description": "Overpacing",
                     "cause": "Rate control algorithm error",
                     "effect": "Ventricular fibrillation — death",
-                    "severity": "S3", "exposure": "E3", "controllability": "C3",
+                    "severity": "S3",
+                    "exposure": "E3",
+                    "controllability": "C3",
                 },
             ],
             fmea_entries=[
-                {"component": "Pulse Gen", "failure_mode": "No output", "effect": "Asystole",
-                 "severity": 10, "occurrence": 3, "detection": 4},
-                {"component": "Rate Control", "failure_mode": "Runaway pacing", "effect": "VFib",
-                 "severity": 10, "occurrence": 2, "detection": 5},
+                {
+                    "component": "Pulse Gen",
+                    "failure_mode": "No output",
+                    "effect": "Asystole",
+                    "severity": 10,
+                    "occurrence": 3,
+                    "detection": 4,
+                },
+                {
+                    "component": "Rate Control",
+                    "failure_mode": "Runaway pacing",
+                    "effect": "VFib",
+                    "severity": 10,
+                    "occurrence": 2,
+                    "detection": 5,
+                },
             ],
         )
 

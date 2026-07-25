@@ -25,7 +25,6 @@ Usage:
 from __future__ import annotations
 
 import logging
-import os
 import threading
 from contextlib import contextmanager
 from typing import Any, Dict, Optional
@@ -39,12 +38,12 @@ logger = logging.getLogger(__name__)
 TRACING_AVAILABLE = False
 
 try:
-    from opentelemetry import trace, context
+    from opentelemetry import trace, context  # noqa: F401
     from opentelemetry.sdk.trace import TracerProvider
     from opentelemetry.sdk.resources import Resource
-    from opentelemetry.trace import StatusCode, Status
-    from opentelemetry.context import Context
-    from opentelemetry.trace.propagation import get_current_span
+    from opentelemetry.trace import StatusCode, Status  # noqa: F401
+    from opentelemetry.context import Context  # noqa: F401
+    from opentelemetry.trace.propagation import get_current_span  # noqa: F401
     from opentelemetry.propagate import inject, extract
 
     TRACING_AVAILABLE = True
@@ -58,6 +57,7 @@ except ImportError:
 # ─────────────────────────────────────────────────────────────────────
 # No-op stubs (used when OTel SDK is absent)
 # ─────────────────────────────────────────────────────────────────────
+
 
 class _NoOpSpan:
     """Span stub that silently accepts all operations."""
@@ -97,6 +97,7 @@ class _NoOpTracer:
 
 class _NoOpStatusCode:
     """StatusCode stub for when OTel is not installed."""
+
     OK = "OK"
     ERROR = "ERROR"
     UNSET = "UNSET"
@@ -115,7 +116,7 @@ class _NoOpProvider:
 
 _init_lock = threading.Lock()
 _provider: Optional[Any] = None  # TracerProvider or _NoOpProvider
-_tracers: Dict[str, Any] = {}    # name → Tracer cache
+_tracers: Dict[str, Any] = {}  # name → Tracer cache
 
 
 # Re-export StatusCode — always available (real or stub)
@@ -128,6 +129,7 @@ else:
 # ─────────────────────────────────────────────────────────────────────
 # Public API
 # ─────────────────────────────────────────────────────────────────────
+
 
 def init_tracing(
     service_name: str = "sage-framework",
@@ -163,6 +165,7 @@ def init_tracing(
 
         if exporter is not None:
             from opentelemetry.sdk.trace.export import BatchSpanProcessor
+
             provider.add_span_processor(BatchSpanProcessor(exporter))
 
         trace.set_tracer_provider(provider)
@@ -195,6 +198,7 @@ def get_tracer(name: str) -> Any:
 # ─────────────────────────────────────────────────────────────────────
 # LLM Call Tracing Helper
 # ─────────────────────────────────────────────────────────────────────
+
 
 @contextmanager
 def trace_llm_call(
@@ -238,6 +242,7 @@ def trace_llm_call(
 # Context Propagation Helpers
 # ─────────────────────────────────────────────────────────────────────
 
+
 def inject_context(carrier: Dict[str, str]) -> None:
     """
     Inject the current trace context into a carrier dict.
@@ -264,6 +269,7 @@ def extract_context(carrier: Dict[str, str]) -> Any:
 # ─────────────────────────────────────────────────────────────────────
 # EventBus Integration
 # ─────────────────────────────────────────────────────────────────────
+
 
 def traced_publish(bus: Any, event_type: str, data: dict) -> int:
     """

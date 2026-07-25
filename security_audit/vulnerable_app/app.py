@@ -1,11 +1,10 @@
 """Intentionally vulnerable Flask web application for OWASP Top 10 audit.
 DO NOT deploy this in production — educational/training use only.
 """
+
 import sqlite3
-import os
 import subprocess
 import urllib.request
-from functools import wraps
 from flask import Flask, request, jsonify, session, render_template_string
 
 app = Flask(__name__)
@@ -36,16 +35,26 @@ def init_db():
     """)
     # Seed data
     try:
-        c.execute("INSERT INTO users (username, password, role, email) VALUES (?, ?, ?, ?)",
-                  ("admin", "admin123", "admin", "admin@example.com"))
-        c.execute("INSERT INTO users (username, password, role, email) VALUES (?, ?, ?, ?)",
-                  ("alice", "password1", "user", "alice@example.com"))
-        c.execute("INSERT INTO users (username, password, role, email) VALUES (?, ?, ?, ?)",
-                  ("bob", "secret99", "user", "bob@example.com"))
-        c.execute("INSERT INTO documents (owner_id, title, content, is_private) VALUES (?, ?, ?, ?)",
-                  (1, "Admin Secret", "Top secret admin content", 1))
-        c.execute("INSERT INTO documents (owner_id, title, content, is_private) VALUES (?, ?, ?, ?)",
-                  (2, "Alice's Note", "Alice private note", 1))
+        c.execute(
+            "INSERT INTO users (username, password, role, email) VALUES (?, ?, ?, ?)",
+            ("admin", "admin123", "admin", "admin@example.com"),
+        )
+        c.execute(
+            "INSERT INTO users (username, password, role, email) VALUES (?, ?, ?, ?)",
+            ("alice", "password1", "user", "alice@example.com"),
+        )
+        c.execute(
+            "INSERT INTO users (username, password, role, email) VALUES (?, ?, ?, ?)",
+            ("bob", "secret99", "user", "bob@example.com"),
+        )
+        c.execute(
+            "INSERT INTO documents (owner_id, title, content, is_private) VALUES (?, ?, ?, ?)",
+            (1, "Admin Secret", "Top secret admin content", 1),
+        )
+        c.execute(
+            "INSERT INTO documents (owner_id, title, content, is_private) VALUES (?, ?, ?, ?)",
+            (2, "Alice's Note", "Alice private note", 1),
+        )
     except sqlite3.IntegrityError:
         pass
     conn.commit()
@@ -102,7 +111,10 @@ def admin_panel():
         conn = sqlite3.connect(DB_PATH)
         c = conn.cursor()
         c.execute("SELECT id, username, email, role FROM users")
-        users = [{"id": r[0], "username": r[1], "email": r[2], "role": r[3]} for r in c.fetchall()]
+        users = [
+            {"id": r[0], "username": r[1], "email": r[2], "role": r[3]}
+            for r in c.fetchall()
+        ]
         conn.close()
         return jsonify({"users": users})
     return jsonify({"error": "forbidden"}), 403
@@ -117,11 +129,15 @@ def get_document(doc_id):
         return jsonify({"error": "login required"}), 401
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    c.execute("SELECT id, owner_id, title, content FROM documents WHERE id = ?", (doc_id,))
+    c.execute(
+        "SELECT id, owner_id, title, content FROM documents WHERE id = ?", (doc_id,)
+    )
     doc = c.fetchone()
     conn.close()
     if doc:
-        return jsonify({"id": doc[0], "owner_id": doc[1], "title": doc[2], "content": doc[3]})
+        return jsonify(
+            {"id": doc[0], "owner_id": doc[1], "title": doc[2], "content": doc[3]}
+        )
     return jsonify({"error": "not found"}), 404
 
 
@@ -148,8 +164,7 @@ def ping_host():
     host = request.args.get("host", "8.8.8.8")
     # DANGEROUS: shell=True with unsanitized input
     result = subprocess.run(
-        f"ping -c 1 {host}",
-        shell=True, capture_output=True, text=True, timeout=10
+        f"ping -c 1 {host}", shell=True, capture_output=True, text=True, timeout=10
     )
     return jsonify({"stdout": result.stdout, "stderr": result.stderr})
 

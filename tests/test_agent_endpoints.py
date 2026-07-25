@@ -6,12 +6,14 @@ from unittest.mock import patch
 
 def test_analyze_jd_endpoint_exists():
     from src.interface.api import app
+
     routes = route_paths(app)
     assert "/agents/analyze-jd" in routes
 
 
 def test_analyze_jd_returns_role_config():
     from src.interface.api import app
+
     client = TestClient(app)
     mock_config = {
         "role_key": "security_reviewer",
@@ -20,13 +22,19 @@ def test_analyze_jd_returns_role_config():
         "system_prompt": "You are a security reviewer...",
         "task_types": [{"name": "REVIEW_CODE_SECURITY", "description": "Review diffs"}],
         "output_schema": {"severity": "RED|AMBER|GREEN"},
-        "eval_case": {"input": "SELECT * FROM users WHERE id='${id}'", "expected_keywords": ["injection"]},
+        "eval_case": {
+            "input": "SELECT * FROM users WHERE id='${id}'",
+            "expected_keywords": ["injection"],
+        },
     }
     with patch("src.core.agent_factory.jd_to_role_config", return_value=mock_config):
-        resp = client.post("/agents/analyze-jd", json={
-            "jd_text": "Senior Security Engineer...",
-            "solution_context": "Node.js API",
-        })
+        resp = client.post(
+            "/agents/analyze-jd",
+            json={
+                "jd_text": "Senior Security Engineer...",
+                "solution_context": "Node.js API",
+            },
+        )
     assert resp.status_code == 200
     data = resp.json()
     assert data["role_key"] == "security_reviewer"
@@ -35,19 +43,24 @@ def test_analyze_jd_returns_role_config():
 
 def test_analyze_jd_returns_422_on_empty_jd():
     from src.interface.api import app
+
     client = TestClient(app)
-    resp = client.post("/agents/analyze-jd", json={"jd_text": "   ", "solution_context": ""})
+    resp = client.post(
+        "/agents/analyze-jd", json={"jd_text": "   ", "solution_context": ""}
+    )
     assert resp.status_code == 422
 
 
 def test_performance_endpoint_exists():
     from src.interface.api import app
+
     routes = route_paths(app)
     assert any("/agents/{" in r for r in routes)
 
 
 def test_performance_returns_stats():
     from src.interface.api import app
+
     client = TestClient(app)
     resp = client.get("/agents/analyst/performance")
     assert resp.status_code == 200

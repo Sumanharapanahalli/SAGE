@@ -27,12 +27,11 @@ Data flow (no leakage):
 import argparse
 import json
 import logging
-import os
 import sys
 import time
 from datetime import datetime, UTC
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
 import numpy as np
 
@@ -43,8 +42,8 @@ _SRC = Path(__file__).parent
 if str(_SRC) not in sys.path:
     sys.path.insert(0, str(_SRC))
 
-from linear_regression import LinearRegressionGD, StandardScaler
-from utils import (
+from linear_regression import LinearRegressionGD, StandardScaler  # noqa: E402
+from utils import (  # noqa: E402
     check_leakage,
     class_balance_check,
     evaluate_regression,
@@ -72,6 +71,7 @@ logger = logging.getLogger("train")
 # Data loader
 # ---------------------------------------------------------------------------
 
+
 def load_boston_housing() -> Tuple[np.ndarray, np.ndarray, List[str]]:
     """
     Load Boston Housing dataset.
@@ -86,15 +86,21 @@ def load_boston_housing() -> Tuple[np.ndarray, np.ndarray, List[str]]:
     try:
         # sklearn < 1.2
         from sklearn.datasets import load_boston  # type: ignore
+
         data = load_boston()
         logger.info("Loaded via sklearn.datasets.load_boston")
-        return data.data.astype(np.float64), data.target.astype(np.float64), list(data.feature_names)
+        return (
+            data.data.astype(np.float64),
+            data.target.astype(np.float64),
+            list(data.feature_names),
+        )
     except (ImportError, AttributeError):
         pass
 
     try:
         # sklearn >= 1.2
         from sklearn.datasets import fetch_openml
+
         data = fetch_openml(name="boston", version=1, as_frame=False, parser="auto")
         X = np.array(data.data, dtype=np.float64)
         y = np.array(data.target, dtype=np.float64)
@@ -110,6 +116,7 @@ def load_boston_housing() -> Tuple[np.ndarray, np.ndarray, List[str]]:
 # ---------------------------------------------------------------------------
 # Experiment logger
 # ---------------------------------------------------------------------------
+
 
 def log_experiment(params: Dict, metrics: Dict, metadata: Dict) -> Path:
     """Append a structured experiment record to experiments/experiment_log.json."""
@@ -138,6 +145,7 @@ def log_experiment(params: Dict, metrics: Dict, metadata: Dict) -> Path:
 # ---------------------------------------------------------------------------
 # Main training pipeline
 # ---------------------------------------------------------------------------
+
 
 def run_experiment(
     learning_rate: float = 0.05,
@@ -183,8 +191,8 @@ def run_experiment(
     # 3. Feature Normalization — no leakage                                #
     # ------------------------------------------------------------------ #
     scaler = StandardScaler()
-    X_train_s = scaler.fit_transform(X_train)   # fit + transform TRAIN
-    X_test_s = scaler.transform(X_test)         # transform ONLY — no re-fit
+    X_train_s = scaler.fit_transform(X_train)  # fit + transform TRAIN
+    X_test_s = scaler.transform(X_test)  # transform ONLY — no re-fit
 
     leakage_report = check_leakage(scaler_fitted_on_test=False)
     logger.info(f"Leakage check: {leakage_report}")
@@ -254,8 +262,7 @@ def run_experiment(
     # 6. Feature Importance (|weight| on normalized scale)                #
     # ------------------------------------------------------------------ #
     importance = {
-        name: round(float(abs(w)), 6)
-        for name, w in zip(feature_names, model.weights_)
+        name: round(float(abs(w)), 6) for name, w in zip(feature_names, model.weights_)
     }
     top5 = sorted(importance.items(), key=lambda x: x[1], reverse=True)[:5]
     logger.info(f"Top 5 features by |weight|: {top5}")
@@ -264,7 +271,11 @@ def run_experiment(
     # 7. Log                                                               #
     # ------------------------------------------------------------------ #
     log_experiment(
-        params={**model.get_params(), "test_size": test_size, "normalize_y": normalize_y},
+        params={
+            **model.get_params(),
+            "test_size": test_size,
+            "normalize_y": normalize_y,
+        },
         metrics={
             "test": {k: round(v, 4) for k, v in test_metrics.items()},
             "train": {k: round(v, 4) for k, v in train_metrics.items()},
@@ -300,6 +311,7 @@ def run_experiment(
 # Hyperparameter search
 # ---------------------------------------------------------------------------
 
+
 def hyperparameter_search() -> None:
     """Grid search over common LR / schedule combinations."""
     grid = [
@@ -313,22 +325,26 @@ def hyperparameter_search() -> None:
 
     rows = []
     for cfg in grid:
-        logger.info(f"\n{'='*60}\nConfig: {cfg}")
+        logger.info(f"\n{'=' * 60}\nConfig: {cfg}")
         result = run_experiment(**cfg)
-        rows.append({
-            "config": cfg,
-            "test_rmse": round(result["metrics"]["rmse"], 4),
-            "test_r2": round(result["metrics"]["r2"], 4),
-            "test_mae": round(result["metrics"]["mae"], 4),
-            "converged": result["convergence"]["converged"],
-            "n_iter_actual": result["convergence"]["n_iter_actual"],
-        })
+        rows.append(
+            {
+                "config": cfg,
+                "test_rmse": round(result["metrics"]["rmse"], 4),
+                "test_r2": round(result["metrics"]["r2"], 4),
+                "test_mae": round(result["metrics"]["mae"], 4),
+                "converged": result["convergence"]["converged"],
+                "n_iter_actual": result["convergence"]["n_iter_actual"],
+            }
+        )
 
     rows.sort(key=lambda r: r["test_rmse"])
-    logger.info("\n" + "="*65)
+    logger.info("\n" + "=" * 65)
     logger.info("HP SEARCH RESULTS (sorted by test RMSE ↑):")
-    logger.info(f"{'LR':>6} | {'Schedule':12} | {'RMSE':>6} | {'R²':>5} | {'MAE':>5} | {'Iters':>6}")
-    logger.info("-"*65)
+    logger.info(
+        f"{'LR':>6} | {'Schedule':12} | {'RMSE':>6} | {'R²':>5} | {'MAE':>5} | {'Iters':>6}"
+    )
+    logger.info("-" * 65)
     for r in rows:
         logger.info(
             f"{r['config']['learning_rate']:>6.3f} | "
@@ -350,9 +366,15 @@ def hyperparameter_search() -> None:
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Train linear regression on Boston Housing")
-    parser.add_argument("--hp-search", action="store_true", help="Run hyperparameter grid search")
-    parser.add_argument("--lr", type=float, default=0.05, help="Learning rate (default 0.05)")
+    parser = argparse.ArgumentParser(
+        description="Train linear regression on Boston Housing"
+    )
+    parser.add_argument(
+        "--hp-search", action="store_true", help="Run hyperparameter grid search"
+    )
+    parser.add_argument(
+        "--lr", type=float, default=0.05, help="Learning rate (default 0.05)"
+    )
     parser.add_argument(
         "--schedule",
         choices=["constant", "step", "exponential", "cosine"],

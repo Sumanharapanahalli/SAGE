@@ -26,7 +26,6 @@ import json
 import logging
 import time
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Dict, List, Optional
 
 import torch
@@ -40,21 +39,21 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class PredictionResult:
-    dialog_act:    str
-    confidence:    float
-    latency_ms:    float
-    top_k:         List[Dict]   # [{"act": str, "prob": float}]
-    within_sla:    bool
-    sla_ms:        float
+    dialog_act: str
+    confidence: float
+    latency_ms: float
+    top_k: List[Dict]  # [{"act": str, "prob": float}]
+    within_sla: bool
+    sla_ms: float
 
     def to_dict(self) -> Dict:
         return {
-            "dialog_act":  self.dialog_act,
-            "confidence":  round(self.confidence, 4),
-            "latency_ms":  round(self.latency_ms, 2),
-            "top_k":       self.top_k,
-            "within_sla":  self.within_sla,
-            "sla_ms":      self.sla_ms,
+            "dialog_act": self.dialog_act,
+            "confidence": round(self.confidence, 4),
+            "latency_ms": round(self.latency_ms, 2),
+            "top_k": self.top_k,
+            "within_sla": self.within_sla,
+            "sla_ms": self.sla_ms,
         }
 
 
@@ -76,13 +75,13 @@ class DialogPredictor:
         top_k: int = 3,
     ) -> None:
         self.sla_ms = sla_ms
-        self.top_k  = top_k
+        self.top_k = top_k
         self.device = torch.device(
             device or ("cuda" if torch.cuda.is_available() else "cpu")
         )
 
         ckpt = torch.load(checkpoint_path, map_location=self.device)
-        cfg  = ckpt["config"]
+        cfg = ckpt["config"]
 
         # Reconstruct model from checkpoint config
         self.class_names: List[str] = ckpt["label_classes"]
@@ -98,17 +97,25 @@ class DialogPredictor:
         self.model.load_state_dict(ckpt["model_state_dict"])
         self.model.eval()
 
-        self.tokenizer = DistilBertTokenizerFast.from_pretrained(cfg["model"]["encoder"])
+        self.tokenizer = DistilBertTokenizerFast.from_pretrained(
+            cfg["model"]["encoder"]
+        )
         self.max_seq_len: int = cfg["model"]["max_seq_len"]
 
         logger.info(
             "DialogPredictor ready — device=%s | classes=%d | SLA=%.0f ms",
-            self.device, n_classes, sla_ms,
+            self.device,
+            n_classes,
+            sla_ms,
         )
 
     def _encode(self, history: str, utterance: str) -> Dict[str, torch.Tensor]:
-        text = f"{history.strip()} [SEP] {utterance.strip()}" if history.strip() else utterance.strip()
-        enc  = self.tokenizer(
+        text = (
+            f"{history.strip()} [SEP] {utterance.strip()}"
+            if history.strip()
+            else utterance.strip()
+        )
+        enc = self.tokenizer(
             text,
             max_length=self.max_seq_len,
             padding="max_length",
@@ -116,7 +123,7 @@ class DialogPredictor:
             return_tensors="pt",
         )
         return {
-            "input_ids":      enc["input_ids"].to(self.device),
+            "input_ids": enc["input_ids"].to(self.device),
             "attention_mask": enc["attention_mask"].to(self.device),
         }
 
@@ -188,7 +195,7 @@ class DialogPredictor:
                 truncation=True,
                 return_tensors="pt",
             )
-            input_ids      = enc["input_ids"].to(self.device)
+            input_ids = enc["input_ids"].to(self.device)
             attention_mask = enc["attention_mask"].to(self.device)
 
             if self.device.type == "cuda":
@@ -201,37 +208,48 @@ class DialogPredictor:
             if self.device.type == "cuda":
                 torch.cuda.synchronize()
             batch_latency_ms = (time.perf_counter() - t0) * 1000.0
-            per_sample_ms    = batch_latency_ms / len(batch)
+            per_sample_ms = batch_latency_ms / len(batch)
 
             probs = F.softmax(logits, dim=-1).cpu()
             for j in range(probs.shape[0]):
-                top_k_vals, top_k_idxs = probs[j].topk(min(self.top_k, len(self.class_names)))
+                top_k_vals, top_k_idxs = probs[j].topk(
+                    min(self.top_k, len(self.class_names))
+                )
                 pred_idx = int(top_k_idxs[0])
-                results.append(PredictionResult(
-                    dialog_act=self.class_names[pred_idx],
-                    confidence=float(top_k_vals[0]),
-                    latency_ms=per_sample_ms,
-                    top_k=[
-                        {"act": self.class_names[int(i)], "prob": round(float(p), 4)}
-                        for i, p in zip(top_k_idxs, top_k_vals)
-                    ],
-                    within_sla=per_sample_ms <= self.sla_ms,
-                    sla_ms=self.sla_ms,
-                ))
+                results.append(
+                    PredictionResult(
+                        dialog_act=self.class_names[pred_idx],
+                        confidence=float(top_k_vals[0]),
+                        latency_ms=per_sample_ms,
+                        top_k=[
+                            {
+                                "act": self.class_names[int(i)],
+                                "prob": round(float(p), 4),
+                            }
+                            for i, p in zip(top_k_idxs, top_k_vals)
+                        ],
+                        within_sla=per_sample_ms <= self.sla_ms,
+                        sla_ms=self.sla_ms,
+                    )
+                )
         return results
 
 
 # ── CLI ───────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+    logging.basicConfig(
+        level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
+    )
 
     parser = argparse.ArgumentParser(description="Dialog Management Inference")
     parser.add_argument("--checkpoint", required=True, help="Path to best_model.pt")
-    parser.add_argument("--history",    default="", help="Prior turns joined by [SEP]")
-    parser.add_argument("--utterance",  required=True, help="Current user utterance")
-    parser.add_argument("--sla-ms",     type=float, default=100.0, help="SLA threshold (ms)")
-    parser.add_argument("--top-k",      type=int,   default=3)
+    parser.add_argument("--history", default="", help="Prior turns joined by [SEP]")
+    parser.add_argument("--utterance", required=True, help="Current user utterance")
+    parser.add_argument(
+        "--sla-ms", type=float, default=100.0, help="SLA threshold (ms)"
+    )
+    parser.add_argument("--top-k", type=int, default=3)
     args = parser.parse_args()
 
     predictor = DialogPredictor(args.checkpoint, sla_ms=args.sla_ms, top_k=args.top_k)

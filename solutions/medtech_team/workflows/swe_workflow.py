@@ -8,11 +8,9 @@ Two interrupt_before gates are active:
 
 This is NOT the default — only regulated solutions use interrupt gates.
 """
+
 from __future__ import annotations
-import os
 import logging
-import re
-from typing import TypedDict, Optional
 from langgraph.graph import StateGraph, END
 
 # Re-use the same node functions from starter

@@ -5,6 +5,7 @@ Covers:
 - write: validates YAML syntax before touching disk; rejects bad file name.
 - missing solution path → SidecarDown.
 """
+
 from __future__ import annotations
 
 import sys
@@ -22,9 +23,7 @@ from rpc import RpcError  # noqa: E402
 
 @pytest.fixture
 def wired_solution(tmp_path, monkeypatch):
-    (tmp_path / "project.yaml").write_text(
-        "name: demo\nversion: 1\n", encoding="utf-8"
-    )
+    (tmp_path / "project.yaml").write_text("name: demo\nversion: 1\n", encoding="utf-8")
     (tmp_path / "prompts.yaml").write_text("agents: []\n", encoding="utf-8")
     monkeypatch.setattr(yaml_edit, "_solution_path", tmp_path)
     monkeypatch.setattr(yaml_edit, "_solution_name", "demo")
@@ -71,9 +70,9 @@ def test_write_rejects_invalid_yaml(wired_solution):
         yaml_edit.write({"file": "project", "content": "{: unbalanced ["})
     assert e.value.code == -32602
     # Original content is untouched
-    assert "name: demo\nversion: 1" in (
-        wired_solution / "project.yaml"
-    ).read_text(encoding="utf-8")
+    assert "name: demo\nversion: 1" in (wired_solution / "project.yaml").read_text(
+        encoding="utf-8"
+    )
 
 
 def test_write_rejects_invalid_file_name(wired_solution):

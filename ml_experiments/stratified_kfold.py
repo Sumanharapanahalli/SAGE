@@ -51,6 +51,7 @@ log = logging.getLogger(__name__)
 # Custom Stratified K-Fold implementation
 # ---------------------------------------------------------------------------
 
+
 class StratifiedKFoldScratch:
     """
     Stratified K-Fold split implemented from scratch.
@@ -64,7 +65,9 @@ class StratifiedKFoldScratch:
     This guarantees class proportions are preserved in every fold.
     """
 
-    def __init__(self, n_splits: int = 5, shuffle: bool = True, random_state: int | None = None):
+    def __init__(
+        self, n_splits: int = 5, shuffle: bool = True, random_state: int | None = None
+    ):
         if n_splits < 2:
             raise ValueError("n_splits must be >= 2")
         self.n_splits = n_splits
@@ -132,42 +135,62 @@ class StratifiedKFoldScratch:
 # Evaluation helpers
 # ---------------------------------------------------------------------------
 
-METRIC_NAMES = ["accuracy", "precision_macro", "recall_macro", "f1_macro",
-                "precision_weighted", "recall_weighted", "f1_weighted"]
+METRIC_NAMES = [
+    "accuracy",
+    "precision_macro",
+    "recall_macro",
+    "f1_macro",
+    "precision_weighted",
+    "recall_weighted",
+    "f1_weighted",
+]
 
 
 def compute_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, float]:
     """Compute all classification metrics for a single fold."""
     return {
-        "accuracy":            accuracy_score(y_true, y_pred),
-        "precision_macro":     precision_score(y_true, y_pred, average="macro",   zero_division=0),
-        "recall_macro":        recall_score(y_true, y_pred,    average="macro",   zero_division=0),
-        "f1_macro":            f1_score(y_true, y_pred,        average="macro",   zero_division=0),
-        "precision_weighted":  precision_score(y_true, y_pred, average="weighted", zero_division=0),
-        "recall_weighted":     recall_score(y_true, y_pred,    average="weighted", zero_division=0),
-        "f1_weighted":         f1_score(y_true, y_pred,        average="weighted", zero_division=0),
+        "accuracy": accuracy_score(y_true, y_pred),
+        "precision_macro": precision_score(
+            y_true, y_pred, average="macro", zero_division=0
+        ),
+        "recall_macro": recall_score(y_true, y_pred, average="macro", zero_division=0),
+        "f1_macro": f1_score(y_true, y_pred, average="macro", zero_division=0),
+        "precision_weighted": precision_score(
+            y_true, y_pred, average="weighted", zero_division=0
+        ),
+        "recall_weighted": recall_score(
+            y_true, y_pred, average="weighted", zero_division=0
+        ),
+        "f1_weighted": f1_score(y_true, y_pred, average="weighted", zero_division=0),
     }
 
 
-def verify_stratification(y: np.ndarray, train_idx: np.ndarray, test_idx: np.ndarray) -> dict:
+def verify_stratification(
+    y: np.ndarray, train_idx: np.ndarray, test_idx: np.ndarray
+) -> dict:
     """Return class proportions for train / test — used to confirm stratification."""
     classes, full_counts = np.unique(y, return_counts=True)
     full_props = full_counts / len(y)
     test_classes, test_counts = np.unique(y[test_idx], return_counts=True)
-    test_props_map = dict(zip(test_classes.tolist(), (test_counts / len(test_idx)).tolist()))
+    test_props_map = dict(
+        zip(test_classes.tolist(), (test_counts / len(test_idx)).tolist())
+    )
     return {
-        "full_proportions":  dict(zip(classes.tolist(), full_props.tolist())),
-        "test_proportions":  test_props_map,
-        "max_drift":         float(max(
-            abs(test_props_map.get(c, 0.0) - p)
-            for c, p in zip(classes.tolist(), full_props.tolist())
-        )),
+        "full_proportions": dict(zip(classes.tolist(), full_props.tolist())),
+        "test_proportions": test_props_map,
+        "max_drift": float(
+            max(
+                abs(test_props_map.get(c, 0.0) - p)
+                for c, p in zip(classes.tolist(), full_props.tolist())
+            )
+        ),
     }
 
 
 # ---------------------------------------------------------------------------
 # Core cross-validation runner (shared logic)
 # ---------------------------------------------------------------------------
+
 
 def run_cv(
     splitter,
@@ -199,8 +222,8 @@ def run_cv(
 
         # ---- Scale: fit on TRAIN only (no leakage) ----
         scaler = StandardScaler()
-        X_train = scaler.fit_transform(X[train_idx])   # fit + transform on train
-        X_test  = scaler.transform(X[test_idx])        # transform only on test
+        X_train = scaler.fit_transform(X[train_idx])  # fit + transform on train
+        X_test = scaler.transform(X[test_idx])  # transform only on test
 
         y_train, y_test = y[train_idx], y[test_idx]
 
@@ -216,10 +239,14 @@ def run_cv(
         log.info(
             "Fold %d/%d | train=%d test=%d | strat_drift=%.4f | "
             "acc=%.4f f1_macro=%.4f f1_weighted=%.4f",
-            fold_i + 1, splitter.n_splits,
-            len(train_idx), len(test_idx),
+            fold_i + 1,
+            splitter.n_splits,
+            len(train_idx),
+            len(test_idx),
             strat_info["max_drift"],
-            metrics["accuracy"], metrics["f1_macro"], metrics["f1_weighted"],
+            metrics["accuracy"],
+            metrics["f1_macro"],
+            metrics["f1_weighted"],
         )
 
     elapsed = time.perf_counter() - t0
@@ -235,12 +262,12 @@ def run_cv(
         log.info("  %-22s %.4f ± %.4f", metric, stats["mean"], stats["std"])
 
     return {
-        "label":              label,
-        "n_splits":           splitter.n_splits,
-        "elapsed_seconds":    round(elapsed, 4),
-        "fold_metrics":       fold_metrics,
+        "label": label,
+        "n_splits": splitter.n_splits,
+        "elapsed_seconds": round(elapsed, 4),
+        "fold_metrics": fold_metrics,
         "fold_stratification": fold_stratification,
-        "aggregate":          agg,
+        "aggregate": agg,
     }
 
 
@@ -248,14 +275,15 @@ def run_cv(
 # Class-imbalance check
 # ---------------------------------------------------------------------------
 
+
 def check_class_imbalance(y: np.ndarray, threshold: float = 0.2) -> dict:
     classes, counts = np.unique(y, return_counts=True)
     proportions = counts / len(y)
     imbalanced = bool(proportions.min() < threshold)
     return {
         "class_distribution": dict(zip(classes.tolist(), counts.tolist())),
-        "class_proportions":  dict(zip(classes.tolist(), proportions.tolist())),
-        "imbalanced":         imbalanced,
+        "class_proportions": dict(zip(classes.tolist(), proportions.tolist())),
+        "imbalanced": imbalanced,
         "minority_proportion": float(proportions.min()),
     }
 
@@ -264,9 +292,10 @@ def check_class_imbalance(y: np.ndarray, threshold: float = 0.2) -> dict:
 # Main experiment
 # ---------------------------------------------------------------------------
 
+
 def main() -> dict:
     RANDOM_STATE = 42
-    N_SPLITS     = 5
+    N_SPLITS = 5
     RESULTS_PATH = Path("logs/experiment_results.json")
 
     # ---- Load dataset ----
@@ -281,35 +310,48 @@ def main() -> dict:
 
     # ---- Experiment parameters ----
     params = {
-        "dataset":       "breast_cancer",
-        "n_samples":     int(X.shape[0]),
-        "n_features":    int(X.shape[1]),
-        "n_splits":      N_SPLITS,
-        "random_state":  RANDOM_STATE,
-        "model":         "LogisticRegression",
-        "model_params":  {"max_iter": 1000, "solver": "lbfgs"},
-        "scaler":        "StandardScaler",
-        "leakage_risk":  False,   # scaler fit on train only, verified below
+        "dataset": "breast_cancer",
+        "n_samples": int(X.shape[0]),
+        "n_features": int(X.shape[1]),
+        "n_splits": N_SPLITS,
+        "random_state": RANDOM_STATE,
+        "model": "LogisticRegression",
+        "model_params": {"max_iter": 1000, "solver": "lbfgs"},
+        "scaler": "StandardScaler",
+        "leakage_risk": False,  # scaler fit on train only, verified below
     }
     log.info("Experiment params: %s", json.dumps(params, indent=2))
 
-    model_fn = lambda random_state: LogisticRegression(
-        max_iter=1000, solver="lbfgs", random_state=random_state
-    )
+    def model_fn(random_state):
+        return LogisticRegression(
+            max_iter=1000, solver="lbfgs", random_state=random_state
+        )
 
     # ---- Run 1: Custom scratch implementation ----
     scratch_splitter = StratifiedKFoldScratch(
         n_splits=N_SPLITS, shuffle=True, random_state=RANDOM_STATE
     )
-    scratch_results = run_cv(scratch_splitter, X, y, model_fn,
-                             label="StratifiedKFold-Scratch", random_state=RANDOM_STATE)
+    scratch_results = run_cv(
+        scratch_splitter,
+        X,
+        y,
+        model_fn,
+        label="StratifiedKFold-Scratch",
+        random_state=RANDOM_STATE,
+    )
 
     # ---- Run 2: sklearn StratifiedKFold ----
     sklearn_splitter = SklearnStratifiedKFold(
         n_splits=N_SPLITS, shuffle=True, random_state=RANDOM_STATE
     )
-    sklearn_results = run_cv(sklearn_splitter, X, y, model_fn,
-                             label="StratifiedKFold-sklearn", random_state=RANDOM_STATE)
+    sklearn_results = run_cv(
+        sklearn_splitter,
+        X,
+        y,
+        model_fn,
+        label="StratifiedKFold-sklearn",
+        random_state=RANDOM_STATE,
+    )
 
     # ---- Comparison table ----
     log.info("")
@@ -323,7 +365,11 @@ def main() -> dict:
         k = sklearn_results["aggregate"][metric]
         log.info(
             "%-22s  %.4f ± %.4f       %.4f ± %.4f",
-            metric, s["mean"], s["std"], k["mean"], k["std"]
+            metric,
+            s["mean"],
+            s["std"],
+            k["mean"],
+            k["std"],
         )
 
     # ---- Drift comparison ----
@@ -336,9 +382,9 @@ def main() -> dict:
 
     # ---- Persist results ----
     output = {
-        "params":           params,
+        "params": params,
         "data_checks": {
-            "leakage_risk":    False,
+            "leakage_risk": False,
             "class_imbalance": imbalance_check["imbalanced"],
             "imbalance_detail": imbalance_check,
         },
@@ -347,12 +393,12 @@ def main() -> dict:
         "comparison": {
             metric: {
                 "scratch_mean": scratch_results["aggregate"][metric]["mean"],
-                "scratch_std":  scratch_results["aggregate"][metric]["std"],
+                "scratch_std": scratch_results["aggregate"][metric]["std"],
                 "sklearn_mean": sklearn_results["aggregate"][metric]["mean"],
-                "sklearn_std":  sklearn_results["aggregate"][metric]["std"],
-                "delta_mean":   abs(
-                    scratch_results["aggregate"][metric]["mean"] -
-                    sklearn_results["aggregate"][metric]["mean"]
+                "sklearn_std": sklearn_results["aggregate"][metric]["std"],
+                "delta_mean": abs(
+                    scratch_results["aggregate"][metric]["mean"]
+                    - sklearn_results["aggregate"][metric]["mean"]
                 ),
             }
             for metric in METRIC_NAMES

@@ -77,7 +77,9 @@ class RequirementsGatheringResponse(BaseModel):
     handoff_ready: Optional[bool] = None
 
 
-@router.post("/product-owner/requirements", response_model=RequirementsGatheringResponse)
+@router.post(
+    "/product-owner/requirements", response_model=RequirementsGatheringResponse
+)
 async def gather_requirements(request: RequirementsGatheringRequest):
     """
     Gather requirements from customer input using the Product Owner agent.
@@ -93,36 +95,33 @@ async def gather_requirements(request: RequirementsGatheringRequest):
         follow_up_qa = None
         if request.follow_up_qa:
             follow_up_qa = [
-                {
-                    "question": qa.question,
-                    "answer": qa.answer,
-                    "topic": qa.topic
-                }
+                {"question": qa.question, "answer": qa.answer, "topic": qa.topic}
                 for qa in request.follow_up_qa
             ]
 
         # Call the Product Owner agent
         result = product_owner_agent.gather_requirements(
-            customer_input=request.customer_input,
-            follow_up_qa=follow_up_qa
+            customer_input=request.customer_input, follow_up_qa=follow_up_qa
         )
 
         # Convert result to response format
         if result["status"] == "needs_clarification":
             questions = []
             for q in result.get("questions", []):
-                questions.append(Question(
-                    question=q["question"],
-                    topic=q.get("topic", "general"),
-                    importance=q.get("importance", "medium"),
-                    follow_up_needed=q.get("follow_up_needed", False)
-                ))
+                questions.append(
+                    Question(
+                        question=q["question"],
+                        topic=q.get("topic", "general"),
+                        importance=q.get("importance", "medium"),
+                        follow_up_needed=q.get("follow_up_needed", False),
+                    )
+                )
 
             return RequirementsGatheringResponse(
                 status=result["status"],
                 questions=questions,
                 analysis=result.get("analysis"),
-                customer_input=result.get("customer_input")
+                customer_input=result.get("customer_input"),
             )
 
         elif result["status"] == "complete":
@@ -131,27 +130,31 @@ async def gather_requirements(request: RequirementsGatheringRequest):
             # Convert backlog data to Pydantic models
             personas = []
             for p in backlog_data.get("personas", []):
-                personas.append(UserPersona(
-                    name=p["name"],
-                    description=p["description"],
-                    goals=p["goals"],
-                    pain_points=p["pain_points"],
-                    technical_comfort=p["technical_comfort"]
-                ))
+                personas.append(
+                    UserPersona(
+                        name=p["name"],
+                        description=p["description"],
+                        goals=p["goals"],
+                        pain_points=p["pain_points"],
+                        technical_comfort=p["technical_comfort"],
+                    )
+                )
 
             user_stories = []
             for story in backlog_data.get("user_stories", []):
-                user_stories.append(UserStory(
-                    id=story["id"],
-                    title=story["title"],
-                    description=story["description"],
-                    persona=story["persona"],
-                    acceptance_criteria=story["acceptance_criteria"],
-                    priority=story["priority"],
-                    story_points=story["story_points"],
-                    business_value=story["business_value"],
-                    dependencies=story["dependencies"]
-                ))
+                user_stories.append(
+                    UserStory(
+                        id=story["id"],
+                        title=story["title"],
+                        description=story["description"],
+                        persona=story["persona"],
+                        acceptance_criteria=story["acceptance_criteria"],
+                        priority=story["priority"],
+                        story_points=story["story_points"],
+                        business_value=story["business_value"],
+                        dependencies=story["dependencies"],
+                    )
+                )
 
             backlog = ProductBacklog(
                 product_name=backlog_data.get("product_name", ""),
@@ -163,25 +166,24 @@ async def gather_requirements(request: RequirementsGatheringRequest):
                 technical_constraints=backlog_data.get("technical_constraints", []),
                 business_constraints=backlog_data.get("business_constraints", []),
                 created_at=backlog_data.get("created_at", ""),
-                po_notes=backlog_data.get("po_notes", "")
+                po_notes=backlog_data.get("po_notes", ""),
             )
 
             return RequirementsGatheringResponse(
                 status=result["status"],
                 backlog=backlog,
-                handoff_ready=result.get("handoff_ready", True)
+                handoff_ready=result.get("handoff_ready", True),
             )
 
         elif result["status"] == "error":
             return RequirementsGatheringResponse(
                 status=result["status"],
-                error=result.get("error", "Unknown error occurred")
+                error=result.get("error", "Unknown error occurred"),
             )
 
         else:
             return RequirementsGatheringResponse(
-                status="error",
-                error="Unexpected response from Product Owner agent"
+                status="error", error="Unexpected response from Product Owner agent"
             )
 
     except Exception as exc:

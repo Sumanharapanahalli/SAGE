@@ -13,11 +13,10 @@ SAGE's wave-based execution model.
 Thread-safe. In-memory per build run (not persistent).
 """
 
-import json
 import logging
 import threading
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 logger = logging.getLogger("MessageBus")
 

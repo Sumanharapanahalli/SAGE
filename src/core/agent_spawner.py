@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class SpawnedAgent:
     """Record of a dynamically spawned sub-agent."""
+
     spawn_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     parent_task_id: str = ""
     role: str = ""
@@ -143,12 +144,15 @@ class AgentSpawner:
         with self._lock:
             self._spawns[record.spawn_id] = record
 
-        self._emit("agent.spawned", {
-            "spawn_id": record.spawn_id,
-            "parent_task_id": parent_task_id,
-            "role": role,
-            "depth": depth,
-        })
+        self._emit(
+            "agent.spawned",
+            {
+                "spawn_id": record.spawn_id,
+                "parent_task_id": parent_task_id,
+                "role": role,
+                "depth": depth,
+            },
+        )
 
         # Execute
         try:
@@ -165,12 +169,15 @@ class AgentSpawner:
             record.result = result
             record.completed_at = datetime.now(timezone.utc).isoformat()
 
-            self._emit("agent.completed", {
-                "spawn_id": record.spawn_id,
-                "role": role,
-                "status": "completed",
-                "depth": depth,
-            })
+            self._emit(
+                "agent.completed",
+                {
+                    "spawn_id": record.spawn_id,
+                    "role": role,
+                    "status": "completed",
+                    "depth": depth,
+                },
+            )
 
         except Exception as exc:
             record.status = "failed"
@@ -210,9 +217,7 @@ class AgentSpawner:
             total = len(self._spawns)
             completed = sum(1 for s in self._spawns.values() if s.status == "completed")
             failed = sum(1 for s in self._spawns.values() if s.status == "failed")
-            max_depth_seen = max(
-                (s.depth for s in self._spawns.values()), default=0
-            )
+            max_depth_seen = max((s.depth for s in self._spawns.values()), default=0)
         return {
             "total_spawns": total,
             "active": self._active_count,
@@ -237,6 +242,7 @@ class AgentSpawner:
         """Check if budget allows spawning."""
         try:
             from src.core.budget_manager import get_budget_manager
+
             bm = get_budget_manager()
             check = bm.check_budget(f"task:{task_id}")
             return check["allowed"]
@@ -247,6 +253,7 @@ class AgentSpawner:
     def _emit(event_type: str, data: dict) -> None:
         try:
             from src.core.event_bus import get_event_bus
+
             get_event_bus().publish(event_type, data, source="agent_spawner")
         except Exception:
             pass

@@ -1,4 +1,5 @@
 """System test configuration — SLA thresholds, staging endpoints, chaos settings."""
+
 import os
 from dataclasses import dataclass
 
@@ -31,19 +32,29 @@ class LoadTargets:
 @dataclass(frozen=True)
 class ThirdPartyEndpoints:
     baas: str = os.environ.get("BAAS_URL", "https://baas-staging.example.com")
-    card_processor: str = os.environ.get("CARD_URL", "https://cards-staging.example.com")
+    card_processor: str = os.environ.get(
+        "CARD_URL", "https://cards-staging.example.com"
+    )
     kyc_vendor: str = os.environ.get("KYC_URL", "https://kyc-staging.example.com")
-    brokerage: str = os.environ.get("BROKERAGE_URL", "https://brokerage-staging.example.com")
+    brokerage: str = os.environ.get(
+        "BROKERAGE_URL", "https://brokerage-staging.example.com"
+    )
 
 
 @dataclass(frozen=True)
 class ChaosSettings:
-    db_primary_container: str = os.environ.get("DB_PRIMARY_CONTAINER", "postgres-primary")
-    db_replica_container: str = os.environ.get("DB_REPLICA_CONTAINER", "postgres-replica")
+    db_primary_container: str = os.environ.get(
+        "DB_PRIMARY_CONTAINER", "postgres-primary"
+    )
+    db_replica_container: str = os.environ.get(
+        "DB_REPLICA_CONTAINER", "postgres-replica"
+    )
     toxiproxy_host: str = os.environ.get("TOXIPROXY_HOST", "localhost")
     toxiproxy_port: int = int(os.environ.get("TOXIPROXY_PORT", "8474"))
     kyc_proxy_name: str = "kyc_vendor"
-    kyc_upstream_host: str = os.environ.get("KYC_UPSTREAM_HOST", "kyc-staging.example.com")
+    kyc_upstream_host: str = os.environ.get(
+        "KYC_UPSTREAM_HOST", "kyc-staging.example.com"
+    )
     kyc_upstream_port: int = int(os.environ.get("KYC_UPSTREAM_PORT", "443"))
 
 

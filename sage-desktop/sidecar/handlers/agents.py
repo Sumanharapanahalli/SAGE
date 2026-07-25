@@ -6,10 +6,10 @@ level; solution-specific custom roles live under ``prompts.roles``. This
 handler unions them into a single flat list and annotates each with
 activity stats from the audit log (event count, last active timestamp).
 """
+
 from __future__ import annotations
 
 import sqlite3
-from typing import Optional
 
 from rpc import RpcError, RPC_INVALID_PARAMS, RPC_METHOD_NOT_FOUND
 
@@ -78,6 +78,7 @@ def _activity_by_actor() -> dict[str, dict]:
 
 # ---------- handlers ----------
 
+
 def list_agents(params: dict) -> list[dict]:
     defs = _agent_definitions()
     if not defs:
@@ -86,11 +87,13 @@ def list_agents(params: dict) -> list[dict]:
     out = []
     for name, d in defs.items():
         stats = activity.get(name, {"count": 0, "last_active": None})
-        out.append({
-            **d,
-            "event_count": stats["count"],
-            "last_active": stats["last_active"],
-        })
+        out.append(
+            {
+                **d,
+                "event_count": stats["count"],
+                "last_active": stats["last_active"],
+            }
+        )
     return out
 
 
@@ -142,11 +145,13 @@ def performance(params: dict) -> dict:
 
     total = len(rows)
     approved = sum(
-        1 for r in rows
+        1
+        for r in rows
         if "APPROVE" in (r[0] or "").upper() or "approved" in (r[1] or "").lower()
     )
     rejected = sum(
-        1 for r in rows
+        1
+        for r in rows
         if "REJECT" in (r[0] or "").upper() or "rejected" in (r[1] or "").lower()
     )
 

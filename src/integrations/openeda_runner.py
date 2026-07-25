@@ -18,9 +18,13 @@ Docker: sage/pcb-toolchain:latest
 import logging
 
 from src.integrations.base_runner import (
-    BaseRunner, RunResult, VerificationReport, VerificationFinding,
-    VerificationSeverity, Exercise, ExerciseScore,
-    register_runner, EDA_ROLES,
+    BaseRunner,
+    VerificationReport,
+    VerificationFinding,
+    VerificationSeverity,
+    Exercise,
+    register_runner,
+    EDA_ROLES,
 )
 
 logger = logging.getLogger("Runner.openeda")
@@ -55,9 +59,9 @@ class OpenEDARunner(BaseRunner):
                 "- Follow IPC standards for footprints\n"
                 "- Include design rule specifications\n"
                 "- Specify PCB stackup and impedance requirements\n\n"
-                "Output as JSON: {\"files\": [{\"path\": \"...\", \"content\": \"...\"}], "
-                "\"components\": N, \"layers\": N, \"board_area_mm2\": N, "
-                "\"drc_rules\": {\"min_trace_mm\": N, \"min_clearance_mm\": N}}\n"
+                'Output as JSON: {"files": [{"path": "...", "content": "..."}], '
+                '"components": N, "layers": N, "board_area_mm2": N, '
+                '"drc_rules": {"min_trace_mm": N, "min_clearance_mm": N}}\n'
             )
 
             user_prompt = f"Task: {description}\nPayload: {payload}"
@@ -79,29 +83,37 @@ class OpenEDARunner(BaseRunner):
             if validation["valid"]:
                 parsed = validation["output"]
                 files_changed = [f["path"] for f in parsed.get("files", [])]
-                metrics.update({
-                    "components": parsed.get("components", 0),
-                    "layers": parsed.get("layers", 2),
-                    "board_area_mm2": parsed.get("board_area_mm2", 0),
-                })
+                metrics.update(
+                    {
+                        "components": parsed.get("components", 0),
+                        "layers": parsed.get("layers", 2),
+                        "board_area_mm2": parsed.get("board_area_mm2", 0),
+                    }
+                )
 
                 # --- Wire MCP hardware tools ---
                 # 1. Create KiCad project scaffold
                 if workspace:
                     mcp_results = self._invoke_mcp_tools(
-                        workspace, project_name, parsed, files_changed,
+                        workspace,
+                        project_name,
+                        parsed,
+                        files_changed,
                     )
                     metrics["mcp_tools_invoked"] = mcp_results
             else:
                 # Validation failed — use raw output
-                response = validation.get("output") or ""
+                validation.get("output") or ""
                 self.logger.warning(
                     "Output validation failed after %d attempts: %s",
-                    validation.get("attempts", 0), validation.get("errors", []),
+                    validation.get("attempts", 0),
+                    validation.get("errors", []),
                 )
 
             return self._make_result(
-                run_id=run_id, status="completed", tier="direct",
+                run_id=run_id,
+                status="completed",
+                tier="direct",
                 output=str(validation.get("output", "")),
                 files_changed=files_changed,
                 metrics=metrics,
@@ -111,8 +123,11 @@ class OpenEDARunner(BaseRunner):
             return self._make_error(run_id, str(exc))
 
     def _invoke_mcp_tools(
-        self, workspace: str, project_name: str,
-        parsed: dict, files_changed: list,
+        self,
+        workspace: str,
+        project_name: str,
+        parsed: dict,
+        files_changed: list,
     ) -> list:
         """Invoke hardware MCP tools on generated EDA artifacts.
 
@@ -120,8 +135,11 @@ class OpenEDARunner(BaseRunner):
         and exports Gerbers/BOM when possible.
         """
         from src.mcp_servers.hardware_tools import (
-            kicad_create_project, kicad_run_erc, kicad_run_drc,
-            kicad_export_gerbers, kicad_export_bom,
+            kicad_create_project,
+            kicad_run_erc,
+            kicad_run_drc,
+            kicad_export_gerbers,
+            kicad_export_bom,
         )
         import os
 
@@ -130,7 +148,7 @@ class OpenEDARunner(BaseRunner):
         # 1. Create KiCad project scaffold
         create_result = kicad_create_project(project_name, workspace)
         tool_results.append({"tool": "kicad_create_project", "result": create_result})
-        project_dir = create_result.get("project_dir", "")
+        create_result.get("project_dir", "")
 
         # 2. Write generated files into the project directory
         for file_info in parsed.get("files", []):
@@ -145,7 +163,9 @@ class OpenEDARunner(BaseRunner):
             sch_path = os.path.join(workspace, sch)
             if os.path.isfile(sch_path):
                 erc_result = kicad_run_erc(sch_path)
-                tool_results.append({"tool": "kicad_run_erc", "file": sch, "result": erc_result})
+                tool_results.append(
+                    {"tool": "kicad_run_erc", "file": sch, "result": erc_result}
+                )
 
         # 4. Run DRC on PCB files
         pcb_files = [f for f in files_changed if f.endswith((".kicad_pcb", ".pcb"))]
@@ -153,12 +173,16 @@ class OpenEDARunner(BaseRunner):
             pcb_path = os.path.join(workspace, pcb)
             if os.path.isfile(pcb_path):
                 drc_result = kicad_run_drc(pcb_path)
-                tool_results.append({"tool": "kicad_run_drc", "file": pcb, "result": drc_result})
+                tool_results.append(
+                    {"tool": "kicad_run_drc", "file": pcb, "result": drc_result}
+                )
 
                 # 5. Export Gerbers if DRC passes
                 gerber_dir = os.path.join(workspace, "gerbers")
                 gerber_result = kicad_export_gerbers(pcb_path, gerber_dir)
-                tool_results.append({"tool": "kicad_export_gerbers", "result": gerber_result})
+                tool_results.append(
+                    {"tool": "kicad_export_gerbers", "result": gerber_result}
+                )
 
         # 6. Export BOM from schematic
         for sch in sch_files[:1]:
@@ -175,9 +199,15 @@ class OpenEDARunner(BaseRunner):
         score = 30.0
 
         if result.status == "error":
-            return VerificationReport(passed=False, score=0.0, findings=[
-                VerificationFinding("execution", VerificationSeverity.ERROR, "Failed"),
-            ])
+            return VerificationReport(
+                passed=False,
+                score=0.0,
+                findings=[
+                    VerificationFinding(
+                        "execution", VerificationSeverity.ERROR, "Failed"
+                    ),
+                ],
+            )
 
         metrics = result.metrics or {}
 
@@ -185,45 +215,68 @@ class OpenEDARunner(BaseRunner):
         drc_errors = metrics.get("drc_errors", -1)
         if drc_errors == 0:
             score += 25
-            findings.append(VerificationFinding(
-                "drc", VerificationSeverity.PASS, "DRC clean — zero errors",
-            ))
+            findings.append(
+                VerificationFinding(
+                    "drc",
+                    VerificationSeverity.PASS,
+                    "DRC clean — zero errors",
+                )
+            )
         elif drc_errors > 0:
-            findings.append(VerificationFinding(
-                "drc", VerificationSeverity.ERROR, f"DRC: {drc_errors} errors",
-            ))
+            findings.append(
+                VerificationFinding(
+                    "drc",
+                    VerificationSeverity.ERROR,
+                    f"DRC: {drc_errors} errors",
+                )
+            )
 
         # ERC check
         erc_errors = metrics.get("erc_errors", -1)
         if erc_errors == 0:
             score += 20
-            findings.append(VerificationFinding(
-                "erc", VerificationSeverity.PASS, "ERC clean — all nets connected",
-            ))
+            findings.append(
+                VerificationFinding(
+                    "erc",
+                    VerificationSeverity.PASS,
+                    "ERC clean — all nets connected",
+                )
+            )
         elif erc_errors > 0:
-            findings.append(VerificationFinding(
-                "erc", VerificationSeverity.ERROR, f"ERC: {erc_errors} errors",
-            ))
+            findings.append(
+                VerificationFinding(
+                    "erc",
+                    VerificationSeverity.ERROR,
+                    f"ERC: {erc_errors} errors",
+                )
+            )
 
         # Unrouted nets
         unrouted = metrics.get("unrouted_nets", -1)
         if unrouted == 0:
             score += 10
         elif unrouted > 0:
-            findings.append(VerificationFinding(
-                "routing", VerificationSeverity.ERROR, f"{unrouted} unrouted nets",
-            ))
+            findings.append(
+                VerificationFinding(
+                    "routing",
+                    VerificationSeverity.ERROR,
+                    f"{unrouted} unrouted nets",
+                )
+            )
 
         # Files produced
         if result.files_changed or result.artifacts:
             score += 15
 
         score = min(score, 100.0)
-        return VerificationReport(passed=score >= 40.0, score=score, findings=findings, metrics=metrics)
+        return VerificationReport(
+            passed=score >= 40.0, score=score, findings=findings, metrics=metrics
+        )
 
     def get_toolchain(self):
         return {
-            "runner": self.name, "docker_image": self.docker_image,
+            "runner": self.name,
+            "docker_image": self.docker_image,
             "roles": self.roles,
             "tools": ["kicad", "kicad-cli", "gerber_viewer", "bom_manager"],
             "packages": ["kicad", "kicad-cli", "python3-kicad"],
@@ -231,13 +284,33 @@ class OpenEDARunner(BaseRunner):
 
     def get_workflow(self):
         return [
-            {"step": 1, "name": "requirements", "description": "Parse electrical requirements and constraints"},
-            {"step": 2, "name": "schematic", "description": "Create schematic with symbol library"},
+            {
+                "step": 1,
+                "name": "requirements",
+                "description": "Parse electrical requirements and constraints",
+            },
+            {
+                "step": 2,
+                "name": "schematic",
+                "description": "Create schematic with symbol library",
+            },
             {"step": 3, "name": "erc", "description": "Run Electrical Rule Check"},
-            {"step": 4, "name": "layout", "description": "Place components and route traces"},
+            {
+                "step": 4,
+                "name": "layout",
+                "description": "Place components and route traces",
+            },
             {"step": 5, "name": "drc", "description": "Run Design Rule Check"},
-            {"step": 6, "name": "design_rule_check", "description": "Verify clearances and trace widths"},
-            {"step": 7, "name": "gerber", "description": "Generate Gerber and drill files"},
+            {
+                "step": 6,
+                "name": "design_rule_check",
+                "description": "Verify clearances and trace widths",
+            },
+            {
+                "step": 7,
+                "name": "gerber",
+                "description": "Generate Gerber and drill files",
+            },
             {"step": 8, "name": "bom", "description": "Generate Bill of Materials"},
         ]
 
@@ -247,6 +320,7 @@ class OpenEDARunner(BaseRunner):
     def get_experimental_commands(self, workspace, files):
         """EDA-specific: KiCad DRC, ERC, netlist validation, BOM check."""
         import os
+
         commands = []
         sch_files = [f for f in files if f.endswith((".kicad_sch", ".sch"))]
         pcb_files = [f for f in files if f.endswith((".kicad_pcb", ".pcb"))]
@@ -254,31 +328,50 @@ class OpenEDARunner(BaseRunner):
 
         # If Python scripts generated (e.g., KiCad scripting), check syntax
         if py_files:
-            commands.append({
-                "name": "python_syntax",
-                "cmd": ["python3", "-m", "py_compile"] + py_files,
-                "weight": 20,
-                "timeout": 15,
-            })
+            commands.append(
+                {
+                    "name": "python_syntax",
+                    "cmd": ["python3", "-m", "py_compile"] + py_files,
+                    "weight": 20,
+                    "timeout": 15,
+                }
+            )
 
         # If KiCad files exist, try CLI validation
         if sch_files:
             for sf in sch_files[:2]:
-                commands.append({
-                    "name": f"sch_validate_{os.path.basename(sf)}",
-                    "cmd": ["kicad-cli", "sch", "export", "netlist",
-                            "-o", "/dev/null", sf],
-                    "weight": 30,
-                    "timeout": 30,
-                })
+                commands.append(
+                    {
+                        "name": f"sch_validate_{os.path.basename(sf)}",
+                        "cmd": [
+                            "kicad-cli",
+                            "sch",
+                            "export",
+                            "netlist",
+                            "-o",
+                            "/dev/null",
+                            sf,
+                        ],
+                        "weight": 30,
+                        "timeout": 30,
+                    }
+                )
         if pcb_files:
             for pf in pcb_files[:2]:
-                commands.append({
-                    "name": f"drc_{os.path.basename(pf)}",
-                    "cmd": ["kicad-cli", "pcb", "drc", "--exit-code-violations", pf],
-                    "weight": 40,
-                    "timeout": 60,
-                })
+                commands.append(
+                    {
+                        "name": f"drc_{os.path.basename(pf)}",
+                        "cmd": [
+                            "kicad-cli",
+                            "pcb",
+                            "drc",
+                            "--exit-code-violations",
+                            pf,
+                        ],
+                        "weight": 40,
+                        "timeout": 60,
+                    }
+                )
 
         return commands
 
@@ -289,25 +382,48 @@ class OpenEDARunner(BaseRunner):
             return catalog
         fallback = {
             "beginner": [
-                Exercise(id="eda-b01", role="pcb_designer", task_type="PCB_DESIGN",
-                         difficulty="beginner",
-                         description="Design a simple LED circuit with resistor on a single-layer PCB",
-                         acceptance_criteria=["DRC clean", "ERC clean", "Gerber files generated"],
-                         expected_artifacts=["led_circuit.kicad_sch"], tags=["basic", "single-layer"]),
+                Exercise(
+                    id="eda-b01",
+                    role="pcb_designer",
+                    task_type="PCB_DESIGN",
+                    difficulty="beginner",
+                    description="Design a simple LED circuit with resistor on a single-layer PCB",
+                    acceptance_criteria=[
+                        "DRC clean",
+                        "ERC clean",
+                        "Gerber files generated",
+                    ],
+                    expected_artifacts=["led_circuit.kicad_sch"],
+                    tags=["basic", "single-layer"],
+                ),
             ],
             "intermediate": [
-                Exercise(id="eda-i01", role="pcb_designer", task_type="PCB_DESIGN",
-                         difficulty="intermediate",
-                         description="Design a 2-layer Arduino shield with I2C and SPI connectors",
-                         acceptance_criteria=["DRC clean", "ERC clean", "BOM complete"],
-                         expected_artifacts=["shield.kicad_sch", "bom.csv"], tags=["arduino", "2-layer"]),
+                Exercise(
+                    id="eda-i01",
+                    role="pcb_designer",
+                    task_type="PCB_DESIGN",
+                    difficulty="intermediate",
+                    description="Design a 2-layer Arduino shield with I2C and SPI connectors",
+                    acceptance_criteria=["DRC clean", "ERC clean", "BOM complete"],
+                    expected_artifacts=["shield.kicad_sch", "bom.csv"],
+                    tags=["arduino", "2-layer"],
+                ),
             ],
             "advanced": [
-                Exercise(id="eda-a01", role="pcb_designer", task_type="PCB_DESIGN",
-                         difficulty="advanced",
-                         description="Design a 4-layer USB-C power delivery board with ESD protection",
-                         acceptance_criteria=["DRC clean", "4-layer impedance controlled", "ESD protection"],
-                         expected_artifacts=["usb_pd.kicad_sch", "stackup.txt"], tags=["usb-c", "4-layer"]),
+                Exercise(
+                    id="eda-a01",
+                    role="pcb_designer",
+                    task_type="PCB_DESIGN",
+                    difficulty="advanced",
+                    description="Design a 4-layer USB-C power delivery board with ESD protection",
+                    acceptance_criteria=[
+                        "DRC clean",
+                        "4-layer impedance controlled",
+                        "ESD protection",
+                    ],
+                    expected_artifacts=["usb_pd.kicad_sch", "stackup.txt"],
+                    tags=["usb-c", "4-layer"],
+                ),
             ],
         }
         return fallback.get(difficulty, fallback["intermediate"])
@@ -337,8 +453,20 @@ class OpenEDARunner(BaseRunner):
 
         # EDA keywords
         output_lower = (result.output or "").lower()
-        eda_kws = ["schematic", "pcb", "trace", "clearance", "component", "footprint",
-                    "net", "via", "copper", "layer", "stackup", "impedance"]
+        eda_kws = [
+            "schematic",
+            "pcb",
+            "trace",
+            "clearance",
+            "component",
+            "footprint",
+            "net",
+            "via",
+            "copper",
+            "layer",
+            "stackup",
+            "impedance",
+        ]
         if sum(1 for k in eda_kws if k in output_lower) >= 3:
             score += 15
             criteria["eda_patterns"] = True
@@ -354,7 +482,11 @@ class OpenEDARunner(BaseRunner):
             criteria["verification_passed"] = True
 
         return self._combined_grade(
-            exercise, result, min(score, 100.0), criteria, hints,
+            exercise,
+            result,
+            min(score, 100.0),
+            criteria,
+            hints,
             domain_context=(
                 "Grade as a senior PCB/EDA engineer. Check for:\n"
                 "- Correct schematic symbols and connections\n"

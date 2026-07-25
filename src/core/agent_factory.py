@@ -4,6 +4,7 @@ agent_factory.py — JD-to-agent-config extractor using LLM metaprompt.
 Reads a job description (or plain-language role description) and returns
 a structured RoleConfig dict ready for the /agents/hire HITL proposal.
 """
+
 import json
 import logging
 
@@ -52,7 +53,7 @@ Return ONLY the JSON object:"""
 def _strip_fences(raw: str) -> str:
     raw = raw.strip()
     if raw.startswith("```"):
-        lines = [l.rstrip() for l in raw.split("\n")]
+        lines = [l.rstrip() for l in raw.split("\n")]  # noqa: E741
         end = len(lines) - 1 if lines[-1].strip() == "```" else len(lines)
         raw = "\n".join(lines[1:end])
     return raw.strip()

@@ -14,7 +14,6 @@ one full training iteration end-to-end.  Verifies:
 
 from __future__ import annotations
 
-import os
 import sys
 import tempfile
 from pathlib import Path
@@ -22,7 +21,6 @@ from pathlib import Path
 import numpy as np
 import torch
 import torch.nn as nn
-import yaml
 from PIL import Image
 
 
@@ -30,7 +28,10 @@ from PIL import Image
 # Synthetic dataset fixture
 # ---------------------------------------------------------------------------
 
-def create_synthetic_dataset(root: str, num_classes: int = 10, images_per_class: int = 10) -> None:
+
+def create_synthetic_dataset(
+    root: str, num_classes: int = 10, images_per_class: int = 10
+) -> None:
     rng = np.random.default_rng(42)
     for cls_idx in range(num_classes):
         cls_dir = Path(root) / f"class_{cls_idx:02d}"
@@ -44,31 +45,55 @@ def create_synthetic_dataset(root: str, num_classes: int = 10, images_per_class:
 # Config fixture
 # ---------------------------------------------------------------------------
 
+
 def make_cfg(data_dir: str) -> dict:
     return {
-        "experiment": {"name": "smoke_test", "seed": 42, "mlflow_tracking_uri": "./mlruns_smoke"},
+        "experiment": {
+            "name": "smoke_test",
+            "seed": 42,
+            "mlflow_tracking_uri": "./mlruns_smoke",
+        },
         "data": {
-            "data_dir": data_dir, "image_size": 224,
-            "val_split": 0.15, "test_split": 0.15, "num_workers": 0,
+            "data_dir": data_dir,
+            "image_size": 224,
+            "val_split": 0.15,
+            "test_split": 0.15,
+            "num_workers": 0,
         },
         "augmentation": {
-            "random_horizontal_flip": True, "random_rotation": 15,
+            "random_horizontal_flip": True,
+            "random_rotation": 15,
             "color_jitter": {"brightness": 0.2, "contrast": 0.2, "saturation": 0.1},
             "normalize": {"mean": [0.485, 0.456, 0.406], "std": [0.229, 0.224, 0.225]},
         },
         "model": {
-            "backbone": "resnet18", "pretrained": False,
-            "num_classes": 10, "dropout": 0.3,
+            "backbone": "resnet18",
+            "pretrained": False,
+            "num_classes": 10,
+            "dropout": 0.3,
             "unfreeze_schedule": [
                 {"epoch": 0, "layers": ["fc"]},
                 {"epoch": 1, "layers": ["layer4", "fc"]},
             ],
         },
         "training": {"epochs": 3, "batch_size": 8, "label_smoothing": 0.1},
-        "optimizer": {"name": "AdamW", "lr": 1e-3, "weight_decay": 1e-4, "backbone_lr_multiplier": 0.1},
+        "optimizer": {
+            "name": "AdamW",
+            "lr": 1e-3,
+            "weight_decay": 1e-4,
+            "backbone_lr_multiplier": 0.1,
+        },
         "scheduler": {"warmup_epochs": 1, "cosine_t_max": 2, "min_lr": 1e-6},
-        "early_stopping": {"patience": 5, "monitor": "val_acc", "min_delta": 0.001, "restore_best_weights": True},
-        "output": {"checkpoint_dir": "./checkpoints_smoke", "best_model_path": "./checkpoints_smoke/best.pt"},
+        "early_stopping": {
+            "patience": 5,
+            "monitor": "val_acc",
+            "min_delta": 0.001,
+            "restore_best_weights": True,
+        },
+        "output": {
+            "checkpoint_dir": "./checkpoints_smoke",
+            "best_model_path": "./checkpoints_smoke/best.pt",
+        },
     }
 
 
@@ -76,8 +101,10 @@ def make_cfg(data_dir: str) -> dict:
 # Tests
 # ---------------------------------------------------------------------------
 
+
 def test_split_no_leakage(cfg):
     from dataset import load_splits
+
     train_loader, val_loader, test_loader, class_names = load_splits(cfg)
     # Already asserted inside load_splits — reaching here means no exception
     assert len(class_names) == 10
@@ -88,6 +115,7 @@ def test_scheduler_lr_profile(cfg):
     from model import build_model
     from scheduler import build_scheduler
     from torch.optim import AdamW
+
     model = build_model(cfg)
     optimizer = AdamW(model.parameters(), lr=1e-3)
     scheduler = build_scheduler(optimizer, cfg)
@@ -99,12 +127,15 @@ def test_scheduler_lr_profile(cfg):
     # LR should increase during warmup
     assert lrs[0] < lrs[min(warmup_epochs - 1, len(lrs) - 1)], "Warmup not increasing"
     # LR should be ≥ min_lr throughout
-    assert all(lr >= cfg["scheduler"]["min_lr"] - 1e-10 for lr in lrs), "LR below min_lr"
+    assert all(lr >= cfg["scheduler"]["min_lr"] - 1e-10 for lr in lrs), (
+        "LR below min_lr"
+    )
     print("  [PASS] scheduler LR profile")
 
 
 def test_early_stopping_triggers():
     from early_stopping import EarlyStopping
+
     model = nn.Linear(2, 2)
     es = EarlyStopping(patience=3, monitor="val_acc", min_delta=0.001, restore=True)
     # Best at step 0
@@ -120,7 +151,6 @@ def test_early_stopping_triggers():
 def test_single_batch(cfg):
     from dataset import load_splits
     from model import build_model
-    from scheduler import build_scheduler
     from torch.optim import AdamW
 
     device = torch.device("cpu")
@@ -131,14 +161,19 @@ def test_single_batch(cfg):
     scaler = torch.cuda.amp.GradScaler(enabled=False)
 
     from train import train_one_epoch, validate
-    train_loss, train_acc = train_one_epoch(model, train_loader, optimizer, criterion, device, scaler)
-    val_loss, val_acc     = validate(model, val_loader, criterion, device)
+
+    train_loss, train_acc = train_one_epoch(
+        model, train_loader, optimizer, criterion, device, scaler
+    )
+    val_loss, val_acc = validate(model, val_loader, criterion, device)
 
     assert np.isfinite(train_loss), f"train_loss is not finite: {train_loss}"
-    assert np.isfinite(val_loss),   f"val_loss is not finite: {val_loss}"
+    assert np.isfinite(val_loss), f"val_loss is not finite: {val_loss}"
     assert 0.0 <= train_acc <= 1.0
-    assert 0.0 <= val_acc   <= 1.0
-    print(f"  [PASS] single-batch forward (train_loss={train_loss:.4f}, val_acc={val_acc:.4f})")
+    assert 0.0 <= val_acc <= 1.0
+    print(
+        f"  [PASS] single-batch forward (train_loss={train_loss:.4f}, val_acc={val_acc:.4f})"
+    )
 
 
 def test_evaluation_metrics(cfg):
@@ -155,12 +190,15 @@ def test_evaluation_metrics(cfg):
     assert required_keys.issubset(metrics.keys())
     assert 0.0 <= metrics["accuracy"] <= 1.0
     assert len(metrics["per_class_f1"]) == 10
-    print(f"  [PASS] evaluation metrics keys and ranges (accuracy={metrics['accuracy']:.4f})")
+    print(
+        f"  [PASS] evaluation metrics keys and ranges (accuracy={metrics['accuracy']:.4f})"
+    )
 
 
 # ---------------------------------------------------------------------------
 # Runner
 # ---------------------------------------------------------------------------
+
 
 def main():
     print("Running ResNet-18 fine-tune smoke tests ...\n")

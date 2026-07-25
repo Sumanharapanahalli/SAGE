@@ -18,6 +18,7 @@ branch — so ``create()`` and ``list()`` MUST default both fields
 identically, or goals created via the default path become invisible to
 the default list query.
 """
+
 from __future__ import annotations
 
 from typing import Any, Dict, Optional
@@ -96,7 +97,9 @@ def update(params: dict) -> dict:
     store = _require_store()
     goal_id = _require_goal_id(params)
     kwargs: Dict[str, Any] = {
-        field: params[field] for field in _UPDATABLE_FIELDS if params.get(field) is not None
+        field: params[field]
+        for field in _UPDATABLE_FIELDS
+        if params.get(field) is not None
     }
     result = store.update(goal_id, **kwargs)
     if result is None:

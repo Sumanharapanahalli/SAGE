@@ -11,7 +11,6 @@ TDD — tests written BEFORE implementation.
 """
 
 import pytest
-from datetime import datetime
 
 
 class TestRegulatoryRegistry:
@@ -20,6 +19,7 @@ class TestRegulatoryRegistry:
     @pytest.fixture
     def framework(self):
         from src.core.regulatory_compliance import RegulatoryComplianceFramework
+
         return RegulatoryComplianceFramework()
 
     def test_registry_contains_all_standards(self, framework):
@@ -28,17 +28,17 @@ class TestRegulatoryRegistry:
         standard_ids = [s["id"] for s in standards]
 
         # FDA
-        assert "fda_swv" in standard_ids        # Software Validation
-        assert "fda_csa" in standard_ids        # Computer Software Assurance
+        assert "fda_swv" in standard_ids  # Software Validation
+        assert "fda_csa" in standard_ids  # Computer Software Assurance
         assert "fda_cybersecurity" in standard_ids
-        assert "fda_aiml" in standard_ids       # AI/ML guidance
-        assert "fda_cds" in standard_ids        # CDS (already implemented)
-        assert "fda_21cfr11" in standard_ids    # Electronic records
+        assert "fda_aiml" in standard_ids  # AI/ML guidance
+        assert "fda_cds" in standard_ids  # CDS (already implemented)
+        assert "fda_21cfr11" in standard_ids  # Electronic records
 
         # EU
-        assert "eu_mdr" in standard_ids         # MDR 2017/745
-        assert "eu_ai_act" in standard_ids      # AI Act
-        assert "eu_ivdr" in standard_ids        # IVDR 2017/746
+        assert "eu_mdr" in standard_ids  # MDR 2017/745
+        assert "eu_ai_act" in standard_ids  # AI Act
+        assert "eu_ivdr" in standard_ids  # IVDR 2017/746
 
         # International
         assert "iec_62304" in standard_ids
@@ -71,6 +71,7 @@ class TestComplianceAssessment:
     @pytest.fixture
     def framework(self):
         from src.core.regulatory_compliance import RegulatoryComplianceFramework
+
         return RegulatoryComplianceFramework()
 
     @pytest.fixture
@@ -142,8 +143,12 @@ class TestComplianceAssessment:
         """AI/ML product should trigger AI-specific standards."""
         result = framework.assess_compliance(aiml_product)
         standard_ids = list(result["assessments"].keys())
-        assert "fda_aiml" in standard_ids, "AI/ML product must be assessed against FDA AI/ML guidance"
-        assert "eu_ai_act" in standard_ids, "AI/ML product targeting EU must be assessed against AI Act"
+        assert "fda_aiml" in standard_ids, (
+            "AI/ML product must be assessed against FDA AI/ML guidance"
+        )
+        assert "eu_ai_act" in standard_ids, (
+            "AI/ML product targeting EU must be assessed against AI Act"
+        )
 
     def test_image_product_fails_cds_criterion_1(self, framework, aiml_product):
         """Product processing images should fail CDS Criterion 1."""
@@ -165,7 +170,10 @@ class TestComplianceAssessment:
         full_score = full_result["assessments"]["iec_62304"]["compliance_score"]
 
         # Stripped artifacts
-        minimal_product = {**medtech_product, "existing_artifacts": ["software_requirements_spec"]}
+        minimal_product = {
+            **medtech_product,
+            "existing_artifacts": ["software_requirements_spec"],
+        }
         min_result = framework.assess_compliance(minimal_product, ["iec_62304"])
         min_score = min_result["assessments"]["iec_62304"]["compliance_score"]
 
@@ -178,6 +186,7 @@ class TestGapAnalysis:
     @pytest.fixture
     def framework(self):
         from src.core.regulatory_compliance import RegulatoryComplianceFramework
+
         return RegulatoryComplianceFramework()
 
     def test_gap_analysis_returns_actionable_items(self, framework):
@@ -223,6 +232,7 @@ class TestRegulatoryDocumentGeneration:
     @pytest.fixture
     def framework(self):
         from src.core.regulatory_compliance import RegulatoryComplianceFramework
+
         return RegulatoryComplianceFramework()
 
     def test_generate_checklist(self, framework):
@@ -263,6 +273,7 @@ class TestMultiRegionCompliance:
     @pytest.fixture
     def framework(self):
         from src.core.regulatory_compliance import RegulatoryComplianceFramework
+
         return RegulatoryComplianceFramework()
 
     def test_us_eu_uk_coverage(self, framework):
@@ -310,6 +321,7 @@ class TestCompliancePackageE2E:
     @pytest.fixture
     def framework(self):
         from src.core.regulatory_compliance import RegulatoryComplianceFramework
+
         return RegulatoryComplianceFramework()
 
     def test_full_compliance_report(self, framework):
@@ -340,4 +352,6 @@ class TestCompliancePackageE2E:
         assert "overall_score" in report
         assert "roadmap" in report
         assert "generated_at" in report
-        assert len(report["assessments"]) >= 4  # At minimum: IEC 62304, ISO 14971, FDA, EU MDR
+        assert (
+            len(report["assessments"]) >= 4
+        )  # At minimum: IEC 62304, ISO 14971, FDA, EU MDR

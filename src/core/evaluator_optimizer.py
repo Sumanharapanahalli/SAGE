@@ -40,6 +40,7 @@ config, a code change) with a task + criteria, and let Gemini hold the bar.
     result = runner.run(task="Improve this approval-inbox component ...", context=src)
     # result["final"] -> submit to HITL approval; result["history"] -> audit trail
 """
+
 from __future__ import annotations
 
 import json
@@ -88,16 +89,22 @@ def _extract_json(text: str) -> Optional[dict]:
 class EvaluatorOptimizerRunner:
     """Run an optimizer LLM against an evaluator LLM until the bar is met."""
 
-    def __init__(self, config: dict, build_provider: Optional[Callable[[dict], object]] = None):
+    def __init__(
+        self, config: dict, build_provider: Optional[Callable[[dict], object]] = None
+    ):
         self.config = config or {}
         self.max_iterations = int(self.config.get("max_iterations", 4))
         self.score_threshold = float(self.config.get("score_threshold", 8.0))
-        self.criteria = self.config.get("criteria", "correctness, clarity, completeness")
+        self.criteria = self.config.get(
+            "criteria", "correctness, clarity, completeness"
+        )
         self.rubric = self.criteria  # may be sharpened in run()
         self.generate_rubric = self.config.get("generate_rubric", True)
         self.sandbox = self.config.get("sandbox", True)
         self.evaluator_retries = int(self.config.get("evaluator_retries", 2))
-        self.evaluator_retry_backoff = float(self.config.get("evaluator_retry_backoff", 5.0))
+        self.evaluator_retry_backoff = float(
+            self.config.get("evaluator_retry_backoff", 5.0)
+        )
         self._build = build_provider or self._default_build_provider
 
         # HARDENING — keep the human-in-the-loop guarantee. The optimizer is the
@@ -108,12 +115,16 @@ class EvaluatorOptimizerRunner:
         # candidate is returned for the human to apply; nothing auto-applies.
         opt_cfg = dict(self.config.get("optimizer", {}))
         if self.sandbox and "optimizer_provider" not in self.config:
-            opt_cfg.setdefault("disallowed_tools", "Write Edit MultiEdit NotebookEdit Bash")
+            opt_cfg.setdefault(
+                "disallowed_tools", "Write Edit MultiEdit NotebookEdit Bash"
+            )
             opt_cfg.setdefault("cwd", tempfile.mkdtemp(prefix="eo_sandbox_"))
 
         # Allow direct provider injection (tests) via optimizer_provider/evaluator_provider.
         self.optimizer = self.config.get("optimizer_provider") or self._build(opt_cfg)
-        self.evaluator = self.config.get("evaluator_provider") or self._build(self.config.get("evaluator", {}))
+        self.evaluator = self.config.get("evaluator_provider") or self._build(
+            self.config.get("evaluator", {})
+        )
 
         # Evaluator pool (game-theory proposal, Step 0(c)): route scoring through
         # an N-provider panel + robust median instead of one judge, so a single
@@ -124,9 +135,11 @@ class EvaluatorOptimizerRunner:
         if pool_providers:
             self.evaluators = list(pool_providers)
         elif self.config.get("evaluator_pool"):
-            self.evaluators = [e for e in
-                                (self._build(cfg) for cfg in self.config["evaluator_pool"])
-                                if e is not None]
+            self.evaluators = [
+                e
+                for e in (self._build(cfg) for cfg in self.config["evaluator_pool"])
+                if e is not None
+            ]
         elif self.evaluator is not None:
             self.evaluators = [self.evaluator]
         else:
@@ -142,25 +155,40 @@ class EvaluatorOptimizerRunner:
         try:
             if name == "gemini":
                 from src.core.llm_gateway import GeminiCLIProvider
-                return GeminiCLIProvider({"gemini_model": model or "gemini-3.5-flash",
-                                          "timeout": cfg.get("timeout", 180)})
+
+                return GeminiCLIProvider(
+                    {
+                        "gemini_model": model or "gemini-3.5-flash",
+                        "timeout": cfg.get("timeout", 180),
+                    }
+                )
             if name == "claude-code":
                 from src.core.llm_gateway import ClaudeCodeCLIProvider
+
                 # Default the optimizer timeout high: it is the agentic claude-code
                 # CLI generating whole files/large diffs, which legitimately takes
                 # minutes (a trivial ask returns in ~10s, a full-file rewrite far more).
-                return ClaudeCodeCLIProvider({
-                    "claude_model": model or "claude-sonnet-4-6", "timeout": cfg.get("timeout", 600),
-                    # forwarded by the hardened __init__ so the optimizer can't write to disk
-                    "disallowed_tools": cfg.get("disallowed_tools", ""),
-                    "cwd": cfg.get("cwd"),
-                })
+                return ClaudeCodeCLIProvider(
+                    {
+                        "claude_model": model or "claude-sonnet-4-6",
+                        "timeout": cfg.get("timeout", 600),
+                        # forwarded by the hardened __init__ so the optimizer can't write to disk
+                        "disallowed_tools": cfg.get("disallowed_tools", ""),
+                        "cwd": cfg.get("cwd"),
+                    }
+                )
             if name == "claude":
                 from src.core.llm_gateway import ClaudeAPIProvider
-                return ClaudeAPIProvider({"claude_model": model or "claude-sonnet-4-6", "timeout": 180})
+
+                return ClaudeAPIProvider(
+                    {"claude_model": model or "claude-sonnet-4-6", "timeout": 180}
+                )
             if name == "ollama":
                 from src.core.llm_gateway import OllamaProvider
-                return OllamaProvider({"ollama_model": model or "llama3", "timeout": 120})
+
+                return OllamaProvider(
+                    {"ollama_model": model or "llama3", "timeout": 120}
+                )
         except Exception as e:  # noqa: BLE001
             logger.warning("could not build provider %s: %s", name, e)
         return None
@@ -201,8 +229,14 @@ class EvaluatorOptimizerRunner:
                 "can be objectively verified. Output ONLY the rubric as plain text."
             )
             lead_evaluator = self.evaluators[0] if self.evaluators else self.evaluator
-            rubric = (lead_evaluator.generate(prompt, "You are a meticulous test-rubric author. "
-                                              "Output only the rubric, no preamble.") or "").strip()
+            rubric = (
+                lead_evaluator.generate(
+                    prompt,
+                    "You are a meticulous test-rubric author. "
+                    "Output only the rubric, no preamble.",
+                )
+                or ""
+            ).strip()
             rubric = self._strip_fences(rubric)
             if rubric and len(rubric) > 20:
                 logger.info("rubric sharpened: %d chars", len(rubric))
@@ -231,16 +265,27 @@ class EvaluatorOptimizerRunner:
         session's flat-0.0 runs (the evaluator was overloaded/unavailable, not harsh)."""
         parsed = _extract_json(raw)
         if not isinstance(parsed, dict) or "score" not in parsed:
-            return {"parse_ok": False, "score": 0.0, "passed": False,
-                    "feedback": "(evaluator output unparseable — no JSON score)"}
+            return {
+                "parse_ok": False,
+                "score": 0.0,
+                "passed": False,
+                "feedback": "(evaluator output unparseable — no JSON score)",
+            }
         try:
             score = float(parsed.get("score", 0))
         except (ValueError, TypeError):
-            return {"parse_ok": False, "score": 0.0, "passed": False,
-                    "feedback": "(evaluator score was non-numeric)"}
-        return {"parse_ok": True, "score": score,
-                "passed": bool(parsed.get("pass", False)),
-                "feedback": str(parsed.get("feedback", "") or "")}
+            return {
+                "parse_ok": False,
+                "score": 0.0,
+                "passed": False,
+                "feedback": "(evaluator score was non-numeric)",
+            }
+        return {
+            "parse_ok": True,
+            "score": score,
+            "passed": bool(parsed.get("pass", False)),
+            "feedback": str(parsed.get("feedback", "") or ""),
+        }
 
     @staticmethod
     def _weighted_median(values: list) -> float:
@@ -279,8 +324,13 @@ class EvaluatorOptimizerRunner:
             f"max_evaluator_prompt_chars if your evaluator can genuinely take it."
         )
         logger.error("%s", msg)
-        return {"parse_ok": False, "score": 0.0, "passed": False,
-                "oversize": True, "feedback": f"(NOT SCORED — {msg})"}
+        return {
+            "parse_ok": False,
+            "score": 0.0,
+            "passed": False,
+            "oversize": True,
+            "feedback": f"(NOT SCORED — {msg})",
+        }
 
     def _evaluate_candidate(self, task: str, candidate: str) -> dict:
         """Evaluate a candidate against self.evaluators. With one evaluator
@@ -311,10 +361,15 @@ class EvaluatorOptimizerRunner:
             for attempt in range(self.evaluator_retries):
                 if ev["parse_ok"]:
                     break
-                logger.warning("evaluator unparseable/timed out — retry %d/%d",
-                               attempt + 1, self.evaluator_retries)
-                time.sleep(self.evaluator_retry_backoff * (2 ** attempt))
-                ev = self._parse_evaluation(evaluator.generate(prompt, EVALUATOR_SYSTEM))
+                logger.warning(
+                    "evaluator unparseable/timed out — retry %d/%d",
+                    attempt + 1,
+                    self.evaluator_retries,
+                )
+                time.sleep(self.evaluator_retry_backoff * (2**attempt))
+                ev = self._parse_evaluation(
+                    evaluator.generate(prompt, EVALUATOR_SYSTEM)
+                )
             return ev
 
         scores = []
@@ -328,8 +383,12 @@ class EvaluatorOptimizerRunner:
                     feedbacks.append(ev["feedback"])
 
         if not scores:
-            return {"parse_ok": False, "score": 0.0, "passed": False,
-                    "feedback": "(every evaluator-pool provider returned unparseable output)"}
+            return {
+                "parse_ok": False,
+                "score": 0.0,
+                "passed": False,
+                "feedback": "(every evaluator-pool provider returned unparseable output)",
+            }
 
         median_score = self._weighted_median(scores)
         return {
@@ -342,11 +401,17 @@ class EvaluatorOptimizerRunner:
     # -- the loop -----------------------------------------------------------
     def run(self, task: str, context: str = "") -> dict:
         if self.optimizer is None or not self.evaluators:
-            return {"error": "optimizer and at least one evaluator provider must be available",
-                    "converged": False, "iterations": 0, "history": []}
+            return {
+                "error": "optimizer and at least one evaluator provider must be available",
+                "converged": False,
+                "iterations": 0,
+                "history": [],
+            }
 
         # sharpen the bar once, up front, so every iteration is judged the same way
-        self.rubric = self._generate_rubric(task) if self.generate_rubric else self.criteria
+        self.rubric = (
+            self._generate_rubric(task) if self.generate_rubric else self.criteria
+        )
 
         history = []
         candidate = None
@@ -355,11 +420,21 @@ class EvaluatorOptimizerRunner:
 
         for i in range(1, self.max_iterations + 1):
             # OPTIMIZE (Claude) — strip any wrapping fence; retry once if empty/errored
-            opt_prompt = self._optimizer_prompt(task, context, candidate, feedback, score)
-            candidate = self._strip_fences((self.optimizer.generate(opt_prompt, OPTIMIZER_SYSTEM) or "").strip())
+            opt_prompt = self._optimizer_prompt(
+                task, context, candidate, feedback, score
+            )
+            candidate = self._strip_fences(
+                (self.optimizer.generate(opt_prompt, OPTIMIZER_SYSTEM) or "").strip()
+            )
             if not candidate or candidate.lower().startswith("error"):
-                logger.warning("iter %d: optimizer returned empty/error, retrying once", i)
-                candidate = self._strip_fences((self.optimizer.generate(opt_prompt, OPTIMIZER_SYSTEM) or "").strip())
+                logger.warning(
+                    "iter %d: optimizer returned empty/error, retrying once", i
+                )
+                candidate = self._strip_fences(
+                    (
+                        self.optimizer.generate(opt_prompt, OPTIMIZER_SYSTEM) or ""
+                    ).strip()
+                )
 
             # EVALUATE — parse robustly: an unparseable response is FLAGGED, not a silent 0.0.
             # With a pool, scores are aggregated via robust median (Step 0(c)).
@@ -369,27 +444,60 @@ class EvaluatorOptimizerRunner:
             # doing exactly what the task asked. Stop now and tell the human to re-scope,
             # rather than grinding through every iteration to arrive at a phantom 0.0.
             if ev.get("oversize"):
-                history.append({"iteration": i, "candidate": candidate, "score": 0.0,
-                                "passed": False, "feedback": ev["feedback"], "parse_ok": False})
-                return {"converged": False, "iterations": i, "final": candidate,
-                        "score": 0.0, "oversize": True, "history": history,
-                        "error": ev["feedback"],
-                        "note": "The candidate is too large for the evaluator to judge. This "
-                                "is NOT a quality score — the judge never ran. Re-scope the "
-                                "task to a smaller unit of work."}
+                history.append(
+                    {
+                        "iteration": i,
+                        "candidate": candidate,
+                        "score": 0.0,
+                        "passed": False,
+                        "feedback": ev["feedback"],
+                        "parse_ok": False,
+                    }
+                )
+                return {
+                    "converged": False,
+                    "iterations": i,
+                    "final": candidate,
+                    "score": 0.0,
+                    "oversize": True,
+                    "history": history,
+                    "error": ev["feedback"],
+                    "note": "The candidate is too large for the evaluator to judge. This "
+                    "is NOT a quality score — the judge never ran. Re-scope the "
+                    "task to a smaller unit of work.",
+                }
 
             score = ev["score"]
             passed = ev["parse_ok"] and (ev["passed"] or score >= self.score_threshold)
             feedback = ev["feedback"]
 
-            history.append({"iteration": i, "candidate": candidate, "score": score,
-                            "passed": passed, "feedback": feedback, "parse_ok": ev["parse_ok"]})
-            logger.info("iter %d/%d: score=%.1f passed=%s", i, self.max_iterations, score, passed)
+            history.append(
+                {
+                    "iteration": i,
+                    "candidate": candidate,
+                    "score": score,
+                    "passed": passed,
+                    "feedback": feedback,
+                    "parse_ok": ev["parse_ok"],
+                }
+            )
+            logger.info(
+                "iter %d/%d: score=%.1f passed=%s",
+                i,
+                self.max_iterations,
+                score,
+                passed,
+            )
 
             if passed:
-                return {"converged": True, "iterations": i, "final": candidate,
-                        "score": score, "history": history,
-                        "note": "Evaluator passed the solution. Submit `final` to the HITL approval gate."}
+                return {
+                    "converged": True,
+                    "iterations": i,
+                    "final": candidate,
+                    "score": score,
+                    "history": history,
+                    "note": "Evaluator passed the solution. Submit `final` to the HITL approval gate.",
+                }
 
         # no convergence — return the best-scoring candidate among PARSEABLE evaluations.
         # A parse-failure iteration carries a swallowed 0.0; it must not be mistaken for a
@@ -397,16 +505,26 @@ class EvaluatorOptimizerRunner:
         parsed_iters = [h for h in history if h.get("parse_ok")]
         if parsed_iters:
             best = max(parsed_iters, key=lambda h: h["score"])
-            return {"converged": False, "iterations": len(history), "final": best["candidate"],
-                    "score": best["score"], "history": history,
-                    "note": "Hit max_iterations without a pass; returning the best-scoring candidate. "
-                            "Submit `final` to the HITL approval gate (a human decides)."}
+            return {
+                "converged": False,
+                "iterations": len(history),
+                "final": best["candidate"],
+                "score": best["score"],
+                "history": history,
+                "note": "Hit max_iterations without a pass; returning the best-scoring candidate. "
+                "Submit `final` to the HITL approval gate (a human decides).",
+            }
         # Every iteration's evaluation was unparseable — surface that; do NOT report a genuine 0.0.
-        return {"converged": False, "iterations": len(history),
-                "final": (history[-1]["candidate"] if history else candidate),
-                "score": 0.0, "evaluator_unparseable": True, "history": history,
-                "note": "Evaluator output was unparseable on every iteration — the score is NOT a "
-                        "genuine 0.0. Check the evaluator model/provider before trusting this result."}
+        return {
+            "converged": False,
+            "iterations": len(history),
+            "final": (history[-1]["candidate"] if history else candidate),
+            "score": 0.0,
+            "evaluator_unparseable": True,
+            "history": history,
+            "note": "Evaluator output was unparseable on every iteration — the score is NOT a "
+            "genuine 0.0. Check the evaluator model/provider before trusting this result.",
+        }
 
 
 def run_loop(task: str, context: str = "", **config) -> dict:
@@ -417,20 +535,40 @@ def run_loop(task: str, context: str = "", **config) -> dict:
 def _main(argv=None):
     """CLI: python -m src.core.evaluator_optimizer --task "..." [--context-file f]"""
     import argparse
-    ap = argparse.ArgumentParser(description="Evaluator-Optimizer loop (Claude optimizes, Gemini evaluates)")
+
+    ap = argparse.ArgumentParser(
+        description="Evaluator-Optimizer loop (Claude optimizes, Gemini evaluates)"
+    )
     ap.add_argument("--task", required=True, help="what to optimize")
-    ap.add_argument("--context-file", help="file whose contents are the current artifact/context")
-    ap.add_argument("--criteria", default="correctness, clarity, completeness, follows SAGE conventions")
-    ap.add_argument("--optimizer", default="claude-code", help="optimizer provider (claude-code|claude|ollama)")
-    ap.add_argument("--evaluator", default="gemini", help="evaluator provider (gemini|...)")
+    ap.add_argument(
+        "--context-file", help="file whose contents are the current artifact/context"
+    )
+    ap.add_argument(
+        "--criteria",
+        default="correctness, clarity, completeness, follows SAGE conventions",
+    )
+    ap.add_argument(
+        "--optimizer",
+        default="claude-code",
+        help="optimizer provider (claude-code|claude|ollama)",
+    )
+    ap.add_argument(
+        "--evaluator", default="gemini", help="evaluator provider (gemini|...)"
+    )
     ap.add_argument("--max-iterations", type=int, default=4)
     ap.add_argument("--threshold", type=float, default=8.0)
     ap.add_argument("--out", help="write the final solution to this file")
-    ap.add_argument("--no-rubric", action="store_true",
-                    help="skip the up-front evaluator rubric-sharpening pass")
-    ap.add_argument("--no-sandbox", action="store_true",
-                    help="DANGER: let the optimizer use file-writing tools in the cwd "
-                         "(default: tool-restricted, throwaway cwd — pure text proposer)")
+    ap.add_argument(
+        "--no-rubric",
+        action="store_true",
+        help="skip the up-front evaluator rubric-sharpening pass",
+    )
+    ap.add_argument(
+        "--no-sandbox",
+        action="store_true",
+        help="DANGER: let the optimizer use file-writing tools in the cwd "
+        "(default: tool-restricted, throwaway cwd — pure text proposer)",
+    )
     args = ap.parse_args(argv)
 
     context = ""
@@ -438,21 +576,27 @@ def _main(argv=None):
         with open(args.context_file, encoding="utf-8") as f:
             context = f.read()
 
-    runner = EvaluatorOptimizerRunner({
-        "optimizer": {"provider": args.optimizer},
-        "evaluator": {"provider": args.evaluator},
-        "criteria": args.criteria,
-        "max_iterations": args.max_iterations,
-        "score_threshold": args.threshold,
-        "generate_rubric": not args.no_rubric,
-        "sandbox": not args.no_sandbox,
-    })
+    runner = EvaluatorOptimizerRunner(
+        {
+            "optimizer": {"provider": args.optimizer},
+            "evaluator": {"provider": args.evaluator},
+            "criteria": args.criteria,
+            "max_iterations": args.max_iterations,
+            "score_threshold": args.threshold,
+            "generate_rubric": not args.no_rubric,
+            "sandbox": not args.no_sandbox,
+        }
+    )
     result = runner.run(args.task, context)
 
-    print(f"\n=== Evaluator-Optimizer: converged={result.get('converged')} "
-          f"iterations={result.get('iterations')} score={result.get('score')} ===")
+    print(
+        f"\n=== Evaluator-Optimizer: converged={result.get('converged')} "
+        f"iterations={result.get('iterations')} score={result.get('score')} ==="
+    )
     for h in result.get("history", []):
-        print(f"  iter {h['iteration']}: score={h['score']} passed={h['passed']}  {h['feedback'][:90]}")
+        print(
+            f"  iter {h['iteration']}: score={h['score']} passed={h['passed']}  {h['feedback'][:90]}"
+        )
     print(f"\n{result.get('note', '')}")
     if "error" in result:
         print("ERROR:", result["error"])
@@ -460,7 +604,9 @@ def _main(argv=None):
     if args.out and result.get("final"):
         with open(args.out, "w", encoding="utf-8") as f:
             f.write(result["final"])
-        print(f"final solution -> {args.out}  (submit to the HITL approval gate; nothing was applied)")
+        print(
+            f"final solution -> {args.out}  (submit to the HITL approval gate; nothing was applied)"
+        )
     else:
         print("\n--- FINAL SOLUTION ---\n" + (result.get("final") or ""))
     return 0
@@ -468,4 +614,5 @@ def _main(argv=None):
 
 if __name__ == "__main__":
     import sys as _sys
+
     _sys.exit(_main())

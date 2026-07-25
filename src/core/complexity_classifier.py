@@ -21,10 +21,22 @@ logger = logging.getLogger(__name__)
 
 # Keywords that indicate complex, multi-step reasoning
 _TOOL_KEYWORDS = {
-    "implementation_plan", "code_diff", "yaml_edit", "refactor",
-    "security", "vulnerability", "architecture", "migration",
-    "compliance", "regulatory", "safety-critical", "firmware",
-    "review", "analyze", "debug", "optimize",
+    "implementation_plan",
+    "code_diff",
+    "yaml_edit",
+    "refactor",
+    "security",
+    "vulnerability",
+    "architecture",
+    "migration",
+    "compliance",
+    "regulatory",
+    "safety-critical",
+    "firmware",
+    "review",
+    "analyze",
+    "debug",
+    "optimize",
 }
 
 # Code block indicators
@@ -32,8 +44,14 @@ _CODE_PATTERNS = re.compile(r"```|def |class |function |import |from .+ import")
 
 # Safety-critical domain keywords in system prompts
 _SAFETY_KEYWORDS = {
-    "safety-critical", "iec 62304", "iso 26262", "medical device",
-    "firmware", "embedded", "compliance", "regulatory",
+    "safety-critical",
+    "iec 62304",
+    "iso 26262",
+    "medical device",
+    "firmware",
+    "embedded",
+    "compliance",
+    "regulatory",
 }
 
 

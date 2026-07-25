@@ -12,7 +12,6 @@ Tests cover:
 """
 
 import json
-import time
 import uuid
 from datetime import datetime, timezone
 
@@ -28,6 +27,7 @@ class TestCloudEventStructure:
     def test_create_event_with_required_fields(self):
         """CloudEvent can be created with the 4 required attributes."""
         from src.modules.cloud_events import CloudEvent
+
         event = CloudEvent(
             type="sage.test.created",
             source="/test",
@@ -41,6 +41,7 @@ class TestCloudEventStructure:
     def test_auto_generated_id(self):
         """CloudEvent auto-generates a UUID id if not provided."""
         from src.modules.cloud_events import CloudEvent
+
         e1 = CloudEvent(type="test", source="/test", data={})
         e2 = CloudEvent(type="test", source="/test", data={})
         assert e1.id != e2.id
@@ -50,6 +51,7 @@ class TestCloudEventStructure:
     def test_auto_generated_time(self):
         """CloudEvent auto-generates an ISO 8601 timestamp."""
         from src.modules.cloud_events import CloudEvent
+
         before = datetime.now(timezone.utc).isoformat()
         event = CloudEvent(type="test", source="/test", data={})
         after = datetime.now(timezone.utc).isoformat()
@@ -59,6 +61,7 @@ class TestCloudEventStructure:
     def test_custom_id_and_time(self):
         """CloudEvent accepts custom id and time."""
         from src.modules.cloud_events import CloudEvent
+
         event = CloudEvent(
             type="test",
             source="/test",
@@ -72,6 +75,7 @@ class TestCloudEventStructure:
     def test_optional_subject(self):
         """CloudEvent supports optional subject attribute."""
         from src.modules.cloud_events import CloudEvent
+
         event = CloudEvent(
             type="sage.proposal.created",
             source="/proposals",
@@ -83,6 +87,7 @@ class TestCloudEventStructure:
     def test_datacontenttype_defaults_json(self):
         """CloudEvent defaults datacontenttype to application/json."""
         from src.modules.cloud_events import CloudEvent
+
         event = CloudEvent(type="test", source="/test", data={})
         assert event.datacontenttype == "application/json"
 
@@ -96,6 +101,7 @@ class TestSpecCompliance:
     def test_required_attributes_present(self):
         """All 4 required attributes (id, source, specversion, type) are present."""
         from src.modules.cloud_events import CloudEvent
+
         event = CloudEvent(type="test.event", source="/sage", data={})
         assert hasattr(event, "id")
         assert hasattr(event, "source")
@@ -105,12 +111,14 @@ class TestSpecCompliance:
     def test_specversion_is_1_0(self):
         """specversion must be '1.0'."""
         from src.modules.cloud_events import CloudEvent
+
         event = CloudEvent(type="test", source="/test", data={})
         assert event.specversion == "1.0"
 
     def test_type_is_non_empty_string(self):
         """type must be a non-empty string."""
         from src.modules.cloud_events import CloudEvent
+
         event = CloudEvent(type="sage.build.completed", source="/build", data={})
         assert isinstance(event.type, str)
         assert len(event.type) > 0
@@ -118,6 +126,7 @@ class TestSpecCompliance:
     def test_source_is_non_empty_string(self):
         """source must be a non-empty string (URI-reference)."""
         from src.modules.cloud_events import CloudEvent
+
         event = CloudEvent(type="test", source="/sage/gym", data={})
         assert isinstance(event.source, str)
         assert len(event.source) > 0
@@ -132,6 +141,7 @@ class TestSerialization:
     def test_to_json_produces_valid_json(self):
         """to_json() returns a valid JSON string."""
         from src.modules.cloud_events import CloudEvent
+
         event = CloudEvent(
             type="sage.test",
             source="/test",
@@ -145,6 +155,7 @@ class TestSerialization:
     def test_to_dict_returns_dict(self):
         """to_dict() returns a plain dict with all attributes."""
         from src.modules.cloud_events import CloudEvent
+
         event = CloudEvent(type="test", source="/test", data={"a": 1})
         d = event.to_dict()
         assert isinstance(d, dict)
@@ -154,6 +165,7 @@ class TestSerialization:
     def test_from_json_roundtrip(self):
         """from_json(event.to_json()) produces an equivalent event."""
         from src.modules.cloud_events import CloudEvent
+
         original = CloudEvent(
             type="sage.roundtrip",
             source="/test",
@@ -172,6 +184,7 @@ class TestSerialization:
     def test_from_dict_roundtrip(self):
         """from_dict(event.to_dict()) produces an equivalent event."""
         from src.modules.cloud_events import CloudEvent
+
         original = CloudEvent(type="sage.dict", source="/test", data={"y": 99})
         d = original.to_dict()
         restored = CloudEvent.from_dict(d)
@@ -182,12 +195,14 @@ class TestSerialization:
     def test_from_json_invalid_raises(self):
         """from_json with invalid JSON raises ValueError."""
         from src.modules.cloud_events import CloudEvent
+
         with pytest.raises((ValueError, json.JSONDecodeError)):
             CloudEvent.from_json("not valid json{{{")
 
     def test_from_dict_missing_required_raises(self):
         """from_dict without required 'type' raises ValueError."""
         from src.modules.cloud_events import CloudEvent
+
         with pytest.raises((ValueError, KeyError)):
             CloudEvent.from_dict({"source": "/test", "data": {}})
 
@@ -201,6 +216,7 @@ class TestEventFactories:
     def test_proposal_event(self):
         """proposal_event() creates a properly typed CloudEvent."""
         from src.modules.cloud_events import proposal_event
+
         event = proposal_event(
             action="created",
             proposal_id="p-123",
@@ -214,6 +230,7 @@ class TestEventFactories:
     def test_build_event(self):
         """build_event() creates a properly typed CloudEvent."""
         from src.modules.cloud_events import build_event
+
         event = build_event(
             action="task_completed",
             run_id="run-456",
@@ -226,6 +243,7 @@ class TestEventFactories:
     def test_gym_event(self):
         """gym_event() creates a properly typed CloudEvent."""
         from src.modules.cloud_events import gym_event
+
         event = gym_event(
             action="session_completed",
             session_id="sess-789",
@@ -238,6 +256,7 @@ class TestEventFactories:
     def test_llm_event(self):
         """llm_event() creates a properly typed CloudEvent."""
         from src.modules.cloud_events import llm_event
+
         event = llm_event(
             action="generate",
             data={"provider": "gemini", "model": "flash", "tokens": 500},
@@ -283,12 +302,16 @@ class TestEventBusIntegration:
         bus.subscribe("sage.proposal.created", lambda t, d: proposals.append(d))
         bus.subscribe("sage.build.started", lambda t, d: builds.append(d))
 
-        publish_cloud_event(bus, CloudEvent(
-            type="sage.proposal.created", source="/proposals", data={"id": "p1"}
-        ))
-        publish_cloud_event(bus, CloudEvent(
-            type="sage.build.started", source="/build", data={"id": "b1"}
-        ))
+        publish_cloud_event(
+            bus,
+            CloudEvent(
+                type="sage.proposal.created", source="/proposals", data={"id": "p1"}
+            ),
+        )
+        publish_cloud_event(
+            bus,
+            CloudEvent(type="sage.build.started", source="/build", data={"id": "b1"}),
+        )
 
         assert len(proposals) == 1
         assert len(builds) == 1
@@ -319,6 +342,7 @@ class TestExtensionAttributes:
     def test_sage_extensions_in_dict(self):
         """SAGE-specific extensions are included in to_dict()."""
         from src.modules.cloud_events import CloudEvent
+
         event = CloudEvent(
             type="sage.test",
             source="/test",
@@ -332,6 +356,7 @@ class TestExtensionAttributes:
     def test_extensions_survive_roundtrip(self):
         """Extension attributes survive JSON roundtrip."""
         from src.modules.cloud_events import CloudEvent
+
         original = CloudEvent(
             type="sage.ext",
             source="/test",

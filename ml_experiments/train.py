@@ -49,6 +49,7 @@ logger = logging.getLogger("train")
 
 # ── CLI ───────────────────────────────────────────────────────────────────────
 
+
 def _parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(
         description="Boston Housing: gradient-descent linear regression",
@@ -68,12 +69,15 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--test-size", type=float, default=0.20, dest="test_size")
     p.add_argument("--val-size", type=float, default=0.10, dest="val_size")
-    p.add_argument("--sweep", action="store_true", help="Run hyperparameter grid search")
+    p.add_argument(
+        "--sweep", action="store_true", help="Run hyperparameter grid search"
+    )
     p.add_argument("--no-plot", action="store_true", dest="no_plot")
     return p.parse_args()
 
 
 # ── Single experiment ─────────────────────────────────────────────────────────
+
 
 def run_experiment(
     X_train: np.ndarray,
@@ -131,10 +135,18 @@ def run_experiment(
         "  test     %7.4f   %7.4f   %7.4f\n"
         "  Iters: %d / %d  |  Converged: %s\n%s",
         "=" * 52,
-        train_m["rmse"], train_m["mae"], train_m["r2"],
-        val_m["rmse"], val_m["mae"], val_m["r2"],
-        test_m["rmse"], test_m["mae"], test_m["r2"],
-        model.n_iter_, params["iterations"], model.converged_,
+        train_m["rmse"],
+        train_m["mae"],
+        train_m["r2"],
+        val_m["rmse"],
+        val_m["mae"],
+        val_m["r2"],
+        test_m["rmse"],
+        test_m["mae"],
+        test_m["r2"],
+        model.n_iter_,
+        params["iterations"],
+        model.converged_,
         "=" * 52,
     )
 
@@ -186,6 +198,7 @@ def run_sweep(
 
 # ── Plotting ──────────────────────────────────────────────────────────────────
 
+
 def plot_learning_curves(
     model: LinearRegressionGD,
     save_path: str = "learning_curves.png",
@@ -206,8 +219,13 @@ def plot_learning_curves(
         ax.set_ylabel("Training MSE (log scale)")
         ax.set_title("Training Loss")
         ax.grid(True, alpha=0.3)
-        ax.axvline(x=model.n_iter_ - 1, color="red", linestyle="--",
-                   linewidth=0.8, label=f"stopped @ {model.n_iter_}")
+        ax.axvline(
+            x=model.n_iter_ - 1,
+            color="red",
+            linestyle="--",
+            linewidth=0.8,
+            label=f"stopped @ {model.n_iter_}",
+        )
         ax.legend(fontsize=9)
 
         ax = axes[1]
@@ -227,6 +245,7 @@ def plot_learning_curves(
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 
+
 def main() -> None:
     args = _parse_args()
 
@@ -238,7 +257,8 @@ def main() -> None:
 
     # ── Split (no normalisation here — done inside model.fit() on train only) ─
     X_train, X_val, X_test, y_train, y_val, y_test = train_test_split_reg(
-        X, y,
+        X,
+        y,
         test_size=args.test_size,
         val_size=args.val_size,
         random_state=args.seed,

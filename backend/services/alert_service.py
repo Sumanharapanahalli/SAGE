@@ -49,6 +49,7 @@ IDEMPOTENCY_TTL_SECONDS = 3600  # deduplicate for 1 hour
 
 # ── Pydantic I/O models ──────────────────────────────────────────────────────
 
+
 class FallEventRequest(BaseModel):
     event_id: str = Field(..., description="Device-generated UUID — idempotency key")
     device_id: str
@@ -91,6 +92,7 @@ class CancellationResponse(BaseModel):
 
 # ── Idempotency store ────────────────────────────────────────────────────────
 
+
 class IdempotencyStore:
     """Async-safe in-memory deduplication with TTL eviction."""
 
@@ -123,6 +125,7 @@ class IdempotencyStore:
 
 
 # ── Audit logger ─────────────────────────────────────────────────────────────
+
 
 class AuditLogger:
     """
@@ -187,6 +190,7 @@ class AuditLogger:
 
 
 # ── Coordinator ──────────────────────────────────────────────────────────────
+
 
 class AlertService:
     """
@@ -534,6 +538,7 @@ async def get_audit_trail(
 
 # ── FastAPI app factory ───────────────────────────────────────────────────────
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logging.basicConfig(
@@ -569,6 +574,7 @@ app = create_app()
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(
         "backend.services.alert_service:app",
         host="0.0.0.0",

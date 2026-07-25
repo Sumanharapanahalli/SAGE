@@ -21,7 +21,7 @@ from typing import Dict
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 
-from .metrics import compute_all, per_horizon_rmse
+from .metrics import compute_all
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +69,9 @@ def comparison_table(lstm_metrics: dict, arima_metrics: dict, horizon: int = 7) 
     """Return a markdown comparison table."""
     rows = ["| Metric | LSTM | ARIMA | Winner |", "|--------|------|-------|--------|"]
 
-    def _row(name: str, lstm_key: str, arima_key: str, lower_is_better: bool = True) -> str:
+    def _row(
+        name: str, lstm_key: str, arima_key: str, lower_is_better: bool = True
+    ) -> str:
         l_val = lstm_metrics.get(lstm_key, float("nan"))
         a_val = arima_metrics.get(arima_key, float("nan"))
         if np.isnan(l_val) or np.isnan(a_val):
@@ -80,10 +82,10 @@ def comparison_table(lstm_metrics: dict, arima_metrics: dict, horizon: int = 7) 
             winner = "LSTM" if l_val > a_val else "ARIMA"
         return f"| {name} | {l_val:.4f} | {a_val:.4f} | {winner} |"
 
-    rows.append(_row("MAE",   "lstm_mae",   "arima_mae"))
-    rows.append(_row("RMSE",  "lstm_rmse",  "arima_rmse"))
-    rows.append(_row("MAPE%", "lstm_mape",  "arima_mape"))
-    rows.append(_row("sMAPE%","lstm_smape", "arima_smape"))
+    rows.append(_row("MAE", "lstm_mae", "arima_mae"))
+    rows.append(_row("RMSE", "lstm_rmse", "arima_rmse"))
+    rows.append(_row("MAPE%", "lstm_mape", "arima_mape"))
+    rows.append(_row("sMAPE%", "lstm_smape", "arima_smape"))
     rows.append("|  |  |  |  |")
     rows.append("| **Per-step RMSE** |  |  |  |")
 

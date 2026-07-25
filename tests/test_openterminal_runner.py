@@ -17,8 +17,7 @@ Inspired by: https://github.com/stanford-iris-lab/meta-harness-tbench2-artifact
 """
 
 import json
-import time
-from unittest.mock import MagicMock, patch, PropertyMock, call
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -29,10 +28,14 @@ pytestmark = pytest.mark.unit
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _fresh_runner():
     """Create an OpenTerminalRunner with mocked dependencies."""
-    with patch("src.integrations.openterminal_runner._check_tmux_available", return_value=True):
+    with patch(
+        "src.integrations.openterminal_runner._check_tmux_available", return_value=True
+    ):
         from src.integrations.openterminal_runner import OpenTerminalRunner
+
         return OpenTerminalRunner()
 
 
@@ -49,25 +52,32 @@ def _basic_task(description="List all Python files in /tmp"):
 def _mock_llm_ctx(response_text=None):
     """Mock LLM gateway for terminal command generation."""
     if response_text is None:
-        response_text = json.dumps({
-            "analysis": "Need to list Python files in /tmp directory",
-            "plan": "Use find command with .py extension filter",
-            "commands": [
-                {"command": "find /tmp -name '*.py' -type f", "duration": 5}
-            ],
-            "task_complete": False,
-        })
-    return patch("src.core.llm_gateway.llm_gateway.generate_for_task", return_value=response_text)
+        response_text = json.dumps(
+            {
+                "analysis": "Need to list Python files in /tmp directory",
+                "plan": "Use find command with .py extension filter",
+                "commands": [
+                    {"command": "find /tmp -name '*.py' -type f", "duration": 5}
+                ],
+                "task_complete": False,
+            }
+        )
+    return patch(
+        "src.core.llm_gateway.llm_gateway.generate_for_task", return_value=response_text
+    )
 
 
 def _mock_llm_generate_ctx(response_text="summarized context"):
     """Mock LLM gateway generate for context summarization."""
-    return patch("src.core.llm_gateway.llm_gateway.generate", return_value=response_text)
+    return patch(
+        "src.core.llm_gateway.llm_gateway.generate", return_value=response_text
+    )
 
 
 # ===========================================================================
 # Group 1: BaseRunner Contract Compliance
 # ===========================================================================
+
 
 class TestBaseRunnerContract:
     """OpenTerminalRunner must implement all BaseRunner abstract methods."""
@@ -75,6 +85,7 @@ class TestBaseRunnerContract:
     def test_is_subclass_of_base_runner(self):
         runner = _fresh_runner()
         from src.integrations.base_runner import BaseRunner
+
         assert isinstance(runner, BaseRunner)
 
     def test_has_correct_name(self):
@@ -89,15 +100,21 @@ class TestBaseRunnerContract:
     def test_execute_returns_run_result(self):
         runner = _fresh_runner()
         task = _basic_task()
-        with _mock_llm_ctx(), \
-             patch.object(runner, "_create_tmux_session", return_value="session-1"), \
-             patch.object(runner, "_destroy_tmux_session"), \
-             patch.object(runner, "_gather_env_snapshot", return_value={"cwd": "/tmp"}), \
-             patch.object(runner, "_run_agent_loop", return_value={
-                 "status": "completed",
-                 "output": "file1.py\nfile2.py",
-                 "commands_executed": 1,
-             }):
+        with (
+            _mock_llm_ctx(),
+            patch.object(runner, "_create_tmux_session", return_value="session-1"),
+            patch.object(runner, "_destroy_tmux_session"),
+            patch.object(runner, "_gather_env_snapshot", return_value={"cwd": "/tmp"}),
+            patch.object(
+                runner,
+                "_run_agent_loop",
+                return_value={
+                    "status": "completed",
+                    "output": "file1.py\nfile2.py",
+                    "commands_executed": 1,
+                },
+            ),
+        ):
             result = runner.execute(task, "/tmp/workspace")
             assert result.run_id is not None
             assert result.status == "completed"
@@ -106,9 +123,12 @@ class TestBaseRunnerContract:
     def test_verify_returns_verification_report(self):
         runner = _fresh_runner()
         from src.integrations.base_runner import RunResult
+
         result = RunResult(
-            run_id="test-123", status="completed",
-            runner="openterminal", tier="direct",
+            run_id="test-123",
+            status="completed",
+            runner="openterminal",
+            tier="direct",
             output="file1.py\nfile2.py",
             metrics={"commands_executed": 1, "exit_code": 0},
         )
@@ -126,20 +146,35 @@ class TestBaseRunnerContract:
     def test_grade_exercise_returns_score(self):
         runner = _fresh_runner()
         from src.integrations.base_runner import Exercise, RunResult
+
         exercise = Exercise(
-            id="term-b01", role="terminal_operator",
-            task_type="terminal_execution", difficulty="beginner",
+            id="term-b01",
+            role="terminal_operator",
+            task_type="terminal_execution",
+            difficulty="beginner",
             description="List files in current directory",
             acceptance_criteria=["Output contains file listing"],
             expected_artifacts=[],
         )
         result = RunResult(
-            run_id="test-grade", status="completed",
-            runner="openterminal", tier="direct",
+            run_id="test-grade",
+            status="completed",
+            runner="openterminal",
+            tier="direct",
             output="file1.txt\nfile2.txt",
             metrics={"exit_code": 0, "commands_executed": 1},
         )
-        with patch.object(runner, "_llm_grade", return_value={"score": 80, "passed": True, "criteria_results": {}, "feedback": "Good", "improvement_hints": []}):
+        with patch.object(
+            runner,
+            "_llm_grade",
+            return_value={
+                "score": 80,
+                "passed": True,
+                "criteria_results": {},
+                "feedback": "Good",
+                "improvement_hints": [],
+            },
+        ):
             score = runner.grade_exercise(exercise, result)
             assert hasattr(score, "score")
             assert hasattr(score, "passed")
@@ -159,6 +194,7 @@ class TestBaseRunnerContract:
 # ===========================================================================
 # Group 2: Tmux Session Management
 # ===========================================================================
+
 
 class TestTmuxSessionManagement:
     """Tmux session create, attach, destroy lifecycle."""
@@ -211,6 +247,7 @@ class TestTmuxSessionManagement:
 # Group 3: Marker-Based Command Polling
 # ===========================================================================
 
+
 class TestMarkerBasedPolling:
     """Marker injection and polling instead of fixed sleep."""
 
@@ -233,7 +270,9 @@ class TestMarkerBasedPolling:
         runner = _fresh_runner()
         marker = runner._make_marker(1)
         # Simulate tmux output that contains the marker
-        with patch.object(runner, "_capture_tmux_pane", return_value=f"some output\n{marker}\n"):
+        with patch.object(
+            runner, "_capture_tmux_pane", return_value=f"some output\n{marker}\n"
+        ):
             found, output = runner._poll_for_marker("session-1", marker, timeout=5)
             assert found is True
 
@@ -268,57 +307,76 @@ class TestMarkerBasedPolling:
 # Group 4: Environment Bootstrapping
 # ===========================================================================
 
+
 class TestEnvironmentBootstrapping:
     """Pre-discovery of sandbox environment before agent loop."""
 
     def test_gather_env_snapshot_returns_dict(self):
         runner = _fresh_runner()
-        with patch.object(runner, "_send_tmux_keys"), \
-             patch.object(runner, "_poll_for_marker", return_value=(True, "Python 3.12\ngcc 12.3\n")), \
-             patch.object(runner, "_capture_tmux_pane", return_value="/home/user\n"):
+        with (
+            patch.object(runner, "_send_tmux_keys"),
+            patch.object(
+                runner,
+                "_poll_for_marker",
+                return_value=(True, "Python 3.12\ngcc 12.3\n"),
+            ),
+            patch.object(runner, "_capture_tmux_pane", return_value="/home/user\n"),
+        ):
             snapshot = runner._gather_env_snapshot("session-1")
             assert isinstance(snapshot, dict)
 
     def test_snapshot_includes_working_directory(self):
         runner = _fresh_runner()
         env_output = "CWD=/home/user\nPython 3.12.0\ngcc 12.3.0"
-        with patch.object(runner, "_send_tmux_keys"), \
-             patch.object(runner, "_poll_for_marker", return_value=(True, env_output)), \
-             patch.object(runner, "_capture_tmux_pane", return_value=env_output):
+        with (
+            patch.object(runner, "_send_tmux_keys"),
+            patch.object(runner, "_poll_for_marker", return_value=(True, env_output)),
+            patch.object(runner, "_capture_tmux_pane", return_value=env_output),
+        ):
             snapshot = runner._gather_env_snapshot("session-1")
             assert "working_directory" in snapshot or "cwd" in snapshot
 
     def test_snapshot_includes_installed_languages(self):
         runner = _fresh_runner()
         env_output = "Python 3.12.0\ngcc 12.3.0\nnode v20.10\nrustc 1.75.0"
-        with patch.object(runner, "_send_tmux_keys"), \
-             patch.object(runner, "_poll_for_marker", return_value=(True, env_output)), \
-             patch.object(runner, "_capture_tmux_pane", return_value=env_output):
+        with (
+            patch.object(runner, "_send_tmux_keys"),
+            patch.object(runner, "_poll_for_marker", return_value=(True, env_output)),
+            patch.object(runner, "_capture_tmux_pane", return_value=env_output),
+        ):
             snapshot = runner._gather_env_snapshot("session-1")
             assert "languages" in snapshot or "tools_available" in snapshot
 
     def test_snapshot_includes_system_info(self):
         runner = _fresh_runner()
         env_output = "Linux 6.1.0\n4096 MB RAM\nDisk: 50GB free"
-        with patch.object(runner, "_send_tmux_keys"), \
-             patch.object(runner, "_poll_for_marker", return_value=(True, env_output)), \
-             patch.object(runner, "_capture_tmux_pane", return_value=env_output):
+        with (
+            patch.object(runner, "_send_tmux_keys"),
+            patch.object(runner, "_poll_for_marker", return_value=(True, env_output)),
+            patch.object(runner, "_capture_tmux_pane", return_value=env_output),
+        ):
             snapshot = runner._gather_env_snapshot("session-1")
             assert "system" in snapshot or "os" in snapshot
 
     def test_snapshot_injected_into_initial_prompt(self):
         """Environment snapshot must be part of the first LLM prompt."""
         runner = _fresh_runner()
-        snapshot = {"cwd": "/home/user", "languages": {"python": "3.12"}, "system": {"os": "Linux"}}
+        snapshot = {
+            "cwd": "/home/user",
+            "languages": {"python": "3.12"},
+            "system": {"os": "Linux"},
+        }
         prompt = runner._build_initial_prompt(_basic_task(), snapshot)
         assert "/home/user" in prompt or "python" in prompt.lower()
 
     def test_bootstrap_failure_returns_partial_snapshot(self):
         """If some probes fail, return what we got — don't crash."""
         runner = _fresh_runner()
-        with patch.object(runner, "_send_tmux_keys"), \
-             patch.object(runner, "_poll_for_marker", return_value=(False, "")), \
-             patch.object(runner, "_capture_tmux_pane", return_value=""):
+        with (
+            patch.object(runner, "_send_tmux_keys"),
+            patch.object(runner, "_poll_for_marker", return_value=(False, "")),
+            patch.object(runner, "_capture_tmux_pane", return_value=""),
+        ):
             snapshot = runner._gather_env_snapshot("session-1")
             assert isinstance(snapshot, dict)
 
@@ -327,17 +385,20 @@ class TestEnvironmentBootstrapping:
 # Group 5: Structured Reasoning Enforcement
 # ===========================================================================
 
+
 class TestStructuredReasoning:
     """LLM tool calls must include analysis + plan + commands."""
 
     def test_parse_valid_structured_response(self):
         runner = _fresh_runner()
-        response = json.dumps({
-            "analysis": "The directory exists and contains Python files",
-            "plan": "List all .py files recursively",
-            "commands": [{"command": "find . -name '*.py'", "duration": 5}],
-            "task_complete": False,
-        })
+        response = json.dumps(
+            {
+                "analysis": "The directory exists and contains Python files",
+                "plan": "List all .py files recursively",
+                "commands": [{"command": "find . -name '*.py'", "duration": 5}],
+                "task_complete": False,
+            }
+        )
         parsed = runner._parse_agent_response(response)
         assert parsed["analysis"] != ""
         assert parsed["plan"] != ""
@@ -346,32 +407,38 @@ class TestStructuredReasoning:
     def test_reject_response_without_analysis(self):
         """Response missing analysis field should be flagged."""
         runner = _fresh_runner()
-        response = json.dumps({
-            "plan": "Just run it",
-            "commands": [{"command": "ls", "duration": 1}],
-            "task_complete": False,
-        })
+        response = json.dumps(
+            {
+                "plan": "Just run it",
+                "commands": [{"command": "ls", "duration": 1}],
+                "task_complete": False,
+            }
+        )
         parsed = runner._parse_agent_response(response)
         assert parsed.get("valid") is False or parsed.get("analysis") == ""
 
     def test_reject_response_without_plan(self):
         runner = _fresh_runner()
-        response = json.dumps({
-            "analysis": "Analyzing the situation",
-            "commands": [{"command": "ls", "duration": 1}],
-            "task_complete": False,
-        })
+        response = json.dumps(
+            {
+                "analysis": "Analyzing the situation",
+                "commands": [{"command": "ls", "duration": 1}],
+                "task_complete": False,
+            }
+        )
         parsed = runner._parse_agent_response(response)
         assert parsed.get("valid") is False or parsed.get("plan") == ""
 
     def test_commands_have_duration_field(self):
         runner = _fresh_runner()
-        response = json.dumps({
-            "analysis": "Need to check files",
-            "plan": "Use ls command",
-            "commands": [{"command": "ls -la", "duration": 3}],
-            "task_complete": False,
-        })
+        response = json.dumps(
+            {
+                "analysis": "Need to check files",
+                "plan": "Use ls command",
+                "commands": [{"command": "ls -la", "duration": 3}],
+                "task_complete": False,
+            }
+        )
         parsed = runner._parse_agent_response(response)
         for cmd in parsed["commands"]:
             assert "duration" in cmd or "timeout" in cmd
@@ -388,6 +455,7 @@ class TestStructuredReasoning:
 # ===========================================================================
 # Group 6: Double-Confirmation Task Completion
 # ===========================================================================
+
 
 class TestDoubleConfirmation:
     """Task completion requires a verification checklist before finalizing."""
@@ -413,7 +481,9 @@ class TestDoubleConfirmation:
         checklist = result.get("checklist", result.get("verification", ""))
         checklist_str = str(checklist).lower()
         # Should reference multiple perspectives
-        assert any(p in checklist_str for p in ["test", "qa", "user", "engineer", "verify"])
+        assert any(
+            p in checklist_str for p in ["test", "qa", "user", "engineer", "verify"]
+        )
 
     def test_second_completion_confirms(self):
         runner = _fresh_runner()
@@ -429,18 +499,22 @@ class TestDoubleConfirmation:
         runner = _fresh_runner()
         # First response: task_complete=True (first time)
         responses = [
-            json.dumps({
-                "analysis": "Task appears done",
-                "plan": "Verify completion",
-                "commands": [],
-                "task_complete": True,
-            }),
-            json.dumps({
-                "analysis": "Verified from all perspectives",
-                "plan": "Confirm completion",
-                "commands": [],
-                "task_complete": True,
-            }),
+            json.dumps(
+                {
+                    "analysis": "Task appears done",
+                    "plan": "Verify completion",
+                    "commands": [],
+                    "task_complete": True,
+                }
+            ),
+            json.dumps(
+                {
+                    "analysis": "Verified from all perspectives",
+                    "plan": "Confirm completion",
+                    "commands": [],
+                    "task_complete": True,
+                }
+            ),
         ]
         call_count = [0]
 
@@ -449,11 +523,16 @@ class TestDoubleConfirmation:
             call_count[0] += 1
             return responses[idx]
 
-        with patch("src.core.llm_gateway.llm_gateway.generate_for_task", side_effect=mock_generate), \
-             patch.object(runner, "_create_tmux_session", return_value="session-1"), \
-             patch.object(runner, "_destroy_tmux_session"), \
-             patch.object(runner, "_gather_env_snapshot", return_value={"cwd": "/tmp"}):
-            loop_result = runner._run_agent_loop("session-1", _basic_task(), {"cwd": "/tmp"})
+        with (
+            patch(
+                "src.core.llm_gateway.llm_gateway.generate_for_task",
+                side_effect=mock_generate,
+            ),
+            patch.object(runner, "_create_tmux_session", return_value="session-1"),
+            patch.object(runner, "_destroy_tmux_session"),
+            patch.object(runner, "_gather_env_snapshot", return_value={"cwd": "/tmp"}),
+        ):
+            runner._run_agent_loop("session-1", _basic_task(), {"cwd": "/tmp"})
             # Agent should have been called at least twice (first complete + verification)
             assert call_count[0] >= 2
 
@@ -461,6 +540,7 @@ class TestDoubleConfirmation:
 # ===========================================================================
 # Group 7: Proactive Context Summarization
 # ===========================================================================
+
 
 class TestContextSummarization:
     """Context management to prevent overflow in long sessions."""
@@ -479,25 +559,25 @@ class TestContextSummarization:
             history.append({"role": "user", "content": f"Turn {i} output"})
             history.append({"role": "assistant", "content": f"Turn {i} response"})
 
-        with _mock_llm_generate_ctx("Summary of previous 20 turns: explored files, found bugs"):
+        with _mock_llm_generate_ctx(
+            "Summary of previous 20 turns: explored files, found bugs"
+        ):
             should_summarize = runner._should_summarize(history)
             assert should_summarize is True
 
     def test_summarize_produces_condensed_history(self):
         runner = _fresh_runner()
-        history = [
-            {"role": "user", "content": f"Turn {i}"} for i in range(30)
-        ]
-        with _mock_llm_generate_ctx("Condensed: explored filesystem, found 3 Python files"):
+        history = [{"role": "user", "content": f"Turn {i}"} for i in range(30)]
+        with _mock_llm_generate_ctx(
+            "Condensed: explored filesystem, found 3 Python files"
+        ):
             condensed = runner._summarize_history(history)
             assert len(condensed) < len(history)
 
     def test_summarize_preserves_recent_messages(self):
         """Recent messages should NOT be summarized — only older ones."""
         runner = _fresh_runner()
-        history = [
-            {"role": "user", "content": f"Turn {i}"} for i in range(30)
-        ]
+        history = [{"role": "user", "content": f"Turn {i}"} for i in range(30)]
         with _mock_llm_generate_ctx("Condensed: earlier turns"):
             condensed = runner._summarize_history(history)
             # Last few messages should remain intact
@@ -518,32 +598,38 @@ class TestContextSummarization:
 # Group 8: Runner Registration
 # ===========================================================================
 
+
 class TestRegistration:
     """Runner must register with the runner registry."""
 
     def test_terminal_roles_defined(self):
         from src.integrations.base_runner import ALL_ROLE_FAMILIES
+
         assert "openterminal" in ALL_ROLE_FAMILIES
 
     def test_runner_registered_for_terminal_operator(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("terminal_operator")
         assert runner is not None
         assert runner.name == "openterminal"
 
     def test_runner_registered_for_shell_expert(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("shell_expert")
         assert runner is not None
         assert runner.name == "openterminal"
 
     def test_runner_accessible_by_name(self):
         from src.integrations.base_runner import get_runner_by_name
+
         runner = get_runner_by_name("openterminal")
         assert runner is not None
 
     def test_runner_in_list_runners(self):
         from src.integrations.base_runner import list_runners
+
         runners = list_runners()
         names = [r["name"] for r in runners]
         assert "openterminal" in names
@@ -553,13 +639,18 @@ class TestRegistration:
 # Group 9: Error Handling & Resilience
 # ===========================================================================
 
+
 class TestResilience:
     """Runner should handle failures gracefully."""
 
     def test_tmux_unavailable_returns_error_result(self):
         """If tmux is not installed, execute returns error RunResult."""
-        with patch("src.integrations.openterminal_runner._check_tmux_available", return_value=False):
+        with patch(
+            "src.integrations.openterminal_runner._check_tmux_available",
+            return_value=False,
+        ):
             from src.integrations.openterminal_runner import OpenTerminalRunner
+
             runner = OpenTerminalRunner()
             result = runner.execute(_basic_task(), "/tmp")
             assert result.status == "error"
@@ -567,17 +658,24 @@ class TestResilience:
 
     def test_llm_failure_returns_error_result(self):
         runner = _fresh_runner()
-        with patch("src.core.llm_gateway.llm_gateway.generate_for_task", side_effect=Exception("LLM down")), \
-             patch.object(runner, "_create_tmux_session", return_value="s1"), \
-             patch.object(runner, "_destroy_tmux_session"), \
-             patch.object(runner, "_gather_env_snapshot", return_value={}):
+        with (
+            patch(
+                "src.core.llm_gateway.llm_gateway.generate_for_task",
+                side_effect=Exception("LLM down"),
+            ),
+            patch.object(runner, "_create_tmux_session", return_value="s1"),
+            patch.object(runner, "_destroy_tmux_session"),
+            patch.object(runner, "_gather_env_snapshot", return_value={}),
+        ):
             result = runner.execute(_basic_task(), "/tmp")
             assert result.status == "error"
 
     def test_command_timeout_captured_in_metrics(self):
         runner = _fresh_runner()
         marker = runner._make_marker(1)
-        with patch.object(runner, "_capture_tmux_pane", return_value="still running..."):
+        with patch.object(
+            runner, "_capture_tmux_pane", return_value="still running..."
+        ):
             found, output = runner._poll_for_marker("s1", marker, timeout=0.1)
             assert found is False
 

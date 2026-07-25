@@ -43,7 +43,6 @@ sys.path.insert(0, str(ROOT))
 # ---------------------------------------------------------------------------
 
 FEATURES = [
-
     # ── core/src ─────────────────────────────────────────────────────────────
     {
         "id": "llm_gateway",
@@ -168,7 +167,6 @@ FEATURES = [
             "timeout management per wave, audit trail completeness"
         ),
     },
-
     # ── agents ────────────────────────────────────────────────────────────────
     {
         "id": "analyst_agent",
@@ -328,7 +326,6 @@ FEATURES = [
             "language/framework awareness from project.yaml"
         ),
     },
-
     # ── api ───────────────────────────────────────────────────────────────────
     {
         "id": "api_endpoints",
@@ -351,7 +348,6 @@ FEATURES = [
             "OpenAPI docs accurate and complete"
         ),
     },
-
     # ── memory ────────────────────────────────────────────────────────────────
     {
         "id": "audit_logger",
@@ -394,7 +390,6 @@ FEATURES = [
             "storage size cap and pruning strategy"
         ),
     },
-
     # ── modules ───────────────────────────────────────────────────────────────
     {
         "id": "nano_modules",
@@ -421,7 +416,6 @@ FEATURES = [
             "event_bus: thread safety, backpressure, subscriber error isolation"
         ),
     },
-
     # ── ui ────────────────────────────────────────────────────────────────────
     {
         "id": "ui_agents_page",
@@ -539,7 +533,6 @@ FEATURES = [
             "mobile responsiveness: sidebar collapses"
         ),
     },
-
     # ── solutions ─────────────────────────────────────────────────────────────
     {
         "id": "solution_yaml_design",
@@ -561,7 +554,6 @@ FEATURES = [
             "in-YAML documentation quality (comments explain each section)"
         ),
     },
-
     # ── gym ───────────────────────────────────────────────────────────────────
     {
         "id": "agent_gym",
@@ -584,7 +576,6 @@ FEATURES = [
             "tool access requirements per exercise vs what agents actually have"
         ),
     },
-
     # ── ops ───────────────────────────────────────────────────────────────────
     {
         "id": "makefile_ops",
@@ -615,16 +606,22 @@ FEATURES = [
 
 MAX_FILE_CHARS = 10_000  # per file — keeps token count manageable
 
+
 def load_context(feature: dict) -> str:
     parts = []
     for rel in feature["source_files"]:
         full = ROOT / rel
         if not full.exists():
-            parts.append(f"### {rel}\n[FILE NOT FOUND — feature may not be implemented yet]\n")
+            parts.append(
+                f"### {rel}\n[FILE NOT FOUND — feature may not be implemented yet]\n"
+            )
             continue
         text = full.read_text(encoding="utf-8", errors="replace")
         if len(text) > MAX_FILE_CHARS:
-            text = text[:MAX_FILE_CHARS] + f"\n\n... [truncated — {len(text) - MAX_FILE_CHARS} chars omitted]"
+            text = (
+                text[:MAX_FILE_CHARS]
+                + f"\n\n... [truncated — {len(text) - MAX_FILE_CHARS} chars omitted]"
+            )
         parts.append(f"### {rel}\n```\n{text}\n```")
     return "\n\n".join(parts)
 
@@ -706,6 +703,7 @@ Score >= 8 only when:
 # ---------------------------------------------------------------------------
 # Output
 # ---------------------------------------------------------------------------
+
 
 def save_proposal(out_dir: Path, feature: dict, result: dict) -> Path:
     slug = feature["id"]
@@ -789,24 +787,45 @@ def save_summary(out_dir: Path, results: list) -> Path:
 # Main
 # ---------------------------------------------------------------------------
 
+
 def main(argv=None):
     ap = argparse.ArgumentParser(
         description="SAGE self-audit: Gemini Flash critiques, Claude proposes fixes"
     )
     ap.add_argument("--feature", help="Run only this feature ID (e.g. llm_gateway)")
-    ap.add_argument("--categories", help="Comma-separated categories (e.g. core,agents,ui)")
-    ap.add_argument("--resume", action="store_true",
-                    help="Skip features whose output file already exists")
-    ap.add_argument("--dry-run", action="store_true",
-                    help="Print catalog only — no LLM calls")
-    ap.add_argument("--max-iterations", type=int, default=3,
-                    help="Max loop iterations per feature (default: 3)")
-    ap.add_argument("--threshold", type=float, default=8.0,
-                    help="Gemini pass score 0-10 (default: 8.0)")
-    ap.add_argument("--gemini-model", default="gemini-3.5-flash",
-                    help="Gemini evaluator model (default: gemini-3.5-flash)")
-    ap.add_argument("--claude-model", default="claude-sonnet-4-6",
-                    help="Claude optimizer model (default: claude-sonnet-4-6)")
+    ap.add_argument(
+        "--categories", help="Comma-separated categories (e.g. core,agents,ui)"
+    )
+    ap.add_argument(
+        "--resume",
+        action="store_true",
+        help="Skip features whose output file already exists",
+    )
+    ap.add_argument(
+        "--dry-run", action="store_true", help="Print catalog only — no LLM calls"
+    )
+    ap.add_argument(
+        "--max-iterations",
+        type=int,
+        default=3,
+        help="Max loop iterations per feature (default: 3)",
+    )
+    ap.add_argument(
+        "--threshold",
+        type=float,
+        default=8.0,
+        help="Gemini pass score 0-10 (default: 8.0)",
+    )
+    ap.add_argument(
+        "--gemini-model",
+        default="gemini-3.5-flash",
+        help="Gemini evaluator model (default: gemini-3.5-flash)",
+    )
+    ap.add_argument(
+        "--claude-model",
+        default="claude-sonnet-4-6",
+        help="Claude optimizer model (default: claude-sonnet-4-6)",
+    )
     args = ap.parse_args(argv)
 
     # Apply filters
@@ -833,7 +852,9 @@ def main(argv=None):
     logger.info("  Features   : %d", len(features))
     logger.info("  Evaluator  : %s (Gemini critic)", args.gemini_model)
     logger.info("  Optimizer  : claude-code/%s", args.claude_model)
-    logger.info("  Iterations : %d max, threshold %.1f", args.max_iterations, args.threshold)
+    logger.info(
+        "  Iterations : %d max, threshold %.1f", args.max_iterations, args.threshold
+    )
     logger.info("  Output     : %s", out_dir)
 
     # Dry run — just print catalog
@@ -873,30 +894,32 @@ def main(argv=None):
         criteria = CRITERIA_TEMPLATE.format(feature_criteria=feature["criteria"])
 
         # Runner: Gemini Flash evaluator + Claude Code optimizer (sandboxed)
-        runner = EvaluatorOptimizerRunner({
-            "optimizer": {
-                "provider": "claude-code",
-                "model":    args.claude_model,
-                "timeout":  600,
-            },
-            "evaluator": {
-                "provider": "gemini",
-                "model":    args.gemini_model,
-                "timeout":  180,
-            },
-            "criteria":        criteria,
-            "max_iterations":  args.max_iterations,
-            "score_threshold": args.threshold,
-            "generate_rubric": True,   # Gemini sharpens its own rubric before judging
-            "sandbox":         True,   # optimizer cannot write files
-        })
+        runner = EvaluatorOptimizerRunner(
+            {
+                "optimizer": {
+                    "provider": "claude-code",
+                    "model": args.claude_model,
+                    "timeout": 600,
+                },
+                "evaluator": {
+                    "provider": "gemini",
+                    "model": args.gemini_model,
+                    "timeout": 180,
+                },
+                "criteria": criteria,
+                "max_iterations": args.max_iterations,
+                "score_threshold": args.threshold,
+                "generate_rubric": True,  # Gemini sharpens its own rubric before judging
+                "sandbox": True,  # optimizer cannot write files
+            }
+        )
 
         result = runner.run(task)  # context already embedded in task string
 
         entry = {
-            "feature":    feature,
-            "score":      result.get("score", 0.0),
-            "converged":  result.get("converged", False),
+            "feature": feature,
+            "score": result.get("score", 0.0),
+            "converged": result.get("converged", False),
             "iterations": result.get("iterations", 0),
         }
         all_results.append(entry)
@@ -904,7 +927,10 @@ def main(argv=None):
         saved = save_proposal(out_dir, feature, result)
         logger.info(
             "  score=%.1f  converged=%s  iters=%d  -> %s",
-            entry["score"], entry["converged"], entry["iterations"], saved.name,
+            entry["score"],
+            entry["converged"],
+            entry["iterations"],
+            saved.name,
         )
 
         if "error" in result:
@@ -918,9 +944,14 @@ def main(argv=None):
         logger.info("")
         logger.info("Done: %d features audited", len(all_results))
         logger.info("  Average score : %.1f / 10", avg)
-        logger.info("  Most critical : %s (%.1f)", worst["feature"]["name"], worst["score"])
-        logger.info("  Converged     : %d / %d",
-                    sum(1 for r in all_results if r["converged"]), len(all_results))
+        logger.info(
+            "  Most critical : %s (%.1f)", worst["feature"]["name"], worst["score"]
+        )
+        logger.info(
+            "  Converged     : %d / %d",
+            sum(1 for r in all_results if r["converged"]),
+            len(all_results),
+        )
         logger.info("  Summary       : %s", summary)
         logger.info("")
         logger.info("Review proposals in: %s", out_dir)

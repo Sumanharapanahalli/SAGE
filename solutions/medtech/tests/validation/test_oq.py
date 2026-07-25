@@ -7,8 +7,6 @@ Tests core functionality against documented specifications.
 OQ confirms: "Does the system work as specified?"
 """
 
-import json
-import os
 import pytest
 
 
@@ -18,6 +16,7 @@ class TestTraceabilityOperations:
     @pytest.fixture(autouse=True)
     def setup(self, tmp_path):
         from src.core.traceability import TraceabilityMatrix, TraceLevel
+
         self.tm = TraceabilityMatrix(db_path=str(tmp_path / "oq_trace.db"))
         self.TraceLevel = TraceLevel
 
@@ -30,13 +29,19 @@ class TestTraceabilityOperations:
         )
         fetched = self.tm.get_item(item.id)
         assert fetched is not None
-        assert fetched.title == "System shall detect cardiac arrhythmia within 2 seconds"
+        assert (
+            fetched.title == "System shall detect cardiac arrhythmia within 2 seconds"
+        )
 
     def test_create_trace_link(self):
         """Can link a requirement to a test case."""
-        req = self.tm.add_item(level=self.TraceLevel.SOFTWARE_REQ, title="Alarm threshold configurable")
-        test = self.tm.add_item(level=self.TraceLevel.UNIT_TEST, title="Test alarm threshold range")
-        link = self.tm.add_link(req.id, test.id, link_type="verifies")
+        req = self.tm.add_item(
+            level=self.TraceLevel.SOFTWARE_REQ, title="Alarm threshold configurable"
+        )
+        test = self.tm.add_item(
+            level=self.TraceLevel.UNIT_TEST, title="Test alarm threshold range"
+        )
+        self.tm.add_link(req.id, test.id, link_type="verifies")
         forward = self.tm.get_forward_links(req.id)
         assert len(forward) == 1
         assert forward[0]["target_id"] == test.id
@@ -65,6 +70,7 @@ class TestAuditIntegrityOperations:
     @pytest.fixture(autouse=True)
     def setup(self, tmp_path):
         from src.core.audit_integrity import AuditIntegrityManager
+
         self.mgr = AuditIntegrityManager(db_path=str(tmp_path / "oq_audit.db"))
 
     def test_chain_integrity_on_sequential_entries(self):
@@ -89,6 +95,7 @@ class TestChangeControlOperations:
     @pytest.fixture(autouse=True)
     def setup(self, tmp_path):
         from src.core.change_control import ChangeControlManager
+
         self.ccm = ChangeControlManager(db_path=str(tmp_path / "oq_change.db"))
 
     def test_full_lifecycle(self):
@@ -103,11 +110,14 @@ class TestChangeControlOperations:
         cr_id = cr["id"]
 
         self.ccm.update_status(cr_id, "submitted", "clinical_engineer")
-        self.ccm.add_impact_assessment(cr_id, {
-            "affected_requirements": ["REQ-ALARM-001"],
-            "risk_impact": "medium",
-            "safety_impact": "review_required",
-        })
+        self.ccm.add_impact_assessment(
+            cr_id,
+            {
+                "affected_requirements": ["REQ-ALARM-001"],
+                "risk_impact": "medium",
+                "safety_impact": "review_required",
+            },
+        )
         self.ccm.add_approval(cr_id, "qa_manager", "QA", "approved", "Risk acceptable")
         self.ccm.update_status(cr_id, "approved", "qa_manager")
         self.ccm.update_status(cr_id, "implemented", "developer")
@@ -121,8 +131,14 @@ class TestChangeControlOperations:
         history = self.ccm.get_history(cr_id)
         statuses = [h["to_status"] for h in history]
         # impact_assessed is set directly by add_impact_assessment, not via update_status
-        assert statuses == ["draft", "submitted", "approved",
-                           "implemented", "verified", "closed"]
+        assert statuses == [
+            "draft",
+            "submitted",
+            "approved",
+            "implemented",
+            "verified",
+            "closed",
+        ]
 
 
 class TestDocumentGeneration:
@@ -131,14 +147,22 @@ class TestDocumentGeneration:
     @pytest.fixture(autouse=True)
     def setup(self):
         from src.core.doc_generator import DocumentGenerator
+
         self.gen = DocumentGenerator(project_name="medtech_oq", version="1.0")
 
     def test_srs_contains_all_requirements(self):
         """Generated SRS includes every requirement passed in."""
         reqs = [
-            {"id": f"REQ-{i:03d}", "type": "functional", "title": f"Requirement {i}",
-             "description": f"Description {i}", "acceptance_criteria": [f"AC-{i}"],
-             "priority": "high", "verification_method": "test", "status": "approved"}
+            {
+                "id": f"REQ-{i:03d}",
+                "type": "functional",
+                "title": f"Requirement {i}",
+                "description": f"Description {i}",
+                "acceptance_criteria": [f"AC-{i}"],
+                "priority": "high",
+                "verification_method": "test",
+                "status": "approved",
+            }
             for i in range(5)
         ]
         doc = self.gen.generate_srs(reqs)
@@ -149,10 +173,22 @@ class TestDocumentGeneration:
     def test_rtm_shows_trace_links(self):
         """Generated RTM includes trace link information."""
         data = [
-            {"id": "SYS-001", "level": "system_requirement", "title": "Speed",
-             "status": "active", "traces_to": [{"target_id": "TST-001"}], "traced_from": []},
-            {"id": "TST-001", "level": "unit_test", "title": "Speed Test",
-             "status": "active", "traces_to": [], "traced_from": [{"source_id": "SYS-001"}]},
+            {
+                "id": "SYS-001",
+                "level": "system_requirement",
+                "title": "Speed",
+                "status": "active",
+                "traces_to": [{"target_id": "TST-001"}],
+                "traced_from": [],
+            },
+            {
+                "id": "TST-001",
+                "level": "unit_test",
+                "title": "Speed Test",
+                "status": "active",
+                "traces_to": [],
+                "traced_from": [{"source_id": "SYS-001"}],
+            },
         ]
         doc = self.gen.generate_rtm(data)
         assert "SYS-001" in doc
@@ -166,6 +202,7 @@ class TestComplianceVerification:
     @pytest.fixture(autouse=True)
     def setup(self):
         from src.core.compliance_verifier import ComplianceVerifier
+
         self.verifier = ComplianceVerifier()
 
     def test_iec62304_fully_compliant_project(self):
@@ -173,8 +210,16 @@ class TestComplianceVerification:
         data = {
             "development_plan": True,
             "requirements": [
-                {"id": "R1", "acceptance_criteria": ["AC1"], "verification_method": "test"},
-                {"id": "R2", "acceptance_criteria": ["AC2"], "verification_method": "analysis"},
+                {
+                    "id": "R1",
+                    "acceptance_criteria": ["AC1"],
+                    "verification_method": "test",
+                },
+                {
+                    "id": "R2",
+                    "acceptance_criteria": ["AC2"],
+                    "verification_method": "analysis",
+                },
             ],
             "architecture": True,
             "tests": [{"level": "integration"}, {"level": "unit"}],

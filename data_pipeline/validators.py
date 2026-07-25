@@ -4,6 +4,7 @@ validators.py — Data validation on ingestion.
 Rules are driven by pipeline_config.yaml; no hard-coded thresholds here.
 Each validator returns a list of ValidationResult objects — never raises on bad data.
 """
+
 from __future__ import annotations
 
 import logging
@@ -22,7 +23,7 @@ class ValidationResult:
     rule_name: str
     passed: bool
     message: str
-    severity: str = "error"          # info | warning | error | critical
+    severity: str = "error"  # info | warning | error | critical
 
 
 @dataclass
@@ -33,7 +34,9 @@ class ValidationReport:
 
     @property
     def passed(self) -> bool:
-        return all(r.passed for r in self.results if r.severity in ("error", "critical"))
+        return all(
+            r.passed for r in self.results if r.severity in ("error", "critical")
+        )
 
     @property
     def critical_failures(self) -> list[ValidationResult]:
@@ -57,21 +60,28 @@ class ValidationReport:
 # Rule library — each function returns a single ValidationResult
 # ---------------------------------------------------------------------------
 
+
 def check_required_fields(record: dict, fields: list[str]) -> list[ValidationResult]:
     results = []
     for f in fields:
         val = record.get(f)
         missing = val is None or (isinstance(val, str) and val.strip() == "")
-        results.append(ValidationResult(
-            rule_name=f"required:{f}",
-            passed=not missing,
-            message="" if not missing else f"Required field '{f}' is missing or empty",
-            severity="critical",
-        ))
+        results.append(
+            ValidationResult(
+                rule_name=f"required:{f}",
+                passed=not missing,
+                message=""
+                if not missing
+                else f"Required field '{f}' is missing or empty",
+                severity="critical",
+            )
+        )
     return results
 
 
-def check_numeric_non_negative(record: dict, fields: list[str]) -> list[ValidationResult]:
+def check_numeric_non_negative(
+    record: dict, fields: list[str]
+) -> list[ValidationResult]:
     results = []
     for f in fields:
         val = record.get(f)
@@ -82,18 +92,26 @@ def check_numeric_non_negative(record: dict, fields: list[str]) -> list[Validati
             ok = numeric >= 0
         except (TypeError, ValueError):
             ok = False
-        results.append(ValidationResult(
-            rule_name=f"non_negative:{f}",
-            passed=ok,
-            message="" if ok else f"Field '{f}' must be >= 0, got {val!r}",
-        ))
+        results.append(
+            ValidationResult(
+                rule_name=f"non_negative:{f}",
+                passed=ok,
+                message="" if ok else f"Field '{f}' must be >= 0, got {val!r}",
+            )
+        )
     return results
 
 
-def check_amount_range(record: dict, field_name: str, min_val: float, max_val: float) -> ValidationResult:
+def check_amount_range(
+    record: dict, field_name: str, min_val: float, max_val: float
+) -> ValidationResult:
     val = record.get(field_name)
     if val is None:
-        return ValidationResult(rule_name=f"amount_range:{field_name}", passed=True, message="skipped (null)")
+        return ValidationResult(
+            rule_name=f"amount_range:{field_name}",
+            passed=True,
+            message="skipped (null)",
+        )
     try:
         numeric = float(val)
         ok = min_val <= numeric <= max_val
@@ -106,10 +124,12 @@ def check_amount_range(record: dict, field_name: str, min_val: float, max_val: f
     )
 
 
-def check_currency_code(record: dict, valid_codes: set[str] | None = None) -> ValidationResult:
+def check_currency_code(
+    record: dict, valid_codes: set[str] | None = None
+) -> ValidationResult:
     valid = valid_codes or VALID_CURRENCIES
     code = record.get("currency")
-    ok = code in valid if code else True      # null handled by required-field check
+    ok = code in valid if code else True  # null handled by required-field check
     return ValidationResult(
         rule_name="currency_code",
         passed=ok,
@@ -120,7 +140,9 @@ def check_currency_code(record: dict, valid_codes: set[str] | None = None) -> Va
 def check_date_field(record: dict, field_name: str) -> ValidationResult:
     val = record.get(field_name)
     if val is None:
-        return ValidationResult(rule_name=f"date_parse:{field_name}", passed=True, message="null skipped")
+        return ValidationResult(
+            rule_name=f"date_parse:{field_name}", passed=True, message="null skipped"
+        )
     ok = _parse_date(val) is not None
     return ValidationResult(
         rule_name=f"date_parse:{field_name}",
@@ -133,7 +155,11 @@ def check_date_order(record: dict, field_a: str, field_b: str) -> ValidationResu
     a = _parse_date(record.get(field_a))
     b = _parse_date(record.get(field_b))
     if a is None or b is None:
-        return ValidationResult(rule_name=f"date_order:{field_a}<={field_b}", passed=True, message="null skipped")
+        return ValidationResult(
+            rule_name=f"date_order:{field_a}<={field_b}",
+            passed=True,
+            message="null skipped",
+        )
     ok = a <= b
     return ValidationResult(
         rule_name=f"date_order:{field_a}<={field_b}",
@@ -158,7 +184,9 @@ def check_invoice_balance(record: dict, tolerance: float = 0.01) -> ValidationRe
     return ValidationResult(
         rule_name="invoice_balance",
         passed=ok,
-        message="" if ok else f"Balance mismatch: |subtotal+tax-discount-total|={diff} > {tolerance}",
+        message=""
+        if ok
+        else f"Balance mismatch: |subtotal+tax-discount-total|={diff} > {tolerance}",
         severity="warning",
     )
 
@@ -166,7 +194,9 @@ def check_invoice_balance(record: dict, tolerance: float = 0.01) -> ValidationRe
 def check_enum(record: dict, field_name: str, allowed: list[str]) -> ValidationResult:
     val = record.get(field_name)
     if val is None:
-        return ValidationResult(rule_name=f"enum:{field_name}", passed=True, message="null skipped")
+        return ValidationResult(
+            rule_name=f"enum:{field_name}", passed=True, message="null skipped"
+        )
     ok = val in allowed
     return ValidationResult(
         rule_name=f"enum:{field_name}",
@@ -175,10 +205,14 @@ def check_enum(record: dict, field_name: str, allowed: list[str]) -> ValidationR
     )
 
 
-def check_no_future_transaction_date(record: dict, field_name: str = "transaction_date") -> ValidationResult:
+def check_no_future_transaction_date(
+    record: dict, field_name: str = "transaction_date"
+) -> ValidationResult:
     val = _parse_date(record.get(field_name))
     if val is None:
-        return ValidationResult(rule_name="no_future_date", passed=True, message="null skipped")
+        return ValidationResult(
+            rule_name="no_future_date", passed=True, message="null skipped"
+        )
     ok = val <= date.today()
     return ValidationResult(
         rule_name="no_future_date",
@@ -192,24 +226,37 @@ def check_no_future_transaction_date(record: dict, field_name: str = "transactio
 # Composite validators per document type
 # ---------------------------------------------------------------------------
 
+
 def validate_invoice(record: dict, config: dict | None = None) -> ValidationReport:
     cfg = config or {}
     ext_id = record.get("external_id", "<unknown>")
     report = ValidationReport(document_type="invoice", external_id=ext_id)
 
-    required = cfg.get("required_fields", ["external_id", "invoice_number", "invoice_date", "total_amount", "currency"])
+    required = cfg.get(
+        "required_fields",
+        ["external_id", "invoice_number", "invoice_date", "total_amount", "currency"],
+    )
     report.results.extend(check_required_fields(record, required))
 
-    non_neg = cfg.get("numeric_non_negative", ["subtotal", "tax_amount", "discount_amount", "total_amount"])
+    non_neg = cfg.get(
+        "numeric_non_negative",
+        ["subtotal", "tax_amount", "discount_amount", "total_amount"],
+    )
     report.results.extend(check_numeric_non_negative(record, non_neg))
 
     for f in cfg.get("date_fields", ["invoice_date", "due_date"]):
         report.results.append(check_date_field(record, f))
 
     ar = cfg.get("amount_range", {"min": 0.01, "max": 10_000_000})
-    report.results.append(check_amount_range(record, "total_amount", ar["min"], ar["max"]))
+    report.results.append(
+        check_amount_range(record, "total_amount", ar["min"], ar["max"])
+    )
 
-    report.results.append(check_currency_code(record, set(cfg.get("currency_codes", list(VALID_CURRENCIES)))))
+    report.results.append(
+        check_currency_code(
+            record, set(cfg.get("currency_codes", list(VALID_CURRENCIES)))
+        )
+    )
 
     if cfg.get("balance_check", {}).get("enabled", True):
         tol = cfg.get("balance_check", {}).get("tolerance", 0.01)
@@ -223,10 +270,15 @@ def validate_receipt(record: dict, config: dict | None = None) -> ValidationRepo
     ext_id = record.get("external_id", "<unknown>")
     report = ValidationReport(document_type="receipt", external_id=ext_id)
 
-    required = cfg.get("required_fields", ["external_id", "transaction_date", "total_amount", "currency"])
+    required = cfg.get(
+        "required_fields",
+        ["external_id", "transaction_date", "total_amount", "currency"],
+    )
     report.results.extend(check_required_fields(record, required))
 
-    non_neg = cfg.get("numeric_non_negative", ["subtotal", "tax_amount", "tip_amount", "total_amount"])
+    non_neg = cfg.get(
+        "numeric_non_negative", ["subtotal", "tax_amount", "tip_amount", "total_amount"]
+    )
     report.results.extend(check_numeric_non_negative(record, non_neg))
 
     for f in cfg.get("date_fields", ["transaction_date"]):
@@ -235,13 +287,29 @@ def validate_receipt(record: dict, config: dict | None = None) -> ValidationRepo
     report.results.append(check_no_future_transaction_date(record))
 
     ar = cfg.get("amount_range", {"min": 0.01, "max": 50_000})
-    report.results.append(check_amount_range(record, "total_amount", ar["min"], ar["max"]))
+    report.results.append(
+        check_amount_range(record, "total_amount", ar["min"], ar["max"])
+    )
 
-    report.results.append(check_currency_code(record, set(cfg.get("currency_codes", list(VALID_CURRENCIES)))))
+    report.results.append(
+        check_currency_code(
+            record, set(cfg.get("currency_codes", list(VALID_CURRENCIES)))
+        )
+    )
 
-    allowed_pm = cfg.get("allowed_payment_methods", [
-        "cash", "credit_card", "debit_card", "digital_wallet", "check", "bank_transfer", "other", "unknown"
-    ])
+    allowed_pm = cfg.get(
+        "allowed_payment_methods",
+        [
+            "cash",
+            "credit_card",
+            "debit_card",
+            "digital_wallet",
+            "check",
+            "bank_transfer",
+            "other",
+            "unknown",
+        ],
+    )
     report.results.append(check_enum(record, "payment_method", allowed_pm))
 
     return report
@@ -252,19 +320,36 @@ def validate_contract(record: dict, config: dict | None = None) -> ValidationRep
     ext_id = record.get("external_id", "<unknown>")
     report = ValidationReport(document_type="contract", external_id=ext_id)
 
-    required = cfg.get("required_fields", ["external_id", "contract_number", "title", "contract_type"])
+    required = cfg.get(
+        "required_fields", ["external_id", "contract_number", "title", "contract_type"]
+    )
     report.results.extend(check_required_fields(record, required))
 
     for f in cfg.get("date_fields", ["effective_date", "expiration_date"]):
         report.results.append(check_date_field(record, f))
 
-    date_order = cfg.get("date_order_check", {"field_a": "effective_date", "field_b": "expiration_date"})
-    report.results.append(check_date_order(record, date_order["field_a"], date_order["field_b"]))
+    date_order = cfg.get(
+        "date_order_check", {"field_a": "effective_date", "field_b": "expiration_date"}
+    )
+    report.results.append(
+        check_date_order(record, date_order["field_a"], date_order["field_b"])
+    )
 
-    allowed_types = cfg.get("allowed_types", [
-        "msa", "nda", "sow", "purchase_order", "lease", "employment",
-        "license", "service_agreement", "partnership", "other"
-    ])
+    allowed_types = cfg.get(
+        "allowed_types",
+        [
+            "msa",
+            "nda",
+            "sow",
+            "purchase_order",
+            "lease",
+            "employment",
+            "license",
+            "service_agreement",
+            "partnership",
+            "other",
+        ],
+    )
     report.results.append(check_enum(record, "contract_type", allowed_types))
 
     return report
@@ -277,7 +362,9 @@ VALIDATORS = {
 }
 
 
-def validate(document_type: str, record: dict, config: dict | None = None) -> ValidationReport:
+def validate(
+    document_type: str, record: dict, config: dict | None = None
+) -> ValidationReport:
     fn = VALIDATORS.get(document_type)
     if fn is None:
         raise ValueError(f"No validator registered for document_type={document_type!r}")
@@ -287,6 +374,7 @@ def validate(document_type: str, record: dict, config: dict | None = None) -> Va
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _parse_date(val: Any) -> date | None:
     if val is None:

@@ -4,13 +4,14 @@ Unit tests for src/core/github_pr.py — the gh CLI adapter.
 Every test injects a FAKE runner (a callable returning canned
 (rc, stdout, stderr)). No real network, no real gh, no real git.
 """
+
 import json
 
 import pytest
 
 pytestmark = pytest.mark.unit
 
-from src.core.github_pr import GitHubPR
+from src.core.github_pr import GitHubPR  # noqa: E402
 
 
 # --------------------------------------------------------------------------- #
@@ -30,7 +31,9 @@ class FakeRunner:
         self.calls = []  # list of dicts: {argv, cwd, timeout, stdin}
 
     def __call__(self, argv, cwd, timeout, stdin=None):
-        self.calls.append({"argv": list(argv), "cwd": cwd, "timeout": timeout, "stdin": stdin})
+        self.calls.append(
+            {"argv": list(argv), "cwd": cwd, "timeout": timeout, "stdin": stdin}
+        )
         if self._responder is not None:
             resp = self._responder(argv)
             if resp is not None:
@@ -92,7 +95,12 @@ class TestCreate:
         out = _pr(runner).create(
             branch="feature/x", title="My title", body="# long body", base="develop"
         )
-        assert out == {"ok": True, "number": 42, "url": "https://github.com/acme/repo/pull/42", "error": ""}
+        assert out == {
+            "ok": True,
+            "number": 42,
+            "url": "https://github.com/acme/repo/pull/42",
+            "error": "",
+        }
 
         # git push happens first, and before the gh pr create call.
         assert runner.argvs[0] == ["git", "push", "-u", "origin", "feature/x"]
@@ -158,7 +166,11 @@ class TestCreate:
             if "create" in argv:
                 return (0, "Opening PR in browser...\n", "")  # no URL
             if "view" in argv:
-                return (0, json.dumps({"number": 77, "url": "https://gh/acme/repo/pull/77"}), "")
+                return (
+                    0,
+                    json.dumps({"number": 77, "url": "https://gh/acme/repo/pull/77"}),
+                    "",
+                )
             return (0, "", "")
 
         runner = FakeRunner(responder=responder)
@@ -223,7 +235,11 @@ class TestGetReviews:
         payload = {
             "reviews": [
                 {"author": {"login": "alice"}, "state": "APPROVED", "body": "LGTM"},
-                {"author": {"login": "bob"}, "state": "CHANGES_REQUESTED", "body": "fix this"},
+                {
+                    "author": {"login": "bob"},
+                    "state": "CHANGES_REQUESTED",
+                    "body": "fix this",
+                },
             ]
         }
         runner = FakeRunner(default=(0, json.dumps(payload), ""))
@@ -318,8 +334,11 @@ class TestMerge:
             if "merge" in argv:
                 return (0, "", "")
             if "view" in argv:  # follow-up state() read
-                payload = {"state": "MERGED", "reviewDecision": "APPROVED",
-                           "mergeCommit": {"oid": "deadbeef"}}
+                payload = {
+                    "state": "MERGED",
+                    "reviewDecision": "APPROVED",
+                    "mergeCommit": {"oid": "deadbeef"},
+                }
                 return (0, json.dumps(payload), "")
             return (0, "", "")
 

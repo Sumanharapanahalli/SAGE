@@ -17,7 +17,7 @@ evidence references, and remediation guidance.
 
 import logging
 from datetime import datetime, timezone
-from typing import Dict, List, Optional
+from typing import List
 
 logger = logging.getLogger(__name__)
 
@@ -25,9 +25,17 @@ logger = logging.getLogger(__name__)
 class VerificationResult:
     """Result of a single verification check."""
 
-    def __init__(self, check_id: str, standard: str, clause: str,
-                 description: str, passed: bool, evidence: str = "",
-                 remediation: str = "", severity: str = "medium"):
+    def __init__(
+        self,
+        check_id: str,
+        standard: str,
+        clause: str,
+        description: str,
+        passed: bool,
+        evidence: str = "",
+        remediation: str = "",
+        severity: str = "medium",
+    ):
         self.check_id = check_id
         self.standard = standard
         self.clause = clause
@@ -82,114 +90,141 @@ class ComplianceVerifier:
         soup = project_data.get("soup_components", [])
 
         # §5.1 — Software development planning
-        results.append(self._add_result(
-            check_id="IEC62304-5.1",
-            standard="IEC 62304",
-            clause="§5.1",
-            description="Software development plan exists",
-            passed=bool(project_data.get("development_plan")),
-            evidence=f"Development plan: {'present' if project_data.get('development_plan') else 'missing'}",
-            remediation="Create a software development plan covering lifecycle model, tools, and procedures",
-            severity="critical",
-        ))
+        results.append(
+            self._add_result(
+                check_id="IEC62304-5.1",
+                standard="IEC 62304",
+                clause="§5.1",
+                description="Software development plan exists",
+                passed=bool(project_data.get("development_plan")),
+                evidence=f"Development plan: {'present' if project_data.get('development_plan') else 'missing'}",
+                remediation="Create a software development plan covering lifecycle model, tools, and procedures",
+                severity="critical",
+            )
+        )
 
         # §5.2 — Software requirements analysis
-        results.append(self._add_result(
-            check_id="IEC62304-5.2",
-            standard="IEC 62304",
-            clause="§5.2",
-            description="Software requirements documented with acceptance criteria",
-            passed=len(reqs) > 0 and all(r.get("acceptance_criteria") for r in reqs),
-            evidence=f"{len(reqs)} requirements found, {sum(1 for r in reqs if r.get('acceptance_criteria'))} have acceptance criteria",
-            remediation="Document all software requirements with testable acceptance criteria",
-            severity="critical",
-        ))
+        results.append(
+            self._add_result(
+                check_id="IEC62304-5.2",
+                standard="IEC 62304",
+                clause="§5.2",
+                description="Software requirements documented with acceptance criteria",
+                passed=len(reqs) > 0
+                and all(r.get("acceptance_criteria") for r in reqs),
+                evidence=f"{len(reqs)} requirements found, {sum(1 for r in reqs if r.get('acceptance_criteria'))} have acceptance criteria",
+                remediation="Document all software requirements with testable acceptance criteria",
+                severity="critical",
+            )
+        )
 
         # §5.3 — Software architectural design
-        results.append(self._add_result(
-            check_id="IEC62304-5.3",
-            standard="IEC 62304",
-            clause="§5.3",
-            description="Software architecture documented",
-            passed=bool(project_data.get("architecture")),
-            evidence=f"Architecture: {'present' if project_data.get('architecture') else 'missing'}",
-            remediation="Document software architecture showing components, interfaces, and data flows",
-            severity="high",
-        ))
+        results.append(
+            self._add_result(
+                check_id="IEC62304-5.3",
+                standard="IEC 62304",
+                clause="§5.3",
+                description="Software architecture documented",
+                passed=bool(project_data.get("architecture")),
+                evidence=f"Architecture: {'present' if project_data.get('architecture') else 'missing'}",
+                remediation="Document software architecture showing components, interfaces, and data flows",
+                severity="high",
+            )
+        )
 
         # §5.5 — Software integration and integration testing
         integration_tests = [t for t in tests if t.get("level") == "integration"]
-        results.append(self._add_result(
-            check_id="IEC62304-5.5",
-            standard="IEC 62304",
-            clause="§5.5",
-            description="Integration tests exist",
-            passed=len(integration_tests) > 0,
-            evidence=f"{len(integration_tests)} integration tests found",
-            remediation="Create integration tests covering component interactions",
-            severity="high",
-        ))
+        results.append(
+            self._add_result(
+                check_id="IEC62304-5.5",
+                standard="IEC 62304",
+                clause="§5.5",
+                description="Integration tests exist",
+                passed=len(integration_tests) > 0,
+                evidence=f"{len(integration_tests)} integration tests found",
+                remediation="Create integration tests covering component interactions",
+                severity="high",
+            )
+        )
 
         # §5.7 — Software verification
-        results.append(self._add_result(
-            check_id="IEC62304-5.7",
-            standard="IEC 62304",
-            clause="§5.7",
-            description="All requirements have verification method defined",
-            passed=all(r.get("verification_method") for r in reqs) if reqs else False,
-            evidence=f"{sum(1 for r in reqs if r.get('verification_method'))}/{len(reqs)} have verification methods",
-            remediation="Define verification method (test/analysis/inspection/demonstration) for each requirement",
-            severity="high",
-        ))
+        results.append(
+            self._add_result(
+                check_id="IEC62304-5.7",
+                standard="IEC 62304",
+                clause="§5.7",
+                description="All requirements have verification method defined",
+                passed=all(r.get("verification_method") for r in reqs)
+                if reqs
+                else False,
+                evidence=f"{sum(1 for r in reqs if r.get('verification_method'))}/{len(reqs)} have verification methods",
+                remediation="Define verification method (test/analysis/inspection/demonstration) for each requirement",
+                severity="high",
+            )
+        )
 
         # §5.1.1 — Requirements traceability
-        traced_items = [t for t in trace_data if t.get("traces_to") or t.get("traced_from")]
-        results.append(self._add_result(
-            check_id="IEC62304-5.1.1",
-            standard="IEC 62304",
-            clause="§5.1.1",
-            description="Requirements traceability matrix maintained",
-            passed=len(trace_data) > 0 and len(traced_items) > len(trace_data) * 0.5,
-            evidence=f"{len(traced_items)}/{len(trace_data)} items traced ({round(len(traced_items)/len(trace_data)*100, 1) if trace_data else 0}% coverage)",
-            remediation="Maintain bidirectional traceability: requirement → design → test → verification",
-            severity="critical",
-        ))
+        traced_items = [
+            t for t in trace_data if t.get("traces_to") or t.get("traced_from")
+        ]
+        results.append(
+            self._add_result(
+                check_id="IEC62304-5.1.1",
+                standard="IEC 62304",
+                clause="§5.1.1",
+                description="Requirements traceability matrix maintained",
+                passed=len(trace_data) > 0
+                and len(traced_items) > len(trace_data) * 0.5,
+                evidence=f"{len(traced_items)}/{len(trace_data)} items traced ({round(len(traced_items) / len(trace_data) * 100, 1) if trace_data else 0}% coverage)",
+                remediation="Maintain bidirectional traceability: requirement → design → test → verification",
+                severity="critical",
+            )
+        )
 
         # §6.1 — Software problem resolution (change control)
-        results.append(self._add_result(
-            check_id="IEC62304-6.1",
-            standard="IEC 62304",
-            clause="§6.1",
-            description="Change control process in place",
-            passed=bool(changes) or bool(project_data.get("change_control_enabled")),
-            evidence=f"{len(changes)} change requests tracked" if changes else "No change control data",
-            remediation="Implement change control workflow for all software modifications",
-            severity="high",
-        ))
+        results.append(
+            self._add_result(
+                check_id="IEC62304-6.1",
+                standard="IEC 62304",
+                clause="§6.1",
+                description="Change control process in place",
+                passed=bool(changes)
+                or bool(project_data.get("change_control_enabled")),
+                evidence=f"{len(changes)} change requests tracked"
+                if changes
+                else "No change control data",
+                remediation="Implement change control workflow for all software modifications",
+                severity="high",
+            )
+        )
 
         # §7.1 — Risk management (references ISO 14971)
-        results.append(self._add_result(
-            check_id="IEC62304-7.1",
-            standard="IEC 62304",
-            clause="§7.1 (→ ISO 14971)",
-            description="Risk analysis performed",
-            passed=len(risks) > 0,
-            evidence=f"{len(risks)} risks identified",
-            remediation="Perform risk analysis per ISO 14971 covering all identified hazards",
-            severity="critical",
-        ))
+        results.append(
+            self._add_result(
+                check_id="IEC62304-7.1",
+                standard="IEC 62304",
+                clause="§7.1 (→ ISO 14971)",
+                description="Risk analysis performed",
+                passed=len(risks) > 0,
+                evidence=f"{len(risks)} risks identified",
+                remediation="Perform risk analysis per ISO 14971 covering all identified hazards",
+                severity="critical",
+            )
+        )
 
         # §8.1.2 — SOUP identification
-        results.append(self._add_result(
-            check_id="IEC62304-8.1.2",
-            standard="IEC 62304",
-            clause="§8.1.2",
-            description="SOUP components identified and assessed",
-            passed=len(soup) > 0,
-            evidence=f"{len(soup)} SOUP components documented",
-            remediation="Identify all third-party software components with version, license, and risk assessment",
-            severity="medium",
-        ))
+        results.append(
+            self._add_result(
+                check_id="IEC62304-8.1.2",
+                standard="IEC 62304",
+                clause="§8.1.2",
+                description="SOUP components identified and assessed",
+                passed=len(soup) > 0,
+                evidence=f"{len(soup)} SOUP components documented",
+                remediation="Identify all third-party software components with version, license, and risk assessment",
+                severity="medium",
+            )
+        )
 
         return [r.to_dict() for r in results]
 
@@ -200,52 +235,65 @@ class ComplianceVerifier:
         asil = project_data.get("asil_classification")
 
         # Part 3 — Concept phase
-        results.append(self._add_result(
-            check_id="ISO26262-3",
-            standard="ISO 26262",
-            clause="Part 3",
-            description="Item definition and hazard analysis performed",
-            passed=bool(project_data.get("hazard_analysis")),
-            evidence=f"Hazard analysis: {'present' if project_data.get('hazard_analysis') else 'missing'}",
-            remediation="Perform hazard analysis and risk assessment (HARA) for the item",
-            severity="critical",
-        ))
+        results.append(
+            self._add_result(
+                check_id="ISO26262-3",
+                standard="ISO 26262",
+                clause="Part 3",
+                description="Item definition and hazard analysis performed",
+                passed=bool(project_data.get("hazard_analysis")),
+                evidence=f"Hazard analysis: {'present' if project_data.get('hazard_analysis') else 'missing'}",
+                remediation="Perform hazard analysis and risk assessment (HARA) for the item",
+                severity="critical",
+            )
+        )
 
         # Part 4 — Product development at system level
-        results.append(self._add_result(
-            check_id="ISO26262-4",
-            standard="ISO 26262",
-            clause="Part 4",
-            description="System-level safety requirements derived from HARA",
-            passed=any(r.get("type") == "safety" for r in reqs) if reqs else False,
-            evidence=f"{sum(1 for r in reqs if r.get('type') == 'safety')} safety requirements found",
-            remediation="Derive safety requirements from hazard analysis with ASIL assignment",
-            severity="critical",
-        ))
+        results.append(
+            self._add_result(
+                check_id="ISO26262-4",
+                standard="ISO 26262",
+                clause="Part 4",
+                description="System-level safety requirements derived from HARA",
+                passed=any(r.get("type") == "safety" for r in reqs) if reqs else False,
+                evidence=f"{sum(1 for r in reqs if r.get('type') == 'safety')} safety requirements found",
+                remediation="Derive safety requirements from hazard analysis with ASIL assignment",
+                severity="critical",
+            )
+        )
 
         # Part 6 — Software development
-        results.append(self._add_result(
-            check_id="ISO26262-6",
-            standard="ISO 26262",
-            clause="Part 6",
-            description="ASIL classification assigned",
-            passed=bool(asil),
-            evidence=f"ASIL: {asil}" if asil else "No ASIL classification",
-            remediation="Assign ASIL (A/B/C/D) based on severity, exposure, and controllability",
-            severity="critical",
-        ))
+        results.append(
+            self._add_result(
+                check_id="ISO26262-6",
+                standard="ISO 26262",
+                clause="Part 6",
+                description="ASIL classification assigned",
+                passed=bool(asil),
+                evidence=f"ASIL: {asil}" if asil else "No ASIL classification",
+                remediation="Assign ASIL (A/B/C/D) based on severity, exposure, and controllability",
+                severity="critical",
+            )
+        )
 
         # Part 8 — Supporting processes
-        results.append(self._add_result(
-            check_id="ISO26262-8.7",
-            standard="ISO 26262",
-            clause="Part 8 §8.7",
-            description="Change management process defined",
-            passed=bool(project_data.get("change_requests") or project_data.get("change_control_enabled")),
-            evidence="Change management: active" if project_data.get("change_requests") else "Not configured",
-            remediation="Establish change management process per ISO 26262 Part 8",
-            severity="high",
-        ))
+        results.append(
+            self._add_result(
+                check_id="ISO26262-8.7",
+                standard="ISO 26262",
+                clause="Part 8 §8.7",
+                description="Change management process defined",
+                passed=bool(
+                    project_data.get("change_requests")
+                    or project_data.get("change_control_enabled")
+                ),
+                evidence="Change management: active"
+                if project_data.get("change_requests")
+                else "Not configured",
+                remediation="Establish change management process per ISO 26262 Part 8",
+                severity="high",
+            )
+        )
 
         return [r.to_dict() for r in results]
 
@@ -255,53 +303,61 @@ class ComplianceVerifier:
         reqs = project_data.get("requirements", [])
 
         # §5.1 — Software planning
-        results.append(self._add_result(
-            check_id="DO178C-5.1",
-            standard="DO-178C",
-            clause="§5.1",
-            description="Software plans documented (PSAC, SDP, SVP, SCMP, SQAP)",
-            passed=bool(project_data.get("development_plan")),
-            evidence=f"Plans: {'present' if project_data.get('development_plan') else 'missing'}",
-            remediation="Create Plan for Software Aspects of Certification (PSAC) and supporting plans",
-            severity="critical",
-        ))
+        results.append(
+            self._add_result(
+                check_id="DO178C-5.1",
+                standard="DO-178C",
+                clause="§5.1",
+                description="Software plans documented (PSAC, SDP, SVP, SCMP, SQAP)",
+                passed=bool(project_data.get("development_plan")),
+                evidence=f"Plans: {'present' if project_data.get('development_plan') else 'missing'}",
+                remediation="Create Plan for Software Aspects of Certification (PSAC) and supporting plans",
+                severity="critical",
+            )
+        )
 
         # §5.2 — Software development
-        results.append(self._add_result(
-            check_id="DO178C-5.2",
-            standard="DO-178C",
-            clause="§5.2",
-            description="High-level and low-level requirements documented",
-            passed=len(reqs) > 0,
-            evidence=f"{len(reqs)} requirements documented",
-            remediation="Document high-level requirements (from system) and low-level requirements (design)",
-            severity="critical",
-        ))
+        results.append(
+            self._add_result(
+                check_id="DO178C-5.2",
+                standard="DO-178C",
+                clause="§5.2",
+                description="High-level and low-level requirements documented",
+                passed=len(reqs) > 0,
+                evidence=f"{len(reqs)} requirements documented",
+                remediation="Document high-level requirements (from system) and low-level requirements (design)",
+                severity="critical",
+            )
+        )
 
         # §6.0 — Software verification
         tests = project_data.get("tests", [])
-        results.append(self._add_result(
-            check_id="DO178C-6",
-            standard="DO-178C",
-            clause="§6",
-            description="Verification activities (reviews, analyses, tests) performed",
-            passed=len(tests) > 0,
-            evidence=f"{len(tests)} test cases defined",
-            remediation="Perform requirements-based testing, structural coverage analysis, and reviews",
-            severity="critical",
-        ))
+        results.append(
+            self._add_result(
+                check_id="DO178C-6",
+                standard="DO-178C",
+                clause="§6",
+                description="Verification activities (reviews, analyses, tests) performed",
+                passed=len(tests) > 0,
+                evidence=f"{len(tests)} test cases defined",
+                remediation="Perform requirements-based testing, structural coverage analysis, and reviews",
+                severity="critical",
+            )
+        )
 
         # MC/DC coverage (DAL A)
-        results.append(self._add_result(
-            check_id="DO178C-6.4.4.2",
-            standard="DO-178C",
-            clause="§6.4.4.2",
-            description="MC/DC structural coverage (required for DAL A)",
-            passed=bool(project_data.get("mcdc_coverage")),
-            evidence=f"MC/DC: {project_data.get('mcdc_coverage', 'not measured')}",
-            remediation="Achieve Modified Condition/Decision Coverage for DAL A software",
-            severity="high",
-        ))
+        results.append(
+            self._add_result(
+                check_id="DO178C-6.4.4.2",
+                standard="DO-178C",
+                clause="§6.4.4.2",
+                description="MC/DC structural coverage (required for DAL A)",
+                passed=bool(project_data.get("mcdc_coverage")),
+                evidence=f"MC/DC: {project_data.get('mcdc_coverage', 'not measured')}",
+                remediation="Achieve Modified Condition/Decision Coverage for DAL A software",
+                severity="high",
+            )
+        )
 
         return [r.to_dict() for r in results]
 
@@ -311,41 +367,49 @@ class ComplianceVerifier:
         reqs = project_data.get("requirements", [])
 
         # §7.2 — Software requirements specification
-        results.append(self._add_result(
-            check_id="EN50128-7.2",
-            standard="EN 50128",
-            clause="§7.2",
-            description="Software requirements specification complete",
-            passed=len(reqs) > 0,
-            evidence=f"{len(reqs)} requirements documented",
-            remediation="Complete SRS per EN 50128 Table A.4",
-            severity="critical",
-        ))
+        results.append(
+            self._add_result(
+                check_id="EN50128-7.2",
+                standard="EN 50128",
+                clause="§7.2",
+                description="Software requirements specification complete",
+                passed=len(reqs) > 0,
+                evidence=f"{len(reqs)} requirements documented",
+                remediation="Complete SRS per EN 50128 Table A.4",
+                severity="critical",
+            )
+        )
 
         # §7.3 — Architecture
-        results.append(self._add_result(
-            check_id="EN50128-7.3",
-            standard="EN 50128",
-            clause="§7.3",
-            description="Software architecture with safety integrity level",
-            passed=bool(project_data.get("architecture") and project_data.get("sil_level")),
-            evidence=f"Architecture: {'present' if project_data.get('architecture') else 'missing'}, SIL: {project_data.get('sil_level', 'not assigned')}",
-            remediation="Document architecture and assign SIL (0-4) per EN 50128",
-            severity="critical",
-        ))
+        results.append(
+            self._add_result(
+                check_id="EN50128-7.3",
+                standard="EN 50128",
+                clause="§7.3",
+                description="Software architecture with safety integrity level",
+                passed=bool(
+                    project_data.get("architecture") and project_data.get("sil_level")
+                ),
+                evidence=f"Architecture: {'present' if project_data.get('architecture') else 'missing'}, SIL: {project_data.get('sil_level', 'not assigned')}",
+                remediation="Document architecture and assign SIL (0-4) per EN 50128",
+                severity="critical",
+            )
+        )
 
         # §7.5 — Software testing
         tests = project_data.get("tests", [])
-        results.append(self._add_result(
-            check_id="EN50128-7.5",
-            standard="EN 50128",
-            clause="§7.5",
-            description="Test suite with coverage analysis",
-            passed=len(tests) > 0,
-            evidence=f"{len(tests)} tests defined",
-            remediation="Create test suite with boundary value analysis, equivalence partitioning per SIL level",
-            severity="high",
-        ))
+        results.append(
+            self._add_result(
+                check_id="EN50128-7.5",
+                standard="EN 50128",
+                clause="§7.5",
+                description="Test suite with coverage analysis",
+                passed=len(tests) > 0,
+                evidence=f"{len(tests)} tests defined",
+                remediation="Create test suite with boundary value analysis, equivalence partitioning per SIL level",
+                severity="high",
+            )
+        )
 
         return [r.to_dict() for r in results]
 
@@ -354,52 +418,62 @@ class ComplianceVerifier:
         results = []
 
         # §11.10(a) — Validation
-        results.append(self._add_result(
-            check_id="21CFR11-10a",
-            standard="21 CFR Part 11",
-            clause="§11.10(a)",
-            description="System validated for intended use",
-            passed=bool(project_data.get("system_validated")),
-            evidence=f"Validation: {'complete' if project_data.get('system_validated') else 'not performed'}",
-            remediation="Perform IQ/OQ/PQ validation of the computerized system",
-            severity="critical",
-        ))
+        results.append(
+            self._add_result(
+                check_id="21CFR11-10a",
+                standard="21 CFR Part 11",
+                clause="§11.10(a)",
+                description="System validated for intended use",
+                passed=bool(project_data.get("system_validated")),
+                evidence=f"Validation: {'complete' if project_data.get('system_validated') else 'not performed'}",
+                remediation="Perform IQ/OQ/PQ validation of the computerized system",
+                severity="critical",
+            )
+        )
 
         # §11.10(e) — Audit trail
-        results.append(self._add_result(
-            check_id="21CFR11-10e",
-            standard="21 CFR Part 11",
-            clause="§11.10(e)",
-            description="Audit trail with computer-generated timestamps",
-            passed=bool(project_data.get("audit_trail_active")),
-            evidence="Audit trail: active" if project_data.get("audit_trail_active") else "Not verified",
-            remediation="Enable immutable audit trail recording all create/modify/delete actions with timestamps",
-            severity="critical",
-        ))
+        results.append(
+            self._add_result(
+                check_id="21CFR11-10e",
+                standard="21 CFR Part 11",
+                clause="§11.10(e)",
+                description="Audit trail with computer-generated timestamps",
+                passed=bool(project_data.get("audit_trail_active")),
+                evidence="Audit trail: active"
+                if project_data.get("audit_trail_active")
+                else "Not verified",
+                remediation="Enable immutable audit trail recording all create/modify/delete actions with timestamps",
+                severity="critical",
+            )
+        )
 
         # §11.10(e) — Audit trail integrity
-        results.append(self._add_result(
-            check_id="21CFR11-10e-integrity",
-            standard="21 CFR Part 11",
-            clause="§11.10(e)",
-            description="Audit trail cryptographic integrity (hash chain)",
-            passed=bool(project_data.get("audit_integrity_verified")),
-            evidence=f"Integrity: {'verified' if project_data.get('audit_integrity_verified') else 'not verified'}",
-            remediation="Enable HMAC hash chain on audit log entries",
-            severity="high",
-        ))
+        results.append(
+            self._add_result(
+                check_id="21CFR11-10e-integrity",
+                standard="21 CFR Part 11",
+                clause="§11.10(e)",
+                description="Audit trail cryptographic integrity (hash chain)",
+                passed=bool(project_data.get("audit_integrity_verified")),
+                evidence=f"Integrity: {'verified' if project_data.get('audit_integrity_verified') else 'not verified'}",
+                remediation="Enable HMAC hash chain on audit log entries",
+                severity="high",
+            )
+        )
 
         # §11.10(g) — Authority checks
-        results.append(self._add_result(
-            check_id="21CFR11-10g",
-            standard="21 CFR Part 11",
-            clause="§11.10(g)",
-            description="Authority checks for record access and operations",
-            passed=bool(project_data.get("access_controls")),
-            evidence=f"Access controls: {'configured' if project_data.get('access_controls') else 'not configured'}",
-            remediation="Implement role-based access control with named approvals",
-            severity="high",
-        ))
+        results.append(
+            self._add_result(
+                check_id="21CFR11-10g",
+                standard="21 CFR Part 11",
+                clause="§11.10(g)",
+                description="Authority checks for record access and operations",
+                passed=bool(project_data.get("access_controls")),
+                evidence=f"Access controls: {'configured' if project_data.get('access_controls') else 'not configured'}",
+                remediation="Implement role-based access control with named approvals",
+                severity="high",
+            )
+        )
 
         return [r.to_dict() for r in results]
 
@@ -439,7 +513,9 @@ class ComplianceVerifier:
             sum(1 for r in v if r["passed"]) for v in all_results.values()
         )
         critical_failures = [
-            r for v in all_results.values() for r in v
+            r
+            for v in all_results.values()
+            for r in v
             if not r["passed"] and r["severity"] == "critical"
         ]
 
@@ -448,7 +524,9 @@ class ComplianceVerifier:
             "total_checks": total_checks,
             "passed": passed_checks,
             "failed": total_checks - passed_checks,
-            "compliance_pct": round(passed_checks / total_checks * 100, 1) if total_checks else 0,
+            "compliance_pct": round(passed_checks / total_checks * 100, 1)
+            if total_checks
+            else 0,
             "critical_failures": len(critical_failures),
             "critical_failure_details": critical_failures,
             "per_standard": all_results,

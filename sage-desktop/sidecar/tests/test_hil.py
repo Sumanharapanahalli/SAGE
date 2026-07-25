@@ -5,6 +5,7 @@ Like workflow.py/compliance.py, hil_runner is a module-level singleton
 _wire_handlers wiring needed, so tests monkeypatch the module's
 _hil_runner attribute / get_hil_runner factory directly.
 """
+
 from __future__ import annotations
 
 import sys
@@ -85,18 +86,20 @@ def test_run_suite_requires_nonempty_tests_list():
 
 
 def test_run_suite_mock_transport_runs_and_summarizes():
-    out = hil.run_suite({
-        "tests": [
-            {
-                "id": "TC-001",
-                "name": "Power-on self test",
-                "requirement_id": "REQ-001",
-                "description": "Device boots cleanly",
-                "procedure": ["Power on", "Observe LED"],
-                "expected_result": "LED green within 2s",
-            },
-        ],
-    })
+    out = hil.run_suite(
+        {
+            "tests": [
+                {
+                    "id": "TC-001",
+                    "name": "Power-on self test",
+                    "requirement_id": "REQ-001",
+                    "description": "Device boots cleanly",
+                    "procedure": ["Power on", "Observe LED"],
+                    "expected_result": "LED green within 2s",
+                },
+            ],
+        }
+    )
     assert out["total"] == 1
     assert out["passed"] == 1
     assert out["transport"] == "mock"
@@ -105,8 +108,20 @@ def test_run_suite_mock_transport_runs_and_summarizes():
 
 
 def test_run_suite_auto_connects_if_not_connected():
-    out = hil.run_suite({"tests": [{"id": "TC-002", "name": "t", "requirement_id": "R",
-                                     "description": "", "procedure": [], "expected_result": ""}]})
+    out = hil.run_suite(
+        {
+            "tests": [
+                {
+                    "id": "TC-002",
+                    "name": "t",
+                    "requirement_id": "R",
+                    "description": "",
+                    "procedure": [],
+                    "expected_result": "",
+                }
+            ]
+        }
+    )
     assert out["results"][0]["verdict"] == "PASS"
     status = hil.status({})
     assert status["connected"] is True
@@ -129,8 +144,20 @@ def test_report_rejects_unknown_session():
 
 
 def test_report_returns_evidence_for_current_session():
-    hil.run_suite({"tests": [{"id": "TC-003", "name": "t", "requirement_id": "REQ-003",
-                               "description": "", "procedure": [], "expected_result": ""}]})
+    hil.run_suite(
+        {
+            "tests": [
+                {
+                    "id": "TC-003",
+                    "name": "t",
+                    "requirement_id": "REQ-003",
+                    "description": "",
+                    "procedure": [],
+                    "expected_result": "",
+                }
+            ]
+        }
+    )
     session_id = hil.status({})["session_id"]
     out = hil.report({"session_id": session_id, "standard": "IEC62304"})
     assert out["standard"] == "IEC62304"
@@ -139,8 +166,20 @@ def test_report_returns_evidence_for_current_session():
 
 
 def test_report_defaults_to_iec62304():
-    hil.run_suite({"tests": [{"id": "TC-004", "name": "t", "requirement_id": "REQ-004",
-                               "description": "", "procedure": [], "expected_result": ""}]})
+    hil.run_suite(
+        {
+            "tests": [
+                {
+                    "id": "TC-004",
+                    "name": "t",
+                    "requirement_id": "REQ-004",
+                    "description": "",
+                    "procedure": [],
+                    "expected_result": "",
+                }
+            ]
+        }
+    )
     session_id = hil.status({})["session_id"]
     out = hil.report({"session_id": session_id})
     assert out["standard"] == "IEC62304"

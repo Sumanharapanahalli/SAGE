@@ -90,11 +90,17 @@ def stratified_split(
     # Verify class proportions are preserved
     for split_name, idx in [("train", train_idx), ("val", val_idx), ("test", test_idx)]:
         _, counts = np.unique(y[idx], return_counts=True)
-        logger.debug(f"  {split_name} class dist: {(counts / counts.sum()).round(3).tolist()}")
+        logger.debug(
+            f"  {split_name} class dist: {(counts / counts.sum()).round(3).tolist()}"
+        )
 
     return (
-        X[train_idx], X[val_idx], X[test_idx],
-        y[train_idx], y[val_idx], y[test_idx],
+        X[train_idx],
+        X[val_idx],
+        X[test_idx],
+        y[train_idx],
+        y[val_idx],
+        y[test_idx],
     )
 
 
@@ -110,9 +116,9 @@ def fit_scaler_on_train(
     Returns scaled arrays + the fitted scaler (save alongside checkpoints).
     """
     scaler = StandardScaler()
-    X_train_s = scaler.fit_transform(X_train)    # ← ONLY fit here
-    X_val_s   = scaler.transform(X_val)           # ← transform only
-    X_test_s  = scaler.transform(X_test)          # ← transform only
+    X_train_s = scaler.fit_transform(X_train)  # ← ONLY fit here
+    X_val_s = scaler.transform(X_val)  # ← transform only
+    X_test_s = scaler.transform(X_test)  # ← transform only
     logger.info(
         f"Scaler fit on train ({len(X_train)} samples). "
         f"mean range: [{X_train_s.mean(0).min():.3f}, {X_train_s.mean(0).max():.3f}]"

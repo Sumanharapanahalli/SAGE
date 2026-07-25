@@ -4,6 +4,7 @@ Builds a real audit_log.db via AuditLogger, signs a couple of events, verifies t
 then tampers (edit / delete / re-order) and asserts verification FAILS at the tampered row —
 the tamper-evidence property the compliance record needs.
 """
+
 from __future__ import annotations
 
 import sqlite3
@@ -19,8 +20,13 @@ KEY = "test-audit-key"
 
 
 def _log(al, actor, action, out, approver=None):
-    al.log_event(actor=actor, action_type=action, input_context="ctx",
-                 output_content=out, approved_by=approver)
+    al.log_event(
+        actor=actor,
+        action_type=action,
+        input_context="ctx",
+        output_content=out,
+        approved_by=approver,
+    )
     conn = sqlite3.connect(al.db_path)
     conn.row_factory = sqlite3.Row
     rid = conn.execute(
@@ -56,7 +62,9 @@ def test_editing_a_signed_row_breaks_the_chain(db):
 
     # Tamper: change the approver on the first signed row.
     conn = sqlite3.connect(db.db_path)
-    conn.execute("UPDATE compliance_audit_log SET approved_by='Mallory' WHERE id=?", (e1,))
+    conn.execute(
+        "UPDATE compliance_audit_log SET approved_by='Mallory' WHERE id=?", (e1,)
+    )
     conn.commit()
     conn.close()
 

@@ -16,6 +16,7 @@ if the import or singleton construction fails, every handler
 returns ``SidecarError`` with a typed message so the UI can render
 a single disabled state.
 """
+
 from __future__ import annotations
 
 from typing import Any, Optional
@@ -95,7 +96,7 @@ def list_learnings(params: Any) -> dict:
         raise RpcError(RPC_SIDECAR_ERROR, f"list_learnings failed: {e}") from e
 
     total = len(full)
-    entries = full[offset: offset + limit]
+    entries = full[offset : offset + limit]
     return {
         "entries": entries,
         "total": total,
@@ -291,9 +292,7 @@ def respond_to_help_request(params: Any) -> dict:
     except ValueError as e:
         raise RpcError(RPC_SIDECAR_ERROR, str(e)) from e
     except Exception as e:  # noqa: BLE001
-        raise RpcError(
-            RPC_SIDECAR_ERROR, f"respond_to_help_request failed: {e}"
-        ) from e
+        raise RpcError(RPC_SIDECAR_ERROR, f"respond_to_help_request failed: {e}") from e
 
     return {"request": updated}
 

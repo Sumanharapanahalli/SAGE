@@ -16,6 +16,7 @@ logger = logging.getLogger("sqlite_tools_mcp")
 
 try:
     from fastmcp import FastMCP
+
     mcp = FastMCP("sqlite-tools")
 except ImportError:
     logger.warning("fastmcp not installed — MCP server cannot start standalone")
@@ -26,6 +27,7 @@ def _get_sage_db_path(db_name: str = "audit_log.db") -> str:
     """Resolve path to a database in the active solution's .sage/ directory."""
     try:
         from src.core.project_loader import project_config, _SOLUTIONS_DIR
+
         return os.path.join(
             _SOLUTIONS_DIR, project_config.project_name, ".sage", db_name
         )
@@ -46,7 +48,16 @@ def _validate_db_path(db_name: str) -> str:
     return path
 
 
-_DANGEROUS_KEYWORDS = {"DROP", "DELETE", "UPDATE", "INSERT", "ALTER", "CREATE", "ATTACH", "DETACH"}
+_DANGEROUS_KEYWORDS = {
+    "DROP",
+    "DELETE",
+    "UPDATE",
+    "INSERT",
+    "ALTER",
+    "CREATE",
+    "ATTACH",
+    "DETACH",
+}
 
 
 def _is_read_only(sql: str) -> bool:
@@ -61,6 +72,7 @@ def _is_read_only(sql: str) -> bool:
 
 
 if mcp:
+
     @mcp.tool()
     def query_db(
         sql: str,
@@ -91,7 +103,9 @@ if mcp:
             conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
             conn.row_factory = sqlite3.Row
             cursor = conn.execute(sql)
-            columns = [desc[0] for desc in cursor.description] if cursor.description else []
+            columns = (
+                [desc[0] for desc in cursor.description] if cursor.description else []
+            )
             rows = [dict(row) for row in cursor.fetchmany(max_rows)]
             total = len(rows)
 
@@ -173,14 +187,16 @@ if mcp:
             cursor = conn.execute(f"PRAGMA table_info([{table_name}])")
             columns = []
             for row in cursor.fetchall():
-                columns.append({
-                    "cid": row[0],
-                    "name": row[1],
-                    "type": row[2],
-                    "notnull": bool(row[3]),
-                    "default": row[4],
-                    "pk": bool(row[5]),
-                })
+                columns.append(
+                    {
+                        "cid": row[0],
+                        "name": row[1],
+                        "type": row[2],
+                        "notnull": bool(row[3]),
+                        "default": row[4],
+                        "pk": bool(row[5]),
+                    }
+                )
 
             if not columns:
                 conn.close()
@@ -212,6 +228,7 @@ if mcp:
         """
         try:
             from src.core.project_loader import project_config, _SOLUTIONS_DIR
+
             sage_dir = os.path.join(
                 _SOLUTIONS_DIR, project_config.project_name, ".sage"
             )
@@ -219,16 +236,22 @@ if mcp:
             return {"success": False, "error": "No active solution"}
 
         if not os.path.isdir(sage_dir):
-            return {"success": True, "databases": [], "note": ".sage/ directory not yet created"}
+            return {
+                "success": True,
+                "databases": [],
+                "note": ".sage/ directory not yet created",
+            }
 
         databases = []
         for f in sorted(os.listdir(sage_dir)):
             if f.endswith(".db"):
                 full = os.path.join(sage_dir, f)
-                databases.append({
-                    "name": f,
-                    "size_bytes": os.path.getsize(full),
-                })
+                databases.append(
+                    {
+                        "name": f,
+                        "size_bytes": os.path.getsize(full),
+                    }
+                )
 
         return {
             "success": True,
@@ -242,5 +265,6 @@ if __name__ == "__main__":
     if mcp is None:
         print("ERROR: fastmcp not installed. Run: pip install fastmcp")
         import sys
+
         sys.exit(1)
     mcp.run()

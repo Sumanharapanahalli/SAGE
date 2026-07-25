@@ -82,9 +82,9 @@ class DialogManagementModel(nn.Module):
 
     def forward(
         self,
-        input_ids: torch.Tensor,      # (B, seq_len)
-        attention_mask: torch.Tensor, # (B, seq_len)
-    ) -> torch.Tensor:                # (B, n_classes)
+        input_ids: torch.Tensor,  # (B, seq_len)
+        attention_mask: torch.Tensor,  # (B, seq_len)
+    ) -> torch.Tensor:  # (B, n_classes)
         # 1. Contextual encoding — CLS token as utterance+history representation
         enc_out = self.encoder(input_ids=input_ids, attention_mask=attention_mask)
         cls = enc_out.last_hidden_state[:, 0, :]  # (B, encoder_dim)
@@ -93,11 +93,11 @@ class DialogManagementModel(nn.Module):
         projected = self.projection(cls).unsqueeze(1)  # (B, 1, hidden_size)
 
         # 3. LSTM dialog state update
-        lstm_out, _ = self.state_tracker(projected)    # (B, 1, hidden_size)
-        state = lstm_out[:, -1, :]                     # (B, hidden_size)
+        lstm_out, _ = self.state_tracker(projected)  # (B, 1, hidden_size)
+        state = lstm_out[:, -1, :]  # (B, hidden_size)
 
         # 4. Policy: predict next dialog act
-        return self.policy_head(state)                 # (B, n_classes)
+        return self.policy_head(state)  # (B, n_classes)
 
     def freeze_encoder(self) -> None:
         """Freeze DistilBERT weights (use for warm-up phase training)."""

@@ -46,6 +46,7 @@ VALID_DIFFICULTIES = {"beginner", "intermediate", "advanced", "expert"}
 @dataclass
 class Skill:
     """A single modular agent skill loaded from YAML."""
+
     name: str
     version: str
     visibility: str  # public | private | disabled
@@ -61,7 +62,9 @@ class Skill:
 
     # JD-sourced metadata
     certifications: list[str] = field(default_factory=list)
-    seniority_delta: dict = field(default_factory=dict)  # {junior: [...], senior: [...]}
+    seniority_delta: dict = field(
+        default_factory=dict
+    )  # {junior: [...], senior: [...]}
     keywords: list[str] = field(default_factory=list)
 
     # Cross-cutting engines this skill can use (e.g. autoresearch)
@@ -80,7 +83,9 @@ class Skill:
             "runner": self.runner,
             "description": self.description,
             "tools": self.tools,
-            "prompt": self.prompt[:200] + "..." if len(self.prompt) > 200 else self.prompt,
+            "prompt": self.prompt[:200] + "..."
+            if len(self.prompt) > 200
+            else self.prompt,
             "acceptance_criteria": self.acceptance_criteria,
             "certifications": self.certifications,
             "engines": self.engines,
@@ -95,6 +100,7 @@ class Skill:
 # ---------------------------------------------------------------------------
 # Skill Registry
 # ---------------------------------------------------------------------------
+
 
 class SkillRegistry:
     """
@@ -277,7 +283,11 @@ class SkillRegistry:
     def get_by_tag(self, tag: str) -> list[Skill]:
         """Get all active skills with a tag."""
         names = self._by_tag.get(tag, [])
-        return [self._skills[n] for n in names if n in self._skills and self._skills[n].is_active]
+        return [
+            self._skills[n]
+            for n in names
+            if n in self._skills and self._skills[n].is_active
+        ]
 
     def search(self, query: str) -> list[Skill]:
         """Search skills by name, description, or keywords."""
@@ -342,7 +352,9 @@ class SkillRegistry:
         total = 0
         for directory in list(self._loaded_dirs):
             total += self.load_directory(directory)
-        logger.info("Hot-reloaded %d skills from %d directories", total, len(self._loaded_dirs))
+        logger.info(
+            "Hot-reloaded %d skills from %d directories", total, len(self._loaded_dirs)
+        )
         return total
 
     # ── Prompt building ──────────────────────────────────────────────────
@@ -361,7 +373,9 @@ class SkillRegistry:
         engines_seen: set[str] = set()
         for skill in skills:
             if skill.prompt:
-                parts.append(f"## Skill: {skill.name} (v{skill.version})\n{skill.prompt}")
+                parts.append(
+                    f"## Skill: {skill.name} (v{skill.version})\n{skill.prompt}"
+                )
             for engine in skill.engines:
                 engines_seen.add(engine)
 
@@ -407,8 +421,12 @@ class SkillRegistry:
             "total": len(self._skills),
             "active": sum(1 for s in self._skills.values() if s.is_active),
             "public": sum(1 for s in self._skills.values() if s.visibility == "public"),
-            "private": sum(1 for s in self._skills.values() if s.visibility == "private"),
-            "disabled": sum(1 for s in self._skills.values() if s.visibility == "disabled"),
+            "private": sum(
+                1 for s in self._skills.values() if s.visibility == "private"
+            ),
+            "disabled": sum(
+                1 for s in self._skills.values() if s.visibility == "disabled"
+            ),
             "roles_covered": len(self._by_role),
             "runners_covered": len(self._by_runner),
             "loaded_dirs": list(self._loaded_dirs),

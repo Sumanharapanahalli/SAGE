@@ -9,7 +9,14 @@ import json
 import time
 
 import pytest
-from playwright.sync_api import sync_playwright, Page, Browser, BrowserContext
+
+# These E2E tests drive a real browser via Playwright, which CI's unit job does
+# not install. Skip the whole module cleanly if Playwright is absent so that
+# `pytest -m unit` collection never hard-errors on this import (was aborting the
+# entire unit-test run).
+_playwright = pytest.importorskip("playwright.sync_api")
+sync_playwright = _playwright.sync_playwright
+Page = _playwright.Page
 
 pytestmark = pytest.mark.e2e
 
@@ -18,6 +25,7 @@ def _backend_up() -> bool:
     """Fast probe that returns True only if the SAGE FastAPI backend answers /health."""
     try:
         import urllib.request
+
         with urllib.request.urlopen("http://localhost:8000/health", timeout=0.5) as r:
             return r.status == 200
     except Exception:
@@ -30,11 +38,15 @@ def _require_live_stack():
     drive a real browser against a live backend + frontend and cannot pass
     otherwise."""
     if not _backend_up():
-        pytest.skip("SAGE backend not reachable on :8000 — live-stack e2e tests skipped")
+        pytest.skip(
+            "SAGE backend not reachable on :8000 — live-stack e2e tests skipped"
+        )
+
 
 # ---------------------------------------------------------------------------
 # Playwright sync fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture(scope="session")
 def pw():
@@ -72,6 +84,7 @@ API = "http://localhost:8000"
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def nav(page: Page, path: str, timeout=20000):
     """Navigate to a path and wait for load (not networkidle — SSE pages never idle)."""
     page.goto(f"{BASE}{path}", wait_until="load", timeout=timeout)
@@ -102,8 +115,8 @@ def body_has(page: Page, *words):
 #  1. CORE — Health & Initial Load
 # ===================================================================
 
-class TestCoreHealth:
 
+class TestCoreHealth:
     def test_backend_health(self, page: Page):
         resp = page.request.get(f"{API}/health")
         assert resp.status == 200
@@ -130,8 +143,8 @@ class TestCoreHealth:
 #  2. WORK AREA
 # ===================================================================
 
-class TestWorkArea:
 
+class TestWorkArea:
     def test_dashboard_renders(self, page: Page):
         nav(page, "/")
         check_no_crash(page)
@@ -143,7 +156,9 @@ class TestWorkArea:
         # Check for any interactive elements — links, buttons, or clickable divs
         links = page.query_selector_all("a[href]")
         buttons = page.query_selector_all("button")
-        clickables = page.query_selector_all("[role='button'], [onclick], [class*='card'], [class*='action']")
+        clickables = page.query_selector_all(
+            "[role='button'], [onclick], [class*='card'], [class*='action']"
+        )
         total = len(links) + len(buttons) + len(clickables)
         assert total > 0, "Dashboard has no interactive elements"
 
@@ -191,7 +206,7 @@ class TestWorkArea:
             assert True  # UI loaded successfully
         else:
             # Check if there's any content indicating the page loaded
-            content = page.text_content('body')
+            content = page.text_content("body")
             print(f"Page content preview: {content[:200]}...")
             # Accept if the page loads without crashing, even if API fails
             assert len(content.strip()) > 0, "Page appears completely empty"
@@ -206,11 +221,14 @@ class TestWorkArea:
         # Look for key UI elements that should be present
         tab_elements = page.locator('[role="tab"], button[class*="tab"], .tab')
         textarea_elements = page.locator('textarea, input[type="text"]')
-        button_elements = page.locator('button')
+        button_elements = page.locator("button")
 
         # Verify some interactive elements loaded
-        assert tab_elements.count() > 0 or textarea_elements.count() > 0 or button_elements.count() > 0, \
-            "No interactive UI elements found - component may not have loaded"
+        assert (
+            tab_elements.count() > 0
+            or textarea_elements.count() > 0
+            or button_elements.count() > 0
+        ), "No interactive UI elements found - component may not have loaded"
 
         # Check if we can interact with input fields
         if textarea_elements.count() > 0:
@@ -227,8 +245,8 @@ class TestWorkArea:
 #  3. INTELLIGENCE AREA
 # ===================================================================
 
-class TestIntelligenceArea:
 
+class TestIntelligenceArea:
     def test_agents_page(self, page: Page):
         nav(page, "/agents")
         check_no_crash(page)
@@ -299,8 +317,8 @@ class TestIntelligenceArea:
 #  4. KNOWLEDGE AREA
 # ===================================================================
 
-class TestKnowledgeArea:
 
+class TestKnowledgeArea:
     def test_knowledge_page(self, page: Page):
         nav(page, "/knowledge")
         check_no_crash(page)
@@ -309,7 +327,9 @@ class TestKnowledgeArea:
 
     def test_knowledge_add_dialog(self, page: Page):
         nav(page, "/knowledge")
-        add_btn = page.query_selector("button:has-text('Add'), button:has-text('New'), button:has-text('+')")
+        add_btn = page.query_selector(
+            "button:has-text('Add'), button:has-text('New'), button:has-text('+')"
+        )
         if add_btn:
             add_btn.click()
             page.wait_for_timeout(1000)
@@ -339,8 +359,8 @@ class TestKnowledgeArea:
 #  5. ORGANIZATION AREA
 # ===================================================================
 
-class TestOrganizationArea:
 
+class TestOrganizationArea:
     def test_org_graph_page(self, page: Page):
         nav(page, "/org-graph")
         check_no_crash(page)
@@ -350,7 +370,9 @@ class TestOrganizationArea:
     def test_onboarding_page(self, page: Page):
         nav(page, "/onboarding")
         check_no_crash(page)
-        assert body_has(page, "onboard", "generate", "solution", "create", "wizard", "new")
+        assert body_has(
+            page, "onboard", "generate", "solution", "create", "wizard", "new"
+        )
         snap(page, "onboarding")
 
     def test_onboarding_has_input(self, page: Page):
@@ -363,12 +385,14 @@ class TestOrganizationArea:
 #  6. ADMIN AREA
 # ===================================================================
 
-class TestAdminArea:
 
+class TestAdminArea:
     def test_llm_settings_page(self, page: Page):
         nav(page, "/llm")
         check_no_crash(page)
-        assert body_has(page, "llm", "provider", "model", "switch", "gemini", "claude", "ollama")
+        assert body_has(
+            page, "llm", "provider", "model", "switch", "gemini", "claude", "ollama"
+        )
         snap(page, "llm_settings")
 
     def test_llm_status_api(self, page: Page):
@@ -397,13 +421,17 @@ class TestAdminArea:
     def test_access_control_page(self, page: Page):
         nav(page, "/access-control")
         check_no_crash(page)
-        assert body_has(page, "access", "control", "role", "permission", "rbac", "api key")
+        assert body_has(
+            page, "access", "control", "role", "permission", "rbac", "api key"
+        )
         snap(page, "access_control")
 
     def test_integrations_page(self, page: Page):
         nav(page, "/integrations")
         check_no_crash(page)
-        assert body_has(page, "integration", "connect", "slack", "github", "webhook", "mcp")
+        assert body_has(
+            page, "integration", "connect", "slack", "github", "webhook", "mcp"
+        )
         snap(page, "integrations")
 
     def test_settings_page(self, page: Page):
@@ -422,11 +450,13 @@ class TestAdminArea:
 #  7. SIDEBAR NAVIGATION
 # ===================================================================
 
-class TestSidebarNavigation:
 
+class TestSidebarNavigation:
     def test_sidebar_exists(self, page: Page):
         nav(page, "/")
-        sidebar = page.query_selector("nav, aside, [class*='sidebar'], [class*='Sidebar'], [class*='side-']")
+        sidebar = page.query_selector(
+            "nav, aside, [class*='sidebar'], [class*='Sidebar'], [class*='side-']"
+        )
         # Sidebar may use div-based layout — check for any nav-like structure
         if sidebar is None:
             # Check for links that look like sidebar nav
@@ -453,13 +483,30 @@ class TestSidebarNavigation:
     def test_all_routes_load(self, page: Page):
         """Verify every sidebar route loads without crash."""
         routes = [
-            "/", "/approvals", "/queue", "/product-backlog", "/build", "/live-console",
-            "/agents", "/analyst", "/developer", "/monitor",
-            "/improvements", "/workflows", "/goals",
-            "/knowledge", "/activity", "/audit", "/costs",
-            "/org-graph", "/onboarding",
-            "/llm", "/yaml-editor", "/access-control",
-            "/integrations", "/settings",
+            "/",
+            "/approvals",
+            "/queue",
+            "/product-backlog",
+            "/build",
+            "/live-console",
+            "/agents",
+            "/analyst",
+            "/developer",
+            "/monitor",
+            "/improvements",
+            "/workflows",
+            "/goals",
+            "/knowledge",
+            "/activity",
+            "/audit",
+            "/costs",
+            "/org-graph",
+            "/onboarding",
+            "/llm",
+            "/yaml-editor",
+            "/access-control",
+            "/integrations",
+            "/settings",
         ]
         failures = []
         for route in routes:
@@ -469,15 +516,17 @@ class TestSidebarNavigation:
             except Exception as e:
                 failures.append(f"{route}: {e}")
         # Allow up to 2 flaky timeouts (browser accumulates state)
-        assert len(failures) <= 2, f"Too many routes failed ({len(failures)}):\n" + "\n".join(failures)
+        assert len(failures) <= 2, (
+            f"Too many routes failed ({len(failures)}):\n" + "\n".join(failures)
+        )
 
 
 # ===================================================================
 #  8. SOLUTION SWITCHING
 # ===================================================================
 
-class TestSolutionSwitching:
 
+class TestSolutionSwitching:
     def test_solution_rail_exists(self, page: Page):
         nav(page, "/")
         rail = page.query_selector("[data-tour='solution-rail']")
@@ -490,11 +539,15 @@ class TestSolutionSwitching:
         data = resp.json()
         projects = data.get("projects", data.get("solutions", []))
         if len(projects) > 1:
-            target = projects[1] if isinstance(projects[1], str) else projects[1].get("name", projects[1].get("project"))
+            target = (
+                projects[1]
+                if isinstance(projects[1], str)
+                else projects[1].get("name", projects[1].get("project"))
+            )
             switch = page.request.post(
                 f"{API}/config/switch",
                 data=json.dumps({"project": target}),
-                headers={"Content-Type": "application/json"}
+                headers={"Content-Type": "application/json"},
             )
             assert switch.status == 200
             nav(page, "/")
@@ -505,8 +558,8 @@ class TestSolutionSwitching:
 #  9. API SMOKE TESTS
 # ===================================================================
 
-class TestAPISmoke:
 
+class TestAPISmoke:
     def test_health(self, page: Page):
         assert page.request.get(f"{API}/health").status == 200
 
@@ -589,16 +642,18 @@ class TestAPISmoke:
 #  10. FUNCTIONAL FLOWS
 # ===================================================================
 
-class TestFunctionalFlows:
 
+class TestFunctionalFlows:
     def test_analyze_via_api(self, page: Page):
         resp = page.request.post(
             f"{API}/analyze",
-            data=json.dumps({
-                "log_entry": "E2E Test: ERROR Connection timeout at db_pool.py:88",
-                "role": "analyst"
-            }),
-            headers={"Content-Type": "application/json"}
+            data=json.dumps(
+                {
+                    "log_entry": "E2E Test: ERROR Connection timeout at db_pool.py:88",
+                    "role": "analyst",
+                }
+            ),
+            headers={"Content-Type": "application/json"},
         )
         assert resp.status == 200
         data = resp.json()
@@ -608,18 +663,20 @@ class TestFunctionalFlows:
         # Add — API expects "text" not "content"
         add = page.request.post(
             f"{API}/knowledge/add",
-            data=json.dumps({
-                "text": "E2E test: Playwright validates all UI flows",
-                "metadata": {"source": "e2e_test"}
-            }),
-            headers={"Content-Type": "application/json"}
+            data=json.dumps(
+                {
+                    "text": "E2E test: Playwright validates all UI flows",
+                    "metadata": {"source": "e2e_test"},
+                }
+            ),
+            headers={"Content-Type": "application/json"},
         )
         assert add.status == 200
         # Search
         search = page.request.post(
             f"{API}/knowledge/search",
             data=json.dumps({"query": "Playwright validates"}),
-            headers={"Content-Type": "application/json"}
+            headers={"Content-Type": "application/json"},
         )
         assert search.status == 200
         # Verify UI
@@ -629,15 +686,17 @@ class TestFunctionalFlows:
     def test_feature_request_flow(self, page: Page):
         resp = page.request.post(
             f"{API}/feedback/feature-request",
-            data=json.dumps({
-                "title": "E2E Test Feature",
-                "description": "Automated E2E test feature request",
-                "scope": "solution",
-                "priority": "low",
-                "module_id": "dashboard",
-                "module_name": "Dashboard"
-            }),
-            headers={"Content-Type": "application/json"}
+            data=json.dumps(
+                {
+                    "title": "E2E Test Feature",
+                    "description": "Automated E2E test feature request",
+                    "scope": "solution",
+                    "priority": "low",
+                    "module_id": "dashboard",
+                    "module_name": "Dashboard",
+                }
+            ),
+            headers={"Content-Type": "application/json"},
         )
         assert resp.status == 200
         nav(page, "/improvements")
@@ -653,8 +712,18 @@ class TestFunctionalFlows:
     def test_rapid_navigation(self, page: Page):
         """Navigate through 10 pages quickly without crashes."""
         failures = 0
-        for route in ["/", "/analyst", "/developer", "/agents", "/approvals",
-                      "/knowledge", "/audit", "/llm", "/settings", "/"]:
+        for route in [
+            "/",
+            "/analyst",
+            "/developer",
+            "/agents",
+            "/approvals",
+            "/knowledge",
+            "/audit",
+            "/llm",
+            "/settings",
+            "/",
+        ]:
             try:
                 nav(page, route, timeout=30000)
                 check_no_crash(page)
@@ -667,11 +736,11 @@ class TestFunctionalFlows:
 #  11. VISUAL & RESPONSIVE
 # ===================================================================
 
-class TestVisualAndResponsive:
 
+class TestVisualAndResponsive:
     def test_theme_css_vars(self, page: Page):
         nav(page, "/")
-        has_theme = page.evaluate("""() => {
+        page.evaluate("""() => {
             const s = getComputedStyle(document.documentElement);
             return s.getPropertyValue('--sage-sidebar-bg') ||
                    s.getPropertyValue('--sidebar-bg') || '';
@@ -690,8 +759,8 @@ class TestVisualAndResponsive:
 #  12. ERROR HANDLING
 # ===================================================================
 
-class TestErrorHandling:
 
+class TestErrorHandling:
     def test_404_route(self, page: Page):
         page.goto(f"{BASE}/nonexistent-page-xyz", wait_until="load", timeout=20000)
         page.wait_for_timeout(1500)
@@ -705,7 +774,7 @@ class TestErrorHandling:
         r = page.request.post(
             f"{API}/analyze",
             data=json.dumps({"log_entry": "", "role": "analyst"}),
-            headers={"Content-Type": "application/json"}
+            headers={"Content-Type": "application/json"},
         )
         assert r.status in [200, 400, 422]
 
@@ -713,7 +782,7 @@ class TestErrorHandling:
         r = page.request.post(
             f"{API}/analyze",
             data="not json",
-            headers={"Content-Type": "application/json"}
+            headers={"Content-Type": "application/json"},
         )
         assert r.status in [400, 422]
 
@@ -722,8 +791,8 @@ class TestErrorHandling:
 #  13. PERFORMANCE
 # ===================================================================
 
-class TestPerformance:
 
+class TestPerformance:
     def test_dashboard_load_time(self, page: Page):
         start = time.time()
         nav(page, "/", timeout=10000)

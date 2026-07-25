@@ -9,7 +9,6 @@ Simulates user journey:
 5. Generate full compliance report
 """
 
-import pytest
 from fastapi.testclient import TestClient
 from src.interface.api import app
 
@@ -34,7 +33,10 @@ class TestE2EStandardsDashboard:
         resp = client.get("/regulatory/standards/iec_62304")
         assert resp.status_code == 200
         data = resp.json()
-        assert data["name"] == "IEC 62304:2006/AMD1:2015 — Medical Device Software Lifecycle"
+        assert (
+            data["name"]
+            == "IEC 62304:2006/AMD1:2015 — Medical Device Software Lifecycle"
+        )
         assert len(data["requirements"]) >= 10
 
     def test_unknown_standard_returns_404(self):
@@ -47,24 +49,27 @@ class TestE2EComplianceAssessment:
 
     def test_medtech_product_us_eu(self):
         """Medtech product targeting US + EU should assess against 10+ standards."""
-        resp = client.post("/regulatory/assess", json={
-            "product": {
-                "product_name": "CardioRisk CDS",
-                "product_type": "samd",
-                "risk_class": "II",
-                "target_regions": ["us", "eu"],
-                "uses_ai_ml": False,
-                "processes_images": False,
-                "processes_signals": False,
-                "existing_artifacts": [
-                    "software_requirements_spec",
-                    "software_architecture_doc",
-                    "risk_management_file",
-                    "verification_plan",
-                    "audit_trail",
-                ],
+        resp = client.post(
+            "/regulatory/assess",
+            json={
+                "product": {
+                    "product_name": "CardioRisk CDS",
+                    "product_type": "samd",
+                    "risk_class": "II",
+                    "target_regions": ["us", "eu"],
+                    "uses_ai_ml": False,
+                    "processes_images": False,
+                    "processes_signals": False,
+                    "existing_artifacts": [
+                        "software_requirements_spec",
+                        "software_architecture_doc",
+                        "risk_management_file",
+                        "verification_plan",
+                        "audit_trail",
+                    ],
+                },
             },
-        })
+        )
         assert resp.status_code == 200
         data = resp.json()
         assert data["standards_assessed"] >= 8
@@ -78,18 +83,21 @@ class TestE2EComplianceAssessment:
 
     def test_aiml_product_triggers_ai_standards(self):
         """AI/ML product should trigger AI-specific assessments."""
-        resp = client.post("/regulatory/assess", json={
-            "product": {
-                "product_name": "LungScan AI",
-                "product_type": "samd",
-                "risk_class": "III",
-                "target_regions": ["us", "eu"],
-                "uses_ai_ml": True,
-                "processes_images": True,
-                "processes_signals": False,
-                "existing_artifacts": ["software_requirements_spec"],
+        resp = client.post(
+            "/regulatory/assess",
+            json={
+                "product": {
+                    "product_name": "LungScan AI",
+                    "product_type": "samd",
+                    "risk_class": "III",
+                    "target_regions": ["us", "eu"],
+                    "uses_ai_ml": True,
+                    "processes_images": True,
+                    "processes_signals": False,
+                    "existing_artifacts": ["software_requirements_spec"],
+                },
             },
-        })
+        )
         assert resp.status_code == 200
         data = resp.json()
         std_ids = list(data["assessments"].keys())
@@ -98,18 +106,21 @@ class TestE2EComplianceAssessment:
 
     def test_japan_only_product(self):
         """Japan-only product should include PMDA but not FDA/EU."""
-        resp = client.post("/regulatory/assess", json={
-            "product": {
-                "product_name": "Japan CDS",
-                "product_type": "samd",
-                "risk_class": "II",
-                "target_regions": ["japan"],
-                "uses_ai_ml": False,
-                "processes_images": False,
-                "processes_signals": False,
-                "existing_artifacts": [],
+        resp = client.post(
+            "/regulatory/assess",
+            json={
+                "product": {
+                    "product_name": "Japan CDS",
+                    "product_type": "samd",
+                    "risk_class": "II",
+                    "target_regions": ["japan"],
+                    "uses_ai_ml": False,
+                    "processes_images": False,
+                    "processes_signals": False,
+                    "existing_artifacts": [],
+                },
             },
-        })
+        )
         assert resp.status_code == 200
         data = resp.json()
         std_ids = list(data["assessments"].keys())
@@ -119,30 +130,41 @@ class TestE2EComplianceAssessment:
 
     def test_more_artifacts_higher_score(self):
         """Product with more artifacts should score higher."""
-        minimal = client.post("/regulatory/assess", json={
-            "product": {
-                "product_name": "Minimal",
-                "target_regions": ["us"],
-                "existing_artifacts": [],
+        minimal = client.post(
+            "/regulatory/assess",
+            json={
+                "product": {
+                    "product_name": "Minimal",
+                    "target_regions": ["us"],
+                    "existing_artifacts": [],
+                },
+                "standard_ids": ["iec_62304"],
             },
-            "standard_ids": ["iec_62304"],
-        }).json()
+        ).json()
 
-        full = client.post("/regulatory/assess", json={
-            "product": {
-                "product_name": "Full",
-                "target_regions": ["us"],
-                "existing_artifacts": [
-                    "software_development_plan", "software_requirements_spec",
-                    "software_architecture_doc", "unit_test_reports",
-                    "integration_test_reports", "system_test_reports",
-                    "software_release_doc", "safety_classification",
-                    "soup_inventory", "configuration_management_plan",
-                    "maintenance_plan",
-                ],
+        full = client.post(
+            "/regulatory/assess",
+            json={
+                "product": {
+                    "product_name": "Full",
+                    "target_regions": ["us"],
+                    "existing_artifacts": [
+                        "software_development_plan",
+                        "software_requirements_spec",
+                        "software_architecture_doc",
+                        "unit_test_reports",
+                        "integration_test_reports",
+                        "system_test_reports",
+                        "software_release_doc",
+                        "safety_classification",
+                        "soup_inventory",
+                        "configuration_management_plan",
+                        "maintenance_plan",
+                    ],
+                },
+                "standard_ids": ["iec_62304"],
             },
-            "standard_ids": ["iec_62304"],
-        }).json()
+        ).json()
 
         assert full["overall_score"] > minimal["overall_score"]
 
@@ -151,14 +173,17 @@ class TestE2EGapAnalysis:
     """User generates gap analysis."""
 
     def test_gap_analysis(self):
-        resp = client.post("/regulatory/gap-analysis", json={
-            "product": {
-                "product_name": "TestProduct",
-                "target_regions": ["us"],
-                "existing_artifacts": ["software_requirements_spec"],
+        resp = client.post(
+            "/regulatory/gap-analysis",
+            json={
+                "product": {
+                    "product_name": "TestProduct",
+                    "target_regions": ["us"],
+                    "existing_artifacts": ["software_requirements_spec"],
+                },
+                "standard_id": "iec_62304",
             },
-            "standard_id": "iec_62304",
-        })
+        )
         assert resp.status_code == 200
         data = resp.json()
         assert data["standard_id"] == "iec_62304"
@@ -171,16 +196,19 @@ class TestE2ERoadmap:
     """User generates submission roadmap."""
 
     def test_roadmap_generation(self):
-        resp = client.post("/regulatory/roadmap", json={
-            "product_name": "GlobalDevice",
-            "product_type": "samd",
-            "risk_class": "II",
-            "target_regions": ["us", "eu", "uk"],
-            "uses_ai_ml": False,
-            "processes_images": False,
-            "processes_signals": False,
-            "existing_artifacts": [],
-        })
+        resp = client.post(
+            "/regulatory/roadmap",
+            json={
+                "product_name": "GlobalDevice",
+                "product_type": "samd",
+                "risk_class": "II",
+                "target_regions": ["us", "eu", "uk"],
+                "uses_ai_ml": False,
+                "processes_images": False,
+                "processes_signals": False,
+                "existing_artifacts": [],
+            },
+        )
         assert resp.status_code == 200
         data = resp.json()
         assert "phases" in data
@@ -196,20 +224,23 @@ class TestE2EFullReport:
     """User generates full compliance report."""
 
     def test_full_report(self):
-        resp = client.post("/regulatory/full-report", json={
-            "product_name": "MedAssist Pro",
-            "product_type": "samd",
-            "risk_class": "II",
-            "target_regions": ["us", "eu"],
-            "uses_ai_ml": False,
-            "processes_images": False,
-            "processes_signals": False,
-            "existing_artifacts": [
-                "software_requirements_spec",
-                "risk_management_file",
-                "audit_trail",
-            ],
-        })
+        resp = client.post(
+            "/regulatory/full-report",
+            json={
+                "product_name": "MedAssist Pro",
+                "product_type": "samd",
+                "risk_class": "II",
+                "target_regions": ["us", "eu"],
+                "uses_ai_ml": False,
+                "processes_images": False,
+                "processes_signals": False,
+                "existing_artifacts": [
+                    "software_requirements_spec",
+                    "risk_management_file",
+                    "audit_trail",
+                ],
+            },
+        )
         assert resp.status_code == 200
         data = resp.json()
         assert "assessments" in data
@@ -236,7 +267,9 @@ class TestE2EAllEndpointsReachable:
                 resp = client.get(path)
             else:
                 resp = client.post(path, json={})
-            assert resp.status_code in (200, 422), f"{method} {path} returned {resp.status_code}"
+            assert resp.status_code in (200, 422), (
+                f"{method} {path} returned {resp.status_code}"
+            )
 
     def test_openapi_includes_regulatory_routes(self):
         resp = client.get("/openapi.json")

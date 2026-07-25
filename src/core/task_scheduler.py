@@ -25,6 +25,7 @@ def _parse_interval_seconds(cron: str) -> int:
     """
     try:
         from croniter import croniter
+
         now = time.time()
         it = croniter(cron, now)
         next1 = it.get_next(float)
@@ -72,21 +73,27 @@ class TaskScheduler:
         now = time.time()
         for entry in tasks:
             task_type = entry.get("task_type", "")
-            cron      = entry.get("cron", "* * * * *")
-            payload   = entry.get("payload", {})
-            priority  = entry.get("priority", 8)
-            key       = self._key(entry)
+            cron = entry.get("cron", "* * * * *")
+            payload = entry.get("payload", {})
+            priority = entry.get("priority", 8)
+            key = self._key(entry)
 
             interval = _parse_interval_seconds(cron)
-            last     = self._last_run.get(key, 0.0)
+            last = self._last_run.get(key, 0.0)
 
             if now - last >= interval:
                 try:
-                    self._qm.submit(task_type, payload, priority=priority, source="scheduler")
+                    self._qm.submit(
+                        task_type, payload, priority=priority, source="scheduler"
+                    )
                     self._last_run[key] = now
-                    self.logger.info("Scheduled task submitted: %s (cron: %s)", task_type, cron)
+                    self.logger.info(
+                        "Scheduled task submitted: %s (cron: %s)", task_type, cron
+                    )
                 except Exception as exc:
-                    self.logger.error("Scheduled task submit failed for %s: %s", task_type, exc)
+                    self.logger.error(
+                        "Scheduled task submit failed for %s: %s", task_type, exc
+                    )
 
     def start(self) -> None:
         """Start the scheduler background thread."""

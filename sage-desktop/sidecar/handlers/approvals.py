@@ -11,10 +11,10 @@ approval gate IS the product (Law 1), and a gate that leaves no record is
 indistinguishable from no gate at all. Approvals.tsx tells the operator the
 decision is recorded — this is what makes that true.
 """
+
 from __future__ import annotations
 
 import logging
-from typing import Optional
 
 import jobs
 from rpc import RpcError, RPC_INVALID_PARAMS
@@ -86,7 +86,9 @@ def _advance_linked_feature_request(proposal) -> None:
         conn.close()
     except Exception as e:  # noqa: BLE001
         logger.warning(
-            "could not advance feature request for trace_id=%s: %s", proposal.trace_id, e
+            "could not advance feature request for trace_id=%s: %s",
+            proposal.trace_id,
+            e,
         )
 
 
@@ -164,13 +166,16 @@ def _compound(proposal, feedback: str) -> None:
             _get_long_term_memory().remember(
                 f"Rejected {proposal.action_type}: {feedback}",
                 user_id=_operator()["name"],
-                metadata={"trace_id": proposal.trace_id,
-                          "action_type": proposal.action_type},
+                metadata={
+                    "trace_id": proposal.trace_id,
+                    "action_type": proposal.action_type,
+                },
             )
     except Exception as e:  # noqa: BLE001
         logger.error(
             "compounding-memory write failed for %s (decision stands): %s",
-            proposal.trace_id, e,
+            proposal.trace_id,
+            e,
         )
 
 
@@ -202,7 +207,9 @@ def _audit(action_type: str, proposal, feedback: str = "") -> None:
             output_content=feedback,
             metadata={
                 "trace_id": proposal.trace_id,
-                "risk_class": getattr(proposal.risk_class, "value", str(proposal.risk_class)),
+                "risk_class": getattr(
+                    proposal.risk_class, "value", str(proposal.risk_class)
+                ),
                 "action_type": proposal.action_type,
             },
             approved_by=ident["name"],
@@ -241,6 +248,7 @@ def _translate_value_error(trace_id: str, err: ValueError, store) -> RpcError:
 
 
 # ---------- handlers ----------
+
 
 def list_pending(params: dict) -> list[dict]:
     store = _require_store()
@@ -296,7 +304,8 @@ def reject(params: dict) -> dict:
                 logger.error(
                     "code_diff revert FAILED for %s — the working tree may still "
                     "contain the rejected changes: %s",
-                    p.trace_id, outcome.get("error"),
+                    p.trace_id,
+                    outcome.get("error"),
                 )
         except Exception as e:  # noqa: BLE001
             logger.error("code_diff revert unavailable for %s: %s", p.trace_id, e)
@@ -321,21 +330,38 @@ def batch_approve(params: dict) -> dict:
     results = []
     for trace_id in trace_ids:
         if not isinstance(trace_id, str):
-            results.append({
-                "trace_id": trace_id,
-                "ok": False,
-                "error": {"code": RPC_INVALID_PARAMS, "message": "trace_id must be a string"},
-            })
+            results.append(
+                {
+                    "trace_id": trace_id,
+                    "ok": False,
+                    "error": {
+                        "code": RPC_INVALID_PARAMS,
+                        "message": "trace_id must be a string",
+                    },
+                }
+            )
             continue
         try:
             p = store.approve(trace_id, decided_by=decided_by, feedback=feedback)
             _audit("PROPOSAL_APPROVED", p, feedback)
-            results.append({"trace_id": trace_id, "ok": True, "proposal": p.model_dump(mode="json")})
+            results.append(
+                {
+                    "trace_id": trace_id,
+                    "ok": True,
+                    "proposal": p.model_dump(mode="json"),
+                }
+            )
         except ValueError as e:
             err = _translate_value_error(trace_id, e, store)
-            results.append({
-                "trace_id": trace_id,
-                "ok": False,
-                "error": {"code": err.code, "message": err.message, "data": err.data},
-            })
+            results.append(
+                {
+                    "trace_id": trace_id,
+                    "ok": False,
+                    "error": {
+                        "code": err.code,
+                        "message": err.message,
+                        "data": err.data,
+                    },
+                }
+            )
     return {"results": results}

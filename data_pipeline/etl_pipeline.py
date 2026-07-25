@@ -8,11 +8,11 @@ Design decisions:
   - All experiment runs logged to pipeline_runs + validation_results tables
   - Stratified split utility included for downstream classification tasks
 """
+
 from __future__ import annotations
 
 import csv
 import hashlib
-import io
 import json
 import logging
 import os
@@ -44,6 +44,7 @@ logger = logging.getLogger("etl_pipeline")
 # Config loader
 # ---------------------------------------------------------------------------
 
+
 def load_config(path: str | Path = "pipeline_config.yaml") -> dict:
     with open(path) as fh:
         raw = yaml.safe_load(fh)
@@ -58,9 +59,11 @@ def _expand_env_vars(obj: Any) -> Any:
         return [_expand_env_vars(i) for i in obj]
     if isinstance(obj, str) and "${" in obj:
         import re
+
         def replace(m):
             var, _, default = m.group(1).partition(":-")
             return os.environ.get(var, default)
+
         return re.sub(r"\$\{([^}]+)\}", replace, obj)
     return obj
 
@@ -68,6 +71,7 @@ def _expand_env_vars(obj: Any) -> Any:
 # ---------------------------------------------------------------------------
 # Database connection pool (simple wrapper — swap for SQLAlchemy if needed)
 # ---------------------------------------------------------------------------
+
 
 @contextmanager
 def get_db(cfg: dict) -> Generator[psycopg2.extensions.connection, None, None]:
@@ -95,7 +99,10 @@ def get_db(cfg: dict) -> Generator[psycopg2.extensions.connection, None, None]:
 # Schema bootstrap — idempotent (CREATE TABLE IF NOT EXISTS everywhere)
 # ---------------------------------------------------------------------------
 
-def apply_schema(conn: psycopg2.extensions.connection, schema_file: str | Path = "models.sql") -> None:
+
+def apply_schema(
+    conn: psycopg2.extensions.connection, schema_file: str | Path = "models.sql"
+) -> None:
     sql = Path(schema_file).read_text()
     with conn.cursor() as cur:
         cur.execute(sql)
@@ -106,6 +113,7 @@ def apply_schema(conn: psycopg2.extensions.connection, schema_file: str | Path =
 # ---------------------------------------------------------------------------
 # Run tracking
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class RunMetrics:
@@ -165,16 +173,25 @@ def log_run_finish(conn: psycopg2.extensions.connection, m: RunMetrics) -> None:
             WHERE run_id = %s
             """,
             (
-                m.finished_at, m.records_read, m.records_loaded,
-                m.records_failed, m.status, m.error_message, m.run_id,
+                m.finished_at,
+                m.records_read,
+                m.records_loaded,
+                m.records_failed,
+                m.status,
+                m.error_message,
+                m.run_id,
             ),
         )
     conn.commit()
     logger.info(
         '"run_id":"%s" "status":"%s" "loaded":%d "failed":%d '
         '"pass_rate":%.3f "rows_per_sec":%.1f',
-        m.run_id, m.status, m.records_loaded, m.records_failed,
-        m.validation_pass_rate, m.rows_per_second,
+        m.run_id,
+        m.status,
+        m.records_loaded,
+        m.records_failed,
+        m.validation_pass_rate,
+        m.rows_per_second,
     )
 
 
@@ -184,8 +201,15 @@ def persist_validation_results(
     report: ValidationReport,
 ) -> None:
     rows = [
-        (run_id, report.document_type, report.external_id,
-         r.rule_name, r.passed, r.message, r.severity)
+        (
+            run_id,
+            report.document_type,
+            report.external_id,
+            r.rule_name,
+            r.passed,
+            r.message,
+            r.severity,
+        )
         for r in report.results
     ]
     with conn.cursor() as cur:
@@ -223,6 +247,7 @@ def log_ingestion_error(
 # EXTRACT — file-system readers
 # ---------------------------------------------------------------------------
 
+
 def extract_json_file(path: Path) -> Iterator[dict]:
     with open(path) as fh:
         data = json.load(fh)
@@ -256,13 +281,14 @@ def extract_file(path: Path) -> Iterator[dict]:
 # TRANSFORM — normalise field names, coerce types, attach metadata
 # ---------------------------------------------------------------------------
 
+
 def transform_record(raw: dict, document_type: str, source_file: str) -> dict:
     """
     Returns a normalised record ready for loading.
     Does NOT mutate the original dict.
     Coercions are type-safe — bad values left as-is for the validator to flag.
     """
-    rec = {k.lower().strip(): v for k, v in raw.items()}    # normalise keys
+    rec = {k.lower().strip(): v for k, v in raw.items()}  # normalise keys
 
     # Deterministic external_id if missing: hash of source file + content
     if not rec.get("external_id"):
@@ -272,8 +298,16 @@ def transform_record(raw: dict, document_type: str, source_file: str) -> dict:
         rec["external_id"] = f"{document_type[:3].upper()}-{digest}"
 
     # Coerce numeric strings
-    for f in ("subtotal", "tax_amount", "discount_amount", "tip_amount",
-              "total_amount", "contract_value", "unit_price", "line_total"):
+    for f in (
+        "subtotal",
+        "tax_amount",
+        "discount_amount",
+        "tip_amount",
+        "total_amount",
+        "contract_value",
+        "unit_price",
+        "line_total",
+    ):
         if f in rec and isinstance(rec[f], str):
             try:
                 rec[f] = float(rec[f].replace(",", "").strip())
@@ -290,9 +324,12 @@ def transform_record(raw: dict, document_type: str, source_file: str) -> dict:
 # LOAD — idempotent upserts per document type
 # ---------------------------------------------------------------------------
 
+
 def upsert_party(cur: psycopg2.extensions.cursor, rec: dict) -> str | None:
     """Upsert a party (vendor/merchant/counterparty) and return its party_id UUID."""
-    ext_id = rec.get("vendor_id") or rec.get("merchant_id") or rec.get("party_external_id")
+    ext_id = (
+        rec.get("vendor_id") or rec.get("merchant_id") or rec.get("party_external_id")
+    )
     name = rec.get("vendor_name") or rec.get("merchant_name") or rec.get("party_name")
     if not name:
         return None
@@ -352,21 +389,23 @@ def load_invoice(conn: psycopg2.extensions.connection, rec: dict) -> str:
             RETURNING invoice_id
             """,
             {
-                "external_id":     rec["external_id"],
-                "invoice_number":  rec.get("invoice_number", rec["external_id"]),
-                "vendor_id":       vendor_id,
-                "invoice_date":    rec.get("invoice_date"),
-                "due_date":        rec.get("due_date"),
-                "currency":        rec.get("currency"),
-                "subtotal":        rec.get("subtotal"),
-                "tax_amount":      rec.get("tax_amount"),
+                "external_id": rec["external_id"],
+                "invoice_number": rec.get("invoice_number", rec["external_id"]),
+                "vendor_id": vendor_id,
+                "invoice_date": rec.get("invoice_date"),
+                "due_date": rec.get("due_date"),
+                "currency": rec.get("currency"),
+                "subtotal": rec.get("subtotal"),
+                "tax_amount": rec.get("tax_amount"),
                 "discount_amount": rec.get("discount_amount", 0),
-                "total_amount":    rec.get("total_amount"),
-                "status":          rec.get("status", "draft"),
-                "payment_terms":   rec.get("payment_terms"),
-                "notes":           rec.get("notes"),
-                "source_file":     rec.get("_source_file"),
-                "raw_data":        json.dumps({k: v for k, v in rec.items() if not k.startswith("_")}),
+                "total_amount": rec.get("total_amount"),
+                "status": rec.get("status", "draft"),
+                "payment_terms": rec.get("payment_terms"),
+                "notes": rec.get("notes"),
+                "source_file": rec.get("_source_file"),
+                "raw_data": json.dumps(
+                    {k: v for k, v in rec.items() if not k.startswith("_")}
+                ),
             },
         )
         row = cur.fetchone()
@@ -403,22 +442,24 @@ def load_receipt(conn: psycopg2.extensions.connection, rec: dict) -> str:
             RETURNING receipt_id
             """,
             {
-                "external_id":      rec["external_id"],
-                "receipt_number":   rec.get("receipt_number"),
-                "merchant_id":      merchant_id,
+                "external_id": rec["external_id"],
+                "receipt_number": rec.get("receipt_number"),
+                "merchant_id": merchant_id,
                 "transaction_date": rec.get("transaction_date"),
                 "transaction_time": rec.get("transaction_time"),
-                "currency":         rec.get("currency"),
-                "subtotal":         rec.get("subtotal"),
-                "tax_amount":       rec.get("tax_amount", 0),
-                "tip_amount":       rec.get("tip_amount", 0),
-                "total_amount":     rec.get("total_amount"),
-                "payment_method":   rec.get("payment_method", "unknown"),
-                "card_last_four":   rec.get("card_last_four"),
-                "category":         rec.get("category"),
-                "reimbursable":     rec.get("reimbursable", False),
-                "source_file":      rec.get("_source_file"),
-                "raw_data":         json.dumps({k: v for k, v in rec.items() if not k.startswith("_")}),
+                "currency": rec.get("currency"),
+                "subtotal": rec.get("subtotal"),
+                "tax_amount": rec.get("tax_amount", 0),
+                "tip_amount": rec.get("tip_amount", 0),
+                "total_amount": rec.get("total_amount"),
+                "payment_method": rec.get("payment_method", "unknown"),
+                "card_last_four": rec.get("card_last_four"),
+                "category": rec.get("category"),
+                "reimbursable": rec.get("reimbursable", False),
+                "source_file": rec.get("_source_file"),
+                "raw_data": json.dumps(
+                    {k: v for k, v in rec.items() if not k.startswith("_")}
+                ),
             },
         )
         row = cur.fetchone()
@@ -456,22 +497,24 @@ def load_contract(conn: psycopg2.extensions.connection, rec: dict) -> str:
             RETURNING contract_id
             """,
             {
-                "external_id":         rec["external_id"],
-                "contract_number":     rec.get("contract_number", rec["external_id"]),
-                "title":               rec.get("title", ""),
-                "contract_type":       rec.get("contract_type", "other"),
-                "status":              rec.get("status", "draft"),
-                "effective_date":      rec.get("effective_date"),
-                "expiration_date":     rec.get("expiration_date"),
-                "auto_renew":          rec.get("auto_renew", False),
+                "external_id": rec["external_id"],
+                "contract_number": rec.get("contract_number", rec["external_id"]),
+                "title": rec.get("title", ""),
+                "contract_type": rec.get("contract_type", "other"),
+                "status": rec.get("status", "draft"),
+                "effective_date": rec.get("effective_date"),
+                "expiration_date": rec.get("expiration_date"),
+                "auto_renew": rec.get("auto_renew", False),
                 "renewal_notice_days": rec.get("renewal_notice_days"),
-                "contract_value":      rec.get("contract_value"),
-                "currency":            rec.get("currency"),
-                "governing_law":       rec.get("governing_law"),
-                "jurisdiction":        rec.get("jurisdiction"),
-                "summary":             rec.get("summary"),
-                "source_file":         rec.get("_source_file"),
-                "raw_data":            json.dumps({k: v for k, v in rec.items() if not k.startswith("_")}),
+                "contract_value": rec.get("contract_value"),
+                "currency": rec.get("currency"),
+                "governing_law": rec.get("governing_law"),
+                "jurisdiction": rec.get("jurisdiction"),
+                "summary": rec.get("summary"),
+                "source_file": rec.get("_source_file"),
+                "raw_data": json.dumps(
+                    {k: v for k, v in rec.items() if not k.startswith("_")}
+                ),
             },
         )
         row = cur.fetchone()
@@ -479,8 +522,8 @@ def load_contract(conn: psycopg2.extensions.connection, rec: dict) -> str:
 
 
 LOADERS = {
-    "invoice":  load_invoice,
-    "receipt":  load_receipt,
+    "invoice": load_invoice,
+    "receipt": load_receipt,
     "contract": load_contract,
 }
 
@@ -488,6 +531,7 @@ LOADERS = {
 # ---------------------------------------------------------------------------
 # Stratified split utility (for downstream ML tasks — no leakage)
 # ---------------------------------------------------------------------------
+
 
 def stratified_split(
     records: list[dict],
@@ -523,6 +567,7 @@ def stratified_split(
 # Main pipeline orchestrator
 # ---------------------------------------------------------------------------
 
+
 class ETLPipeline:
     """
     Orchestrates Extract → Transform → Validate → Load for document ingestion.
@@ -537,7 +582,9 @@ class ETLPipeline:
         self.cfg = load_config(config_path)
         self.pipeline_cfg = self.cfg["pipeline"]
         self.val_cfg = self.cfg.get("validation", {})
-        logger.info('"ETLPipeline initialised" "version":"%s"', self.pipeline_cfg["version"])
+        logger.info(
+            '"ETLPipeline initialised" "version":"%s"', self.pipeline_cfg["version"]
+        )
 
     # ------------------------------------------------------------------
     # Public entrypoints
@@ -571,13 +618,17 @@ class ETLPipeline:
 
     def run_file(self, path: str | Path, document_type: str) -> RunMetrics:
         """Process a single file — useful for testing or one-off ingestion."""
-        return self._process_files([Path(path)], document_type, self.cfg["sources"].get("filesystem", {}))
+        return self._process_files(
+            [Path(path)], document_type, self.cfg["sources"].get("filesystem", {})
+        )
 
     # ------------------------------------------------------------------
     # Core processing
     # ------------------------------------------------------------------
 
-    def _process_files(self, files: list[Path], document_type: str, fs_cfg: dict) -> RunMetrics:
+    def _process_files(
+        self, files: list[Path], document_type: str, fs_cfg: dict
+    ) -> RunMetrics:
         metrics = RunMetrics(source_type=document_type)
 
         with get_db(self.cfg) as conn:
@@ -585,7 +636,7 @@ class ETLPipeline:
             log_run_start(conn, metrics)
 
             batch: list[dict] = []
-            source_map: dict[str, str] = {}   # external_id → source_file
+            source_map: dict[str, str] = {}  # external_id → source_file
 
             for file_path in files:
                 logger.info('"extracting" "file":"%s"', file_path)
@@ -601,8 +652,17 @@ class ETLPipeline:
                             batch.clear()
 
                 except Exception as exc:
-                    logger.error('"extract error" "file":"%s" "error":"%s"', file_path, exc)
-                    log_ingestion_error(conn, metrics.run_id, str(file_path), {}, "EXTRACT_ERROR", str(exc))
+                    logger.error(
+                        '"extract error" "file":"%s" "error":"%s"', file_path, exc
+                    )
+                    log_ingestion_error(
+                        conn,
+                        metrics.run_id,
+                        str(file_path),
+                        {},
+                        "EXTRACT_ERROR",
+                        str(exc),
+                    )
                     metrics.records_failed += 1
 
             if batch:
@@ -618,8 +678,10 @@ class ETLPipeline:
                     pass
 
             metrics.status = (
-                "success" if metrics.records_failed == 0
-                else "partial" if metrics.records_loaded > 0
+                "success"
+                if metrics.records_failed == 0
+                else "partial"
+                if metrics.records_loaded > 0
                 else "failed"
             )
             log_run_finish(conn, metrics)
@@ -653,10 +715,14 @@ class ETLPipeline:
                     metrics.records_failed += 1
                     logger.warning(
                         '"validation failed" "ext_id":"%s" "failures":%d',
-                        ext_id, len(report.error_failures),
+                        ext_id,
+                        len(report.error_failures),
                     )
                     log_ingestion_error(
-                        conn, metrics.run_id, source_file, rec,
+                        conn,
+                        metrics.run_id,
+                        source_file,
+                        rec,
                         "VALIDATION_FAILED",
                         "; ".join(r.message for r in report.error_failures),
                     )
@@ -670,7 +736,7 @@ class ETLPipeline:
                         metrics.records_loaded += 1
                         metrics.records_transformed += 1
                         break
-                    except psycopg2.Error as db_err:
+                    except psycopg2.Error:
                         conn.rollback()
                         if attempt == self.pipeline_cfg.get("max_retries", 3) - 1:
                             raise
@@ -680,7 +746,9 @@ class ETLPipeline:
                 conn.rollback()
                 metrics.records_failed += 1
                 logger.error('"load error" "ext_id":"%s" "error":"%s"', ext_id, exc)
-                log_ingestion_error(conn, metrics.run_id, source_file, rec, "LOAD_ERROR", str(exc))
+                log_ingestion_error(
+                    conn, metrics.run_id, source_file, rec, "LOAD_ERROR", str(exc)
+                )
 
         # Alert on high failure rate
         if metrics.records_read > 0:
@@ -688,7 +756,8 @@ class ETLPipeline:
             if fail_rate > alert_threshold:
                 logger.error(
                     '"HIGH FAILURE RATE" "rate":%.3f "threshold":%.3f',
-                    fail_rate, alert_threshold,
+                    fail_rate,
+                    alert_threshold,
                 )
 
 
@@ -701,9 +770,12 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="SAGE Document Ingestion ETL")
     parser.add_argument("--config", default="pipeline_config.yaml")
-    parser.add_argument("--type", dest="document_type",
-                        choices=["invoice", "receipt", "contract"],
-                        help="Process only this document type")
+    parser.add_argument(
+        "--type",
+        dest="document_type",
+        choices=["invoice", "receipt", "contract"],
+        help="Process only this document type",
+    )
     parser.add_argument("--file", help="Process a single file")
     args = parser.parse_args()
 

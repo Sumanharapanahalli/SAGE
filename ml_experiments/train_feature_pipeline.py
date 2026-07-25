@@ -23,7 +23,7 @@ import logging
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 import numpy as np
 import pandas as pd
@@ -39,6 +39,7 @@ from sklearn.pipeline import Pipeline
 
 # Add ml_experiments/src to path when running from repo root
 import sys
+
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 from feature_pipeline import build_feature_pipeline
@@ -54,6 +55,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Data quality checks
 # ---------------------------------------------------------------------------
+
 
 def audit_missing(df: pd.DataFrame) -> None:
     """Log missing-value summary and warn on columns with > 50 % missing."""
@@ -109,8 +111,12 @@ def detect_leakage_risk(
         return False
 
     y_numeric = pd.to_numeric(y, errors="coerce")
-    correlations = numeric_X.corrwith(y_numeric).abs().dropna().sort_values(ascending=False)
-    logger.info("Top feature-target correlations:\n%s", correlations.head(10).to_string())
+    correlations = (
+        numeric_X.corrwith(y_numeric).abs().dropna().sort_values(ascending=False)
+    )
+    logger.info(
+        "Top feature-target correlations:\n%s", correlations.head(10).to_string()
+    )
 
     leakers = correlations[correlations > correlation_threshold]
     if not leakers.empty:
@@ -126,6 +132,7 @@ def detect_leakage_risk(
 # ---------------------------------------------------------------------------
 # Experiment logging
 # ---------------------------------------------------------------------------
+
 
 def _log_to_mlflow(
     params: Dict[str, Any],
@@ -175,6 +182,7 @@ def log_experiment(
 # Training
 # ---------------------------------------------------------------------------
 
+
 def train(
     df: pd.DataFrame,
     target_col: str,
@@ -213,7 +221,8 @@ def train(
     # stratify=y preserves class proportions in both splits.
     # Transformers are fit ONLY on X_train — test set is never seen during fit.
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y,
+        X,
+        y,
         test_size=test_size,
         stratify=y,
         random_state=random_state,
@@ -221,8 +230,10 @@ def train(
     )
     logger.info(
         "Stratified split → train=%d, test=%d (%.0f%%/%.0f%%)",
-        len(X_train), len(X_test),
-        (1 - test_size) * 100, test_size * 100,
+        len(X_train),
+        len(X_test),
+        (1 - test_size) * 100,
+        test_size * 100,
     )
 
     # ── Pipeline assembly ───────────────────────────────────────────────────
@@ -266,33 +277,35 @@ def train(
     cv_elapsed = time.perf_counter() - t0
 
     cv_metrics: Dict[str, float] = {
-        "cv_accuracy_mean":  float(np.mean(cv_results["test_accuracy"])),
-        "cv_accuracy_std":   float(np.std(cv_results["test_accuracy"])),
-        "cv_f1_mean":        float(np.mean(cv_results["test_f1_weighted"])),
-        "cv_f1_std":         float(np.std(cv_results["test_f1_weighted"])),
-        "cv_roc_auc_mean":   float(np.mean(cv_results["test_roc_auc_ovr_weighted"])),
-        "cv_elapsed_s":      round(cv_elapsed, 2),
+        "cv_accuracy_mean": float(np.mean(cv_results["test_accuracy"])),
+        "cv_accuracy_std": float(np.std(cv_results["test_accuracy"])),
+        "cv_f1_mean": float(np.mean(cv_results["test_f1_weighted"])),
+        "cv_f1_std": float(np.std(cv_results["test_f1_weighted"])),
+        "cv_roc_auc_mean": float(np.mean(cv_results["test_roc_auc_ovr_weighted"])),
+        "cv_elapsed_s": round(cv_elapsed, 2),
     }
     logger.info(
         "CV (%d-fold): accuracy=%.4f±%.4f | f1=%.4f±%.4f | roc_auc=%.4f",
         cv_folds,
-        cv_metrics["cv_accuracy_mean"], cv_metrics["cv_accuracy_std"],
-        cv_metrics["cv_f1_mean"],       cv_metrics["cv_f1_std"],
+        cv_metrics["cv_accuracy_mean"],
+        cv_metrics["cv_accuracy_std"],
+        cv_metrics["cv_f1_mean"],
+        cv_metrics["cv_f1_std"],
         cv_metrics["cv_roc_auc_mean"],
     )
 
     # ── Final fit on full train set ─────────────────────────────────────────
-    pipeline.fit(X_train, y_train)   # scalers/encoders fit on X_train only
+    pipeline.fit(X_train, y_train)  # scalers/encoders fit on X_train only
 
     # ── Hold-out evaluation ─────────────────────────────────────────────────
-    y_pred  = pipeline.predict(X_test)
+    y_pred = pipeline.predict(X_test)
     y_proba = pipeline.predict_proba(X_test)
 
     holdout: Dict[str, float] = {
-        "holdout_accuracy":     float(accuracy_score(y_test, y_pred)),
-        "holdout_f1_weighted":  float(f1_score(y_test, y_pred, average="weighted")),
-        "holdout_f1_macro":     float(f1_score(y_test, y_pred, average="macro")),
-        "holdout_roc_auc":      float(
+        "holdout_accuracy": float(accuracy_score(y_test, y_pred)),
+        "holdout_f1_weighted": float(f1_score(y_test, y_pred, average="weighted")),
+        "holdout_f1_macro": float(f1_score(y_test, y_pred, average="macro")),
+        "holdout_roc_auc": float(
             roc_auc_score(y_test, y_proba, multi_class="ovr", average="weighted")
         ),
     }
@@ -306,19 +319,19 @@ def train(
 
     # ── Log experiment ──────────────────────────────────────────────────────
     params = {
-        "numeric_cols":       numeric_cols,
-        "ohe_cols":           ohe_cols,
-        "target_enc_cols":    target_enc_cols,
-        "numeric_strategy":   numeric_strategy,
-        "test_size":          test_size,
-        "cv_folds":           cv_folds,
-        "classifier":         type(classifier).__name__,
-        "n_estimators":       classifier.n_estimators,
-        "learning_rate":      classifier.learning_rate,
-        "max_depth":          classifier.max_depth,
-        "subsample":          classifier.subsample,
-        "class_imbalance":    class_imbalance,
-        "leakage_risk":       leakage_risk,
+        "numeric_cols": numeric_cols,
+        "ohe_cols": ohe_cols,
+        "target_enc_cols": target_enc_cols,
+        "numeric_strategy": numeric_strategy,
+        "test_size": test_size,
+        "cv_folds": cv_folds,
+        "classifier": type(classifier).__name__,
+        "n_estimators": classifier.n_estimators,
+        "learning_rate": classifier.learning_rate,
+        "max_depth": classifier.max_depth,
+        "subsample": classifier.subsample,
+        "class_imbalance": class_imbalance,
+        "leakage_risk": leakage_risk,
     }
     log_experiment(params, {**cv_metrics, **holdout})
 
@@ -328,6 +341,7 @@ def train(
 # ---------------------------------------------------------------------------
 # Synthetic demo dataset
 # ---------------------------------------------------------------------------
+
 
 def make_demo_dataset(n: int = 5_000, random_state: int = 42) -> pd.DataFrame:
     """
@@ -340,13 +354,13 @@ def make_demo_dataset(n: int = 5_000, random_state: int = 42) -> pd.DataFrame:
 
     df = pd.DataFrame(
         {
-            "age":     rng.integers(18, 80, n).astype(float),
-            "income":  rng.lognormal(10.0, 1.0, n),
-            "score":   rng.normal(50.0, 15.0, n),
-            "tenure":  rng.integers(0, 40, n).astype(float),
-            "region":  rng.choice(["north", "south", "east", "west"], n),
+            "age": rng.integers(18, 80, n).astype(float),
+            "income": rng.lognormal(10.0, 1.0, n),
+            "score": rng.normal(50.0, 15.0, n),
+            "tenure": rng.integers(0, 40, n).astype(float),
+            "region": rng.choice(["north", "south", "east", "west"], n),
             "product": rng.choice(["A", "B", "C"], n),
-            "city":    rng.choice([f"city_{i:02d}" for i in range(50)], n),
+            "city": rng.choice([f"city_{i:02d}" for i in range(50)], n),
         }
     )
 
@@ -357,10 +371,10 @@ def make_demo_dataset(n: int = 5_000, random_state: int = 42) -> pd.DataFrame:
 
     # Structured target (not purely random — avoids trivial leakage)
     logit = (
-        0.025  * df["age"].fillna(df["age"].median())
+        0.025 * df["age"].fillna(df["age"].median())
         + 3e-5 * df["income"].fillna(df["income"].median())
-        - 0.6  * (df["product"] == "A").astype(float)
-        + 0.4  * (df["region"] == "north").fillna(0)
+        - 0.6 * (df["product"] == "A").astype(float)
+        + 0.4 * (df["region"] == "north").fillna(0)
         + rng.normal(0, 1, n)
     )
     df["churn"] = (logit > logit.median()).astype(int)
@@ -371,19 +385,27 @@ def make_demo_dataset(n: int = 5_000, random_state: int = 42) -> pd.DataFrame:
 # CLI entry point
 # ---------------------------------------------------------------------------
 
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Feature Engineering Pipeline — demo")
     parser.add_argument(
-        "--data", type=str, default=None,
+        "--data",
+        type=str,
+        default=None,
         help="Path to CSV file (default: use synthetic demo dataset)",
     )
-    parser.add_argument("--target",  type=str, default="churn")
-    parser.add_argument("--rows",    type=int, default=5_000,
-                        help="Rows for synthetic dataset (ignored if --data is given)")
-    parser.add_argument("--strategy", type=str, default="mean",
-                        choices=["mean", "median"])
+    parser.add_argument("--target", type=str, default="churn")
+    parser.add_argument(
+        "--rows",
+        type=int,
+        default=5_000,
+        help="Rows for synthetic dataset (ignored if --data is given)",
+    )
+    parser.add_argument(
+        "--strategy", type=str, default="mean", choices=["mean", "median"]
+    )
     parser.add_argument("--test-size", type=float, default=0.20)
-    parser.add_argument("--cv-folds",  type=int,   default=5)
+    parser.add_argument("--cv-folds", type=int, default=5)
     return parser.parse_args()
 
 
@@ -394,14 +416,18 @@ if __name__ == "__main__":
         df = pd.read_csv(args.data)
         logger.info("Loaded CSV: %s", args.data)
         # Infer column types automatically
-        numeric_cols   = df.select_dtypes(include=np.number).columns.drop(args.target, errors="ignore").tolist()
-        cat_cols       = df.select_dtypes(include="object").columns.tolist()
-        ohe_cols       = [c for c in cat_cols if df[c].nunique() < 20]
+        numeric_cols = (
+            df.select_dtypes(include=np.number)
+            .columns.drop(args.target, errors="ignore")
+            .tolist()
+        )
+        cat_cols = df.select_dtypes(include="object").columns.tolist()
+        ohe_cols = [c for c in cat_cols if df[c].nunique() < 20]
         target_enc_cols = [c for c in cat_cols if df[c].nunique() >= 20]
     else:
-        df              = make_demo_dataset(n=args.rows)
-        numeric_cols    = ["age", "income", "score", "tenure"]
-        ohe_cols        = ["region", "product"]
+        df = make_demo_dataset(n=args.rows)
+        numeric_cols = ["age", "income", "score", "tenure"]
+        ohe_cols = ["region", "product"]
         target_enc_cols = ["city"]
 
     pipeline, metrics, class_imbalance, leakage_risk = train(
@@ -421,19 +447,19 @@ if __name__ == "__main__":
         "model_type": "classification",
         "metrics": {
             "accuracy": round(metrics["holdout_accuracy"], 4),
-            "f1":       round(metrics["holdout_f1_weighted"], 4),
-            "roc_auc":  round(metrics["holdout_roc_auc"], 4),
+            "f1": round(metrics["holdout_f1_weighted"], 4),
+            "roc_auc": round(metrics["holdout_roc_auc"], 4),
             "cv_accuracy_mean": round(metrics["cv_accuracy_mean"], 4),
-            "cv_f1_mean":       round(metrics["cv_f1_mean"], 4),
+            "cv_f1_mean": round(metrics["cv_f1_mean"], 4),
         },
         "data_checks": {
-            "leakage_risk":    leakage_risk,
+            "leakage_risk": leakage_risk,
             "class_imbalance": class_imbalance,
         },
         "pipeline_steps": [s[0] for s in pipeline.steps],
         "feature_groups": {
-            "numeric":    numeric_cols,
-            "ohe":        ohe_cols,
+            "numeric": numeric_cols,
+            "ohe": ohe_cols,
             "target_enc": target_enc_cols,
         },
     }

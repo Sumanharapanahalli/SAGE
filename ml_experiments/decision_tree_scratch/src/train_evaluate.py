@@ -55,6 +55,7 @@ EXPERIMENT_LOG_PATH = Path(__file__).parent.parent / "experiment_log.json"
 # Experiment logging
 # ---------------------------------------------------------------------------
 
+
 def log_experiment(params: Dict[str, Any], results: Dict[str, Any]) -> None:
     """
     Append one experiment record to a JSON log file.
@@ -82,6 +83,7 @@ def log_experiment(params: Dict[str, Any], results: Dict[str, Any]) -> None:
 # Data loading & integrity checks
 # ---------------------------------------------------------------------------
 
+
 def load_and_check_iris() -> Tuple[np.ndarray, np.ndarray, np.ndarray, Dict[str, Any]]:
     """
     Load Iris, run data integrity checks, return (X, y, class_names, checks).
@@ -102,16 +104,23 @@ def load_and_check_iris() -> Tuple[np.ndarray, np.ndarray, np.ndarray, Dict[str,
 
     log.info("Dataset shape       : %s", X.shape)
     log.info("Class counts        : %s", dict(zip(iris.target_names, counts.tolist())))
-    log.info("Imbalance ratio     : %.2f  (imbalanced=%s)", imbalance_ratio, is_imbalanced)
+    log.info(
+        "Imbalance ratio     : %.2f  (imbalanced=%s)", imbalance_ratio, is_imbalanced
+    )
     log.info("NaN / Inf in data   : %s", has_nan)
     log.info(
         "Feature ranges      : %s",
-        {iris.feature_names[i]: (round(float(X[:, i].min()), 2), round(float(X[:, i].max()), 2))
-         for i in range(X.shape[1])},
+        {
+            iris.feature_names[i]: (
+                round(float(X[:, i].min()), 2),
+                round(float(X[:, i].max()), 2),
+            )
+            for i in range(X.shape[1])
+        },
     )
 
     checks: Dict[str, Any] = {
-        "leakage_risk": False,          # enforced by fit-only-on-train below
+        "leakage_risk": False,  # enforced by fit-only-on-train below
         "class_imbalance": is_imbalanced,
         "has_nan_or_inf": has_nan,
         "imbalance_ratio": round(imbalance_ratio, 4),
@@ -125,6 +134,7 @@ def load_and_check_iris() -> Tuple[np.ndarray, np.ndarray, np.ndarray, Dict[str,
 # ---------------------------------------------------------------------------
 # Main pipeline
 # ---------------------------------------------------------------------------
+
 
 def run_pipeline(
     max_depth: int | None = None,
@@ -154,14 +164,16 @@ def run_pipeline(
     # ------------------------------------------------------------------ #
     # Step 1: carve off 20% test
     X_temp, X_test, y_temp, y_test = train_test_split(
-        X, y,
+        X,
+        y,
         test_size=0.20,
         stratify=y,
         random_state=random_state,
     )
     # Step 2: split remaining 80% → 75% train / 25% val = 60% / 20% overall
     X_train, X_val, y_train, y_val = train_test_split(
-        X_temp, y_temp,
+        X_temp,
+        y_temp,
         test_size=0.25,
         stratify=y_temp,
         random_state=random_state,
@@ -169,7 +181,9 @@ def run_pipeline(
 
     log.info(
         "Split (stratified)  : train=%d  val=%d  test=%d",
-        len(y_train), len(y_val), len(y_test),
+        len(y_train),
+        len(y_val),
+        len(y_test),
     )
     log.info("Train class dist    : %s", np.bincount(y_train).tolist())
     log.info("Val   class dist    : %s", np.bincount(y_val).tolist())
@@ -312,7 +326,7 @@ def run_pipeline(
 
 if __name__ == "__main__":
     summary = run_pipeline(
-        max_depth=None,       # grow full tree, let REP control complexity
+        max_depth=None,  # grow full tree, let REP control complexity
         min_samples_split=2,
         min_samples_leaf=1,
         random_state=42,

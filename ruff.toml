@@ -1,0 +1,7 @@
+# Ruff config for SAGE.
+# Notebooks are exploratory experiments, not shipping modules — linting cell-level
+# import position and reformatting JSON cells is noise, so exclude them. All default
+# lint rules apply to real .py source; pre-existing non-auto-fixable violations were
+# grandfathered inline with `# noqa` (see 2026-07-15 CI-health cleanup), keeping the
+# gate meaningful for new code.
+extend-exclude = ["*.ipynb"]

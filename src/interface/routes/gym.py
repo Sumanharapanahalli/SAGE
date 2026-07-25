@@ -10,6 +10,7 @@ router = APIRouter(tags=["gym"])
 
 # ── Request Models ────────────────────────────────────────────────────
 
+
 class GymTrainRequest(BaseModel):
     role: str
     difficulty: str = ""
@@ -34,10 +35,12 @@ class CatalogGenerateRequest(BaseModel):
 
 # ── Training Endpoints ───────────────────────────────────────────────
 
+
 @router.post("/gym/train")
 async def gym_train(req: GymTrainRequest):
     """Start a training session for an agent role (self-play exercise)."""
     from src.core.agent_gym import agent_gym
+
     session = agent_gym.train(
         role=req.role,
         difficulty=req.difficulty,
@@ -52,6 +55,7 @@ async def gym_train(req: GymTrainRequest):
 async def gym_train_batch(req: GymBatchRequest):
     """Train multiple roles in parallel. If roles is empty, trains all registered roles."""
     from src.core.agent_gym import agent_gym
+
     sessions = agent_gym.train_batch(
         roles=req.roles,
         difficulty=req.difficulty,
@@ -69,10 +73,12 @@ async def gym_train_batch(req: GymBatchRequest):
 
 # ── Session & Ratings ────────────────────────────────────────────────
 
+
 @router.get("/gym/session/{session_id}")
 async def gym_session(session_id: str):
     """Get details of a training session."""
     from src.core.agent_gym import agent_gym
+
     session = agent_gym.get_session(session_id)
     if not session:
         db_session = agent_gym._db.load_session(session_id)
@@ -86,6 +92,7 @@ async def gym_session(session_id: str):
 async def gym_ratings():
     """Get all agent skill ratings (leaderboard)."""
     from src.core.agent_gym import agent_gym
+
     return {
         "leaderboard": agent_gym.get_leaderboard(),
         "stats": agent_gym.stats(),
@@ -96,6 +103,7 @@ async def gym_ratings():
 async def gym_role_ratings(role: str):
     """Get skill ratings for a specific agent role."""
     from src.core.agent_gym import agent_gym
+
     ratings = agent_gym.get_ratings_for_role(role)
     return {"role": role, "ratings": [r.to_dict() for r in ratings]}
 
@@ -104,6 +112,7 @@ async def gym_role_ratings(role: str):
 async def gym_history(limit: int = 20):
     """Get recent training session history."""
     from src.core.agent_gym import agent_gym
+
     return {"sessions": agent_gym.get_history(limit=limit)}
 
 
@@ -111,6 +120,7 @@ async def gym_history(limit: int = 20):
 async def gym_analytics(role: str = "", skill: str = ""):
     """Comprehensive gym analytics dashboard data."""
     from src.core.agent_gym import agent_gym
+
     return agent_gym.analytics(role=role, skill=skill)
 
 
@@ -118,6 +128,7 @@ async def gym_analytics(role: str = "", skill: str = ""):
 async def gym_curriculum(role: str):
     """Get curriculum status for a role — current difficulty and progression data."""
     from src.core.agent_gym import agent_gym
+
     ratings = agent_gym.get_ratings_for_role(role)
     if not ratings:
         return {"role": role, "skills": [], "message": "No training data yet"}
@@ -138,10 +149,12 @@ async def gym_curriculum(role: str):
 
 # ── Exercise Catalog ─────────────────────────────────────────────────
 
+
 @router.get("/gym/catalog")
 async def gym_catalog_stats():
     """Get exercise catalog statistics — total exercises per domain and difficulty."""
     from src.core.exercise_catalog import exercise_catalog
+
     return exercise_catalog.stats()
 
 
@@ -149,6 +162,7 @@ async def gym_catalog_stats():
 async def gym_catalog_domain(domain: str, difficulty: str = ""):
     """Get exercises for a specific domain, optionally filtered by difficulty."""
     from src.core.exercise_catalog import exercise_catalog
+
     exercises = exercise_catalog.get_for_domain(domain, difficulty)
     return {
         "domain": domain,
@@ -162,6 +176,7 @@ async def gym_catalog_domain(domain: str, difficulty: str = ""):
 async def gym_catalog_generate(req: CatalogGenerateRequest):
     """Generate exercise variants from seed exercises using LLM."""
     from src.core.exercise_catalog import exercise_catalog
+
     generated = exercise_catalog.generate_variants(
         domain=req.domain,
         count=req.count,

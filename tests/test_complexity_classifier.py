@@ -1,4 +1,5 @@
 """Tests for prompt complexity classification and model routing."""
+
 import pytest
 
 from src.core.complexity_classifier import ComplexityClassifier, Complexity
@@ -42,7 +43,7 @@ class TestComplexityClassifier:
     def test_classify_with_system_prompt(self, classifier):
         result = classifier.classify(
             "Fix bug",
-            system_prompt="You are a senior developer reviewing code for safety-critical firmware."
+            system_prompt="You are a senior developer reviewing code for safety-critical firmware.",
         )
         # System prompt context should bump complexity
         assert result in (Complexity.MEDIUM, Complexity.HIGH)
@@ -51,23 +52,32 @@ class TestComplexityClassifier:
 class TestModelRouting:
     def test_route_returns_model_name(self):
         from src.core.complexity_classifier import route_to_model
-        model = route_to_model(Complexity.LOW, {
-            "low": "gemini-2.5-flash",
-            "medium": "gemini-2.5-flash",
-            "high": "gemini-2.5-pro",
-        })
+
+        model = route_to_model(
+            Complexity.LOW,
+            {
+                "low": "gemini-2.5-flash",
+                "medium": "gemini-2.5-flash",
+                "high": "gemini-2.5-pro",
+            },
+        )
         assert model == "gemini-2.5-flash"
 
     def test_route_high_complexity(self):
         from src.core.complexity_classifier import route_to_model
-        model = route_to_model(Complexity.HIGH, {
-            "low": "gemini-2.5-flash",
-            "medium": "gemini-2.5-flash",
-            "high": "gemini-2.5-pro",
-        })
+
+        model = route_to_model(
+            Complexity.HIGH,
+            {
+                "low": "gemini-2.5-flash",
+                "medium": "gemini-2.5-flash",
+                "high": "gemini-2.5-pro",
+            },
+        )
         assert model == "gemini-2.5-pro"
 
     def test_route_fallback_when_no_config(self):
         from src.core.complexity_classifier import route_to_model
+
         model = route_to_model(Complexity.MEDIUM, {})
         assert model is None

@@ -30,11 +30,9 @@ import os
 import re
 import sqlite3
 import threading
-import time
 from dataclasses import dataclass, field
 from typing import Optional
 
-import yaml
 
 logger = logging.getLogger("ExerciseCatalog")
 
@@ -43,23 +41,29 @@ logger = logging.getLogger("ExerciseCatalog")
 # Data classes
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class Exercise:
     """A single training exercise for the Agent Gym."""
+
     id: str
-    domain: str          # runner name (openfw, openswe, openml, etc.)
-    skill: str           # skill name from skill YAML
+    domain: str  # runner name (openfw, openswe, openml, etc.)
+    skill: str  # skill name from skill YAML
     title: str
-    description: str     # full exercise prompt — what the agent must do
-    difficulty: str      # beginner, intermediate, advanced, expert
+    description: str  # full exercise prompt — what the agent must do
+    difficulty: str  # beginner, intermediate, advanced, expert
     tags: list[str] = field(default_factory=list)
     acceptance_criteria: list[str] = field(default_factory=list)
-    context: str = ""    # setup info, background, constraints
+    context: str = ""  # setup info, background, constraints
     task_type: str = ""  # maps to runner task types
     time_limit: int = 300  # seconds
-    prerequisites: list[str] = field(default_factory=list)  # exercise IDs that must be mastered first
-    seed_id: str = ""    # if this is a variant, the seed exercise it was generated from
-    variant_axis: str = ""  # what dimension this variant explores (e.g., "platform", "concurrency")
+    prerequisites: list[str] = field(
+        default_factory=list
+    )  # exercise IDs that must be mastered first
+    seed_id: str = ""  # if this is a variant, the seed exercise it was generated from
+    variant_axis: str = (
+        ""  # what dimension this variant explores (e.g., "platform", "concurrency")
+    )
 
     def to_dict(self) -> dict:
         return {
@@ -67,7 +71,8 @@ class Exercise:
             "domain": self.domain,
             "skill": self.skill,
             "title": self.title,
-            "description": self.description[:500] + ("..." if len(self.description) > 500 else ""),
+            "description": self.description[:500]
+            + ("..." if len(self.description) > 500 else ""),
             "difficulty": self.difficulty,
             "tags": self.tags,
             "acceptance_criteria": self.acceptance_criteria,
@@ -87,48 +92,112 @@ class Exercise:
 # Variant axes: dimensions along which exercises can be expanded
 VARIANT_AXES = {
     "openfw": [
-        "platform", "rtos", "peripheral", "optimization", "safety",
-        "concurrency", "power_management", "communication_protocol",
-        "memory_constraint", "error_recovery",
+        "platform",
+        "rtos",
+        "peripheral",
+        "optimization",
+        "safety",
+        "concurrency",
+        "power_management",
+        "communication_protocol",
+        "memory_constraint",
+        "error_recovery",
     ],
     "openswe": [
-        "language", "framework", "scale", "pattern", "testing",
-        "concurrency", "api_design", "database", "security", "performance",
+        "language",
+        "framework",
+        "scale",
+        "pattern",
+        "testing",
+        "concurrency",
+        "api_design",
+        "database",
+        "security",
+        "performance",
     ],
     "openml": [
-        "dataset_size", "model_type", "metric", "feature_engineering",
-        "deployment", "monitoring", "fairness", "interpretability",
-        "pipeline_stage", "domain_application",
+        "dataset_size",
+        "model_type",
+        "metric",
+        "feature_engineering",
+        "deployment",
+        "monitoring",
+        "fairness",
+        "interpretability",
+        "pipeline_stage",
+        "domain_application",
     ],
     "openeda": [
-        "layer_count", "signal_integrity", "power_delivery", "thermal",
-        "component_density", "manufacturing_constraint", "emc_compliance",
-        "impedance_matching", "via_strategy", "bom_optimization",
+        "layer_count",
+        "signal_integrity",
+        "power_delivery",
+        "thermal",
+        "component_density",
+        "manufacturing_constraint",
+        "emc_compliance",
+        "impedance_matching",
+        "via_strategy",
+        "bom_optimization",
     ],
     "opensim": [
-        "simulation_type", "clock_domain", "power_rail", "timing_constraint",
-        "noise_analysis", "corner_case", "temperature_range",
-        "process_variation", "testbench_complexity", "verification_method",
+        "simulation_type",
+        "clock_domain",
+        "power_rail",
+        "timing_constraint",
+        "noise_analysis",
+        "corner_case",
+        "temperature_range",
+        "process_variation",
+        "testbench_complexity",
+        "verification_method",
     ],
     "opendoc": [
-        "document_type", "regulatory_standard", "audience", "compliance_level",
-        "cross_reference", "traceability", "revision_control",
-        "template_format", "review_stage", "localization",
+        "document_type",
+        "regulatory_standard",
+        "audience",
+        "compliance_level",
+        "cross_reference",
+        "traceability",
+        "revision_control",
+        "template_format",
+        "review_stage",
+        "localization",
     ],
     "opendesign": [
-        "accessibility_level", "viewport", "interaction_pattern", "branding",
-        "design_system", "animation", "dark_mode", "rtl_support",
-        "component_complexity", "user_flow",
+        "accessibility_level",
+        "viewport",
+        "interaction_pattern",
+        "branding",
+        "design_system",
+        "animation",
+        "dark_mode",
+        "rtl_support",
+        "component_complexity",
+        "user_flow",
     ],
     "openbrowser": [
-        "app_type", "viewport", "auth_method", "framework",
-        "real_time_features", "accessibility_level", "performance_target",
-        "security_posture", "i18n_scope", "test_depth",
+        "app_type",
+        "viewport",
+        "auth_method",
+        "framework",
+        "real_time_features",
+        "accessibility_level",
+        "performance_target",
+        "security_posture",
+        "i18n_scope",
+        "test_depth",
     ],
     "openstrategy": [
-        "market_size", "competition_level", "go_to_market", "pricing_model",
-        "customer_segment", "regulatory_environment", "geographic_scope",
-        "technology_readiness", "team_size", "funding_stage",
+        "market_size",
+        "competition_level",
+        "go_to_market",
+        "pricing_model",
+        "customer_segment",
+        "regulatory_environment",
+        "geographic_scope",
+        "technology_readiness",
+        "team_size",
+        "funding_stage",
     ],
 }
 
@@ -142,13 +211,14 @@ def _generate_seed_catalog() -> dict[str, list[dict]]:
     certifications, professional training programs, and domain standards.
     """
     from src.core.exercise_seeds import get_all_seeds
-    return get_all_seeds()
 
+    return get_all_seeds()
 
 
 # ---------------------------------------------------------------------------
 # Exercise Catalog
 # ---------------------------------------------------------------------------
+
 
 class ExerciseCatalog:
     """
@@ -162,14 +232,18 @@ class ExerciseCatalog:
         self.logger = logging.getLogger("ExerciseCatalog")
         if not db_path:
             db_path = os.path.join(
-                os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+                os.path.dirname(
+                    os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                ),
                 ".gym_catalog.db",
             )
         self.db_path = db_path
         self._lock = threading.Lock()
         self._exercises: dict[str, Exercise] = {}  # id → Exercise
         self._domain_index: dict[str, list[str]] = {}  # domain → [exercise_ids]
-        self._difficulty_index: dict[str, dict[str, list[str]]] = {}  # domain → difficulty → [ids]
+        self._difficulty_index: dict[
+            str, dict[str, list[str]]
+        ] = {}  # domain → difficulty → [ids]
         self._prerequisites: dict[str, list[str]] = {}  # exercise_id → [prereq_ids]
 
         self._init_db()
@@ -229,12 +303,18 @@ class ExerciseCatalog:
                 self._register(exercise)
                 loaded += 1
 
-        self.logger.info("Loaded %d seed exercises across %d domains", loaded, len(catalog))
+        self.logger.info(
+            "Loaded %d seed exercises across %d domains", loaded, len(catalog)
+        )
 
     def _make_id(self, domain: str, title: str) -> str:
         """Generate deterministic exercise ID from domain + title."""
-        slug = re.sub(r'[^a-z0-9]+', '_', title.lower()).strip('_')
-        short_hash = hashlib.md5(f"{domain}:{title}".encode()).hexdigest()[:6]
+        slug = re.sub(r"[^a-z0-9]+", "_", title.lower()).strip("_")
+        # Non-security: a short deterministic id for an exercise, not a digest of
+        # anything sensitive. usedforsecurity=False silences the SAST HIGH finding.
+        short_hash = hashlib.md5(
+            f"{domain}:{title}".encode(), usedforsecurity=False
+        ).hexdigest()[:6]
         return f"{domain}_{slug}_{short_hash}"
 
     def _register(self, exercise: Exercise) -> None:
@@ -250,8 +330,13 @@ class ExerciseCatalog:
             self._difficulty_index[exercise.domain] = {}
         if exercise.difficulty not in self._difficulty_index[exercise.domain]:
             self._difficulty_index[exercise.domain][exercise.difficulty] = []
-        if exercise.id not in self._difficulty_index[exercise.domain][exercise.difficulty]:
-            self._difficulty_index[exercise.domain][exercise.difficulty].append(exercise.id)
+        if (
+            exercise.id
+            not in self._difficulty_index[exercise.domain][exercise.difficulty]
+        ):
+            self._difficulty_index[exercise.domain][exercise.difficulty].append(
+                exercise.id
+            )
 
         if exercise.prerequisites:
             self._prerequisites[exercise.id] = exercise.prerequisites
@@ -276,7 +361,9 @@ class ExerciseCatalog:
         source = self._exercises.values()
         if domain:
             source_ids = self._domain_index.get(domain, [])
-            source = [self._exercises[eid] for eid in source_ids if eid in self._exercises]
+            source = [
+                self._exercises[eid] for eid in source_ids if eid in self._exercises
+            ]
         for ex in source:
             if tag_set & set(ex.tags):
                 results.append(ex)
@@ -343,7 +430,7 @@ class ExerciseCatalog:
 
             # Generate in batches
             batch_size = min(count, 10)
-            seed_sample = original_seeds[:min(5, len(original_seeds))]
+            seed_sample = original_seeds[: min(5, len(original_seeds))]
 
             for batch_start in range(0, count, batch_size):
                 remaining = min(batch_size, count - batch_start)
@@ -376,12 +463,14 @@ class ExerciseCatalog:
 
                 # Parse response
                 response = response.replace("```json", "").replace("```", "").strip()
-                match = re.search(r'\[[\s\S]*\]', response)
+                match = re.search(r"\[[\s\S]*\]", response)
                 if match:
                     variants = json.loads(match.group(0))
                     for v in variants[:remaining]:
                         ex = Exercise(
-                            id=self._make_id(domain, v.get("title", f"variant_{len(generated)}")),
+                            id=self._make_id(
+                                domain, v.get("title", f"variant_{len(generated)}")
+                            ),
                             domain=domain,
                             skill=seed.skill,
                             title=v.get("title", "Generated variant"),
@@ -408,18 +497,31 @@ class ExerciseCatalog:
         with self._lock:
             conn = sqlite3.connect(self.db_path)
             try:
-                conn.execute("""
+                conn.execute(
+                    """
                     INSERT OR REPLACE INTO exercises
                     (id, domain, skill, title, description, difficulty, tags_json,
                      acceptance_json, context, task_type, time_limit,
                      prerequisites_json, seed_id, variant_axis)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, (
-                    ex.id, ex.domain, ex.skill, ex.title, ex.description,
-                    ex.difficulty, json.dumps(ex.tags), json.dumps(ex.acceptance_criteria),
-                    ex.context, ex.task_type, ex.time_limit,
-                    json.dumps(ex.prerequisites), ex.seed_id, ex.variant_axis,
-                ))
+                """,
+                    (
+                        ex.id,
+                        ex.domain,
+                        ex.skill,
+                        ex.title,
+                        ex.description,
+                        ex.difficulty,
+                        json.dumps(ex.tags),
+                        json.dumps(ex.acceptance_criteria),
+                        ex.context,
+                        ex.task_type,
+                        ex.time_limit,
+                        json.dumps(ex.prerequisites),
+                        ex.seed_id,
+                        ex.variant_axis,
+                    ),
+                )
                 conn.commit()
             finally:
                 conn.close()
@@ -462,7 +564,9 @@ class ExerciseCatalog:
 
     # ── Template-based bulk variant generation (no LLM) ─────────────
 
-    def generate_template_variants(self, domain: str = "", target_count: int = 10000) -> int:
+    def generate_template_variants(
+        self, domain: str = "", target_count: int = 10000
+    ) -> int:
         """
         Generate exercise variants structurally using template multiplication.
         No LLM needed — instant generation of thousands of exercises.
@@ -481,17 +585,29 @@ class ExerciseCatalog:
                 ("targeting 100% branch coverage in tests", "full_coverage"),
                 ("that must handle 10K concurrent requests", "high_concurrency"),
                 ("following MISRA-C style strict coding standards", "strict_standards"),
-                ("with comprehensive error recovery for every failure mode", "error_recovery"),
+                (
+                    "with comprehensive error recovery for every failure mode",
+                    "error_recovery",
+                ),
                 ("that must complete in under 50ms p99 latency", "low_latency"),
                 ("using event-driven architecture only", "event_driven"),
                 ("with full OpenTelemetry observability built in", "observable"),
-                ("that is backward compatible with v1 API consumers", "backward_compat"),
+                (
+                    "that is backward compatible with v1 API consumers",
+                    "backward_compat",
+                ),
             ],
             "openml": [
                 ("on a dataset with 100M+ rows and 500 features", "large_scale"),
-                ("with strict fairness constraints (demographic parity < 0.05)", "fairness"),
+                (
+                    "with strict fairness constraints (demographic parity < 0.05)",
+                    "fairness",
+                ),
                 ("that must run inference in under 10ms on CPU", "fast_inference"),
-                ("with full explainability (SHAP values for every prediction)", "explainable"),
+                (
+                    "with full explainability (SHAP values for every prediction)",
+                    "explainable",
+                ),
                 ("on streaming data with concept drift detection", "streaming"),
                 ("with differential privacy guarantees (epsilon=1.0)", "private"),
                 ("that must work on edge devices (< 50MB model size)", "edge_deploy"),
@@ -514,7 +630,10 @@ class ExerciseCatalog:
             "openeda": [
                 ("for a 12-layer HDI PCB with 0.1mm trace/space", "hdi"),
                 ("that must pass MIL-STD-810G environmental testing", "mil_spec"),
-                ("with controlled impedance for 10Gbps differential pairs", "high_speed"),
+                (
+                    "with controlled impedance for 10Gbps differential pairs",
+                    "high_speed",
+                ),
                 ("using only automotive-grade components (AEC-Q100)", "automotive"),
                 ("with full thermal analysis and heatsink design", "thermal"),
                 ("targeting IPC Class 3 reliability standards", "ipc_class3"),
@@ -524,15 +643,30 @@ class ExerciseCatalog:
                 ("that must fit in a 10mm × 10mm footprint", "miniature"),
             ],
             "opensim": [
-                ("with Monte Carlo analysis across 1000 process corners", "monte_carlo"),
-                ("including full thermal simulation at 85°C junction temp", "thermal_sim"),
+                (
+                    "with Monte Carlo analysis across 1000 process corners",
+                    "monte_carlo",
+                ),
+                (
+                    "including full thermal simulation at 85°C junction temp",
+                    "thermal_sim",
+                ),
                 ("with EMI/EMC spectral analysis up to 6GHz", "emi_analysis"),
                 ("targeting signal integrity for DDR5 at 4800MT/s", "ddr5_si"),
-                ("with power integrity analysis including PDN impedance", "power_integrity"),
+                (
+                    "with power integrity analysis including PDN impedance",
+                    "power_integrity",
+                ),
                 ("using mixed-signal simulation (analog + digital)", "mixed_signal"),
                 ("with radiation hardness analysis for space applications", "rad_hard"),
-                ("including aging/reliability simulation over 20-year lifetime", "aging"),
-                ("with cross-domain coupling analysis (thermal-electrical)", "multi_physics"),
+                (
+                    "including aging/reliability simulation over 20-year lifetime",
+                    "aging",
+                ),
+                (
+                    "with cross-domain coupling analysis (thermal-electrical)",
+                    "multi_physics",
+                ),
                 ("targeting automotive SPICE Level 2 compliance", "auto_spice"),
             ],
             "opendoc": [
@@ -540,7 +674,10 @@ class ExerciseCatalog:
                 ("following ISO 14971 risk management process", "iso_14971"),
                 ("for a CE marking technical file (MDR 2017/745)", "ce_marking"),
                 ("targeting CMMI Level 3 process documentation", "cmmi_l3"),
-                ("with full traceability matrix from requirements to tests", "traceability"),
+                (
+                    "with full traceability matrix from requirements to tests",
+                    "traceability",
+                ),
                 ("for a SOC 2 Type II audit evidence package", "soc2"),
                 ("following IEEE 830 SRS format with formal methods", "ieee_830"),
                 ("for HIPAA compliance documentation package", "hipaa"),
@@ -551,8 +688,14 @@ class ExerciseCatalog:
                 ("meeting WCAG 2.2 AAA accessibility standards", "wcag_aaa"),
                 ("for a kiosk with only touch input (no keyboard)", "kiosk"),
                 ("supporting RTL languages (Arabic, Hebrew) natively", "rtl_native"),
-                ("with dark mode, high contrast, and reduced motion variants", "a11y_variants"),
-                ("for elderly users (min 18px font, high contrast ratios)", "senior_ux"),
+                (
+                    "with dark mode, high contrast, and reduced motion variants",
+                    "a11y_variants",
+                ),
+                (
+                    "for elderly users (min 18px font, high contrast ratios)",
+                    "senior_ux",
+                ),
                 ("that works offline-first with sync indicators", "offline_first"),
                 ("with voice control as primary interaction method", "voice_ui"),
                 ("for a 320px smartwatch screen", "smartwatch"),
@@ -561,27 +704,54 @@ class ExerciseCatalog:
             ],
             "openbrowser": [
                 ("on a single-page application with client-side routing", "spa"),
-                ("with strict Content Security Policy (no inline scripts)", "strict_csp"),
+                (
+                    "with strict Content Security Policy (no inline scripts)",
+                    "strict_csp",
+                ),
                 ("testing across 3 viewports (mobile, tablet, desktop)", "responsive"),
                 ("with authentication via OAuth/SSO providers", "sso_auth"),
                 ("on a PWA with offline mode and service workers", "pwa"),
-                ("with real-time WebSocket features requiring sync testing", "realtime"),
+                (
+                    "with real-time WebSocket features requiring sync testing",
+                    "realtime",
+                ),
                 ("on an internationalized app with RTL language support", "i18n_rtl"),
                 ("with strict WCAG 2.2 AAA accessibility requirements", "wcag_aaa"),
-                ("behind a CDN with aggressive caching (test cache invalidation)", "cdn_cached"),
-                ("on a micro-frontend architecture with 5 independently deployed modules", "microfrontend"),
+                (
+                    "behind a CDN with aggressive caching (test cache invalidation)",
+                    "cdn_cached",
+                ),
+                (
+                    "on a micro-frontend architecture with 5 independently deployed modules",
+                    "microfrontend",
+                ),
             ],
             "openstrategy": [
                 ("for a pre-seed startup with $0 marketing budget", "bootstrapped"),
                 ("entering a market dominated by 3 incumbents", "red_ocean"),
                 ("for a B2B2C marketplace with network effects", "marketplace"),
-                ("requiring regulatory approval in 5+ jurisdictions", "multi_regulatory"),
+                (
+                    "requiring regulatory approval in 5+ jurisdictions",
+                    "multi_regulatory",
+                ),
                 ("with a freemium model targeting 2% conversion", "freemium"),
-                ("for a hardware+software product with 18-month dev cycle", "hw_sw_combo"),
-                ("targeting enterprise customers with 12-month sales cycles", "enterprise_sales"),
+                (
+                    "for a hardware+software product with 18-month dev cycle",
+                    "hw_sw_combo",
+                ),
+                (
+                    "targeting enterprise customers with 12-month sales cycles",
+                    "enterprise_sales",
+                ),
                 ("in a market undergoing rapid regulatory change", "regulatory_flux"),
-                ("for a product requiring FDA + CE + TGA approvals", "global_regulatory"),
-                ("with a land-and-expand strategy in a saturated market", "land_expand"),
+                (
+                    "for a product requiring FDA + CE + TGA approvals",
+                    "global_regulatory",
+                ),
+                (
+                    "with a land-and-expand strategy in a saturated market",
+                    "land_expand",
+                ),
             ],
         }
 
@@ -602,7 +772,9 @@ class ExerciseCatalog:
             if not original_seeds:
                 continue
 
-            constraints = CONSTRAINT_MODIFIERS.get(dom, CONSTRAINT_MODIFIERS.get("openswe", []))
+            constraints = CONSTRAINT_MODIFIERS.get(
+                dom, CONSTRAINT_MODIFIERS.get("openswe", [])
+            )
 
             for seed in original_seeds:
                 if generated_count >= target_count:
@@ -654,8 +826,7 @@ class ExerciseCatalog:
                             break
 
                         variant_desc = (
-                            f"{seed.description}\n\n"
-                            f"Scale context: {scale_desc}"
+                            f"{seed.description}\n\nScale context: {scale_desc}"
                         )
                         variant_id = self._make_id(
                             dom, f"{seed.id}_{seed.difficulty}_{scale_tag}"
@@ -671,9 +842,8 @@ class ExerciseCatalog:
                             description=variant_desc,
                             difficulty=seed.difficulty,
                             tags=list(seed.tags) + [scale_tag],
-                            acceptance_criteria=list(seed.acceptance_criteria) + [
-                                f"Appropriate for {scale_tag} context"
-                            ],
+                            acceptance_criteria=list(seed.acceptance_criteria)
+                            + [f"Appropriate for {scale_tag} context"],
                             task_type=seed.task_type,
                             seed_id=seed.id,
                             variant_axis=scale_tag,
@@ -684,12 +854,14 @@ class ExerciseCatalog:
 
             self.logger.info(
                 "Template variants for %s: %d exercises total",
-                dom, len(self._domain_index.get(dom, [])),
+                dom,
+                len(self._domain_index.get(dom, [])),
             )
 
         self.logger.info(
             "Template generation complete: %d new variants (%d total exercises)",
-            generated_count, len(self._exercises),
+            generated_count,
+            len(self._exercises),
         )
         return generated_count
 

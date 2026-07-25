@@ -1,10 +1,10 @@
-import pytest
 from unittest.mock import MagicMock
 import time
 
 
 def test_get_scheduled_tasks_empty_when_none():
     from src.core.project_loader import ProjectConfig
+
     cfg = ProjectConfig.__new__(ProjectConfig)
     cfg._tasks = {}
     assert cfg.get_scheduled_tasks() == []
@@ -12,6 +12,7 @@ def test_get_scheduled_tasks_empty_when_none():
 
 def test_get_scheduled_tasks_returns_list():
     from src.core.project_loader import ProjectConfig
+
     cfg = ProjectConfig.__new__(ProjectConfig)
     cfg._tasks = {
         "scheduled": [
@@ -30,7 +31,11 @@ def test_scheduler_submits_due_task():
     mock_qm = MagicMock()
     mock_pc = MagicMock()
     mock_pc.get_scheduled_tasks.return_value = [
-        {"task_type": "MONITOR_CHECK", "cron": "* * * * *", "payload": {"source": "all"}}
+        {
+            "task_type": "MONITOR_CHECK",
+            "cron": "* * * * *",
+            "payload": {"source": "all"},
+        }
     ]
 
     scheduler = TaskScheduler(queue_manager=mock_qm, project_config=mock_pc)

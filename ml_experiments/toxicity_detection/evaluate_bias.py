@@ -23,7 +23,7 @@ import json
 import logging
 import warnings
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import numpy as np
 import pandas as pd
@@ -31,11 +31,11 @@ import torch
 import yaml
 from datasets import load_dataset
 from sklearn.metrics import (
-    accuracy_score, f1_score,
+    accuracy_score,
+    f1_score,
     confusion_matrix,
 )
-from torch.utils.data import DataLoader
-from transformers import AutoModelForSequenceClassification, AutoTokenizer, pipeline
+from transformers import pipeline
 
 warnings.filterwarnings("ignore")
 logging.basicConfig(
@@ -48,6 +48,7 @@ logger = logging.getLogger("toxicity.bias")
 # ─────────────────────────────────────────────────────────────────────────────
 # Helpers
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def load_config(path: str) -> Dict[str, Any]:
     with open(path) as fh:
@@ -63,7 +64,9 @@ def _safe_fpr_fnr(y_true: np.ndarray, y_pred: np.ndarray):
     return fpr, fnr
 
 
-def _subgroup_metrics(y_true: np.ndarray, y_pred: np.ndarray, y_prob: np.ndarray) -> Dict:
+def _subgroup_metrics(
+    y_true: np.ndarray, y_pred: np.ndarray, y_prob: np.ndarray
+) -> Dict:
     if len(y_true) == 0:
         return {}
     fpr, fnr = _safe_fpr_fnr(y_true, y_pred)
@@ -81,6 +84,7 @@ def _subgroup_metrics(y_true: np.ndarray, y_pred: np.ndarray, y_prob: np.ndarray
 # ─────────────────────────────────────────────────────────────────────────────
 # Inference helper
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def _run_inference(
     texts: List[str],
@@ -106,6 +110,7 @@ def _run_inference(
 # ─────────────────────────────────────────────────────────────────────────────
 # Main evaluation
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def evaluate_bias(
     cfg: Dict[str, Any],
@@ -135,14 +140,20 @@ def evaluate_bias(
         available_identity = [c for c in identity_cols if c in df.columns]
         text_col = data_cfg["text_column"]
         label_col = data_cfg["label_column"]
-        df = df[[text_col, label_col] + available_identity].dropna(subset=[text_col, label_col])
+        df = df[[text_col, label_col] + available_identity].dropna(
+            subset=[text_col, label_col]
+        )
         df[label_col] = (df[label_col] >= 0.5).astype(int)
     except Exception as exc:
         logger.warning("Real dataset unavailable (%s); using synthetic fallback.", exc)
         df, available_identity = _synthetic_bias_data()
         text_col, label_col = "comment_text", "toxic"
 
-    logger.info("Bias eval dataset: %d rows, %d identity columns", len(df), len(available_identity))
+    logger.info(
+        "Bias eval dataset: %d rows, %d identity columns",
+        len(df),
+        len(available_identity),
+    )
 
     # ── Run inference on whole dataset ────────────────────────────────────────
     logger.info("Running inference …")
@@ -154,7 +165,10 @@ def evaluate_bias(
     overall = _subgroup_metrics(y_true, y_pred, y_prob)
     logger.info(
         "Overall → accuracy=%.4f  f1=%.4f  fpr=%.4f  fnr=%.4f",
-        overall["accuracy"], overall["f1"], overall["fpr"], overall["fnr"],
+        overall["accuracy"],
+        overall["f1"],
+        overall["fpr"],
+        overall["fnr"],
     )
 
     # ── Per-subgroup evaluation ───────────────────────────────────────────────
@@ -167,9 +181,9 @@ def evaluate_bias(
             logger.debug("Skipping %s (n=%d < 20)", col, mask.sum())
             continue
         sg = _subgroup_metrics(y_true[mask], y_pred[mask], y_prob[mask])
-        sg["gap_f1"]      = sg["f1"]  - overall["f1"]
-        sg["gap_accuracy"]= sg["accuracy"] - overall["accuracy"]
-        sg["gap_fpr"]     = sg["fpr"]  - overall["fpr"]
+        sg["gap_f1"] = sg["f1"] - overall["f1"]
+        sg["gap_accuracy"] = sg["accuracy"] - overall["accuracy"]
+        sg["gap_fpr"] = sg["fpr"] - overall["fpr"]
         subgroup_results[col] = sg
 
         if abs(sg["gap_f1"]) > fairness_threshold:
@@ -178,7 +192,11 @@ def evaluate_bias(
             )
         logger.info(
             "  %-40s  n=%5d  f1=%.4f  gap_f1=%+.4f  fpr=%.4f",
-            col, sg["n"], sg["f1"], sg["gap_f1"], sg["fpr"],
+            col,
+            sg["n"],
+            sg["f1"],
+            sg["gap_f1"],
+            sg["fpr"],
         )
 
     # ── Fairness verdict ──────────────────────────────────────────────────────
@@ -186,7 +204,9 @@ def evaluate_bias(
     if passed_fairness:
         logger.info("FAIRNESS CHECK PASSED — all subgroup gaps within threshold.")
     else:
-        logger.warning("FAIRNESS CHECK FAILED — violations:\n  %s", "\n  ".join(violations))
+        logger.warning(
+            "FAIRNESS CHECK FAILED — violations:\n  %s", "\n  ".join(violations)
+        )
 
     report = {
         "overall": overall,
@@ -211,14 +231,17 @@ def evaluate_bias(
 # Synthetic fallback
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 def _synthetic_bias_data():
     rng = np.random.default_rng(0)
     n = 500
     identity_cols = ["male", "female", "black", "white", "muslim", "christian"]
-    df = pd.DataFrame({
-        "comment_text": [f"sample comment number {i}" for i in range(n)],
-        "toxic": rng.binomial(1, 0.25, n),
-    })
+    df = pd.DataFrame(
+        {
+            "comment_text": [f"sample comment number {i}" for i in range(n)],
+            "toxic": rng.binomial(1, 0.25, n),
+        }
+    )
     for col in identity_cols:
         df[col] = rng.binomial(1, 0.2, n).astype(float)
     return df, identity_cols
@@ -227,6 +250,7 @@ def _synthetic_bias_data():
 # ─────────────────────────────────────────────────────────────────────────────
 # Entry point
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def main():
     parser = argparse.ArgumentParser(description="Bias evaluation for toxicity model")

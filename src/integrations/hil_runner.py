@@ -19,7 +19,6 @@ Usage:
   report = runner.generate_report(standard="IEC62304")
 """
 
-import json
 import logging
 import os
 import subprocess
@@ -36,19 +35,20 @@ logger = logging.getLogger("HILRunner")
 # Enums
 # ---------------------------------------------------------------------------
 
+
 class HILTransport(str, Enum):
-    SERIAL  = "serial"
-    JLINK   = "jlink"
-    CAN     = "can"
+    SERIAL = "serial"
+    JLINK = "jlink"
+    CAN = "can"
     OPENOCD = "openocd"
-    MOCK    = "mock"
+    MOCK = "mock"
 
 
 class TestVerdict(str, Enum):
-    PASS    = "PASS"
-    FAIL    = "FAIL"
-    ERROR   = "ERROR"
-    SKIP    = "SKIP"
+    PASS = "PASS"
+    FAIL = "FAIL"
+    ERROR = "ERROR"
+    SKIP = "SKIP"
     BLOCKED = "BLOCKED"  # hardware not available
 
 
@@ -56,13 +56,14 @@ class TestVerdict(str, Enum):
 # Data classes
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class HILTestCase:
     id: str
     name: str
-    requirement_id: str        # links to requirement (e.g. REQ-001, IEC62304-5.5.1)
+    requirement_id: str  # links to requirement (e.g. REQ-001, IEC62304-5.5.1)
     description: str
-    procedure: list            # ordered steps — list[str]
+    procedure: list  # ordered steps — list[str]
     expected_result: str
     transport: HILTransport = HILTransport.MOCK
     timeout_seconds: int = 30
@@ -85,6 +86,7 @@ class HILTestResult:
 # HIL Runner
 # ---------------------------------------------------------------------------
 
+
 class HILRunner:
     """
     Hardware-in-the-Loop test runner with regulatory evidence capture.
@@ -96,17 +98,20 @@ class HILRunner:
     - Supports serial, J-Link, CAN bus, OpenOCD, and mock transport
     """
 
-    def __init__(self, transport: HILTransport = HILTransport.MOCK, config: dict = None):
+    def __init__(
+        self, transport: HILTransport = HILTransport.MOCK, config: dict = None
+    ):
         self.transport = transport
         self.config = config or {}
-        self.results: list = []          # list[HILTestResult]
+        self.results: list = []  # list[HILTestResult]
         self.session_id = f"hil_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}"
         self._serial_conn = None
         self._can_bus = None
         self._connected = False
         logger.info(
             "HILRunner initialized: transport=%s session=%s",
-            transport.value, self.session_id,
+            transport.value,
+            self.session_id,
         )
 
     # -----------------------------------------------------------------------
@@ -153,9 +158,10 @@ class HILRunner:
     def _connect_serial(self) -> bool:
         try:
             import serial  # pyserial
-            port     = self.config.get("port", "/dev/ttyUSB0")
-            baud     = self.config.get("baud_rate", 115200)
-            timeout  = self.config.get("timeout", 2)
+
+            port = self.config.get("port", "/dev/ttyUSB0")
+            baud = self.config.get("baud_rate", 115200)
+            timeout = self.config.get("timeout", 2)
             self._serial_conn = serial.Serial(port, baud, timeout=timeout)
             logger.info("Serial connected: %s @ %d baud", port, baud)
             return True
@@ -168,16 +174,21 @@ class HILRunner:
 
     def _connect_jlink(self) -> bool:
         try:
-            device    = self.config.get("device", "")
+            device = self.config.get("device", "")
             serial_no = self.config.get("serial_number", "")
-            speed     = self.config.get("speed", 4000)
+            speed = self.config.get("speed", 4000)
             cmd = [
                 "JLinkExe",
-                "-device", device,
-                "-if", "SWD",
-                "-speed", str(speed),
-                "-autoconnect", "1",
-                "-NoGui", "1",
+                "-device",
+                device,
+                "-if",
+                "SWD",
+                "-speed",
+                str(speed),
+                "-autoconnect",
+                "1",
+                "-NoGui",
+                "1",
             ]
             if serial_no:
                 cmd += ["-SelectEmuBySN", str(serial_no)]
@@ -198,10 +209,11 @@ class HILRunner:
     def _connect_can(self) -> bool:
         try:
             import can  # python-can
-            interface      = self.config.get("interface", "socketcan")
-            channel        = self.config.get("channel", "can0")
-            bitrate        = self.config.get("bitrate", 500000)
-            self._can_bus  = can.interface.Bus(
+
+            interface = self.config.get("interface", "socketcan")
+            channel = self.config.get("channel", "can0")
+            bitrate = self.config.get("bitrate", 500000)
+            self._can_bus = can.interface.Bus(
                 channel=channel, bustype=interface, bitrate=bitrate
             )
             logger.info("CAN connected: %s / %s @ %d bps", interface, channel, bitrate)
@@ -216,9 +228,11 @@ class HILRunner:
     def _connect_openocd(self) -> bool:
         try:
             cfg_file = self.config.get("openocd_config", "board/stm32f4discovery.cfg")
-            result   = subprocess.run(
+            result = subprocess.run(
                 ["openocd", "-f", cfg_file, "-c", "init; exit"],
-                capture_output=True, text=True, timeout=15,
+                capture_output=True,
+                text=True,
+                timeout=15,
             )
             ok = "Info : Listening" in result.stderr or result.returncode == 0
             if ok:
@@ -243,11 +257,19 @@ class HILRunner:
         Returns {"success": bool, "output": str, "error": str}.
         """
         if not os.path.isfile(firmware_path):
-            return {"success": False, "output": "", "error": f"Firmware not found: {firmware_path}"}
+            return {
+                "success": False,
+                "output": "",
+                "error": f"Firmware not found: {firmware_path}",
+            }
 
         if self.transport == HILTransport.MOCK:
             logger.info("MOCK: flash_firmware(%s)", firmware_path)
-            return {"success": True, "output": f"[MOCK] Flashed {firmware_path}", "error": ""}
+            return {
+                "success": True,
+                "output": f"[MOCK] Flashed {firmware_path}",
+                "error": "",
+            }
 
         if self.transport == HILTransport.JLINK:
             return self._flash_jlink(firmware_path)
@@ -259,31 +281,35 @@ class HILRunner:
             # Serial bootloader flash (e.g. stm32flash)
             return self._flash_serial(firmware_path)
 
-        return {"success": False, "output": "", "error": f"Flash not supported for transport: {self.transport}"}
+        return {
+            "success": False,
+            "output": "",
+            "error": f"Flash not supported for transport: {self.transport}",
+        }
 
     def _flash_jlink(self, firmware_path: str) -> dict:
         try:
-            device    = self.config.get("device", "")
-            speed     = self.config.get("speed", 4000)
-            addr      = self.config.get("flash_address", "0x08000000")
-            jlink_cmd = (
-                f"h\n"
-                f"loadbin {firmware_path},{addr}\n"
-                f"r\n"
-                f"g\n"
-                f"exit\n"
-            )
+            device = self.config.get("device", "")
+            speed = self.config.get("speed", 4000)
+            addr = self.config.get("flash_address", "0x08000000")
+            jlink_cmd = f"h\nloadbin {firmware_path},{addr}\nr\ng\nexit\n"
             script_path = "/tmp/sage_jlink_flash.jlink"
             with open(script_path, "w", encoding="utf-8") as f:
                 f.write(jlink_cmd)
             cmd = [
                 "JLinkExe",
-                "-device", device,
-                "-if", "SWD",
-                "-speed", str(speed),
-                "-autoconnect", "1",
-                "-NoGui", "1",
-                "-CommandFile", script_path,
+                "-device",
+                device,
+                "-if",
+                "SWD",
+                "-speed",
+                str(speed),
+                "-autoconnect",
+                "1",
+                "-NoGui",
+                "1",
+                "-CommandFile",
+                script_path,
             ]
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
             ok = result.returncode == 0 or "Flash download: Program OK" in result.stdout
@@ -300,8 +326,10 @@ class HILRunner:
             cfg_file = self.config.get("openocd_config", "board/stm32f4discovery.cfg")
             cmd = [
                 "openocd",
-                "-f", cfg_file,
-                "-c", f"program {firmware_path} verify reset exit",
+                "-f",
+                cfg_file,
+                "-c",
+                f"program {firmware_path} verify reset exit",
             ]
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
             ok = "Verified OK" in result.stderr or result.returncode == 0
@@ -315,10 +343,10 @@ class HILRunner:
 
     def _flash_serial(self, firmware_path: str) -> dict:
         try:
-            port  = self.config.get("port", "/dev/ttyUSB0")
-            baud  = self.config.get("baud_rate", 115200)
+            port = self.config.get("port", "/dev/ttyUSB0")
+            baud = self.config.get("baud_rate", 115200)
             # stm32flash is common for UART bootloader
-            cmd   = ["stm32flash", "-w", firmware_path, "-v", "-b", str(baud), port]
+            cmd = ["stm32flash", "-w", firmware_path, "-v", "-b", str(baud), port]
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
             ok = result.returncode == 0
             return {
@@ -338,21 +366,21 @@ class HILRunner:
     def run_test(self, test: HILTestCase) -> HILTestResult:
         """Execute a single HIL test case. Always returns a result (BLOCKED if no HW)."""
         start = time.time()
-        ts    = datetime.now(timezone.utc).isoformat()
+        ts = datetime.now(timezone.utc).isoformat()
 
         if self.transport == HILTransport.MOCK:
-            verdict  = TestVerdict.PASS
-            actual   = f"[MOCK] {test.expected_result}"
+            verdict = TestVerdict.PASS
+            actual = f"[MOCK] {test.expected_result}"
             evidence = {"mock": True, "procedure_steps": len(test.procedure)}
         elif not self._connected:
-            verdict  = TestVerdict.BLOCKED
-            actual   = "Hardware transport not connected"
+            verdict = TestVerdict.BLOCKED
+            actual = "Hardware transport not connected"
             evidence = {}
         else:
             verdict, actual, evidence = self._execute_on_hardware(test)
 
         duration = time.time() - start
-        result   = HILTestResult(
+        result = HILTestResult(
             test_id=test.id,
             test_name=test.name,
             requirement_id=test.requirement_id,
@@ -372,7 +400,7 @@ class HILRunner:
         evidence = {}
         try:
             if self.transport == HILTransport.SERIAL and self._serial_conn:
-                cmd      = f"RUN_TEST {test.id}\n".encode()
+                cmd = f"RUN_TEST {test.id}\n".encode()
                 self._serial_conn.write(cmd)
                 time.sleep(0.5)
                 response = self._serial_conn.read(512).decode(errors="replace")
@@ -384,13 +412,20 @@ class HILRunner:
                 elif "FAIL" in upper:
                     return TestVerdict.FAIL, response.strip(), evidence
                 else:
-                    return TestVerdict.ERROR, f"Unexpected response: {response[:200]}", evidence
+                    return (
+                        TestVerdict.ERROR,
+                        f"Unexpected response: {response[:200]}",
+                        evidence,
+                    )
 
             elif self.transport == HILTransport.CAN and self._can_bus:
                 import can
+
                 # Send test trigger frame (CAN ID 0x7FF = broadcast test command)
                 test_id_bytes = test.id.encode()[:8]
-                msg = can.Message(arbitration_id=0x7FF, data=test_id_bytes, is_extended_id=False)
+                msg = can.Message(
+                    arbitration_id=0x7FF, data=test_id_bytes, is_extended_id=False
+                )
                 self._can_bus.send(msg)
                 # Wait for response frame (CAN ID 0x7FE = test result)
                 deadline = time.time() + test.timeout_seconds
@@ -409,7 +444,11 @@ class HILRunner:
                 return TestVerdict.ERROR, "CAN response timeout", evidence
 
             else:
-                return TestVerdict.BLOCKED, f"Transport {self.transport} not active", evidence
+                return (
+                    TestVerdict.BLOCKED,
+                    f"Transport {self.transport} not active",
+                    evidence,
+                )
 
         except Exception as e:
             logger.error("HIL hardware execution error for %s: %s", test.id, e)
@@ -419,6 +458,7 @@ class HILRunner:
         """Write test result to SAGE audit log for regulatory evidence."""
         try:
             from src.memory.audit_logger import audit_logger
+
             audit_logger.log_event(
                 actor="HILRunner",
                 action_type="HIL_TEST_RESULT",
@@ -439,24 +479,24 @@ class HILRunner:
 
     def run_suite(self, tests: list) -> dict:
         """Run a list of HILTestCase objects. Returns a structured summary."""
-        results  = [self.run_test(t) for t in tests]
-        passed   = sum(1 for r in results if r.verdict == TestVerdict.PASS)
-        failed   = sum(1 for r in results if r.verdict == TestVerdict.FAIL)
-        errors   = sum(1 for r in results if r.verdict == TestVerdict.ERROR)
-        skipped  = sum(1 for r in results if r.verdict == TestVerdict.SKIP)
-        blocked  = sum(1 for r in results if r.verdict == TestVerdict.BLOCKED)
-        total    = len(results)
+        results = [self.run_test(t) for t in tests]
+        passed = sum(1 for r in results if r.verdict == TestVerdict.PASS)
+        failed = sum(1 for r in results if r.verdict == TestVerdict.FAIL)
+        errors = sum(1 for r in results if r.verdict == TestVerdict.ERROR)
+        skipped = sum(1 for r in results if r.verdict == TestVerdict.SKIP)
+        blocked = sum(1 for r in results if r.verdict == TestVerdict.BLOCKED)
+        total = len(results)
         return {
-            "session_id":  self.session_id,
-            "transport":   self.transport.value,
-            "total":       total,
-            "passed":      passed,
-            "failed":      failed,
-            "errors":      errors,
-            "skipped":     skipped,
-            "blocked":     blocked,
-            "pass_rate":   round(passed / total * 100, 1) if total else 0.0,
-            "results":     [vars(r) for r in results],
+            "session_id": self.session_id,
+            "transport": self.transport.value,
+            "total": total,
+            "passed": passed,
+            "failed": failed,
+            "errors": errors,
+            "skipped": skipped,
+            "blocked": blocked,
+            "pass_rate": round(passed / total * 100, 1) if total else 0.0,
+            "results": [vars(r) for r in results],
         }
 
     def generate_report(self, standard: str = "IEC62304") -> dict:
@@ -464,100 +504,123 @@ class HILRunner:
         Generate a regulatory evidence report from all accumulated results.
         Supports IEC 62304, DO-178C, EN 50128, ISO 26262, IEC 62443.
         """
-        passed  = sum(1 for r in self.results if r.verdict == TestVerdict.PASS)
-        failed  = sum(1 for r in self.results if r.verdict == TestVerdict.FAIL)
+        passed = sum(1 for r in self.results if r.verdict == TestVerdict.PASS)
+        failed = sum(1 for r in self.results if r.verdict == TestVerdict.FAIL)
         blocked = sum(1 for r in self.results if r.verdict == TestVerdict.BLOCKED)
-        total   = len(self.results)
+        total = len(self.results)
 
         # Standard-specific metadata
         standard_meta = {
             "IEC62304": {
                 "full_name": "IEC 62304:2015+A1 — Medical Device Software",
-                "evidence_sections": ["§5.5 Unit Testing", "§5.6 Integration Testing", "§5.7 System Testing"],
+                "evidence_sections": [
+                    "§5.5 Unit Testing",
+                    "§5.6 Integration Testing",
+                    "§5.7 System Testing",
+                ],
                 "pass_criteria": "All safety-class tests must PASS with zero FAILs",
             },
             "DO178C": {
                 "full_name": "DO-178C — Software Considerations in Airborne Systems",
-                "evidence_sections": ["§6.4 Reviews and Analyses", "§6.4.3 Hardware/Software Integration Testing"],
+                "evidence_sections": [
+                    "§6.4 Reviews and Analyses",
+                    "§6.4.3 Hardware/Software Integration Testing",
+                ],
                 "pass_criteria": "All DAL-A/B tests must PASS; coverage objectives met",
             },
             "EN50128": {
                 "full_name": "EN 50128:2011+A2 — Railway Applications Software",
-                "evidence_sections": ["§6.2 Software Test Specification", "§6.3 Software Integration Test"],
+                "evidence_sections": [
+                    "§6.2 Software Test Specification",
+                    "§6.3 Software Integration Test",
+                ],
                 "pass_criteria": "SIL-3/4 requires formal verification in addition to testing",
             },
             "ISO26262": {
                 "full_name": "ISO 26262:2018 — Road Vehicles Functional Safety",
-                "evidence_sections": ["Part 6 §9 Software Unit Testing", "Part 6 §10 Software Integration Testing"],
+                "evidence_sections": [
+                    "Part 6 §9 Software Unit Testing",
+                    "Part 6 §10 Software Integration Testing",
+                ],
                 "pass_criteria": "ASIL C/D: MC/DC coverage; all tests PASS",
             },
             "IEC62443": {
                 "full_name": "IEC 62443-3-3 — Industrial Cybersecurity",
-                "evidence_sections": ["§SR 3.1 Communication Integrity", "§SR 3.3 Security Functionality Verification"],
+                "evidence_sections": [
+                    "§SR 3.1 Communication Integrity",
+                    "§SR 3.3 Security Functionality Verification",
+                ],
                 "pass_criteria": "All security-level requirements verified",
             },
-        }.get(standard, {
-            "full_name": standard,
-            "evidence_sections": [],
-            "pass_criteria": "All tests must PASS",
-        })
+        }.get(
+            standard,
+            {
+                "full_name": standard,
+                "evidence_sections": [],
+                "pass_criteria": "All tests must PASS",
+            },
+        )
 
         return {
-            "report_type":       f"HIL Test Evidence — {standard}",
-            "standard":          standard,
+            "report_type": f"HIL Test Evidence — {standard}",
+            "standard": standard,
             "standard_full_name": standard_meta.get("full_name", standard),
-            "generated_at":      datetime.now(timezone.utc).isoformat(),
-            "session_id":        self.session_id,
-            "transport":         self.transport.value,
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "session_id": self.session_id,
+            "transport": self.transport.value,
             "evidence_sections": standard_meta.get("evidence_sections", []),
-            "pass_criteria":     standard_meta.get("pass_criteria", ""),
+            "pass_criteria": standard_meta.get("pass_criteria", ""),
             "summary": {
-                "total_tests":   total,
-                "passed":        passed,
-                "failed":        failed,
-                "blocked":       blocked,
-                "pass_rate":     round(passed / total * 100, 1) if total else 0.0,
-                "overall_status": "PASS" if (total > 0 and failed == 0 and blocked == 0) else "FAIL",
+                "total_tests": total,
+                "passed": passed,
+                "failed": failed,
+                "blocked": blocked,
+                "pass_rate": round(passed / total * 100, 1) if total else 0.0,
+                "overall_status": "PASS"
+                if (total > 0 and failed == 0 and blocked == 0)
+                else "FAIL",
             },
             "traceability": [
                 {
-                    "requirement_id":    r.requirement_id,
-                    "test_id":           r.test_id,
-                    "test_name":         r.test_name,
-                    "verdict":           r.verdict.value,
-                    "timestamp":         r.timestamp,
-                    "duration_seconds":  r.duration_seconds,
+                    "requirement_id": r.requirement_id,
+                    "test_id": r.test_id,
+                    "test_name": r.test_name,
+                    "verdict": r.verdict.value,
+                    "timestamp": r.timestamp,
+                    "duration_seconds": r.duration_seconds,
                     "evidence_captured": bool(r.evidence),
                 }
                 for r in self.results
             ],
             "deviations": [
                 {"test_id": r.test_id, "notes": r.deviation_notes}
-                for r in self.results if r.deviation_notes
+                for r in self.results
+                if r.deviation_notes
             ],
             "failed_tests": [
                 {
-                    "test_id":       r.test_id,
-                    "test_name":     r.test_name,
+                    "test_id": r.test_id,
+                    "test_name": r.test_name,
                     "requirement_id": r.requirement_id,
                     "actual_result": r.actual_result,
-                    "verdict":       r.verdict.value,
+                    "verdict": r.verdict.value,
                 }
                 for r in self.results
-                if r.verdict in (TestVerdict.FAIL, TestVerdict.ERROR, TestVerdict.BLOCKED)
+                if r.verdict
+                in (TestVerdict.FAIL, TestVerdict.ERROR, TestVerdict.BLOCKED)
             ],
         }
 
     def status(self) -> dict:
         """Return current runner status for API health checks."""
         return {
-            "session_id":    self.session_id,
-            "transport":     self.transport.value,
-            "connected":     self._connected,
-            "tests_run":     len(self.results),
-            "passed":        sum(1 for r in self.results if r.verdict == TestVerdict.PASS),
-            "failed":        sum(1 for r in self.results if r.verdict == TestVerdict.FAIL),
-            "blocked":       sum(1 for r in self.results if r.verdict == TestVerdict.BLOCKED),
+            "session_id": self.session_id,
+            "transport": self.transport.value,
+            "connected": self._connected,
+            "tests_run": len(self.results),
+            "passed": sum(1 for r in self.results if r.verdict == TestVerdict.PASS),
+            "failed": sum(1 for r in self.results if r.verdict == TestVerdict.FAIL),
+            "blocked": sum(1 for r in self.results if r.verdict == TestVerdict.BLOCKED),
         }
 
 

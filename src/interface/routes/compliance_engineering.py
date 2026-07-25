@@ -13,7 +13,7 @@ These endpoints close the regulatory gaps identified in the compliance audit:
 """
 
 import logging
-from typing import Dict, List, Optional
+from typing import List, Optional
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
@@ -23,6 +23,7 @@ router = APIRouter(prefix="/compliance", tags=["Compliance Engineering"])
 
 
 # ─── Pydantic Models ────────────────────────────────────────────────────
+
 
 class TraceItemCreate(BaseModel):
     level: str
@@ -101,6 +102,7 @@ def _get_trace_matrix():
     global _trace_matrix
     if _trace_matrix is None:
         from src.core.traceability import TraceabilityMatrix
+
         _trace_matrix = TraceabilityMatrix()
     return _trace_matrix
 
@@ -109,6 +111,7 @@ def _get_change_control():
     global _change_control
     if _change_control is None:
         from src.core.change_control import ChangeControlManager
+
         _change_control = ChangeControlManager()
     return _change_control
 
@@ -117,16 +120,21 @@ def _get_change_control():
 # TRACEABILITY MATRIX
 # ═══════════════════════════════════════════════════════════════════════
 
+
 @router.post("/traceability/items")
 def create_trace_item(req: TraceItemCreate):
     """Create a new traceability item."""
     try:
         from src.core.traceability import TraceLevel
+
         level = TraceLevel(req.level)
         tm = _get_trace_matrix()
         item = tm.add_item(
-            level=level, title=req.title, description=req.description,
-            source_file=req.source_file, source_line=req.source_line,
+            level=level,
+            title=req.title,
+            description=req.description,
+            source_file=req.source_file,
+            source_line=req.source_line,
             item_id=req.item_id,
         )
         return {"status": "created", "item": item.to_dict()}
@@ -139,6 +147,7 @@ def list_trace_items(level: Optional[str] = None, status: str = "active"):
     """List traceability items, optionally filtered by level."""
     try:
         from src.core.traceability import TraceLevel
+
         lvl = TraceLevel(level) if level else None
         tm = _get_trace_matrix()
         items = tm.list_items(level=lvl, status=status)
@@ -165,8 +174,10 @@ def create_trace_link(req: TraceLinkCreate):
     try:
         tm = _get_trace_matrix()
         link = tm.add_link(
-            source_id=req.source_id, target_id=req.target_id,
-            link_type=req.link_type, rationale=req.rationale,
+            source_id=req.source_id,
+            target_id=req.target_id,
+            link_type=req.link_type,
+            rationale=req.rationale,
             created_by=req.created_by,
         )
         return {"status": "created", "link": link.to_dict()}
@@ -199,15 +210,19 @@ def export_traceability():
 # CHANGE CONTROL
 # ═══════════════════════════════════════════════════════════════════════
 
+
 @router.post("/change-control/requests")
 def create_change_request(req: ChangeRequestCreate):
     """Create a new change request."""
     try:
         ccm = _get_change_control()
         result = ccm.create_request(
-            title=req.title, description=req.description,
-            category=req.category, priority=req.priority,
-            requester=req.requester, affected_items=req.affected_items,
+            title=req.title,
+            description=req.description,
+            category=req.category,
+            priority=req.priority,
+            requester=req.requester,
+            affected_items=req.affected_items,
         )
         return result
     except ValueError as e:
@@ -253,7 +268,9 @@ def add_change_approval(cr_id: str, req: ApprovalInput):
     """Add an approval decision to a change request."""
     try:
         ccm = _get_change_control()
-        return ccm.add_approval(cr_id, req.approver, req.role, req.decision, req.comments)
+        return ccm.add_approval(
+            cr_id, req.approver, req.role, req.decision, req.comments
+        )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -276,11 +293,13 @@ def change_control_metrics():
 # DOCUMENT GENERATION
 # ═══════════════════════════════════════════════════════════════════════
 
+
 @router.post("/documents/generate")
 def generate_document(req: DocumentRequest):
     """Generate a regulatory compliance document."""
     try:
         from src.core.doc_generator import DocumentGenerator
+
         gen = DocumentGenerator(project_name=req.project_name, version=req.version)
         content = gen.generate_document(req.doc_type, req.data)
         return {"doc_type": req.doc_type, "content": content}
@@ -292,6 +311,7 @@ def generate_document(req: DocumentRequest):
 def list_document_types():
     """List available document types."""
     from src.core.doc_generator import DocumentGenerator
+
     gen = DocumentGenerator()
     return {"types": gen.list_document_types()}
 
@@ -300,12 +320,14 @@ def list_document_types():
 # AUDIT INTEGRITY
 # ═══════════════════════════════════════════════════════════════════════
 
+
 @router.post("/audit/integrity/append")
 def append_integrity_entry(req: IntegrityAppendRequest):
     """Append an entry to the audit integrity chain."""
     try:
         from src.core.audit_integrity import AuditIntegrityManager
         from src.memory.audit_logger import DB_PATH
+
         mgr = AuditIntegrityManager(DB_PATH)
         return mgr.append_entry(req.audit_event_id, req.event_data)
     except Exception as e:
@@ -317,6 +339,7 @@ def verify_audit_integrity():
     """Verify the audit log integrity chain."""
     from src.core.audit_integrity import AuditIntegrityManager
     from src.memory.audit_logger import DB_PATH
+
     mgr = AuditIntegrityManager(DB_PATH)
     return mgr.verify_chain()
 
@@ -326,6 +349,7 @@ def audit_integrity_status():
     """Get audit integrity chain status."""
     from src.core.audit_integrity import AuditIntegrityManager
     from src.memory.audit_logger import DB_PATH
+
     mgr = AuditIntegrityManager(DB_PATH)
     return mgr.get_chain_status()
 
@@ -334,10 +358,12 @@ def audit_integrity_status():
 # COMPLIANCE VERIFICATION
 # ═══════════════════════════════════════════════════════════════════════
 
+
 @router.post("/verify")
 def verify_compliance(req: VerificationRequest):
     """Run compliance verification against specified standards."""
     from src.core.compliance_verifier import ComplianceVerifier
+
     verifier = ComplianceVerifier()
     return verifier.verify_all(req.project_data, req.standards)
 
@@ -347,10 +373,26 @@ def list_verification_standards():
     """List available verification standards."""
     return {
         "standards": [
-            {"id": "iec62304", "name": "IEC 62304", "domain": "Medical Device Software"},
-            {"id": "iso26262", "name": "ISO 26262", "domain": "Automotive Functional Safety"},
+            {
+                "id": "iec62304",
+                "name": "IEC 62304",
+                "domain": "Medical Device Software",
+            },
+            {
+                "id": "iso26262",
+                "name": "ISO 26262",
+                "domain": "Automotive Functional Safety",
+            },
             {"id": "do178c", "name": "DO-178C", "domain": "Avionics Software"},
-            {"id": "en50128", "name": "EN 50128", "domain": "Railway Signalling Software"},
-            {"id": "21cfr_part11", "name": "21 CFR Part 11", "domain": "Electronic Records & Signatures"},
+            {
+                "id": "en50128",
+                "name": "EN 50128",
+                "domain": "Railway Signalling Software",
+            },
+            {
+                "id": "21cfr_part11",
+                "name": "21 CFR Part 11",
+                "domain": "Electronic Records & Signatures",
+            },
         ]
     }

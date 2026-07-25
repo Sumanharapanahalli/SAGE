@@ -197,7 +197,7 @@ class OCRInferencePipeline:
         logger.info("Warming up with %d passes …", n_warmup)
         for img in images[:n_warmup]:
             self.predict(img)
-        self._latency_history.clear()   # discard warmup latencies
+        self._latency_history.clear()  # discard warmup latencies
 
         logger.info("Benchmarking %d images …", len(images))
         for img in images:
@@ -208,12 +208,14 @@ class OCRInferencePipeline:
         if not stats["sla_pass"]:
             logger.error(
                 "Latency SLA FAILED — p95 %.1f ms > budget %.1f ms",
-                stats["p95_ms"], self.sla_ms,
+                stats["p95_ms"],
+                self.sla_ms,
             )
         else:
             logger.info(
                 "Latency SLA PASS — p95 %.1f ms ≤ budget %.1f ms",
-                stats["p95_ms"], self.sla_ms,
+                stats["p95_ms"],
+                self.sla_ms,
             )
         return stats
 

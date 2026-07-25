@@ -9,6 +9,7 @@ RapidSOS ERG (Emergency Response Gateway) API flow:
 In mock mode (rapidsos_mock_mode=True), returns a realistic fake dispatch_id.
 Set rapidsos_mock_mode=False with real credentials for production.
 """
+
 from __future__ import annotations
 
 import logging

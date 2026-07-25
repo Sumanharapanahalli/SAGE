@@ -4,6 +4,7 @@ The contract that matters: preflight NEVER mutates (no proposal, no audit
 event), NEVER crashes on a missing optional dep (warning, not error), and
 NEVER blocks the serial dispatch loop on a hung LLM provider.
 """
+
 from __future__ import annotations
 
 import time
@@ -15,7 +16,14 @@ from rpc import RpcError
 
 
 class _FakeLLM:
-    def __init__(self, reply="OK", provider="gemini", model="gemini-2.0-flash", exc=None, delay=0.0):
+    def __init__(
+        self,
+        reply="OK",
+        provider="gemini",
+        model="gemini-2.0-flash",
+        exc=None,
+        delay=0.0,
+    ):
         self._reply, self._provider, self._model = reply, provider, model
         self._exc, self._delay = exc, delay
         self.calls = 0
@@ -44,7 +52,10 @@ class _FakeVM:
     def list_entries(self, limit=50):
         if self._raises:
             raise RuntimeError("chroma exploded")
-        return [{"id": str(i), "text": f"e{i}", "metadata": {}} for i in range(self._entries)]
+        return [
+            {"id": str(i), "text": f"e{i}", "metadata": {}}
+            for i in range(self._entries)
+        ]
 
 
 class _FakeProject:

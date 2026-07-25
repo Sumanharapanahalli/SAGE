@@ -35,9 +35,11 @@ pytestmark = pytest.mark.unit
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _fresh_critic():
     """Create a CriticAgent with mocked LLM and audit dependencies."""
     from src.agents.critic import CriticAgent
+
     critic = CriticAgent()
     critic._llm_gateway = MagicMock()
     critic._audit_logger = MagicMock()
@@ -58,14 +60,16 @@ def _mock_llm_response(score=85, flaws=None, issues=None, **kwargs):
 # CriticAgent.review_plan()
 # ---------------------------------------------------------------------------
 
-class TestReviewPlan:
 
+class TestReviewPlan:
     def test_returns_score_and_flaws(self):
         critic = _fresh_critic()
         critic._llm_gateway.generate.return_value = _mock_llm_response(
             score=72, flaws=["Missing error handling", "No tests"]
         )
-        result = critic.review_plan([{"step": 1, "task_type": "BACKEND"}], "Build a web app")
+        result = critic.review_plan(
+            [{"step": 1, "task_type": "BACKEND"}], "Build a web app"
+        )
         assert result["score"] == 72
         assert "Missing error handling" in result["flaws"]
 
@@ -96,8 +100,8 @@ class TestReviewPlan:
 # CriticAgent.review_code()
 # ---------------------------------------------------------------------------
 
-class TestReviewCode:
 
+class TestReviewCode:
     def test_returns_score_and_issues(self):
         critic = _fresh_critic()
         critic._llm_gateway.generate.return_value = _mock_llm_response(
@@ -127,8 +131,8 @@ class TestReviewCode:
 # CriticAgent.review_integration()
 # ---------------------------------------------------------------------------
 
-class TestReviewIntegration:
 
+class TestReviewIntegration:
     def test_returns_score_and_gaps(self):
         critic = _fresh_critic()
         critic._llm_gateway.generate.return_value = _mock_llm_response(
@@ -150,8 +154,8 @@ class TestReviewIntegration:
 # CriticAgent.review_with_loop()
 # ---------------------------------------------------------------------------
 
-class TestReviewWithLoop:
 
+class TestReviewWithLoop:
     def test_passes_on_first_try(self):
         critic = _fresh_critic()
         critic._llm_gateway.generate.return_value = _mock_llm_response(score=85)
@@ -172,8 +176,11 @@ class TestReviewWithLoop:
         critic._llm_gateway.generate.side_effect = responses
         with patch.object(critic, "_store_feedback"):
             result = critic.review_with_loop(
-                review_fn="plan", artifact=[], description="test",
-                threshold=70, max_iterations=3,
+                review_fn="plan",
+                artifact=[],
+                description="test",
+                threshold=70,
+                max_iterations=3,
                 revise_fn=lambda artifact, feedback: artifact,
                 generate_rubric=False,
             )
@@ -183,11 +190,16 @@ class TestReviewWithLoop:
 
     def test_respects_max_iterations(self):
         critic = _fresh_critic()
-        critic._llm_gateway.generate.return_value = _mock_llm_response(score=30, flaws=["Still bad"])
+        critic._llm_gateway.generate.return_value = _mock_llm_response(
+            score=30, flaws=["Still bad"]
+        )
         with patch.object(critic, "_store_feedback"):
             result = critic.review_with_loop(
-                review_fn="plan", artifact=[], description="test",
-                threshold=70, max_iterations=2,
+                review_fn="plan",
+                artifact=[],
+                description="test",
+                threshold=70,
+                max_iterations=2,
                 revise_fn=lambda a, f: a,
             )
             assert result["iterations"] == 2
@@ -204,8 +216,12 @@ class TestReviewWithLoop:
         revise_fn = MagicMock(return_value=["revised plan"])
         with patch.object(critic, "_store_feedback"):
             critic.review_with_loop(
-                review_fn="plan", artifact=["original"], description="test",
-                threshold=70, max_iterations=3, revise_fn=revise_fn,
+                review_fn="plan",
+                artifact=["original"],
+                description="test",
+                threshold=70,
+                max_iterations=3,
+                revise_fn=revise_fn,
                 generate_rubric=False,
             )
             revise_fn.assert_called_once()
@@ -216,8 +232,12 @@ class TestReviewWithLoop:
         revise_fn = MagicMock(side_effect=RuntimeError("Revision failed"))
         with patch.object(critic, "_store_feedback"):
             result = critic.review_with_loop(
-                review_fn="plan", artifact=[], description="test",
-                threshold=70, max_iterations=3, revise_fn=revise_fn,
+                review_fn="plan",
+                artifact=[],
+                description="test",
+                threshold=70,
+                max_iterations=3,
+                revise_fn=revise_fn,
             )
             assert result["iterations"] == 1
 
@@ -259,7 +279,10 @@ class TestReviewWithLoop:
         critic._llm_gateway.generate.return_value = _mock_llm_response(score=85)
         with patch.object(critic, "_store_feedback"):
             critic.review_with_loop(
-                review_fn="plan", artifact=[], description="test", threshold=70,
+                review_fn="plan",
+                artifact=[],
+                description="test",
+                threshold=70,
                 generate_rubric=False,
             )
         assert critic._llm_gateway.generate.call_count == 1
@@ -292,8 +315,12 @@ class TestReviewWithLoop:
         critic._llm_gateway.generate.return_value = _mock_llm_response(score=40)
         with patch.object(critic, "_store_feedback"):
             result = critic.review_with_loop(
-                review_fn="plan", artifact=[], description="test",
-                threshold=70, max_iterations=3, revise_fn=None,
+                review_fn="plan",
+                artifact=[],
+                description="test",
+                threshold=70,
+                max_iterations=3,
+                revise_fn=None,
             )
             assert result["iterations"] == 1
             assert result["passed"] is False
@@ -308,8 +335,11 @@ class TestReviewWithLoop:
         critic._llm_gateway.generate.side_effect = responses
         with patch.object(critic, "_store_feedback"):
             result = critic.review_with_loop(
-                review_fn="plan", artifact=[], description="test",
-                threshold=70, max_iterations=3,
+                review_fn="plan",
+                artifact=[],
+                description="test",
+                threshold=70,
+                max_iterations=3,
                 revise_fn=lambda a, f: a,
                 generate_rubric=False,
             )
@@ -322,11 +352,13 @@ class TestReviewWithLoop:
 # CriticAgent._call_llm() internal
 # ---------------------------------------------------------------------------
 
-class TestCallLLM:
 
+class TestCallLLM:
     def test_extracts_json_from_markdown_fences(self):
         critic = _fresh_critic()
-        critic._llm_gateway.generate.return_value = '```json\n{"score": 90, "summary": "Good"}\n```'
+        critic._llm_gateway.generate.return_value = (
+            '```json\n{"score": 90, "summary": "Good"}\n```'
+        )
         result = critic._call_llm("test", "test", "TEST")
         assert result["score"] == 90
 
@@ -355,8 +387,8 @@ class TestCallLLM:
 # CriticAgent._store_feedback() internal
 # ---------------------------------------------------------------------------
 
-class TestStoreFeedback:
 
+class TestStoreFeedback:
     def test_handles_vector_store_failure(self):
         critic = _fresh_critic()
         with patch("src.memory.vector_store.vector_memory") as mock_vm:
@@ -369,10 +401,11 @@ class TestStoreFeedback:
 # Module-level
 # ---------------------------------------------------------------------------
 
-class TestModuleLevel:
 
+class TestModuleLevel:
     def test_singleton_importable(self):
         from src.agents.critic import critic_agent
+
         assert critic_agent is not None
         assert hasattr(critic_agent, "review_plan")
         assert hasattr(critic_agent, "review_code")
@@ -381,6 +414,7 @@ class TestModuleLevel:
 
     def test_system_prompts_non_empty(self):
         from src.agents.critic import CriticAgent
+
         assert len(CriticAgent.PLAN_REVIEW_PROMPT) > 50
         assert len(CriticAgent.CODE_REVIEW_PROMPT) > 50
         assert len(CriticAgent.INTEGRATION_REVIEW_PROMPT) > 50
@@ -390,8 +424,8 @@ class TestModuleLevel:
 # Edge-case tests
 # ---------------------------------------------------------------------------
 
-class TestReviewPlanEdgeCases:
 
+class TestReviewPlanEdgeCases:
     def test_empty_plan_list(self):
         """review_plan() with an empty plan list should still call LLM and return score."""
         critic = _fresh_critic()
@@ -406,7 +440,10 @@ class TestReviewPlanEdgeCases:
         """review_plan() with 100+ steps should not crash and truncates in prompt."""
         critic = _fresh_critic()
         critic._llm_gateway.generate.return_value = _mock_llm_response(score=60)
-        large_plan = [{"step": i, "task_type": "BACKEND", "description": f"Task {i}"} for i in range(120)]
+        large_plan = [
+            {"step": i, "task_type": "BACKEND", "description": f"Task {i}"}
+            for i in range(120)
+        ]
         result = critic.review_plan(large_plan, "Massive system")
         assert result["score"] == 60
         # The LLM was called (prompt was constructed)
@@ -414,7 +451,6 @@ class TestReviewPlanEdgeCases:
 
 
 class TestReviewCodeEdgeCases:
-
     def test_empty_code_string(self):
         """review_code() with empty code should still work."""
         critic = _fresh_critic()
@@ -434,7 +470,6 @@ class TestReviewCodeEdgeCases:
 
 
 class TestReviewWithLoopEdgeCases:
-
     def test_threshold_zero_always_passes(self):
         """review_with_loop() with threshold=0 should pass even with score=0."""
         critic = _fresh_critic()
@@ -456,8 +491,11 @@ class TestReviewWithLoopEdgeCases:
         critic._llm_gateway.generate.side_effect = responses
         with patch.object(critic, "_store_feedback"):
             result = critic.review_with_loop(
-                review_fn="plan", artifact=[], description="test",
-                threshold=100, max_iterations=2,
+                review_fn="plan",
+                artifact=[],
+                description="test",
+                threshold=100,
+                max_iterations=2,
                 revise_fn=lambda a, f: a,
                 generate_rubric=False,
             )
@@ -480,8 +518,11 @@ class TestReviewWithLoopEdgeCases:
         critic._llm_gateway.generate.return_value = _mock_llm_response(score=40)
         with patch.object(critic, "_store_feedback"):
             result = critic.review_with_loop(
-                review_fn="plan", artifact=[], description="test",
-                threshold=70, max_iterations=1,
+                review_fn="plan",
+                artifact=[],
+                description="test",
+                threshold=70,
+                max_iterations=1,
                 revise_fn=lambda a, f: a,
             )
             assert result["iterations"] == 1
@@ -505,18 +546,22 @@ class TestReviewWithLoopEdgeCases:
         critic._llm_gateway.generate.return_value = _mock_llm_response(score=69)
         with patch.object(critic, "_store_feedback"):
             result = critic.review_with_loop(
-                review_fn="plan", artifact=[], description="test",
-                threshold=70, max_iterations=1,
+                review_fn="plan",
+                artifact=[],
+                description="test",
+                threshold=70,
+                max_iterations=1,
             )
             assert result["passed"] is False
 
 
 class TestCallLLMEdgeCases:
-
     def test_nested_json_in_markdown_fences(self):
         """_call_llm() extracts nested JSON from markdown fences."""
         critic = _fresh_critic()
-        nested = '```json\n{"score": 75, "summary": "OK", "details": {"sub": [1, 2]}}\n```'
+        nested = (
+            '```json\n{"score": 75, "summary": "OK", "details": {"sub": [1, 2]}}\n```'
+        )
         critic._llm_gateway.generate.return_value = nested
         result = critic._call_llm("test", "test", "TEST")
         assert result["score"] == 75
@@ -549,11 +594,10 @@ class TestCallLLMEdgeCases:
 
 
 class TestStoreFeedbackEdgeCases:
-
     def test_empty_history(self):
         """_store_feedback() with empty history should not raise."""
         critic = _fresh_critic()
-        with patch("src.memory.vector_store.vector_memory") as mock_vm:
+        with patch("src.memory.vector_store.vector_memory"):
             # Empty history: the method accesses history[-1] which would raise on truly empty
             # but it should handle gracefully
             critic._store_feedback("plan", "test", [], True)
@@ -575,7 +619,6 @@ class TestStoreFeedbackEdgeCases:
 
 
 class TestReviewIntegrationEdgeCases:
-
     def test_empty_test_results_and_diff(self):
         """review_integration() with empty test results and diff."""
         critic = _fresh_critic()
@@ -603,6 +646,7 @@ class TestReviewIntegrationEdgeCases:
 
 class _MockMultiProvider:
     """Mock provider for multi-LLM critic tests."""
+
     def __init__(self, name, response):
         self._name = name
         self._response = response
@@ -622,14 +666,16 @@ class TestReviewPlanMulti:
         from src.agents.critic import CriticAgent
         from src.core.llm_gateway import ProviderPool
 
-        review_json = json.dumps({
-            "score": 72,
-            "flaws": ["missing auth"],
-            "suggestions": ["add auth"],
-            "missing": [],
-            "security_risks": [],
-            "summary": "decent plan",
-        })
+        review_json = json.dumps(
+            {
+                "score": 72,
+                "flaws": ["missing auth"],
+                "suggestions": ["add auth"],
+                "missing": [],
+                "security_risks": [],
+                "summary": "decent plan",
+            }
+        )
 
         pool = ProviderPool()
         pool.register("a", _MockMultiProvider("a", review_json))
@@ -641,8 +687,10 @@ class TestReviewPlanMulti:
         critic._audit_logger = MagicMock()
 
         result = critic.review_plan_multi(
-            [{"task": "build API"}], "A REST API",
-            strategy="voting", provider_names=["a", "b"],
+            [{"task": "build API"}],
+            "A REST API",
+            strategy="voting",
+            provider_names=["a", "b"],
         )
         assert result["score"] == 72
         assert "multi_llm" in result
@@ -653,14 +701,16 @@ class TestReviewPlanMulti:
         from src.agents.critic import CriticAgent
         from src.core.llm_gateway import ProviderPool
 
-        review_json = json.dumps({
-            "score": 85,
-            "flaws": [],
-            "suggestions": [],
-            "missing": [],
-            "security_risks": [],
-            "summary": "great plan",
-        })
+        review_json = json.dumps(
+            {
+                "score": 85,
+                "flaws": [],
+                "suggestions": [],
+                "missing": [],
+                "security_risks": [],
+                "summary": "great plan",
+            }
+        )
 
         critic = CriticAgent()
         critic._llm_gateway = MagicMock()
@@ -679,6 +729,7 @@ class TestReviewPlanMulti:
         class _FailProvider:
             def provider_name(self):
                 return "fail"
+
             def generate(self, prompt, system_prompt):
                 raise ConnectionError("down")
 
@@ -692,8 +743,10 @@ class TestReviewPlanMulti:
         critic._audit_logger = MagicMock()
 
         result = critic.review_plan_multi(
-            [{"task": "build"}], "A product",
-            strategy="fallback", provider_names=["fail1", "fail2"],
+            [{"task": "build"}],
+            "A product",
+            strategy="fallback",
+            provider_names=["fail1", "fail2"],
         )
         assert result["score"] == 0
         assert "error" in result
@@ -702,16 +755,19 @@ class TestReviewPlanMulti:
 # --- Phase 1a: robust (weighted-median) critic aggregation — one rogue/extreme
 #     valid score must not drag the verdict the way the old weighted mean did. ---
 
+
 def test_robust_aggregate_resists_single_rogue_critic_score():
     from src.agents.critic import CriticAgent
+
     scored = {"primary": 80, "gemini": 82, "ollama": 78, "rogue": 0}
     weights = {"primary": 1.5, "gemini": 1.0, "ollama": 1.0, "rogue": 1.0}
     agg = CriticAgent._robust_aggregate(scored, weights)
-    assert agg >= 75   # the old weighted mean would crater to ~62
+    assert agg >= 75  # the old weighted mean would crater to ~62
 
 
 def test_robust_aggregate_matches_consensus_when_critics_agree():
     from src.agents.critic import CriticAgent
+
     scored = {"primary": 80, "gemini": 82, "ollama": 78}
     weights = {"primary": 1.5, "gemini": 1.0, "ollama": 1.0}
     agg = CriticAgent._robust_aggregate(scored, weights)

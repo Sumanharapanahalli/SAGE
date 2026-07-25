@@ -11,7 +11,7 @@ Option 3: Capability-match warm-start for AdaptiveRouter
 import json
 import os
 import tempfile
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -21,6 +21,7 @@ pytestmark = pytest.mark.unit
 # ---------------------------------------------------------------------------
 # Option 4: Wire MCP Hardware Tools to Domain Runners
 # ---------------------------------------------------------------------------
+
 
 class TestOpenEDAHardwareTools:
     """OpenEDA runner should use hardware_tools MCP functions."""
@@ -32,16 +33,23 @@ class TestOpenEDAHardwareTools:
         runner = OpenEDARunner()
         with tempfile.TemporaryDirectory() as workspace:
             with patch("src.core.llm_gateway.llm_gateway") as mock_llm:
-                mock_llm.generate_for_task.return_value = json.dumps({
-                    "files": [{"path": "board.kicad_sch", "content": "(kicad_sch)"}],
-                    "components": 5,
-                    "layers": 2,
-                    "board_area_mm2": 1600,
-                })
+                mock_llm.generate_for_task.return_value = json.dumps(
+                    {
+                        "files": [
+                            {"path": "board.kicad_sch", "content": "(kicad_sch)"}
+                        ],
+                        "components": 5,
+                        "layers": 2,
+                        "board_area_mm2": 1600,
+                    }
+                )
 
                 result = runner.execute(
-                    {"description": "Design LED PCB", "task_type": "PCB_DESIGN",
-                     "payload": {"project_name": "led_board"}},
+                    {
+                        "description": "Design LED PCB",
+                        "task_type": "PCB_DESIGN",
+                        "payload": {"project_name": "led_board"},
+                    },
                     workspace,
                 )
 
@@ -58,8 +66,12 @@ class TestOpenEDAHardwareTools:
 
         runner = OpenEDARunner()
         result = RunResult(
-            run_id="test-123", status="completed", runner="openeda", tier="direct",
-            output="schematic generated", files_changed=["board.kicad_sch", "board.kicad_pcb"],
+            run_id="test-123",
+            status="completed",
+            runner="openeda",
+            tier="direct",
+            output="schematic generated",
+            files_changed=["board.kicad_sch", "board.kicad_pcb"],
             metrics={"drc_errors": 0, "erc_errors": 0, "components": 5},
         )
         report = runner.verify(result, {"task_type": "PCB_DESIGN"})
@@ -73,17 +85,24 @@ class TestOpenEDAHardwareTools:
         runner = OpenEDARunner()
         with tempfile.TemporaryDirectory() as workspace:
             with patch("src.core.llm_gateway.llm_gateway") as mock_llm:
-                mock_llm.generate_for_task.return_value = json.dumps({
-                    "files": [
-                        {"path": "board.kicad_sch", "content": "(kicad_sch)"},
-                        {"path": "board.kicad_pcb", "content": "(kicad_pcb)"},
-                    ],
-                    "components": 3, "layers": 2, "board_area_mm2": 900,
-                })
+                mock_llm.generate_for_task.return_value = json.dumps(
+                    {
+                        "files": [
+                            {"path": "board.kicad_sch", "content": "(kicad_sch)"},
+                            {"path": "board.kicad_pcb", "content": "(kicad_pcb)"},
+                        ],
+                        "components": 3,
+                        "layers": 2,
+                        "board_area_mm2": 900,
+                    }
+                )
 
                 result = runner.execute(
-                    {"description": "Design sensor PCB", "task_type": "PCB_DESIGN",
-                     "payload": {"project_name": "sensor"}},
+                    {
+                        "description": "Design sensor PCB",
+                        "task_type": "PCB_DESIGN",
+                        "payload": {"project_name": "sensor"},
+                    },
                     workspace,
                 )
 
@@ -102,19 +121,24 @@ class TestOpenFWHardwareTools:
         runner = OpenFWRunner()
         with tempfile.TemporaryDirectory() as workspace:
             with patch("src.core.llm_gateway.llm_gateway") as mock_llm:
-                mock_llm.generate_for_task.return_value = json.dumps({
-                    "files": [
-                        {"path": "main.c", "content": "int main() { return 0; }"},
-                        {"path": "Makefile", "content": "all: main.c"},
-                    ],
-                    "target_mcu": "cortex-m4",
-                    "binary_estimate_kb": 32,
-                    "ram_estimate_kb": 8,
-                })
+                mock_llm.generate_for_task.return_value = json.dumps(
+                    {
+                        "files": [
+                            {"path": "main.c", "content": "int main() { return 0; }"},
+                            {"path": "Makefile", "content": "all: main.c"},
+                        ],
+                        "target_mcu": "cortex-m4",
+                        "binary_estimate_kb": 32,
+                        "ram_estimate_kb": 8,
+                    }
+                )
 
                 result = runner.execute(
-                    {"description": "Write LED blinker firmware", "task_type": "FIRMWARE",
-                     "payload": {}},
+                    {
+                        "description": "Write LED blinker firmware",
+                        "task_type": "FIRMWARE",
+                        "payload": {},
+                    },
                     workspace,
                 )
 
@@ -129,14 +153,19 @@ class TestOpenFWHardwareTools:
         runner = OpenFWRunner()
         with tempfile.TemporaryDirectory() as workspace:
             with patch("src.core.llm_gateway.llm_gateway") as mock_llm:
-                mock_llm.generate_for_task.return_value = json.dumps({
-                    "files": [
-                        {"path": "main.c", "content": "#include <stdint.h>\nint main() { return 0; }"},
-                    ],
-                    "target_mcu": "cortex-m4",
-                    "binary_estimate_kb": 16,
-                    "ram_estimate_kb": 4,
-                })
+                mock_llm.generate_for_task.return_value = json.dumps(
+                    {
+                        "files": [
+                            {
+                                "path": "main.c",
+                                "content": "#include <stdint.h>\nint main() { return 0; }",
+                            },
+                        ],
+                        "target_mcu": "cortex-m4",
+                        "binary_estimate_kb": 16,
+                        "ram_estimate_kb": 4,
+                    }
+                )
 
                 result = runner.execute(
                     {"description": "Blinker", "task_type": "FIRMWARE", "payload": {}},
@@ -151,16 +180,19 @@ class TestOpenFWHardwareTools:
 # Option 2: Agent MessageBus
 # ---------------------------------------------------------------------------
 
+
 class TestMessageBus:
     """Test structured inter-agent messaging."""
 
     def test_create_bus(self):
         from src.integrations.message_bus import MessageBus
+
         bus = MessageBus()
         assert bus is not None
 
     def test_publish_and_read(self):
         from src.integrations.message_bus import MessageBus
+
         bus = MessageBus()
         bus.publish("agent_a", "architecture", {"stack": "Python+FastAPI"})
         messages = bus.read("architecture")
@@ -170,12 +202,14 @@ class TestMessageBus:
 
     def test_read_empty_topic(self):
         from src.integrations.message_bus import MessageBus
+
         bus = MessageBus()
         messages = bus.read("nonexistent")
         assert messages == []
 
     def test_multiple_publishers(self):
         from src.integrations.message_bus import MessageBus
+
         bus = MessageBus()
         bus.publish("agent_a", "design", {"layer": "HAL"})
         bus.publish("agent_b", "design", {"layer": "Driver"})
@@ -184,6 +218,7 @@ class TestMessageBus:
 
     def test_point_to_point(self):
         from src.integrations.message_bus import MessageBus
+
         bus = MessageBus()
         bus.send("agent_a", "agent_b", {"file": "main.c"})
         inbox = bus.inbox("agent_b")
@@ -192,12 +227,14 @@ class TestMessageBus:
 
     def test_inbox_empty(self):
         from src.integrations.message_bus import MessageBus
+
         bus = MessageBus()
         assert bus.inbox("agent_c") == []
 
     def test_get_summary(self):
         """Summary should produce a markdown digest of all messages."""
         from src.integrations.message_bus import MessageBus
+
         bus = MessageBus()
         bus.publish("arch_agent", "architecture", {"pattern": "microservices"})
         bus.publish("fw_agent", "firmware", {"mcu": "STM32F4"})
@@ -208,6 +245,7 @@ class TestMessageBus:
 
     def test_clear(self):
         from src.integrations.message_bus import MessageBus
+
         bus = MessageBus()
         bus.publish("a", "topic", {"data": 1})
         bus.clear()
@@ -217,13 +255,17 @@ class TestMessageBus:
         """Bus should handle concurrent publishes safely."""
         import threading
         from src.integrations.message_bus import MessageBus
+
         bus = MessageBus()
 
         def publish_n(agent, n):
             for i in range(n):
                 bus.publish(agent, "load", {"i": i})
 
-        threads = [threading.Thread(target=publish_n, args=(f"agent_{t}", 50)) for t in range(4)]
+        threads = [
+            threading.Thread(target=publish_n, args=(f"agent_{t}", 50))
+            for t in range(4)
+        ]
         for t in threads:
             t.start()
         for t in threads:
@@ -236,11 +278,13 @@ class TestMessageBus:
 # Option 5: Structured Output Validation + Auto-Retry
 # ---------------------------------------------------------------------------
 
+
 class TestOutputValidation:
     """Test Pydantic validation of agent outputs with auto-retry."""
 
     def test_valid_output_passes(self):
         from src.integrations.output_validator import validate_agent_output
+
         output = {
             "files": [{"path": "main.py", "content": "print('hello')"}],
             "explanation": "A hello world script",
@@ -250,6 +294,7 @@ class TestOutputValidation:
 
     def test_invalid_output_detected(self):
         from src.integrations.output_validator import validate_agent_output
+
         output = {"garbage": True}
         result = validate_agent_output(output, "code_generation")
         assert result["valid"] is False
@@ -257,6 +302,7 @@ class TestOutputValidation:
 
     def test_missing_files_field(self):
         from src.integrations.output_validator import validate_agent_output
+
         output = {"explanation": "did something"}
         result = validate_agent_output(output, "code_generation")
         assert result["valid"] is False
@@ -290,6 +336,7 @@ class TestOutputValidation:
 
     def test_eda_output_schema(self):
         from src.integrations.output_validator import validate_agent_output
+
         output = {
             "files": [{"path": "board.kicad_sch", "content": "(kicad_sch)"}],
             "components": 5,
@@ -301,6 +348,7 @@ class TestOutputValidation:
 
     def test_firmware_output_schema(self):
         from src.integrations.output_validator import validate_agent_output
+
         output = {
             "files": [{"path": "main.c", "content": "int main(){}"}],
             "target_mcu": "cortex-m4",
@@ -315,11 +363,13 @@ class TestOutputValidation:
 # Option 1: Cascade Failure Propagation (Transitive)
 # ---------------------------------------------------------------------------
 
+
 class TestCascadeFailure:
     """Test that failure cascades transitively through dependency chains."""
 
     def _make_orchestrator(self):
         from src.integrations.build_orchestrator import BuildOrchestrator
+
         return BuildOrchestrator(checkpoint_db=":memory:")
 
     def test_direct_dependency_blocked(self):
@@ -327,7 +377,12 @@ class TestCascadeFailure:
         orch = self._make_orchestrator()
         plan = [
             {"step": 1, "task_type": "BACKEND", "description": "API", "depends_on": []},
-            {"step": 2, "task_type": "TESTS", "description": "Tests", "depends_on": [1]},
+            {
+                "step": 2,
+                "task_type": "TESTS",
+                "description": "Tests",
+                "depends_on": [1],
+            },
         ]
         waves = orch._compute_waves(plan)
         assert len(waves) == 2
@@ -339,7 +394,12 @@ class TestCascadeFailure:
         orch = self._make_orchestrator()
         plan = [
             {"step": 1, "task_type": "BACKEND", "description": "API", "depends_on": []},
-            {"step": 2, "task_type": "TESTS", "description": "Tests", "depends_on": [1]},
+            {
+                "step": 2,
+                "task_type": "TESTS",
+                "description": "Tests",
+                "depends_on": [1],
+            },
             {"step": 3, "task_type": "DOCS", "description": "Docs", "depends_on": [2]},
         ]
         waves = orch._compute_waves(plan)
@@ -352,23 +412,40 @@ class TestCascadeFailure:
         run = {
             "run_id": "test-cascade",
             "plan": [
-                {"step": 1, "task_type": "BACKEND", "description": "API", "depends_on": [],
-                 "agent_role": "developer"},
-                {"step": 2, "task_type": "TESTS", "description": "Tests", "depends_on": [1],
-                 "agent_role": "developer"},
-                {"step": 3, "task_type": "DOCS", "description": "Docs", "depends_on": [2],
-                 "agent_role": "developer"},
+                {
+                    "step": 1,
+                    "task_type": "BACKEND",
+                    "description": "API",
+                    "depends_on": [],
+                    "agent_role": "developer",
+                },
+                {
+                    "step": 2,
+                    "task_type": "TESTS",
+                    "description": "Tests",
+                    "depends_on": [1],
+                    "agent_role": "developer",
+                },
+                {
+                    "step": 3,
+                    "task_type": "DOCS",
+                    "description": "Docs",
+                    "depends_on": [2],
+                    "agent_role": "developer",
+                },
             ],
             "workspace_dir": "",
             "agent_results": [],
             "detected_domains": [],
         }
 
-        with patch.object(orch, "_route_to_agent") as mock_route, \
-             patch.object(orch, "_checkpoint"), \
-             patch.object(orch, "_audit"), \
-             patch.object(orch, "_summarize_context", return_value=""), \
-             patch.object(orch, "_check_drift", return_value=True):
+        with (
+            patch.object(orch, "_route_to_agent") as mock_route,
+            patch.object(orch, "_checkpoint"),
+            patch.object(orch, "_audit"),
+            patch.object(orch, "_summarize_context", return_value=""),
+            patch.object(orch, "_check_drift", return_value=True),
+        ):
             mock_route.return_value = {"status": "error", "error": "compile failed"}
             orch._execute_agents(run)
 
@@ -385,43 +462,57 @@ class TestCascadeFailure:
 # Option 3: Capability-Match Warm-Start for AdaptiveRouter
 # ---------------------------------------------------------------------------
 
+
 class TestCapabilityWarmStart:
     """Test keyword overlap scoring for cold-start routing."""
 
     def test_cold_start_uses_capability_match(self):
         """With zero observations, router should use keyword overlap if descriptions provided."""
         from src.integrations.build_orchestrator import AdaptiveRouter
+
         router = AdaptiveRouter()
 
         # Register role descriptions
-        router.set_role_descriptions({
-            "developer": "Write backend APIs, frontend code, database schemas, tests",
-            "firmware_engineer": "Write embedded C firmware, HAL drivers, cross-compile for ARM Cortex-M",
-            "pcb_designer": "Design PCB schematics, layouts, run ERC DRC, export Gerbers",
-        })
+        router.set_role_descriptions(
+            {
+                "developer": "Write backend APIs, frontend code, database schemas, tests",
+                "firmware_engineer": "Write embedded C firmware, HAL drivers, cross-compile for ARM Cortex-M",
+                "pcb_designer": "Design PCB schematics, layouts, run ERC DRC, export Gerbers",
+            }
+        )
 
         # Cold start — no observations yet
-        result = router.route_with_context("FIRMWARE", "Write I2C driver for STM32 sensor")
+        result = router.route_with_context(
+            "FIRMWARE", "Write I2C driver for STM32 sensor"
+        )
         assert result == "firmware_engineer"
 
     def test_cold_start_pcb_design(self):
         from src.integrations.build_orchestrator import AdaptiveRouter
+
         router = AdaptiveRouter()
-        router.set_role_descriptions({
-            "developer": "Write backend APIs, frontend code, database schemas",
-            "pcb_designer": "Design PCB schematics, layouts, DRC, Gerber export",
-        })
-        result = router.route_with_context("PCB_DESIGN", "Design 4-layer PCB with USB-C")
+        router.set_role_descriptions(
+            {
+                "developer": "Write backend APIs, frontend code, database schemas",
+                "pcb_designer": "Design PCB schematics, layouts, DRC, Gerber export",
+            }
+        )
+        result = router.route_with_context(
+            "PCB_DESIGN", "Design 4-layer PCB with USB-C"
+        )
         assert result == "pcb_designer"
 
     def test_learned_score_overrides_capability(self):
         """Once enough observations exist, learned scores should win."""
         from src.integrations.build_orchestrator import AdaptiveRouter
+
         router = AdaptiveRouter()
-        router.set_role_descriptions({
-            "developer": "Write backend APIs",
-            "analyst": "Analyze logs and data",
-        })
+        router.set_role_descriptions(
+            {
+                "developer": "Write backend APIs",
+                "analyst": "Analyze logs and data",
+            }
+        )
 
         # Record enough observations that analyst is better at BACKEND tasks (unusual but possible)
         for _ in range(5):
@@ -429,11 +520,14 @@ class TestCapabilityWarmStart:
             router.record("BACKEND", "developer", success=False, quality_score=0.1)
 
         result = router.route("BACKEND")
-        assert result == "analyst"  # Learned score overrides both default AND capability
+        assert (
+            result == "analyst"
+        )  # Learned score overrides both default AND capability
 
     def test_no_descriptions_falls_back_to_default(self):
         """Without descriptions, cold start should use static mapping."""
         from src.integrations.build_orchestrator import AdaptiveRouter
+
         router = AdaptiveRouter()
         # No set_role_descriptions called
         result = router.route_with_context("FIRMWARE", "Write I2C driver")

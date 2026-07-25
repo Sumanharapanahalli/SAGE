@@ -19,11 +19,11 @@ Usage:
   python testbench/run.py --config testbench/configs/poseengine.yaml [--suite api,load]
   python testbench/run.py --solution poseengine            # uses solutions/poseengine/testbench.yaml
 """
+
 from __future__ import annotations
 
 import argparse
 import importlib
-import json
 import sys
 import time
 from pathlib import Path
@@ -67,7 +67,9 @@ def main():
     ap = argparse.ArgumentParser(description="SAGE generic test bench")
     ap.add_argument("--config", help="path to a testbench.yaml")
     ap.add_argument("--solution", help="solution name (uses its testbench.yaml)")
-    ap.add_argument("--suite", help="comma-list to run a subset (default: all declared)")
+    ap.add_argument(
+        "--suite", help="comma-list to run a subset (default: all declared)"
+    )
     ap.add_argument("--report", help="write a markdown report to this path")
     args = ap.parse_args()
 
@@ -95,21 +97,39 @@ def main():
             driver = importlib.import_module(DRIVERS[name])
             res = driver.run(scfg) or {}
         except Exception as e:  # noqa: BLE001 - a driver failure shouldn't abort the bench
-            res = {"driver": name, "passed": 0, "failed": 1, "skipped": 0,
-                   "checks": [{"name": f"{name} driver", "status": "FAIL", "detail": f"{type(e).__name__}: {e}"}],
-                   "note": "driver raised"}
+            res = {
+                "driver": name,
+                "passed": 0,
+                "failed": 1,
+                "skipped": 0,
+                "checks": [
+                    {
+                        "name": f"{name} driver",
+                        "status": "FAIL",
+                        "detail": f"{type(e).__name__}: {e}",
+                    }
+                ],
+                "note": "driver raised",
+            }
         res["driver"] = name
         res["duration_s"] = round(time.perf_counter() - t0, 1)
         results.append(res)
         for c in res.get("checks", []):
-            print(f"  [{c['status']}] {c['name']}" + (f"  - {c['detail']}" if c.get('detail') else ""))
-        print(f"  => {res.get('passed',0)} pass / {res.get('failed',0)} fail / "
-              f"{res.get('skipped',0)} skip  ({res['duration_s']}s)")
+            print(
+                f"  [{c['status']}] {c['name']}"
+                + (f"  - {c['detail']}" if c.get("detail") else "")
+            )
+        print(
+            f"  => {res.get('passed', 0)} pass / {res.get('failed', 0)} fail / "
+            f"{res.get('skipped', 0)} skip  ({res['duration_s']}s)"
+        )
 
     total_p = sum(r.get("passed", 0) for r in results)
     total_f = sum(r.get("failed", 0) for r in results)
-    print(f"\n=== BENCH SUMMARY :: {project} :: {total_p} pass / {total_f} fail "
-          f"across {len(results)} suite(s) ===")
+    print(
+        f"\n=== BENCH SUMMARY :: {project} :: {total_p} pass / {total_f} fail "
+        f"across {len(results)} suite(s) ==="
+    )
 
     if args.report:
         _write_report(Path(args.report), project, cfg, results, total_p, total_f)
@@ -119,15 +139,22 @@ def main():
 
 
 def _write_report(path, project, cfg, results, total_p, total_f):
-    lines = [f"# Test Bench Report — {project}\n",
-             f"Config: `{cfg['_config_path']}` · **{total_p} pass / {total_f} fail**\n"]
+    lines = [
+        f"# Test Bench Report — {project}\n",
+        f"Config: `{cfg['_config_path']}` · **{total_p} pass / {total_f} fail**\n",
+    ]
     for r in results:
-        lines.append(f"## {r['driver']} — {r.get('passed',0)} pass / {r.get('failed',0)} fail "
-                     f"({r.get('duration_s','?')}s)")
+        lines.append(
+            f"## {r['driver']} — {r.get('passed', 0)} pass / {r.get('failed', 0)} fail "
+            f"({r.get('duration_s', '?')}s)"
+        )
         if r.get("note"):
             lines.append(f"_{r['note']}_\n")
         for c in r.get("checks", []):
-            lines.append(f"- **[{c['status']}]** {c['name']}" + (f" — {c['detail']}" if c.get('detail') else ""))
+            lines.append(
+                f"- **[{c['status']}]** {c['name']}"
+                + (f" — {c['detail']}" if c.get("detail") else "")
+            )
         lines.append("")
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(lines), encoding="utf-8")

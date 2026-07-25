@@ -16,6 +16,7 @@ Both subsystems are legitimately-often-off (pollers usually aren't started
 standalone in the desktop sidecar), so a construction/call failure means
 "not active", not a wire-protocol error.
 """
+
 from __future__ import annotations
 
 from types import SimpleNamespace
@@ -35,17 +36,20 @@ def _reset_scheduler_cache():
 
 # ---------- status (MonitorAgent) ----------
 
+
 def test_status_returns_monitor_agent_get_status_happy_path(monkeypatch):
-    fake_monitor = SimpleNamespace(get_status=lambda: {
-        "running": True,
-        "active_threads": ["MonitorAgent-Teams"],
-        "thread_count": 1,
-        "seen_messages": 3,
-        "seen_issues": 0,
-        "teams_configured": True,
-        "metabase_configured": False,
-        "gitlab_configured": False,
-    })
+    fake_monitor = SimpleNamespace(
+        get_status=lambda: {
+            "running": True,
+            "active_threads": ["MonitorAgent-Teams"],
+            "thread_count": 1,
+            "seen_messages": 3,
+            "seen_issues": 0,
+            "teams_configured": True,
+            "metabase_configured": False,
+            "gitlab_configured": False,
+        }
+    )
     monkeypatch.setattr("src.agents.monitor.monitor_agent", fake_monitor)
     out = monitor.status({})
     assert out["running"] is True
@@ -85,12 +89,15 @@ def test_status_degrades_gracefully_when_import_fails(monkeypatch):
 
 # ---------- scheduler_status (TaskScheduler) ----------
 
+
 def test_scheduler_status_returns_cached_scheduler_status_happy_path(monkeypatch):
-    fake_sched = SimpleNamespace(status=lambda: {
-        "running": True,
-        "scheduled_count": 2,
-        "next_check_in_seconds": 30,
-    })
+    fake_sched = SimpleNamespace(
+        status=lambda: {
+            "running": True,
+            "scheduled_count": 2,
+            "next_check_in_seconds": 30,
+        }
+    )
     monkeypatch.setattr(monitor, "_scheduler", fake_sched)
 
     out = monitor.scheduler_status({})
@@ -114,8 +121,12 @@ def test_scheduler_status_lazily_constructs_and_starts_on_first_call(monkeypatch
             return {"running": True, "scheduled_count": 0, "next_check_in_seconds": 30}
 
     monkeypatch.setattr("src.core.task_scheduler.TaskScheduler", FakeScheduler)
-    monkeypatch.setattr("src.core.queue_manager.task_queue", SimpleNamespace(), raising=False)
-    monkeypatch.setattr("src.core.project_loader.project_config", SimpleNamespace(), raising=False)
+    monkeypatch.setattr(
+        "src.core.queue_manager.task_queue", SimpleNamespace(), raising=False
+    )
+    monkeypatch.setattr(
+        "src.core.project_loader.project_config", SimpleNamespace(), raising=False
+    )
 
     assert monitor._scheduler is None
     out = monitor.scheduler_status({})
@@ -134,8 +145,12 @@ def test_scheduler_status_degrades_gracefully_when_construction_raises(monkeypat
             raise RuntimeError("no project loaded")
 
     monkeypatch.setattr("src.core.task_scheduler.TaskScheduler", BoomScheduler)
-    monkeypatch.setattr("src.core.queue_manager.task_queue", SimpleNamespace(), raising=False)
-    monkeypatch.setattr("src.core.project_loader.project_config", SimpleNamespace(), raising=False)
+    monkeypatch.setattr(
+        "src.core.queue_manager.task_queue", SimpleNamespace(), raising=False
+    )
+    monkeypatch.setattr(
+        "src.core.project_loader.project_config", SimpleNamespace(), raising=False
+    )
 
     out = monitor.scheduler_status({})
     assert out["running"] is False
@@ -157,7 +172,13 @@ def test_scheduler_status_degrades_gracefully_when_status_call_raises(monkeypatc
 
 def test_scheduler_status_requires_no_params():
     """params dict is accepted but unused — must not raise on empty dict."""
-    monkeypatch_target = SimpleNamespace(status=lambda: {"running": False, "scheduled_count": 0, "next_check_in_seconds": 30})
+    monkeypatch_target = SimpleNamespace(
+        status=lambda: {
+            "running": False,
+            "scheduled_count": 0,
+            "next_check_in_seconds": 30,
+        }
+    )
     monitor._scheduler = monkeypatch_target
     out = monitor.scheduler_status({})
     assert isinstance(out, dict)

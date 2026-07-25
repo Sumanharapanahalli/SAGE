@@ -12,7 +12,7 @@ import sqlite3
 import uuid
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from src.core.auth import UserIdentity
@@ -21,26 +21,28 @@ logger = logging.getLogger(__name__)
 
 # Role rank — higher = more privileges
 _ROLE_RANK = {
-    "viewer":   0,
+    "viewer": 0,
     "operator": 1,
     "approver": 2,
-    "admin":    3,
+    "admin": 3,
 }
 
 
 class Role(str, Enum):
-    VIEWER   = "viewer"
+    VIEWER = "viewer"
     OPERATOR = "operator"
     APPROVER = "approver"
-    ADMIN    = "admin"
+    ADMIN = "admin"
 
 
 # ---------------------------------------------------------------------------
 # DB helpers
 # ---------------------------------------------------------------------------
 
+
 def _db_path() -> str:
     from src.memory.audit_logger import audit_logger
+
     return audit_logger.db_path
 
 
@@ -70,6 +72,7 @@ def _ensure_table():
 # ---------------------------------------------------------------------------
 # Public helpers
 # ---------------------------------------------------------------------------
+
 
 def get_user_role(email: str, solution: str) -> Role:
     """Return the user's role for a solution. Defaults to VIEWER."""
@@ -102,7 +105,13 @@ def assign_role(email: str, solution: str, role: Role, granted_by: str):
     )
     conn.commit()
     conn.close()
-    logger.info("Role assigned: email=%s solution=%s role=%s by=%s", email, solution, role.value, granted_by)
+    logger.info(
+        "Role assigned: email=%s solution=%s role=%s by=%s",
+        email,
+        solution,
+        role.value,
+        granted_by,
+    )
 
 
 def list_roles(solution: str) -> list[dict]:
@@ -121,6 +130,7 @@ def list_roles(solution: str) -> list[dict]:
 # FastAPI dependency factory
 # ---------------------------------------------------------------------------
 
+
 def require_role(minimum_role: Role):
     """
     FastAPI dependency factory.
@@ -134,7 +144,7 @@ def require_role(minimum_role: Role):
 
     async def _check(user=Depends(get_current_user)) -> "UserIdentity":
         user_rank = _ROLE_RANK.get(user.role, 0)
-        min_rank  = _ROLE_RANK.get(minimum_role.value, 0)
+        min_rank = _ROLE_RANK.get(minimum_role.value, 0)
         if user_rank < min_rank:
             raise HTTPException(
                 status_code=403,

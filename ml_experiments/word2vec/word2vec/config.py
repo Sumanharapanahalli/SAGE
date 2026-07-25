@@ -12,7 +12,7 @@ class Word2VecConfig:
     # ── Skip-gram window / negatives ─────────────────────────────────────────
     window_size: int = 5
     num_negatives: int = 5
-    neg_sampling_power: float = 0.75   # unigram^power for negative table
+    neg_sampling_power: float = 0.75  # unigram^power for negative table
 
     # ── Subsampling of frequent words ─────────────────────────────────────────
     subsample_threshold: float = 1e-3  # t in Mikolov 2013
@@ -25,7 +25,7 @@ class Word2VecConfig:
     epochs: int = 5
     batch_size: int = 512
     learning_rate: float = 0.025
-    min_lr: float = 1e-4            # linear decay floor
+    min_lr: float = 1e-4  # linear decay floor
 
     # ── Data ──────────────────────────────────────────────────────────────────
     corpus_path: Optional[str] = None  # None → NLTK Brown + Reuters
@@ -34,21 +34,21 @@ class Word2VecConfig:
     analogy_tests: List[Tuple[str, str, str, str]] = field(
         default_factory=lambda: [
             # Semantic – royalty
-            ("king",   "man",    "woman",  "queen"),
-            ("king",   "queen",  "man",    "woman"),
+            ("king", "man", "woman", "queen"),
+            ("king", "queen", "man", "woman"),
             # Semantic – capitals
-            ("paris",  "france", "berlin", "germany"),
-            ("paris",  "france", "london", "england"),
-            ("paris",  "france", "rome",   "italy"),
+            ("paris", "france", "berlin", "germany"),
+            ("paris", "france", "london", "england"),
+            ("paris", "france", "rome", "italy"),
             # Semantic – currency
-            ("dollar", "usa",    "euro",   "europe"),
+            ("dollar", "usa", "euro", "europe"),
             # Syntactic – comparative
-            ("good",   "better", "bad",    "worse"),
-            ("big",    "bigger", "small",  "smaller"),
-            ("fast",   "faster", "slow",   "slower"),
+            ("good", "better", "bad", "worse"),
+            ("big", "bigger", "small", "smaller"),
+            ("fast", "faster", "slow", "slower"),
             # Syntactic – past tense
-            ("run",    "ran",    "go",     "went"),
-            ("walk",   "walked", "talk",   "talked"),
+            ("run", "ran", "go", "went"),
+            ("walk", "walked", "talk", "talked"),
         ]
     )
 
@@ -67,7 +67,7 @@ class Word2VecConfig:
     tsne_save_path: str = "tsne_embeddings.png"
 
     # ── Device ────────────────────────────────────────────────────────────────
-    device: str = "auto"   # "auto" | "cpu" | "cuda" | "mps"
+    device: str = "auto"  # "auto" | "cpu" | "cuda" | "mps"
 
     # ── Reproducibility ───────────────────────────────────────────────────────
     seed: int = 42

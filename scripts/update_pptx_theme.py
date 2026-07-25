@@ -2,24 +2,31 @@
 Update Build Orchestrator slides in SAGE pptx files from dark theme to white+green.
 Only touches slides we added (identified by title content).
 """
+
 from pptx import Presentation
-from pptx.util import Pt, Emu
 from pptx.dml.color import RGBColor
-from pptx.enum.dml import MSO_THEME_COLOR
 import os
 
 # Color mapping: old dark -> new light
 # Shape/background fills
 FILL_MAP = {
-    RGBColor(0x0D, 0x1B, 0x2A): RGBColor(0xEC, 0xFD, 0xF5),  # dark navy header -> light green
-    RGBColor(0x1E, 0x29, 0x3B): RGBColor(0xEC, 0xFD, 0xF5),  # dark card bg -> light green
-    RGBColor(0x00, 0x78, 0xD4): RGBColor(0x10, 0xB9, 0x81),  # blue table header -> emerald
+    RGBColor(0x0D, 0x1B, 0x2A): RGBColor(
+        0xEC, 0xFD, 0xF5
+    ),  # dark navy header -> light green
+    RGBColor(0x1E, 0x29, 0x3B): RGBColor(
+        0xEC, 0xFD, 0xF5
+    ),  # dark card bg -> light green
+    RGBColor(0x00, 0x78, 0xD4): RGBColor(
+        0x10, 0xB9, 0x81
+    ),  # blue table header -> emerald
 }
 
 # Text color mapping
 TEXT_MAP = {
     RGBColor(0xFF, 0xFF, 0xFF): RGBColor(0x06, 0x5F, 0x46),  # white title -> dark green
-    RGBColor(0x00, 0xB4, 0xD8): RGBColor(0x4B, 0x55, 0x63),  # cyan subtitle -> medium gray
+    RGBColor(0x00, 0xB4, 0xD8): RGBColor(
+        0x4B, 0x55, 0x63
+    ),  # cyan subtitle -> medium gray
     RGBColor(0x38, 0xBD, 0xF8): RGBColor(0x05, 0x96, 0x69),  # blue accent -> emerald
     RGBColor(0xCB, 0xD5, 0xE1): RGBColor(0x37, 0x41, 0x51),  # light body -> dark gray
     RGBColor(0x94, 0xA3, 0xB8): RGBColor(0x6B, 0x72, 0x80),  # gray notes -> medium gray
@@ -34,7 +41,9 @@ TABLE_TEXT_MAP = {
 # Table cell fill map
 TABLE_FILL_MAP = {
     RGBColor(0x00, 0x78, 0xD4): RGBColor(0x10, 0xB9, 0x81),  # blue header -> emerald
-    RGBColor(0xF0, 0xF4, 0xF8): RGBColor(0xEC, 0xFD, 0xF5),  # light gray stripe -> light green
+    RGBColor(0xF0, 0xF4, 0xF8): RGBColor(
+        0xEC, 0xFD, 0xF5
+    ),  # light gray stripe -> light green
     # White cells stay white
 }
 
@@ -102,7 +111,7 @@ def update_text_colors(shape, text_map):
 
 def update_table(shape, table_fill_map, table_text_map_, text_map):
     """Update table cell fills and text colors."""
-    if not hasattr(shape, 'table'):
+    if not hasattr(shape, "table"):
         return
     tbl = shape.table
     for row_idx in range(len(tbl.rows)):
@@ -149,7 +158,9 @@ def process_file(filepath):
             continue
 
         updated_count += 1
-        print(f"  Updating: {[s.text_frame.text[:60] for s in slide.shapes if s.has_text_frame][:1]}")
+        print(
+            f"  Updating: {[s.text_frame.text[:60] for s in slide.shapes if s.has_text_frame][:1]}"
+        )
 
         # Set slide background to white
         update_slide_background(slide)
@@ -160,7 +171,7 @@ def process_file(filepath):
             # Update text colors
             update_text_colors(shape, TEXT_MAP)
             # Update tables
-            if hasattr(shape, 'table'):
+            if hasattr(shape, "table"):
                 update_table(shape, TABLE_FILL_MAP, TABLE_TEXT_MAP, TEXT_MAP)
 
     if updated_count > 0:

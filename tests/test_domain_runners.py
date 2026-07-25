@@ -18,9 +18,7 @@ Groups:
  12. Experience accumulation (6 tests)
 """
 
-import os
-import tempfile
-from unittest.mock import MagicMock, patch, PropertyMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -30,6 +28,7 @@ pytestmark = pytest.mark.unit
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _mock_llm_response(text="mock output"):
     """Create a mock LLM gateway that returns text."""
@@ -55,14 +54,19 @@ def _basic_task(task_type="BACKEND", description="Build a REST API"):
     }
 
 
-def _mock_llm_ctx(response_text='{"files": [{"path": "out.py", "content": "x=1"}], "explanation": "done"}'):
+def _mock_llm_ctx(
+    response_text='{"files": [{"path": "out.py", "content": "x=1"}], "explanation": "done"}',
+):
     """Context manager to mock llm_gateway.generate_for_task across all runners."""
-    return patch("src.core.llm_gateway.llm_gateway.generate_for_task", return_value=response_text)
+    return patch(
+        "src.core.llm_gateway.llm_gateway.generate_for_task", return_value=response_text
+    )
 
 
 # ===========================================================================
 # Group 1: BaseRunner Interface Contract
 # ===========================================================================
+
 
 class TestBaseRunnerContract:
     """Verify BaseRunner ABC and data classes work correctly."""
@@ -70,12 +74,14 @@ class TestBaseRunnerContract:
     def test_cannot_instantiate_base_runner(self):
         """BaseRunner is abstract — direct instantiation must fail."""
         from src.integrations.base_runner import BaseRunner
+
         with pytest.raises(TypeError):
             BaseRunner("test", ["developer"])
 
     def test_run_result_to_dict(self):
         """RunResult.to_dict() returns a serializable dict."""
         from src.integrations.base_runner import RunResult
+
         r = RunResult(
             run_id="abc-123",
             status="completed",
@@ -94,8 +100,11 @@ class TestBaseRunnerContract:
     def test_verification_report_to_dict(self):
         """VerificationReport serializes correctly."""
         from src.integrations.base_runner import (
-            VerificationReport, VerificationFinding, VerificationSeverity,
+            VerificationReport,
+            VerificationFinding,
+            VerificationSeverity,
         )
+
         report = VerificationReport(
             passed=True,
             score=85.0,
@@ -118,6 +127,7 @@ class TestBaseRunnerContract:
     def test_exercise_dataclass(self):
         """Exercise dataclass holds training task definition."""
         from src.integrations.base_runner import Exercise
+
         ex = Exercise(
             id="fw-001",
             role="firmware_engineer",
@@ -134,6 +144,7 @@ class TestBaseRunnerContract:
     def test_exercise_score_dataclass(self):
         """ExerciseScore holds grading results."""
         from src.integrations.base_runner import ExerciseScore
+
         score = ExerciseScore(
             exercise_id="fw-001",
             passed=True,
@@ -148,6 +159,7 @@ class TestBaseRunnerContract:
     def test_verification_severity_enum(self):
         """All expected severity levels exist."""
         from src.integrations.base_runner import VerificationSeverity
+
         assert VerificationSeverity.PASS.value == "pass"
         assert VerificationSeverity.WARNING.value == "warning"
         assert VerificationSeverity.ERROR.value == "error"
@@ -156,9 +168,13 @@ class TestBaseRunnerContract:
     def test_run_result_with_verification(self):
         """RunResult can carry a VerificationReport."""
         from src.integrations.base_runner import RunResult, VerificationReport
+
         report = VerificationReport(passed=True, score=90.0)
         r = RunResult(
-            run_id="x", status="completed", runner="test", tier="direct",
+            run_id="x",
+            status="completed",
+            runner="test",
+            tier="direct",
             verification=report,
         )
         d = r.to_dict()
@@ -168,8 +184,12 @@ class TestBaseRunnerContract:
     def test_run_result_truncates_long_output(self):
         """RunResult.to_dict() truncates output to 2000 chars."""
         from src.integrations.base_runner import RunResult
+
         r = RunResult(
-            run_id="x", status="completed", runner="test", tier="direct",
+            run_id="x",
+            status="completed",
+            runner="test",
+            tier="direct",
             output="A" * 5000,
         )
         d = r.to_dict()
@@ -185,11 +205,14 @@ class TestBaseRunnerContract:
             all_assigned.update(roles)
 
         for role in AGENT_ROLES_REGISTRY:
-            assert role in all_assigned, f"Role '{role}' has no family assignment in base_runner.py"
+            assert role in all_assigned, (
+                f"Role '{role}' has no family assignment in base_runner.py"
+            )
 
     def test_no_role_in_multiple_families(self):
         """A role must belong to exactly one runner family."""
         from src.integrations.base_runner import ALL_ROLE_FAMILIES
+
         seen = {}
         for family, roles in ALL_ROLE_FAMILIES.items():
             for role in roles:
@@ -203,24 +226,33 @@ class TestBaseRunnerContract:
 # Group 2: Runner Registry
 # ===========================================================================
 
+
 class TestRunnerRegistry:
     """Verify runner registration and lookup."""
 
     def test_register_runner(self):
         """register_runner() adds runner to registry."""
         from src.integrations.base_runner import (
-            register_runner, get_runner_for_role, _RUNNER_REGISTRY,
-            _RUNNER_INSTANCES, BaseRunner, RunResult, VerificationReport,
-            Exercise, ExerciseScore,
+            register_runner,
+            get_runner_for_role,
+            _RUNNER_REGISTRY,
+            _RUNNER_INSTANCES,
+            BaseRunner,
+            RunResult,
+            VerificationReport,
+            ExerciseScore,
         )
 
         class DummyRunner(BaseRunner):
             def execute(self, task, workspace, sandbox_handle=None):
                 return RunResult("x", "completed", "dummy", "direct")
+
             def verify(self, result, task):
                 return VerificationReport(True, 100.0)
+
             def get_exercises(self, difficulty="intermediate"):
                 return []
+
             def grade_exercise(self, exercise, result):
                 return ExerciseScore("x", True, 100.0)
 
@@ -238,23 +270,32 @@ class TestRunnerRegistry:
     def test_get_runner_for_unknown_role(self):
         """Unknown role returns None."""
         from src.integrations.base_runner import get_runner_for_role
+
         assert get_runner_for_role("nonexistent_role_xyz") is None
 
     def test_get_runner_by_name(self):
         """Can retrieve runner by name."""
         from src.integrations.base_runner import (
-            register_runner, get_runner_by_name, _RUNNER_REGISTRY,
-            _RUNNER_INSTANCES, BaseRunner, RunResult, VerificationReport,
-            Exercise, ExerciseScore,
+            register_runner,
+            get_runner_by_name,
+            _RUNNER_REGISTRY,
+            _RUNNER_INSTANCES,
+            BaseRunner,
+            RunResult,
+            VerificationReport,
+            ExerciseScore,
         )
 
         class DummyRunner2(BaseRunner):
             def execute(self, task, workspace, sandbox_handle=None):
                 return RunResult("x", "completed", "dummy2", "direct")
+
             def verify(self, result, task):
                 return VerificationReport(True, 100.0)
+
             def get_exercises(self, difficulty="intermediate"):
                 return []
+
             def grade_exercise(self, exercise, result):
                 return ExerciseScore("x", True, 100.0)
 
@@ -270,6 +311,7 @@ class TestRunnerRegistry:
     def test_list_runners(self):
         """list_runners() returns info about all registered runners."""
         from src.integrations.base_runner import list_runners
+
         runners = list_runners()
         assert isinstance(runners, list)
         for r in runners:
@@ -279,12 +321,14 @@ class TestRunnerRegistry:
     def test_get_role_to_runner_map(self):
         """get_role_to_runner_map() returns complete mapping."""
         from src.integrations.base_runner import get_role_to_runner_map
+
         mapping = get_role_to_runner_map()
         assert isinstance(mapping, dict)
 
     def test_runner_get_toolchain(self):
         """Every runner provides toolchain info."""
         from src.integrations.base_runner import _RUNNER_INSTANCES
+
         for name, runner in _RUNNER_INSTANCES.items():
             tc = runner.get_toolchain()
             assert "runner" in tc
@@ -294,6 +338,7 @@ class TestRunnerRegistry:
     def test_runner_get_workflow(self):
         """Every runner provides a workflow with at least one step."""
         from src.integrations.base_runner import _RUNNER_INSTANCES
+
         for name, runner in _RUNNER_INSTANCES.items():
             wf = runner.get_workflow()
             assert isinstance(wf, list)
@@ -302,6 +347,7 @@ class TestRunnerRegistry:
     def test_runner_get_status_unknown_run(self):
         """get_status() for unknown run_id returns error."""
         from src.integrations.base_runner import _RUNNER_INSTANCES
+
         for name, runner in _RUNNER_INSTANCES.items():
             status = runner.get_status("nonexistent-run-id")
             assert "error" in status
@@ -312,12 +358,14 @@ class TestRunnerRegistry:
 # Group 3: OpenSWE Runner (refactored to BaseRunner)
 # ===========================================================================
 
+
 class TestOpenSWERunner:
     """Verify OpenSWE implements BaseRunner interface."""
 
     def test_openswe_is_registered(self):
         """OpenSWE runner is registered for SWE_ROLES."""
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("developer")
         assert runner is not None
         assert runner.name == "openswe"
@@ -325,6 +373,7 @@ class TestOpenSWERunner:
     def test_openswe_covers_all_swe_roles(self):
         """OpenSWE handles developer, qa_engineer, system_tester, devops, localization."""
         from src.integrations.base_runner import get_runner_for_role, SWE_ROLES
+
         for role in SWE_ROLES:
             runner = get_runner_for_role(role)
             assert runner is not None, f"No runner for SWE role '{role}'"
@@ -333,13 +382,20 @@ class TestOpenSWERunner:
     def test_openswe_execute_returns_run_result(self):
         """execute() returns a RunResult with correct fields."""
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("developer")
         task = _basic_task()
-        with patch("src.integrations.openswe_runner.OpenSWERunner.build", return_value={
-            "status": "completed", "tier": "llm_react",
-            "code": "x=1", "files_changed": ["app.py"], "output": {},
-            "run_id": "test-123",
-        }):
+        with patch(
+            "src.integrations.openswe_runner.OpenSWERunner.build",
+            return_value={
+                "status": "completed",
+                "tier": "llm_react",
+                "code": "x=1",
+                "files_changed": ["app.py"],
+                "output": {},
+                "run_id": "test-123",
+            },
+        ):
             result = runner.execute(task, "/tmp/test-workspace")
         assert result.status in ("completed", "error", "failed")
         assert result.runner == "openswe"
@@ -348,22 +404,34 @@ class TestOpenSWERunner:
     def test_openswe_handles_empty_task(self):
         """execute() with minimal task doesn't crash."""
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("developer")
-        with patch("src.integrations.openswe_runner.OpenSWERunner.build", return_value={
-            "status": "completed", "tier": "llm_react",
-            "code": "", "files_changed": [], "output": {},
-            "run_id": "empty-123",
-        }):
+        with patch(
+            "src.integrations.openswe_runner.OpenSWERunner.build",
+            return_value={
+                "status": "completed",
+                "tier": "llm_react",
+                "code": "",
+                "files_changed": [],
+                "output": {},
+                "run_id": "empty-123",
+            },
+        ):
             result = runner.execute({"task_type": "BACKEND", "description": ""}, "")
         assert result.status in ("completed", "error", "failed")
 
     def test_openswe_verify_checks_code(self):
         """verify() checks code output quality."""
         from src.integrations.base_runner import get_runner_for_role, RunResult
+
         runner = get_runner_for_role("developer")
         result = RunResult(
-            run_id="x", status="completed", runner="openswe", tier="direct",
-            files_changed=["app.py"], output="def hello(): pass",
+            run_id="x",
+            status="completed",
+            runner="openswe",
+            tier="direct",
+            files_changed=["app.py"],
+            output="def hello(): pass",
         )
         report = runner.verify(result, _basic_task())
         assert hasattr(report, "passed")
@@ -373,6 +441,7 @@ class TestOpenSWERunner:
     def test_openswe_exercises_exist(self):
         """get_exercises() returns non-empty list."""
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("developer")
         exercises = runner.get_exercises("intermediate")
         assert len(exercises) >= 1
@@ -381,6 +450,7 @@ class TestOpenSWERunner:
     def test_openswe_workflow_steps(self):
         """OpenSWE workflow: explore → code → test → PR."""
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("developer")
         wf = runner.get_workflow()
         step_names = [s["name"] for s in wf]
@@ -389,6 +459,7 @@ class TestOpenSWERunner:
     def test_openswe_toolchain(self):
         """OpenSWE toolchain includes language runtimes."""
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("developer")
         tc = runner.get_toolchain()
         assert "tools" in tc
@@ -397,17 +468,28 @@ class TestOpenSWERunner:
     def test_openswe_grade_exercise(self):
         """grade_exercise returns an ExerciseScore."""
         from src.integrations.base_runner import (
-            get_runner_for_role, Exercise, RunResult,
+            get_runner_for_role,
+            Exercise,
+            RunResult,
         )
+
         runner = get_runner_for_role("developer")
         ex = Exercise(
-            id="swe-001", role="developer", task_type="BACKEND",
-            difficulty="beginner", description="Write hello world",
-            acceptance_criteria=["Prints hello"], expected_artifacts=["main.py"],
+            id="swe-001",
+            role="developer",
+            task_type="BACKEND",
+            difficulty="beginner",
+            description="Write hello world",
+            acceptance_criteria=["Prints hello"],
+            expected_artifacts=["main.py"],
         )
         result = RunResult(
-            run_id="x", status="completed", runner="openswe", tier="direct",
-            files_changed=["main.py"], output='print("hello")',
+            run_id="x",
+            status="completed",
+            runner="openswe",
+            tier="direct",
+            files_changed=["main.py"],
+            output='print("hello")',
         )
         score = runner.grade_exercise(ex, result)
         assert hasattr(score, "passed")
@@ -416,6 +498,7 @@ class TestOpenSWERunner:
     def test_openswe_experience_keys(self):
         """Experience keys include task_type and language."""
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("developer")
         keys = runner.get_experience_keys()
         assert "task_type" in keys
@@ -425,17 +508,20 @@ class TestOpenSWERunner:
 # Group 4: OpenFW Runner — Firmware
 # ===========================================================================
 
+
 class TestOpenFWRunner:
     """Verify OpenFW firmware runner."""
 
     def test_openfw_is_registered(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("firmware_engineer")
         assert runner is not None
         assert runner.name == "openfw"
 
     def test_openfw_covers_firmware_roles(self):
         from src.integrations.base_runner import get_runner_for_role, FIRMWARE_ROLES
+
         for role in FIRMWARE_ROLES:
             runner = get_runner_for_role(role)
             assert runner is not None, f"No runner for firmware role '{role}'"
@@ -443,9 +529,12 @@ class TestOpenFWRunner:
 
     def test_openfw_execute_returns_run_result(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("firmware_engineer")
         task = _basic_task("FIRMWARE", "Write I2C driver for BME280")
-        with _mock_llm_ctx('{"files": [{"path": "driver.c", "content": "// HAL_Init()"}], "target_mcu": "STM32F4", "binary_estimate_kb": 32, "ram_estimate_kb": 8}'):
+        with _mock_llm_ctx(
+            '{"files": [{"path": "driver.c", "content": "// HAL_Init()"}], "target_mcu": "STM32F4", "binary_estimate_kb": 32, "ram_estimate_kb": 8}'
+        ):
             result = runner.execute(task, "/tmp/fw-workspace")
         assert result.runner == "openfw"
         assert result.status in ("completed", "error", "failed")
@@ -453,9 +542,13 @@ class TestOpenFWRunner:
     def test_openfw_verify_checks_compilation(self):
         """Firmware verification must check cross-compilation success."""
         from src.integrations.base_runner import get_runner_for_role, RunResult
+
         runner = get_runner_for_role("firmware_engineer")
         result = RunResult(
-            run_id="x", status="completed", runner="openfw", tier="direct",
+            run_id="x",
+            status="completed",
+            runner="openfw",
+            tier="direct",
             files_changed=["driver.c", "driver.h"],
             artifacts=[{"path": "build/firmware.elf", "type": "binary", "size": 32768}],
             metrics={"binary_size": 32768, "ram_usage": 4096},
@@ -467,9 +560,13 @@ class TestOpenFWRunner:
     def test_openfw_verify_checks_binary_size(self):
         """Verification reports binary size metrics."""
         from src.integrations.base_runner import get_runner_for_role, RunResult
+
         runner = get_runner_for_role("firmware_engineer")
         result = RunResult(
-            run_id="x", status="completed", runner="openfw", tier="direct",
+            run_id="x",
+            status="completed",
+            runner="openfw",
+            tier="direct",
             metrics={"binary_size": 262144, "flash_limit": 256 * 1024},
         )
         report = runner.verify(result, _basic_task("FIRMWARE", "Large firmware"))
@@ -479,6 +576,7 @@ class TestOpenFWRunner:
     def test_openfw_workflow_has_cross_compile(self):
         """Firmware workflow includes cross-compilation step."""
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("firmware_engineer")
         wf = runner.get_workflow()
         step_names = [s["name"] for s in wf]
@@ -487,6 +585,7 @@ class TestOpenFWRunner:
     def test_openfw_toolchain_has_gcc_arm(self):
         """Firmware toolchain includes gcc-arm-none-eabi."""
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("firmware_engineer")
         tc = runner.get_toolchain()
         all_tools = tc.get("tools", []) + tc.get("packages", [])
@@ -495,35 +594,80 @@ class TestOpenFWRunner:
     def test_openfw_docker_image(self):
         """Firmware runner has docker image configured."""
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("firmware_engineer")
         assert runner.docker_image
         assert "firmware" in runner.docker_image
 
     def test_openfw_exercises_exist(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("firmware_engineer")
         exercises = runner.get_exercises("intermediate")
         assert len(exercises) >= 1
         assert all(
-            ex.task_type in ("FIRMWARE", "EMBEDDED_TEST") or "firmware" in ex.role or "embedded" in ex.role
+            ex.task_type in ("FIRMWARE", "EMBEDDED_TEST")
+            or "firmware" in ex.role
+            or "embedded" in ex.role
             for ex in exercises
         )
 
     def test_openfw_exercises_have_binary_criteria(self):
         """At least 80% of firmware exercises must include embedded/firmware acceptance criteria."""
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("firmware_engineer")
         exercises = runner.get_exercises("beginner")
         assert len(exercises) > 0, "No beginner firmware exercises"
-        fw_keywords = ["compile", "binary", "build", "flash", "size", "hal", "gpio",
-                        "uart", "spi", "i2c", "interrupt", "timer", "isr", "rtos",
-                        "debounce", "watchdog", "dma", "register", "driver", "firmware",
-                        "initialize", "configure", "baud", "peripheral", "crc",
-                        "polynomial", "eeprom", "boot", "rom", "stack", "heap",
-                        "table", "state", "event", "guard", "queue", "entry", "action",
-                        "reset", "log", "timestamp", "stored", "section", "init"]
+        fw_keywords = [
+            "compile",
+            "binary",
+            "build",
+            "flash",
+            "size",
+            "hal",
+            "gpio",
+            "uart",
+            "spi",
+            "i2c",
+            "interrupt",
+            "timer",
+            "isr",
+            "rtos",
+            "debounce",
+            "watchdog",
+            "dma",
+            "register",
+            "driver",
+            "firmware",
+            "initialize",
+            "configure",
+            "baud",
+            "peripheral",
+            "crc",
+            "polynomial",
+            "eeprom",
+            "boot",
+            "rom",
+            "stack",
+            "heap",
+            "table",
+            "state",
+            "event",
+            "guard",
+            "queue",
+            "entry",
+            "action",
+            "reset",
+            "log",
+            "timestamp",
+            "stored",
+            "section",
+            "init",
+        ]
         matched = sum(
-            1 for ex in exercises
+            1
+            for ex in exercises
             if any(kw in " ".join(ex.acceptance_criteria).lower() for kw in fw_keywords)
         )
         ratio = matched / len(exercises)
@@ -533,16 +677,27 @@ class TestOpenFWRunner:
         )
 
     def test_openfw_grade_exercise(self):
-        from src.integrations.base_runner import get_runner_for_role, Exercise, RunResult
+        from src.integrations.base_runner import (
+            get_runner_for_role,
+            Exercise,
+            RunResult,
+        )
+
         runner = get_runner_for_role("firmware_engineer")
         ex = Exercise(
-            id="fw-001", role="firmware_engineer", task_type="FIRMWARE",
-            difficulty="beginner", description="Blink LED on STM32",
+            id="fw-001",
+            role="firmware_engineer",
+            task_type="FIRMWARE",
+            difficulty="beginner",
+            description="Blink LED on STM32",
             acceptance_criteria=["Compiles for ARM", "Binary < 64KB"],
             expected_artifacts=["main.c", "Makefile"],
         )
         result = RunResult(
-            run_id="x", status="completed", runner="openfw", tier="direct",
+            run_id="x",
+            status="completed",
+            runner="openfw",
+            tier="direct",
             files_changed=["main.c", "Makefile"],
             metrics={"binary_size": 8192},
         )
@@ -551,6 +706,7 @@ class TestOpenFWRunner:
 
     def test_openfw_experience_keys(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("firmware_engineer")
         keys = runner.get_experience_keys()
         assert "task_type" in keys
@@ -562,20 +718,25 @@ class TestOpenFWRunner:
 # Group 5: OpenEDA Runner — PCB/Electronics
 # ===========================================================================
 
+
 class TestOpenEDARunner:
     """Verify OpenEDA PCB design runner."""
 
     def test_openeda_is_registered(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("pcb_designer")
         assert runner is not None
         assert runner.name == "openeda"
 
     def test_openeda_execute_returns_run_result(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("pcb_designer")
         task = _basic_task("PCB_DESIGN", "Design power supply board")
-        with _mock_llm_ctx('{"files": [{"path": "board.kicad_pcb", "content": "layout"}], "components": 5, "layers": 2}'):
+        with _mock_llm_ctx(
+            '{"files": [{"path": "board.kicad_pcb", "content": "layout"}], "components": 5, "layers": 2}'
+        ):
             result = runner.execute(task, "/tmp/eda-workspace")
         assert result.runner == "openeda"
         assert result.status in ("completed", "error", "failed")
@@ -583,9 +744,13 @@ class TestOpenEDARunner:
     def test_openeda_verify_checks_drc(self):
         """EDA verification must check DRC/ERC results."""
         from src.integrations.base_runner import get_runner_for_role, RunResult
+
         runner = get_runner_for_role("pcb_designer")
         result = RunResult(
-            run_id="x", status="completed", runner="openeda", tier="direct",
+            run_id="x",
+            status="completed",
+            runner="openeda",
+            tier="direct",
             artifacts=[{"path": "board.kicad_pcb", "type": "pcb_layout"}],
             metrics={"drc_errors": 0, "erc_errors": 0, "unrouted_nets": 0},
         )
@@ -595,6 +760,7 @@ class TestOpenEDARunner:
     def test_openeda_workflow_has_drc(self):
         """EDA workflow includes DRC step."""
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("pcb_designer")
         wf = runner.get_workflow()
         step_names = [s["name"] for s in wf]
@@ -602,6 +768,7 @@ class TestOpenEDARunner:
 
     def test_openeda_toolchain_has_kicad(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("pcb_designer")
         tc = runner.get_toolchain()
         all_tools = tc.get("tools", []) + tc.get("packages", [])
@@ -609,12 +776,14 @@ class TestOpenEDARunner:
 
     def test_openeda_docker_image(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("pcb_designer")
         assert runner.docker_image
         assert "pcb" in runner.docker_image
 
     def test_openeda_exercises_exist(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("pcb_designer")
         exercises = runner.get_exercises("beginner")
         assert len(exercises) >= 1
@@ -622,16 +791,42 @@ class TestOpenEDARunner:
     def test_openeda_exercises_have_drc_criteria(self):
         """At least 80% of PCB exercises must include EDA/PCB acceptance criteria."""
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("pcb_designer")
         exercises = runner.get_exercises("beginner")
         assert len(exercises) > 0
-        eda_keywords = ["drc", "erc", "gerber", "schematic", "layout", "footprint",
-                        "trace", "pcb", "clearance", "impedance", "stackup", "bom",
-                        "component", "net", "pin", "drill", "copper", "layer",
-                        "sot", "ipc", "jlcpcb", "lcsc", "aperture", "solder"]
+        eda_keywords = [
+            "drc",
+            "erc",
+            "gerber",
+            "schematic",
+            "layout",
+            "footprint",
+            "trace",
+            "pcb",
+            "clearance",
+            "impedance",
+            "stackup",
+            "bom",
+            "component",
+            "net",
+            "pin",
+            "drill",
+            "copper",
+            "layer",
+            "sot",
+            "ipc",
+            "jlcpcb",
+            "lcsc",
+            "aperture",
+            "solder",
+        ]
         matched = sum(
-            1 for ex in exercises
-            if any(kw in " ".join(ex.acceptance_criteria).lower() for kw in eda_keywords)
+            1
+            for ex in exercises
+            if any(
+                kw in " ".join(ex.acceptance_criteria).lower() for kw in eda_keywords
+            )
         )
         ratio = matched / len(exercises)
         assert ratio >= 0.8, (
@@ -640,16 +835,27 @@ class TestOpenEDARunner:
         )
 
     def test_openeda_grade_exercise(self):
-        from src.integrations.base_runner import get_runner_for_role, Exercise, RunResult
+        from src.integrations.base_runner import (
+            get_runner_for_role,
+            Exercise,
+            RunResult,
+        )
+
         runner = get_runner_for_role("pcb_designer")
         ex = Exercise(
-            id="eda-001", role="pcb_designer", task_type="PCB_DESIGN",
-            difficulty="beginner", description="Design LED circuit",
+            id="eda-001",
+            role="pcb_designer",
+            task_type="PCB_DESIGN",
+            difficulty="beginner",
+            description="Design LED circuit",
             acceptance_criteria=["DRC clean", "BOM complete"],
             expected_artifacts=["schematic.kicad_sch"],
         )
         result = RunResult(
-            run_id="x", status="completed", runner="openeda", tier="direct",
+            run_id="x",
+            status="completed",
+            runner="openeda",
+            tier="direct",
             artifacts=[{"path": "schematic.kicad_sch", "type": "schematic"}],
             metrics={"drc_errors": 0, "erc_errors": 0},
         )
@@ -658,6 +864,7 @@ class TestOpenEDARunner:
 
     def test_openeda_experience_keys(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("pcb_designer")
         keys = runner.get_experience_keys()
         assert "task_type" in keys
@@ -667,29 +874,38 @@ class TestOpenEDARunner:
 # Group 6: OpenSim Runner — Hardware Simulation
 # ===========================================================================
 
+
 class TestOpenSimRunner:
     """Verify OpenSim hardware simulation runner."""
 
     def test_opensim_is_registered(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("hardware_sim_engineer")
         assert runner is not None
         assert runner.name == "opensim"
 
     def test_opensim_execute_returns_run_result(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("hardware_sim_engineer")
         task = _basic_task("HARDWARE_SIM", "Simulate bandpass filter")
-        with _mock_llm_ctx('{"files": [{"path": "filter.spice", "content": "* SPICE netlist"}], "sim_type": "spice", "sim_time_us": 1000}'):
+        with _mock_llm_ctx(
+            '{"files": [{"path": "filter.spice", "content": "* SPICE netlist"}], "sim_type": "spice", "sim_time_us": 1000}'
+        ):
             result = runner.execute(task, "/tmp/sim-workspace")
         assert result.runner == "opensim"
 
     def test_opensim_verify_checks_convergence(self):
         """Simulation verification must check convergence."""
         from src.integrations.base_runner import get_runner_for_role, RunResult
+
         runner = get_runner_for_role("hardware_sim_engineer")
         result = RunResult(
-            run_id="x", status="completed", runner="opensim", tier="direct",
+            run_id="x",
+            status="completed",
+            runner="opensim",
+            tier="direct",
             metrics={"converged": True, "timing_slack_ns": 2.5},
         )
         report = runner.verify(result, _basic_task("HARDWARE_SIM", "Filter sim"))
@@ -697,6 +913,7 @@ class TestOpenSimRunner:
 
     def test_opensim_workflow_has_simulate(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("hardware_sim_engineer")
         wf = runner.get_workflow()
         step_names = [s["name"] for s in wf]
@@ -704,36 +921,72 @@ class TestOpenSimRunner:
 
     def test_opensim_toolchain_has_spice(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("hardware_sim_engineer")
         tc = runner.get_toolchain()
         all_tools = tc.get("tools", []) + tc.get("packages", [])
-        assert any("spice" in t.lower() or "verilog" in t.lower() or "iverilog" in t.lower() for t in all_tools)
+        assert any(
+            "spice" in t.lower() or "verilog" in t.lower() or "iverilog" in t.lower()
+            for t in all_tools
+        )
 
     def test_opensim_docker_image(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("hardware_sim_engineer")
         assert runner.docker_image
         assert "simulation" in runner.docker_image or "sim" in runner.docker_image
 
     def test_opensim_exercises_exist(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("hardware_sim_engineer")
         exercises = runner.get_exercises("intermediate")
         assert len(exercises) >= 1
 
     def test_opensim_exercises_have_sim_criteria(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("hardware_sim_engineer")
         exercises = runner.get_exercises("beginner")
         assert len(exercises) > 0
-        sim_keywords = ["simulate", "converge", "waveform", "timing", "spice", "verilog",
-                        "testbench", "frequency", "bode", "alu", "bias", "operating point",
-                        "synthesis", "module", "register", "counter", "clock", "gate",
-                        "boundary", "sweep", "netlist", "circuit", "dc", "ac",
-                        "counting", "synchronous", "load", "wrap", "enable"]
+        sim_keywords = [
+            "simulate",
+            "converge",
+            "waveform",
+            "timing",
+            "spice",
+            "verilog",
+            "testbench",
+            "frequency",
+            "bode",
+            "alu",
+            "bias",
+            "operating point",
+            "synthesis",
+            "module",
+            "register",
+            "counter",
+            "clock",
+            "gate",
+            "boundary",
+            "sweep",
+            "netlist",
+            "circuit",
+            "dc",
+            "ac",
+            "counting",
+            "synchronous",
+            "load",
+            "wrap",
+            "enable",
+        ]
         matched = sum(
-            1 for ex in exercises
-            if any(kw in " ".join(ex.acceptance_criteria).lower() for kw in sim_keywords)
+            1
+            for ex in exercises
+            if any(
+                kw in " ".join(ex.acceptance_criteria).lower() for kw in sim_keywords
+            )
         )
         ratio = matched / len(exercises)
         assert ratio >= 0.8, (
@@ -742,16 +995,27 @@ class TestOpenSimRunner:
         )
 
     def test_opensim_grade_exercise(self):
-        from src.integrations.base_runner import get_runner_for_role, Exercise, RunResult
+        from src.integrations.base_runner import (
+            get_runner_for_role,
+            Exercise,
+            RunResult,
+        )
+
         runner = get_runner_for_role("hardware_sim_engineer")
         ex = Exercise(
-            id="sim-001", role="hardware_sim_engineer", task_type="HARDWARE_SIM",
-            difficulty="beginner", description="Simulate RC filter",
+            id="sim-001",
+            role="hardware_sim_engineer",
+            task_type="HARDWARE_SIM",
+            difficulty="beginner",
+            description="Simulate RC filter",
             acceptance_criteria=["Simulation converges", "Cutoff at 1kHz"],
             expected_artifacts=["filter.spice"],
         )
         result = RunResult(
-            run_id="x", status="completed", runner="opensim", tier="direct",
+            run_id="x",
+            status="completed",
+            runner="opensim",
+            tier="direct",
             metrics={"converged": True, "cutoff_hz": 1000},
         )
         score = runner.grade_exercise(ex, result)
@@ -759,6 +1023,7 @@ class TestOpenSimRunner:
 
     def test_opensim_experience_keys(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("hardware_sim_engineer")
         keys = runner.get_experience_keys()
         assert "task_type" in keys
@@ -768,29 +1033,38 @@ class TestOpenSimRunner:
 # Group 7: OpenML Runner — Machine Learning
 # ===========================================================================
 
+
 class TestOpenMLRunner:
     """Verify OpenML machine learning runner."""
 
     def test_openml_is_registered(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("data_scientist")
         assert runner is not None
         assert runner.name == "openml"
 
     def test_openml_execute_returns_run_result(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("data_scientist")
         task = _basic_task("ML_MODEL", "Train fraud classifier")
-        with _mock_llm_ctx('{"files": [{"path": "train.py", "content": "# model"}], "model_type": "xgboost", "metrics": {"accuracy": 0.92, "f1": 0.88}}'):
+        with _mock_llm_ctx(
+            '{"files": [{"path": "train.py", "content": "# model"}], "model_type": "xgboost", "metrics": {"accuracy": 0.92, "f1": 0.88}}'
+        ):
             result = runner.execute(task, "/tmp/ml-workspace")
         assert result.runner == "openml"
 
     def test_openml_verify_checks_metrics(self):
         """ML verification must check model metrics."""
         from src.integrations.base_runner import get_runner_for_role, RunResult
+
         runner = get_runner_for_role("data_scientist")
         result = RunResult(
-            run_id="x", status="completed", runner="openml", tier="direct",
+            run_id="x",
+            status="completed",
+            runner="openml",
+            tier="direct",
             metrics={"accuracy": 0.92, "f1": 0.88, "auc": 0.95},
         )
         report = runner.verify(result, _basic_task("ML_MODEL", "Classifier"))
@@ -798,6 +1072,7 @@ class TestOpenMLRunner:
 
     def test_openml_workflow_has_train(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("data_scientist")
         wf = runner.get_workflow()
         step_names = [s["name"] for s in wf]
@@ -805,34 +1080,79 @@ class TestOpenMLRunner:
 
     def test_openml_toolchain_has_ml_tools(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("data_scientist")
         tc = runner.get_toolchain()
         all_tools = tc.get("tools", []) + tc.get("packages", [])
-        assert any(
-            t in all_tools
-            for t in ["pandas", "scikit-learn", "pytorch", "tensorflow", "mlflow", "sklearn"]
-        ) or len(all_tools) > 0
+        assert (
+            any(
+                t in all_tools
+                for t in [
+                    "pandas",
+                    "scikit-learn",
+                    "pytorch",
+                    "tensorflow",
+                    "mlflow",
+                    "sklearn",
+                ]
+            )
+            or len(all_tools) > 0
+        )
 
     def test_openml_exercises_exist(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("data_scientist")
         exercises = runner.get_exercises("intermediate")
         assert len(exercises) >= 1
 
     def test_openml_exercises_have_metric_criteria(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("data_scientist")
         exercises = runner.get_exercises("beginner")
         assert len(exercises) > 0
-        ml_keywords = ["accuracy", "f1", "metric", "evaluate", "train", "model",
-                        "gradient", "feature", "rmse", "r²", "learning", "confusion",
-                        "roc", "precision", "recall", "imputation", "encoding", "scaling",
-                        "normalization", "cross", "validation", "curve", "plot",
-                        "missing", "categorical", "classification", "regression",
-                        "split", "leakage", "temporal", "group",
-                        "tuning", "optuna", "sampler", "parameter", "importance"]
+        ml_keywords = [
+            "accuracy",
+            "f1",
+            "metric",
+            "evaluate",
+            "train",
+            "model",
+            "gradient",
+            "feature",
+            "rmse",
+            "r²",
+            "learning",
+            "confusion",
+            "roc",
+            "precision",
+            "recall",
+            "imputation",
+            "encoding",
+            "scaling",
+            "normalization",
+            "cross",
+            "validation",
+            "curve",
+            "plot",
+            "missing",
+            "categorical",
+            "classification",
+            "regression",
+            "split",
+            "leakage",
+            "temporal",
+            "group",
+            "tuning",
+            "optuna",
+            "sampler",
+            "parameter",
+            "importance",
+        ]
         matched = sum(
-            1 for ex in exercises
+            1
+            for ex in exercises
             if any(kw in " ".join(ex.acceptance_criteria).lower() for kw in ml_keywords)
         )
         ratio = matched / len(exercises)
@@ -844,30 +1164,44 @@ class TestOpenMLRunner:
     def test_openml_verify_detects_data_leakage(self):
         """ML verification should flag potential data leakage."""
         from src.integrations.base_runner import get_runner_for_role, RunResult
+
         runner = get_runner_for_role("data_scientist")
         result = RunResult(
-            run_id="x", status="completed", runner="openml", tier="direct",
+            run_id="x",
+            status="completed",
+            runner="openml",
+            tier="direct",
             metrics={"accuracy": 1.0, "f1": 1.0},  # suspiciously perfect
         )
         report = runner.verify(result, _basic_task("ML_MODEL", "Too good"))
         # Perfect metrics should trigger a warning
         has_warning = any(
-            f.severity.value in ("warning", "critical")
-            for f in report.findings
+            f.severity.value in ("warning", "critical") for f in report.findings
         )
         assert has_warning or report.score < 100
 
     def test_openml_grade_exercise(self):
-        from src.integrations.base_runner import get_runner_for_role, Exercise, RunResult
+        from src.integrations.base_runner import (
+            get_runner_for_role,
+            Exercise,
+            RunResult,
+        )
+
         runner = get_runner_for_role("data_scientist")
         ex = Exercise(
-            id="ml-001", role="data_scientist", task_type="ML_MODEL",
-            difficulty="beginner", description="Train iris classifier",
+            id="ml-001",
+            role="data_scientist",
+            task_type="ML_MODEL",
+            difficulty="beginner",
+            description="Train iris classifier",
             acceptance_criteria=["Accuracy > 0.90", "No data leakage"],
             expected_artifacts=["model.pkl", "metrics.json"],
         )
         result = RunResult(
-            run_id="x", status="completed", runner="openml", tier="direct",
+            run_id="x",
+            status="completed",
+            runner="openml",
+            tier="direct",
             metrics={"accuracy": 0.95, "f1": 0.94},
         )
         score = runner.grade_exercise(ex, result)
@@ -875,6 +1209,7 @@ class TestOpenMLRunner:
 
     def test_openml_experience_keys(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("data_scientist")
         keys = runner.get_experience_keys()
         assert "task_type" in keys
@@ -884,17 +1219,20 @@ class TestOpenMLRunner:
 # Group 8: OpenDoc Runner — Documentation/Compliance
 # ===========================================================================
 
+
 class TestOpenDocRunner:
     """Verify OpenDoc documentation/compliance runner."""
 
     def test_opendoc_is_registered(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("technical_writer")
         assert runner is not None
         assert runner.name == "opendoc"
 
     def test_opendoc_covers_all_doc_roles(self):
         from src.integrations.base_runner import get_runner_for_role, DOC_ROLES
+
         for role in DOC_ROLES:
             runner = get_runner_for_role(role)
             assert runner is not None, f"No runner for doc role '{role}'"
@@ -902,17 +1240,24 @@ class TestOpenDocRunner:
 
     def test_opendoc_execute_returns_run_result(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("technical_writer")
         task = _basic_task("DOCUMENTATION", "Write API docs")
-        with _mock_llm_ctx('{"files": [{"path": "api_docs.md", "content": "# API Docs section"}], "sections_count": 5, "word_count": 500}'):
+        with _mock_llm_ctx(
+            '{"files": [{"path": "api_docs.md", "content": "# API Docs section"}], "sections_count": 5, "word_count": 500}'
+        ):
             result = runner.execute(task, "/tmp/doc-workspace")
         assert result.runner == "opendoc"
 
     def test_opendoc_verify_checks_completeness(self):
         from src.integrations.base_runner import get_runner_for_role, RunResult
+
         runner = get_runner_for_role("regulatory_specialist")
         result = RunResult(
-            run_id="x", status="completed", runner="opendoc", tier="direct",
+            run_id="x",
+            status="completed",
+            runner="opendoc",
+            tier="direct",
             artifacts=[{"path": "dhf.md", "type": "document"}],
             metrics={"sections_complete": 12, "sections_required": 15},
         )
@@ -921,6 +1266,7 @@ class TestOpenDocRunner:
 
     def test_opendoc_workflow_has_draft(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("technical_writer")
         wf = runner.get_workflow()
         step_names = [s["name"] for s in wf]
@@ -928,23 +1274,54 @@ class TestOpenDocRunner:
 
     def test_opendoc_exercises_exist(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("technical_writer")
         exercises = runner.get_exercises("beginner")
         assert len(exercises) >= 1
 
     def test_opendoc_exercises_have_doc_criteria(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("technical_writer")
         exercises = runner.get_exercises("beginner")
         assert len(exercises) > 0
-        doc_keywords = ["section", "document", "complete", "template", "draft", "write",
-                        "format", "example", "criteria", "code", "api", "user",
-                        "version", "iso", "summary", "reference", "header", "date",
-                        "sentence", "bug", "hazard", "signal", "ansi", "abbreviation",
-                        "expanded", "page", "changelog", "release", "safety"]
+        doc_keywords = [
+            "section",
+            "document",
+            "complete",
+            "template",
+            "draft",
+            "write",
+            "format",
+            "example",
+            "criteria",
+            "code",
+            "api",
+            "user",
+            "version",
+            "iso",
+            "summary",
+            "reference",
+            "header",
+            "date",
+            "sentence",
+            "bug",
+            "hazard",
+            "signal",
+            "ansi",
+            "abbreviation",
+            "expanded",
+            "page",
+            "changelog",
+            "release",
+            "safety",
+        ]
         matched = sum(
-            1 for ex in exercises
-            if any(kw in " ".join(ex.acceptance_criteria).lower() for kw in doc_keywords)
+            1
+            for ex in exercises
+            if any(
+                kw in " ".join(ex.acceptance_criteria).lower() for kw in doc_keywords
+            )
         )
         ratio = matched / len(exercises)
         assert ratio >= 0.8, (
@@ -953,16 +1330,27 @@ class TestOpenDocRunner:
         )
 
     def test_opendoc_grade_exercise(self):
-        from src.integrations.base_runner import get_runner_for_role, Exercise, RunResult
+        from src.integrations.base_runner import (
+            get_runner_for_role,
+            Exercise,
+            RunResult,
+        )
+
         runner = get_runner_for_role("technical_writer")
         ex = Exercise(
-            id="doc-001", role="technical_writer", task_type="DOCUMENTATION",
-            difficulty="beginner", description="Write quickstart guide",
+            id="doc-001",
+            role="technical_writer",
+            task_type="DOCUMENTATION",
+            difficulty="beginner",
+            description="Write quickstart guide",
             acceptance_criteria=["Has installation section", "Has first example"],
             expected_artifacts=["quickstart.md"],
         )
         result = RunResult(
-            run_id="x", status="completed", runner="opendoc", tier="direct",
+            run_id="x",
+            status="completed",
+            runner="opendoc",
+            tier="direct",
             artifacts=[{"path": "quickstart.md", "type": "document"}],
         )
         score = runner.grade_exercise(ex, result)
@@ -971,9 +1359,13 @@ class TestOpenDocRunner:
     def test_opendoc_regulatory_uses_standard_coverage(self):
         """Regulatory docs should track standard clause coverage."""
         from src.integrations.base_runner import get_runner_for_role, RunResult
+
         runner = get_runner_for_role("regulatory_specialist")
         result = RunResult(
-            run_id="x", status="completed", runner="opendoc", tier="direct",
+            run_id="x",
+            status="completed",
+            runner="opendoc",
+            tier="direct",
             metrics={"standard_coverage_pct": 85, "standard": "ISO 14971"},
         )
         report = runner.verify(result, _basic_task("REGULATORY", "Risk management"))
@@ -981,6 +1373,7 @@ class TestOpenDocRunner:
 
     def test_opendoc_experience_keys(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("technical_writer")
         keys = runner.get_experience_keys()
         assert "task_type" in keys
@@ -990,28 +1383,37 @@ class TestOpenDocRunner:
 # Group 9: OpenDesign Runner — UX/Design
 # ===========================================================================
 
+
 class TestOpenDesignRunner:
     """Verify OpenDesign UX runner."""
 
     def test_opendesign_is_registered(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("ux_designer")
         assert runner is not None
         assert runner.name == "opendesign"
 
     def test_opendesign_execute_returns_run_result(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("ux_designer")
         task = _basic_task("UI_DESIGN", "Design login screen")
-        with _mock_llm_ctx('{"files": [{"path": "login.svg", "content": "<svg/>"}], "wcag_level": "AA", "components": ["input", "button"]}'):
+        with _mock_llm_ctx(
+            '{"files": [{"path": "login.svg", "content": "<svg/>"}], "wcag_level": "AA", "components": ["input", "button"]}'
+        ):
             result = runner.execute(task, "/tmp/design-workspace")
         assert result.runner == "opendesign"
 
     def test_opendesign_verify_checks_accessibility(self):
         from src.integrations.base_runner import get_runner_for_role, RunResult
+
         runner = get_runner_for_role("ux_designer")
         result = RunResult(
-            run_id="x", status="completed", runner="opendesign", tier="direct",
+            run_id="x",
+            status="completed",
+            runner="opendesign",
+            tier="direct",
             metrics={"wcag_violations": 0, "contrast_ratio_min": 4.8},
         )
         report = runner.verify(result, _basic_task("UI_DESIGN", "Login screen"))
@@ -1019,19 +1421,26 @@ class TestOpenDesignRunner:
 
     def test_opendesign_workflow_has_wireframe(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("ux_designer")
         wf = runner.get_workflow()
         step_names = [s["name"] for s in wf]
-        assert "wireframe" in step_names or "prototype" in step_names or "design" in step_names
+        assert (
+            "wireframe" in step_names
+            or "prototype" in step_names
+            or "design" in step_names
+        )
 
     def test_opendesign_exercises_exist(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("ux_designer")
         exercises = runner.get_exercises("beginner")
         assert len(exercises) >= 1
 
     def test_opendesign_exercises_have_accessibility_criteria(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("ux_designer")
         all_criteria = []
         for ex in runner.get_exercises("beginner"):
@@ -1043,16 +1452,27 @@ class TestOpenDesignRunner:
         )
 
     def test_opendesign_grade_exercise(self):
-        from src.integrations.base_runner import get_runner_for_role, Exercise, RunResult
+        from src.integrations.base_runner import (
+            get_runner_for_role,
+            Exercise,
+            RunResult,
+        )
+
         runner = get_runner_for_role("ux_designer")
         ex = Exercise(
-            id="design-001", role="ux_designer", task_type="UI_DESIGN",
-            difficulty="beginner", description="Design button component",
+            id="design-001",
+            role="ux_designer",
+            task_type="UI_DESIGN",
+            difficulty="beginner",
+            description="Design button component",
             acceptance_criteria=["WCAG AA compliant", "Touch target >= 44px"],
             expected_artifacts=["button.svg", "tokens.json"],
         )
         result = RunResult(
-            run_id="x", status="completed", runner="opendesign", tier="direct",
+            run_id="x",
+            status="completed",
+            runner="opendesign",
+            tier="direct",
             metrics={"wcag_violations": 0, "min_touch_target": 48},
         )
         score = runner.grade_exercise(ex, result)
@@ -1060,6 +1480,7 @@ class TestOpenDesignRunner:
 
     def test_opendesign_experience_keys(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("ux_designer")
         keys = runner.get_experience_keys()
         assert "task_type" in keys
@@ -1069,17 +1490,20 @@ class TestOpenDesignRunner:
 # Group 10: OpenStrategy Runner — Strategy/Planning
 # ===========================================================================
 
+
 class TestOpenStrategyRunner:
     """Verify OpenStrategy planning runner."""
 
     def test_openstrategy_is_registered(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("product_manager")
         assert runner is not None
         assert runner.name == "openstrategy"
 
     def test_openstrategy_covers_all_strategy_roles(self):
         from src.integrations.base_runner import get_runner_for_role, STRATEGY_ROLES
+
         for role in STRATEGY_ROLES:
             runner = get_runner_for_role(role)
             assert runner is not None, f"No runner for strategy role '{role}'"
@@ -1087,17 +1511,24 @@ class TestOpenStrategyRunner:
 
     def test_openstrategy_execute_returns_run_result(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("product_manager")
         task = _basic_task("PRODUCT_STRATEGY", "Write PRD for mobile app")
-        with _mock_llm_ctx('{"files": [{"path": "prd.md", "content": "# PRD"}], "framework_used": "RICE", "sections": ["problem", "solution"], "action_items": ["launch"]}'):
+        with _mock_llm_ctx(
+            '{"files": [{"path": "prd.md", "content": "# PRD"}], "framework_used": "RICE", "sections": ["problem", "solution"], "action_items": ["launch"]}'
+        ):
             result = runner.execute(task, "/tmp/strategy-workspace")
         assert result.runner == "openstrategy"
 
     def test_openstrategy_verify_checks_framework_completeness(self):
         from src.integrations.base_runner import get_runner_for_role, RunResult
+
         runner = get_runner_for_role("product_manager")
         result = RunResult(
-            run_id="x", status="completed", runner="openstrategy", tier="direct",
+            run_id="x",
+            status="completed",
+            runner="openstrategy",
+            tier="direct",
             metrics={"framework_sections_complete": 8, "framework_sections_total": 10},
         )
         report = runner.verify(result, _basic_task("PRODUCT_STRATEGY", "PRD"))
@@ -1105,28 +1536,43 @@ class TestOpenStrategyRunner:
 
     def test_openstrategy_workflow_has_analyze(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("product_manager")
         wf = runner.get_workflow()
         step_names = [s["name"] for s in wf]
-        assert "analyze" in step_names or "research" in step_names or "plan" in step_names
+        assert (
+            "analyze" in step_names or "research" in step_names or "plan" in step_names
+        )
 
     def test_openstrategy_exercises_exist(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("product_manager")
         exercises = runner.get_exercises("beginner")
         assert len(exercises) >= 1
 
     def test_openstrategy_grade_exercise(self):
-        from src.integrations.base_runner import get_runner_for_role, Exercise, RunResult
+        from src.integrations.base_runner import (
+            get_runner_for_role,
+            Exercise,
+            RunResult,
+        )
+
         runner = get_runner_for_role("product_manager")
         ex = Exercise(
-            id="strat-001", role="product_manager", task_type="PRODUCT_STRATEGY",
-            difficulty="beginner", description="Write feature prioritization",
+            id="strat-001",
+            role="product_manager",
+            task_type="PRODUCT_STRATEGY",
+            difficulty="beginner",
+            description="Write feature prioritization",
             acceptance_criteria=["Uses RICE framework", "Has actionable output"],
             expected_artifacts=["prioritization.md"],
         )
         result = RunResult(
-            run_id="x", status="completed", runner="openstrategy", tier="direct",
+            run_id="x",
+            status="completed",
+            runner="openstrategy",
+            tier="direct",
             artifacts=[{"path": "prioritization.md", "type": "document"}],
         )
         score = runner.grade_exercise(ex, result)
@@ -1134,6 +1580,7 @@ class TestOpenStrategyRunner:
 
     def test_openstrategy_experience_keys(self):
         from src.integrations.base_runner import get_runner_for_role
+
         runner = get_runner_for_role("product_manager")
         keys = runner.get_experience_keys()
         assert "task_type" in keys
@@ -1143,13 +1590,18 @@ class TestOpenStrategyRunner:
 # Group 11: Cross-Runner Integration
 # ===========================================================================
 
+
 class TestCrossRunnerIntegration:
     """Verify runners work together and with the orchestrator."""
 
     def test_every_hireable_role_has_runner(self):
         """Every role in AGENT_ROLES_REGISTRY that is hireable has a runner."""
-        from src.integrations.base_runner import get_runner_for_role, ORCHESTRATION_ROLES
+        from src.integrations.base_runner import (
+            get_runner_for_role,
+            ORCHESTRATION_ROLES,
+        )
         from src.integrations.build_orchestrator import AGENT_ROLES_REGISTRY
+
         for role, info in AGENT_ROLES_REGISTRY.items():
             if role in ORCHESTRATION_ROLES:
                 continue  # orchestration roles don't execute
@@ -1161,24 +1613,46 @@ class TestCrossRunnerIntegration:
     def test_all_runners_have_unique_names(self):
         """No two runners share the same name."""
         from src.integrations.base_runner import _RUNNER_INSTANCES
+
         names = list(_RUNNER_INSTANCES.keys())
         assert len(names) == len(set(names))
 
     def test_all_runners_implement_full_interface(self):
         """Every registered runner implements all BaseRunner methods."""
-        from src.integrations.base_runner import _RUNNER_INSTANCES, RunResult, Exercise
+        from src.integrations.base_runner import _RUNNER_INSTANCES
+
         for name, runner in _RUNNER_INSTANCES.items():
-            assert callable(getattr(runner, "execute", None)), f"{name} missing execute()"
+            assert callable(getattr(runner, "execute", None)), (
+                f"{name} missing execute()"
+            )
             assert callable(getattr(runner, "verify", None)), f"{name} missing verify()"
-            assert callable(getattr(runner, "get_exercises", None)), f"{name} missing get_exercises()"
-            assert callable(getattr(runner, "grade_exercise", None)), f"{name} missing grade_exercise()"
-            assert callable(getattr(runner, "get_toolchain", None)), f"{name} missing get_toolchain()"
-            assert callable(getattr(runner, "get_workflow", None)), f"{name} missing get_workflow()"
+            assert callable(getattr(runner, "get_exercises", None)), (
+                f"{name} missing get_exercises()"
+            )
+            assert callable(getattr(runner, "grade_exercise", None)), (
+                f"{name} missing grade_exercise()"
+            )
+            assert callable(getattr(runner, "get_toolchain", None)), (
+                f"{name} missing get_toolchain()"
+            )
+            assert callable(getattr(runner, "get_workflow", None)), (
+                f"{name} missing get_workflow()"
+            )
 
     def test_runner_names_match_expected_set(self):
         """All 8 expected runners are registered."""
         from src.integrations.base_runner import _RUNNER_INSTANCES
-        expected = {"openswe", "openfw", "openeda", "opensim", "openml", "opendoc", "opendesign", "openstrategy"}
+
+        expected = {
+            "openswe",
+            "openfw",
+            "openeda",
+            "opensim",
+            "openml",
+            "opendoc",
+            "opendesign",
+            "openstrategy",
+        }
         actual = set(_RUNNER_INSTANCES.keys())
         missing = expected - actual
         assert not missing, f"Missing runners: {missing}"
@@ -1186,6 +1660,7 @@ class TestCrossRunnerIntegration:
     def test_each_runner_has_at_least_one_exercise(self):
         """Every runner provides at least one exercise."""
         from src.integrations.base_runner import _RUNNER_INSTANCES
+
         for name, runner in _RUNNER_INSTANCES.items():
             exercises = runner.get_exercises("beginner")
             assert len(exercises) >= 1, f"Runner '{name}' has no beginner exercises"
@@ -1193,6 +1668,7 @@ class TestCrossRunnerIntegration:
     def test_each_runner_workflow_is_valid(self):
         """Every runner's workflow has step numbers and names."""
         from src.integrations.base_runner import _RUNNER_INSTANCES
+
         for name, runner in _RUNNER_INSTANCES.items():
             wf = runner.get_workflow()
             for step in wf:
@@ -1202,23 +1678,41 @@ class TestCrossRunnerIntegration:
     def test_runner_execute_never_raises(self):
         """execute() returns error result, never raises exceptions."""
         from src.integrations.base_runner import _RUNNER_INSTANCES
+
         with _mock_llm_ctx('{"files": [], "explanation": "empty"}'):
             for name, runner in _RUNNER_INSTANCES.items():
                 if name == "openswe":
-                    with patch("src.integrations.openswe_runner.OpenSWERunner.build", return_value={
-                        "status": "completed", "tier": "llm_react", "code": "", "files_changed": [], "output": {}, "run_id": "x",
-                    }):
-                        result = runner.execute({"task_type": "INVALID", "description": ""}, "/nonexistent/path")
+                    with patch(
+                        "src.integrations.openswe_runner.OpenSWERunner.build",
+                        return_value={
+                            "status": "completed",
+                            "tier": "llm_react",
+                            "code": "",
+                            "files_changed": [],
+                            "output": {},
+                            "run_id": "x",
+                        },
+                    ):
+                        result = runner.execute(
+                            {"task_type": "INVALID", "description": ""},
+                            "/nonexistent/path",
+                        )
                 else:
-                    result = runner.execute({"task_type": "INVALID", "description": ""}, "/nonexistent/path")
+                    result = runner.execute(
+                        {"task_type": "INVALID", "description": ""}, "/nonexistent/path"
+                    )
                 assert result.status in ("completed", "error", "failed", "partial")
 
     def test_runner_verify_never_raises(self):
         """verify() returns report, never raises exceptions."""
         from src.integrations.base_runner import _RUNNER_INSTANCES, RunResult
+
         for name, runner in _RUNNER_INSTANCES.items():
             result = RunResult(
-                run_id="x", status="error", runner=name, tier="direct",
+                run_id="x",
+                status="error",
+                runner=name,
+                tier="direct",
                 errors=["test error"],
             )
             report = runner.verify(result, {"task_type": "TEST", "description": ""})
@@ -1230,12 +1724,14 @@ class TestCrossRunnerIntegration:
 # Group 12: Experience Accumulation
 # ===========================================================================
 
+
 class TestExperienceAccumulation:
     """Verify experience storage and retrieval patterns."""
 
     def test_each_runner_has_experience_keys(self):
         """Every runner defines experience retrieval keys."""
         from src.integrations.base_runner import _RUNNER_INSTANCES
+
         for name, runner in _RUNNER_INSTANCES.items():
             keys = runner.get_experience_keys()
             assert isinstance(keys, list)
@@ -1245,10 +1741,18 @@ class TestExperienceAccumulation:
     def test_execute_can_return_experience(self):
         """execute() result can include experience entries for storage."""
         from src.integrations.base_runner import RunResult
+
         r = RunResult(
-            run_id="x", status="completed", runner="test", tier="direct",
+            run_id="x",
+            status="completed",
+            runner="test",
+            tier="direct",
             experience=[
-                {"pattern": "Always validate input", "task_type": "BACKEND", "score": 85},
+                {
+                    "pattern": "Always validate input",
+                    "task_type": "BACKEND",
+                    "score": 85,
+                },
             ],
         )
         assert len(r.experience) == 1
@@ -1257,8 +1761,12 @@ class TestExperienceAccumulation:
     def test_experience_in_to_dict(self):
         """Experience entries survive serialization."""
         from src.integrations.base_runner import RunResult
+
         r = RunResult(
-            run_id="x", status="completed", runner="test", tier="direct",
+            run_id="x",
+            status="completed",
+            runner="test",
+            tier="direct",
             experience=[{"pattern": "Use DMA for UART", "mcu": "STM32F4"}],
         )
         d = r.to_dict()
@@ -1267,6 +1775,7 @@ class TestExperienceAccumulation:
     def test_runner_experience_keys_are_strings(self):
         """Experience keys are all strings."""
         from src.integrations.base_runner import _RUNNER_INSTANCES
+
         for name, runner in _RUNNER_INSTANCES.items():
             keys = runner.get_experience_keys()
             for k in keys:
@@ -1275,6 +1784,7 @@ class TestExperienceAccumulation:
     def test_exercise_score_includes_improvement_hints(self):
         """ExerciseScore can carry improvement hints for experience storage."""
         from src.integrations.base_runner import ExerciseScore
+
         score = ExerciseScore(
             exercise_id="test",
             passed=False,
@@ -1289,8 +1799,11 @@ class TestExperienceAccumulation:
     def test_domain_specific_experience_keys(self):
         """Domain runners have domain-relevant experience keys beyond task_type."""
         from src.integrations.base_runner import get_runner_for_role
+
         # Firmware should have MCU-related keys
         fw = get_runner_for_role("firmware_engineer")
         if fw:
             keys = fw.get_experience_keys()
-            assert len(keys) >= 2, "Firmware runner should have domain-specific experience keys"
+            assert len(keys) >= 2, (
+                "Firmware runner should have domain-specific experience keys"
+            )

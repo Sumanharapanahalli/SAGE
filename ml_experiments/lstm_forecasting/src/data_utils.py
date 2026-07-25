@@ -17,7 +17,6 @@ from dataclasses import dataclass
 from typing import Tuple
 
 import numpy as np
-import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 import torch
 from torch.utils.data import Dataset, DataLoader
@@ -29,7 +28,10 @@ logger = logging.getLogger(__name__)
 # Synthetic data generator (replace with real data loader for production)
 # ---------------------------------------------------------------------------
 
-def generate_synthetic_series(n: int = 2000, noise_std: float = 0.5, seed: int = 42) -> np.ndarray:
+
+def generate_synthetic_series(
+    n: int = 2000, noise_std: float = 0.5, seed: int = 42
+) -> np.ndarray:
     """Multi-component synthetic time series (trend + seasonal + noise)."""
     rng = np.random.default_rng(seed)
     t = np.arange(n, dtype=float)
@@ -38,13 +40,19 @@ def generate_synthetic_series(n: int = 2000, noise_std: float = 0.5, seed: int =
     monthly = 1.5 * np.sin(2 * np.pi * t / 30)
     noise = rng.normal(0, noise_std, n)
     series = trend + weekly + monthly + noise
-    logger.info("Generated synthetic series: length=%d, mean=%.3f, std=%.3f", n, series.mean(), series.std())
+    logger.info(
+        "Generated synthetic series: length=%d, mean=%.3f, std=%.3f",
+        n,
+        series.mean(),
+        series.std(),
+    )
     return series.astype(np.float32)
 
 
 # ---------------------------------------------------------------------------
 # Window dataset
 # ---------------------------------------------------------------------------
+
 
 class TimeSeriesWindowDataset(Dataset):
     """Sliding-window dataset.
@@ -62,8 +70,10 @@ class TimeSeriesWindowDataset(Dataset):
         for i in range(len(series) - lookback - horizon + 1):
             X.append(series[i : i + lookback])
             y.append(series[i + lookback : i + lookback + horizon])
-        self.X = torch.tensor(np.array(X), dtype=torch.float32).unsqueeze(-1)  # (N, L, 1)
-        self.y = torch.tensor(np.array(y), dtype=torch.float32)                # (N, H)
+        self.X = torch.tensor(np.array(X), dtype=torch.float32).unsqueeze(
+            -1
+        )  # (N, L, 1)
+        self.y = torch.tensor(np.array(y), dtype=torch.float32)  # (N, H)
 
     def __len__(self) -> int:
         return len(self.X)
@@ -76,12 +86,13 @@ class TimeSeriesWindowDataset(Dataset):
 # Leakage-safe split + scaling
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class SplitResult:
     train_series: np.ndarray
     test_series: np.ndarray
     scaler: MinMaxScaler
-    train_raw: np.ndarray   # un-scaled, for ARIMA
+    train_raw: np.ndarray  # un-scaled, for ARIMA
     test_raw: np.ndarray
 
 
@@ -108,8 +119,10 @@ def temporal_split_and_scale(
 
     logger.info(
         "Temporal split: train=%d (%.0f%%), test=%d (%.0f%%)",
-        len(train_raw), train_ratio * 100,
-        len(test_raw), (1 - train_ratio) * 100,
+        len(train_raw),
+        train_ratio * 100,
+        len(test_raw),
+        (1 - train_ratio) * 100,
     )
     logger.info("Scaler fit on train only — leakage risk: NONE")
 
@@ -119,6 +132,7 @@ def temporal_split_and_scale(
 # ---------------------------------------------------------------------------
 # DataLoader factory
 # ---------------------------------------------------------------------------
+
 
 def make_dataloaders(
     split: SplitResult,
@@ -132,14 +146,19 @@ def make_dataloaders(
 
     logger.info("Train windows: %d | Test windows: %d", len(train_ds), len(test_ds))
 
-    train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True,  num_workers=num_workers)
-    test_dl  = DataLoader(test_ds, batch_size=batch_size, shuffle=False, num_workers=num_workers)
+    train_dl = DataLoader(
+        train_ds, batch_size=batch_size, shuffle=True, num_workers=num_workers
+    )
+    test_dl = DataLoader(
+        test_ds, batch_size=batch_size, shuffle=False, num_workers=num_workers
+    )
     return train_dl, test_dl
 
 
 # ---------------------------------------------------------------------------
 # Class-imbalance check (N/A for regression — documented for completeness)
 # ---------------------------------------------------------------------------
+
 
 def check_class_imbalance(series: np.ndarray) -> dict:
     """For regression tasks class_imbalance is not applicable.

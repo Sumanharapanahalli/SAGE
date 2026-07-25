@@ -1,38 +1,66 @@
 """Smoke tests for the fall alert pipeline."""
+
 import asyncio
 import sys
 import os
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 
 def test_fall_classifier():
-    from backend.agents.fall_classifier import FallClassifierAgent, FallEventInput, FallSeverity
+    from backend.agents.fall_classifier import (
+        FallClassifierAgent,
+        FallEventInput,
+        FallSeverity,
+    )
 
     agent = FallClassifierAgent()
 
     # SOS button -> highest priority, 30s grace
-    e = FallEventInput(event_id="e1", device_id="d1", user_id="u1",
-                       event_type="sos_button", button_pressed=True)
+    e = FallEventInput(
+        event_id="e1",
+        device_id="d1",
+        user_id="u1",
+        event_type="sos_button",
+        button_pressed=True,
+    )
     c = agent.classify(e)
-    assert c.severity == FallSeverity.SOS_BUTTON, f"Expected SOS_BUTTON got {c.severity}"
+    assert c.severity == FallSeverity.SOS_BUTTON, (
+        f"Expected SOS_BUTTON got {c.severity}"
+    )
     assert c.grace_period_seconds == 30
 
     # High-impact fall, no recovery -> confirmed
-    e2 = FallEventInput(event_id="e2", device_id="d1", user_id="u1",
-                        event_type="fall_detected", impact_force_g=4.5)
+    e2 = FallEventInput(
+        event_id="e2",
+        device_id="d1",
+        user_id="u1",
+        event_type="fall_detected",
+        impact_force_g=4.5,
+    )
     c2 = agent.classify(e2)
     assert c2.severity == FallSeverity.CONFIRMED_FALL
     assert c2.grace_period_seconds == 60
 
     # Moderate impact -> possible fall
-    e3 = FallEventInput(event_id="e3", device_id="d1", user_id="u1",
-                        event_type="impact", impact_force_g=2.0)
+    e3 = FallEventInput(
+        event_id="e3",
+        device_id="d1",
+        user_id="u1",
+        event_type="impact",
+        impact_force_g=2.0,
+    )
     c3 = agent.classify(e3)
     assert c3.severity == FallSeverity.POSSIBLE_FALL
 
     # Low impact -> false alarm
-    e4 = FallEventInput(event_id="e4", device_id="d1", user_id="u1",
-                        event_type="impact", impact_force_g=0.5)
+    e4 = FallEventInput(
+        event_id="e4",
+        device_id="d1",
+        user_id="u1",
+        event_type="impact",
+        impact_force_g=0.5,
+    )
     c4 = agent.classify(e4)
     assert c4.severity == FallSeverity.FALSE_ALARM
 
@@ -41,20 +69,31 @@ def test_fall_classifier():
 
 async def test_notification_router_parallel():
     from backend.agents.fall_classifier import FallClassifierAgent, FallEventInput
-    from backend.agents.notification_router import CaregiverContact, NotificationRouterAgent
+    from backend.agents.notification_router import (
+        CaregiverContact,
+        NotificationRouterAgent,
+    )
     import time
 
     classifier = FallClassifierAgent()
     router = NotificationRouterAgent()
 
-    event = FallEventInput(event_id="e10", device_id="d1", user_id="u1",
-                           event_type="fall_detected", impact_force_g=4.0)
+    event = FallEventInput(
+        event_id="e10",
+        device_id="d1",
+        user_id="u1",
+        event_type="fall_detected",
+        impact_force_g=4.0,
+    )
     classification = classifier.classify(event)
 
     caregivers = [
         CaregiverContact(
-            caregiver_id="cg1", name="Alice",
-            fcm_token="tok_abc", phone_number="+15550001", email="alice@test.com"
+            caregiver_id="cg1",
+            name="Alice",
+            fcm_token="tok_abc",
+            phone_number="+15550001",
+            email="alice@test.com",
         )
     ]
 
@@ -63,11 +102,15 @@ async def test_notification_router_parallel():
     elapsed_ms = (time.monotonic() - start) * 1000
 
     # All 3 channels should have been attempted (push + sms + email)
-    assert len(decision.results) == 3, f"Expected 3 results, got {len(decision.results)}"
+    assert len(decision.results) == 3, (
+        f"Expected 3 results, got {len(decision.results)}"
+    )
     assert decision.primary_notification_sent
     # Parallel: wall clock should be close to the slowest channel (~120ms), not sum (~250ms)
     assert elapsed_ms < 300, f"Expected <300ms got {elapsed_ms:.0f}ms"
-    print(f"NotificationRouter: PASS — 3 channels in {elapsed_ms:.0f}ms (parallel verified)")
+    print(
+        f"NotificationRouter: PASS — 3 channels in {elapsed_ms:.0f}ms (parallel verified)"
+    )
 
 
 async def test_idempotency():
@@ -105,7 +148,9 @@ async def test_dispatch_decider_cancel():
 
     # Wait past the original timeout to confirm dispatch was NOT called
     await asyncio.sleep(2.5)
-    assert len(dispatched) == 0, "Dispatch should NOT have been called after cancellation"
+    assert len(dispatched) == 0, (
+        "Dispatch should NOT have been called after cancellation"
+    )
     print("DispatchDecider cancel: PASS")
 
 

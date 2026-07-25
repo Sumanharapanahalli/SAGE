@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 
 # ── Contact model ────────────────────────────────────────────────────────────
 
+
 @dataclass
 class CaregiverContact:
     caregiver_id: str
@@ -37,9 +38,10 @@ class CaregiverContact:
 
 # ── Result models ────────────────────────────────────────────────────────────
 
+
 @dataclass
 class NotificationResult:
-    channel: str           # "push" | "sms" | "email"
+    channel: str  # "push" | "sms" | "email"
     caregiver_id: str
     success: bool
     message_id: Optional[str] = None
@@ -60,15 +62,14 @@ class RoutingDecision:
 
 # ── Notification client stubs ────────────────────────────────────────────────
 
+
 class FCMClient:
     """
     Firebase Cloud Messaging client.
     Replace body with: firebase_admin.messaging.send(Message(...))
     """
 
-    async def send(
-        self, token: str, title: str, body: str, data: dict
-    ) -> str:
+    async def send(self, token: str, title: str, body: str, data: dict) -> str:
         logger.info(
             "FCM → token=%.8s… title=%r data_keys=%s",
             token,
@@ -104,6 +105,7 @@ class SendGridClient:
 
 
 # ── Agent ────────────────────────────────────────────────────────────────────
+
 
 class NotificationRouterAgent:
     """
@@ -155,7 +157,9 @@ class NotificationRouterAgent:
                 tasks.append(self._send_email(cg, title, body, classification))
 
         if not tasks:
-            logger.warning("NotificationRouter: no channels available for alert %s", alert_id)
+            logger.warning(
+                "NotificationRouter: no channels available for alert %s", alert_id
+            )
 
         raw = await asyncio.gather(*tasks, return_exceptions=True)
 
@@ -197,9 +201,7 @@ class NotificationRouterAgent:
 
     # ── message builders ─────────────────────────────────────────────────────
 
-    def _build_message(
-        self, classification: AlertClassification
-    ) -> tuple[str, str]:
+    def _build_message(self, classification: AlertClassification) -> tuple[str, str]:
         sev = classification.severity
         grace = classification.grace_period_seconds
         if sev == FallSeverity.SOS_BUTTON:
@@ -235,14 +237,18 @@ class NotificationRouterAgent:
         try:
             msg_id = await self.fcm.send(cg.fcm_token, title, body, data)
             return NotificationResult(
-                channel="push", caregiver_id=cg.caregiver_id,
-                success=True, message_id=msg_id,
+                channel="push",
+                caregiver_id=cg.caregiver_id,
+                success=True,
+                message_id=msg_id,
             )
         except Exception as exc:
             logger.error("FCM failed caregiver=%s: %s", cg.caregiver_id, exc)
             return NotificationResult(
-                channel="push", caregiver_id=cg.caregiver_id,
-                success=False, error=str(exc),
+                channel="push",
+                caregiver_id=cg.caregiver_id,
+                success=False,
+                error=str(exc),
             )
 
     async def _send_sms(
@@ -256,14 +262,18 @@ class NotificationRouterAgent:
             sms_body = f"{title}: {body}"
             msg_id = await self.twilio.send_sms(cg.phone_number, sms_body)
             return NotificationResult(
-                channel="sms", caregiver_id=cg.caregiver_id,
-                success=True, message_id=msg_id,
+                channel="sms",
+                caregiver_id=cg.caregiver_id,
+                success=True,
+                message_id=msg_id,
             )
         except Exception as exc:
             logger.error("SMS failed caregiver=%s: %s", cg.caregiver_id, exc)
             return NotificationResult(
-                channel="sms", caregiver_id=cg.caregiver_id,
-                success=False, error=str(exc),
+                channel="sms",
+                caregiver_id=cg.caregiver_id,
+                success=False,
+                error=str(exc),
             )
 
     async def _send_email(
@@ -285,12 +295,16 @@ class NotificationRouterAgent:
             )
             msg_id = await self.sendgrid.send_email(cg.email, title, html)
             return NotificationResult(
-                channel="email", caregiver_id=cg.caregiver_id,
-                success=True, message_id=msg_id,
+                channel="email",
+                caregiver_id=cg.caregiver_id,
+                success=True,
+                message_id=msg_id,
             )
         except Exception as exc:
             logger.error("Email failed caregiver=%s: %s", cg.caregiver_id, exc)
             return NotificationResult(
-                channel="email", caregiver_id=cg.caregiver_id,
-                success=False, error=str(exc),
+                channel="email",
+                caregiver_id=cg.caregiver_id,
+                success=False,
+                error=str(exc),
             )

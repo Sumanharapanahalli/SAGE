@@ -23,6 +23,7 @@ log = logging.getLogger(__name__)
 @dataclass
 class MQTTMessage:
     """Captured MQTT message with receive timestamp."""
+
     topic: str
     payload: Dict[str, Any]
     received_at: float = field(default_factory=time.monotonic)
@@ -36,11 +37,11 @@ class MQTTMonitor:
     """Thread-safe MQTT subscriber that collects messages for test assertions."""
 
     SUBSCRIBE_TOPICS = [
-        ("guardian/+/alerts",    1),
+        ("guardian/+/alerts", 1),
         ("guardian/+/telemetry", 0),
-        ("guardian/+/ack",       1),
-        ("guardian/+/ota/status",1),
-        ("guardian/+/geofence",  1),
+        ("guardian/+/ack", 1),
+        ("guardian/+/ota/status", 1),
+        ("guardian/+/geofence", 1),
     ]
 
     def __init__(
@@ -62,9 +63,9 @@ class MQTTMonitor:
         self._client = mqtt.Client(client_id=f"sage-system-test-{device_id}")
         if username:
             self._client.username_pw_set(username, password)
-        self._client.on_connect    = self._on_connect
+        self._client.on_connect = self._on_connect
         self._client.on_disconnect = self._on_disconnect
-        self._client.on_message    = self._on_message
+        self._client.on_message = self._on_message
 
     # ── Lifecycle ─────────────────────────────────────────────────────────────
 
@@ -94,8 +95,9 @@ class MQTTMonitor:
 
     # ── Callbacks ─────────────────────────────────────────────────────────────
 
-    def _on_connect(self, client: mqtt.Client, userdata: Any,
-                    flags: Dict, rc: int) -> None:
+    def _on_connect(
+        self, client: mqtt.Client, userdata: Any, flags: Dict, rc: int
+    ) -> None:
         if rc == 0:
             for topic, qos in self.SUBSCRIBE_TOPICS:
                 client.subscribe(topic, qos)
@@ -109,8 +111,9 @@ class MQTTMonitor:
             log.warning("MQTTMonitor: unexpected disconnect rc=%d", rc)
         self._connected_event.clear()
 
-    def _on_message(self, client: mqtt.Client, userdata: Any,
-                    msg: mqtt.MQTTMessage) -> None:
+    def _on_message(
+        self, client: mqtt.Client, userdata: Any, msg: mqtt.MQTTMessage
+    ) -> None:
         try:
             payload = json.loads(msg.payload.decode("utf-8"))
         except (json.JSONDecodeError, UnicodeDecodeError):

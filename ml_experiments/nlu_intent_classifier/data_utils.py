@@ -11,7 +11,7 @@ Rules enforced here:
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
@@ -28,13 +28,14 @@ logger = logging.getLogger(__name__)
 # Data-quality report
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class DataReport:
     num_classes: int
     class_counts: dict[str, int]
-    imbalance_ratio: float          # max_count / min_count
-    class_imbalance_flag: bool      # True if ratio > 10
-    leakage_risk: bool = False      # always False after this pipeline
+    imbalance_ratio: float  # max_count / min_count
+    class_imbalance_flag: bool  # True if ratio > 10
+    leakage_risk: bool = False  # always False after this pipeline
     train_size: int = 0
     val_size: int = 0
     test_size: int = 0
@@ -46,8 +47,12 @@ class DataReport:
         logger.info("  Classes        : %d", self.num_classes)
         logger.info("  Imbalance ratio: %.1f", self.imbalance_ratio)
         logger.info("  Imbalance flag : %s", self.class_imbalance_flag)
-        logger.info("  Train / Val / Test: %d / %d / %d",
-                    self.train_size, self.val_size, self.test_size)
+        logger.info(
+            "  Train / Val / Test: %d / %d / %d",
+            self.train_size,
+            self.val_size,
+            self.test_size,
+        )
         logger.info("  Duplicate rate : %.2f%%", self.duplicate_rate * 100)
         logger.info("  Empty texts    : %d", self.empty_text_count)
         logger.info("─────────────────────────────────────────────")
@@ -56,6 +61,7 @@ class DataReport:
 # ---------------------------------------------------------------------------
 # Label encoder (fit on train only)
 # ---------------------------------------------------------------------------
+
 
 class IntentLabelEncoder:
     """Wraps sklearn LabelEncoder; serialisable for artifact logging."""
@@ -83,6 +89,7 @@ class IntentLabelEncoder:
 # Main loader
 # ---------------------------------------------------------------------------
 
+
 def load_and_split(
     cfg: dict[str, Any],
     tokenizer: PreTrainedTokenizerBase,
@@ -109,7 +116,9 @@ def load_and_split(
         raw = load_dataset(dataset_id, trust_remote_code=True)
         df = _hf_to_df(raw, text_col, label_col)
     except Exception:
-        logger.warning("HF dataset '%s' unavailable; generating synthetic data.", dataset_id)
+        logger.warning(
+            "HF dataset '%s' unavailable; generating synthetic data.", dataset_id
+        )
         df = _synthetic_df(text_col, label_col, seed=seed)
 
     # ── 2. Basic quality checks ──────────────────────────────────────────
@@ -128,7 +137,7 @@ def load_and_split(
         class_counts=counts.to_dict(),
         imbalance_ratio=imbalance_ratio,
         class_imbalance_flag=imbalance_ratio > 10,
-        leakage_risk=False,      # enforced by design below
+        leakage_risk=False,  # enforced by design below
         duplicate_rate=dup_rate,
         empty_text_count=empty_count,
     )
@@ -136,7 +145,8 @@ def load_and_split(
     if report.class_imbalance_flag:
         logger.warning(
             "Class imbalance detected (ratio=%.1f). "
-            "Consider oversampling or weighted loss.", imbalance_ratio
+            "Consider oversampling or weighted loss.",
+            imbalance_ratio,
         )
 
     # ── 3. Stratified split (train first, then val from train) ───────────
@@ -144,7 +154,8 @@ def load_and_split(
     labels = df[label_col].tolist()
 
     X_train_val, X_test, y_train_val, y_test = train_test_split(
-        texts, labels,
+        texts,
+        labels,
         test_size=test_size,
         stratify=labels,
         random_state=seed,
@@ -152,7 +163,8 @@ def load_and_split(
 
     val_fraction = val_size / (1.0 - test_size)
     X_train, X_val, y_train, y_val = train_test_split(
-        X_train_val, y_train_val,
+        X_train_val,
+        y_train_val,
         test_size=val_fraction,
         stratify=y_train_val,
         random_state=seed,
@@ -162,12 +174,12 @@ def load_and_split(
     enc = IntentLabelEncoder().fit(y_train)
     # Val/test may contain unseen labels (OOS); map them to -1 for analysis
     y_train_ids = enc.transform(y_train).tolist()
-    y_val_ids   = _safe_transform(enc, y_val)
-    y_test_ids  = _safe_transform(enc, y_test)
+    y_val_ids = _safe_transform(enc, y_val)
+    y_test_ids = _safe_transform(enc, y_test)
 
     report.train_size = len(X_train)
-    report.val_size   = len(X_val)
-    report.test_size  = len(X_test)
+    report.val_size = len(X_val)
+    report.test_size = len(X_test)
     report.log()
 
     # ── 5. Tokenise (no leakage — tokenizer is fit-free) ────────────────
@@ -183,11 +195,13 @@ def load_and_split(
         ds = Dataset.from_dict({text_col: texts_, "label": label_ids})
         return ds.map(tokenise, batched=True).remove_columns([text_col])
 
-    dataset_dict = DatasetDict({
-        "train": make_hf(X_train, y_train_ids),
-        "val":   make_hf(X_val,   y_val_ids),
-        "test":  make_hf(X_test,  y_test_ids),
-    })
+    dataset_dict = DatasetDict(
+        {
+            "train": make_hf(X_train, y_train_ids),
+            "val": make_hf(X_val, y_val_ids),
+            "test": make_hf(X_test, y_test_ids),
+        }
+    )
 
     return dataset_dict, enc, report
 
@@ -195,6 +209,7 @@ def load_and_split(
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _hf_to_df(raw: Any, text_col: str, label_col: str) -> pd.DataFrame:
     """Flatten multi-split HF dataset into a single DataFrame."""
@@ -209,7 +224,7 @@ def _hf_to_df(raw: Any, text_col: str, label_col: str) -> pd.DataFrame:
 def _safe_transform(enc: IntentLabelEncoder, labels: list[str]) -> list[int]:
     """Transform labels; unseen labels become -1 (out-of-scope sentinel)."""
     known = set(enc.classes_)
-    return [enc.transform([l])[0] if l in known else -1 for l in labels]
+    return [enc.transform([l])[0] if l in known else -1 for l in labels]  # noqa: E741
 
 
 def _synthetic_df(text_col: str, label_col: str, seed: int = 42) -> pd.DataFrame:
@@ -219,11 +234,31 @@ def _synthetic_df(text_col: str, label_col: str, seed: int = 42) -> pd.DataFrame
     """
     rng = np.random.default_rng(seed)
     intents = {
-        "book_flight":      ["book a flight to {city}", "I need to fly to {city}", "reserve a seat to {city}"],
-        "check_balance":    ["what is my balance", "how much money do I have", "show my account balance"],
-        "cancel_order":     ["cancel my order", "I want to cancel", "please cancel order {id}"],
-        "track_package":    ["where is my package", "track order {id}", "check delivery status"],
-        "weather_forecast": ["what is the weather in {city}", "will it rain tomorrow", "weather forecast {city}"],
+        "book_flight": [
+            "book a flight to {city}",
+            "I need to fly to {city}",
+            "reserve a seat to {city}",
+        ],
+        "check_balance": [
+            "what is my balance",
+            "how much money do I have",
+            "show my account balance",
+        ],
+        "cancel_order": [
+            "cancel my order",
+            "I want to cancel",
+            "please cancel order {id}",
+        ],
+        "track_package": [
+            "where is my package",
+            "track order {id}",
+            "check delivery status",
+        ],
+        "weather_forecast": [
+            "what is the weather in {city}",
+            "will it rain tomorrow",
+            "weather forecast {city}",
+        ],
     }
     cities = ["Paris", "London", "Tokyo", "Berlin", "Sydney"]
     texts, labels = [], []
@@ -231,7 +266,7 @@ def _synthetic_df(text_col: str, label_col: str, seed: int = 42) -> pd.DataFrame
         for _ in range(200):
             tmpl = templates[rng.integers(len(templates))]
             city = cities[rng.integers(len(cities))]
-            oid  = str(rng.integers(10000, 99999))
+            oid = str(rng.integers(10000, 99999))
             texts.append(tmpl.format(city=city, id=oid))
             labels.append(intent)
     df = pd.DataFrame({text_col: texts, label_col: labels})

@@ -6,6 +6,7 @@ NOTE: AgentRunRequest declares ``context: str`` (Pydantic v2), so payloads use
 a string context. UniversalAgent is patched so the endpoint logic — not the
 real agent — is exercised, keeping these tests fast and deterministic.
 """
+
 from unittest.mock import patch
 
 import pytest
@@ -26,6 +27,7 @@ def _payload(task="do something", role_id="engineer"):
 @pytest.fixture
 def client():
     from src.interface.api import app, _agent_run_limiter
+
     _agent_run_limiter.reset()
     with TestClient(app) as c:
         yield c
@@ -113,16 +115,21 @@ def test_second_ip_is_unaffected_by_first_ips_limit(client):
         MockAgent.return_value.run.return_value = {"status": "ok"}
         for _ in range(RATE_LIMIT):
             client.post("/agent/run", json=_payload(), headers=ip_a)
-        assert client.post("/agent/run", json=_payload(), headers=ip_a).status_code == 429
+        assert (
+            client.post("/agent/run", json=_payload(), headers=ip_a).status_code == 429
+        )
 
         for i in range(RATE_LIMIT):
             resp = client.post("/agent/run", json=_payload(), headers=ip_b)
-            assert resp.status_code != 429, f"IP B request {i + 1} unexpectedly throttled"
+            assert resp.status_code != 429, (
+                f"IP B request {i + 1} unexpectedly throttled"
+            )
 
 
 def test_disabled_when_rate_limit_zero(client):
     """A capacity of 0 disables throttling entirely."""
     from src.interface.api import _agent_run_limiter
+
     _agent_run_limiter.configure(capacity=0, window_seconds=WINDOW_SECONDS)
     headers = {"X-Forwarded-For": "203.0.113.30"}
     with patch("src.agents.universal.UniversalAgent") as MockAgent:

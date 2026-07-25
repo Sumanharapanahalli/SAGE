@@ -54,6 +54,7 @@ class ASRPipeline:
         logger.info("Loading model from %s on %s", model_dir, self.device)
         # Lazy import to avoid circular dependency during testing
         from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
+
         self.processor = Wav2Vec2Processor.from_pretrained(model_dir)
         self.model = Wav2Vec2ForCTC.from_pretrained(model_dir).to(self.device)
         self.model.eval()
@@ -103,7 +104,9 @@ class ASRPipeline:
 
         logger.info(
             "Benchmarking: %d runs × %.1f-second clips on %s",
-            n_runs, audio_duration_sec, self.device,
+            n_runs,
+            audio_duration_sec,
+            self.device,
         )
 
         # Warm-up (3 runs excluded from stats)
@@ -119,7 +122,9 @@ class ASRPipeline:
             latencies_ms.append(result.latency_ms)
             rtfs.append(result.rtf)
             if (i + 1) % 20 == 0:
-                logger.info("  Run %d/%d — p50=%.1f ms", i + 1, n_runs, np.median(latencies_ms))
+                logger.info(
+                    "  Run %d/%d — p50=%.1f ms", i + 1, n_runs, np.median(latencies_ms)
+                )
 
         stats = {
             "audio_duration_sec": audio_duration_sec,
@@ -141,18 +146,35 @@ class ASRPipeline:
             "sla": {
                 "latency_sla_ms": self.latency_sla_ms,
                 "rtf_threshold": self.rtf_threshold,
-                "latency_p95_pass": float(np.percentile(latencies_ms, 95)) <= self.latency_sla_ms,
+                "latency_p95_pass": float(np.percentile(latencies_ms, 95))
+                <= self.latency_sla_ms,
                 "rtf_p95_pass": float(np.percentile(rtfs, 95)) <= self.rtf_threshold,
                 "fraction_within_sla": round(
-                    sum(l <= self.latency_sla_ms for l in latencies_ms) / n_runs, 4
+                    sum(lat <= self.latency_sla_ms for lat in latencies_ms) / n_runs,
+                    4,
                 ),
             },
         }
 
         logger.info("Benchmark complete:")
-        logger.info("  p50=%.1f ms | p95=%.1f ms | p99=%.1f ms", stats["latency_ms"]["p50"], stats["latency_ms"]["p95"], stats["latency_ms"]["p99"])
-        logger.info("  RTF p95=%.4f (SLA=%.2f) → %s", stats["rtf"]["p95"], self.rtf_threshold, "PASS" if stats["sla"]["rtf_p95_pass"] else "FAIL")
-        logger.info("  Latency p95=%.1f ms (SLA=%d ms) → %s", stats["latency_ms"]["p95"], int(self.latency_sla_ms), "PASS" if stats["sla"]["latency_p95_pass"] else "FAIL")
+        logger.info(
+            "  p50=%.1f ms | p95=%.1f ms | p99=%.1f ms",
+            stats["latency_ms"]["p50"],
+            stats["latency_ms"]["p95"],
+            stats["latency_ms"]["p99"],
+        )
+        logger.info(
+            "  RTF p95=%.4f (SLA=%.2f) → %s",
+            stats["rtf"]["p95"],
+            self.rtf_threshold,
+            "PASS" if stats["sla"]["rtf_p95_pass"] else "FAIL",
+        )
+        logger.info(
+            "  Latency p95=%.1f ms (SLA=%d ms) → %s",
+            stats["latency_ms"]["p95"],
+            int(self.latency_sla_ms),
+            "PASS" if stats["sla"]["latency_p95_pass"] else "FAIL",
+        )
 
         return stats
 
@@ -198,7 +220,9 @@ def main(config_path: str = "config.yaml", model_dir: str | None = None):
     logger.info("Benchmark saved: %s", out)
 
     # Demo transcription
-    demo_audio = np.random.randn(int(3.0 * cfg["data"]["sampling_rate"])).astype(np.float32)
+    demo_audio = np.random.randn(int(3.0 * cfg["data"]["sampling_rate"])).astype(
+        np.float32
+    )
     result = pipeline.transcribe(demo_audio)
     logger.info(
         "Demo transcription — text=%r | latency=%.1f ms | rtf=%.3f | sla=%s",

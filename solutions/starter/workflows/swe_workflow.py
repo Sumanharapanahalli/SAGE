@@ -25,6 +25,7 @@ Usage:
   POST /workflow/resume
   {"run_id": "<id>", "feedback": {"approved": true}}
 """
+
 from __future__ import annotations
 
 import logging
@@ -42,34 +43,35 @@ logger = logging.getLogger(__name__)
 # State
 # ---------------------------------------------------------------------------
 
+
 class SWEState(TypedDict, total=False):
     # Input
-    task: str                       # The task / issue description
-    repo_path: str                  # Path to existing local repo (default: cwd)
-    repo_url: str                   # Optional: clone from remote URL
+    task: str  # The task / issue description
+    repo_path: str  # Path to existing local repo (default: cwd)
+    repo_url: str  # Optional: clone from remote URL
     solution_name: str
 
     # Exploration
-    workspace_dir: str              # Resolved workspace (may be cloned or repo_path)
-    repo_context: str               # README + AGENTS.md concatenated
-    file_tree: str                  # Top-level directory listing
-    tech_stack: str                 # Detected language / framework
-    test_command: str               # Inferred test command (e.g. "pytest tests/")
-    agents_md: str                  # AGENTS.md content (open-swe convention)
-    exploration_summary: str        # LLM-generated codebase understanding
+    workspace_dir: str  # Resolved workspace (may be cloned or repo_path)
+    repo_context: str  # README + AGENTS.md concatenated
+    file_tree: str  # Top-level directory listing
+    tech_stack: str  # Detected language / framework
+    test_command: str  # Inferred test command (e.g. "pytest tests/")
+    agents_md: str  # AGENTS.md content (open-swe convention)
+    exploration_summary: str  # LLM-generated codebase understanding
 
     # Planning
-    plan: List[str]                 # Ordered list of change steps
-    todos: List[dict]               # [{file, action, description}]
-    implementation_plan: str        # Full LLM-generated plan text
+    plan: List[str]  # Ordered list of change steps
+    todos: List[dict]  # [{file, action, description}]
+    implementation_plan: str  # Full LLM-generated plan text
 
     # Implementation
-    changes_made: List[str]         # Files changed
+    changes_made: List[str]  # Files changed
     implementation_result: str
     diff_summary: str
 
     # Verify
-    test_results: str               # Stdout from test run
+    test_results: str  # Stdout from test run
     tests_passed: bool
 
     # Submit
@@ -83,12 +85,13 @@ class SWEState(TypedDict, total=False):
     run_id: str
     trace_id: str
     error: Optional[str]
-    approved: bool                  # Set by human during HITL gate
+    approved: bool  # Set by human during HITL gate
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _resolve_workspace(state: SWEState) -> tuple[str, bool]:
     """
@@ -100,6 +103,7 @@ def _resolve_workspace(state: SWEState) -> tuple[str, bool]:
 
     if repo_url:
         from src.integrations.sandbox_runner import sandbox_runner
+
         result = sandbox_runner.clone_repo(repo_url)
         if result["success"]:
             return result["workspace_dir"], True
@@ -115,6 +119,7 @@ def _resolve_workspace(state: SWEState) -> tuple[str, bool]:
 def _safe_execute(cmd: str, workspace_dir: str, timeout: int = 120) -> dict:
     """Wrapper around sandbox_runner.execute that never raises."""
     from src.integrations.sandbox_runner import sandbox_runner
+
     return sandbox_runner.execute(cmd, workspace_dir, timeout=timeout)
 
 
@@ -122,6 +127,7 @@ def _llm_generate(prompt: str, max_tokens: int = 1500) -> str:
     """Call LLMGateway; return empty string on failure."""
     try:
         from src.core.llm_gateway import llm_gateway
+
         return llm_gateway.generate(prompt, max_tokens=max_tokens)
     except Exception as e:
         logger.error("LLM generate failed: %s", e)
@@ -131,6 +137,7 @@ def _llm_generate(prompt: str, max_tokens: int = 1500) -> str:
 # ---------------------------------------------------------------------------
 # Node 1: explore
 # ---------------------------------------------------------------------------
+
 
 def explore(state: SWEState) -> SWEState:
     """
@@ -148,7 +155,9 @@ def explore(state: SWEState) -> SWEState:
     readme = readme_result.get("stdout", "")[:3000]
 
     # Read AGENTS.md (open-swe convention)
-    agents_md_result = _safe_execute("cat AGENTS.md 2>/dev/null || echo ''", workspace_dir)
+    agents_md_result = _safe_execute(
+        "cat AGENTS.md 2>/dev/null || echo ''", workspace_dir
+    )
     agents_md = agents_md_result.get("stdout", "").strip()
 
     # File tree — top two levels
@@ -160,7 +169,10 @@ def explore(state: SWEState) -> SWEState:
     file_tree = tree_result.get("stdout", "")[:2000]
 
     # Detect tech stack and test command
-    has_pytest = _safe_execute("test -f pytest.ini || test -f setup.cfg || test -f pyproject.toml", workspace_dir)
+    has_pytest = _safe_execute(
+        "test -f pytest.ini || test -f setup.cfg || test -f pyproject.toml",
+        workspace_dir,
+    )
     has_package_json = _safe_execute("test -f package.json", workspace_dir)
     has_makefile = _safe_execute("test -f Makefile", workspace_dir)
 
@@ -185,7 +197,11 @@ def explore(state: SWEState) -> SWEState:
             test_command = "make test 2>&1 | head -50"
 
     # Compose context for LLM
-    agents_section = f"\n\nAGENTS.md (repo conventions — follow these):\n{agents_md}" if agents_md else ""
+    agents_section = (
+        f"\n\nAGENTS.md (repo conventions — follow these):\n{agents_md}"
+        if agents_md
+        else ""
+    )
     repo_context = f"README:\n{readme}{agents_section}"
 
     explore_prompt = f"""You are a senior software engineer exploring a codebase to plan implementation.
@@ -224,6 +240,7 @@ Be specific about file paths. Do not guess if uncertain — flag unknowns."""
 # Node 2: plan
 # ---------------------------------------------------------------------------
 
+
 def plan(state: SWEState) -> SWEState:
     """
     Use LLM to generate a structured plan as an ordered list of file edits.
@@ -237,7 +254,9 @@ def plan(state: SWEState) -> SWEState:
 
     # Read a sample of files mentioned in the exploration
     file_samples = ""
-    relevant_files = re.findall(r'(?:^|\s)([\w./\-]+\.(?:py|ts|js|go|java|yaml|yml|json))', exploration_summary)
+    relevant_files = re.findall(
+        r"(?:^|\s)([\w./\-]+\.(?:py|ts|js|go|java|yaml|yml|json))", exploration_summary
+    )
     for rel_path in relevant_files[:4]:
         rel_path = rel_path.strip()
         full_path = os.path.join(workspace_dir, rel_path)
@@ -249,7 +268,11 @@ def plan(state: SWEState) -> SWEState:
             except Exception:
                 pass
 
-    agents_section = f"\nRepo conventions (AGENTS.md — you MUST follow these):\n{agents_md}\n" if agents_md else ""
+    agents_section = (
+        f"\nRepo conventions (AGENTS.md — you MUST follow these):\n{agents_md}\n"
+        if agents_md
+        else ""
+    )
 
     plan_prompt = f"""You are a senior software engineer creating a minimal implementation plan.
 
@@ -292,9 +315,10 @@ Rules:
     implementation_plan = raw
 
     try:
-        json_match = re.search(r'\{[\s\S]*\}', raw)
+        json_match = re.search(r"\{[\s\S]*\}", raw)
         if json_match:
             import json
+
             data = json.loads(json_match.group(0))
             plan_steps = data.get("plan", [])
             todos = data.get("todos", [])
@@ -307,7 +331,7 @@ Rules:
     except Exception as e:
         logger.warning("Could not parse plan JSON: %s — using raw text", e)
         # Extract steps from numbered list as fallback
-        plan_steps = re.findall(r'(?:^|\n)\s*\d+\.\s+(.+)', raw)
+        plan_steps = re.findall(r"(?:^|\n)\s*\d+\.\s+(.+)", raw)
         todos = []
 
     return {
@@ -323,6 +347,7 @@ Rules:
 # ---------------------------------------------------------------------------
 # Node 3: implement
 # ---------------------------------------------------------------------------
+
 
 def implement(state: SWEState) -> SWEState:
     """
@@ -348,7 +373,9 @@ def implement(state: SWEState) -> SWEState:
     from src.integrations.sandbox_runner import sandbox_runner
 
     changes_made: List[str] = []
-    agents_section = f"\nRepo conventions (AGENTS.md):\n{agents_md}\n" if agents_md else ""
+    agents_section = (
+        f"\nRepo conventions (AGENTS.md):\n{agents_md}\n" if agents_md else ""
+    )
 
     # If todos list is populated, implement file by file
     if todos:
@@ -367,7 +394,11 @@ def implement(state: SWEState) -> SWEState:
                 read_result = sandbox_runner.read_file(file_path, workspace_dir)
                 existing_content = read_result.get("content", "") or ""
 
-            existing_section = f"\nCURRENT FILE CONTENT ({file_path}):\n```\n{existing_content[:3000]}\n```" if existing_content else f"\n(Creating new file: {file_path})"
+            existing_section = (
+                f"\nCURRENT FILE CONTENT ({file_path}):\n```\n{existing_content[:3000]}\n```"
+                if existing_content
+                else f"\n(Creating new file: {file_path})"
+            )
 
             impl_prompt = f"""You are implementing a specific file change as part of a software task.
 
@@ -384,14 +415,18 @@ Write production-quality code. Preserve all existing functionality unless the ta
 
             if new_content.strip():
                 # Strip accidental markdown fences
-                new_content = re.sub(r'^```\w*\n', '', new_content.strip())
-                new_content = re.sub(r'\n```$', '', new_content.strip())
+                new_content = re.sub(r"^```\w*\n", "", new_content.strip())
+                new_content = re.sub(r"\n```$", "", new_content.strip())
 
-                write_result = sandbox_runner.write_file(file_path, new_content + "\n", workspace_dir)
+                write_result = sandbox_runner.write_file(
+                    file_path, new_content + "\n", workspace_dir
+                )
                 if write_result.get("success"):
                     changes_made.append(file_path)
                 else:
-                    logger.warning("Failed to write %s: %s", file_path, write_result.get("error"))
+                    logger.warning(
+                        "Failed to write %s: %s", file_path, write_result.get("error")
+                    )
 
     else:
         # Fallback: ask LLM for FILE blocks covering all changes
@@ -415,10 +450,12 @@ FILE: path/to/file.py
 Output only FILE blocks. Most critical files first. Never create backup files."""
 
         raw = _llm_generate(fallback_prompt, max_tokens=3000)
-        file_blocks = re.findall(r'FILE: ([^\n]+)\n```(?:\w+)?\n([\s\S]*?)```', raw)
+        file_blocks = re.findall(r"FILE: ([^\n]+)\n```(?:\w+)?\n([\s\S]*?)```", raw)
         for file_path, content in file_blocks:
             file_path = file_path.strip()
-            write_result = sandbox_runner.write_file(file_path, content.strip() + "\n", workspace_dir)
+            write_result = sandbox_runner.write_file(
+                file_path, content.strip() + "\n", workspace_dir
+            )
             if write_result.get("success"):
                 changes_made.append(file_path)
 
@@ -447,6 +484,7 @@ Output only FILE blocks. Most critical files first. Never create backup files.""
 # Node 4: verify
 # ---------------------------------------------------------------------------
 
+
 def verify(state: SWEState) -> SWEState:
     """
     Run only the tests related to changed files.
@@ -459,10 +497,18 @@ def verify(state: SWEState) -> SWEState:
     base_test_command = state.get("test_command", "")
 
     if not workspace_dir or not os.path.isdir(workspace_dir):
-        return {**state, "test_results": "No workspace — skipping tests.", "tests_passed": True}
+        return {
+            **state,
+            "test_results": "No workspace — skipping tests.",
+            "tests_passed": True,
+        }
 
     if not changes_made:
-        return {**state, "test_results": "No changes made — skipping tests.", "tests_passed": True}
+        return {
+            **state,
+            "test_results": "No changes made — skipping tests.",
+            "tests_passed": True,
+        }
 
     # Build targeted test command
     targeted_cmd = base_test_command
@@ -485,7 +531,9 @@ def verify(state: SWEState) -> SWEState:
                     break
 
         if test_paths:
-            targeted_cmd = f"python -m pytest {' '.join(test_paths)} -x -q 2>&1 | head -60"
+            targeted_cmd = (
+                f"python -m pytest {' '.join(test_paths)} -x -q 2>&1 | head -60"
+            )
         else:
             targeted_cmd = "python -m pytest -x -q 2>&1 | head -60"
 
@@ -512,6 +560,7 @@ def verify(state: SWEState) -> SWEState:
 # Node 5: propose_pr
 # ---------------------------------------------------------------------------
 
+
 def propose_pr(state: SWEState) -> SWEState:
     """
     Commit staged changes to a new branch. If GITHUB_TOKEN is set, open a
@@ -521,8 +570,8 @@ def propose_pr(state: SWEState) -> SWEState:
     task = state.get("task", "")
     pr_title = state.get("pr_title", f"feat: {task[:60].lower()}")
     pr_body = state.get("pr_body", "")
-    changes_made = state.get("changes_made", [])
-    diff_summary = state.get("diff_summary", "")
+    state.get("changes_made", [])
+    state.get("diff_summary", "")
     test_results = state.get("test_results", "")
 
     if not workspace_dir or not os.path.isdir(workspace_dir):
@@ -533,7 +582,7 @@ def propose_pr(state: SWEState) -> SWEState:
         }
 
     # Generate a branch name
-    slug = re.sub(r'[^a-z0-9-]', '-', task[:40].lower()).strip('-')
+    slug = re.sub(r"[^a-z0-9-]", "-", task[:40].lower()).strip("-")
     branch_name = f"sage-swe/{slug}-{str(uuid.uuid4())[:6]}"
 
     # Create branch
@@ -543,8 +592,12 @@ def propose_pr(state: SWEState) -> SWEState:
     )
 
     # Configure git author if not already set
-    _safe_execute("git config user.email 'sage-swe@localhost' 2>/dev/null || true", workspace_dir)
-    _safe_execute("git config user.name 'SAGE SWE Agent' 2>/dev/null || true", workspace_dir)
+    _safe_execute(
+        "git config user.email 'sage-swe@localhost' 2>/dev/null || true", workspace_dir
+    )
+    _safe_execute(
+        "git config user.name 'SAGE SWE Agent' 2>/dev/null || true", workspace_dir
+    )
 
     # Commit
     escaped_title = pr_title.replace('"', '\\"')
@@ -568,7 +621,7 @@ def propose_pr(state: SWEState) -> SWEState:
             remote_url = remote_result.get("stdout", "").strip()
 
             # Parse owner/repo from URL
-            repo_match = re.search(r'github\.com[:/]([^/]+)/([^/.]+)', remote_url)
+            repo_match = re.search(r"github\.com[:/]([^/]+)/([^/.]+)", remote_url)
             if repo_match:
                 import urllib.request
                 import json
@@ -589,20 +642,28 @@ def propose_pr(state: SWEState) -> SWEState:
                         "git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@'",
                         workspace_dir,
                     )
-                    base_branch = default_branch_result.get("stdout", "main").strip() or "main"
+                    base_branch = (
+                        default_branch_result.get("stdout", "main").strip() or "main"
+                    )
 
                     # Build PR body with test results appended
                     full_body = pr_body
                     if test_results:
-                        full_body += f"\n\n## Test Results\n```\n{test_results[:500]}\n```"
-                    full_body += f"\n\n---\n*Opened by SAGE SWE Agent — commit `{commit_sha}`*"
+                        full_body += (
+                            f"\n\n## Test Results\n```\n{test_results[:500]}\n```"
+                        )
+                    full_body += (
+                        f"\n\n---\n*Opened by SAGE SWE Agent — commit `{commit_sha}`*"
+                    )
 
-                    payload = json.dumps({
-                        "title": pr_title,
-                        "body": full_body,
-                        "head": branch_name,
-                        "base": base_branch,
-                    }).encode()
+                    payload = json.dumps(
+                        {
+                            "title": pr_title,
+                            "body": full_body,
+                            "head": branch_name,
+                            "base": base_branch,
+                        }
+                    ).encode()
 
                     req = urllib.request.Request(
                         f"https://api.github.com/repos/{owner}/{repo}/pulls",
@@ -637,6 +698,7 @@ def propose_pr(state: SWEState) -> SWEState:
 # Node 6: finalize  (HITL gate — interrupt_before this node)
 # ---------------------------------------------------------------------------
 
+
 def finalize(state: SWEState) -> SWEState:
     """
     Log task completion to the audit trail.
@@ -650,6 +712,7 @@ def finalize(state: SWEState) -> SWEState:
 
     try:
         from src.memory.audit_logger import audit_logger
+
         audit_logger.log_event(
             actor="SWEAgent",
             action_type="SWE_TASK_COMPLETE",
@@ -667,7 +730,9 @@ def finalize(state: SWEState) -> SWEState:
 
     logger.info(
         "SWE task complete — PR: %s | commit: %s | files changed: %s",
-        pr_url, commit_sha, changes_made,
+        pr_url,
+        commit_sha,
+        changes_made,
     )
 
     return state

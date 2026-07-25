@@ -13,7 +13,6 @@ import os
 import sqlite3
 import tempfile
 import threading
-import time
 
 import pytest
 
@@ -26,6 +25,7 @@ class TestExceptionHierarchy:
 
     def test_base_exception_exists(self):
         from src.core.exceptions import SAGEError
+
         assert issubclass(SAGEError, Exception)
 
     def test_llm_errors_chain(self):
@@ -35,6 +35,7 @@ class TestExceptionHierarchy:
             LLMTimeoutError,
             LLMRateLimitError,
         )
+
         assert issubclass(LLMProviderError, SAGEError)
         assert issubclass(LLMTimeoutError, LLMProviderError)
         assert issubclass(LLMRateLimitError, LLMProviderError)
@@ -46,6 +47,7 @@ class TestExceptionHierarchy:
             ProposalNotFoundError,
             ProposalExpiredError,
         )
+
         assert issubclass(ProposalError, SAGEError)
         assert issubclass(ProposalNotFoundError, ProposalError)
         assert issubclass(ProposalExpiredError, ProposalError)
@@ -58,6 +60,7 @@ class TestExceptionHierarchy:
             RunnerTimeoutError,
             SandboxError,
         )
+
         assert issubclass(RunnerError, SAGEError)
         assert issubclass(RunnerUnavailableError, RunnerError)
         assert issubclass(RunnerTimeoutError, RunnerError)
@@ -70,6 +73,7 @@ class TestExceptionHierarchy:
             SolutionNotFoundError,
             YAMLValidationError,
         )
+
         assert issubclass(ConfigError, SAGEError)
         assert issubclass(SolutionNotFoundError, ConfigError)
         assert issubclass(YAMLValidationError, ConfigError)
@@ -83,6 +87,7 @@ class TestExceptionHierarchy:
             RunnerUnavailableError,
             YAMLValidationError,
         )
+
         for exc_class in [
             LLMTimeoutError,
             ProposalExpiredError,
@@ -94,6 +99,7 @@ class TestExceptionHierarchy:
 
     def test_exceptions_carry_message(self):
         from src.core.exceptions import LLMProviderError
+
         err = LLMProviderError("Gemini CLI timed out after 30s")
         assert "Gemini CLI" in str(err)
 
@@ -106,6 +112,7 @@ class TestSQLiteWAL:
 
     def test_wal_mode_enabled(self):
         from src.core.db import get_connection
+
         with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
             db_path = f.name
         try:
@@ -118,6 +125,7 @@ class TestSQLiteWAL:
 
     def test_busy_timeout_set(self):
         from src.core.db import get_connection
+
         with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
             db_path = f.name
         try:
@@ -130,6 +138,7 @@ class TestSQLiteWAL:
 
     def test_row_factory_default_is_row(self):
         from src.core.db import get_connection
+
         with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
             db_path = f.name
         try:
@@ -141,6 +150,7 @@ class TestSQLiteWAL:
 
     def test_row_factory_none_gives_tuples(self):
         from src.core.db import get_connection
+
         with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
             db_path = f.name
         try:
@@ -153,6 +163,7 @@ class TestSQLiteWAL:
     def test_concurrent_writes_with_wal(self):
         """WAL mode should allow concurrent writes without 'database is locked'."""
         from src.core.db import get_connection
+
         with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
             db_path = f.name
         try:
@@ -201,6 +212,7 @@ class TestLLMSemaphore:
 
     def test_provider_concurrency_map_exists(self):
         from src.core.llm_gateway import LLMGateway
+
         assert hasattr(LLMGateway, "PROVIDER_CONCURRENCY")
         pc = LLMGateway.PROVIDER_CONCURRENCY
         assert pc["local"] == 1, "Local GPU must be single-lane"
@@ -210,6 +222,7 @@ class TestLLMSemaphore:
     def test_gateway_has_inference_semaphore(self):
         """After init, the gateway should have a semaphore, not just a lock."""
         from src.core.llm_gateway import LLMGateway
+
         gw = LLMGateway()
         assert hasattr(gw, "_inference_semaphore")
         assert isinstance(gw._inference_semaphore, threading.Semaphore)
@@ -217,6 +230,7 @@ class TestLLMSemaphore:
     def test_class_lock_still_exists_for_singleton(self):
         """The class-level _lock must remain for thread-safe singleton creation."""
         from src.core.llm_gateway import LLMGateway
+
         assert hasattr(LLMGateway, "_lock")
         assert isinstance(LLMGateway._lock, type(threading.Lock()))
 
@@ -229,6 +243,7 @@ class TestVectorStoreThreadSafety:
 
     def test_fallback_lock_exists(self):
         from src.memory.vector_store import VectorMemory
+
         vm = VectorMemory()
         assert hasattr(vm, "_fallback_lock")
         assert isinstance(vm._fallback_lock, type(threading.Lock()))
@@ -236,6 +251,7 @@ class TestVectorStoreThreadSafety:
     def test_concurrent_add_and_search(self):
         """Multiple threads adding feedback while others search should not crash."""
         from src.memory.vector_store import VectorMemory
+
         vm = VectorMemory()  # minimal mode — uses fallback only
         errors = []
 
@@ -268,6 +284,7 @@ class TestVectorStoreThreadSafety:
     def test_concurrent_add_entry_and_list(self):
         """add_entry + list_entries should not race."""
         from src.memory.vector_store import VectorMemory
+
         vm = VectorMemory()
         errors = []
 
@@ -304,7 +321,9 @@ class TestRouteModuleStructure:
     def test_routes_directory_exists(self):
         routes_dir = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            "src", "interface", "routes",
+            "src",
+            "interface",
+            "routes",
         )
         assert os.path.isdir(routes_dir), "src/interface/routes/ must exist"
 
@@ -312,10 +331,13 @@ class TestRouteModuleStructure:
         """Each .py file in routes/ (except __init__) should define a router."""
         routes_dir = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            "src", "interface", "routes",
+            "src",
+            "interface",
+            "routes",
         )
         route_files = [
-            f for f in os.listdir(routes_dir)
+            f
+            for f in os.listdir(routes_dir)
             if f.endswith(".py") and f != "__init__.py"
         ]
         assert len(route_files) >= 2, "Should have at least 2 route modules"
@@ -324,5 +346,6 @@ class TestRouteModuleStructure:
             module_name = rf.removesuffix(".py")
             # Dynamic import to check for router attribute
             import importlib
+
             mod = importlib.import_module(f"src.interface.routes.{module_name}")
             assert hasattr(mod, "router"), f"{rf} missing 'router' attribute"

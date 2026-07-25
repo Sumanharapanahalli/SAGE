@@ -16,7 +16,7 @@ import uuid
 from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Callable, Optional
+from typing import Callable, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +24,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class BacktrackRecord:
     """Record of a backtrack event."""
+
     backtrack_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     failed_task_id: str = ""
     failed_task_type: str = ""
@@ -99,11 +100,13 @@ class BacktrackPlanner:
         with self._lock:
             count = self._failure_counts.get(task_id, 0)
             total_backtracks = sum(
-                1 for r in self._records.values()
+                1
+                for r in self._records.values()
                 if r.status in ("replanned", "replanning")
             )
-        return (count >= self._failure_threshold and
-                total_backtracks < self._max_backtracks)
+        return (
+            count >= self._failure_threshold and total_backtracks < self._max_backtracks
+        )
 
     def handle_failure(
         self,
@@ -137,7 +140,8 @@ class BacktrackPlanner:
 
         # Identify affected subtree
         affected = self._identify_affected_subtree(
-            failed_task_id, task_graph,
+            failed_task_id,
+            task_graph,
         )
         scope = "subtree" if len(affected) > 1 else "branch"
 
@@ -153,12 +157,15 @@ class BacktrackPlanner:
         with self._lock:
             self._records[record.backtrack_id] = record
 
-        self._emit("backtrack.started", {
-            "backtrack_id": record.backtrack_id,
-            "failed_task_id": failed_task_id,
-            "scope": scope,
-            "affected_count": len(affected),
-        })
+        self._emit(
+            "backtrack.started",
+            {
+                "backtrack_id": record.backtrack_id,
+                "failed_task_id": failed_task_id,
+                "scope": scope,
+                "affected_count": len(affected),
+            },
+        )
 
         # Re-plan
         try:
@@ -171,10 +178,13 @@ class BacktrackPlanner:
             record.new_plan = new_tasks
             record.status = "replanned"
 
-            self._emit("backtrack.replanned", {
-                "backtrack_id": record.backtrack_id,
-                "new_task_count": len(new_tasks),
-            })
+            self._emit(
+                "backtrack.replanned",
+                {
+                    "backtrack_id": record.backtrack_id,
+                    "new_task_count": len(new_tasks),
+                },
+            )
 
             return {
                 "backtrack_id": record.backtrack_id,
@@ -188,7 +198,9 @@ class BacktrackPlanner:
             return None
 
     def _identify_affected_subtree(
-        self, failed_id: str, task_graph: dict,
+        self,
+        failed_id: str,
+        task_graph: dict,
     ) -> list[dict]:
         """Find all tasks downstream of the failed task."""
         tasks = task_graph.get("tasks", [])
@@ -262,9 +274,7 @@ class BacktrackPlanner:
             replanned = sum(
                 1 for r in self._records.values() if r.status == "replanned"
             )
-            failed = sum(
-                1 for r in self._records.values() if r.status == "failed"
-            )
+            failed = sum(1 for r in self._records.values() if r.status == "failed")
         return {
             "total_backtracks": total,
             "successful_replans": replanned,
@@ -278,6 +288,7 @@ class BacktrackPlanner:
     def _emit(event_type: str, data: dict) -> None:
         try:
             from src.core.event_bus import get_event_bus
+
             get_event_bus().publish(event_type, data, source="backtrack_planner")
         except Exception:
             pass

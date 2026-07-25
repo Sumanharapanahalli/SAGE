@@ -66,14 +66,14 @@ _PROJECT_ROOT = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 )
 _SOLUTIONS_DIR = os.environ.get(
-    "SAGE_SOLUTIONS_DIR",
-    os.path.join(_PROJECT_ROOT, "solutions")
+    "SAGE_SOLUTIONS_DIR", os.path.join(_PROJECT_ROOT, "solutions")
 )
 
 
 # ---------------------------------------------------------------------------
 # Config validation — minimal JSON Schemas + a tiny dependency-free validator
 # ---------------------------------------------------------------------------
+
 
 class ConfigValidationError(ValueError):
     """Raised when a solution's YAML config fails schema validation.
@@ -87,8 +87,7 @@ class ConfigValidationError(ValueError):
         self.source = source
         self.field_path = field_path or "<root>"
         super().__init__(
-            f"Invalid SAGE config in '{source}': "
-            f"field '{self.field_path}' {message}"
+            f"Invalid SAGE config in '{source}': field '{self.field_path}' {message}"
         )
 
 
@@ -106,16 +105,16 @@ PROJECT_SCHEMA: dict = {
     # project.yaml layout — where a missing name is a genuine authoring error.
     "required": ["name"],
     "properties": {
-        "name":                 {"type": "string"},
-        "version":              {"type": "string"},
-        "domain":               {"type": "string"},
-        "description":          {"type": "string"},
-        "active_modules":       {"type": "array"},
+        "name": {"type": "string"},
+        "version": {"type": "string"},
+        "domain": {"type": "string"},
+        "description": {"type": "string"},
+        "active_modules": {"type": "array"},
         "compliance_standards": {"type": "array"},
-        "integrations":         {"type": "array"},
-        "ui_labels":            {"type": "object"},
-        "dashboard":            {"type": "object"},
-        "agent_budgets":        {"type": "object"},
+        "integrations": {"type": "array"},
+        "ui_labels": {"type": "object"},
+        "dashboard": {"type": "object"},
+        "agent_budgets": {"type": "object"},
     },
 }
 
@@ -129,15 +128,15 @@ PROMPTS_SCHEMA: dict = {
             # while appearing configured.
             "required": ["system_prompt"],
             "properties": {
-                "system_prompt":        {"type": "string"},
+                "system_prompt": {"type": "string"},
                 "user_prompt_template": {"type": "string"},
-                "output_schema":        {"type": "object"},
+                "output_schema": {"type": "object"},
             },
         },
         "developer": {
             "type": "object",
             "properties": {
-                "review_system_prompt":    {"type": "string"},
+                "review_system_prompt": {"type": "string"},
                 "mr_create_system_prompt": {"type": "string"},
             },
         },
@@ -163,18 +162,18 @@ TASKS_SCHEMA: dict = {
     # load-time ConfigValidationError (a regression). We still type-check it
     # whenever it IS present: it must be an array of strings.
     "properties": {
-        "task_types":            {"type": "array", "items": {"type": "string"}},
-        "task_descriptions":     {"type": "object"},
-        "task_hooks":            {"type": "object"},
+        "task_types": {"type": "array", "items": {"type": "string"}},
+        "task_descriptions": {"type": "object"},
+        "task_hooks": {"type": "object"},
         "task_sandbox_policies": {"type": "object"},
-        "scheduled":             {"type": "array"},
+        "scheduled": {"type": "array"},
     },
 }
 
 _JSON_TYPES: dict = {
-    "object":  dict,
-    "array":   list,
-    "string":  str,
+    "object": dict,
+    "array": list,
+    "string": str,
     "integer": int,
     "boolean": bool,
 }
@@ -199,7 +198,8 @@ def _validate(instance: Any, schema: dict, source: str, path: str = "") -> None:
     expected_type = schema.get("type")
     if expected_type and not _type_matches(instance, expected_type):
         raise ConfigValidationError(
-            source, path,
+            source,
+            path,
             f"must be a {expected_type}, got {type(instance).__name__}",
         )
 
@@ -207,13 +207,16 @@ def _validate(instance: Any, schema: dict, source: str, path: str = "") -> None:
         for key in schema.get("required", []):
             if key not in instance:
                 raise ConfigValidationError(
-                    source, f"{path}.{key}".lstrip("."),
+                    source,
+                    f"{path}.{key}".lstrip("."),
                     "is required but missing",
                 )
         for key, sub_schema in schema.get("properties", {}).items():
             if key in instance:
                 _validate(
-                    instance[key], sub_schema, source,
+                    instance[key],
+                    sub_schema,
+                    source,
                     f"{path}.{key}".lstrip("."),
                 )
 
@@ -246,7 +249,8 @@ def _auto_discover_project() -> str:
         return explicit
     try:
         candidates = sorted(
-            d for d in os.listdir(_SOLUTIONS_DIR)
+            d
+            for d in os.listdir(_SOLUTIONS_DIR)
             if (
                 os.path.isfile(os.path.join(_SOLUTIONS_DIR, d, "SKILL.md"))
                 or os.path.isfile(os.path.join(_SOLUTIONS_DIR, d, "project.yaml"))
@@ -261,6 +265,7 @@ def _auto_discover_project() -> str:
 # Internal YAML loader
 # ---------------------------------------------------------------------------
 
+
 def _load_yaml(path: str) -> dict:
     """Load a YAML file; return {} silently if missing."""
     if os.path.exists(path):
@@ -273,6 +278,7 @@ def _load_yaml(path: str) -> dict:
 def _get_org_loader():
     """Lazy import to avoid circular dependency at module load time."""
     from src.core.org_loader import org_loader
+
     return org_loader
 
 
@@ -304,7 +310,10 @@ def _parse_skill_md(path: str) -> tuple[dict, dict, dict, str]:
         # Malformed — try splitting with \r\n
         parts = raw.split("---\r\n", 2)
     if len(parts) < 3:
-        logger.warning("SKILL.md at %s has no valid frontmatter — treating entire file as body.", path)
+        logger.warning(
+            "SKILL.md at %s has no valid frontmatter — treating entire file as body.",
+            path,
+        )
         return {}, {}, {}, raw.strip()
 
     _, frontmatter_raw, body = parts
@@ -318,22 +327,32 @@ def _parse_skill_md(path: str) -> tuple[dict, dict, dict, str]:
 
     # ── Build project dict from frontmatter top-level keys ────────────────
     project_dict = {
-        "name":                 fm.get("name", ""),
-        "version":              fm.get("version", "1.0.0"),
-        "domain":               fm.get("domain", "general"),
-        "description":          fm.get("description", ""),
-        "active_modules":       fm.get("modules", fm.get("active_modules", [])),
+        "name": fm.get("name", ""),
+        "version": fm.get("version", "1.0.0"),
+        "domain": fm.get("domain", "general"),
+        "description": fm.get("description", ""),
+        "active_modules": fm.get("modules", fm.get("active_modules", [])),
         "compliance_standards": fm.get("compliance_standards", []),
-        "integrations":         fm.get("integrations", []),
-        "ui_labels":            fm.get("ui_labels", {}),
-        "dashboard":            fm.get("dashboard", {}),
-        "settings":             fm.get("settings", {}),
+        "integrations": fm.get("integrations", []),
+        "ui_labels": fm.get("ui_labels", {}),
+        "dashboard": fm.get("dashboard", {}),
+        "settings": fm.get("settings", {}),
     }
     # Copy through any extra top-level keys (e.g. source_repo, tenants)
     skip = {
-        "name", "version", "domain", "description", "modules", "active_modules",
-        "compliance_standards", "integrations", "ui_labels", "dashboard",
-        "settings", "tasks", "agent_roles",
+        "name",
+        "version",
+        "domain",
+        "description",
+        "modules",
+        "active_modules",
+        "compliance_standards",
+        "integrations",
+        "ui_labels",
+        "dashboard",
+        "settings",
+        "tasks",
+        "agent_roles",
     }
     for k, v in fm.items():
         if k not in skip:
@@ -348,26 +367,33 @@ def _parse_skill_md(path: str) -> tuple[dict, dict, dict, str]:
             role_cfg = agent_roles[role_key]
             if role_key == "analyst":
                 prompts_dict["analyst"] = {
-                    "system_prompt":       role_cfg.get("system_prompt", ""),
+                    "system_prompt": role_cfg.get("system_prompt", ""),
                     "user_prompt_template": role_cfg.get(
                         "user_prompt_template",
                         "INPUT:\n{input}\n\nPAST CONTEXT:\n{context}\n\nGenerate Analysis JSON:",
                     ),
-                    "output_schema":       role_cfg.get("output_schema", {}),
+                    "output_schema": role_cfg.get("output_schema", {}),
                 }
             elif role_key == "developer":
                 prompts_dict["developer"] = {
-                    "review_system_prompt":    role_cfg.get("system_prompt", ""),
-                    "mr_create_system_prompt": role_cfg.get("mr_create_system_prompt", ""),
+                    "review_system_prompt": role_cfg.get("system_prompt", ""),
+                    "mr_create_system_prompt": role_cfg.get(
+                        "mr_create_system_prompt", ""
+                    ),
                 }
             elif role_key == "planner":
-                prompts_dict["planner"] = {"system_prompt": role_cfg.get("system_prompt", "")}
+                prompts_dict["planner"] = {
+                    "system_prompt": role_cfg.get("system_prompt", "")
+                }
             elif role_key == "monitor":
-                prompts_dict["monitor"] = {"system_prompt": role_cfg.get("system_prompt", "")}
+                prompts_dict["monitor"] = {
+                    "system_prompt": role_cfg.get("system_prompt", "")
+                }
 
     # Any extra roles go into prompts_dict["roles"] for UniversalAgent
     universal_roles = {
-        k: v for k, v in agent_roles.items()
+        k: v
+        for k, v in agent_roles.items()
         if k not in ("analyst", "developer", "planner", "monitor")
     }
     if universal_roles:
@@ -389,6 +415,7 @@ def _parse_skill_md(path: str) -> tuple[dict, dict, dict, str]:
 # ---------------------------------------------------------------------------
 # ProjectConfig
 # ---------------------------------------------------------------------------
+
 
 class ProjectConfig:
     """
@@ -427,13 +454,17 @@ class ProjectConfig:
         rather than letting a missing key surface as a KeyError inside an agent.
         """
         self._name = (
-            project_name
-            or os.environ.get("SAGE_PROJECT", "")
-            or _auto_discover_project()
-        ).lower().strip()
+            (
+                project_name
+                or os.environ.get("SAGE_PROJECT", "")
+                or _auto_discover_project()
+            )
+            .lower()
+            .strip()
+        )
 
         project_dir = os.path.join(_SOLUTIONS_DIR, self._name)
-        self._base    = _load_yaml(os.path.join(_PROJECT_ROOT, "config", "config.yaml"))
+        self._base = _load_yaml(os.path.join(_PROJECT_ROOT, "config", "config.yaml"))
 
         skill_path = os.path.join(project_dir, "SKILL.md")
         if os.path.isfile(skill_path):
@@ -444,19 +475,26 @@ class ProjectConfig:
             self._skill_md_path = skill_path
             _validate_config(self._project, PROJECT_SCHEMA, skill_path)
             _validate_config(self._prompts, PROMPTS_SCHEMA, skill_path)
-            _validate_config(self._tasks,   TASKS_SCHEMA,   skill_path)
+            _validate_config(self._tasks, TASKS_SCHEMA, skill_path)
             logger.info(
                 "SAGE project loaded from SKILL.md: '%s'  (%s)",
-                self._name, skill_path,
+                self._name,
+                skill_path,
             )
         else:
             # Fall back to legacy 3-file layout
             project_path = os.path.join(project_dir, "project.yaml")
             prompts_path = os.path.join(project_dir, "prompts.yaml")
-            tasks_path   = os.path.join(project_dir, "tasks.yaml")
-            self._project = _validate_config(_load_yaml(project_path), PROJECT_SCHEMA, project_path)
-            self._prompts = _validate_config(_load_yaml(prompts_path), PROMPTS_SCHEMA, prompts_path)
-            self._tasks   = _validate_config(_load_yaml(tasks_path),   TASKS_SCHEMA,   tasks_path)
+            tasks_path = os.path.join(project_dir, "tasks.yaml")
+            self._project = _validate_config(
+                _load_yaml(project_path), PROJECT_SCHEMA, project_path
+            )
+            self._prompts = _validate_config(
+                _load_yaml(prompts_path), PROMPTS_SCHEMA, prompts_path
+            )
+            self._tasks = _validate_config(
+                _load_yaml(tasks_path), TASKS_SCHEMA, tasks_path
+            )
             self._skill_content = ""
             self._skill_md_path = ""
             logger.info("SAGE project loaded: '%s'  (%s)", self._name, project_dir)
@@ -504,21 +542,21 @@ class ProjectConfig:
     def metadata(self) -> dict:
         """Rich project metadata dict (safe to serialise to JSON)."""
         return {
-            "project":             self._name,
+            "project": self._name,
             # `or`, not get(..., default): dict.get only falls back when the key is ABSENT,
             # so a present-but-empty `name: ""` returned "" — and that empty string then
             # became the solution's display name and flowed into derived identifiers. An
             # empty name is as unusable as a missing one; fall back to the directory name.
-            "name":                self._project.get("name") or self._name,
-            "version":             self._project.get("version", "1.0.0"),
-            "description":         self._project.get("description", ""),
-            "domain":              self._project.get("domain", "general"),
-            "active_modules":      self._project.get("active_modules", []),
-            "compliance_standards":self._project.get("compliance_standards", []),
-            "integrations":        self._project.get("integrations", []),
-            "ui_labels":           self._project.get("ui_labels", {}),
-            "dashboard":           self._project.get("dashboard", {}),
-            "theme":               self._project.get("theme", {}),
+            "name": self._project.get("name") or self._name,
+            "version": self._project.get("version", "1.0.0"),
+            "description": self._project.get("description", ""),
+            "domain": self._project.get("domain", "general"),
+            "active_modules": self._project.get("active_modules", []),
+            "compliance_standards": self._project.get("compliance_standards", []),
+            "integrations": self._project.get("integrations", []),
+            "ui_labels": self._project.get("ui_labels", {}),
+            "dashboard": self._project.get("dashboard", {}),
+            "theme": self._project.get("theme", {}),
         }
 
     # ------------------------------------------------------------------
@@ -559,7 +597,9 @@ class ProjectConfig:
             with open(ctx_path, "r", encoding="utf-8") as fh:
                 return fh.read().strip()
         except OSError as exc:
-            logger.warning("Could not read solution_context.md at %s: %s", ctx_path, exc)
+            logger.warning(
+                "Could not read solution_context.md at %s: %s", ctx_path, exc
+            )
             return ""
 
     # ------------------------------------------------------------------
@@ -570,8 +610,8 @@ class ProjectConfig:
         """Return (system_prompt, user_prompt_template) for AnalystAgent."""
         cfg = self._prompts.get("analyst", {})
         return (
-            cfg.get("system_prompt",        _DEFAULT_ANALYST_SYSTEM),
-            cfg.get("user_prompt_template",  _DEFAULT_ANALYST_USER),
+            cfg.get("system_prompt", _DEFAULT_ANALYST_SYSTEM),
+            cfg.get("user_prompt_template", _DEFAULT_ANALYST_USER),
         )
 
     def get_developer_review_prompt(self) -> str:
@@ -594,9 +634,8 @@ class ProjectConfig:
 
     def get_analyst_output_schema(self) -> dict:
         """Return expected JSON output schema for AnalystAgent."""
-        return (
-            self._prompts.get("analyst", {})
-                         .get("output_schema", _DEFAULT_ANALYST_SCHEMA)
+        return self._prompts.get("analyst", {}).get(
+            "output_schema", _DEFAULT_ANALYST_SCHEMA
         )
 
     # ------------------------------------------------------------------
@@ -617,7 +656,9 @@ class ProjectConfig:
         ol = _get_org_loader()
         if ol.org_name and self._name:
             merged = ol.get_merged_tasks(self._name)
-            return merged.get("task_types", self._tasks.get("task_types", list(_DEFAULT_TASK_TYPES)))
+            return merged.get(
+                "task_types", self._tasks.get("task_types", list(_DEFAULT_TASK_TYPES))
+            )
         return self._tasks.get("task_types", list(_DEFAULT_TASK_TYPES))
 
     def get_task_descriptions(self) -> dict[str, str]:
@@ -630,7 +671,9 @@ class ProjectConfig:
         ol = _get_org_loader()
         if ol.org_name and self._name:
             merged = ol.get_merged_tasks(self._name)
-            return merged.get("task_descriptions", self._tasks.get("task_descriptions", {}))
+            return merged.get(
+                "task_descriptions", self._tasks.get("task_descriptions", {})
+            )
         return self._tasks.get("task_descriptions", {})
 
     def get_task_hooks(self, task_type: str) -> dict:
@@ -638,7 +681,7 @@ class ProjectConfig:
         hooks_map = self._tasks.get("task_hooks", {})
         entry = hooks_map.get(task_type, {})
         return {
-            "pre":  entry.get("pre", []),
+            "pre": entry.get("pre", []),
             "post": entry.get("post", []),
         }
 

@@ -8,6 +8,7 @@ All public names are exported; SAGE-specific error codes are declared
 here so the Python handlers and the Rust error mapper share the same
 constants via the JSON-RPC wire.
 """
+
 from __future__ import annotations
 
 import json

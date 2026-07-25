@@ -13,11 +13,11 @@ after a LIMIT would silently drop matches beyond the first page.
 Reads via raw SQL against ``audit_logger.db_path`` (same pattern as
 audit.py) so the handler is independent of AuditLogger's write path.
 """
+
 from __future__ import annotations
 
 import json
 import sqlite3
-from typing import Optional
 
 from rpc import RPC_INVALID_PARAMS, RPC_SIDECAR_ERROR, RpcError
 
@@ -58,6 +58,7 @@ def _conn():
 
 
 # --- predicate builders (SQL and Python kept in lockstep) -----------------
+
 
 def _like_any(exprs: tuple, keywords: tuple) -> tuple:
     """(sql, args) matching any keyword in any of the given SQL expressions."""
@@ -177,6 +178,7 @@ def _clamp_offset(params: dict) -> int:
 
 
 # ---------- handlers ----------
+
 
 def list_events(params: dict) -> dict:
     """Triage feed: full rows, newest-first, category + free-text filtered."""

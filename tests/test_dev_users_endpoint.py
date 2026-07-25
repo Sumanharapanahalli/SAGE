@@ -1,6 +1,5 @@
 """Tests for GET /config/dev-users endpoint."""
-import os
-import pytest
+
 from fastapi.testclient import TestClient
 
 
@@ -19,6 +18,7 @@ users:
     monkeypatch.setenv("SAGE_DEV_USERS_PATH", str(yaml_file))
 
     from src.interface.api import app
+
     client = TestClient(app)
     resp = client.get("/config/dev-users")
     assert resp.status_code == 200
@@ -34,6 +34,7 @@ def test_dev_users_missing_file_returns_empty(monkeypatch, tmp_path):
     monkeypatch.setenv("SAGE_DEV_USERS_PATH", str(tmp_path / "nonexistent.yaml"))
 
     from src.interface.api import app
+
     client = TestClient(app)
     resp = client.get("/config/dev-users")
     assert resp.status_code == 200

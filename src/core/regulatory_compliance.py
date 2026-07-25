@@ -15,7 +15,6 @@ Usage:
 """
 
 import logging
-import uuid
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
@@ -176,7 +175,6 @@ STANDARDS_REGISTRY: Dict[str, Dict] = {
             "access_control_policy",
         ],
     },
-
     # ---- EU ----
     "eu_mdr": {
         "id": "eu_mdr",
@@ -257,7 +255,6 @@ STANDARDS_REGISTRY: Dict[str, Dict] = {
             "pmpf_plan",
         ],
     },
-
     # ---- International ----
     "iec_62304": {
         "id": "iec_62304",
@@ -362,7 +359,6 @@ STANDARDS_REGISTRY: Dict[str, Dict] = {
             "clinical_evaluation",
         ],
     },
-
     # ---- Regional ----
     "uk_mhra": {
         "id": "uk_mhra",
@@ -699,11 +695,16 @@ class RegulatoryComplianceFramework:
 
         # Domain-specific safety standards (detected from product keywords or explicit domain)
         product_domain = product.get("domain") or ""
-        product_desc = " ".join(filter(None, [
-            product.get("intended_use"),
-            product.get("product_name"),
-            product.get("description"),
-        ])).lower()
+        product_desc = " ".join(
+            filter(
+                None,
+                [
+                    product.get("intended_use"),
+                    product.get("product_name"),
+                    product.get("description"),
+                ],
+            )
+        ).lower()
 
         for domain, standards in DOMAIN_SAFETY_STANDARDS.items():
             if domain in product_domain or domain in product_desc:
@@ -800,13 +801,21 @@ class RegulatoryComplianceFramework:
             # Map requirements to artifacts
             if "traceability" in req_lower and "traceability_matrix" in existing:
                 is_met = True
-            elif "risk" in req_lower and ("risk_management_file" in existing or "risk_assessment" in existing):
+            elif "risk" in req_lower and (
+                "risk_management_file" in existing or "risk_assessment" in existing
+            ):
                 is_met = True
-            elif "requirement" in req_lower and "software_requirements_spec" in existing:
+            elif (
+                "requirement" in req_lower and "software_requirements_spec" in existing
+            ):
                 is_met = True
-            elif "architecture" in req_lower and "software_architecture_doc" in existing:
+            elif (
+                "architecture" in req_lower and "software_architecture_doc" in existing
+            ):
                 is_met = True
-            elif "validation" in req_lower and ("validation_plan" in existing or "validation_report" in existing):
+            elif "validation" in req_lower and (
+                "validation_plan" in existing or "validation_report" in existing
+            ):
                 is_met = True
             elif "verification" in req_lower and "verification_plan" in existing:
                 is_met = True
@@ -816,7 +825,10 @@ class RegulatoryComplianceFramework:
                 is_met = True
             elif "soup" in req_lower and "soup_inventory" in existing:
                 is_met = True
-            elif "configuration" in req_lower and "configuration_management_plan" in existing:
+            elif (
+                "configuration" in req_lower
+                and "configuration_management_plan" in existing
+            ):
                 is_met = True
             elif "safety" in req_lower and "safety_classification" in existing:
                 is_met = True
@@ -857,26 +869,32 @@ class RegulatoryComplianceFramework:
         for req in std["requirements"]:
             req_lower = req.lower()
             has_evidence = any(
-                keyword in a for a in existing
-                for keyword in req_lower.split()[:3]
+                keyword in a for a in existing for keyword in req_lower.split()[:3]
             )
 
             if has_evidence:
                 status = "met"
                 remediation = "Evidence artifact exists. Verify completeness."
-            elif any(partial in existing for partial in ["software_requirements_spec", "audit_trail"]):
+            elif any(
+                partial in existing
+                for partial in ["software_requirements_spec", "audit_trail"]
+            ):
                 status = "partial"
                 remediation = f"Partial evidence exists. Complete: {req}"
             else:
                 status = "missing"
                 remediation = f"Create documentation for: {req}"
 
-            gaps.append({
-                "requirement": req,
-                "status": status,
-                "remediation": remediation,
-                "priority": "high" if "safety" in req_lower or "risk" in req_lower else "medium",
-            })
+            gaps.append(
+                {
+                    "requirement": req,
+                    "status": status,
+                    "remediation": remediation,
+                    "priority": "high"
+                    if "safety" in req_lower or "risk" in req_lower
+                    else "medium",
+                }
+            )
 
         return {
             "standard_id": standard_id,
@@ -898,16 +916,20 @@ class RegulatoryComplianceFramework:
         items = []
         for i, req in enumerate(std["requirements"]):
             related_artifacts = [
-                a for a in std["required_artifacts"]
+                a
+                for a in std["required_artifacts"]
                 if any(word in a for word in req.lower().split()[:3])
             ]
-            items.append({
-                "id": f"{standard_id}-{i+1:03d}",
-                "requirement": req,
-                "description": f"Verify compliance with: {req}",
-                "evidence_needed": related_artifacts or [f"Documentation for: {req}"],
-                "checked": False,
-            })
+            items.append(
+                {
+                    "id": f"{standard_id}-{i + 1:03d}",
+                    "requirement": req,
+                    "description": f"Verify compliance with: {req}",
+                    "evidence_needed": related_artifacts
+                    or [f"Documentation for: {req}"],
+                    "checked": False,
+                }
+            )
 
         return {
             "standard_id": standard_id,
@@ -928,7 +950,11 @@ class RegulatoryComplianceFramework:
             {
                 "phase_name": "Phase 1: Foundation",
                 "description": "Core lifecycle and risk management",
-                "standards": [s for s in applicable if s in ("iec_62304", "iso_14971", "iec_82304")],
+                "standards": [
+                    s
+                    for s in applicable
+                    if s in ("iec_62304", "iso_14971", "iec_82304")
+                ],
                 "deliverables": [
                     "Software Development Plan",
                     "Risk Management Plan and File",
@@ -940,7 +966,11 @@ class RegulatoryComplianceFramework:
             {
                 "phase_name": "Phase 2: Quality & Security",
                 "description": "Quality system and cybersecurity",
-                "standards": [s for s in applicable if s in ("fda_swv", "fda_csa", "fda_cybersecurity", "fda_21cfr11")],
+                "standards": [
+                    s
+                    for s in applicable
+                    if s in ("fda_swv", "fda_csa", "fda_cybersecurity", "fda_21cfr11")
+                ],
                 "deliverables": [
                     "Validation Plan and Reports",
                     "Threat Model and SBOM",
@@ -952,7 +982,21 @@ class RegulatoryComplianceFramework:
             {
                 "phase_name": "Phase 3: Classification & Compliance",
                 "description": "Regulatory classification and region-specific compliance",
-                "standards": [s for s in applicable if s in ("fda_cds", "imdrf_samd", "eu_mdr", "eu_ai_act", "uk_mhra", "canada_hc", "japan_pmda", "aus_tga")],
+                "standards": [
+                    s
+                    for s in applicable
+                    if s
+                    in (
+                        "fda_cds",
+                        "imdrf_samd",
+                        "eu_mdr",
+                        "eu_ai_act",
+                        "uk_mhra",
+                        "canada_hc",
+                        "japan_pmda",
+                        "aus_tga",
+                    )
+                ],
                 "deliverables": [
                     "CDS Classification Report",
                     "Technical Documentation",

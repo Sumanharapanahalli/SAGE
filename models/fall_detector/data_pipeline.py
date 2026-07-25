@@ -20,7 +20,6 @@ IEC 62304 Class: B (safety-relevant supporting software)
 
 from __future__ import annotations
 
-import os
 import logging
 import hashlib
 import numpy as np
@@ -31,14 +30,15 @@ from typing import Tuple, List, Optional
 logger = logging.getLogger(__name__)
 
 # ── Constants ────────────────────────────────────────────────────────────────
-SAMPLE_RATE_HZ = 200          # sensor output rate
-WINDOW_SAMPLES = 400          # 2 s window
-CHANNELS = 6                  # ax, ay, az [g], gx, gy, gz [°/s]
-GRAVITY_G = 9.81              # m/s²
+SAMPLE_RATE_HZ = 200  # sensor output rate
+WINDOW_SAMPLES = 400  # 2 s window
+CHANNELS = 6  # ax, ay, az [g], gx, gy, gz [°/s]
+GRAVITY_G = 9.81  # m/s²
 
 # Dataset size requirements
 MIN_FALL_WINDOWS = 5_000
-MIN_ADL_WINDOWS  = 20_000
+MIN_ADL_WINDOWS = 20_000
+
 
 # ── Data classes ─────────────────────────────────────────────────────────────
 @dataclass
@@ -57,13 +57,24 @@ class DatasetStats:
 
 
 # ── MobiAct loader ───────────────────────────────────────────────────────────
-MOBIACT_FALL_CODES = {"FOL", "FKL", "BSC", "SDL"}   # see dataset docs
-MOBIACT_ADL_CODES  = {"STD", "WAL", "JOG", "JUM", "STU", "STN", "SCH",
-                       "SIT", "CHU", "CSI", "CSO", "LYI"}
+MOBIACT_FALL_CODES = {"FOL", "FKL", "BSC", "SDL"}  # see dataset docs
+MOBIACT_ADL_CODES = {
+    "STD",
+    "WAL",
+    "JOG",
+    "JUM",
+    "STU",
+    "STN",
+    "SCH",
+    "SIT",
+    "CHU",
+    "CSI",
+    "CSO",
+    "LYI",
+}
 
 
-def load_mobiact(root: Path, stats: DatasetStats
-                 ) -> Tuple[np.ndarray, np.ndarray]:
+def load_mobiact(root: Path, stats: DatasetStats) -> Tuple[np.ndarray, np.ndarray]:
     """
     Parse MobiAct v2.0 CSV files.
     Expected directory layout:
@@ -78,8 +89,9 @@ def load_mobiact(root: Path, stats: DatasetStats
     annotated = root / "Annotated Data"
     if not annotated.exists():
         logger.warning("MobiAct path not found: %s — skipping.", annotated)
-        return np.empty((0, WINDOW_SAMPLES, CHANNELS), dtype=np.float32), \
-               np.empty(0, dtype=np.int8)
+        return np.empty((0, WINDOW_SAMPLES, CHANNELS), dtype=np.float32), np.empty(
+            0, dtype=np.int8
+        )
 
     for activity_dir in sorted(annotated.iterdir()):
         if not activity_dir.is_dir():
@@ -91,8 +103,9 @@ def load_mobiact(root: Path, stats: DatasetStats
 
         for csv_file in activity_dir.glob("*.csv"):
             try:
-                data = np.loadtxt(csv_file, delimiter=",", skiprows=1,
-                                  usecols=(1, 2, 3, 4, 5, 6))
+                data = np.loadtxt(
+                    csv_file, delimiter=",", skiprows=1, usecols=(1, 2, 3, 4, 5, 6)
+                )
                 wins, labs = _segment(data, int(is_fall))
                 windows_list.append(wins)
                 labels_list.append(labs)
@@ -101,20 +114,22 @@ def load_mobiact(root: Path, stats: DatasetStats
                 logger.warning("Skipping %s: %s", csv_file, exc)
 
     if not windows_list:
-        return np.empty((0, WINDOW_SAMPLES, CHANNELS), dtype=np.float32), \
-               np.empty(0, dtype=np.int8)
+        return np.empty((0, WINDOW_SAMPLES, CHANNELS), dtype=np.float32), np.empty(
+            0, dtype=np.int8
+        )
 
-    return (np.concatenate(windows_list, axis=0).astype(np.float32),
-            np.concatenate(labels_list, axis=0).astype(np.int8))
+    return (
+        np.concatenate(windows_list, axis=0).astype(np.float32),
+        np.concatenate(labels_list, axis=0).astype(np.int8),
+    )
 
 
 # ── SisFall loader ────────────────────────────────────────────────────────────
 SISFALL_FALL_PREFIX = "F"
-SISFALL_ADL_PREFIX  = "D"
+SISFALL_ADL_PREFIX = "D"
 
 
-def load_sisfall(root: Path, stats: DatasetStats
-                 ) -> Tuple[np.ndarray, np.ndarray]:
+def load_sisfall(root: Path, stats: DatasetStats) -> Tuple[np.ndarray, np.ndarray]:
     """
     Parse SisFall dataset.
     Expected layout: <root>/<SA01|SE01|...>/<F01|D01|...>_SA01_R01.txt
@@ -126,8 +141,9 @@ def load_sisfall(root: Path, stats: DatasetStats
     windows_list, labels_list = [], []
     if not root.exists():
         logger.warning("SisFall path not found: %s — skipping.", root)
-        return np.empty((0, WINDOW_SAMPLES, CHANNELS), dtype=np.float32), \
-               np.empty(0, dtype=np.int8)
+        return np.empty((0, WINDOW_SAMPLES, CHANNELS), dtype=np.float32), np.empty(
+            0, dtype=np.int8
+        )
 
     for subject_dir in sorted(root.iterdir()):
         if not subject_dir.is_dir():
@@ -140,9 +156,9 @@ def load_sisfall(root: Path, stats: DatasetStats
             try:
                 raw = np.loadtxt(txt_file, delimiter=",")
                 # Convert raw LSB → physical units
-                accel = raw[:, :3] * (9.8 / 4096.0)   # m/s²
-                gyro  = raw[:, 3:6] * (1.0 / 131.0)   # °/s
-                data  = np.concatenate([accel, gyro], axis=1)
+                accel = raw[:, :3] * (9.8 / 4096.0)  # m/s²
+                gyro = raw[:, 3:6] * (1.0 / 131.0)  # °/s
+                data = np.concatenate([accel, gyro], axis=1)
                 wins, labs = _segment(data, int(is_fall))
                 windows_list.append(wins)
                 labels_list.append(labs)
@@ -151,25 +167,32 @@ def load_sisfall(root: Path, stats: DatasetStats
                 logger.warning("Skipping %s: %s", txt_file, exc)
 
     if not windows_list:
-        return np.empty((0, WINDOW_SAMPLES, CHANNELS), dtype=np.float32), \
-               np.empty(0, dtype=np.int8)
+        return np.empty((0, WINDOW_SAMPLES, CHANNELS), dtype=np.float32), np.empty(
+            0, dtype=np.int8
+        )
 
-    return (np.concatenate(windows_list, axis=0).astype(np.float32),
-            np.concatenate(labels_list, axis=0).astype(np.int8))
+    return (
+        np.concatenate(windows_list, axis=0).astype(np.float32),
+        np.concatenate(labels_list, axis=0).astype(np.int8),
+    )
 
 
 # ── Segmentation ─────────────────────────────────────────────────────────────
-def _segment(data: np.ndarray, label: int,
-             overlap: float = 0.5) -> Tuple[np.ndarray, np.ndarray]:
+def _segment(
+    data: np.ndarray, label: int, overlap: float = 0.5
+) -> Tuple[np.ndarray, np.ndarray]:
     """50 % overlapping sliding window over a continuous IMU recording."""
     step = int(WINDOW_SAMPLES * (1 - overlap))
     n_windows = (len(data) - WINDOW_SAMPLES) // step + 1
     if n_windows <= 0:
-        return (np.empty((0, WINDOW_SAMPLES, CHANNELS), dtype=np.float32),
-                np.empty(0, dtype=np.int8))
+        return (
+            np.empty((0, WINDOW_SAMPLES, CHANNELS), dtype=np.float32),
+            np.empty(0, dtype=np.int8),
+        )
 
-    wins = np.stack([data[i * step: i * step + WINDOW_SAMPLES]
-                     for i in range(n_windows)], axis=0)
+    wins = np.stack(
+        [data[i * step : i * step + WINDOW_SAMPLES] for i in range(n_windows)], axis=0
+    )
     labs = np.full(n_windows, label, dtype=np.int8)
     return wins.astype(np.float32), labs
 
@@ -207,13 +230,13 @@ class SyntheticGenerator:
     def fall_window(self) -> np.ndarray:
         t = np.linspace(0, 2.0, WINDOW_SAMPLES)
         impact_t = self.rng.uniform(0.4, 0.7)
-        peak_g   = self.rng.uniform(3.0, 8.0)        # g units
-        sigma_s  = self.rng.uniform(0.03, 0.08)      # impact duration
+        peak_g = self.rng.uniform(3.0, 8.0)  # g units
+        sigma_s = self.rng.uniform(0.03, 0.08)  # impact duration
 
         # Gravity baseline on dominant axis before fall
         ax = np.zeros(WINDOW_SAMPLES)
         ay = np.zeros(WINDOW_SAMPLES)
-        az = np.ones(WINDOW_SAMPLES) * 1.0            # upright, gravity on z
+        az = np.ones(WINDOW_SAMPLES) * 1.0  # upright, gravity on z
 
         # Pre-fall motion: slight oscillation
         pre_mask = t < impact_t
@@ -222,15 +245,13 @@ class SyntheticGenerator:
         ay[pre_mask] += 0.08 * np.cos(2 * np.pi * freq_pre * t[pre_mask])
 
         # Impact spike — asymmetric Gaussian on all axes
-        for axis_arr, scale in zip([ax, ay, az],
-                                    self.rng.uniform(0.2, 1.0, 3)):
-            axis_arr += scale * peak_g * np.exp(
-                -0.5 * ((t - impact_t) / sigma_s) ** 2)
+        for axis_arr, scale in zip([ax, ay, az], self.rng.uniform(0.2, 1.0, 3)):
+            axis_arr += scale * peak_g * np.exp(-0.5 * ((t - impact_t) / sigma_s) ** 2)
 
         # Post-fall: gravity on side (x-axis dominant), near-still
         post_mask = t > (impact_t + 0.3)
         az[post_mask] *= self.rng.uniform(0.0, 0.15)
-        ax[post_mask] += self.rng.uniform(0.8, 1.0)   # lying on side
+        ax[post_mask] += self.rng.uniform(0.8, 1.0)  # lying on side
 
         # Gyroscope: large rotation during fall, then still
         gx = 0.5 * peak_g * 20 * np.exp(-0.5 * ((t - impact_t) / (sigma_s * 2)) ** 2)
@@ -244,7 +265,7 @@ class SyntheticGenerator:
     # ── ADL synthesis ─────────────────────────────────────────────────────
     def walk_window(self) -> np.ndarray:
         t = np.linspace(0, 2.0, WINDOW_SAMPLES)
-        step_freq = self.rng.uniform(1.5, 2.2)        # Hz
+        step_freq = self.rng.uniform(1.5, 2.2)  # Hz
         az = 1.0 + 0.4 * np.sin(2 * np.pi * step_freq * t)
         ax = 0.1 * np.cos(4 * np.pi * step_freq * t)
         ay = 0.05 * np.sin(4 * np.pi * step_freq * t + 0.3)
@@ -262,7 +283,7 @@ class SyntheticGenerator:
         ax = 0.25 * np.cos(4 * np.pi * step_freq * t)
         ay = 0.15 * np.sin(4 * np.pi * step_freq * t)
         gx = 12.0 * np.cos(2 * np.pi * step_freq * t)
-        gy = 5.0  * np.sin(2 * np.pi * step_freq * t)
+        gy = 5.0 * np.sin(2 * np.pi * step_freq * t)
         gz = np.zeros(WINDOW_SAMPLES)
         w = np.stack([ax, ay, az, gx, gy, gz], axis=1)
         w += self._sensor_noise(WINDOW_SAMPLES, noise_scale=1.5)
@@ -271,8 +292,9 @@ class SyntheticGenerator:
     def sit_stand_window(self) -> np.ndarray:
         t = np.linspace(0, 2.0, WINDOW_SAMPLES)
         transition_t = self.rng.uniform(0.5, 1.5)
-        az = np.where(t < transition_t, 1.0,
-                      1.0 + 0.3 * np.exp(-5 * (t - transition_t)))
+        az = np.where(
+            t < transition_t, 1.0, 1.0 + 0.3 * np.exp(-5 * (t - transition_t))
+        )
         ax = 0.05 * self.rng.standard_normal(WINDOW_SAMPLES)
         ay = 0.05 * self.rng.standard_normal(WINDOW_SAMPLES)
         gx = 3.0 * np.exp(-8 * (t - transition_t) ** 2)
@@ -321,26 +343,30 @@ class SyntheticGenerator:
 
     def _sensor_noise(self, n: int, noise_scale: float = 1.0) -> np.ndarray:
         accel_noise = 0.02 * noise_scale
-        gyro_noise  = 0.50 * noise_scale
+        gyro_noise = 0.50 * noise_scale
         noise = np.zeros((n, CHANNELS), dtype=np.float32)
         noise[:, :3] = self.rng.normal(0, accel_noise, (n, 3))
-        noise[:, 3:] = self.rng.normal(0, gyro_noise,  (n, 3))
+        noise[:, 3:] = self.rng.normal(0, gyro_noise, (n, 3))
         return noise
 
     # ── Batch generation ──────────────────────────────────────────────────
     def generate_falls(self, n: int) -> Tuple[np.ndarray, np.ndarray]:
         windows = np.stack([self.fall_window() for _ in range(n)])
-        labels  = np.ones(n, dtype=np.int8)
+        labels = np.ones(n, dtype=np.int8)
         return windows, labels
 
     def generate_adls(self, n: int) -> Tuple[np.ndarray, np.ndarray]:
-        adl_fns = [self.walk_window, self.run_window,
-                   self.sit_stand_window, self.stair_window,
-                   self.lying_window]
+        adl_fns = [
+            self.walk_window,
+            self.run_window,
+            self.sit_stand_window,
+            self.stair_window,
+            self.lying_window,
+        ]
         windows = []
         for i in range(n):
             fn = adl_fns[i % len(adl_fns)]
-            w  = fn()
+            w = fn()
             if self.rng.random() < 0.5:
                 w = self.augment(w)
             windows.append(w)
@@ -372,31 +398,39 @@ def build_dataset(
         X_m, y_m = load_mobiact(mobiact_root, stats)
         fall_windows_list.append(X_m[y_m == 1])
         adl_windows_list.append(X_m[y_m == 0])
-        logger.info("  MobiAct → %d fall / %d ADL windows",
-                    fall_windows_list[-1].shape[0],
-                    adl_windows_list[-1].shape[0])
+        logger.info(
+            "  MobiAct → %d fall / %d ADL windows",
+            fall_windows_list[-1].shape[0],
+            adl_windows_list[-1].shape[0],
+        )
 
     if sisfall_root and sisfall_root.exists():
         logger.info("Loading SisFall from %s …", sisfall_root)
         X_s, y_s = load_sisfall(sisfall_root, stats)
         fall_windows_list.append(X_s[y_s == 1])
         adl_windows_list.append(X_s[y_s == 0])
-        logger.info("  SisFall → %d fall / %d ADL windows",
-                    fall_windows_list[-1].shape[0],
-                    adl_windows_list[-1].shape[0])
+        logger.info(
+            "  SisFall → %d fall / %d ADL windows",
+            fall_windows_list[-1].shape[0],
+            adl_windows_list[-1].shape[0],
+        )
 
-    real_falls = (np.concatenate(fall_windows_list)
-                  if fall_windows_list else
-                  np.empty((0, WINDOW_SAMPLES, CHANNELS), dtype=np.float32))
-    real_adls  = (np.concatenate(adl_windows_list)
-                  if adl_windows_list else
-                  np.empty((0, WINDOW_SAMPLES, CHANNELS), dtype=np.float32))
+    real_falls = (
+        np.concatenate(fall_windows_list)
+        if fall_windows_list
+        else np.empty((0, WINDOW_SAMPLES, CHANNELS), dtype=np.float32)
+    )
+    real_adls = (
+        np.concatenate(adl_windows_list)
+        if adl_windows_list
+        else np.empty((0, WINDOW_SAMPLES, CHANNELS), dtype=np.float32)
+    )
 
     # ── Synthetic top-up ─────────────────────────────────────────────────
     gen = SyntheticGenerator(np.random.default_rng(rng_seed))
 
     n_falls_needed = max(0, MIN_FALL_WINDOWS - len(real_falls))
-    n_adls_needed  = max(0, MIN_ADL_WINDOWS  - len(real_adls))
+    n_adls_needed = max(0, MIN_ADL_WINDOWS - len(real_adls))
 
     if n_falls_needed > 0:
         logger.info("Generating %d synthetic fall windows …", n_falls_needed)
@@ -410,27 +444,34 @@ def build_dataset(
 
     # ── Merge & label ────────────────────────────────────────────────────
     all_falls = np.concatenate(fall_windows_list) if fall_windows_list else real_falls
-    all_adls  = np.concatenate(adl_windows_list)  if adl_windows_list  else real_adls
+    all_adls = np.concatenate(adl_windows_list) if adl_windows_list else real_adls
 
     stats.fall_count = len(all_falls)
-    stats.adl_count  = len(all_adls)
+    stats.adl_count = len(all_adls)
 
     assert stats.fall_count >= MIN_FALL_WINDOWS, (
-        f"Fall window count {stats.fall_count} < required {MIN_FALL_WINDOWS}")
+        f"Fall window count {stats.fall_count} < required {MIN_FALL_WINDOWS}"
+    )
     assert stats.adl_count >= MIN_ADL_WINDOWS, (
-        f"ADL window count {stats.adl_count} < required {MIN_ADL_WINDOWS}")
+        f"ADL window count {stats.adl_count} < required {MIN_ADL_WINDOWS}"
+    )
 
     X = np.concatenate([all_falls, all_adls], axis=0)
-    y = np.concatenate([np.ones(len(all_falls),  dtype=np.int8),
-                        np.zeros(len(all_adls), dtype=np.int8)], axis=0)
+    y = np.concatenate(
+        [
+            np.ones(len(all_falls), dtype=np.int8),
+            np.zeros(len(all_adls), dtype=np.int8),
+        ],
+        axis=0,
+    )
 
     # ── Normalise ────────────────────────────────────────────────────────
     X = _normalize(X)
 
     # ── Shuffle ──────────────────────────────────────────────────────────
     rng_np = np.random.default_rng(rng_seed)
-    idx    = rng_np.permutation(len(X))
-    X, y   = X[idx], y[idx]
+    idx = rng_np.permutation(len(X))
+    X, y = X[idx], y[idx]
 
     logger.info("Dataset assembled: %s", stats.summary())
     return X, y, stats
@@ -439,26 +480,27 @@ def build_dataset(
 def _normalize(X: np.ndarray) -> np.ndarray:
     """Per-channel z-score normalisation computed across training windows."""
     mean = X.mean(axis=(0, 1), keepdims=True)
-    std  = X.std(axis=(0, 1), keepdims=True) + 1e-8
+    std = X.std(axis=(0, 1), keepdims=True) + 1e-8
     return ((X - mean) / std).astype(np.float32)
 
 
 def train_val_test_split(
-    X: np.ndarray, y: np.ndarray,
+    X: np.ndarray,
+    y: np.ndarray,
     val_frac: float = 0.10,
     test_frac: float = 0.15,
     seed: int = 42,
-) -> Tuple[np.ndarray, np.ndarray,
-           np.ndarray, np.ndarray,
-           np.ndarray, np.ndarray]:
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """Stratified split preserving fall/ADL ratio in every partition."""
     from sklearn.model_selection import train_test_split as tts
 
     X_tv, X_test, y_tv, y_test = tts(
-        X, y, test_size=test_frac, stratify=y, random_state=seed)
+        X, y, test_size=test_frac, stratify=y, random_state=seed
+    )
 
     val_frac_adj = val_frac / (1.0 - test_frac)
     X_train, X_val, y_train, y_val = tts(
-        X_tv, y_tv, test_size=val_frac_adj, stratify=y_tv, random_state=seed)
+        X_tv, y_tv, test_size=val_frac_adj, stratify=y_tv, random_state=seed
+    )
 
     return X_train, y_train, X_val, y_val, X_test, y_test

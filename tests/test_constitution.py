@@ -8,9 +8,7 @@ TDD: tests written first, implementation follows.
 """
 
 import os
-import json
 import copy
-import tempfile
 import threading
 import pytest
 import yaml
@@ -19,6 +17,7 @@ import yaml
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _make_constitution(tmp, solution="test_sol", content=None):
     """Write a constitution.yaml into a temp solutions dir and return its path."""
@@ -75,11 +74,13 @@ _SAMPLE_CONSTITUTION = {
 # Test: Constitution Loader
 # ===========================================================================
 
+
 class TestConstitutionLoader:
     """Tests for loading and parsing constitution.yaml files."""
 
     def test_load_valid_constitution(self, tmp_path):
         from src.core.constitution import Constitution
+
         _make_constitution(str(tmp_path), "mysol")
         c = Constitution(solutions_dir=str(tmp_path), solution="mysol")
         assert c.name == "Test Constitution"
@@ -89,6 +90,7 @@ class TestConstitutionLoader:
 
     def test_load_missing_file_returns_empty(self, tmp_path):
         from src.core.constitution import Constitution
+
         os.makedirs(os.path.join(str(tmp_path), "empty_sol"))
         c = Constitution(solutions_dir=str(tmp_path), solution="empty_sol")
         assert c.name == ""
@@ -98,6 +100,7 @@ class TestConstitutionLoader:
 
     def test_load_malformed_yaml_returns_empty(self, tmp_path):
         from src.core.constitution import Constitution
+
         sol_dir = os.path.join(str(tmp_path), "bad")
         os.makedirs(sol_dir)
         with open(os.path.join(sol_dir, "constitution.yaml"), "w") as fh:
@@ -108,6 +111,7 @@ class TestConstitutionLoader:
     def test_load_partial_constitution(self, tmp_path):
         """Constitution with only principles — other sections default."""
         from src.core.constitution import Constitution
+
         partial = {
             "meta": {"name": "Partial"},
             "principles": [{"id": "p1", "text": "Do good", "weight": 1.0}],
@@ -122,6 +126,7 @@ class TestConstitutionLoader:
 
     def test_reload_picks_up_changes(self, tmp_path):
         from src.core.constitution import Constitution
+
         _make_constitution(str(tmp_path), "reloadsol")
         c = Constitution(solutions_dir=str(tmp_path), solution="reloadsol")
         assert c.name == "Test Constitution"
@@ -140,10 +145,11 @@ class TestConstitutionLoader:
 # Test: Principle Accessors
 # ===========================================================================
 
-class TestPrinciples:
 
+class TestPrinciples:
     def test_get_all_principles(self, tmp_path):
         from src.core.constitution import Constitution
+
         _make_constitution(str(tmp_path), "sol")
         c = Constitution(solutions_dir=str(tmp_path), solution="sol")
         assert len(c.principles) == 2
@@ -151,6 +157,7 @@ class TestPrinciples:
 
     def test_get_principle_by_id(self, tmp_path):
         from src.core.constitution import Constitution
+
         _make_constitution(str(tmp_path), "sol")
         c = Constitution(solutions_dir=str(tmp_path), solution="sol")
         p = c.get_principle("safety-first")
@@ -159,6 +166,7 @@ class TestPrinciples:
 
     def test_get_principle_not_found(self, tmp_path):
         from src.core.constitution import Constitution
+
         _make_constitution(str(tmp_path), "sol")
         c = Constitution(solutions_dir=str(tmp_path), solution="sol")
         assert c.get_principle("nonexistent") is None
@@ -166,6 +174,7 @@ class TestPrinciples:
     def test_non_negotiable_principles(self, tmp_path):
         """Principles with weight 1.0 are non-negotiable."""
         from src.core.constitution import Constitution
+
         _make_constitution(str(tmp_path), "sol")
         c = Constitution(solutions_dir=str(tmp_path), solution="sol")
         nn = c.get_non_negotiable_principles()
@@ -174,6 +183,7 @@ class TestPrinciples:
 
     def test_principles_sorted_by_weight(self, tmp_path):
         from src.core.constitution import Constitution
+
         _make_constitution(str(tmp_path), "sol")
         c = Constitution(solutions_dir=str(tmp_path), solution="sol")
         sorted_p = c.get_principles_by_priority()
@@ -184,11 +194,13 @@ class TestPrinciples:
 # Test: Prompt Injection
 # ===========================================================================
 
+
 class TestPromptInjection:
     """Constitution principles and constraints injected into agent prompts."""
 
     def test_build_preamble(self, tmp_path):
         from src.core.constitution import Constitution
+
         _make_constitution(str(tmp_path), "sol")
         c = Constitution(solutions_dir=str(tmp_path), solution="sol")
         preamble = c.build_prompt_preamble()
@@ -198,12 +210,14 @@ class TestPromptInjection:
 
     def test_preamble_empty_constitution(self, tmp_path):
         from src.core.constitution import Constitution
+
         os.makedirs(os.path.join(str(tmp_path), "empty"))
         c = Constitution(solutions_dir=str(tmp_path), solution="empty")
         assert c.build_prompt_preamble() == ""
 
     def test_preamble_includes_voice(self, tmp_path):
         from src.core.constitution import Constitution
+
         _make_constitution(str(tmp_path), "sol")
         c = Constitution(solutions_dir=str(tmp_path), solution="sol")
         preamble = c.build_prompt_preamble()
@@ -211,6 +225,7 @@ class TestPromptInjection:
 
     def test_preamble_includes_constraints(self, tmp_path):
         from src.core.constitution import Constitution
+
         _make_constitution(str(tmp_path), "sol")
         c = Constitution(solutions_dir=str(tmp_path), solution="sol")
         preamble = c.build_prompt_preamble()
@@ -218,6 +233,7 @@ class TestPromptInjection:
 
     def test_inject_into_system_prompt(self, tmp_path):
         from src.core.constitution import Constitution
+
         _make_constitution(str(tmp_path), "sol")
         c = Constitution(solutions_dir=str(tmp_path), solution="sol")
         original = "You are a helpful analyst."
@@ -230,10 +246,11 @@ class TestPromptInjection:
 # Test: Constraint Checking
 # ===========================================================================
 
-class TestConstraintChecking:
 
+class TestConstraintChecking:
     def test_check_action_no_violations(self, tmp_path):
         from src.core.constitution import Constitution
+
         _make_constitution(str(tmp_path), "sol")
         c = Constitution(solutions_dir=str(tmp_path), solution="sol")
         result = c.check_action("Update the README with new docs")
@@ -242,6 +259,7 @@ class TestConstraintChecking:
 
     def test_check_action_detects_constraint_violation(self, tmp_path):
         from src.core.constitution import Constitution
+
         _make_constitution(str(tmp_path), "sol")
         c = Constitution(solutions_dir=str(tmp_path), solution="sol")
         result = c.check_action("Modify files in /critical/ to fix a bug")
@@ -250,6 +268,7 @@ class TestConstraintChecking:
 
     def test_check_action_empty_constitution_allows_all(self, tmp_path):
         from src.core.constitution import Constitution
+
         os.makedirs(os.path.join(str(tmp_path), "empty"))
         c = Constitution(solutions_dir=str(tmp_path), solution="empty")
         result = c.check_action("Do anything")
@@ -257,6 +276,7 @@ class TestConstraintChecking:
 
     def test_escalation_keywords_detected(self, tmp_path):
         from src.core.constitution import Constitution
+
         _make_constitution(str(tmp_path), "sol")
         c = Constitution(solutions_dir=str(tmp_path), solution="sol")
         result = c.check_escalation("This involves patient safety concerns")
@@ -265,6 +285,7 @@ class TestConstraintChecking:
 
     def test_no_escalation_for_normal_text(self, tmp_path):
         from src.core.constitution import Constitution
+
         _make_constitution(str(tmp_path), "sol")
         c = Constitution(solutions_dir=str(tmp_path), solution="sol")
         result = c.check_escalation("Update the color of the button")
@@ -272,6 +293,7 @@ class TestConstraintChecking:
 
     def test_auto_approve_category(self, tmp_path):
         from src.core.constitution import Constitution
+
         _make_constitution(str(tmp_path), "sol")
         c = Constitution(solutions_dir=str(tmp_path), solution="sol")
         assert c.can_auto_approve("docs") is True
@@ -283,10 +305,11 @@ class TestConstraintChecking:
 # Test: CRUD Operations
 # ===========================================================================
 
-class TestConstitutionCRUD:
 
+class TestConstitutionCRUD:
     def test_update_principle(self, tmp_path):
         from src.core.constitution import Constitution
+
         _make_constitution(str(tmp_path), "sol")
         c = Constitution(solutions_dir=str(tmp_path), solution="sol")
         c.update_principle("safety-first", text="Updated safety text", weight=0.95)
@@ -296,6 +319,7 @@ class TestConstitutionCRUD:
 
     def test_add_principle(self, tmp_path):
         from src.core.constitution import Constitution
+
         _make_constitution(str(tmp_path), "sol")
         c = Constitution(solutions_dir=str(tmp_path), solution="sol")
         c.add_principle(id="new-rule", text="Always write tests", weight=0.9)
@@ -304,6 +328,7 @@ class TestConstitutionCRUD:
 
     def test_add_duplicate_principle_raises(self, tmp_path):
         from src.core.constitution import Constitution
+
         _make_constitution(str(tmp_path), "sol")
         c = Constitution(solutions_dir=str(tmp_path), solution="sol")
         with pytest.raises(ValueError, match="already exists"):
@@ -311,6 +336,7 @@ class TestConstitutionCRUD:
 
     def test_remove_principle(self, tmp_path):
         from src.core.constitution import Constitution
+
         _make_constitution(str(tmp_path), "sol")
         c = Constitution(solutions_dir=str(tmp_path), solution="sol")
         c.remove_principle("lean-iteration")
@@ -319,6 +345,7 @@ class TestConstitutionCRUD:
 
     def test_remove_nonexistent_principle_raises(self, tmp_path):
         from src.core.constitution import Constitution
+
         _make_constitution(str(tmp_path), "sol")
         c = Constitution(solutions_dir=str(tmp_path), solution="sol")
         with pytest.raises(ValueError, match="not found"):
@@ -326,6 +353,7 @@ class TestConstitutionCRUD:
 
     def test_add_constraint(self, tmp_path):
         from src.core.constitution import Constitution
+
         _make_constitution(str(tmp_path), "sol")
         c = Constitution(solutions_dir=str(tmp_path), solution="sol")
         c.add_constraint("No deployments on Friday")
@@ -333,6 +361,7 @@ class TestConstitutionCRUD:
 
     def test_remove_constraint(self, tmp_path):
         from src.core.constitution import Constitution
+
         _make_constitution(str(tmp_path), "sol")
         c = Constitution(solutions_dir=str(tmp_path), solution="sol")
         c.remove_constraint("All API changes must be backward compatible")
@@ -340,6 +369,7 @@ class TestConstitutionCRUD:
 
     def test_update_voice(self, tmp_path):
         from src.core.constitution import Constitution
+
         _make_constitution(str(tmp_path), "sol")
         c = Constitution(solutions_dir=str(tmp_path), solution="sol")
         c.update_voice(tone="friendly, casual", avoid=["jargon"])
@@ -348,9 +378,13 @@ class TestConstitutionCRUD:
 
     def test_update_decisions(self, tmp_path):
         from src.core.constitution import Constitution
+
         _make_constitution(str(tmp_path), "sol")
         c = Constitution(solutions_dir=str(tmp_path), solution="sol")
-        c.update_decisions(default_approval_tier="auto", auto_approve_categories=["docs", "tests", "formatting"])
+        c.update_decisions(
+            default_approval_tier="auto",
+            auto_approve_categories=["docs", "tests", "formatting"],
+        )
         assert c.decisions["default_approval_tier"] == "auto"
         assert "formatting" in c.decisions["auto_approve_categories"]
 
@@ -359,10 +393,11 @@ class TestConstitutionCRUD:
 # Test: Save / Persist
 # ===========================================================================
 
-class TestConstitutionPersistence:
 
+class TestConstitutionPersistence:
     def test_save_writes_yaml(self, tmp_path):
         from src.core.constitution import Constitution
+
         _make_constitution(str(tmp_path), "sol")
         c = Constitution(solutions_dir=str(tmp_path), solution="sol")
         c.add_principle(id="new-one", text="Be kind", weight=0.5)
@@ -375,6 +410,7 @@ class TestConstitutionPersistence:
 
     def test_save_updates_timestamp(self, tmp_path):
         from src.core.constitution import Constitution
+
         _make_constitution(str(tmp_path), "sol")
         c = Constitution(solutions_dir=str(tmp_path), solution="sol")
         old_date = c._data["meta"]["last_updated"]
@@ -384,6 +420,7 @@ class TestConstitutionPersistence:
 
     def test_save_empty_constitution_creates_file(self, tmp_path):
         from src.core.constitution import Constitution
+
         sol_dir = os.path.join(str(tmp_path), "newsol")
         os.makedirs(sol_dir)
         c = Constitution(solutions_dir=str(tmp_path), solution="newsol")
@@ -394,6 +431,7 @@ class TestConstitutionPersistence:
 
     def test_version_history_tracked(self, tmp_path):
         from src.core.constitution import Constitution
+
         _make_constitution(str(tmp_path), "sol")
         c = Constitution(solutions_dir=str(tmp_path), solution="sol")
         c.add_principle(id="v2", text="v2 rule", weight=0.5)
@@ -406,6 +444,7 @@ class TestConstitutionPersistence:
 
     def test_to_dict_roundtrip(self, tmp_path):
         from src.core.constitution import Constitution
+
         _make_constitution(str(tmp_path), "sol")
         c = Constitution(solutions_dir=str(tmp_path), solution="sol")
         d = c.to_dict()
@@ -418,10 +457,11 @@ class TestConstitutionPersistence:
 # Test: Validation
 # ===========================================================================
 
-class TestConstitutionValidation:
 
+class TestConstitutionValidation:
     def test_validate_valid_constitution(self, tmp_path):
         from src.core.constitution import Constitution
+
         _make_constitution(str(tmp_path), "sol")
         c = Constitution(solutions_dir=str(tmp_path), solution="sol")
         errors = c.validate()
@@ -429,6 +469,7 @@ class TestConstitutionValidation:
 
     def test_validate_principle_missing_id(self, tmp_path):
         from src.core.constitution import Constitution
+
         bad = copy.deepcopy(_SAMPLE_CONSTITUTION)
         bad["principles"][0].pop("id")
         _make_constitution(str(tmp_path), "sol", bad)
@@ -438,6 +479,7 @@ class TestConstitutionValidation:
 
     def test_validate_principle_missing_text(self, tmp_path):
         from src.core.constitution import Constitution
+
         bad = copy.deepcopy(_SAMPLE_CONSTITUTION)
         bad["principles"][0].pop("text")
         _make_constitution(str(tmp_path), "sol", bad)
@@ -447,6 +489,7 @@ class TestConstitutionValidation:
 
     def test_validate_weight_out_of_range(self, tmp_path):
         from src.core.constitution import Constitution
+
         bad = copy.deepcopy(_SAMPLE_CONSTITUTION)
         bad["principles"][0]["weight"] = 1.5
         _make_constitution(str(tmp_path), "sol", bad)
@@ -456,6 +499,7 @@ class TestConstitutionValidation:
 
     def test_validate_duplicate_principle_ids(self, tmp_path):
         from src.core.constitution import Constitution
+
         bad = copy.deepcopy(_SAMPLE_CONSTITUTION)
         bad["principles"].append({"id": "safety-first", "text": "Dupe", "weight": 0.5})
         _make_constitution(str(tmp_path), "sol", bad)
@@ -465,6 +509,7 @@ class TestConstitutionValidation:
 
     def test_validate_empty_is_valid(self, tmp_path):
         from src.core.constitution import Constitution
+
         os.makedirs(os.path.join(str(tmp_path), "empty"))
         c = Constitution(solutions_dir=str(tmp_path), solution="empty")
         errors = c.validate()
@@ -475,10 +520,11 @@ class TestConstitutionValidation:
 # Test: Thread Safety
 # ===========================================================================
 
-class TestThreadSafety:
 
+class TestThreadSafety:
     def test_concurrent_reads(self, tmp_path):
         from src.core.constitution import Constitution
+
         _make_constitution(str(tmp_path), "sol")
         c = Constitution(solutions_dir=str(tmp_path), solution="sol")
         results = []
@@ -496,6 +542,7 @@ class TestThreadSafety:
 
     def test_concurrent_writes(self, tmp_path):
         from src.core.constitution import Constitution
+
         _make_constitution(str(tmp_path), "sol")
         c = Constitution(solutions_dir=str(tmp_path), solution="sol")
         errors = []
@@ -519,15 +566,17 @@ class TestThreadSafety:
 # Test: Singleton / get_constitution
 # ===========================================================================
 
-class TestSingleton:
 
+class TestSingleton:
     def test_get_constitution_returns_instance(self):
         from src.core.constitution import get_constitution
+
         c = get_constitution()
         assert c is not None
 
     def test_get_constitution_same_instance(self):
         from src.core.constitution import get_constitution
+
         c1 = get_constitution()
         c2 = get_constitution()
         assert c1 is c2
@@ -537,10 +586,11 @@ class TestSingleton:
 # Test: Stats
 # ===========================================================================
 
-class TestStats:
 
+class TestStats:
     def test_get_stats(self, tmp_path):
         from src.core.constitution import Constitution
+
         _make_constitution(str(tmp_path), "sol")
         c = Constitution(solutions_dir=str(tmp_path), solution="sol")
         stats = c.get_stats()
@@ -553,6 +603,7 @@ class TestStats:
 
     def test_stats_empty(self, tmp_path):
         from src.core.constitution import Constitution
+
         os.makedirs(os.path.join(str(tmp_path), "empty"))
         c = Constitution(solutions_dir=str(tmp_path), solution="empty")
         stats = c.get_stats()

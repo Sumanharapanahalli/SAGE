@@ -24,13 +24,15 @@ def inject(store):
 
 
 def test_create_goal_returns_row():
-    result = goals.create({
-        "title": "Ship desktop parity",
-        "quarter": "2026-Q3",
-        "owner": "harish",
-        "status": "on_track",
-        "key_results": [{"text": "Ship Goals page", "done": False}],
-    })
+    result = goals.create(
+        {
+            "title": "Ship desktop parity",
+            "quarter": "2026-Q3",
+            "owner": "harish",
+            "status": "on_track",
+            "key_results": [{"text": "Ship Goals page", "done": False}],
+        }
+    )
     assert result["title"] == "Ship desktop parity"
     assert result["quarter"] == "2026-Q3"
     assert result["owner"] == "harish"
@@ -49,10 +51,14 @@ def test_create_goal_defaults_status_owner_key_results():
 
 
 def test_create_goal_honours_explicit_user_id_and_solution():
-    result = goals.create({
-        "title": "t", "quarter": "2026-Q3",
-        "user_id": "alice", "solution": "medtech",
-    })
+    result = goals.create(
+        {
+            "title": "t",
+            "quarter": "2026-Q3",
+            "user_id": "alice",
+            "solution": "medtech",
+        }
+    )
     assert result["user_id"] == "alice"
     assert result["solution"] == "medtech"
 
@@ -94,7 +100,9 @@ def test_list_goals_filters_by_quarter():
 
 
 def test_list_goals_filters_by_explicit_user_id_and_solution():
-    goals.create({"title": "a", "quarter": "2026-Q3", "user_id": "alice", "solution": "medtech"})
+    goals.create(
+        {"title": "a", "quarter": "2026-Q3", "user_id": "alice", "solution": "medtech"}
+    )
     goals.create({"title": "b", "quarter": "2026-Q3"})  # defaults
     result = goals.list({"user_id": "alice", "solution": "medtech"})
     assert len(result) == 1
@@ -136,9 +144,14 @@ def test_get_goal_missing_id_raises_invalid_params():
 
 
 def test_update_goal_partial_fields_only():
-    created = goals.create({
-        "title": "t", "quarter": "2026-Q3", "owner": "harish", "status": "on_track",
-    })
+    created = goals.create(
+        {
+            "title": "t",
+            "quarter": "2026-Q3",
+            "owner": "harish",
+            "status": "on_track",
+        }
+    )
     updated = goals.update({"goal_id": created["id"], "status": "at_risk"})
     assert updated["status"] == "at_risk"
     # Untouched fields survive the partial update.

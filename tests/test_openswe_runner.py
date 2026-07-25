@@ -28,7 +28,7 @@ Tests for:
 """
 
 import json
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -39,8 +39,10 @@ pytestmark = pytest.mark.unit
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _fresh_runner():
     from src.integrations.openswe_runner import OpenSWERunner
+
     runner = OpenSWERunner()
     runner._openswe_url = ""  # Disable external SWE for most tests
     return runner
@@ -86,15 +88,27 @@ STATUS: ITERATE — need to add tests
 # OpenSWERunner.build()
 # ---------------------------------------------------------------------------
 
-class TestBuild:
 
+class TestBuild:
     def test_returns_run_id_and_status(self):
         runner = _fresh_runner()
-        with patch.object(runner, "_try_llm_fallback", return_value={
-            "status": "completed", "tier": "llm_react", "code": "x=1",
-            "files_changed": ["app.py"], "output": {},
-        }), patch.object(runner, "_audit"):
-            result = runner.build({"description": "Build hello world", "task_type": "BACKEND"})
+        with (
+            patch.object(
+                runner,
+                "_try_llm_fallback",
+                return_value={
+                    "status": "completed",
+                    "tier": "llm_react",
+                    "code": "x=1",
+                    "files_changed": ["app.py"],
+                    "output": {},
+                },
+            ),
+            patch.object(runner, "_audit"),
+        ):
+            result = runner.build(
+                {"description": "Build hello world", "task_type": "BACKEND"}
+            )
             assert "run_id" in result
             assert result["status"] == "completed"
             assert result["tier"] == "llm_react"
@@ -102,46 +116,83 @@ class TestBuild:
     def test_tries_external_swe_first(self):
         runner = _fresh_runner()
         runner._openswe_url = "http://fake-swe:8000"
-        with patch.object(runner, "_try_external_swe", return_value={
-            "status": "completed", "tier": "openswe_external", "code": "x=1",
-            "files_changed": [], "output": {},
-        }) as mock_ext, \
-             patch.object(runner, "_audit"):
+        with (
+            patch.object(
+                runner,
+                "_try_external_swe",
+                return_value={
+                    "status": "completed",
+                    "tier": "openswe_external",
+                    "code": "x=1",
+                    "files_changed": [],
+                    "output": {},
+                },
+            ) as mock_ext,
+            patch.object(runner, "_audit"),
+        ):
             result = runner.build({"description": "test"})
             mock_ext.assert_called_once()
             assert result["tier"] == "openswe_external"
 
     def test_falls_back_to_langgraph(self):
         runner = _fresh_runner()
-        with patch.object(runner, "_try_external_swe", return_value=None), \
-             patch.object(runner, "_try_langgraph_swe", return_value={
-                 "status": "completed", "tier": "langgraph_swe", "code": "",
-                 "files_changed": [], "output": {},
-             }) as mock_lg, \
-             patch.object(runner, "_audit"):
+        with (
+            patch.object(runner, "_try_external_swe", return_value=None),
+            patch.object(
+                runner,
+                "_try_langgraph_swe",
+                return_value={
+                    "status": "completed",
+                    "tier": "langgraph_swe",
+                    "code": "",
+                    "files_changed": [],
+                    "output": {},
+                },
+            ) as mock_lg,
+            patch.object(runner, "_audit"),
+        ):
             result = runner.build({"description": "test"})
             mock_lg.assert_called_once()
             assert result["tier"] == "langgraph_swe"
 
     def test_falls_back_to_react_llm(self):
         runner = _fresh_runner()
-        with patch.object(runner, "_try_external_swe", return_value=None), \
-             patch.object(runner, "_try_langgraph_swe", return_value=None), \
-             patch.object(runner, "_try_llm_fallback", return_value={
-                 "status": "completed", "tier": "llm_react", "code": "x=1",
-                 "files_changed": [], "output": {},
-             }) as mock_llm, \
-             patch.object(runner, "_audit"):
+        with (
+            patch.object(runner, "_try_external_swe", return_value=None),
+            patch.object(runner, "_try_langgraph_swe", return_value=None),
+            patch.object(
+                runner,
+                "_try_llm_fallback",
+                return_value={
+                    "status": "completed",
+                    "tier": "llm_react",
+                    "code": "x=1",
+                    "files_changed": [],
+                    "output": {},
+                },
+            ) as mock_llm,
+            patch.object(runner, "_audit"),
+        ):
             result = runner.build({"description": "test"})
             mock_llm.assert_called_once()
             assert result["tier"] == "llm_react"
 
     def test_audits_every_build(self):
         runner = _fresh_runner()
-        with patch.object(runner, "_try_llm_fallback", return_value={
-            "status": "completed", "tier": "llm_react", "code": "",
-            "files_changed": [], "output": {},
-        }), patch.object(runner, "_audit") as mock_audit:
+        with (
+            patch.object(
+                runner,
+                "_try_llm_fallback",
+                return_value={
+                    "status": "completed",
+                    "tier": "llm_react",
+                    "code": "",
+                    "files_changed": [],
+                    "output": {},
+                },
+            ),
+            patch.object(runner, "_audit") as mock_audit,
+        ):
             runner.build({"description": "test"})
             mock_audit.assert_called_once()
 
@@ -150,14 +201,24 @@ class TestBuild:
 # OpenSWERunner.get_status()
 # ---------------------------------------------------------------------------
 
-class TestGetStatus:
 
+class TestGetStatus:
     def test_returns_status_for_known_run(self):
         runner = _fresh_runner()
-        with patch.object(runner, "_try_llm_fallback", return_value={
-            "status": "completed", "tier": "llm_react", "code": "",
-            "files_changed": [], "output": {},
-        }), patch.object(runner, "_audit"):
+        with (
+            patch.object(
+                runner,
+                "_try_llm_fallback",
+                return_value={
+                    "status": "completed",
+                    "tier": "llm_react",
+                    "code": "",
+                    "files_changed": [],
+                    "output": {},
+                },
+            ),
+            patch.object(runner, "_audit"),
+        ):
             result = runner.build({"description": "test"})
             status = runner.get_status(result["run_id"])
             assert status["status"] == "completed"
@@ -172,8 +233,8 @@ class TestGetStatus:
 # _try_external_swe()
 # ---------------------------------------------------------------------------
 
-class TestExternalSWE:
 
+class TestExternalSWE:
     def test_returns_none_when_url_not_set(self):
         runner = _fresh_runner()
         runner._openswe_url = ""
@@ -191,8 +252,8 @@ class TestExternalSWE:
 # _try_langgraph_swe()
 # ---------------------------------------------------------------------------
 
-class TestLangGraphSWE:
 
+class TestLangGraphSWE:
     def test_returns_none_when_unavailable(self):
         runner = _fresh_runner()
         with patch("src.integrations.openswe_runner.logger"):
@@ -206,13 +267,13 @@ class TestLangGraphSWE:
 # _try_llm_fallback() — ReAct pattern
 # ---------------------------------------------------------------------------
 
+
 def _setup_mock_gw(mock_gw, return_value=None, side_effect=None):
     """Configure both generate and generate_for_task on a mocked llm_gateway."""
     if side_effect is not None:
         mock_gw.generate.side_effect = side_effect
         mock_gw.generate_for_task.side_effect = (
-            [s for s in side_effect] if isinstance(side_effect, list)
-            else side_effect
+            [s for s in side_effect] if isinstance(side_effect, list) else side_effect
         )
     elif return_value is not None:
         mock_gw.generate.return_value = return_value
@@ -220,7 +281,6 @@ def _setup_mock_gw(mock_gw, return_value=None, side_effect=None):
 
 
 class TestReActLLMFallback:
-
     def test_uses_react_pattern(self):
         runner = _fresh_runner()
         with patch("src.core.llm_gateway.llm_gateway") as mock_gw:
@@ -237,11 +297,19 @@ class TestReActLLMFallback:
         with patch("src.core.llm_gateway.llm_gateway") as mock_gw:
             _setup_mock_gw(mock_gw, return_value=REACT_RESPONSE)
             runner._try_llm_fallback(
-                {"description": "Build API", "task_type": "BACKEND",
-                 "acceptance_criteria": ["Has error handling", "Has tests"]},
+                {
+                    "description": "Build API",
+                    "task_type": "BACKEND",
+                    "acceptance_criteria": ["Has error handling", "Has tests"],
+                },
                 "",
             )
-            prompt = mock_gw.generate_for_task.call_args[1].get("prompt", mock_gw.generate_for_task.call_args[0][1] if len(mock_gw.generate_for_task.call_args[0]) > 1 else "")
+            prompt = mock_gw.generate_for_task.call_args[1].get(
+                "prompt",
+                mock_gw.generate_for_task.call_args[0][1]
+                if len(mock_gw.generate_for_task.call_args[0]) > 1
+                else "",
+            )
             assert "Has error handling" in prompt
             assert "Has tests" in prompt
 
@@ -249,15 +317,21 @@ class TestReActLLMFallback:
         runner = _fresh_runner()
         with patch("src.core.llm_gateway.llm_gateway") as mock_gw:
             _setup_mock_gw(mock_gw, return_value=REACT_RESPONSE)
-            result = runner._try_llm_fallback({"description": "test", "task_type": "BACKEND"}, "")
+            result = runner._try_llm_fallback(
+                {"description": "test", "task_type": "BACKEND"}, ""
+            )
             assert mock_gw.generate_for_task.call_count == 1
             assert result["output"]["react_iterations"] == 1
 
     def test_iterates_when_status_is_iterate(self):
         runner = _fresh_runner()
         with patch("src.core.llm_gateway.llm_gateway") as mock_gw:
-            _setup_mock_gw(mock_gw, side_effect=[REACT_RESPONSE_ITERATE, REACT_RESPONSE])
-            result = runner._try_llm_fallback({"description": "test", "task_type": "BACKEND"}, "")
+            _setup_mock_gw(
+                mock_gw, side_effect=[REACT_RESPONSE_ITERATE, REACT_RESPONSE]
+            )
+            result = runner._try_llm_fallback(
+                {"description": "test", "task_type": "BACKEND"}, ""
+            )
             assert mock_gw.generate_for_task.call_count == 2
             assert result["output"]["react_iterations"] == 2
 
@@ -265,7 +339,9 @@ class TestReActLLMFallback:
         runner = _fresh_runner()
         with patch("src.core.llm_gateway.llm_gateway") as mock_gw:
             _setup_mock_gw(mock_gw, return_value=REACT_RESPONSE_ITERATE)
-            result = runner._try_llm_fallback({"description": "test", "task_type": "BACKEND"}, "")
+            runner._try_llm_fallback(
+                {"description": "test", "task_type": "BACKEND"}, ""
+            )
             # max_iterations=3
             assert mock_gw.generate_for_task.call_count == 3
 
@@ -273,7 +349,9 @@ class TestReActLLMFallback:
         runner = _fresh_runner()
         with patch("src.core.llm_gateway.llm_gateway") as mock_gw:
             _setup_mock_gw(mock_gw, side_effect=RuntimeError("LLM down"))
-            result = runner._try_llm_fallback({"description": "test", "task_type": "BACKEND"}, "")
+            result = runner._try_llm_fallback(
+                {"description": "test", "task_type": "BACKEND"}, ""
+            )
             assert result["status"] == "error"
             assert result["tier"] == "llm_react"
 
@@ -298,7 +376,9 @@ STATUS: DONE"""
 
         with patch("src.core.llm_gateway.llm_gateway") as mock_gw:
             _setup_mock_gw(mock_gw, side_effect=[iter1, iter2])
-            result = runner._try_llm_fallback({"description": "test", "task_type": "BACKEND"}, "")
+            result = runner._try_llm_fallback(
+                {"description": "test", "task_type": "BACKEND"}, ""
+            )
             # app.py should be v2 (overridden), config.py should remain
             assert len(result["files_changed"]) == 2
             assert "app.py" in result["files_changed"]
@@ -309,8 +389,8 @@ STATUS: DONE"""
 # _parse_react_response()
 # ---------------------------------------------------------------------------
 
-class TestParseReactResponse:
 
+class TestParseReactResponse:
     def test_extracts_thought(self):
         runner = _fresh_runner()
         result = runner._parse_react_response(REACT_RESPONSE)
@@ -345,7 +425,9 @@ class TestParseReactResponse:
 
     def test_handles_json_without_fences(self):
         runner = _fresh_runner()
-        resp = 'THOUGHT: test\n{"files": [{"path": "x.py", "content": "x"}]}\nSTATUS: DONE'
+        resp = (
+            'THOUGHT: test\n{"files": [{"path": "x.py", "content": "x"}]}\nSTATUS: DONE'
+        )
         result = runner._parse_react_response(resp)
         assert len(result["files"]) == 1
 
@@ -354,16 +436,18 @@ class TestParseReactResponse:
 # Singleton
 # ---------------------------------------------------------------------------
 
-class TestSingleton:
 
+class TestSingleton:
     def test_get_openswe_runner_returns_instance(self):
         from src.integrations.openswe_runner import get_openswe_runner
+
         runner = get_openswe_runner()
         assert runner is not None
         assert hasattr(runner, "build")
 
     def test_get_openswe_runner_is_same_instance(self):
         from src.integrations.openswe_runner import get_openswe_runner
+
         r1 = get_openswe_runner()
         r2 = get_openswe_runner()
         assert r1 is r2
@@ -373,15 +457,25 @@ class TestSingleton:
 # Edge-case tests
 # ---------------------------------------------------------------------------
 
-class TestBuildEdgeCases:
 
+class TestBuildEdgeCases:
     def test_missing_description_field(self):
         """build() with task missing 'description' should still work."""
         runner = _fresh_runner()
-        with patch.object(runner, "_try_llm_fallback", return_value={
-            "status": "completed", "tier": "llm_react", "code": "",
-            "files_changed": [], "output": {},
-        }), patch.object(runner, "_audit"):
+        with (
+            patch.object(
+                runner,
+                "_try_llm_fallback",
+                return_value={
+                    "status": "completed",
+                    "tier": "llm_react",
+                    "code": "",
+                    "files_changed": [],
+                    "output": {},
+                },
+            ),
+            patch.object(runner, "_audit"),
+        ):
             result = runner.build({"task_type": "BACKEND"})
             assert result["status"] == "completed"
             assert "run_id" in result
@@ -389,10 +483,20 @@ class TestBuildEdgeCases:
     def test_missing_task_type_field(self):
         """build() with task missing 'task_type' should still work."""
         runner = _fresh_runner()
-        with patch.object(runner, "_try_llm_fallback", return_value={
-            "status": "completed", "tier": "llm_react", "code": "x=1",
-            "files_changed": ["x.py"], "output": {},
-        }), patch.object(runner, "_audit"):
+        with (
+            patch.object(
+                runner,
+                "_try_llm_fallback",
+                return_value={
+                    "status": "completed",
+                    "tier": "llm_react",
+                    "code": "x=1",
+                    "files_changed": ["x.py"],
+                    "output": {},
+                },
+            ),
+            patch.object(runner, "_audit"),
+        ):
             result = runner.build({"description": "Build something"})
             assert result["status"] == "completed"
 
@@ -400,42 +504,74 @@ class TestBuildEdgeCases:
         """build() when all 3 tiers return failure, result reflects error."""
         runner = _fresh_runner()
         runner._openswe_url = "http://fake:8000"
-        with patch.object(runner, "_try_external_swe", return_value=None), \
-             patch.object(runner, "_try_langgraph_swe", return_value=None), \
-             patch.object(runner, "_try_llm_fallback", return_value={
-                 "status": "error", "tier": "llm_react",
-                 "error": "All tiers failed", "code": "", "files_changed": [],
-             }), patch.object(runner, "_audit"):
+        with (
+            patch.object(runner, "_try_external_swe", return_value=None),
+            patch.object(runner, "_try_langgraph_swe", return_value=None),
+            patch.object(
+                runner,
+                "_try_llm_fallback",
+                return_value={
+                    "status": "error",
+                    "tier": "llm_react",
+                    "error": "All tiers failed",
+                    "code": "",
+                    "files_changed": [],
+                },
+            ),
+            patch.object(runner, "_audit"),
+        ):
             result = runner.build({"description": "test"})
             assert result["status"] == "error"
 
     def test_build_preserves_task_metadata(self):
         """build() preserves run_id in output even when custom fields present."""
         runner = _fresh_runner()
-        with patch.object(runner, "_try_llm_fallback", return_value={
-            "status": "completed", "tier": "llm_react", "code": "x=1",
-            "files_changed": ["a.py"], "output": {"custom": "data"},
-        }), patch.object(runner, "_audit"):
-            result = runner.build({
-                "description": "test", "task_type": "BACKEND",
-                "extra_field": "extra_value",
-            })
+        with (
+            patch.object(
+                runner,
+                "_try_llm_fallback",
+                return_value={
+                    "status": "completed",
+                    "tier": "llm_react",
+                    "code": "x=1",
+                    "files_changed": ["a.py"],
+                    "output": {"custom": "data"},
+                },
+            ),
+            patch.object(runner, "_audit"),
+        ):
+            result = runner.build(
+                {
+                    "description": "test",
+                    "task_type": "BACKEND",
+                    "extra_field": "extra_value",
+                }
+            )
             assert "run_id" in result
             assert result["output"]["custom"] == "data"
 
     def test_empty_task_dict(self):
         """build() with completely empty task dict."""
         runner = _fresh_runner()
-        with patch.object(runner, "_try_llm_fallback", return_value={
-            "status": "completed", "tier": "llm_react", "code": "",
-            "files_changed": [], "output": {},
-        }), patch.object(runner, "_audit"):
+        with (
+            patch.object(
+                runner,
+                "_try_llm_fallback",
+                return_value={
+                    "status": "completed",
+                    "tier": "llm_react",
+                    "code": "",
+                    "files_changed": [],
+                    "output": {},
+                },
+            ),
+            patch.object(runner, "_audit"),
+        ):
             result = runner.build({})
             assert "run_id" in result
 
 
 class TestTryLlmFallbackEdgeCases:
-
     def test_empty_response_from_llm(self):
         """_try_llm_fallback() with empty string from LLM produces no files."""
         runner = _fresh_runner()
@@ -488,8 +624,12 @@ STATUS: DONE"""
         with patch("src.core.llm_gateway.llm_gateway") as mock_gw:
             _setup_mock_gw(mock_gw, return_value=REACT_RESPONSE)
             runner._try_llm_fallback(
-                {"description": "test", "task_type": "BACKEND",
-                 "payload": {"framework": "django"}}, ""
+                {
+                    "description": "test",
+                    "task_type": "BACKEND",
+                    "payload": {"framework": "django"},
+                },
+                "",
             )
             # generate_for_task uses keyword args
             call_kwargs = mock_gw.generate_for_task.call_args
@@ -498,7 +638,6 @@ STATUS: DONE"""
 
 
 class TestParseReactResponseEdgeCases:
-
     def test_only_status_line(self):
         """_parse_react_response() with only a STATUS line."""
         runner = _fresh_runner()
@@ -520,7 +659,9 @@ class TestParseReactResponseEdgeCases:
         """_parse_react_response() handles very large responses."""
         runner = _fresh_runner()
         large_content = "x = 1; " * 10000
-        payload = json.dumps({"files": [{"path": "big.py", "content": large_content[:200]}]})
+        payload = json.dumps(
+            {"files": [{"path": "big.py", "content": large_content[:200]}]}
+        )
         response = (
             f"THOUGHT: Building large file\n"
             f"ACTION: Generate code\n"
@@ -560,29 +701,46 @@ STATUS: DONE"""
     def test_no_status_line_defaults_to_done(self):
         """_parse_react_response() defaults to DONE when no STATUS line."""
         runner = _fresh_runner()
-        result = runner._parse_react_response("THOUGHT: Just thinking\nOBSERVATION: Noted.")
+        result = runner._parse_react_response(
+            "THOUGHT: Just thinking\nOBSERVATION: Noted."
+        )
         assert result["status"] == "DONE"
 
 
 class TestExternalSWEEdgeCases:
-
     def test_timeout_returns_none(self):
         """_try_external_swe() returns None on timeout."""
+        import socket
+
         runner = _fresh_runner()
-        runner._openswe_url = "http://10.255.255.1:9999"  # Non-routable → timeout
-        result = runner._try_external_swe({"description": "test"}, "", None)
+        runner._openswe_url = "http://example.invalid:9999"
+        # Mock the HTTP call to time out immediately. The previous version pointed
+        # at a non-routable IP and relied on a real 300s connect timeout, which
+        # blew past pytest-timeout (120s) and failed the whole unit-test job. The
+        # runner catches any exception from urlopen and returns None.
+        with patch("urllib.request.urlopen", side_effect=socket.timeout("timed out")):
+            result = runner._try_external_swe({"description": "test"}, "", None)
         assert result is None
 
 
 class TestGetStatusEdgeCases:
-
     def test_status_right_after_build(self):
         """get_status() immediately after build() returns completed status."""
         runner = _fresh_runner()
-        with patch.object(runner, "_try_llm_fallback", return_value={
-            "status": "completed", "tier": "llm_react", "code": "x=1",
-            "files_changed": ["a.py"], "output": {},
-        }), patch.object(runner, "_audit"):
+        with (
+            patch.object(
+                runner,
+                "_try_llm_fallback",
+                return_value={
+                    "status": "completed",
+                    "tier": "llm_react",
+                    "code": "x=1",
+                    "files_changed": ["a.py"],
+                    "output": {},
+                },
+            ),
+            patch.object(runner, "_audit"),
+        ):
             build_result = runner.build({"description": "test"})
             status = runner.get_status(build_result["run_id"])
             assert status["status"] == "completed"
@@ -592,15 +750,24 @@ class TestGetStatusEdgeCases:
     def test_multiple_builds_independent_statuses(self):
         """Multiple build() calls produce independent status entries."""
         runner = _fresh_runner()
+
         # Each build() call needs a fresh return dict (not shared reference)
         # and a unique uuid
         def make_result():
             return {
-                "status": "completed", "tier": "llm_react", "code": "",
-                "files_changed": [], "output": {},
+                "status": "completed",
+                "tier": "llm_react",
+                "code": "",
+                "files_changed": [],
+                "output": {},
             }
-        with patch.object(runner, "_try_llm_fallback", side_effect=lambda *a, **k: make_result()), \
-             patch.object(runner, "_audit"):
+
+        with (
+            patch.object(
+                runner, "_try_llm_fallback", side_effect=lambda *a, **k: make_result()
+            ),
+            patch.object(runner, "_audit"),
+        ):
             r1 = runner.build({"description": "task 1"})
             r2 = runner.build({"description": "task 2"})
             assert r1["run_id"] != r2["run_id"]

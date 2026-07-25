@@ -4,6 +4,7 @@ Extracted from src/interface/api.py so the desktop sidecar can reuse the
 exact same schema without importing FastAPI. Column names and semantics
 are preserved verbatim — existing rows continue to load.
 """
+
 from __future__ import annotations
 
 import sqlite3
@@ -124,9 +125,19 @@ class FeatureRequestStore:
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
-                    fr.id, fr.module_id, fr.module_name, fr.title, fr.description,
-                    fr.priority, fr.status, fr.requested_by, fr.scope,
-                    fr.created_at, fr.updated_at, fr.reviewer_note, fr.plan_trace_id,
+                    fr.id,
+                    fr.module_id,
+                    fr.module_name,
+                    fr.title,
+                    fr.description,
+                    fr.priority,
+                    fr.status,
+                    fr.requested_by,
+                    fr.scope,
+                    fr.created_at,
+                    fr.updated_at,
+                    fr.reviewer_note,
+                    fr.plan_trace_id,
                 ),
             )
             conn.commit()

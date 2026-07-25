@@ -1,19 +1,20 @@
 """
 Unit tests for src/modules/event_bus.py
 """
+
 import threading
-import time
 
 import pytest
 
 pytestmark = pytest.mark.unit
 
-from src.modules.event_bus import EventBus
+from src.modules.event_bus import EventBus  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def make_recorder():
     """Return a list and a handler that appends (event_type, data) to it."""
@@ -28,6 +29,7 @@ def make_recorder():
 # ---------------------------------------------------------------------------
 # subscribe() + publish()
 # ---------------------------------------------------------------------------
+
 
 class TestSubscribePublish:
     def test_handler_called_on_publish(self):
@@ -81,6 +83,7 @@ class TestSubscribePublish:
 # Wildcard '*' handler
 # ---------------------------------------------------------------------------
 
+
 class TestWildcard:
     def test_wildcard_receives_any_event(self):
         bus = EventBus()
@@ -124,6 +127,7 @@ class TestWildcard:
 # unsubscribe()
 # ---------------------------------------------------------------------------
 
+
 class TestUnsubscribe:
     def test_handler_not_called_after_unsubscribe(self):
         bus = EventBus()
@@ -153,6 +157,7 @@ class TestUnsubscribe:
 # ---------------------------------------------------------------------------
 # Exception handling
 # ---------------------------------------------------------------------------
+
 
 class TestExceptionHandling:
     def test_exception_in_handler_does_not_propagate(self):
@@ -201,6 +206,7 @@ class TestExceptionHandling:
 # clear()
 # ---------------------------------------------------------------------------
 
+
 class TestClear:
     def test_clear_removes_all_handlers(self):
         bus = EventBus()
@@ -224,6 +230,7 @@ class TestClear:
 # ---------------------------------------------------------------------------
 # Thread safety
 # ---------------------------------------------------------------------------
+
 
 class TestThreadSafety:
     def test_concurrent_publish_does_not_corrupt_state(self):
@@ -267,10 +274,9 @@ class TestThreadSafety:
             except Exception as e:
                 errors.append(e)
 
-        threads = (
-            [threading.Thread(target=subscriber) for _ in range(20)]
-            + [threading.Thread(target=publisher) for _ in range(20)]
-        )
+        threads = [threading.Thread(target=subscriber) for _ in range(20)] + [
+            threading.Thread(target=publisher) for _ in range(20)
+        ]
         for t in threads:
             t.start()
         for t in threads:

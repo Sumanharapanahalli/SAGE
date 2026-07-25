@@ -1,4 +1,5 @@
 """LLM handler — current provider info and runtime switch."""
+
 from __future__ import annotations
 
 import asyncio
@@ -42,6 +43,7 @@ def _switchable_providers() -> list[str]:
     """
     try:
         from src.core.llm_gateway import SWITCHABLE_PROVIDERS
+
         return list(SWITCHABLE_PROVIDERS)
     except Exception:  # noqa: BLE001
         return ["gemini", "claude-code", "ollama", "local", "claude"]

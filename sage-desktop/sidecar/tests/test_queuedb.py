@@ -4,6 +4,7 @@ Uses a REAL TaskQueue against a temp db_path so the schema under test is the
 framework's, not a hand-rolled copy — if queue_manager migrates a column,
 these tests see it.
 """
+
 from __future__ import annotations
 
 import json
@@ -44,6 +45,7 @@ def _set_status(db_path: str, task_id: str, status: str, error: str | None = Non
 
 # ── wiring ────────────────────────────────────────────────────────────────
 
+
 def test_list_all_errors_when_not_wired(monkeypatch):
     monkeypatch.setattr(queuedb, "_db_path", None)
     with pytest.raises(RpcError):
@@ -60,6 +62,7 @@ def test_list_all_on_a_never_written_queue_returns_empty(tmp_path, monkeypatch):
 
 # ── list_all ──────────────────────────────────────────────────────────────
 
+
 def test_list_all_returns_full_payload_source_and_error(dbs):
     q = dbs["queue"]
     tid = q.submit("ANALYZE_LOG", {"log_entry": "boom"}, source="solution")
@@ -67,7 +70,7 @@ def test_list_all_returns_full_payload_source_and_error(dbs):
 
     out = queuedb.list_all({})
     task = next(t for t in out["tasks"] if t["task_id"] == tid)
-    assert task["payload"] == {"log_entry": "boom"}   # decoded, not raw JSON text
+    assert task["payload"] == {"log_entry": "boom"}  # decoded, not raw JSON text
     assert task["source"] == "solution"
     assert task["status"] == "failed"
     assert task["error"] == "LLM timeout"
@@ -85,7 +88,8 @@ def test_list_all_returns_completed_history_the_in_memory_handler_cannot(dbs):
     _set_status(dbs["queue_db"], tid, "completed")
 
     from src.core.queue_manager import TaskQueue
-    fresh = TaskQueue(db_path=dbs["queue_db"])           # simulates a restart
+
+    fresh = TaskQueue(db_path=dbs["queue_db"])  # simulates a restart
     assert not [t for t in fresh.get_all_tasks() if t["task_id"] == tid]
 
     out = queuedb.list_all({})
@@ -124,8 +128,13 @@ def test_counts_span_the_whole_table_even_when_filtered(dbs):
     out = queuedb.list_all({"status": "failed"})
     assert len(out["tasks"]) == 1
     assert out["counts"] == {
-        "pending": 1, "in_progress": 0, "completed": 1,
-        "failed": 1, "blocked": 0, "cancelled": 0, "total": 3,
+        "pending": 1,
+        "in_progress": 0,
+        "completed": 1,
+        "failed": 1,
+        "blocked": 0,
+        "cancelled": 0,
+        "total": 3,
     }
 
 
@@ -137,7 +146,9 @@ def test_list_all_joins_feature_title_and_scope(dbs):
     fr_id = fr.id
     trace = "trace-abc"
     conn = sqlite3.connect(dbs["feature_db"])
-    conn.execute("UPDATE feature_requests SET plan_trace_id=? WHERE id=?", (trace, fr_id))
+    conn.execute(
+        "UPDATE feature_requests SET plan_trace_id=? WHERE id=?", (trace, fr_id)
+    )
     conn.commit()
     conn.close()
 
@@ -188,11 +199,14 @@ def test_list_all_decodes_a_corrupt_payload_to_an_empty_object(dbs):
 
 # ── subtasks ──────────────────────────────────────────────────────────────
 
+
 def test_subtasks_returns_children_by_parent_task_id(dbs):
     q = dbs["queue"]
     parent = q.submit("PLAN", {})
     child = q.submit(
-        "DEVELOP", {}, metadata={"parent_task_id": parent, "wave": 1},
+        "DEVELOP",
+        {},
+        metadata={"parent_task_id": parent, "wave": 1},
     )
     q.submit("DEVELOP", {})  # unrelated
 
@@ -233,7 +247,9 @@ def test_subtask_depends_on_round_trips(dbs):
     parent = q.submit("PLAN", {})
     first = q.submit("DEVELOP", {}, metadata={"parent_task_id": parent, "wave": 0})
     q.submit(
-        "TEST", {}, depends_on=[first],
+        "TEST",
+        {},
+        depends_on=[first],
         metadata={"parent_task_id": parent, "wave": 1},
     )
     out = queuedb.subtasks({"task_id": parent})

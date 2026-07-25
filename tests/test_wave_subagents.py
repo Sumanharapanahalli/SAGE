@@ -1,5 +1,4 @@
 from tests.route_paths import route_paths
-import pytest
 from unittest.mock import MagicMock
 
 
@@ -12,7 +11,7 @@ def test_subtask_fanout_submits_children():
     subtasks = [
         {"task_type": "ANALYZE_LOG", "payload": {"log_entry": "error A"}, "wave": 0},
         {"task_type": "ANALYZE_LOG", "payload": {"log_entry": "error B"}, "wave": 0},
-        {"task_type": "REVIEW_MR",   "payload": {"mr_iid": 42},           "wave": 1},
+        {"task_type": "REVIEW_MR", "payload": {"mr_iid": 42}, "wave": 1},
     ]
     _fanout_subtasks(mock_qm, parent_task_id, subtasks)
     assert mock_qm.submit.call_count == 3
@@ -21,6 +20,7 @@ def test_subtask_fanout_submits_children():
 def test_wave_0_tasks_have_no_depends_on():
     """Wave 0 subtasks are submitted with empty depends_on."""
     from src.core.queue_manager import _fanout_subtasks
+
     mock_qm = MagicMock()
     mock_qm.submit.return_value = "task-id-001"
     subtasks = [
@@ -42,7 +42,7 @@ def test_wave_1_tasks_depend_on_wave_0():
     subtasks = [
         {"task_type": "ANALYZE_LOG", "payload": {}, "wave": 0},
         {"task_type": "ANALYZE_LOG", "payload": {}, "wave": 0},
-        {"task_type": "REVIEW_MR",   "payload": {}, "wave": 1},
+        {"task_type": "REVIEW_MR", "payload": {}, "wave": 1},
     ]
     _fanout_subtasks(mock_qm, "parent-y", subtasks)
     wave1_call = mock_qm.submit.call_args_list[2]
@@ -52,5 +52,6 @@ def test_wave_1_tasks_depend_on_wave_0():
 
 def test_subtasks_endpoint_exists():
     from src.interface.api import app
+
     routes = route_paths(app)
     assert "/tasks/{task_id}/subtasks" in routes

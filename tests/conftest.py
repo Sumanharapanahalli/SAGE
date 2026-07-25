@@ -13,7 +13,6 @@ Provides reusable fixtures for:
 
 import json
 import os
-import sqlite3
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -28,6 +27,7 @@ os.environ.setdefault("SAGE_MCP_DOCKER", "0")
 # ---------------------------------------------------------------------------
 # Sample log entries used across multiple test files
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def sample_log_entries():
@@ -45,6 +45,7 @@ def sample_log_entries():
 # Audit logger fixture — fresh isolated SQLite DB per test
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture
 def tmp_audit_db(tmp_path):
     """
@@ -52,6 +53,7 @@ def tmp_audit_db(tmp_path):
     Each test gets its own isolated DB — no shared state.
     """
     from src.memory.audit_logger import AuditLogger
+
     db_file = str(tmp_path / "test_audit.db")
     logger = AuditLogger(db_path=db_file)
     return logger
@@ -61,6 +63,7 @@ def tmp_audit_db(tmp_path):
 # Vector memory fixture — in-memory fallback only
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture
 def tmp_vector_memory():
     """
@@ -69,12 +72,16 @@ def tmp_vector_memory():
     """
     with patch.dict("sys.modules", {"chromadb": None}):
         # Patch _HAS_CHROMADB and Chroma to force fallback path
-        with patch("src.memory.vector_store._HAS_CHROMADB", False), \
-             patch("src.memory.vector_store.Chroma", None):
+        with (
+            patch("src.memory.vector_store._HAS_CHROMADB", False),
+            patch("src.memory.vector_store.Chroma", None),
+        ):
             from src.memory.vector_store import VectorMemory
+
             vm = VectorMemory.__new__(VectorMemory)
             import logging
             import threading
+
             vm.logger = logging.getLogger("VectorMemory.test")
             vm._fallback_memory = []
             vm._fallback_lock = threading.Lock()
@@ -87,24 +94,30 @@ def tmp_vector_memory():
 # Mock LLM gateway fixture
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture
 def mock_llm_gateway():
     """
     Patches llm_gateway.generate() to return a fixed valid JSON analysis string.
     Suitable for testing agents that call the LLM gateway.
     """
-    fixed_response = json.dumps({
-        "severity": "HIGH",
-        "root_cause_hypothesis": "test hypothesis",
-        "recommended_action": "test action",
-    })
-    with patch("src.core.llm_gateway.LLMGateway.generate", return_value=fixed_response) as mock_gen:
+    fixed_response = json.dumps(
+        {
+            "severity": "HIGH",
+            "root_cause_hypothesis": "test hypothesis",
+            "recommended_action": "test action",
+        }
+    )
+    with patch(
+        "src.core.llm_gateway.LLMGateway.generate", return_value=fixed_response
+    ) as mock_gen:
         yield mock_gen
 
 
 # ---------------------------------------------------------------------------
 # Mock GitLab HTTP responses
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def mock_gitlab_responses():
@@ -166,8 +179,20 @@ def mock_gitlab_responses():
             "web_url": "https://gitlab.example.com/project/-/pipelines/555",
         },
         "jobs": [
-            {"name": "build", "stage": "build", "status": "success", "duration": 120, "web_url": ""},
-            {"name": "test", "stage": "test", "status": "success", "duration": 180, "web_url": ""},
+            {
+                "name": "build",
+                "stage": "build",
+                "status": "success",
+                "duration": 120,
+                "web_url": "",
+            },
+            {
+                "name": "test",
+                "stage": "test",
+                "status": "success",
+                "duration": 180,
+                "web_url": "",
+            },
         ],
         "note": {
             "id": 9001,
@@ -183,6 +208,7 @@ def mock_gitlab_responses():
 # FastAPI TestClient fixture
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture
 def api_client():
     """
@@ -191,6 +217,7 @@ def api_client():
     """
     from fastapi.testclient import TestClient
     from src.interface.api import app
+
     with TestClient(app) as client:
         yield client
 
@@ -198,6 +225,7 @@ def api_client():
 # ---------------------------------------------------------------------------
 # Serial port mock fixture
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def mock_serial_port():
@@ -222,8 +250,13 @@ def mock_serial_port():
     mock_ser_instance.read.return_value = b"OK"
     mock_ser_instance.in_waiting = 3
 
-    with patch("serial.tools.list_ports.comports", return_value=[mock_port_info, mock_port_info2]) as mock_comports, \
-         patch("serial.Serial", return_value=mock_ser_instance) as mock_serial_cls:
+    with (
+        patch(
+            "serial.tools.list_ports.comports",
+            return_value=[mock_port_info, mock_port_info2],
+        ) as mock_comports,
+        patch("serial.Serial", return_value=mock_ser_instance) as mock_serial_cls,
+    ):
         yield {
             "comports": mock_comports,
             "Serial": mock_serial_cls,
@@ -235,6 +268,7 @@ def mock_serial_port():
 # ---------------------------------------------------------------------------
 # J-Link mock fixture
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def mock_jlink():
@@ -265,6 +299,7 @@ def mock_jlink():
 # Metabase session mock fixture
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture
 def mock_metabase_session():
     """
@@ -279,12 +314,22 @@ def mock_metabase_session():
     mock_data_response.status_code = 200
     mock_data_response.raise_for_status = MagicMock()
     mock_data_response.json.return_value = [
-        {"error_code": "E001", "message": "Sensor timeout", "timestamp": "2024-01-15T10:00:00Z"},
-        {"error_code": "E002", "message": "Flash write error", "timestamp": "2024-01-15T09:30:00Z"},
+        {
+            "error_code": "E001",
+            "message": "Sensor timeout",
+            "timestamp": "2024-01-15T10:00:00Z",
+        },
+        {
+            "error_code": "E002",
+            "message": "Flash write error",
+            "timestamp": "2024-01-15T09:30:00Z",
+        },
     ]
 
-    with patch("requests.post", return_value=mock_auth_response) as mock_post, \
-         patch("requests.get", return_value=mock_data_response) as mock_get:
+    with (
+        patch("requests.post", return_value=mock_auth_response) as mock_post,
+        patch("requests.get", return_value=mock_data_response) as mock_get,
+    ):
         yield {
             "post": mock_post,
             "get": mock_get,
@@ -296,6 +341,7 @@ def mock_metabase_session():
 # ---------------------------------------------------------------------------
 # Spira requests mock fixture
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def mock_spira_requests():
@@ -342,8 +388,10 @@ def mock_spira_requests():
         "CreationDate": "2024-01-15T10:00:00",
     }
 
-    with patch("requests.get", return_value=mock_get_response) as mock_get, \
-         patch("requests.post", return_value=mock_post_response) as mock_post:
+    with (
+        patch("requests.get", return_value=mock_get_response) as mock_get,
+        patch("requests.post", return_value=mock_post_response) as mock_post,
+    ):
         yield {
             "get": mock_get,
             "post": mock_post,
@@ -355,6 +403,7 @@ def mock_spira_requests():
 # ---------------------------------------------------------------------------
 # Teams requests mock fixture
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def mock_teams_requests():
@@ -384,7 +433,10 @@ def mock_teams_requests():
                 "id": "msg-001",
                 "createdDateTime": "2024-01-15T10:00:00Z",
                 "from": {"user": {"displayName": "Alice Engineer"}},
-                "body": {"contentType": "text", "content": "ERROR timeout on device COM3"},
+                "body": {
+                    "contentType": "text",
+                    "content": "ERROR timeout on device COM3",
+                },
                 "importance": "normal",
                 "subject": "",
             },
@@ -392,7 +444,10 @@ def mock_teams_requests():
                 "id": "msg-002",
                 "createdDateTime": "2024-01-15T10:01:00Z",
                 "from": {"user": {"displayName": "Bob Dev"}},
-                "body": {"contentType": "text", "content": "Firmware update completed successfully"},
+                "body": {
+                    "contentType": "text",
+                    "content": "Firmware update completed successfully",
+                },
                 "importance": "normal",
                 "subject": "",
             },
@@ -400,16 +455,23 @@ def mock_teams_requests():
                 "id": "msg-003",
                 "createdDateTime": "2024-01-15T10:02:00Z",
                 "from": {"user": {"displayName": "System Monitor"}},
-                "body": {"contentType": "text", "content": "CRITICAL sensor fault detected on line 4"},
+                "body": {
+                    "contentType": "text",
+                    "content": "CRITICAL sensor fault detected on line 4",
+                },
                 "importance": "urgent",
                 "subject": "",
             },
         ]
     }
 
-    with patch("msal.ConfidentialClientApplication", return_value=mock_msal_app) as mock_msal_cls, \
-         patch("requests.post", return_value=mock_webhook_response) as mock_post, \
-         patch("requests.get", return_value=mock_graph_response) as mock_get:
+    with (
+        patch(
+            "msal.ConfidentialClientApplication", return_value=mock_msal_app
+        ) as mock_msal_cls,
+        patch("requests.post", return_value=mock_webhook_response) as mock_post,
+        patch("requests.get", return_value=mock_graph_response) as mock_get,
+    ):
         yield {
             "msal_cls": mock_msal_cls,
             "msal_app": mock_msal_app,

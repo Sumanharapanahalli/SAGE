@@ -19,9 +19,13 @@ Docker: sage/firmware-toolchain:latest
 import logging
 
 from src.integrations.base_runner import (
-    BaseRunner, RunResult, VerificationReport, VerificationFinding,
-    VerificationSeverity, Exercise, ExerciseScore,
-    register_runner, FIRMWARE_ROLES,
+    BaseRunner,
+    VerificationReport,
+    VerificationFinding,
+    VerificationSeverity,
+    Exercise,
+    register_runner,
+    FIRMWARE_ROLES,
 )
 
 logger = logging.getLogger("Runner.openfw")
@@ -57,8 +61,8 @@ class OpenFWRunner(BaseRunner):
                 "- Include proper interrupt priority configuration\n"
                 "- Follow MISRA-C guidelines where practical\n"
                 "- Include a Makefile or CMakeLists.txt for cross-compilation\n\n"
-                "Output as JSON: {\"files\": [{\"path\": \"...\", \"content\": \"...\"}], "
-                "\"target_mcu\": \"...\", \"binary_estimate_kb\": N, \"ram_estimate_kb\": N}\n"
+                'Output as JSON: {"files": [{"path": "...", "content": "..."}], '
+                '"target_mcu": "...", "binary_estimate_kb": N, "ram_estimate_kb": N}\n'
             )
 
             user_prompt = f"Task: {description}\nPayload: {task.get('payload', {})}"
@@ -91,7 +95,8 @@ class OpenFWRunner(BaseRunner):
             else:
                 self.logger.warning(
                     "Output validation failed after %d attempts: %s",
-                    validation.get("attempts", 0), validation.get("errors", []),
+                    validation.get("attempts", 0),
+                    validation.get("errors", []),
                 )
 
             metrics["task_type"] = task_type
@@ -115,7 +120,9 @@ class OpenFWRunner(BaseRunner):
         and attempts cross-compilation when tools are available.
         """
         from src.mcp_servers.hardware_tools import (
-            firmware_compile, firmware_size, cppcheck_misra,
+            firmware_compile,
+            firmware_size,
+            cppcheck_misra,
         )
         import os
 
@@ -142,9 +149,12 @@ class OpenFWRunner(BaseRunner):
         target_mcu = parsed.get("target_mcu", "cortex-m4")
         # Map MCU names to GCC target flags
         target_map = {
-            "stm32f4": "cortex-m4", "stm32f1": "cortex-m3",
-            "stm32f0": "cortex-m0", "stm32f7": "cortex-m7",
-            "nrf52": "cortex-m4", "esp32": "cortex-m4",
+            "stm32f4": "cortex-m4",
+            "stm32f1": "cortex-m3",
+            "stm32f0": "cortex-m0",
+            "stm32f7": "cortex-m7",
+            "nrf52": "cortex-m4",
+            "esp32": "cortex-m4",
         }
         gcc_target = target_map.get(target_mcu.lower(), target_mcu)
         if c_files:
@@ -166,10 +176,14 @@ class OpenFWRunner(BaseRunner):
         score = 30.0  # base for producing any output
 
         if result.status == "error":
-            findings.append(VerificationFinding(
-                check="execution", severity=VerificationSeverity.ERROR,
-                message="Execution failed", details={"errors": result.errors},
-            ))
+            findings.append(
+                VerificationFinding(
+                    check="execution",
+                    severity=VerificationSeverity.ERROR,
+                    message="Execution failed",
+                    details={"errors": result.errors},
+                )
+            )
             return VerificationReport(passed=False, score=0.0, findings=findings)
 
         metrics = result.metrics or {}
@@ -180,51 +194,81 @@ class OpenFWRunner(BaseRunner):
             flash_limit = metrics.get("flash_limit", 256 * 1024)  # default 256KB
             if binary_kb <= flash_limit:
                 score += 15
-                findings.append(VerificationFinding(
-                    check="binary_size", severity=VerificationSeverity.PASS,
-                    message=f"Binary {binary_kb}KB fits flash",
-                    details={"binary_size": binary_kb},
-                ))
+                findings.append(
+                    VerificationFinding(
+                        check="binary_size",
+                        severity=VerificationSeverity.PASS,
+                        message=f"Binary {binary_kb}KB fits flash",
+                        details={"binary_size": binary_kb},
+                    )
+                )
             else:
-                findings.append(VerificationFinding(
-                    check="binary_size", severity=VerificationSeverity.ERROR,
-                    message=f"Binary {binary_kb}KB exceeds flash limit {flash_limit}KB",
-                ))
+                findings.append(
+                    VerificationFinding(
+                        check="binary_size",
+                        severity=VerificationSeverity.ERROR,
+                        message=f"Binary {binary_kb}KB exceeds flash limit {flash_limit}KB",
+                    )
+                )
 
         # Check files produced
         if result.files_changed:
             score += 20
-            has_c = any(f.endswith(".c") or f.endswith(".cpp") for f in result.files_changed)
-            has_h = any(f.endswith(".h") or f.endswith(".hpp") for f in result.files_changed)
-            has_build = any("make" in f.lower() or "cmake" in f.lower() for f in result.files_changed)
+            has_c = any(
+                f.endswith(".c") or f.endswith(".cpp") for f in result.files_changed
+            )
+            has_h = any(
+                f.endswith(".h") or f.endswith(".hpp") for f in result.files_changed
+            )
+            has_build = any(
+                "make" in f.lower() or "cmake" in f.lower()
+                for f in result.files_changed
+            )
             if has_c:
                 score += 10
             if has_h:
                 score += 5
             if has_build:
                 score += 10
-            findings.append(VerificationFinding(
-                check="artifacts", severity=VerificationSeverity.PASS,
-                message=f"Produced {len(result.files_changed)} files (C={has_c}, H={has_h}, Build={has_build})",
-            ))
+            findings.append(
+                VerificationFinding(
+                    check="artifacts",
+                    severity=VerificationSeverity.PASS,
+                    message=f"Produced {len(result.files_changed)} files (C={has_c}, H={has_h}, Build={has_build})",
+                )
+            )
 
         # Check output contains embedded patterns
         output_lower = (result.output or "").lower()
-        embedded_patterns = ["hal_", "gpio", "uart", "spi", "i2c", "interrupt", "volatile", "rtos"]
+        embedded_patterns = [
+            "hal_",
+            "gpio",
+            "uart",
+            "spi",
+            "i2c",
+            "interrupt",
+            "volatile",
+            "rtos",
+        ]
         matched = sum(1 for p in embedded_patterns if p in output_lower)
         if matched >= 2:
             score += 10
-            findings.append(VerificationFinding(
-                check="embedded_patterns", severity=VerificationSeverity.PASS,
-                message=f"Contains {matched} embedded patterns",
-            ))
+            findings.append(
+                VerificationFinding(
+                    check="embedded_patterns",
+                    severity=VerificationSeverity.PASS,
+                    message=f"Contains {matched} embedded patterns",
+                )
+            )
 
         score = min(score, 100.0)
         return VerificationReport(
             passed=score >= 40.0,
             score=score,
             findings=findings,
-            metrics={"binary_size": binary_kb} if isinstance(binary_kb, (int, float)) else {},
+            metrics={"binary_size": binary_kb}
+            if isinstance(binary_kb, (int, float))
+            else {},
         )
 
     # ── Toolchain ───────────────────────────────────────────────────────
@@ -234,20 +278,64 @@ class OpenFWRunner(BaseRunner):
             "runner": self.name,
             "docker_image": self.docker_image,
             "roles": self.roles,
-            "tools": ["gcc-arm-none-eabi", "openocd", "gdb-multiarch", "cmake", "ninja", "make"],
-            "packages": ["gcc-arm-none-eabi", "openocd", "cmake", "ninja-build", "gdb-multiarch",
-                         "cppcheck", "valgrind", "lcov", "qemu-system-arm"],
+            "tools": [
+                "gcc-arm-none-eabi",
+                "openocd",
+                "gdb-multiarch",
+                "cmake",
+                "ninja",
+                "make",
+            ],
+            "packages": [
+                "gcc-arm-none-eabi",
+                "openocd",
+                "cmake",
+                "ninja-build",
+                "gdb-multiarch",
+                "cppcheck",
+                "valgrind",
+                "lcov",
+                "qemu-system-arm",
+            ],
         }
 
     def get_workflow(self):
         return [
-            {"step": 1, "name": "spec_review", "description": "Read hardware spec and requirements"},
-            {"step": 2, "name": "code", "description": "Generate HAL/driver/application code"},
-            {"step": 3, "name": "cross_compile", "description": "Cross-compile for target MCU"},
-            {"step": 4, "name": "static_analysis", "description": "Run cppcheck, MISRA checks"},
-            {"step": 5, "name": "binary_metrics", "description": "Measure binary size, stack depth, RAM usage"},
-            {"step": 6, "name": "emulator_test", "description": "Run unit tests on QEMU ARM emulator"},
-            {"step": 7, "name": "report", "description": "Generate build report with metrics"},
+            {
+                "step": 1,
+                "name": "spec_review",
+                "description": "Read hardware spec and requirements",
+            },
+            {
+                "step": 2,
+                "name": "code",
+                "description": "Generate HAL/driver/application code",
+            },
+            {
+                "step": 3,
+                "name": "cross_compile",
+                "description": "Cross-compile for target MCU",
+            },
+            {
+                "step": 4,
+                "name": "static_analysis",
+                "description": "Run cppcheck, MISRA checks",
+            },
+            {
+                "step": 5,
+                "name": "binary_metrics",
+                "description": "Measure binary size, stack depth, RAM usage",
+            },
+            {
+                "step": 6,
+                "name": "emulator_test",
+                "description": "Run unit tests on QEMU ARM emulator",
+            },
+            {
+                "step": 7,
+                "name": "report",
+                "description": "Generate build report with metrics",
+            },
         ]
 
     def get_experience_keys(self):
@@ -256,6 +344,7 @@ class OpenFWRunner(BaseRunner):
     def get_experimental_commands(self, workspace, files):
         """Firmware-specific: C syntax check, cross-compile attempt, static analysis."""
         import os
+
         commands = []
         c_files = [f for f in files if f.endswith((".c", ".cpp"))]
         h_files = [f for f in files if f.endswith((".h", ".hpp"))]
@@ -263,39 +352,72 @@ class OpenFWRunner(BaseRunner):
         if c_files:
             # GCC syntax check (host compiler — catches syntax errors even without ARM headers)
             compiler = "gcc" if any(f.endswith(".c") for f in c_files) else "g++"
-            commands.append({
-                "name": "c_syntax_check",
-                "cmd": [compiler, "-fsyntax-only", "-Wall", "-Wextra",
-                        "-Wno-unknown-pragmas", f"-I{workspace}"] + c_files,
-                "weight": 30,
-                "timeout": 30,
-            })
+            commands.append(
+                {
+                    "name": "c_syntax_check",
+                    "cmd": [
+                        compiler,
+                        "-fsyntax-only",
+                        "-Wall",
+                        "-Wextra",
+                        "-Wno-unknown-pragmas",
+                        f"-I{workspace}",
+                    ]
+                    + c_files,
+                    "weight": 30,
+                    "timeout": 30,
+                }
+            )
             # Try ARM cross-compile if toolchain available
-            commands.append({
-                "name": "arm_cross_compile",
-                "cmd": ["arm-none-eabi-gcc", "-fsyntax-only", "-mcpu=cortex-m4",
-                        "-mthumb", f"-I{workspace}"] + c_files,
-                "weight": 25,
-                "timeout": 30,
-            })
+            commands.append(
+                {
+                    "name": "arm_cross_compile",
+                    "cmd": [
+                        "arm-none-eabi-gcc",
+                        "-fsyntax-only",
+                        "-mcpu=cortex-m4",
+                        "-mthumb",
+                        f"-I{workspace}",
+                    ]
+                    + c_files,
+                    "weight": 25,
+                    "timeout": 30,
+                }
+            )
             # Static analysis with cppcheck if available
-            commands.append({
-                "name": "static_analysis",
-                "cmd": ["cppcheck", "--enable=warning,style", "--error-exitcode=1",
-                        "--quiet"] + c_files,
-                "weight": 20,
-                "timeout": 30,
-            })
+            commands.append(
+                {
+                    "name": "static_analysis",
+                    "cmd": [
+                        "cppcheck",
+                        "--enable=warning,style",
+                        "--error-exitcode=1",
+                        "--quiet",
+                    ]
+                    + c_files,
+                    "weight": 20,
+                    "timeout": 30,
+                }
+            )
 
         if h_files:
             # Verify headers are self-contained (include guard check)
             for hf in h_files[:5]:
-                commands.append({
-                    "name": f"header_check_{os.path.basename(hf)}",
-                    "cmd": ["gcc", "-fsyntax-only", "-x", "c", f"-I{workspace}", hf],
-                    "weight": 5,
-                    "timeout": 10,
-                })
+                commands.append(
+                    {
+                        "name": f"header_check_{os.path.basename(hf)}",
+                        "cmd": [
+                            "gcc",
+                            "-fsyntax-only",
+                            "-x",
+                            "c",
+                            f"-I{workspace}",
+                            hf,
+                        ],
+                        "weight": 5,
+                        "timeout": 10,
+                    }
+                )
 
         return commands
 
@@ -309,29 +431,49 @@ class OpenFWRunner(BaseRunner):
         # Fallback: minimal hardcoded set
         fallback = {
             "beginner": [
-                Exercise(id="fw-b01", role="firmware_engineer", task_type="FIRMWARE",
-                         difficulty="beginner",
-                         description="Write a GPIO driver to blink an LED on STM32F4 at 1Hz",
-                         acceptance_criteria=["Compiles for ARM Cortex-M4", "Binary under 64KB",
-                                              "Uses HAL GPIO functions", "Includes Makefile or CMake"],
-                         expected_artifacts=["main.c", "gpio_driver.c", "Makefile"],
-                         tags=["gpio", "stm32"]),
+                Exercise(
+                    id="fw-b01",
+                    role="firmware_engineer",
+                    task_type="FIRMWARE",
+                    difficulty="beginner",
+                    description="Write a GPIO driver to blink an LED on STM32F4 at 1Hz",
+                    acceptance_criteria=[
+                        "Compiles for ARM Cortex-M4",
+                        "Binary under 64KB",
+                        "Uses HAL GPIO functions",
+                        "Includes Makefile or CMake",
+                    ],
+                    expected_artifacts=["main.c", "gpio_driver.c", "Makefile"],
+                    tags=["gpio", "stm32"],
+                ),
             ],
             "intermediate": [
-                Exercise(id="fw-i01", role="firmware_engineer", task_type="FIRMWARE",
-                         difficulty="intermediate",
-                         description="Write an I2C driver for BME280 sensor on STM32",
-                         acceptance_criteria=["Compiles for ARM", "I2C read/write", "Handles NACK errors"],
-                         expected_artifacts=["bme280.c", "bme280.h", "main.c"],
-                         tags=["i2c", "sensor"]),
+                Exercise(
+                    id="fw-i01",
+                    role="firmware_engineer",
+                    task_type="FIRMWARE",
+                    difficulty="intermediate",
+                    description="Write an I2C driver for BME280 sensor on STM32",
+                    acceptance_criteria=[
+                        "Compiles for ARM",
+                        "I2C read/write",
+                        "Handles NACK errors",
+                    ],
+                    expected_artifacts=["bme280.c", "bme280.h", "main.c"],
+                    tags=["i2c", "sensor"],
+                ),
             ],
             "advanced": [
-                Exercise(id="fw-a01", role="firmware_engineer", task_type="FIRMWARE",
-                         difficulty="advanced",
-                         description="Implement FreeRTOS CAN bus gateway with message filtering",
-                         acceptance_criteria=["FreeRTOS tasks", "CAN filtering", "Watchdog"],
-                         expected_artifacts=["main.c", "can_gateway.c", "CMakeLists.txt"],
-                         tags=["rtos", "can"]),
+                Exercise(
+                    id="fw-a01",
+                    role="firmware_engineer",
+                    task_type="FIRMWARE",
+                    difficulty="advanced",
+                    description="Implement FreeRTOS CAN bus gateway with message filtering",
+                    acceptance_criteria=["FreeRTOS tasks", "CAN filtering", "Watchdog"],
+                    expected_artifacts=["main.c", "can_gateway.c", "CMakeLists.txt"],
+                    tags=["rtos", "can"],
+                ),
             ],
         }
         return fallback.get(difficulty, fallback["intermediate"])
@@ -351,7 +493,9 @@ class OpenFWRunner(BaseRunner):
             hints.append("Ensure code compiles without errors")
 
         # Structural: binary metrics
-        binary_size = result.metrics.get("binary_size", result.metrics.get("binary_estimate_kb", 0))
+        binary_size = result.metrics.get(
+            "binary_size", result.metrics.get("binary_estimate_kb", 0)
+        )
         if isinstance(binary_size, (int, float)) and binary_size > 0:
             score += 15
             criteria["has_binary_metrics"] = True
@@ -361,7 +505,16 @@ class OpenFWRunner(BaseRunner):
 
         # Structural: embedded patterns
         output_lower = (result.output or "").lower()
-        fw_keywords = ["hal_", "gpio", "uart", "spi", "i2c", "interrupt", "#include", "volatile"]
+        fw_keywords = [
+            "hal_",
+            "gpio",
+            "uart",
+            "spi",
+            "i2c",
+            "interrupt",
+            "#include",
+            "volatile",
+        ]
         kw_hits = sum(1 for k in fw_keywords if k in output_lower)
         if kw_hits >= 2:
             score += 20
@@ -371,7 +524,11 @@ class OpenFWRunner(BaseRunner):
             hints.append("Use proper HAL/peripheral abstractions")
 
         # Structural: build system
-        build_files = [f for f in result.files_changed if "make" in f.lower() or "cmake" in f.lower()]
+        build_files = [
+            f
+            for f in result.files_changed
+            if "make" in f.lower() or "cmake" in f.lower()
+        ]
         if build_files:
             score += 15
             criteria["has_build_system"] = True
@@ -392,7 +549,11 @@ class OpenFWRunner(BaseRunner):
             criteria["verification_passed"] = True
 
         return self._combined_grade(
-            exercise, result, min(score, 100.0), criteria, hints,
+            exercise,
+            result,
+            min(score, 100.0),
+            criteria,
+            hints,
             domain_context=(
                 "Grade as a firmware/embedded engineer. Check for:\n"
                 "- Correct HAL usage, volatile qualifiers, interrupt safety\n"

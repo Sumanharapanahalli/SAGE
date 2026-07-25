@@ -7,7 +7,6 @@ following the Hugging Face model card spec (https://huggingface.co/docs/hub/mode
 from __future__ import annotations
 
 import json
-import sys
 from datetime import date
 from pathlib import Path
 
@@ -149,10 +148,16 @@ def _bias_table(bias_report: dict) -> str:
         for subval, wer_val in breakdown.items():
             flag = " ⚠️" if wer_val > 0.20 else ""
             lines.append(f"| {subval} | {wer_val:.4f}{flag} |")
-    return "\n".join(lines) if lines else "_No demographic metadata available in test set._"
+    return (
+        "\n".join(lines)
+        if lines
+        else "_No demographic metadata available in test set._"
+    )
 
 
-def generate(config_path: str = "config.yaml", eval_report_path: str | None = None) -> str:
+def generate(
+    config_path: str = "config.yaml", eval_report_path: str | None = None
+) -> str:
     with open(config_path) as f:
         cfg = yaml.safe_load(f)
 

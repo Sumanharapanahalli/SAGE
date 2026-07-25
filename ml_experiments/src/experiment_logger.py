@@ -54,7 +54,9 @@ class ExperimentLogger:
     ) -> str:
         """Create a run record and return its 8-char hex run_id."""
         ts = time.time()
-        fingerprint = f"{self.experiment_name}-{ts}-{json.dumps(params, sort_keys=True)}"
+        fingerprint = (
+            f"{self.experiment_name}-{ts}-{json.dumps(params, sort_keys=True)}"
+        )
         run_id = hashlib.md5(fingerprint.encode()).hexdigest()[:8]
         self._active[run_id] = {
             "run_id": run_id,
@@ -67,7 +69,9 @@ class ExperimentLogger:
             "metrics": {},
             "tags": tags or {},
         }
-        logger.info("[%s] run=%s started | params=%s", self.experiment_name, run_id, params)
+        logger.info(
+            "[%s] run=%s started | params=%s", self.experiment_name, run_id, params
+        )
         return run_id
 
     def log_metrics(self, run_id: str, metrics: Dict[str, float]) -> None:
@@ -133,9 +137,7 @@ class ExperimentLogger:
         metric : str  — key inside run["metrics"]
         mode   : "min" (lower is better) | "max" (higher is better)
         """
-        candidates = [
-            r for r in self.load_all_runs() if metric in r.get("metrics", {})
-        ]
+        candidates = [r for r in self.load_all_runs() if metric in r.get("metrics", {})]
         if not candidates:
             return None
         fn = min if mode == "min" else max

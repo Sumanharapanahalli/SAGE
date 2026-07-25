@@ -25,7 +25,7 @@ import logging
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import numpy as np
 import pandas as pd
@@ -35,7 +35,6 @@ from joblib import load
 from data import (
     CATEGORICAL_FEATURES,
     NUMERIC_FEATURES,
-    RECEIPT_CATEGORIES,
 )
 
 logger = logging.getLogger(__name__)
@@ -44,11 +43,12 @@ CONFIG_PATH = Path(__file__).parent / "config.yaml"
 
 # ── Result types ───────────────────────────────────────────────────────────────
 
+
 @dataclass
 class Prediction:
     predicted_category: str
-    confidence: float                    # max class probability
-    top_3: List[Dict[str, Any]]          # top-3 categories + probabilities
+    confidence: float  # max class probability
+    top_3: List[Dict[str, Any]]  # top-3 categories + probabilities
     latency_ms: float
     sla_met: bool
 
@@ -62,6 +62,7 @@ class BatchPrediction:
 
 
 # ── Classifier wrapper ─────────────────────────────────────────────────────────
+
 
 class ReceiptClassifier:
     """
@@ -87,7 +88,8 @@ class ReceiptClassifier:
 
         logger.info(
             "ReceiptClassifier loaded — %d classes, SLA=%.0fms",
-            len(self._classes), self._sla_ms,
+            len(self._classes),
+            self._sla_ms,
         )
 
     # ── Internal helpers ───────────────────────────────────────────────────────
@@ -148,7 +150,9 @@ class ReceiptClassifier:
         if not result.sla_met:
             logger.warning(
                 "SLA breach: %.2fms > %.0fms for receipt=%s",
-                result.latency_ms, self._sla_ms, raw.get("receipt_id", "?"),
+                result.latency_ms,
+                self._sla_ms,
+                raw.get("receipt_id", "?"),
             )
         return result
 
@@ -228,14 +232,16 @@ if __name__ == "__main__":
     if args.csv_path:
         df = pd.read_csv(args.csv_path)
         result_df = clf.predict_dataframe(df)
-        print(result_df[["predicted_category", "confidence", "batch_latency_ms"]].head(20))
+        print(
+            result_df[["predicted_category", "confidence", "batch_latency_ms"]].head(20)
+        )
     else:
         raw = {
-            "amount_usd":      args.amount or 42.50,
-            "merchant_type":   args.merchant_type,
-            "payment_method":  args.payment_method,
-            "currency":        args.currency,
-            "item_count":      args.item_count,
+            "amount_usd": args.amount or 42.50,
+            "merchant_type": args.merchant_type,
+            "payment_method": args.payment_method,
+            "currency": args.currency,
+            "item_count": args.item_count,
         }
         pred = clf.predict_one(raw)
         print(json.dumps(asdict(pred), indent=2))

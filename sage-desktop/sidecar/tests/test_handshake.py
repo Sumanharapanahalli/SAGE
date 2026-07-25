@@ -1,7 +1,7 @@
 """Tests for the handshake handler."""
+
 from __future__ import annotations
 
-from pathlib import Path
 
 from handlers import handshake as h
 
@@ -22,13 +22,17 @@ def test_handshake_returns_versions_and_solution(tmp_path, monkeypatch):
 def test_handshake_lists_missing_modules_as_warnings(tmp_path, monkeypatch):
     monkeypatch.setattr(h, "_SOLUTION_PATH", tmp_path)
     monkeypatch.setattr(h, "_SOLUTION_NAME", "test")
-    monkeypatch.setattr(h, "_PROBE_IMPORTS", ["this_module_definitely_does_not_exist_xyz"])
+    monkeypatch.setattr(
+        h, "_PROBE_IMPORTS", ["this_module_definitely_does_not_exist_xyz"]
+    )
     out = h.handshake({})
     assert len(out["warnings"]) == 1
     assert "this_module_definitely_does_not_exist_xyz" in out["warnings"][0]
 
 
-def test_handshake_returns_unknown_sage_version_when_version_import_fails(tmp_path, monkeypatch):
+def test_handshake_returns_unknown_sage_version_when_version_import_fails(
+    tmp_path, monkeypatch
+):
     monkeypatch.setattr(h, "_SOLUTION_PATH", tmp_path)
     monkeypatch.setattr(h, "_SOLUTION_NAME", "test")
     monkeypatch.setattr(h, "_PROBE_IMPORTS", [])

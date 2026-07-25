@@ -21,6 +21,7 @@ addition to constructing the locally-injected ``ProjectConfig`` used
 elsewhere) or eval suite listing silently resolves the wrong solution's
 ``evals/`` directory.
 """
+
 from __future__ import annotations
 
 from rpc import RPC_INVALID_PARAMS, RPC_SAGE_IMPORT_ERROR, RPC_SIDECAR_ERROR, RpcError

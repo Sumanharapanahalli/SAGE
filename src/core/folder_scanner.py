@@ -3,15 +3,64 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-_SKIP_DIRS = {".git", "node_modules", "__pycache__", ".venv", "venv", ".sage", "dist", "build", ".next"}
-_SKIP_EXTENSIONS = {
-    ".pyc", ".pyo", ".class", ".o", ".a", ".so", ".dll", ".exe",
-    ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".ico", ".svg",
-    ".pdf", ".zip", ".tar", ".gz", ".7z", ".rar",
-    ".mp3", ".mp4", ".avi", ".mov", ".wav",
-    ".db", ".sqlite", ".lock",
+_SKIP_DIRS = {
+    ".git",
+    "node_modules",
+    "__pycache__",
+    ".venv",
+    "venv",
+    ".sage",
+    "dist",
+    "build",
+    ".next",
 }
-_PRIORITY_EXTENSIONS = {".py", ".ts", ".tsx", ".js", ".jsx", ".c", ".cpp", ".h", ".md", ".yaml", ".yml", ".json", ".txt", ".rst"}
+_SKIP_EXTENSIONS = {
+    ".pyc",
+    ".pyo",
+    ".class",
+    ".o",
+    ".a",
+    ".so",
+    ".dll",
+    ".exe",
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".gif",
+    ".bmp",
+    ".ico",
+    ".svg",
+    ".pdf",
+    ".zip",
+    ".tar",
+    ".gz",
+    ".7z",
+    ".rar",
+    ".mp3",
+    ".mp4",
+    ".avi",
+    ".mov",
+    ".wav",
+    ".db",
+    ".sqlite",
+    ".lock",
+}
+_PRIORITY_EXTENSIONS = {
+    ".py",
+    ".ts",
+    ".tsx",
+    ".js",
+    ".jsx",
+    ".c",
+    ".cpp",
+    ".h",
+    ".md",
+    ".yaml",
+    ".yml",
+    ".json",
+    ".txt",
+    ".rst",
+}
 _MAX_FILE_BYTES = 500 * 1024  # 500KB
 
 

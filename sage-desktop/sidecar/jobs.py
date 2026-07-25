@@ -26,6 +26,7 @@ Two properties worth stating, because they are easy to get wrong:
 This module is the same machinery Chat, the Gym's batch training, and any
 future streaming work will reuse — build it once, correctly.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -33,7 +34,7 @@ import logging
 import threading
 import uuid
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any, Dict, Optional
+from typing import Dict, Optional
 
 from rpc import RpcError, RPC_INVALID_PARAMS
 
@@ -130,6 +131,7 @@ def list_jobs() -> list[dict]:
 
 
 # ---------- RPC handlers ----------
+
 
 def rpc_status(params: dict) -> dict:
     job_id = params.get("job_id")

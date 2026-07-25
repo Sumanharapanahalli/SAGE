@@ -5,21 +5,20 @@ Generate / update SAGE presentations:
 """
 
 from pptx import Presentation
-from pptx.util import Inches, Pt, Emu
+from pptx.util import Inches, Pt
 from pptx.enum.text import PP_ALIGN
 from pptx.dml.color import RGBColor
-from pptx.util import Inches, Pt
-import copy, os
+import os
 
 # ── colour palette — White + Emerald Green (NO blue, NO black) ───────────────
-SAGE_DARK   = RGBColor(0x1F, 0x2A, 0x37)   # gray-800 (dark charcoal — NOT black)
-SAGE_BLUE   = RGBColor(0x10, 0xB9, 0x81)   # emerald-500 (replaces blue everywhere)
-SAGE_TEAL   = RGBColor(0x04, 0x78, 0x57)   # emerald-700 (dark accent)
-SAGE_AMBER  = RGBColor(0xF5, 0x9E, 0x0B)   # amber-500
-SAGE_GREEN  = RGBColor(0x10, 0xB9, 0x81)   # emerald-500 — primary accent
-SAGE_LIGHT  = RGBColor(0xFA, 0xFA, 0xFA)   # near-white background
-WHITE       = RGBColor(0xFF, 0xFF, 0xFF)
-GREY        = RGBColor(0x4B, 0x55, 0x63)   # gray-600
+SAGE_DARK = RGBColor(0x1F, 0x2A, 0x37)  # gray-800 (dark charcoal — NOT black)
+SAGE_BLUE = RGBColor(0x10, 0xB9, 0x81)  # emerald-500 (replaces blue everywhere)
+SAGE_TEAL = RGBColor(0x04, 0x78, 0x57)  # emerald-700 (dark accent)
+SAGE_AMBER = RGBColor(0xF5, 0x9E, 0x0B)  # amber-500
+SAGE_GREEN = RGBColor(0x10, 0xB9, 0x81)  # emerald-500 — primary accent
+SAGE_LIGHT = RGBColor(0xFA, 0xFA, 0xFA)  # near-white background
+WHITE = RGBColor(0xFF, 0xFF, 0xFF)
+GREY = RGBColor(0x4B, 0x55, 0x63)  # gray-600
 
 DISCLAIMER = (
     "IMPORTANT: All financial figures, FTE savings, and ROI estimates "
@@ -36,21 +35,25 @@ SLIDE_H = Inches(7.5)
 # Helper functions
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 def new_prs():
     prs = Presentation()
-    prs.slide_width  = SLIDE_W
+    prs.slide_width = SLIDE_W
     prs.slide_height = SLIDE_H
     return prs
 
 
 def blank_layout(prs):
-    return prs.slide_layouts[6]   # completely blank
+    return prs.slide_layouts[6]  # completely blank
 
 
-def add_rect(slide, l, t, w, h, fill_color=None, line_color=None, line_width=Pt(0)):
-    from pptx.util import Pt
+def add_rect(slide, l, t, w, h, fill_color=None, line_color=None, line_width=Pt(0)):  # noqa: E741
     shape = slide.shapes.add_shape(
-        1, l, t, w, h   # MSO_SHAPE_TYPE.RECTANGLE = 1
+        1,
+        l,
+        t,
+        w,
+        h,  # MSO_SHAPE_TYPE.RECTANGLE = 1
     )
     shape.line.width = line_width
     if fill_color:
@@ -65,9 +68,20 @@ def add_rect(slide, l, t, w, h, fill_color=None, line_color=None, line_width=Pt(
     return shape
 
 
-def add_text_box(slide, text, l, t, w, h,
-                 font_size=18, bold=False, color=SAGE_DARK,
-                 align=PP_ALIGN.LEFT, wrap=True, italic=False):
+def add_text_box(
+    slide,
+    text,
+    l,  # noqa: E741
+    t,
+    w,
+    h,
+    font_size=18,
+    bold=False,
+    color=SAGE_DARK,
+    align=PP_ALIGN.LEFT,
+    wrap=True,
+    italic=False,
+):
     txBox = slide.shapes.add_textbox(l, t, w, h)
     tf = txBox.text_frame
     tf.word_wrap = wrap
@@ -89,29 +103,75 @@ def slide_bg(slide, color=SAGE_LIGHT):
     fill.fore_color.rgb = color
 
 
-def header_band(slide, title, subtitle=None, bg=SAGE_DARK, title_color=WHITE, sub_color=SAGE_TEAL):
+def header_band(
+    slide, title, subtitle=None, bg=SAGE_DARK, title_color=WHITE, sub_color=SAGE_TEAL
+):
     add_rect(slide, 0, 0, SLIDE_W, Inches(1.45), fill_color=bg)
-    add_text_box(slide, title,
-                 Inches(0.45), Inches(0.12), Inches(12.4), Inches(0.8),
-                 font_size=30, bold=True, color=title_color, align=PP_ALIGN.LEFT)
+    add_text_box(
+        slide,
+        title,
+        Inches(0.45),
+        Inches(0.12),
+        Inches(12.4),
+        Inches(0.8),
+        font_size=30,
+        bold=True,
+        color=title_color,
+        align=PP_ALIGN.LEFT,
+    )
     if subtitle:
-        add_text_box(slide, subtitle,
-                     Inches(0.45), Inches(0.88), Inches(12.4), Inches(0.48),
-                     font_size=16, bold=False, color=sub_color, align=PP_ALIGN.LEFT)
+        add_text_box(
+            slide,
+            subtitle,
+            Inches(0.45),
+            Inches(0.88),
+            Inches(12.4),
+            Inches(0.48),
+            font_size=16,
+            bold=False,
+            color=sub_color,
+            align=PP_ALIGN.LEFT,
+        )
 
 
-def footer_band(slide, text="SAGE[ai] — Open Source (MIT) | github.com/Sumanharapanahalli/sage | March 2026", include_disclaimer=False):
+def footer_band(
+    slide,
+    text="SAGE[ai] — Open Source (MIT) | github.com/Sumanharapanahalli/sage | March 2026",
+    include_disclaimer=False,
+):
     add_rect(slide, 0, Inches(7.1), SLIDE_W, Inches(0.4), fill_color=SAGE_DARK)
-    add_text_box(slide, text,
-                 Inches(0.3), Inches(7.12), Inches(9), Inches(0.3),
-                 font_size=9, color=GREY, align=PP_ALIGN.LEFT)
+    add_text_box(
+        slide,
+        text,
+        Inches(0.3),
+        Inches(7.12),
+        Inches(9),
+        Inches(0.3),
+        font_size=9,
+        color=GREY,
+        align=PP_ALIGN.LEFT,
+    )
     if include_disclaimer:
-        add_rect(slide, 0, Inches(6.55), SLIDE_W, Inches(0.58),
-                 fill_color=RGBColor(0xFF, 0xF3, 0xCC))
-        add_text_box(slide, DISCLAIMER,
-                     Inches(0.3), Inches(6.57), Inches(12.7), Inches(0.54),
-                     font_size=8.5, italic=True, color=RGBColor(0x7B, 0x4F, 0x00),
-                     align=PP_ALIGN.LEFT)
+        add_rect(
+            slide,
+            0,
+            Inches(6.55),
+            SLIDE_W,
+            Inches(0.58),
+            fill_color=RGBColor(0xFF, 0xF3, 0xCC),
+        )
+        add_text_box(
+            slide,
+            DISCLAIMER,
+            Inches(0.3),
+            Inches(6.57),
+            Inches(12.7),
+            Inches(0.54),
+            font_size=8.5,
+            italic=True,
+            color=RGBColor(0x7B, 0x4F, 0x00),
+            align=PP_ALIGN.LEFT,
+        )
 
 
 def bullet_slide(prs, title, subtitle, bullets, include_disclaimer=False):
@@ -121,17 +181,32 @@ def bullet_slide(prs, title, subtitle, bullets, include_disclaimer=False):
 
     top = Inches(1.6)
     for b in bullets:
-        add_text_box(slide, b,
-                     Inches(0.55), top, Inches(12.2), Inches(0.42),
-                     font_size=15, color=SAGE_DARK)
+        add_text_box(
+            slide,
+            b,
+            Inches(0.55),
+            top,
+            Inches(12.2),
+            Inches(0.42),
+            font_size=15,
+            color=SAGE_DARK,
+        )
         top += Inches(0.5)
 
     footer_band(slide, include_disclaimer=include_disclaimer)
     return slide
 
 
-def table_slide(prs, title, subtitle, headers, rows, col_widths=None,
-                include_disclaimer=False, note=None):
+def table_slide(
+    prs,
+    title,
+    subtitle,
+    headers,
+    rows,
+    col_widths=None,
+    include_disclaimer=False,
+    note=None,
+):
     slide = prs.slides.add_slide(blank_layout(prs))
     slide_bg(slide)
     header_band(slide, title, subtitle)
@@ -141,14 +216,13 @@ def table_slide(prs, title, subtitle, headers, rows, col_widths=None,
     if col_widths is None:
         col_widths = [Inches(12.3 / n_cols)] * n_cols
 
-    tbl_top  = Inches(1.65)
+    tbl_top = Inches(1.65)
     tbl_left = Inches(0.5)
-    row_h    = Inches(0.52)
-    tbl_h    = row_h * (n_rows + 1)
+    row_h = Inches(0.52)
+    tbl_h = row_h * (n_rows + 1)
 
     table = slide.shapes.add_table(
-        n_rows + 1, n_cols, tbl_left, tbl_top,
-        sum(col_widths), tbl_h
+        n_rows + 1, n_cols, tbl_left, tbl_top, sum(col_widths), tbl_h
     ).table
 
     # set col widths
@@ -184,9 +258,17 @@ def table_slide(prs, title, subtitle, headers, rows, col_widths=None,
 
     if note:
         top_pos = tbl_top + tbl_h + Inches(0.1)
-        add_text_box(slide, note,
-                     Inches(0.5), top_pos, Inches(12.3), Inches(0.4),
-                     font_size=11, italic=True, color=GREY)
+        add_text_box(
+            slide,
+            note,
+            Inches(0.5),
+            top_pos,
+            Inches(12.3),
+            Inches(0.4),
+            font_size=11,
+            italic=True,
+            color=GREY,
+        )
 
     footer_band(slide, include_disclaimer=include_disclaimer)
     return slide
@@ -196,6 +278,7 @@ def table_slide(prs, title, subtitle, headers, rows, col_widths=None,
 #  1.  BUSINESS CASE DECK  (updated)
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 def build_business_case():
     prs = new_prs()
 
@@ -204,24 +287,69 @@ def build_business_case():
     add_rect(slide, 0, 0, SLIDE_W, SLIDE_H, fill_color=SAGE_DARK)
     add_rect(slide, 0, Inches(5.2), SLIDE_W, Inches(0.08), fill_color=SAGE_TEAL)
 
-    add_text_box(slide, "SAGE[ai]",
-                 Inches(1), Inches(1.4), Inches(11), Inches(1.4),
-                 font_size=64, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
-    add_text_box(slide, "Autonomous Manufacturing Intelligence",
-                 Inches(1), Inches(2.85), Inches(11), Inches(0.7),
-                 font_size=26, bold=False, color=SAGE_TEAL, align=PP_ALIGN.CENTER)
-    add_text_box(slide, "Transforming Medical Device Production with Agentic AI",
-                 Inches(1), Inches(3.55), Inches(11), Inches(0.55),
-                 font_size=18, bold=False, color=GREY, align=PP_ALIGN.CENTER)
-    add_text_box(slide, "Open Source (MIT) — Business Case Presentation — March 2026",
-                 Inches(1), Inches(5.5), Inches(11), Inches(0.45),
-                 font_size=14, color=GREY, align=PP_ALIGN.CENTER)
-    add_text_box(slide, "github.com/Sumanharapanahalli/sage",
-                 Inches(1), Inches(6.1), Inches(11), Inches(0.4),
-                 font_size=12, italic=True, color=SAGE_AMBER, align=PP_ALIGN.CENTER)
+    add_text_box(
+        slide,
+        "SAGE[ai]",
+        Inches(1),
+        Inches(1.4),
+        Inches(11),
+        Inches(1.4),
+        font_size=64,
+        bold=True,
+        color=WHITE,
+        align=PP_ALIGN.CENTER,
+    )
+    add_text_box(
+        slide,
+        "Autonomous Manufacturing Intelligence",
+        Inches(1),
+        Inches(2.85),
+        Inches(11),
+        Inches(0.7),
+        font_size=26,
+        bold=False,
+        color=SAGE_TEAL,
+        align=PP_ALIGN.CENTER,
+    )
+    add_text_box(
+        slide,
+        "Transforming Medical Device Production with Agentic AI",
+        Inches(1),
+        Inches(3.55),
+        Inches(11),
+        Inches(0.55),
+        font_size=18,
+        bold=False,
+        color=GREY,
+        align=PP_ALIGN.CENTER,
+    )
+    add_text_box(
+        slide,
+        "Open Source (MIT) — Business Case Presentation — March 2026",
+        Inches(1),
+        Inches(5.5),
+        Inches(11),
+        Inches(0.45),
+        font_size=14,
+        color=GREY,
+        align=PP_ALIGN.CENTER,
+    )
+    add_text_box(
+        slide,
+        "github.com/Sumanharapanahalli/sage",
+        Inches(1),
+        Inches(6.1),
+        Inches(11),
+        Inches(0.4),
+        font_size=12,
+        italic=True,
+        color=SAGE_AMBER,
+        align=PP_ALIGN.CENTER,
+    )
 
     # ── Slide 2 — Problem ──────────────────────────────────────────────────────
-    bullet_slide(prs,
+    bullet_slide(
+        prs,
         "Current State: Manual Bottlenecks at Scale",
         "The hidden cost of running without agentic AI",
         [
@@ -232,11 +360,12 @@ def build_business_case():
             "Error detection relies on human vigilance 24/7 — unsustainable at scale",
             "",
             "Result: ~68 hrs/week of preventable manual work — every single week",
-        ]
+        ],
     )
 
     # ── Slide 3 — Solution ─────────────────────────────────────────────────────
-    bullet_slide(prs,
+    bullet_slide(
+        prs,
         "SAGE[ai]: Always-On AI Engineering Partner",
         "Replace manual toil with autonomous, auditable intelligence",
         [
@@ -247,134 +376,296 @@ def build_business_case():
             "Human-in-the-loop: AI advises, humans decide — always",
             "Learns from every correction via vector memory (RAG)",
             "Web dashboard for all stakeholders — zero CLI required",
-        ]
+        ],
     )
 
     # ── Slide 4 — Industry Evidence ────────────────────────────────────────────
-    table_slide(prs,
+    table_slide(
+        prs,
         "Companies Already Winning with Agentic AI",
         "Validated industry outcomes — this is the direction of travel",
         ["Company", "Implementation", "Result"],
         [
-            ["Siemens",    "AI predictive maintenance agents",       "30% less unplanned downtime, €1.5B saved/yr"],
-            ["BMW",        "AI quality inspection",                  "99.5% defect detection, 30% QC cost reduction"],
-            ["Bosch",      "AI-assisted code review",                "40% faster releases, 60% fewer defect escapes"],
-            ["Amazon",     "CodeGuru automated review",              "50% reduction in production incidents"],
-            ["Microsoft",  "GitHub Copilot",                        "55% faster code completion, 46% more PRs merged/day"],
-            ["Medtronic",  "AI in quality management",              "35% shorter CAPA cycle, faster FDA submissions"],
-            ["Stryker",    "AI regulatory documentation",           "40% reduction in submission preparation time"],
-            ["J&J",        "AI manufacturing analytics",            "20% yield improvement, significant waste reduction"],
+            [
+                "Siemens",
+                "AI predictive maintenance agents",
+                "30% less unplanned downtime, €1.5B saved/yr",
+            ],
+            [
+                "BMW",
+                "AI quality inspection",
+                "99.5% defect detection, 30% QC cost reduction",
+            ],
+            [
+                "Bosch",
+                "AI-assisted code review",
+                "40% faster releases, 60% fewer defect escapes",
+            ],
+            [
+                "Amazon",
+                "CodeGuru automated review",
+                "50% reduction in production incidents",
+            ],
+            [
+                "Microsoft",
+                "GitHub Copilot",
+                "55% faster code completion, 46% more PRs merged/day",
+            ],
+            [
+                "Medtronic",
+                "AI in quality management",
+                "35% shorter CAPA cycle, faster FDA submissions",
+            ],
+            [
+                "Stryker",
+                "AI regulatory documentation",
+                "40% reduction in submission preparation time",
+            ],
+            [
+                "J&J",
+                "AI manufacturing analytics",
+                "20% yield improvement, significant waste reduction",
+            ],
         ],
         col_widths=[Inches(1.7), Inches(4.5), Inches(6.1)],
-        note="Sources: company annual reports, press releases, and published case studies (2023–2025)."
+        note="Sources: company annual reports, press releases, and published case studies (2023–2025).",
     )
 
     # ── Slide 5 — Lean Alignment ───────────────────────────────────────────────
-    table_slide(prs,
+    table_slide(
+        prs,
         "SAGE[ai] Is Built on Lean Principles",
         "Lean development + agentic AI — the natural pairing",
         ["Lean Principle", "How SAGE[ai] Delivers"],
         [
-            ["Eliminate Waste (Muda)",         "Removes 60+ hrs/week of repetitive analysis"],
-            ["Continuous Improvement (Kaizen)", "Learns from every rejection via RAG memory"],
-            ["Error-Proofing (Poka-yoke)",      "Human-in-the-loop prevents AI errors reaching production"],
-            ["Visual Management",               "Real-time dashboard for all stakeholders"],
-            ["Single Piece Flow",               "Single-lane task queue: deterministic, auditable"],
-            ["Respect for People",              "Amplifies engineers; never replaces human judgment"],
+            ["Eliminate Waste (Muda)", "Removes 60+ hrs/week of repetitive analysis"],
+            [
+                "Continuous Improvement (Kaizen)",
+                "Learns from every rejection via RAG memory",
+            ],
+            [
+                "Error-Proofing (Poka-yoke)",
+                "Human-in-the-loop prevents AI errors reaching production",
+            ],
+            ["Visual Management", "Real-time dashboard for all stakeholders"],
+            ["Single Piece Flow", "Single-lane task queue: deterministic, auditable"],
+            [
+                "Respect for People",
+                "Amplifies engineers; never replaces human judgment",
+            ],
         ],
-        col_widths=[Inches(4.0), Inches(8.3)]
+        col_widths=[Inches(4.0), Inches(8.3)],
     )
 
     # ── Slide 6 — ROI  (with disclaimer) ──────────────────────────────────────
-    table_slide(prs,
+    table_slide(
+        prs,
         "Return on Investment: Month 2 Payback",
         "Conservative baseline — replace with your actual measured numbers",
         ["Activity", "Before SAGE[ai]", "After SAGE[ai]", "Savings"],
         [
-            ["Error log analysis",    "45 min × 10/day × 2 eng = 15 hrs/day",  "< 5 min total",        "~93% reduction"],
-            ["MR code review",        "3 hrs × 15 MRs/week = 45 hrs/week",     "~4 hrs/week",          "~91% reduction"],
-            ["Compliance reporting",  "8 hrs/week manual",                      "0 hrs (auto-gen)",     "~100% reduction"],
-            ["Knowledge capture",     "Lost on attrition",                      "Stored in vector mem", "Permanent"],
-            ["TOTAL SAVINGS",         "68 hrs/week ≈ 1.7 FTE",                 "—",                    "~€120K/yr*"],
+            [
+                "Error log analysis",
+                "45 min × 10/day × 2 eng = 15 hrs/day",
+                "< 5 min total",
+                "~93% reduction",
+            ],
+            [
+                "MR code review",
+                "3 hrs × 15 MRs/week = 45 hrs/week",
+                "~4 hrs/week",
+                "~91% reduction",
+            ],
+            [
+                "Compliance reporting",
+                "8 hrs/week manual",
+                "0 hrs (auto-gen)",
+                "~100% reduction",
+            ],
+            [
+                "Knowledge capture",
+                "Lost on attrition",
+                "Stored in vector mem",
+                "Permanent",
+            ],
+            ["TOTAL SAVINGS", "68 hrs/week ≈ 1.7 FTE", "—", "~€120K/yr*"],
         ],
         col_widths=[Inches(2.8), Inches(3.8), Inches(2.8), Inches(2.9)],
         include_disclaimer=True,
-        note="* All figures are ASSUMPTION-BASED estimates. Replace with actual team data before presenting externally."
+        note="* All figures are ASSUMPTION-BASED estimates. Replace with actual team data before presenting externally.",
     )
 
     # ── Slide 7 — Architecture ─────────────────────────────────────────────────
     slide = prs.slides.add_slide(blank_layout(prs))
     slide_bg(slide)
-    header_band(slide,
-                "Simple, Auditable, Secure Architecture",
-                "End-to-end data flow — one direction, fully logged")
+    header_band(
+        slide,
+        "Simple, Auditable, Secure Architecture",
+        "End-to-end data flow — one direction, fully logged",
+    )
 
     # flow boxes
     boxes = [
-        ("Event\nSources",    Inches(0.3),  SAGE_DARK),
-        ("Monitor\nAgent",    Inches(2.3),  SAGE_BLUE),
-        ("Task\nQueue",       Inches(4.3),  SAGE_BLUE),
+        ("Event\nSources", Inches(0.3), SAGE_DARK),
+        ("Monitor\nAgent", Inches(2.3), SAGE_BLUE),
+        ("Task\nQueue", Inches(4.3), SAGE_BLUE),
         ("Analyst /\nDev Agent", Inches(6.3), SAGE_BLUE),
-        ("Human\nGate",       Inches(8.6),  SAGE_AMBER),
-        ("Audit\nTrail",      Inches(10.9), SAGE_GREEN),
+        ("Human\nGate", Inches(8.6), SAGE_AMBER),
+        ("Audit\nTrail", Inches(10.9), SAGE_GREEN),
     ]
     for label, left, color in boxes:
-        add_rect(slide, left, Inches(1.8), Inches(1.85), Inches(1.2),
-                 fill_color=color)
-        add_text_box(slide, label,
-                     left, Inches(1.85), Inches(1.85), Inches(1.1),
-                     font_size=12, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
+        add_rect(slide, left, Inches(1.8), Inches(1.85), Inches(1.2), fill_color=color)
+        add_text_box(
+            slide,
+            label,
+            left,
+            Inches(1.85),
+            Inches(1.85),
+            Inches(1.1),
+            font_size=12,
+            bold=True,
+            color=WHITE,
+            align=PP_ALIGN.CENTER,
+        )
         if left < Inches(10.9):
-            add_text_box(slide, "→",
-                         left + Inches(1.85), Inches(2.2), Inches(0.4), Inches(0.5),
-                         font_size=22, bold=True, color=SAGE_DARK, align=PP_ALIGN.CENTER)
+            add_text_box(
+                slide,
+                "→",
+                left + Inches(1.85),
+                Inches(2.2),
+                Inches(0.4),
+                Inches(0.5),
+                font_size=22,
+                bold=True,
+                color=SAGE_DARK,
+                align=PP_ALIGN.CENTER,
+            )
 
     details = [
-        ("Event Sources",    "Teams channels · Metabase dashboards · GitLab issues & MRs · Error log uploads"),
-        ("AI Agents",        "AnalystAgent (log triage) · DeveloperAgent (code review + MR creation) · PlannerAgent (orchestration) · ReAct multi-step loop"),
-        ("Compliance Layer", "Immutable SQLite audit log · ISO 13485 trace IDs · FDA 21 CFR Part 11 · Human approval on every proposal"),
+        (
+            "Event Sources",
+            "Teams channels · Metabase dashboards · GitLab issues & MRs · Error log uploads",
+        ),
+        (
+            "AI Agents",
+            "AnalystAgent (log triage) · DeveloperAgent (code review + MR creation) · PlannerAgent (orchestration) · ReAct multi-step loop",
+        ),
+        (
+            "Compliance Layer",
+            "Immutable SQLite audit log · ISO 13485 trace IDs · FDA 21 CFR Part 11 · Human approval on every proposal",
+        ),
     ]
     top = Inches(3.3)
     for title, body in details:
-        add_text_box(slide, title,
-                     Inches(0.5), top, Inches(12.3), Inches(0.35),
-                     font_size=13, bold=True, color=SAGE_BLUE)
-        add_text_box(slide, body,
-                     Inches(0.9), top + Inches(0.33), Inches(12.0), Inches(0.35),
-                     font_size=12, color=SAGE_DARK)
+        add_text_box(
+            slide,
+            title,
+            Inches(0.5),
+            top,
+            Inches(12.3),
+            Inches(0.35),
+            font_size=13,
+            bold=True,
+            color=SAGE_BLUE,
+        )
+        add_text_box(
+            slide,
+            body,
+            Inches(0.9),
+            top + Inches(0.33),
+            Inches(12.0),
+            Inches(0.35),
+            font_size=12,
+            color=SAGE_DARK,
+        )
         top += Inches(0.75)
 
     footer_band(slide)
 
     # ── Slide 8 — Capabilities ─────────────────────────────────────────────────
-    table_slide(prs,
+    table_slide(
+        prs,
         "What SAGE[ai] Does Today",
         "136 API endpoints across 12 integration phases — all open source (MIT)",
         ["No.", "Capability", "Description"],
         [
-            ["01", "Log Analysis",        "AI triage in under 60 s — severity RED / AMBER / GREEN with root-cause reasoning"],
-            ["02", "Code Review",         "ReAct multi-step reasoning + CI pipeline status check"],
-            ["03", "MR Creation",         "Auto-draft merge request from GitLab issue, branch naming, description"],
-            ["04", "24/7 Monitor",        "Teams, Metabase, GitLab event detection — zero polling lag"],
-            ["05", "SSE Streaming",       "Real-time token-by-token output to dashboard — all providers supported"],
-            ["06", "Onboarding Wizard",   "Plain-language description to full YAML solution in under 60 seconds"],
-            ["07", "Knowledge Base CRUD", "List / add / delete / bulk-import / semantic search the RAG vector store"],
-            ["08", "Slack Approvals",     "Block Kit proposals with Approve/Reject buttons — HMAC-verified callbacks"],
-            ["09", "Eval & Benchmarking", "YAML test cases, 0-100 scoring, SQLite history, regression tracking"],
-            ["10", "Multi-Tenant",        "X-SAGE-Tenant header — per-team knowledge collection isolation"],
-            ["11", "Durable Workflows",   "LangGraph interrupt/resume + Temporal — workflows survive server restart"],
-            ["12", "Audit Trail",         "Every decision traceable, ISO 13485 compliant, UUID per event"],
-            ["13", "Web Dashboard",       "Dashboard, Analyst, Developer, Audit, Monitor — no CLI needed"],
+            [
+                "01",
+                "Log Analysis",
+                "AI triage in under 60 s — severity RED / AMBER / GREEN with root-cause reasoning",
+            ],
+            [
+                "02",
+                "Code Review",
+                "ReAct multi-step reasoning + CI pipeline status check",
+            ],
+            [
+                "03",
+                "MR Creation",
+                "Auto-draft merge request from GitLab issue, branch naming, description",
+            ],
+            [
+                "04",
+                "24/7 Monitor",
+                "Teams, Metabase, GitLab event detection — zero polling lag",
+            ],
+            [
+                "05",
+                "SSE Streaming",
+                "Real-time token-by-token output to dashboard — all providers supported",
+            ],
+            [
+                "06",
+                "Onboarding Wizard",
+                "Plain-language description to full YAML solution in under 60 seconds",
+            ],
+            [
+                "07",
+                "Knowledge Base CRUD",
+                "List / add / delete / bulk-import / semantic search the RAG vector store",
+            ],
+            [
+                "08",
+                "Slack Approvals",
+                "Block Kit proposals with Approve/Reject buttons — HMAC-verified callbacks",
+            ],
+            [
+                "09",
+                "Eval & Benchmarking",
+                "YAML test cases, 0-100 scoring, SQLite history, regression tracking",
+            ],
+            [
+                "10",
+                "Multi-Tenant",
+                "X-SAGE-Tenant header — per-team knowledge collection isolation",
+            ],
+            [
+                "11",
+                "Durable Workflows",
+                "LangGraph interrupt/resume + Temporal — workflows survive server restart",
+            ],
+            [
+                "12",
+                "Audit Trail",
+                "Every decision traceable, ISO 13485 compliant, UUID per event",
+            ],
+            [
+                "13",
+                "Web Dashboard",
+                "Dashboard, Analyst, Developer, Audit, Monitor — no CLI needed",
+            ],
         ],
-        col_widths=[Inches(0.5), Inches(2.2), Inches(9.6)]
+        col_widths=[Inches(0.5), Inches(2.2), Inches(9.6)],
     )
 
     # ── Slide 9 — Compliance ───────────────────────────────────────────────────
     slide = prs.slides.add_slide(blank_layout(prs))
     slide_bg(slide)
-    header_band(slide,
-                "Built for Regulated Medical Device Environments",
-                "Standards compliance is built-in, not bolted-on")
+    header_band(
+        slide,
+        "Built for Regulated Medical Device Environments",
+        "Standards compliance is built-in, not bolted-on",
+    )
 
     standards = [
         ("ISO 13485:2016", "Quality Management System"),
@@ -385,14 +676,29 @@ def build_business_case():
     ]
     top = Inches(1.7)
     for std, desc in standards:
-        add_text_box(slide, f"{std}  —  {desc}",
-                     Inches(0.6), top, Inches(12.0), Inches(0.4),
-                     font_size=15, color=SAGE_DARK)
+        add_text_box(
+            slide,
+            f"{std}  —  {desc}",
+            Inches(0.6),
+            top,
+            Inches(12.0),
+            Inches(0.4),
+            font_size=15,
+            color=SAGE_DARK,
+        )
         top += Inches(0.5)
 
-    add_text_box(slide, "How We Comply",
-                 Inches(0.6), top + Inches(0.1), Inches(12.0), Inches(0.4),
-                 font_size=16, bold=True, color=SAGE_BLUE)
+    add_text_box(
+        slide,
+        "How We Comply",
+        Inches(0.6),
+        top + Inches(0.1),
+        Inches(12.0),
+        Inches(0.4),
+        font_size=16,
+        bold=True,
+        color=SAGE_BLUE,
+    )
     top += Inches(0.55)
     how = [
         "Immutable append-only audit log (no deletes, ever)",
@@ -402,9 +708,16 @@ def build_business_case():
         "Air-gapped LLM option — no cloud dependency required",
     ]
     for h in how:
-        add_text_box(slide, f"  {h}",
-                     Inches(0.9), top, Inches(12.0), Inches(0.38),
-                     font_size=13, color=SAGE_DARK)
+        add_text_box(
+            slide,
+            f"  {h}",
+            Inches(0.9),
+            top,
+            Inches(12.0),
+            Inches(0.38),
+            font_size=13,
+            color=SAGE_DARK,
+        )
         top += Inches(0.42)
 
     footer_band(slide)
@@ -412,62 +725,155 @@ def build_business_case():
     # ── Slide 10 — Improvement Loop ────────────────────────────────────────────
     slide = prs.slides.add_slide(blank_layout(prs))
     slide_bg(slide)
-    header_band(slide,
-                "SAGE[ai] Gets Better Every Day — From Your Own Team",
-                "Compounding intelligence through the RAG feedback loop")
+    header_band(
+        slide,
+        "SAGE[ai] Gets Better Every Day — From Your Own Team",
+        "Compounding intelligence through the RAG feedback loop",
+    )
 
     steps = [
-        ("1", "USER SUBMITS REQUEST",    "Click 'Request Improvement' on any module — logged instantly",           SAGE_BLUE),
-        ("2", "AI PLANS",                "Planner Agent decomposes into subtasks, queued for implementation",      SAGE_TEAL),
-        ("3", "IMPLEMENTED & LEARNED",   "Change deployed; RAG memory updated — next analysis is smarter",         SAGE_GREEN),
+        (
+            "1",
+            "USER SUBMITS REQUEST",
+            "Click 'Request Improvement' on any module — logged instantly",
+            SAGE_BLUE,
+        ),
+        (
+            "2",
+            "AI PLANS",
+            "Planner Agent decomposes into subtasks, queued for implementation",
+            SAGE_TEAL,
+        ),
+        (
+            "3",
+            "IMPLEMENTED & LEARNED",
+            "Change deployed; RAG memory updated — next analysis is smarter",
+            SAGE_GREEN,
+        ),
     ]
     left = Inches(0.6)
     for num, title, body, color in steps:
         add_rect(slide, left, Inches(1.75), Inches(3.7), Inches(3.5), fill_color=color)
-        add_text_box(slide, num,
-                     left + Inches(0.15), Inches(1.9), Inches(0.6), Inches(0.6),
-                     font_size=28, bold=True, color=WHITE)
-        add_text_box(slide, title,
-                     left + Inches(0.15), Inches(2.55), Inches(3.4), Inches(0.5),
-                     font_size=14, bold=True, color=WHITE)
-        add_text_box(slide, body,
-                     left + Inches(0.15), Inches(3.1), Inches(3.4), Inches(1.8),
-                     font_size=12, color=WHITE)
+        add_text_box(
+            slide,
+            num,
+            left + Inches(0.15),
+            Inches(1.9),
+            Inches(0.6),
+            Inches(0.6),
+            font_size=28,
+            bold=True,
+            color=WHITE,
+        )
+        add_text_box(
+            slide,
+            title,
+            left + Inches(0.15),
+            Inches(2.55),
+            Inches(3.4),
+            Inches(0.5),
+            font_size=14,
+            bold=True,
+            color=WHITE,
+        )
+        add_text_box(
+            slide,
+            body,
+            left + Inches(0.15),
+            Inches(3.1),
+            Inches(3.4),
+            Inches(1.8),
+            font_size=12,
+            color=WHITE,
+        )
         left += Inches(4.2)
 
-    add_text_box(slide,
-                 "The system improves itself through the same AI pipeline it provides to engineers.",
-                 Inches(0.6), Inches(5.5), Inches(12.0), Inches(0.55),
-                 font_size=15, italic=True, bold=True, color=SAGE_DARK, align=PP_ALIGN.CENTER)
+    add_text_box(
+        slide,
+        "The system improves itself through the same AI pipeline it provides to engineers.",
+        Inches(0.6),
+        Inches(5.5),
+        Inches(12.0),
+        Inches(0.55),
+        font_size=15,
+        italic=True,
+        bold=True,
+        color=SAGE_DARK,
+        align=PP_ALIGN.CENTER,
+    )
     footer_band(slide)
 
     # ── Slide 11 — Roadmap ─────────────────────────────────────────────────────
-    table_slide(prs,
+    table_slide(
+        prs,
         "From Pilot to Production: 3-Month Plan",
         "12 integration phases complete — pilot deployment is next",
         ["Phase", "Timeline", "Deliverable", "Status"],
         [
-            ["Phases 0-4: Core",   "Done",    "Agents, API, Web UI, Approval gate, Audit log",              "Complete"],
-            ["Phase 5: Streaming", "Done",    "SSE token streaming for all providers",                       "Complete"],
-            ["Phase 6: Onboard",   "Done",    "Plain-language to YAML solution wizard",                      "Complete"],
-            ["Phases 7-11",        "Done",    "Knowledge CRUD, Slack, Eval, Multi-tenant, Temporal",         "Complete"],
-            ["Pilot Deploy",       "Month 1", "Production deploy, engineer training, KPI baseline",          "Next"],
-            ["Iterate",            "Month 2", "KPI tracking, RAG feedback loop, first improvements",         "Planned"],
-            ["Scale",              "Month 3", "Multi-team rollout, Spira integration, exec dashboards",      "Planned"],
+            [
+                "Phases 0-4: Core",
+                "Done",
+                "Agents, API, Web UI, Approval gate, Audit log",
+                "Complete",
+            ],
+            [
+                "Phase 5: Streaming",
+                "Done",
+                "SSE token streaming for all providers",
+                "Complete",
+            ],
+            [
+                "Phase 6: Onboard",
+                "Done",
+                "Plain-language to YAML solution wizard",
+                "Complete",
+            ],
+            [
+                "Phases 7-11",
+                "Done",
+                "Knowledge CRUD, Slack, Eval, Multi-tenant, Temporal",
+                "Complete",
+            ],
+            [
+                "Pilot Deploy",
+                "Month 1",
+                "Production deploy, engineer training, KPI baseline",
+                "Next",
+            ],
+            [
+                "Iterate",
+                "Month 2",
+                "KPI tracking, RAG feedback loop, first improvements",
+                "Planned",
+            ],
+            [
+                "Scale",
+                "Month 3",
+                "Multi-team rollout, Spira integration, exec dashboards",
+                "Planned",
+            ],
         ],
-        col_widths=[Inches(2.0), Inches(1.4), Inches(6.9), Inches(2.0)]
+        col_widths=[Inches(2.0), Inches(1.4), Inches(6.9), Inches(2.0)],
     )
 
     # ── Slide 12 — Next Steps ──────────────────────────────────────────────────
     slide = prs.slides.add_slide(blank_layout(prs))
     slide_bg(slide)
-    header_band(slide,
-                "Next Steps: 3-Month Pilot Proposal",
-                "What we need vs what you get")
+    header_band(
+        slide, "Next Steps: 3-Month Pilot Proposal", "What we need vs what you get"
+    )
 
-    add_text_box(slide, "What We Need",
-                 Inches(0.5), Inches(1.65), Inches(6.0), Inches(0.45),
-                 font_size=16, bold=True, color=SAGE_BLUE)
+    add_text_box(
+        slide,
+        "What We Need",
+        Inches(0.5),
+        Inches(1.65),
+        Inches(6.0),
+        Inches(0.45),
+        font_size=16,
+        bold=True,
+        color=SAGE_BLUE,
+    )
     needs = [
         "Production deployment approval (internal network)",
         "2-day engineering team training session",
@@ -476,14 +882,29 @@ def build_business_case():
     ]
     top = Inches(2.15)
     for n in needs:
-        add_text_box(slide, f"{n}",
-                     Inches(0.7), top, Inches(5.8), Inches(0.42),
-                     font_size=13, color=SAGE_DARK)
+        add_text_box(
+            slide,
+            f"{n}",
+            Inches(0.7),
+            top,
+            Inches(5.8),
+            Inches(0.42),
+            font_size=13,
+            color=SAGE_DARK,
+        )
         top += Inches(0.48)
 
-    add_text_box(slide, "What You Get",
-                 Inches(6.9), Inches(1.65), Inches(6.0), Inches(0.45),
-                 font_size=16, bold=True, color=SAGE_GREEN)
+    add_text_box(
+        slide,
+        "What You Get",
+        Inches(6.9),
+        Inches(1.65),
+        Inches(6.0),
+        Inches(0.45),
+        font_size=16,
+        bold=True,
+        color=SAGE_GREEN,
+    )
     gets = [
         "KPI dashboard operational by Week 2",
         "60+ hours/week reclaimed from manual work",
@@ -493,13 +914,21 @@ def build_business_case():
     ]
     top = Inches(2.15)
     for g in gets:
-        add_text_box(slide, g,
-                     Inches(7.1), top, Inches(5.8), Inches(0.42),
-                     font_size=13, color=SAGE_DARK)
+        add_text_box(
+            slide,
+            g,
+            Inches(7.1),
+            top,
+            Inches(5.8),
+            Inches(0.42),
+            font_size=13,
+            color=SAGE_DARK,
+        )
         top += Inches(0.48)
 
-    add_rect(slide, Inches(6.7), Inches(1.6), Inches(0.04), Inches(3.8),
-             fill_color=SAGE_TEAL)
+    add_rect(
+        slide, Inches(6.7), Inches(1.6), Inches(0.04), Inches(3.8), fill_color=SAGE_TEAL
+    )
 
     footer_band(slide, include_disclaimer=True)
 
@@ -508,19 +937,43 @@ def build_business_case():
     add_rect(slide, 0, 0, SLIDE_W, SLIDE_H, fill_color=SAGE_DARK)
     add_rect(slide, 0, Inches(3.4), SLIDE_W, Inches(0.06), fill_color=SAGE_TEAL)
 
-    add_text_box(slide,
-                 "SAGE[ai] is not a replacement for your engineers\n—\nit's their most productive teammate.",
-                 Inches(0.8), Inches(1.8), Inches(11.5), Inches(1.8),
-                 font_size=30, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
+    add_text_box(
+        slide,
+        "SAGE[ai] is not a replacement for your engineers\n—\nit's their most productive teammate.",
+        Inches(0.8),
+        Inches(1.8),
+        Inches(11.5),
+        Inches(1.8),
+        font_size=30,
+        bold=True,
+        color=WHITE,
+        align=PP_ALIGN.CENTER,
+    )
 
-    add_text_box(slide, "Open source. Self-hosted. Start today at github.com/Sumanharapanahalli/sage",
-                 Inches(0.8), Inches(3.7), Inches(11.5), Inches(0.65),
-                 font_size=22, color=SAGE_TEAL, align=PP_ALIGN.CENTER)
+    add_text_box(
+        slide,
+        "Open source. Self-hosted. Start today at github.com/Sumanharapanahalli/sage",
+        Inches(0.8),
+        Inches(3.7),
+        Inches(11.5),
+        Inches(0.65),
+        font_size=22,
+        color=SAGE_TEAL,
+        align=PP_ALIGN.CENTER,
+    )
 
-    add_text_box(slide,
-                 "* All financial estimates are assumption-based. Validate with actual data before business decisions.",
-                 Inches(1.5), Inches(6.0), Inches(10.0), Inches(0.5),
-                 font_size=10, italic=True, color=GREY, align=PP_ALIGN.CENTER)
+    add_text_box(
+        slide,
+        "* All financial estimates are assumption-based. Validate with actual data before business decisions.",
+        Inches(1.5),
+        Inches(6.0),
+        Inches(10.0),
+        Inches(0.5),
+        font_size=10,
+        italic=True,
+        color=GREY,
+        align=PP_ALIGN.CENTER,
+    )
 
     out = os.path.join(os.path.dirname(__file__), "SageAI_Business_Case.pptx")
     prs.save(out)
@@ -531,6 +984,7 @@ def build_business_case():
 #  2.  TECH PITCH DECK  (new)
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 def build_tech_pitch():
     prs = new_prs()
 
@@ -540,42 +994,107 @@ def build_tech_pitch():
     add_rect(slide, 0, Inches(5.4), SLIDE_W, Inches(0.06), fill_color=SAGE_TEAL)
     add_rect(slide, Inches(0), Inches(0), Inches(0.35), SLIDE_H, fill_color=SAGE_BLUE)
 
-    add_text_box(slide, "SAGE Framework",
-                 Inches(1), Inches(1.0), Inches(11), Inches(1.2),
-                 font_size=58, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
-    add_text_box(slide, "Smart Agentic-Guided Empowerment",
-                 Inches(1), Inches(2.3), Inches(11), Inches(0.65),
-                 font_size=24, bold=False, color=SAGE_TEAL, align=PP_ALIGN.CENTER)
-    add_text_box(slide,
-                 "A modular open-source AI agent framework\nbuilt on lean development methodology at machine speed",
-                 Inches(1.5), Inches(3.1), Inches(10), Inches(0.9),
-                 font_size=17, italic=True, color=GREY, align=PP_ALIGN.CENTER)
-    add_text_box(slide, "Open Source (MIT) — Technical Platform Overview — March 2026",
-                 Inches(1), Inches(5.7), Inches(11), Inches(0.45),
-                 font_size=14, color=GREY, align=PP_ALIGN.CENTER)
+    add_text_box(
+        slide,
+        "SAGE Framework",
+        Inches(1),
+        Inches(1.0),
+        Inches(11),
+        Inches(1.2),
+        font_size=58,
+        bold=True,
+        color=WHITE,
+        align=PP_ALIGN.CENTER,
+    )
+    add_text_box(
+        slide,
+        "Smart Agentic-Guided Empowerment",
+        Inches(1),
+        Inches(2.3),
+        Inches(11),
+        Inches(0.65),
+        font_size=24,
+        bold=False,
+        color=SAGE_TEAL,
+        align=PP_ALIGN.CENTER,
+    )
+    add_text_box(
+        slide,
+        "A modular open-source AI agent framework\nbuilt on lean development methodology at machine speed",
+        Inches(1.5),
+        Inches(3.1),
+        Inches(10),
+        Inches(0.9),
+        font_size=17,
+        italic=True,
+        color=GREY,
+        align=PP_ALIGN.CENTER,
+    )
+    add_text_box(
+        slide,
+        "Open Source (MIT) — Technical Platform Overview — March 2026",
+        Inches(1),
+        Inches(5.7),
+        Inches(11),
+        Inches(0.45),
+        font_size=14,
+        color=GREY,
+        align=PP_ALIGN.CENTER,
+    )
 
     # ── Slide 2 — The Core Thesis ──────────────────────────────────────────────
     slide = prs.slides.add_slide(blank_layout(prs))
     slide_bg(slide)
-    header_band(slide,
-                "The Core Thesis",
-                "Lean development is the natural pairing for agentic AI")
+    header_band(
+        slide,
+        "The Core Thesis",
+        "Lean development is the natural pairing for agentic AI",
+    )
 
     points = [
-        ("Eliminate Waste", "Agents handle the repetitive — humans handle the judgment"),
-        ("Shorten Feedback Loops", "Surface → Propose → Decide → Compound in seconds, not days"),
-        ("Amplify Human Judgment", "Every proposal waits for a human gate — compliance guaranteed"),
-        ("Compound Intelligence", "Every correction feeds the vector store — the system gets smarter with use"),
+        (
+            "Eliminate Waste",
+            "Agents handle the repetitive — humans handle the judgment",
+        ),
+        (
+            "Shorten Feedback Loops",
+            "Surface → Propose → Decide → Compound in seconds, not days",
+        ),
+        (
+            "Amplify Human Judgment",
+            "Every proposal waits for a human gate — compliance guaranteed",
+        ),
+        (
+            "Compound Intelligence",
+            "Every correction feeds the vector store — the system gets smarter with use",
+        ),
     ]
     top = Inches(1.75)
     for title, body in points:
-        add_rect(slide, Inches(0.45), top, Inches(0.12), Inches(0.8), fill_color=SAGE_BLUE)
-        add_text_box(slide, title,
-                     Inches(0.75), top, Inches(11.5), Inches(0.38),
-                     font_size=15, bold=True, color=SAGE_BLUE)
-        add_text_box(slide, body,
-                     Inches(0.75), top + Inches(0.35), Inches(11.5), Inches(0.38),
-                     font_size=13, color=SAGE_DARK)
+        add_rect(
+            slide, Inches(0.45), top, Inches(0.12), Inches(0.8), fill_color=SAGE_BLUE
+        )
+        add_text_box(
+            slide,
+            title,
+            Inches(0.75),
+            top,
+            Inches(11.5),
+            Inches(0.38),
+            font_size=15,
+            bold=True,
+            color=SAGE_BLUE,
+        )
+        add_text_box(
+            slide,
+            body,
+            Inches(0.75),
+            top + Inches(0.35),
+            Inches(11.5),
+            Inches(0.38),
+            font_size=13,
+            color=SAGE_DARK,
+        )
         top += Inches(1.05)
 
     footer_band(slide)
@@ -583,253 +1102,563 @@ def build_tech_pitch():
     # ── Slide 3 — The SAGE Lean Loop ───────────────────────────────────────────
     slide = prs.slides.add_slide(blank_layout(prs))
     slide_bg(slide)
-    header_band(slide,
-                "The SAGE Lean Loop",
-                "Every task follows this five-phase cycle — no phase is skippable")
+    header_band(
+        slide,
+        "The SAGE Lean Loop",
+        "Every task follows this five-phase cycle — no phase is skippable",
+    )
 
     phases = [
-        ("1\nSURFACE",      "Agent detects or receives signal\n(log, webhook, trigger)",               SAGE_DARK),
-        ("2\nCONTEXTUALIZE","Vector memory searched;\nprior decisions retrieved",                      SAGE_BLUE),
-        ("3\nPROPOSE",      "LLM generates action proposal\nwith trace_id",                            SAGE_TEAL),
-        ("4\nDECIDE",       "Human reviews, approves\nor rejects with feedback",                       SAGE_AMBER),
-        ("5\nCOMPOUND",     "Feedback ingested into vector store;\naudit log updated",                 SAGE_GREEN),
+        (
+            "1\nSURFACE",
+            "Agent detects or receives signal\n(log, webhook, trigger)",
+            SAGE_DARK,
+        ),
+        (
+            "2\nCONTEXTUALIZE",
+            "Vector memory searched;\nprior decisions retrieved",
+            SAGE_BLUE,
+        ),
+        ("3\nPROPOSE", "LLM generates action proposal\nwith trace_id", SAGE_TEAL),
+        ("4\nDECIDE", "Human reviews, approves\nor rejects with feedback", SAGE_AMBER),
+        (
+            "5\nCOMPOUND",
+            "Feedback ingested into vector store;\naudit log updated",
+            SAGE_GREEN,
+        ),
     ]
     left = Inches(0.25)
     for label, body, color in phases:
         add_rect(slide, left, Inches(1.8), Inches(2.4), Inches(3.8), fill_color=color)
-        add_text_box(slide, label,
-                     left + Inches(0.1), Inches(1.9), Inches(2.2), Inches(0.9),
-                     font_size=14, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
-        add_text_box(slide, body,
-                     left + Inches(0.1), Inches(2.9), Inches(2.2), Inches(2.0),
-                     font_size=12, color=WHITE, align=PP_ALIGN.CENTER)
+        add_text_box(
+            slide,
+            label,
+            left + Inches(0.1),
+            Inches(1.9),
+            Inches(2.2),
+            Inches(0.9),
+            font_size=14,
+            bold=True,
+            color=WHITE,
+            align=PP_ALIGN.CENTER,
+        )
+        add_text_box(
+            slide,
+            body,
+            left + Inches(0.1),
+            Inches(2.9),
+            Inches(2.2),
+            Inches(2.0),
+            font_size=12,
+            color=WHITE,
+            align=PP_ALIGN.CENTER,
+        )
         if left < Inches(10):
-            add_text_box(slide, "→",
-                         left + Inches(2.4), Inches(3.2), Inches(0.3), Inches(0.5),
-                         font_size=22, bold=True, color=SAGE_DARK, align=PP_ALIGN.CENTER)
+            add_text_box(
+                slide,
+                "→",
+                left + Inches(2.4),
+                Inches(3.2),
+                Inches(0.3),
+                Inches(0.5),
+                font_size=22,
+                bold=True,
+                color=SAGE_DARK,
+                align=PP_ALIGN.CENTER,
+            )
         left += Inches(2.68)
 
-    add_text_box(slide,
-                 "Phase 5 feeds Phase 2 for every future task — this is compounding intelligence.",
-                 Inches(0.5), Inches(5.85), Inches(12.3), Inches(0.45),
-                 font_size=13, italic=True, bold=True, color=SAGE_BLUE, align=PP_ALIGN.CENTER)
+    add_text_box(
+        slide,
+        "Phase 5 feeds Phase 2 for every future task — this is compounding intelligence.",
+        Inches(0.5),
+        Inches(5.85),
+        Inches(12.3),
+        Inches(0.45),
+        font_size=13,
+        italic=True,
+        bold=True,
+        color=SAGE_BLUE,
+        align=PP_ALIGN.CENTER,
+    )
     footer_band(slide)
 
     # ── Slide 4 — Architecture Overview ───────────────────────────────────────
     slide = prs.slides.add_slide(blank_layout(prs))
     slide_bg(slide)
-    header_band(slide,
-                "Architecture Overview",
-                "Framework is domain-blind — solutions are YAML configs, not code")
+    header_band(
+        slide,
+        "Architecture Overview",
+        "Framework is domain-blind — solutions are YAML configs, not code",
+    )
 
     layers = [
-        ("solutions/<name>/",  "3 YAML files · tests · tools — fully replaceable per domain",    SAGE_GREEN,   Inches(1.6)),
-        ("src/core/",          "LLM gateway · queue · project loader · memory — the brain",       SAGE_BLUE,    Inches(2.35)),
-        ("src/agents/",        "Analyst · Developer · Monitor · Planner · Universal — the workers", SAGE_BLUE,  Inches(3.1)),
-        ("src/interface/",     "FastAPI — the only public interface (UI never calls agents directly)", SAGE_TEAL, Inches(3.85)),
-        ("src/memory/",        "Audit log (compliance + training signal) · vector store (RAG)",   SAGE_TEAL,    Inches(4.6)),
-        ("web/src/",           "React 18 + TypeScript — reads from the API door only",            SAGE_AMBER,   Inches(5.35)),
+        (
+            "solutions/<name>/",
+            "3 YAML files · tests · tools — fully replaceable per domain",
+            SAGE_GREEN,
+            Inches(1.6),
+        ),
+        (
+            "src/core/",
+            "LLM gateway · queue · project loader · memory — the brain",
+            SAGE_BLUE,
+            Inches(2.35),
+        ),
+        (
+            "src/agents/",
+            "Analyst · Developer · Monitor · Planner · Universal — the workers",
+            SAGE_BLUE,
+            Inches(3.1),
+        ),
+        (
+            "src/interface/",
+            "FastAPI — the only public interface (UI never calls agents directly)",
+            SAGE_TEAL,
+            Inches(3.85),
+        ),
+        (
+            "src/memory/",
+            "Audit log (compliance + training signal) · vector store (RAG)",
+            SAGE_TEAL,
+            Inches(4.6),
+        ),
+        (
+            "web/src/",
+            "React 18 + TypeScript — reads from the API door only",
+            SAGE_AMBER,
+            Inches(5.35),
+        ),
     ]
 
     for path, desc, color, top in layers:
         add_rect(slide, Inches(0.4), top, Inches(2.5), Inches(0.6), fill_color=color)
-        add_text_box(slide, path,
-                     Inches(0.45), top + Inches(0.05), Inches(2.4), Inches(0.5),
-                     font_size=12, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
-        add_text_box(slide, desc,
-                     Inches(3.1), top + Inches(0.1), Inches(9.8), Inches(0.42),
-                     font_size=13, color=SAGE_DARK)
+        add_text_box(
+            slide,
+            path,
+            Inches(0.45),
+            top + Inches(0.05),
+            Inches(2.4),
+            Inches(0.5),
+            font_size=12,
+            bold=True,
+            color=WHITE,
+            align=PP_ALIGN.CENTER,
+        )
+        add_text_box(
+            slide,
+            desc,
+            Inches(3.1),
+            top + Inches(0.1),
+            Inches(9.8),
+            Inches(0.42),
+            font_size=13,
+            color=SAGE_DARK,
+        )
 
     footer_band(slide)
 
     # ── Slide 5 — YAML-First Design ────────────────────────────────────────────
     slide = prs.slides.add_slide(blank_layout(prs))
     slide_bg(slide)
-    header_band(slide,
-                "YAML-First Design — Solutions Are Config, Not Code",
-                "A new domain requires zero Python changes")
+    header_band(
+        slide,
+        "YAML-First Design — Solutions Are Config, Not Code",
+        "A new domain requires zero Python changes",
+    )
 
     files = [
-        ("project.yaml",  "What this domain IS",  "Declarative agent manifest: project name, active modules,\nintegrations, team structure, compliance standards"),
-        ("prompts.yaml",  "How agents THINK",      "Role definitions + system prompts per agent role.\nAdd a new role = add a YAML block. No Python file."),
-        ("tasks.yaml",    "What agents CAN DO",    "Task type registry: routing rules, output schemas,\nverification steps, approval requirements."),
+        (
+            "project.yaml",
+            "What this domain IS",
+            "Declarative agent manifest: project name, active modules,\nintegrations, team structure, compliance standards",
+        ),
+        (
+            "prompts.yaml",
+            "How agents THINK",
+            "Role definitions + system prompts per agent role.\nAdd a new role = add a YAML block. No Python file.",
+        ),
+        (
+            "tasks.yaml",
+            "What agents CAN DO",
+            "Task type registry: routing rules, output schemas,\nverification steps, approval requirements.",
+        ),
     ]
     left = Inches(0.4)
     for fname, tagline, body in files:
-        add_rect(slide, left, Inches(1.75), Inches(4.0), Inches(4.5), fill_color=SAGE_DARK)
-        add_text_box(slide, fname,
-                     left + Inches(0.15), Inches(1.85), Inches(3.7), Inches(0.55),
-                     font_size=18, bold=True, color=SAGE_TEAL, align=PP_ALIGN.CENTER)
-        add_text_box(slide, tagline,
-                     left + Inches(0.15), Inches(2.5), Inches(3.7), Inches(0.4),
-                     font_size=13, bold=True, italic=True, color=SAGE_AMBER, align=PP_ALIGN.CENTER)
-        add_text_box(slide, body,
-                     left + Inches(0.15), Inches(3.0), Inches(3.7), Inches(2.8),
-                     font_size=12, color=WHITE, align=PP_ALIGN.LEFT)
+        add_rect(
+            slide, left, Inches(1.75), Inches(4.0), Inches(4.5), fill_color=SAGE_DARK
+        )
+        add_text_box(
+            slide,
+            fname,
+            left + Inches(0.15),
+            Inches(1.85),
+            Inches(3.7),
+            Inches(0.55),
+            font_size=18,
+            bold=True,
+            color=SAGE_TEAL,
+            align=PP_ALIGN.CENTER,
+        )
+        add_text_box(
+            slide,
+            tagline,
+            left + Inches(0.15),
+            Inches(2.5),
+            Inches(3.7),
+            Inches(0.4),
+            font_size=13,
+            bold=True,
+            italic=True,
+            color=SAGE_AMBER,
+            align=PP_ALIGN.CENTER,
+        )
+        add_text_box(
+            slide,
+            body,
+            left + Inches(0.15),
+            Inches(3.0),
+            Inches(3.7),
+            Inches(2.8),
+            font_size=12,
+            color=WHITE,
+            align=PP_ALIGN.LEFT,
+        )
         left += Inches(4.47)
 
-    add_text_box(slide,
-                 "Separation of concerns is sacred — the framework knows nothing specific about any industry.",
-                 Inches(0.5), Inches(6.45), Inches(12.3), Inches(0.45),
-                 font_size=13, italic=True, color=SAGE_BLUE, align=PP_ALIGN.CENTER)
+    add_text_box(
+        slide,
+        "Separation of concerns is sacred — the framework knows nothing specific about any industry.",
+        Inches(0.5),
+        Inches(6.45),
+        Inches(12.3),
+        Inches(0.45),
+        font_size=13,
+        italic=True,
+        color=SAGE_BLUE,
+        align=PP_ALIGN.CENTER,
+    )
     footer_band(slide)
 
     # ── Slide 6 — Agent Architecture ──────────────────────────────────────────
-    table_slide(prs,
+    table_slide(
+        prs,
         "Agent Architecture",
         "Role-based, not function-based — roles are YAML, not Python classes",
         ["Agent", "Role", "Key Capabilities"],
         [
-            ["AnalystAgent",   "Signal intelligence",    "Log triage · severity scoring · root-cause reasoning · ReAct loop"],
-            ["DeveloperAgent", "Code intelligence",      "Code review · MR creation · pipeline status · diff analysis"],
-            ["MonitorAgent",   "Event surveillance",     "Teams · Metabase · GitLab polling · real-time event routing"],
-            ["PlannerAgent",   "Task orchestration",     "Backlog decomposition · wave scheduling · dependency resolution"],
-            ["UniversalAgent", "Routing & fallback",     "Dispatches to the correct role; handles new YAML-defined roles"],
+            [
+                "AnalystAgent",
+                "Signal intelligence",
+                "Log triage · severity scoring · root-cause reasoning · ReAct loop",
+            ],
+            [
+                "DeveloperAgent",
+                "Code intelligence",
+                "Code review · MR creation · pipeline status · diff analysis",
+            ],
+            [
+                "MonitorAgent",
+                "Event surveillance",
+                "Teams · Metabase · GitLab polling · real-time event routing",
+            ],
+            [
+                "PlannerAgent",
+                "Task orchestration",
+                "Backlog decomposition · wave scheduling · dependency resolution",
+            ],
+            [
+                "UniversalAgent",
+                "Routing & fallback",
+                "Dispatches to the correct role; handles new YAML-defined roles",
+            ],
         ],
-        col_widths=[Inches(2.0), Inches(2.2), Inches(8.1)]
+        col_widths=[Inches(2.0), Inches(2.2), Inches(8.1)],
     )
 
     # ── Slide 7 — Memory Architecture ─────────────────────────────────────────
     slide = prs.slides.add_slide(blank_layout(prs))
     slide_bg(slide)
-    header_band(slide,
-                "Two-Layer Memory Architecture",
-                "Compliance record + compounding intelligence in one design")
+    header_band(
+        slide,
+        "Two-Layer Memory Architecture",
+        "Compliance record + compounding intelligence in one design",
+    )
 
     layers_mem = [
-        ("SQLite Audit Log",
-         "Compliance record & training signal",
-         [
-             "Append-only — no deletes, ever",
-             "UUID trace_id on every AI decision",
-             "Full event: input · output · approval · feedback",
-             "Queryable for KPI dashboards",
-             "FDA 21 CFR Part 11 / ISO 13485 compliant",
-         ],
-         SAGE_DARK, Inches(0.4)),
-        ("ChromaDB Vector Store",
-         "Compounding intelligence via RAG",
-         [
-             "Prior analyses stored as embeddings",
-             "Searched before every LLM call",
-             "Updated after every human correction",
-             "No model retraining — behavioral improvement via retrieval",
-             "Memento principle: policy improves, LLM stays frozen",
-         ],
-         SAGE_BLUE, Inches(6.9)),
+        (
+            "SQLite Audit Log",
+            "Compliance record & training signal",
+            [
+                "Append-only — no deletes, ever",
+                "UUID trace_id on every AI decision",
+                "Full event: input · output · approval · feedback",
+                "Queryable for KPI dashboards",
+                "FDA 21 CFR Part 11 / ISO 13485 compliant",
+            ],
+            SAGE_DARK,
+            Inches(0.4),
+        ),
+        (
+            "ChromaDB Vector Store",
+            "Compounding intelligence via RAG",
+            [
+                "Prior analyses stored as embeddings",
+                "Searched before every LLM call",
+                "Updated after every human correction",
+                "No model retraining — behavioral improvement via retrieval",
+                "Memento principle: policy improves, LLM stays frozen",
+            ],
+            SAGE_BLUE,
+            Inches(6.9),
+        ),
     ]
 
     for title, subtitle, bullets, color, left in layers_mem:
         add_rect(slide, left, Inches(1.75), Inches(5.9), Inches(4.8), fill_color=color)
-        add_text_box(slide, title,
-                     left + Inches(0.2), Inches(1.85), Inches(5.5), Inches(0.5),
-                     font_size=18, bold=True, color=WHITE)
-        add_text_box(slide, subtitle,
-                     left + Inches(0.2), Inches(2.4), Inches(5.5), Inches(0.4),
-                     font_size=13, italic=True, color=SAGE_TEAL)
+        add_text_box(
+            slide,
+            title,
+            left + Inches(0.2),
+            Inches(1.85),
+            Inches(5.5),
+            Inches(0.5),
+            font_size=18,
+            bold=True,
+            color=WHITE,
+        )
+        add_text_box(
+            slide,
+            subtitle,
+            left + Inches(0.2),
+            Inches(2.4),
+            Inches(5.5),
+            Inches(0.4),
+            font_size=13,
+            italic=True,
+            color=SAGE_TEAL,
+        )
         top = Inches(2.9)
         for b in bullets:
-            add_text_box(slide, f"{b}",
-                         left + Inches(0.3), top, Inches(5.3), Inches(0.38),
-                         font_size=12, color=WHITE)
+            add_text_box(
+                slide,
+                f"{b}",
+                left + Inches(0.3),
+                top,
+                Inches(5.3),
+                Inches(0.38),
+                font_size=12,
+                color=WHITE,
+            )
             top += Inches(0.45)
 
-    add_text_box(slide, "|",
-                 Inches(6.15), Inches(3.8), Inches(0.6), Inches(0.4),
-                 font_size=10, color=GREY, align=PP_ALIGN.CENTER)
+    add_text_box(
+        slide,
+        "|",
+        Inches(6.15),
+        Inches(3.8),
+        Inches(0.6),
+        Inches(0.4),
+        font_size=10,
+        color=GREY,
+        align=PP_ALIGN.CENTER,
+    )
     footer_band(slide)
 
     # ── Slide 8 — Integrations ─────────────────────────────────────────────────
-    table_slide(prs,
+    table_slide(
+        prs,
         "Integration Surface",
         "Everything your team already uses — all live, no API keys required",
         ["Category", "Tools / Protocols", "Status"],
         [
-            ["Source Control",    "GitLab (MRs, Issues, Pipelines, CI status)",              "Live"],
-            ["Communication",     "Microsoft Teams, Slack (Block Kit approvals, callbacks)", "Live"],
-            ["Analytics",         "Metabase (dashboard event detection)",                    "Live"],
-            ["LLM Providers",     "Gemini CLI, Claude Code, Ollama, local, GenericCLI",     "No API key"],
-            ["Automation",        "n8n webhook to SAGE task routing (HMAC-verified)",        "Live"],
-            ["Workflow Engine",   "LangGraph (interrupt/resume), Temporal (durable)",        "Live"],
-            ["Code Execution",    "AutoGen plan, approve, execute in Docker sandbox",        "Live"],
-            ["Compliance",        "Spira TM, REST webhook adapters",                         "Live"],
-            ["Multi-Tenant",      "X-SAGE-Tenant header, per-team collection isolation",    "Live"],
-            ["MCP Servers",       "Model Context Protocol — plug-in tool ecosystem",         "Ready"],
+            ["Source Control", "GitLab (MRs, Issues, Pipelines, CI status)", "Live"],
+            [
+                "Communication",
+                "Microsoft Teams, Slack (Block Kit approvals, callbacks)",
+                "Live",
+            ],
+            ["Analytics", "Metabase (dashboard event detection)", "Live"],
+            [
+                "LLM Providers",
+                "Gemini CLI, Claude Code, Ollama, local, GenericCLI",
+                "No API key",
+            ],
+            ["Automation", "n8n webhook to SAGE task routing (HMAC-verified)", "Live"],
+            [
+                "Workflow Engine",
+                "LangGraph (interrupt/resume), Temporal (durable)",
+                "Live",
+            ],
+            [
+                "Code Execution",
+                "AutoGen plan, approve, execute in Docker sandbox",
+                "Live",
+            ],
+            ["Compliance", "Spira TM, REST webhook adapters", "Live"],
+            [
+                "Multi-Tenant",
+                "X-SAGE-Tenant header, per-team collection isolation",
+                "Live",
+            ],
+            ["MCP Servers", "Model Context Protocol — plug-in tool ecosystem", "Ready"],
         ],
-        col_widths=[Inches(2.3), Inches(6.8), Inches(3.2)]
+        col_widths=[Inches(2.3), Inches(6.8), Inches(3.2)],
     )
 
     # ── Slide 9 — LLM Gateway ─────────────────────────────────────────────────
     slide = prs.slides.add_slide(blank_layout(prs))
     slide_bg(slide)
-    header_band(slide,
-                "LLM Gateway Design",
-                "Provider-agnostic, thread-safe, single-lane inference")
+    header_band(
+        slide,
+        "LLM Gateway Design",
+        "Provider-agnostic, thread-safe, single-lane inference",
+    )
 
     props = [
-        ("No API Key Needed",    "5 providers require zero credential management — login once or run fully local"),
-        ("Gemini CLI",           "npm install -g @google/gemini-cli · browser login once · gemini-2.5-flash"),
-        ("Claude Code CLI",      "npm install -g @anthropic-ai/claude-code · Anthropic auth once · sonnet-4-6"),
-        ("Ollama (local)",       "ollama serve + ollama pull llama3.2 — fully offline, CUDA-accelerated option"),
-        ("Generic CLI",          "Any CLI tool via configurable path + {prompt} arg — Aider, LM Studio, etc."),
-        ("Thread-Safe + Stream", "threading.Lock on generate() · SSE streaming via generate_stream() for all providers"),
+        (
+            "No API Key Needed",
+            "5 providers require zero credential management — login once or run fully local",
+        ),
+        (
+            "Gemini CLI",
+            "npm install -g @google/gemini-cli · browser login once · gemini-2.5-flash",
+        ),
+        (
+            "Claude Code CLI",
+            "npm install -g @anthropic-ai/claude-code · Anthropic auth once · sonnet-4-6",
+        ),
+        (
+            "Ollama (local)",
+            "ollama serve + ollama pull llama3.2 — fully offline, CUDA-accelerated option",
+        ),
+        (
+            "Generic CLI",
+            "Any CLI tool via configurable path + {prompt} arg — Aider, LM Studio, etc.",
+        ),
+        (
+            "Thread-Safe + Stream",
+            "threading.Lock on generate() · SSE streaming via generate_stream() for all providers",
+        ),
     ]
     top = Inches(1.75)
     for title, body in props:
-        add_rect(slide, Inches(0.4), top, Inches(3.5), Inches(0.7), fill_color=SAGE_BLUE)
-        add_text_box(slide, title,
-                     Inches(0.45), top + Inches(0.1), Inches(3.4), Inches(0.5),
-                     font_size=13, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
-        add_text_box(slide, body,
-                     Inches(4.1), top + Inches(0.12), Inches(8.8), Inches(0.5),
-                     font_size=13, color=SAGE_DARK)
+        add_rect(
+            slide, Inches(0.4), top, Inches(3.5), Inches(0.7), fill_color=SAGE_BLUE
+        )
+        add_text_box(
+            slide,
+            title,
+            Inches(0.45),
+            top + Inches(0.1),
+            Inches(3.4),
+            Inches(0.5),
+            font_size=13,
+            bold=True,
+            color=WHITE,
+            align=PP_ALIGN.CENTER,
+        )
+        add_text_box(
+            slide,
+            body,
+            Inches(4.1),
+            top + Inches(0.12),
+            Inches(8.8),
+            Inches(0.5),
+            font_size=13,
+            color=SAGE_DARK,
+        )
         top += Inches(0.85)
 
     footer_band(slide)
 
     # ── Slide 10 — Security & Compliance ──────────────────────────────────────
-    table_slide(prs,
+    table_slide(
+        prs,
         "Security & Compliance Architecture",
         "Designed for regulated environments — not retrofitted",
         ["Control", "Implementation", "Standard"],
         [
-            ["Audit Log Integrity",  "Append-only SQLite; no UPDATE/DELETE exposed",           "ISO 13485 · FDA 21 CFR Part 11"],
-            ["Decision Traceability","UUID trace_id on every LLM call + human action",         "IEC 62304 · ISO 14971"],
-            ["Human Gate",           "Approval endpoint required before any action executes",  "ISO 13485 §8.5 CAPA"],
-            ["Access Control",       "JWT auth · role-based permissions (roadmap Phase 7)",   "FDA Cybersecurity 2023"],
-            ["Data Residency",       "Air-gapped Ollama option; no cloud egress required",    "GDPR · HIPAA ready"],
-            ["SOUP Inventory",       "All third-party libs documented; pinned versions",       "IEC 62304 §8.1.2"],
+            [
+                "Audit Log Integrity",
+                "Append-only SQLite; no UPDATE/DELETE exposed",
+                "ISO 13485 · FDA 21 CFR Part 11",
+            ],
+            [
+                "Decision Traceability",
+                "UUID trace_id on every LLM call + human action",
+                "IEC 62304 · ISO 14971",
+            ],
+            [
+                "Human Gate",
+                "Approval endpoint required before any action executes",
+                "ISO 13485 §8.5 CAPA",
+            ],
+            [
+                "Access Control",
+                "JWT auth · role-based permissions (roadmap Phase 7)",
+                "FDA Cybersecurity 2023",
+            ],
+            [
+                "Data Residency",
+                "Air-gapped Ollama option; no cloud egress required",
+                "GDPR · HIPAA ready",
+            ],
+            [
+                "SOUP Inventory",
+                "All third-party libs documented; pinned versions",
+                "IEC 62304 §8.1.2",
+            ],
         ],
-        col_widths=[Inches(2.5), Inches(5.8), Inches(4.0)]
+        col_widths=[Inches(2.5), Inches(5.8), Inches(4.0)],
     )
 
     # ── Slide 11 — Dev Experience ─────────────────────────────────────────────
     slide = prs.slides.add_slide(blank_layout(prs))
     slide_bg(slide)
-    header_band(slide,
-                "Developer Experience",
-                "From zero to running agent in minutes")
+    header_band(slide, "Developer Experience", "From zero to running agent in minutes")
 
     cmds = [
-        ("Setup",       "make venv              # Create .venv, install all deps"),
-        ("Low-RAM",     "make venv-minimal      # Skip ChromaDB/embeddings"),
+        ("Setup", "make venv              # Create .venv, install all deps"),
+        ("Low-RAM", "make venv-minimal      # Skip ChromaDB/embeddings"),
         ("Run backend", "make run PROJECT=medtech  # FastAPI on :8000"),
-        ("Run UI",      "make ui                # Vite frontend on :5173"),
-        ("Test",        "make test              # Framework unit tests"),
-        ("Test all",    "make test-all          # Framework + all solutions"),
+        ("Run UI", "make ui                # Vite frontend on :5173"),
+        ("Test", "make test              # Framework unit tests"),
+        ("Test all", "make test-all          # Framework + all solutions"),
     ]
 
-    add_rect(slide, Inches(0.4), Inches(1.7), Inches(12.4), Inches(3.9),
-             fill_color=RGBColor(0x1E, 0x1E, 0x2E))
+    add_rect(
+        slide,
+        Inches(0.4),
+        Inches(1.7),
+        Inches(12.4),
+        Inches(3.9),
+        fill_color=RGBColor(0x1E, 0x1E, 0x2E),
+    )
 
     top = Inches(1.85)
     for label, cmd in cmds:
-        add_text_box(slide, f"# {label}",
-                     Inches(0.7), top, Inches(1.6), Inches(0.42),
-                     font_size=12, color=GREY)
-        add_text_box(slide, cmd,
-                     Inches(2.3), top, Inches(10.2), Inches(0.42),
-                     font_size=12, color=SAGE_GREEN)
+        add_text_box(
+            slide,
+            f"# {label}",
+            Inches(0.7),
+            top,
+            Inches(1.6),
+            Inches(0.42),
+            font_size=12,
+            color=GREY,
+        )
+        add_text_box(
+            slide,
+            cmd,
+            Inches(2.3),
+            top,
+            Inches(10.2),
+            Inches(0.42),
+            font_size=12,
+            color=SAGE_GREEN,
+        )
         top += Inches(0.52)
 
     extras = [
@@ -839,302 +1668,645 @@ def build_tech_pitch():
     ]
     top = Inches(5.85)
     for e in extras:
-        add_text_box(slide, f"{e}",
-                     Inches(0.5), top, Inches(12.3), Inches(0.35),
-                     font_size=12, color=SAGE_DARK)
+        add_text_box(
+            slide,
+            f"{e}",
+            Inches(0.5),
+            top,
+            Inches(12.3),
+            Inches(0.35),
+            font_size=12,
+            color=SAGE_DARK,
+        )
         top += Inches(0.42)
 
     footer_band(slide)
 
     # ── Slide 12 — Performance & Scalability ──────────────────────────────────
-    table_slide(prs,
+    table_slide(
+        prs,
         "Performance Characteristics",
         "Benchmarks are assumption-based — validate with your workload",
         ["Metric", "Baseline Target*", "Notes"],
         [
-            ["Log analysis latency",    "< 60 seconds end-to-end",      "LLM call + RAG retrieval + audit write"],
-            ["Code review latency",     "< 3 minutes per MR",           "ReAct loop: up to 5 reasoning steps"],
-            ["Task queue throughput",   "~10–20 tasks/hour single-lane", "threading.Lock serializes LLM calls"],
-            ["Vector search",           "< 200 ms for top-5 results",   "ChromaDB in-process, local embeddings"],
-            ["Audit log write",         "< 5 ms per event",             "SQLite WAL mode, append-only"],
-            ["API response (non-LLM)",  "< 50 ms p99",                  "FastAPI + uvicorn, no DB round-trip"],
-            ["Min hardware (pilot)",    "8-core CPU · 32 GB RAM",       "GPU optional — Ollama benefits from CUDA"],
+            [
+                "Log analysis latency",
+                "< 60 seconds end-to-end",
+                "LLM call + RAG retrieval + audit write",
+            ],
+            [
+                "Code review latency",
+                "< 3 minutes per MR",
+                "ReAct loop: up to 5 reasoning steps",
+            ],
+            [
+                "Task queue throughput",
+                "~10–20 tasks/hour single-lane",
+                "threading.Lock serializes LLM calls",
+            ],
+            [
+                "Vector search",
+                "< 200 ms for top-5 results",
+                "ChromaDB in-process, local embeddings",
+            ],
+            ["Audit log write", "< 5 ms per event", "SQLite WAL mode, append-only"],
+            [
+                "API response (non-LLM)",
+                "< 50 ms p99",
+                "FastAPI + uvicorn, no DB round-trip",
+            ],
+            [
+                "Min hardware (pilot)",
+                "8-core CPU · 32 GB RAM",
+                "GPU optional — Ollama benefits from CUDA",
+            ],
         ],
         col_widths=[Inches(3.0), Inches(3.3), Inches(6.0)],
         include_disclaimer=True,
-        note="* All latency targets are assumption-based estimates. Replace with measured values from your environment."
+        note="* All latency targets are assumption-based estimates. Replace with measured values from your environment.",
     )
 
     # ── Slide 13 — Two Backlogs ────────────────────────────────────────────────
     slide = prs.slides.add_slide(blank_layout(prs))
     slide_bg(slide)
-    header_band(slide,
-                "Two Backlogs — One Platform",
-                "SAGE serves both solution teams and the open-source community")
+    header_band(
+        slide,
+        "Two Backlogs — One Platform",
+        "SAGE serves both solution teams and the open-source community",
+    )
 
     panels = [
-        ("Solution Backlog",
-         "scope: \"solution\"",
-         [
-             "Features to build inside your application",
-             "Owned by the builder's team",
-             "Full SAGE workflow: Log → AI plan → Approve → Implement",
-             "Planner Agent decomposes and prioritises",
-             "Visible in: Improvements → Solution Backlog tab",
-         ],
-         SAGE_BLUE, Inches(0.4)),
-        ("SAGE Framework Ideas",
-         "scope: \"sage\"",
-         [
-             "Improvements to the SAGE platform itself",
-             "Community contributions",
-             "Raised as GitHub Issues on the SAGE repo",
-             "Open-source community picks them up",
-             "Visible in: Improvements → SAGE Framework Ideas tab",
-         ],
-         SAGE_DARK, Inches(6.9)),
+        (
+            "Solution Backlog",
+            'scope: "solution"',
+            [
+                "Features to build inside your application",
+                "Owned by the builder's team",
+                "Full SAGE workflow: Log → AI plan → Approve → Implement",
+                "Planner Agent decomposes and prioritises",
+                "Visible in: Improvements → Solution Backlog tab",
+            ],
+            SAGE_BLUE,
+            Inches(0.4),
+        ),
+        (
+            "SAGE Framework Ideas",
+            'scope: "sage"',
+            [
+                "Improvements to the SAGE platform itself",
+                "Community contributions",
+                "Raised as GitHub Issues on the SAGE repo",
+                "Open-source community picks them up",
+                "Visible in: Improvements → SAGE Framework Ideas tab",
+            ],
+            SAGE_DARK,
+            Inches(6.9),
+        ),
     ]
 
     for title, tag, bullets, color, left in panels:
         add_rect(slide, left, Inches(1.75), Inches(5.9), Inches(4.8), fill_color=color)
-        add_text_box(slide, title,
-                     left + Inches(0.2), Inches(1.85), Inches(5.5), Inches(0.5),
-                     font_size=18, bold=True, color=WHITE)
-        add_text_box(slide, tag,
-                     left + Inches(0.2), Inches(2.4), Inches(5.5), Inches(0.38),
-                     font_size=12, italic=True, color=SAGE_TEAL)
+        add_text_box(
+            slide,
+            title,
+            left + Inches(0.2),
+            Inches(1.85),
+            Inches(5.5),
+            Inches(0.5),
+            font_size=18,
+            bold=True,
+            color=WHITE,
+        )
+        add_text_box(
+            slide,
+            tag,
+            left + Inches(0.2),
+            Inches(2.4),
+            Inches(5.5),
+            Inches(0.38),
+            font_size=12,
+            italic=True,
+            color=SAGE_TEAL,
+        )
         top = Inches(2.9)
         for b in bullets:
-            add_text_box(slide, f"{b}",
-                         left + Inches(0.3), top, Inches(5.3), Inches(0.38),
-                         font_size=12, color=WHITE)
+            add_text_box(
+                slide,
+                f"{b}",
+                left + Inches(0.3),
+                top,
+                Inches(5.3),
+                Inches(0.38),
+                font_size=12,
+                color=WHITE,
+            )
             top += Inches(0.45)
 
-    add_text_box(slide,
-                 "Never mix the two backlogs — the scope field on every FeatureRequest enforces this in code.",
-                 Inches(0.5), Inches(6.82), Inches(12.3), Inches(0.38),
-                 font_size=11, italic=True, bold=True, color=SAGE_DARK, align=PP_ALIGN.CENTER)
+    add_text_box(
+        slide,
+        "Never mix the two backlogs — the scope field on every FeatureRequest enforces this in code.",
+        Inches(0.5),
+        Inches(6.82),
+        Inches(12.3),
+        Inches(0.38),
+        font_size=11,
+        italic=True,
+        bold=True,
+        color=SAGE_DARK,
+        align=PP_ALIGN.CENTER,
+    )
     footer_band(slide)
 
     # ── Slide 14 — Deployment Options ─────────────────────────────────────────
-    table_slide(prs,
+    table_slide(
+        prs,
         "Deployment Options",
         "From laptop to air-gapped production server",
         ["Mode", "LLM", "Storage", "Best For"],
         [
-            ["Local dev",          "Ollama (local)",     "SQLite + ChromaDB local",   "Developer machine, no internet needed"],
-            ["Cloud (SaaS LLM)",   "OpenAI / Azure",     "SQLite + ChromaDB local",   "Small team, fastest setup"],
-            ["On-premise",         "Azure OpenAI / Ollama", "SQLite + ChromaDB server", "Regulated, data-sovereignty required"],
-            ["Air-gapped",         "Ollama only",        "SQLite + ChromaDB server",  "Classified / no-network environments"],
+            [
+                "Local dev",
+                "Ollama (local)",
+                "SQLite + ChromaDB local",
+                "Developer machine, no internet needed",
+            ],
+            [
+                "Cloud (SaaS LLM)",
+                "OpenAI / Azure",
+                "SQLite + ChromaDB local",
+                "Small team, fastest setup",
+            ],
+            [
+                "On-premise",
+                "Azure OpenAI / Ollama",
+                "SQLite + ChromaDB server",
+                "Regulated, data-sovereignty required",
+            ],
+            [
+                "Air-gapped",
+                "Ollama only",
+                "SQLite + ChromaDB server",
+                "Classified / no-network environments",
+            ],
         ],
-        col_widths=[Inches(2.0), Inches(2.8), Inches(3.5), Inches(4.0)]
+        col_widths=[Inches(2.0), Inches(2.8), Inches(3.5), Inches(4.0)],
     )
 
     # ── Slide 15 — SSE Streaming ───────────────────────────────────────────────
     slide = prs.slides.add_slide(blank_layout(prs))
     slide_bg(slide)
-    header_band(slide,
-                "Real-Time Token Streaming (Phase 5)",
-                "Server-Sent Events for progressive AI output — every provider, no API key required")
+    header_band(
+        slide,
+        "Real-Time Token Streaming (Phase 5)",
+        "Server-Sent Events for progressive AI output — every provider, no API key required",
+    )
 
     stream_points = [
-        ("FastAPI StreamingResponse", "text/event-stream content-type; browser-native SSE protocol"),
-        ("generate_stream() method",  "Yields chunks from LLMGateway — same thread-safe singleton, streaming path"),
-        ("Claude API provider",        "Native token-by-token streaming via Anthropic SDK stream context"),
-        ("CLI providers (Gemini, etc)","Full generation runs then output is split into 4-word chunks — progressive feel"),
-        ("Ollama provider",            "stream=True to local REST API — true token-level streaming offline"),
-        ("Two endpoints",             "POST /analyze/stream · POST /agent/stream — both support X-SAGE-Tenant"),
+        (
+            "FastAPI StreamingResponse",
+            "text/event-stream content-type; browser-native SSE protocol",
+        ),
+        (
+            "generate_stream() method",
+            "Yields chunks from LLMGateway — same thread-safe singleton, streaming path",
+        ),
+        (
+            "Claude API provider",
+            "Native token-by-token streaming via Anthropic SDK stream context",
+        ),
+        (
+            "CLI providers (Gemini, etc)",
+            "Full generation runs then output is split into 4-word chunks — progressive feel",
+        ),
+        (
+            "Ollama provider",
+            "stream=True to local REST API — true token-level streaming offline",
+        ),
+        (
+            "Two endpoints",
+            "POST /analyze/stream · POST /agent/stream — both support X-SAGE-Tenant",
+        ),
     ]
     top = Inches(1.75)
     for title, body in stream_points:
-        add_rect(slide, Inches(0.4), top, Inches(3.7), Inches(0.65), fill_color=SAGE_TEAL)
-        add_text_box(slide, title,
-                     Inches(0.45), top + Inches(0.08), Inches(3.6), Inches(0.5),
-                     font_size=12, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
-        add_text_box(slide, body,
-                     Inches(4.3), top + Inches(0.1), Inches(8.7), Inches(0.5),
-                     font_size=13, color=SAGE_DARK)
+        add_rect(
+            slide, Inches(0.4), top, Inches(3.7), Inches(0.65), fill_color=SAGE_TEAL
+        )
+        add_text_box(
+            slide,
+            title,
+            Inches(0.45),
+            top + Inches(0.08),
+            Inches(3.6),
+            Inches(0.5),
+            font_size=12,
+            bold=True,
+            color=WHITE,
+            align=PP_ALIGN.CENTER,
+        )
+        add_text_box(
+            slide,
+            body,
+            Inches(4.3),
+            top + Inches(0.1),
+            Inches(8.7),
+            Inches(0.5),
+            font_size=13,
+            color=SAGE_DARK,
+        )
         top += Inches(0.82)
     footer_band(slide)
 
     # ── Slide 16 — Onboarding Wizard ──────────────────────────────────────────
     slide = prs.slides.add_slide(blank_layout(prs))
     slide_bg(slide)
-    header_band(slide,
-                "Onboarding Wizard — New Solution in 60 Seconds (Phase 6)",
-                "Plain language → production-ready YAML configs via AI generation")
+    header_band(
+        slide,
+        "Onboarding Wizard — New Solution in 60 Seconds (Phase 6)",
+        "Plain language → production-ready YAML configs via AI generation",
+    )
 
     steps_ob = [
-        ("1  DESCRIBE", "POST /onboarding/generate with a plain-language description + compliance standards", SAGE_DARK),
-        ("2  GENERATE", "LLM produces project.yaml · prompts.yaml · tasks.yaml tailored to your domain",      SAGE_BLUE),
-        ("3  SCAFFOLD",  "solutions/<name>/ created with workflows/ · mcp_servers/ · evals/ subdirs",         SAGE_TEAL),
-        ("4  RUN",       "make run PROJECT=<name> — agents immediately operational with domain context",       SAGE_GREEN),
+        (
+            "1  DESCRIBE",
+            "POST /onboarding/generate with a plain-language description + compliance standards",
+            SAGE_DARK,
+        ),
+        (
+            "2  GENERATE",
+            "LLM produces project.yaml · prompts.yaml · tasks.yaml tailored to your domain",
+            SAGE_BLUE,
+        ),
+        (
+            "3  SCAFFOLD",
+            "solutions/<name>/ created with workflows/ · mcp_servers/ · evals/ subdirs",
+            SAGE_TEAL,
+        ),
+        (
+            "4  RUN",
+            "make run PROJECT=<name> — agents immediately operational with domain context",
+            SAGE_GREEN,
+        ),
     ]
     left = Inches(0.25)
     for label, body, color in steps_ob:
         add_rect(slide, left, Inches(1.85), Inches(3.0), Inches(3.4), fill_color=color)
-        add_text_box(slide, label,
-                     left + Inches(0.1), Inches(1.95), Inches(2.8), Inches(0.55),
-                     font_size=13, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
-        add_text_box(slide, body,
-                     left + Inches(0.1), Inches(2.6), Inches(2.8), Inches(2.0),
-                     font_size=11, color=WHITE, align=PP_ALIGN.CENTER)
+        add_text_box(
+            slide,
+            label,
+            left + Inches(0.1),
+            Inches(1.95),
+            Inches(2.8),
+            Inches(0.55),
+            font_size=13,
+            bold=True,
+            color=WHITE,
+            align=PP_ALIGN.CENTER,
+        )
+        add_text_box(
+            slide,
+            body,
+            left + Inches(0.1),
+            Inches(2.6),
+            Inches(2.8),
+            Inches(2.0),
+            font_size=11,
+            color=WHITE,
+            align=PP_ALIGN.CENTER,
+        )
         if left < Inches(9.5):
-            add_text_box(slide, "→",
-                         left + Inches(3.0), Inches(3.2), Inches(0.25), Inches(0.5),
-                         font_size=22, bold=True, color=SAGE_DARK, align=PP_ALIGN.CENTER)
+            add_text_box(
+                slide,
+                "→",
+                left + Inches(3.0),
+                Inches(3.2),
+                Inches(0.25),
+                Inches(0.5),
+                font_size=22,
+                bold=True,
+                color=SAGE_DARK,
+                align=PP_ALIGN.CENTER,
+            )
         left += Inches(3.27)
 
-    add_text_box(slide,
-                 "Templates available at GET /onboarding/templates — or describe any domain from scratch.",
-                 Inches(0.5), Inches(5.55), Inches(12.3), Inches(0.45),
-                 font_size=13, italic=True, color=SAGE_BLUE, align=PP_ALIGN.CENTER)
+    add_text_box(
+        slide,
+        "Templates available at GET /onboarding/templates — or describe any domain from scratch.",
+        Inches(0.5),
+        Inches(5.55),
+        Inches(12.3),
+        Inches(0.45),
+        font_size=13,
+        italic=True,
+        color=SAGE_BLUE,
+        align=PP_ALIGN.CENTER,
+    )
     footer_band(slide)
 
     # ── Slide 17 — Knowledge Base CRUD ────────────────────────────────────────
-    table_slide(prs,
+    table_slide(
+        prs,
         "Knowledge Base CRUD API (Phase 7)",
         "Full lifecycle management for the RAG vector store — list, add, delete, bulk import, search",
         ["Endpoint", "Method", "Description"],
         [
-            ["GET  /knowledge/entries",     "List",         "Paginated entries from ChromaDB with metadata"],
-            ["POST /knowledge/add",         "Add",          "Single entry with text + arbitrary metadata dict"],
-            ["DELETE /knowledge/entry/{id}","Delete",       "Remove by entry UUID — audit-logged"],
-            ["POST /knowledge/import",      "Bulk import",  "JSON array of entries — batch ingest from external knowledge base"],
-            ["POST /knowledge/search",      "Semantic",     "query + k → top-k cosine-similarity results"],
+            [
+                "GET  /knowledge/entries",
+                "List",
+                "Paginated entries from ChromaDB with metadata",
+            ],
+            [
+                "POST /knowledge/add",
+                "Add",
+                "Single entry with text + arbitrary metadata dict",
+            ],
+            [
+                "DELETE /knowledge/entry/{id}",
+                "Delete",
+                "Remove by entry UUID — audit-logged",
+            ],
+            [
+                "POST /knowledge/import",
+                "Bulk import",
+                "JSON array of entries — batch ingest from external knowledge base",
+            ],
+            [
+                "POST /knowledge/search",
+                "Semantic",
+                "query + k → top-k cosine-similarity results",
+            ],
         ],
-        col_widths=[Inches(3.5), Inches(1.5), Inches(7.3)]
+        col_widths=[Inches(3.5), Inches(1.5), Inches(7.3)],
     )
 
     # ── Slide 18 — Slack Two-Way Approval ─────────────────────────────────────
     slide = prs.slides.add_slide(blank_layout(prs))
     slide_bg(slide)
-    header_band(slide,
-                "Slack Two-Way Approval Loop (Phase 8)",
-                "Proposals delivered as Block Kit messages — approve or reject from Slack without leaving the app")
+    header_band(
+        slide,
+        "Slack Two-Way Approval Loop (Phase 8)",
+        "Proposals delivered as Block Kit messages — approve or reject from Slack without leaving the app",
+    )
 
     slack_flow = [
-        ("Agent proposes",      "SAGE generates proposal → POST /slack/send-proposal"),
-        ("Block Kit message",   "Approve + Reject buttons sent to #sage-approvals channel"),
-        ("Engineer clicks",     "Slack POSTs interactive payload to POST /webhook/slack"),
-        ("HMAC verification",   "X-Slack-Signature checked — replays rejected, 5-min window enforced"),
-        ("Audit log updated",   "Decision + Slack user ID written to SQLite audit trail"),
-        ("Vector store updated","Rejection reason ingested for Phase 5 COMPOUND — system learns"),
+        ("Agent proposes", "SAGE generates proposal → POST /slack/send-proposal"),
+        (
+            "Block Kit message",
+            "Approve + Reject buttons sent to #sage-approvals channel",
+        ),
+        ("Engineer clicks", "Slack POSTs interactive payload to POST /webhook/slack"),
+        (
+            "HMAC verification",
+            "X-Slack-Signature checked — replays rejected, 5-min window enforced",
+        ),
+        ("Audit log updated", "Decision + Slack user ID written to SQLite audit trail"),
+        (
+            "Vector store updated",
+            "Rejection reason ingested for Phase 5 COMPOUND — system learns",
+        ),
     ]
     top = Inches(1.75)
     for label, body in slack_flow:
-        add_rect(slide, Inches(0.4), top, Inches(0.08), Inches(0.6), fill_color=SAGE_TEAL)
-        add_text_box(slide, label,
-                     Inches(0.65), top, Inches(3.3), Inches(0.35),
-                     font_size=13, bold=True, color=SAGE_BLUE)
-        add_text_box(slide, body,
-                     Inches(0.65), top + Inches(0.33), Inches(12.0), Inches(0.35),
-                     font_size=12, color=SAGE_DARK)
+        add_rect(
+            slide, Inches(0.4), top, Inches(0.08), Inches(0.6), fill_color=SAGE_TEAL
+        )
+        add_text_box(
+            slide,
+            label,
+            Inches(0.65),
+            top,
+            Inches(3.3),
+            Inches(0.35),
+            font_size=13,
+            bold=True,
+            color=SAGE_BLUE,
+        )
+        add_text_box(
+            slide,
+            body,
+            Inches(0.65),
+            top + Inches(0.33),
+            Inches(12.0),
+            Inches(0.35),
+            font_size=12,
+            color=SAGE_DARK,
+        )
         top += Inches(0.75)
     footer_band(slide)
 
     # ── Slide 19 — Eval & Benchmarking ────────────────────────────────────────
     slide = prs.slides.add_slide(blank_layout(prs))
     slide_bg(slide)
-    header_band(slide,
-                "Eval & Benchmarking Framework (Phase 9)",
-                "YAML-defined test cases — score agent quality, track regressions over time")
+    header_band(
+        slide,
+        "Eval & Benchmarking Framework (Phase 9)",
+        "YAML-defined test cases — score agent quality, track regressions over time",
+    )
 
     eval_panels = [
-        ("Eval YAML Format",
-         "Define test cases in solutions/<name>/evals/<suite>.yaml",
-         [
-             "prompt: the input to send to the agent",
-             "expected_keywords: list of terms that must appear",
-             "max_response_length: optional brevity constraint",
-             "Scoring: 70 pts keyword coverage + 30 pts length",
-         ],
-         SAGE_DARK, Inches(0.4)),
-        ("API + Persistence",
-         "Run suites on demand, store history in SQLite",
-         [
-             "GET  /eval/suites — list available suites",
-             "POST /eval/run   — run one or all suites",
-             "GET  /eval/history — trend data per suite",
-             "Scores 0–100; track regressions across LLM upgrades",
-         ],
-         SAGE_BLUE, Inches(6.9)),
+        (
+            "Eval YAML Format",
+            "Define test cases in solutions/<name>/evals/<suite>.yaml",
+            [
+                "prompt: the input to send to the agent",
+                "expected_keywords: list of terms that must appear",
+                "max_response_length: optional brevity constraint",
+                "Scoring: 70 pts keyword coverage + 30 pts length",
+            ],
+            SAGE_DARK,
+            Inches(0.4),
+        ),
+        (
+            "API + Persistence",
+            "Run suites on demand, store history in SQLite",
+            [
+                "GET  /eval/suites — list available suites",
+                "POST /eval/run   — run one or all suites",
+                "GET  /eval/history — trend data per suite",
+                "Scores 0–100; track regressions across LLM upgrades",
+            ],
+            SAGE_BLUE,
+            Inches(6.9),
+        ),
     ]
     for title, subtitle, bullets, color, left in eval_panels:
         add_rect(slide, left, Inches(1.75), Inches(5.9), Inches(4.8), fill_color=color)
-        add_text_box(slide, title,
-                     left + Inches(0.2), Inches(1.85), Inches(5.5), Inches(0.5),
-                     font_size=17, bold=True, color=WHITE)
-        add_text_box(slide, subtitle,
-                     left + Inches(0.2), Inches(2.4), Inches(5.5), Inches(0.4),
-                     font_size=12, italic=True, color=SAGE_TEAL)
+        add_text_box(
+            slide,
+            title,
+            left + Inches(0.2),
+            Inches(1.85),
+            Inches(5.5),
+            Inches(0.5),
+            font_size=17,
+            bold=True,
+            color=WHITE,
+        )
+        add_text_box(
+            slide,
+            subtitle,
+            left + Inches(0.2),
+            Inches(2.4),
+            Inches(5.5),
+            Inches(0.4),
+            font_size=12,
+            italic=True,
+            color=SAGE_TEAL,
+        )
         top = Inches(2.9)
         for b in bullets:
-            add_text_box(slide, f"{b}",
-                         left + Inches(0.3), top, Inches(5.3), Inches(0.38),
-                         font_size=12, color=WHITE)
+            add_text_box(
+                slide,
+                f"{b}",
+                left + Inches(0.3),
+                top,
+                Inches(5.3),
+                Inches(0.38),
+                font_size=12,
+                color=WHITE,
+            )
             top += Inches(0.48)
     footer_band(slide)
 
     # ── Slide 20 — Multi-Tenant Isolation ─────────────────────────────────────
     slide = prs.slides.add_slide(blank_layout(prs))
     slide_bg(slide)
-    header_band(slide,
-                "Multi-Tenant Isolation (Phase 10)",
-                "Per-team knowledge namespacing via a single request header")
+    header_band(
+        slide,
+        "Multi-Tenant Isolation (Phase 10)",
+        "Per-team knowledge namespacing via a single request header",
+    )
 
     mt_points = [
-        ("X-SAGE-Tenant header",  "Add to any request: X-SAGE-Tenant: firmware_team — zero auth change needed"),
-        ("TenantMiddleware",       "BaseHTTPMiddleware extracts header → sets ContextVar before request reaches agent"),
-        ("ContextVar isolation",   "Python contextvars — each async request has its own tenant context; no cross-talk"),
-        ("Collection namespacing", "tenant_scoped_collection() → <tenant>_knowledge ChromaDB collection"),
-        ("GET /tenant/context",   "Debug endpoint shows resolved tenant for current request headers"),
-        ("Backward compatible",   "Requests without header use global collection — no breaking change"),
+        (
+            "X-SAGE-Tenant header",
+            "Add to any request: X-SAGE-Tenant: firmware_team — zero auth change needed",
+        ),
+        (
+            "TenantMiddleware",
+            "BaseHTTPMiddleware extracts header → sets ContextVar before request reaches agent",
+        ),
+        (
+            "ContextVar isolation",
+            "Python contextvars — each async request has its own tenant context; no cross-talk",
+        ),
+        (
+            "Collection namespacing",
+            "tenant_scoped_collection() → <tenant>_knowledge ChromaDB collection",
+        ),
+        (
+            "GET /tenant/context",
+            "Debug endpoint shows resolved tenant for current request headers",
+        ),
+        (
+            "Backward compatible",
+            "Requests without header use global collection — no breaking change",
+        ),
     ]
     top = Inches(1.75)
     for title, body in mt_points:
-        add_rect(slide, Inches(0.4), top, Inches(3.5), Inches(0.65), fill_color=SAGE_BLUE)
-        add_text_box(slide, title,
-                     Inches(0.45), top + Inches(0.08), Inches(3.4), Inches(0.5),
-                     font_size=12, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
-        add_text_box(slide, body,
-                     Inches(4.1), top + Inches(0.1), Inches(8.8), Inches(0.5),
-                     font_size=13, color=SAGE_DARK)
+        add_rect(
+            slide, Inches(0.4), top, Inches(3.5), Inches(0.65), fill_color=SAGE_BLUE
+        )
+        add_text_box(
+            slide,
+            title,
+            Inches(0.45),
+            top + Inches(0.08),
+            Inches(3.4),
+            Inches(0.5),
+            font_size=12,
+            bold=True,
+            color=WHITE,
+            align=PP_ALIGN.CENTER,
+        )
+        add_text_box(
+            slide,
+            body,
+            Inches(4.1),
+            top + Inches(0.1),
+            Inches(8.8),
+            Inches(0.5),
+            font_size=13,
+            color=SAGE_DARK,
+        )
         top += Inches(0.82)
     footer_band(slide)
 
     # ── Slide 21 — Temporal Durable Workflows ─────────────────────────────────
-    table_slide(prs,
+    table_slide(
+        prs,
         "Temporal Durable Workflows (Phase 11)",
         "Production-grade workflow orchestration with automatic retry, state persistence, and LangGraph fallback",
         ["Capability", "Implementation", "Benefit"],
         [
-            ["Durable execution",   "Temporal SDK — workflow survives server restart",          "Zero lost work"],
-            ["Automatic retry",     "Temporal retry policies per activity",                    "Self-healing pipelines"],
-            ["Human pause",         "LangGraph interrupt_before — pause at any node for review","Compliance gate in workflow"],
-            ["Resume after approval","POST /workflow/resume · POST /temporal/workflow/resume",  "Async human-in-the-loop"],
-            ["Graceful fallback",   "Temporal unavailable → LangGraph runner transparently",    "No hard dependency on server"],
-            ["Status tracking",     "GET /workflow/status/{id} · GET /temporal/workflow/list",  "Full observability"],
+            [
+                "Durable execution",
+                "Temporal SDK — workflow survives server restart",
+                "Zero lost work",
+            ],
+            [
+                "Automatic retry",
+                "Temporal retry policies per activity",
+                "Self-healing pipelines",
+            ],
+            [
+                "Human pause",
+                "LangGraph interrupt_before — pause at any node for review",
+                "Compliance gate in workflow",
+            ],
+            [
+                "Resume after approval",
+                "POST /workflow/resume · POST /temporal/workflow/resume",
+                "Async human-in-the-loop",
+            ],
+            [
+                "Graceful fallback",
+                "Temporal unavailable → LangGraph runner transparently",
+                "No hard dependency on server",
+            ],
+            [
+                "Status tracking",
+                "GET /workflow/status/{id} · GET /temporal/workflow/list",
+                "Full observability",
+            ],
         ],
-        col_widths=[Inches(2.5), Inches(5.3), Inches(4.5)]
+        col_widths=[Inches(2.5), Inches(5.3), Inches(4.5)],
     )
 
     # ── Slide 22 — Phase Summary ───────────────────────────────────────────────
-    table_slide(prs,
+    table_slide(
+        prs,
         "Platform Completeness — 136 Endpoints, 27 Pages, 17+ Solutions",
         "From core agent loop to enterprise-grade orchestration — all open source",
         ["Phase", "Feature", "Status"],
         [
-            ["0-4",  "Core agents, API, Web UI, Approval gate, Audit log",           "Complete"],
-            ["5",    "SSE streaming — real-time token output in dashboard",           "Complete"],
-            ["6",    "Onboarding wizard — plain-language to YAML solution in 60 s",  "Complete"],
-            ["7",    "Knowledge base CRUD — list, add, delete, bulk, search",        "Complete"],
-            ["8",    "Slack two-way approval — Block Kit buttons, HMAC verified",     "Complete"],
-            ["9",    "Eval & benchmarking — YAML test cases, 0-100 scoring, history","Complete"],
-            ["10",   "Multi-tenant isolation — X-SAGE-Tenant header namespacing",    "Complete"],
-            ["11",   "Temporal durable workflows + LangGraph fallback",               "Complete"],
+            ["0-4", "Core agents, API, Web UI, Approval gate, Audit log", "Complete"],
+            ["5", "SSE streaming — real-time token output in dashboard", "Complete"],
+            [
+                "6",
+                "Onboarding wizard — plain-language to YAML solution in 60 s",
+                "Complete",
+            ],
+            ["7", "Knowledge base CRUD — list, add, delete, bulk, search", "Complete"],
+            [
+                "8",
+                "Slack two-way approval — Block Kit buttons, HMAC verified",
+                "Complete",
+            ],
+            [
+                "9",
+                "Eval & benchmarking — YAML test cases, 0-100 scoring, history",
+                "Complete",
+            ],
+            [
+                "10",
+                "Multi-tenant isolation — X-SAGE-Tenant header namespacing",
+                "Complete",
+            ],
+            ["11", "Temporal durable workflows + LangGraph fallback", "Complete"],
         ],
-        col_widths=[Inches(0.9), Inches(8.3), Inches(3.1)]
+        col_widths=[Inches(0.9), Inches(8.3), Inches(3.1)],
     )
 
     # ── Slide 23 — Closing ─────────────────────────────────────────────────────
@@ -1143,13 +2315,29 @@ def build_tech_pitch():
     add_rect(slide, 0, Inches(4.0), SLIDE_W, Inches(0.06), fill_color=SAGE_TEAL)
     add_rect(slide, Inches(0), Inches(0), Inches(0.35), SLIDE_H, fill_color=SAGE_BLUE)
 
-    add_text_box(slide, "SAGE Framework",
-                 Inches(0.8), Inches(0.8), Inches(11.5), Inches(0.9),
-                 font_size=44, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
-    add_text_box(slide,
-                 "Open Source (MIT). Lean development at machine speed.\nYAML-first. Agent-native. Human-in-the-loop always.",
-                 Inches(0.8), Inches(1.75), Inches(11.5), Inches(1.0),
-                 font_size=20, color=SAGE_TEAL, align=PP_ALIGN.CENTER)
+    add_text_box(
+        slide,
+        "SAGE Framework",
+        Inches(0.8),
+        Inches(0.8),
+        Inches(11.5),
+        Inches(0.9),
+        font_size=44,
+        bold=True,
+        color=WHITE,
+        align=PP_ALIGN.CENTER,
+    )
+    add_text_box(
+        slide,
+        "Open Source (MIT). Lean development at machine speed.\nYAML-first. Agent-native. Human-in-the-loop always.",
+        Inches(0.8),
+        Inches(1.75),
+        Inches(11.5),
+        Inches(1.0),
+        font_size=20,
+        color=SAGE_TEAL,
+        align=PP_ALIGN.CENTER,
+    )
 
     links = [
         "github.com/Sumanharapanahalli/sage — Star, Fork, Contribute",
@@ -1158,16 +2346,32 @@ def build_tech_pitch():
         "make run PROJECT=medtech — running in 60 seconds",
     ]
     top = Inches(4.3)
-    for l in links:
-        add_text_box(slide, l,
-                     Inches(2.0), top, Inches(9.3), Inches(0.45),
-                     font_size=14, color=WHITE, align=PP_ALIGN.LEFT)
+    for l in links:  # noqa: E741
+        add_text_box(
+            slide,
+            l,
+            Inches(2.0),
+            top,
+            Inches(9.3),
+            Inches(0.45),
+            font_size=14,
+            color=WHITE,
+            align=PP_ALIGN.LEFT,
+        )
         top += Inches(0.52)
 
-    add_text_box(slide,
-                 "All performance figures and cost estimates are assumption-based — validate before decisions.",
-                 Inches(1.5), Inches(6.55), Inches(10.0), Inches(0.45),
-                 font_size=10, italic=True, color=GREY, align=PP_ALIGN.CENTER)
+    add_text_box(
+        slide,
+        "All performance figures and cost estimates are assumption-based — validate before decisions.",
+        Inches(1.5),
+        Inches(6.55),
+        Inches(10.0),
+        Inches(0.45),
+        font_size=10,
+        italic=True,
+        color=GREY,
+        align=PP_ALIGN.CENTER,
+    )
 
     out = os.path.join(os.path.dirname(__file__), "SageAI_Tech_Pitch.pptx")
     prs.save(out)
@@ -1178,6 +2382,7 @@ def build_tech_pitch():
 #  3.  INVESTOR PITCH DECK
 # ===============================================================================
 
+
 def build_investor_pitch():
     prs = new_prs()
 
@@ -1187,29 +2392,71 @@ def build_investor_pitch():
     add_rect(slide, 0, Inches(5.6), SLIDE_W, Inches(0.06), fill_color=SAGE_TEAL)
     add_rect(slide, 0, 0, Inches(0.4), SLIDE_H, fill_color=SAGE_BLUE)
 
-    add_text_box(slide, "SAGE Framework",
-                 Inches(1), Inches(1.0), Inches(11.3), Inches(1.2),
-                 font_size=56, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
-    add_text_box(slide, "Smart Agentic-Guided Empowerment",
-                 Inches(1), Inches(2.3), Inches(11.3), Inches(0.65),
-                 font_size=24, color=SAGE_TEAL, align=PP_ALIGN.CENTER)
-    add_text_box(slide,
-                 "Autonomous AI Agent Infrastructure for Regulated Industries",
-                 Inches(1.5), Inches(3.1), Inches(10.3), Inches(0.65),
-                 font_size=18, italic=True, color=GREY, align=PP_ALIGN.CENTER)
-    add_text_box(slide, "Investor Presentation — March 2026 — Open Source (MIT)",
-                 Inches(1), Inches(5.9), Inches(11.3), Inches(0.45),
-                 font_size=13, color=GREY, align=PP_ALIGN.CENTER)
+    add_text_box(
+        slide,
+        "SAGE Framework",
+        Inches(1),
+        Inches(1.0),
+        Inches(11.3),
+        Inches(1.2),
+        font_size=56,
+        bold=True,
+        color=WHITE,
+        align=PP_ALIGN.CENTER,
+    )
+    add_text_box(
+        slide,
+        "Smart Agentic-Guided Empowerment",
+        Inches(1),
+        Inches(2.3),
+        Inches(11.3),
+        Inches(0.65),
+        font_size=24,
+        color=SAGE_TEAL,
+        align=PP_ALIGN.CENTER,
+    )
+    add_text_box(
+        slide,
+        "Autonomous AI Agent Infrastructure for Regulated Industries",
+        Inches(1.5),
+        Inches(3.1),
+        Inches(10.3),
+        Inches(0.65),
+        font_size=18,
+        italic=True,
+        color=GREY,
+        align=PP_ALIGN.CENTER,
+    )
+    add_text_box(
+        slide,
+        "Investor Presentation — March 2026 — Open Source (MIT)",
+        Inches(1),
+        Inches(5.9),
+        Inches(11.3),
+        Inches(0.45),
+        font_size=13,
+        color=GREY,
+        align=PP_ALIGN.CENTER,
+    )
 
     # -- Slide 2 — Executive Summary ---------------------------------------------
     slide = prs.slides.add_slide(blank_layout(prs))
     slide_bg(slide)
-    header_band(slide, "Executive Summary",
-                "The opportunity and our position — in brief")
+    header_band(
+        slide, "Executive Summary", "The opportunity and our position — in brief"
+    )
 
-    add_text_box(slide, "The Opportunity",
-                 Inches(0.5), Inches(1.6), Inches(5.9), Inches(0.45),
-                 font_size=16, bold=True, color=SAGE_BLUE)
+    add_text_box(
+        slide,
+        "The Opportunity",
+        Inches(0.5),
+        Inches(1.6),
+        Inches(5.9),
+        Inches(0.45),
+        font_size=16,
+        bold=True,
+        color=SAGE_BLUE,
+    )
     opp = [
         "AI in manufacturing software: $3.8B (2023) to $68.4B (2032), 38% CAGR",
         "Regulated industries (medical devices, aerospace, pharma) are under-served",
@@ -1217,14 +2464,29 @@ def build_investor_pitch():
     ]
     top = Inches(2.1)
     for o in opp:
-        add_text_box(slide, o,
-                     Inches(0.6), top, Inches(5.8), Inches(0.42),
-                     font_size=13, color=SAGE_DARK)
+        add_text_box(
+            slide,
+            o,
+            Inches(0.6),
+            top,
+            Inches(5.8),
+            Inches(0.42),
+            font_size=13,
+            color=SAGE_DARK,
+        )
         top += Inches(0.5)
 
-    add_text_box(slide, "Our Position",
-                 Inches(7.0), Inches(1.6), Inches(5.9), Inches(0.45),
-                 font_size=16, bold=True, color=SAGE_GREEN)
+    add_text_box(
+        slide,
+        "Our Position",
+        Inches(7.0),
+        Inches(1.6),
+        Inches(5.9),
+        Inches(0.45),
+        font_size=16,
+        bold=True,
+        color=SAGE_GREEN,
+    )
     pos = [
         "Production-ready AI agent framework — human-in-the-loop compliance by design",
         "12 integration phases complete — live in regulated production environments",
@@ -1232,34 +2494,69 @@ def build_investor_pitch():
     ]
     top = Inches(2.1)
     for p in pos:
-        add_text_box(slide, p,
-                     Inches(7.1), top, Inches(5.8), Inches(0.42),
-                     font_size=13, color=SAGE_DARK)
+        add_text_box(
+            slide,
+            p,
+            Inches(7.1),
+            top,
+            Inches(5.8),
+            Inches(0.42),
+            font_size=13,
+            color=SAGE_DARK,
+        )
         top += Inches(0.5)
 
-    add_rect(slide, Inches(6.7), Inches(1.55), Inches(0.04), Inches(3.5),
-             fill_color=SAGE_TEAL)
+    add_rect(
+        slide,
+        Inches(6.7),
+        Inches(1.55),
+        Inches(0.04),
+        Inches(3.5),
+        fill_color=SAGE_TEAL,
+    )
     footer_band(slide)
 
     # -- Slide 3 — The Problem ---------------------------------------------------
-    table_slide(prs,
+    table_slide(
+        prs,
         "The Cost of Manual Engineering Operations",
         "60+ hours per week of preventable waste in every regulated engineering team",
         ["Activity", "Current State", "Annual Cost (Estimated)*"],
         [
-            ["Error log analysis",   "45 min per event, 10 events/day, 2 engineers",     "~780 engineer-hours per year"],
-            ["Code review backlog",  "3 hours per MR, 15 MRs per week",                  "~2,340 engineer-hours per year"],
-            ["Compliance reporting", "8+ hours per week, manual, error-prone",            "~416 engineer-hours per year"],
-            ["Knowledge attrition",  "Expert context lost permanently on departure",      "Unquantifiable, recurring"],
-            ["TOTAL IMPACT",         "~68 hrs/week per team of 10 engineers",             "~1.7 FTE equivalent per year*"],
+            [
+                "Error log analysis",
+                "45 min per event, 10 events/day, 2 engineers",
+                "~780 engineer-hours per year",
+            ],
+            [
+                "Code review backlog",
+                "3 hours per MR, 15 MRs per week",
+                "~2,340 engineer-hours per year",
+            ],
+            [
+                "Compliance reporting",
+                "8+ hours per week, manual, error-prone",
+                "~416 engineer-hours per year",
+            ],
+            [
+                "Knowledge attrition",
+                "Expert context lost permanently on departure",
+                "Unquantifiable, recurring",
+            ],
+            [
+                "TOTAL IMPACT",
+                "~68 hrs/week per team of 10 engineers",
+                "~1.7 FTE equivalent per year*",
+            ],
         ],
         col_widths=[Inches(2.5), Inches(5.5), Inches(4.3)],
         include_disclaimer=True,
-        note="* All figures are assumption-based estimates derived from industry benchmarks. Validate with actual team data."
+        note="* All figures are assumption-based estimates derived from industry benchmarks. Validate with actual team data.",
     )
 
     # -- Slide 4 — The Solution --------------------------------------------------
-    bullet_slide(prs,
+    bullet_slide(
+        prs,
         "SAGE: Always-On AI Agent Infrastructure",
         "Agents surface signals, propose actions, wait for human approval, and learn from every correction",
         [
@@ -1270,218 +2567,456 @@ def build_investor_pitch():
             "Every decision logged to an immutable, ISO 13485-compliant audit trail",
             "Learns from every correction via vector memory — improves without model retraining",
             "YAML-first architecture: new industry domain configured in under 60 seconds",
-        ]
+        ],
     )
 
     # -- Slide 5 — Market Opportunity --------------------------------------------
     slide = prs.slides.add_slide(blank_layout(prs))
     slide_bg(slide)
-    header_band(slide,
-                "Large, Fast-Growing, Underserved Market",
-                "Regulated industry engineering software is a clear white space for agentic AI")
+    header_band(
+        slide,
+        "Large, Fast-Growing, Underserved Market",
+        "Regulated industry engineering software is a clear white space for agentic AI",
+    )
 
     metrics = [
-        ("$68.4B",  "AI in Manufacturing Software by 2032",       "38% CAGR from $3.8B in 2023",           SAGE_DARK),
-        ("120,000+","Regulated engineering teams globally",         "Medical devices, pharma, aerospace",     SAGE_BLUE),
-        ("$45B",    "Compliance and quality management software TAM","Growing at 12% CAGR",                  SAGE_TEAL),
+        (
+            "$68.4B",
+            "AI in Manufacturing Software by 2032",
+            "38% CAGR from $3.8B in 2023",
+            SAGE_DARK,
+        ),
+        (
+            "120,000+",
+            "Regulated engineering teams globally",
+            "Medical devices, pharma, aerospace",
+            SAGE_BLUE,
+        ),
+        (
+            "$45B",
+            "Compliance and quality management software TAM",
+            "Growing at 12% CAGR",
+            SAGE_TEAL,
+        ),
     ]
     left = Inches(0.5)
     for big, mid, small, color in metrics:
         add_rect(slide, left, Inches(1.75), Inches(3.9), Inches(3.8), fill_color=color)
-        add_text_box(slide, big,
-                     left + Inches(0.15), Inches(1.95), Inches(3.6), Inches(1.1),
-                     font_size=42, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
-        add_text_box(slide, mid,
-                     left + Inches(0.15), Inches(3.1), Inches(3.6), Inches(0.65),
-                     font_size=13, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
-        add_text_box(slide, small,
-                     left + Inches(0.15), Inches(3.8), Inches(3.6), Inches(0.55),
-                     font_size=11, italic=True, color=SAGE_LIGHT, align=PP_ALIGN.CENTER)
+        add_text_box(
+            slide,
+            big,
+            left + Inches(0.15),
+            Inches(1.95),
+            Inches(3.6),
+            Inches(1.1),
+            font_size=42,
+            bold=True,
+            color=WHITE,
+            align=PP_ALIGN.CENTER,
+        )
+        add_text_box(
+            slide,
+            mid,
+            left + Inches(0.15),
+            Inches(3.1),
+            Inches(3.6),
+            Inches(0.65),
+            font_size=13,
+            bold=True,
+            color=WHITE,
+            align=PP_ALIGN.CENTER,
+        )
+        add_text_box(
+            slide,
+            small,
+            left + Inches(0.15),
+            Inches(3.8),
+            Inches(3.6),
+            Inches(0.55),
+            font_size=11,
+            italic=True,
+            color=SAGE_LIGHT,
+            align=PP_ALIGN.CENTER,
+        )
         left += Inches(4.3)
 
-    add_text_box(slide,
-                 "Sources: MarketsandMarkets, Grand View Research, Gartner — 2024 industry reports.",
-                 Inches(0.5), Inches(6.1), Inches(12.3), Inches(0.38),
-                 font_size=11, italic=True, color=GREY, align=PP_ALIGN.CENTER)
+    add_text_box(
+        slide,
+        "Sources: MarketsandMarkets, Grand View Research, Gartner — 2024 industry reports.",
+        Inches(0.5),
+        Inches(6.1),
+        Inches(12.3),
+        Inches(0.38),
+        font_size=11,
+        italic=True,
+        color=GREY,
+        align=PP_ALIGN.CENTER,
+    )
     footer_band(slide)
 
     # -- Slide 6 — Product Capabilities ------------------------------------------
-    table_slide(prs,
+    table_slide(
+        prs,
         "Platform Capabilities — 136 Endpoints, Open Source (MIT)",
         "From core agent loop to enterprise-grade orchestration — all production-ready, all open source",
         ["Capability", "What It Does", "Value Delivered"],
         [
-            ["Intelligent Analysis",   "AI triage of error logs, severity scoring, root-cause reasoning",     "45 min reduced to under 60 seconds"],
-            ["Automated Code Review",  "Multi-step ReAct reasoning loop on merge requests",                   "3-hour review reduced to minutes"],
-            ["Durable Workflows",      "LangGraph interrupt/resume and Temporal — survives server restart",   "Zero lost work in long processes"],
-            ["Onboarding Wizard",      "Plain-language description generates full domain config in 60 seconds","New vertical in under 1 hour"],
-            ["Evaluation Framework",   "YAML test suites with 0-100 scoring and regression tracking",         "Measurable agent quality over time"],
-            ["Multi-Tenant Isolation", "Per-team knowledge namespacing via request header",                   "Enterprise-ready, single deployment"],
-            ["Slack Approvals",        "Block Kit proposals with approve/reject and HMAC-verified callbacks", "Approvals from existing team tools"],
+            [
+                "Intelligent Analysis",
+                "AI triage of error logs, severity scoring, root-cause reasoning",
+                "45 min reduced to under 60 seconds",
+            ],
+            [
+                "Automated Code Review",
+                "Multi-step ReAct reasoning loop on merge requests",
+                "3-hour review reduced to minutes",
+            ],
+            [
+                "Durable Workflows",
+                "LangGraph interrupt/resume and Temporal — survives server restart",
+                "Zero lost work in long processes",
+            ],
+            [
+                "Onboarding Wizard",
+                "Plain-language description generates full domain config in 60 seconds",
+                "New vertical in under 1 hour",
+            ],
+            [
+                "Evaluation Framework",
+                "YAML test suites with 0-100 scoring and regression tracking",
+                "Measurable agent quality over time",
+            ],
+            [
+                "Multi-Tenant Isolation",
+                "Per-team knowledge namespacing via request header",
+                "Enterprise-ready, single deployment",
+            ],
+            [
+                "Slack Approvals",
+                "Block Kit proposals with approve/reject and HMAC-verified callbacks",
+                "Approvals from existing team tools",
+            ],
         ],
-        col_widths=[Inches(2.5), Inches(5.5), Inches(4.3)]
+        col_widths=[Inches(2.5), Inches(5.5), Inches(4.3)],
     )
 
     # -- Slide 7 — Technology Differentiation ------------------------------------
     slide = prs.slides.add_slide(blank_layout(prs))
     slide_bg(slide)
-    header_band(slide,
-                "Five Defensible Technology Moats",
-                "Architecture decisions that compound advantage over time")
+    header_band(
+        slide,
+        "Five Defensible Technology Moats",
+        "Architecture decisions that compound advantage over time",
+    )
 
     moats = [
-        ("Compliance by Design",
-         "Human approval gate is enforced in code — never optional. Audit trail is append-only. "
-         "Built for FDA 21 CFR Part 11 and ISO 13485 from day one, not retrofitted."),
-        ("Compounding Intelligence",
-         "Every human correction is stored in the vector database. Future agent quality improves "
-         "without model retraining. Behavioral improvement decouples from LLM cost."),
-        ("YAML-First Architecture",
-         "New domain equals 3 YAML files and zero code changes. The framework is domain-blind. "
-         "Vertical expansion requires no additional engineering time."),
-        ("No API Key Lock-In",
-         "Five LLM providers work without API keys — Gemini CLI, Claude Code, Ollama, local models, "
-         "and any CLI tool. Customers own their inference and data."),
-        ("Provider Agnostic",
-         "A single config change swaps LLM providers — OpenAI to Ollama to Anthropic. "
-         "No vendor lock-in at the infrastructure level."),
+        (
+            "Compliance by Design",
+            "Human approval gate is enforced in code — never optional. Audit trail is append-only. "
+            "Built for FDA 21 CFR Part 11 and ISO 13485 from day one, not retrofitted.",
+        ),
+        (
+            "Compounding Intelligence",
+            "Every human correction is stored in the vector database. Future agent quality improves "
+            "without model retraining. Behavioral improvement decouples from LLM cost.",
+        ),
+        (
+            "YAML-First Architecture",
+            "New domain equals 3 YAML files and zero code changes. The framework is domain-blind. "
+            "Vertical expansion requires no additional engineering time.",
+        ),
+        (
+            "No API Key Lock-In",
+            "Five LLM providers work without API keys — Gemini CLI, Claude Code, Ollama, local models, "
+            "and any CLI tool. Customers own their inference and data.",
+        ),
+        (
+            "Provider Agnostic",
+            "A single config change swaps LLM providers — OpenAI to Ollama to Anthropic. "
+            "No vendor lock-in at the infrastructure level.",
+        ),
     ]
     top = Inches(1.6)
     for title, body in moats:
-        add_rect(slide, Inches(0.4), top, Inches(0.1), Inches(0.85), fill_color=SAGE_BLUE)
-        add_text_box(slide, title,
-                     Inches(0.65), top + Inches(0.05), Inches(11.8), Inches(0.38),
-                     font_size=14, bold=True, color=SAGE_BLUE)
-        add_text_box(slide, body,
-                     Inches(0.65), top + Inches(0.42), Inches(11.8), Inches(0.38),
-                     font_size=12, color=SAGE_DARK)
+        add_rect(
+            slide, Inches(0.4), top, Inches(0.1), Inches(0.85), fill_color=SAGE_BLUE
+        )
+        add_text_box(
+            slide,
+            title,
+            Inches(0.65),
+            top + Inches(0.05),
+            Inches(11.8),
+            Inches(0.38),
+            font_size=14,
+            bold=True,
+            color=SAGE_BLUE,
+        )
+        add_text_box(
+            slide,
+            body,
+            Inches(0.65),
+            top + Inches(0.42),
+            Inches(11.8),
+            Inches(0.38),
+            font_size=12,
+            color=SAGE_DARK,
+        )
         top += Inches(1.0)
     footer_band(slide)
 
     # -- Slide 8 — Business Model ------------------------------------------------
     slide = prs.slides.add_slide(blank_layout(prs))
     slide_bg(slide)
-    header_band(slide,
-                "Business Model — SaaS Infrastructure and Professional Services",
-                "Recurring revenue with high retention — switching cost grows as vector memory accumulates")
+    header_band(
+        slide,
+        "Business Model — SaaS Infrastructure and Professional Services",
+        "Recurring revenue with high retention — switching cost grows as vector memory accumulates",
+    )
 
     bm_panels = [
-        ("Software — Annual Recurring Revenue",
-         "Platform revenue streams",
-         [
-             "Platform license per deployment (on-premise or cloud)",
-             "Tiered by number of active solutions and agents",
-             "Multi-tenant enterprise pricing for large organisations",
-             "Add-on modules: advanced eval, Temporal, AutoGen execution",
-         ],
-         SAGE_DARK, Inches(0.4)),
-        ("Professional Services",
-         "Engagement and support revenue",
-         [
-             "Onboarding and integration (fixed fee per engagement)",
-             "Custom solution development (YAML and prompt engineering)",
-             "Training and certification for engineering teams",
-             "Compliance documentation packages (ISO 13485, IEC 62304)",
-         ],
-         SAGE_BLUE, Inches(6.9)),
+        (
+            "Software — Annual Recurring Revenue",
+            "Platform revenue streams",
+            [
+                "Platform license per deployment (on-premise or cloud)",
+                "Tiered by number of active solutions and agents",
+                "Multi-tenant enterprise pricing for large organisations",
+                "Add-on modules: advanced eval, Temporal, AutoGen execution",
+            ],
+            SAGE_DARK,
+            Inches(0.4),
+        ),
+        (
+            "Professional Services",
+            "Engagement and support revenue",
+            [
+                "Onboarding and integration (fixed fee per engagement)",
+                "Custom solution development (YAML and prompt engineering)",
+                "Training and certification for engineering teams",
+                "Compliance documentation packages (ISO 13485, IEC 62304)",
+            ],
+            SAGE_BLUE,
+            Inches(6.9),
+        ),
     ]
     for title, subtitle, bullets, color, left in bm_panels:
         add_rect(slide, left, Inches(1.75), Inches(5.9), Inches(4.4), fill_color=color)
-        add_text_box(slide, title,
-                     left + Inches(0.2), Inches(1.85), Inches(5.5), Inches(0.5),
-                     font_size=16, bold=True, color=WHITE)
-        add_text_box(slide, subtitle,
-                     left + Inches(0.2), Inches(2.4), Inches(5.5), Inches(0.38),
-                     font_size=12, italic=True, color=SAGE_TEAL)
+        add_text_box(
+            slide,
+            title,
+            left + Inches(0.2),
+            Inches(1.85),
+            Inches(5.5),
+            Inches(0.5),
+            font_size=16,
+            bold=True,
+            color=WHITE,
+        )
+        add_text_box(
+            slide,
+            subtitle,
+            left + Inches(0.2),
+            Inches(2.4),
+            Inches(5.5),
+            Inches(0.38),
+            font_size=12,
+            italic=True,
+            color=SAGE_TEAL,
+        )
         top = Inches(2.85)
         for b in bullets:
-            add_text_box(slide, b,
-                         left + Inches(0.3), top, Inches(5.3), Inches(0.38),
-                         font_size=12, color=WHITE)
+            add_text_box(
+                slide,
+                b,
+                left + Inches(0.3),
+                top,
+                Inches(5.3),
+                Inches(0.38),
+                font_size=12,
+                color=WHITE,
+            )
             top += Inches(0.46)
 
-    add_text_box(slide,
-                 "Target gross margin: 75-80% on software, 40-50% on services. Blended target: 65%+*",
-                 Inches(0.5), Inches(6.38), Inches(12.3), Inches(0.38),
-                 font_size=11, italic=True, bold=True, color=SAGE_DARK, align=PP_ALIGN.CENTER)
+    add_text_box(
+        slide,
+        "Target gross margin: 75-80% on software, 40-50% on services. Blended target: 65%+*",
+        Inches(0.5),
+        Inches(6.38),
+        Inches(12.3),
+        Inches(0.38),
+        font_size=11,
+        italic=True,
+        bold=True,
+        color=SAGE_DARK,
+        align=PP_ALIGN.CENTER,
+    )
     footer_band(slide, include_disclaimer=True)
 
     # -- Slide 9 — Competitive Landscape ----------------------------------------
-    table_slide(prs,
+    table_slide(
+        prs,
         "Competitive Landscape",
         "SAGE is purpose-built for regulated industries — no direct equivalent exists today",
         ["Competitor Category", "Examples", "Gap vs SAGE"],
         [
-            ["General AI coding assistants",  "GitHub Copilot, Cursor, Codeium",             "No audit trail, no compliance gate, no domain memory"],
-            ["Enterprise LLM platforms",       "Azure OpenAI, AWS Bedrock",                   "Infrastructure only — no agent logic, no approval workflow"],
-            ["AI workflow automation",          "n8n, Zapier AI, Make",                        "No domain intelligence, no vector memory, no compliance layer"],
-            ["Vertical AI point solutions",     "Veeva, Sparta Systems TrackWise",             "Single-function, expensive, not extensible to engineering workflows"],
-            ["Open-source agent frameworks",    "LangChain, AutoGen, CrewAI",                  "No production harness, no compliance, no UI — integration required"],
-            ["SAGE Framework",                  "Purpose-built for regulated engineering",     "Full stack: compliance, agents, memory, UI, no API key required"],
+            [
+                "General AI coding assistants",
+                "GitHub Copilot, Cursor, Codeium",
+                "No audit trail, no compliance gate, no domain memory",
+            ],
+            [
+                "Enterprise LLM platforms",
+                "Azure OpenAI, AWS Bedrock",
+                "Infrastructure only — no agent logic, no approval workflow",
+            ],
+            [
+                "AI workflow automation",
+                "n8n, Zapier AI, Make",
+                "No domain intelligence, no vector memory, no compliance layer",
+            ],
+            [
+                "Vertical AI point solutions",
+                "Veeva, Sparta Systems TrackWise",
+                "Single-function, expensive, not extensible to engineering workflows",
+            ],
+            [
+                "Open-source agent frameworks",
+                "LangChain, AutoGen, CrewAI",
+                "No production harness, no compliance, no UI — integration required",
+            ],
+            [
+                "SAGE Framework",
+                "Purpose-built for regulated engineering",
+                "Full stack: compliance, agents, memory, UI, no API key required",
+            ],
         ],
-        col_widths=[Inches(3.0), Inches(4.2), Inches(5.1)]
+        col_widths=[Inches(3.0), Inches(4.2), Inches(5.1)],
     )
 
     # -- Slide 10 — Go-to-Market -------------------------------------------------
     slide = prs.slides.add_slide(blank_layout(prs))
     slide_bg(slide)
-    header_band(slide,
-                "Go-to-Market Strategy",
-                "Land in regulated engineering teams, expand across the organisation, grow vertically")
+    header_band(
+        slide,
+        "Go-to-Market Strategy",
+        "Land in regulated engineering teams, expand across the organisation, grow vertically",
+    )
 
     gtm = [
-        ("Phase 1: Land",
-         "Target regulated engineering teams in medical devices, aerospace, and pharma. "
-         "Pilot pricing is a fixed 90-day engagement. "
-         "Success metric: 40% manual work reduction measured and validated.",
-         SAGE_DARK),
-        ("Phase 2: Expand",
-         "Cross-sell multi-tenant to adjacent teams in the same organisation. "
-         "Add Spira, Jira, and ServiceNow connectors. "
-         "Upsell advanced eval and Temporal workflow modules.",
-         SAGE_BLUE),
-        ("Phase 3: Scale",
-         "Partner with system integrators and QMS consultancies. "
-         "OEM licensing to compliance software vendors. "
-         "Open-source community flywheel for non-regulated verticals.",
-         SAGE_TEAL),
+        (
+            "Phase 1: Land",
+            "Target regulated engineering teams in medical devices, aerospace, and pharma. "
+            "Pilot pricing is a fixed 90-day engagement. "
+            "Success metric: 40% manual work reduction measured and validated.",
+            SAGE_DARK,
+        ),
+        (
+            "Phase 2: Expand",
+            "Cross-sell multi-tenant to adjacent teams in the same organisation. "
+            "Add Spira, Jira, and ServiceNow connectors. "
+            "Upsell advanced eval and Temporal workflow modules.",
+            SAGE_BLUE,
+        ),
+        (
+            "Phase 3: Scale",
+            "Partner with system integrators and QMS consultancies. "
+            "OEM licensing to compliance software vendors. "
+            "Open-source community flywheel for non-regulated verticals.",
+            SAGE_TEAL,
+        ),
     ]
     left = Inches(0.4)
     for title, body, color in gtm:
         add_rect(slide, left, Inches(1.75), Inches(3.95), Inches(4.0), fill_color=color)
-        add_text_box(slide, title,
-                     left + Inches(0.15), Inches(1.9), Inches(3.65), Inches(0.55),
-                     font_size=15, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
-        add_text_box(slide, body,
-                     left + Inches(0.15), Inches(2.55), Inches(3.65), Inches(2.8),
-                     font_size=12, color=WHITE)
+        add_text_box(
+            slide,
+            title,
+            left + Inches(0.15),
+            Inches(1.9),
+            Inches(3.65),
+            Inches(0.55),
+            font_size=15,
+            bold=True,
+            color=WHITE,
+            align=PP_ALIGN.CENTER,
+        )
+        add_text_box(
+            slide,
+            body,
+            left + Inches(0.15),
+            Inches(2.55),
+            Inches(3.65),
+            Inches(2.8),
+            font_size=12,
+            color=WHITE,
+        )
         left += Inches(4.35)
     footer_band(slide)
 
     # -- Slide 11 — Traction -----------------------------------------------------
     slide = prs.slides.add_slide(blank_layout(prs))
     slide_bg(slide)
-    header_band(slide,
-                "Traction — Platform Complete, Pilots Underway",
-                "12 integration phases shipped, test suite green, first regulated deployment in progress")
+    header_band(
+        slide,
+        "Traction — Platform Complete, Pilots Underway",
+        "12 integration phases shipped, test suite green, first regulated deployment in progress",
+    )
 
     stats = [
-        ("136",  "API endpoints across 22 categories", "27 UI pages, 17+ solution templates",       SAGE_DARK),
-        ("79",   "E2E browser tests (78 passing)",     "53 test files, full API lifecycle coverage", SAGE_BLUE),
-        ("5",    "LLM providers — zero API keys",      "Open source MIT on GitHub",          SAGE_TEAL),
+        (
+            "136",
+            "API endpoints across 22 categories",
+            "27 UI pages, 17+ solution templates",
+            SAGE_DARK,
+        ),
+        (
+            "79",
+            "E2E browser tests (78 passing)",
+            "53 test files, full API lifecycle coverage",
+            SAGE_BLUE,
+        ),
+        ("5", "LLM providers — zero API keys", "Open source MIT on GitHub", SAGE_TEAL),
     ]
     left = Inches(0.5)
     for big, mid, small, color in stats:
         add_rect(slide, left, Inches(1.65), Inches(3.9), Inches(2.8), fill_color=color)
-        add_text_box(slide, big,
-                     left + Inches(0.1), Inches(1.8), Inches(3.7), Inches(0.95),
-                     font_size=44, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
-        add_text_box(slide, mid,
-                     left + Inches(0.1), Inches(2.8), Inches(3.7), Inches(0.5),
-                     font_size=13, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
-        add_text_box(slide, small,
-                     left + Inches(0.1), Inches(3.3), Inches(3.7), Inches(0.45),
-                     font_size=11, italic=True, color=SAGE_LIGHT, align=PP_ALIGN.CENTER)
+        add_text_box(
+            slide,
+            big,
+            left + Inches(0.1),
+            Inches(1.8),
+            Inches(3.7),
+            Inches(0.95),
+            font_size=44,
+            bold=True,
+            color=WHITE,
+            align=PP_ALIGN.CENTER,
+        )
+        add_text_box(
+            slide,
+            mid,
+            left + Inches(0.1),
+            Inches(2.8),
+            Inches(3.7),
+            Inches(0.5),
+            font_size=13,
+            bold=True,
+            color=WHITE,
+            align=PP_ALIGN.CENTER,
+        )
+        add_text_box(
+            slide,
+            small,
+            left + Inches(0.1),
+            Inches(3.3),
+            Inches(3.7),
+            Inches(0.45),
+            font_size=11,
+            italic=True,
+            color=SAGE_LIGHT,
+            align=PP_ALIGN.CENTER,
+        )
         left += Inches(4.3)
 
     milestones = [
@@ -1492,78 +3027,125 @@ def build_investor_pitch():
     ]
     top = Inches(4.65)
     for m in milestones:
-        add_text_box(slide, m,
-                     Inches(0.55), top, Inches(12.2), Inches(0.38),
-                     font_size=13, color=SAGE_DARK)
+        add_text_box(
+            slide,
+            m,
+            Inches(0.55),
+            top,
+            Inches(12.2),
+            Inches(0.38),
+            font_size=13,
+            color=SAGE_DARK,
+        )
         top += Inches(0.46)
     footer_band(slide)
 
     # -- Slide 12 — Financial Projections ----------------------------------------
-    table_slide(prs,
+    table_slide(
+        prs,
         "Financial Projections — Three-Year Model",
         "Conservative estimates based on industry benchmarks — all figures assumption-based*",
         ["Metric", "Year 1", "Year 2", "Year 3"],
         [
-            ["Customers (deployments)",  "3-5 pilots",  "15-25",   "50-80"],
-            ["Average Contract Value",   "$45K ARR",    "$65K ARR", "$85K ARR"],
-            ["Annual Recurring Revenue", "$180K",       "$1.3M",   "$5.5M"],
-            ["Professional Services",    "$150K",       "$400K",   "$800K"],
-            ["Total Revenue",            "$330K",       "$1.7M",   "$6.3M"],
-            ["Gross Margin (blended)",   "55%",         "62%",     "68%"],
-            ["Headcount",                "4",           "12",      "25"],
+            ["Customers (deployments)", "3-5 pilots", "15-25", "50-80"],
+            ["Average Contract Value", "$45K ARR", "$65K ARR", "$85K ARR"],
+            ["Annual Recurring Revenue", "$180K", "$1.3M", "$5.5M"],
+            ["Professional Services", "$150K", "$400K", "$800K"],
+            ["Total Revenue", "$330K", "$1.7M", "$6.3M"],
+            ["Gross Margin (blended)", "55%", "62%", "68%"],
+            ["Headcount", "4", "12", "25"],
         ],
         col_widths=[Inches(3.5), Inches(2.4), Inches(2.4), Inches(4.0)],
         include_disclaimer=True,
-        note="* All projections are assumption-based. Replace with validated data before any investment decision."
+        note="* All projections are assumption-based. Replace with validated data before any investment decision.",
     )
 
     # -- Slide 13 — The Ask ------------------------------------------------------
     slide = prs.slides.add_slide(blank_layout(prs))
     slide_bg(slide)
-    header_band(slide,
-                "The Ask — Series A: $4.5M",
-                "18-month runway to first significant revenue and an enterprise customer base")
+    header_band(
+        slide,
+        "The Ask — Series A: $4.5M",
+        "18-month runway to first significant revenue and an enterprise customer base",
+    )
 
     ask_panels = [
-        ("Use of Funds",
-         "How the capital is deployed",
-         [
-             "Engineering and Product  —  45%  ($2.0M)",
-             "Sales and Marketing      —  30%  ($1.35M)",
-             "Operations and G&A       —  15%  ($0.68M)",
-             "Reserve and Contingency  —  10%  ($0.45M)",
-         ],
-         SAGE_DARK, Inches(0.4)),
-        ("18-Month Milestones",
-         "What the investment delivers",
-         [
-             "3 paying enterprise customers by Month 6",
-             "$1M ARR by Month 12",
-             "Partner channel live by Month 14",
-             "$2.5M ARR by Month 18",
-             "Series B ready: $10M+ ARR trajectory",
-         ],
-         SAGE_BLUE, Inches(6.9)),
+        (
+            "Use of Funds",
+            "How the capital is deployed",
+            [
+                "Engineering and Product  —  45%  ($2.0M)",
+                "Sales and Marketing      —  30%  ($1.35M)",
+                "Operations and G&A       —  15%  ($0.68M)",
+                "Reserve and Contingency  —  10%  ($0.45M)",
+            ],
+            SAGE_DARK,
+            Inches(0.4),
+        ),
+        (
+            "18-Month Milestones",
+            "What the investment delivers",
+            [
+                "3 paying enterprise customers by Month 6",
+                "$1M ARR by Month 12",
+                "Partner channel live by Month 14",
+                "$2.5M ARR by Month 18",
+                "Series B ready: $10M+ ARR trajectory",
+            ],
+            SAGE_BLUE,
+            Inches(6.9),
+        ),
     ]
     for title, subtitle, bullets, color, left in ask_panels:
         add_rect(slide, left, Inches(1.75), Inches(5.9), Inches(4.4), fill_color=color)
-        add_text_box(slide, title,
-                     left + Inches(0.2), Inches(1.85), Inches(5.5), Inches(0.5),
-                     font_size=17, bold=True, color=WHITE)
-        add_text_box(slide, subtitle,
-                     left + Inches(0.2), Inches(2.4), Inches(5.5), Inches(0.38),
-                     font_size=12, italic=True, color=SAGE_TEAL)
+        add_text_box(
+            slide,
+            title,
+            left + Inches(0.2),
+            Inches(1.85),
+            Inches(5.5),
+            Inches(0.5),
+            font_size=17,
+            bold=True,
+            color=WHITE,
+        )
+        add_text_box(
+            slide,
+            subtitle,
+            left + Inches(0.2),
+            Inches(2.4),
+            Inches(5.5),
+            Inches(0.38),
+            font_size=12,
+            italic=True,
+            color=SAGE_TEAL,
+        )
         top = Inches(2.9)
         for b in bullets:
-            add_text_box(slide, b,
-                         left + Inches(0.3), top, Inches(5.3), Inches(0.38),
-                         font_size=13, color=WHITE)
+            add_text_box(
+                slide,
+                b,
+                left + Inches(0.3),
+                top,
+                Inches(5.3),
+                Inches(0.38),
+                font_size=13,
+                color=WHITE,
+            )
             top += Inches(0.48)
 
-    add_text_box(slide,
-                 "All financial projections are assumptions — validate before any investment decision.",
-                 Inches(0.5), Inches(6.38), Inches(12.3), Inches(0.38),
-                 font_size=10, italic=True, color=GREY, align=PP_ALIGN.CENTER)
+    add_text_box(
+        slide,
+        "All financial projections are assumptions — validate before any investment decision.",
+        Inches(0.5),
+        Inches(6.38),
+        Inches(12.3),
+        Inches(0.38),
+        font_size=10,
+        italic=True,
+        color=GREY,
+        align=PP_ALIGN.CENTER,
+    )
     footer_band(slide, include_disclaimer=True)
 
     # -- Slide 14 — Closing ------------------------------------------------------
@@ -1572,17 +3154,41 @@ def build_investor_pitch():
     add_rect(slide, 0, Inches(4.1), SLIDE_W, Inches(0.06), fill_color=SAGE_TEAL)
     add_rect(slide, 0, 0, Inches(0.4), SLIDE_H, fill_color=SAGE_BLUE)
 
-    add_text_box(slide, "SAGE Framework",
-                 Inches(0.8), Inches(0.9), Inches(11.7), Inches(0.95),
-                 font_size=46, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
-    add_text_box(slide,
-                 "Open source infrastructure for AI-augmented engineering in regulated industries.",
-                 Inches(0.8), Inches(1.95), Inches(11.7), Inches(0.7),
-                 font_size=20, color=SAGE_TEAL, align=PP_ALIGN.CENTER)
-    add_text_box(slide,
-                 "MIT. Lean development at machine speed.\nCompliant by design. Human judgment always in the loop.",
-                 Inches(0.8), Inches(2.75), Inches(11.7), Inches(1.0),
-                 font_size=17, italic=True, color=GREY, align=PP_ALIGN.CENTER)
+    add_text_box(
+        slide,
+        "SAGE Framework",
+        Inches(0.8),
+        Inches(0.9),
+        Inches(11.7),
+        Inches(0.95),
+        font_size=46,
+        bold=True,
+        color=WHITE,
+        align=PP_ALIGN.CENTER,
+    )
+    add_text_box(
+        slide,
+        "Open source infrastructure for AI-augmented engineering in regulated industries.",
+        Inches(0.8),
+        Inches(1.95),
+        Inches(11.7),
+        Inches(0.7),
+        font_size=20,
+        color=SAGE_TEAL,
+        align=PP_ALIGN.CENTER,
+    )
+    add_text_box(
+        slide,
+        "MIT. Lean development at machine speed.\nCompliant by design. Human judgment always in the loop.",
+        Inches(0.8),
+        Inches(2.75),
+        Inches(11.7),
+        Inches(1.0),
+        font_size=17,
+        italic=True,
+        color=GREY,
+        align=PP_ALIGN.CENTER,
+    )
 
     contact = [
         "github.com/Sumanharapanahalli/sage — Star, Fork, Contribute",
@@ -1591,16 +3197,32 @@ def build_investor_pitch():
     ]
     top = Inches(4.35)
     for c in contact:
-        add_text_box(slide, c,
-                     Inches(2.5), top, Inches(8.3), Inches(0.42),
-                     font_size=14, color=WHITE, align=PP_ALIGN.CENTER)
+        add_text_box(
+            slide,
+            c,
+            Inches(2.5),
+            top,
+            Inches(8.3),
+            Inches(0.42),
+            font_size=14,
+            color=WHITE,
+            align=PP_ALIGN.CENTER,
+        )
         top += Inches(0.5)
 
-    add_text_box(slide,
-                 "All financial estimates and projections are assumption-based. "
-                 "Validate with actual data before any investment decision.",
-                 Inches(1.5), Inches(6.55), Inches(10.3), Inches(0.45),
-                 font_size=10, italic=True, color=GREY, align=PP_ALIGN.CENTER)
+    add_text_box(
+        slide,
+        "All financial estimates and projections are assumption-based. "
+        "Validate with actual data before any investment decision.",
+        Inches(1.5),
+        Inches(6.55),
+        Inches(10.3),
+        Inches(0.45),
+        font_size=10,
+        italic=True,
+        color=GREY,
+        align=PP_ALIGN.CENTER,
+    )
 
     out = os.path.join(os.path.dirname(__file__), "SageAI_Investor_Pitch.pptx")
     prs.save(out)

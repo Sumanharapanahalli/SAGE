@@ -26,11 +26,10 @@ Two properties matter and are load-bearing:
 Law 1: `operator.set` is framework control (the operator naming themselves),
 not an agent proposal — it executes immediately.
 """
+
 from __future__ import annotations
 
 import logging
-from pathlib import Path
-from typing import Optional
 
 import yaml
 
@@ -73,12 +72,16 @@ def set(params: dict) -> dict:
     """Set the operator identity. `name` is required — an unnamed signer is
     the defect this handler exists to fix."""
     if _path is None:
-        raise RpcError(RPC_INVALID_PARAMS, "no active solution — cannot set operator identity")
+        raise RpcError(
+            RPC_INVALID_PARAMS, "no active solution — cannot set operator identity"
+        )
 
     name = str(params.get("name", "") or "").strip()
     email = str(params.get("email", "") or "").strip()
     if not name:
-        raise RpcError(RPC_INVALID_PARAMS, "'name' is required — the audit signer cannot be blank")
+        raise RpcError(
+            RPC_INVALID_PARAMS, "'name' is required — the audit signer cannot be blank"
+        )
 
     _path.parent.mkdir(parents=True, exist_ok=True)
     _path.write_text(

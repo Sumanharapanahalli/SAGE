@@ -40,6 +40,7 @@ from bms_core import (
 # Factories — no hardcoded literals scattered through tests
 # ===========================================================================
 
+
 def make_config(
     num_cells: int = 4,
     num_temp_sensors: int = 2,
@@ -99,6 +100,7 @@ def make_data(
 # Fixtures
 # ===========================================================================
 
+
 @pytest.fixture
 def default_config() -> BMSConfig:
     return make_config()
@@ -112,6 +114,7 @@ def bms(default_config: BMSConfig) -> BMSCore:
 # ===========================================================================
 # 1.  BMSConfig validation
 # ===========================================================================
+
 
 class TestBMSConfigValidation:
     """BMSConfig.validate() must accept valid configs and reject bad ones."""
@@ -185,6 +188,7 @@ class TestBMSConfigValidation:
 # 2.  Fault detection — happy path (no faults)
 # ===========================================================================
 
+
 class TestFaultDetectionNominal:
     """detect_faults() must return NONE for readings within all thresholds."""
 
@@ -218,18 +222,23 @@ class TestFaultDetectionNominal:
 
     def test_temp_at_max_boundary_is_ok(self, bms: BMSCore) -> None:
         data = make_data(num_cells=bms.config.num_cells)
-        data.temperature_degc_x10 = [bms.config.max_temp_degc_x10] * bms.config.num_temp_sensors
+        data.temperature_degc_x10 = [
+            bms.config.max_temp_degc_x10
+        ] * bms.config.num_temp_sensors
         assert BMSFault.OVERTEMP not in bms.detect_faults(data)
 
     def test_temp_at_min_boundary_is_ok(self, bms: BMSCore) -> None:
         data = make_data(num_cells=bms.config.num_cells)
-        data.temperature_degc_x10 = [bms.config.min_temp_degc_x10] * bms.config.num_temp_sensors
+        data.temperature_degc_x10 = [
+            bms.config.min_temp_degc_x10
+        ] * bms.config.num_temp_sensors
         assert BMSFault.UNDERTEMP not in bms.detect_faults(data)
 
 
 # ===========================================================================
 # 3.  Fault detection — individual fault types
 # ===========================================================================
+
 
 class TestFaultDetectionErrors:
     """detect_faults() must set the correct flag for each fault type."""
@@ -279,17 +288,15 @@ class TestFaultDetectionErrors:
 
     def test_overtemperature_detected(self, bms: BMSCore) -> None:
         data = make_data(num_cells=bms.config.num_cells)
-        data.temperature_degc_x10 = (
-            [bms.config.max_temp_degc_x10 + 1]
-            + [0] * (bms.config.num_temp_sensors - 1)
+        data.temperature_degc_x10 = [bms.config.max_temp_degc_x10 + 1] + [0] * (
+            bms.config.num_temp_sensors - 1
         )
         assert BMSFault.OVERTEMP in bms.detect_faults(data)
 
     def test_undertemperature_detected(self, bms: BMSCore) -> None:
         data = make_data(num_cells=bms.config.num_cells)
-        data.temperature_degc_x10 = (
-            [bms.config.min_temp_degc_x10 - 1]
-            + [0] * (bms.config.num_temp_sensors - 1)
+        data.temperature_degc_x10 = [bms.config.min_temp_degc_x10 - 1] + [0] * (
+            bms.config.num_temp_sensors - 1
         )
         assert BMSFault.UNDERTEMP in bms.detect_faults(data)
 
@@ -325,6 +332,7 @@ class TestFaultDetectionErrors:
 # ===========================================================================
 # 4.  State machine transitions
 # ===========================================================================
+
 
 class TestStateMachineTransitions:
     """BMSCore.transition() must follow the documented state diagram."""
@@ -418,6 +426,7 @@ class TestStateMachineTransitions:
 # 5.  SOC estimation
 # ===========================================================================
 
+
 class TestSoCEstimation:
     """estimate_soc_percent() must map OCV values to valid 0-100 range."""
 
@@ -459,6 +468,7 @@ class TestSoCEstimation:
 # ===========================================================================
 # 6.  Cell balancing
 # ===========================================================================
+
 
 class TestCellBalancing:
     """compute_balance_mask() must identify cells that need bleeding."""
@@ -508,6 +518,7 @@ class TestCellBalancing:
 # 7.  Pack voltage
 # ===========================================================================
 
+
 class TestPackVoltage:
     """compute_pack_voltage() must correctly sum series cell voltages."""
 
@@ -533,6 +544,7 @@ class TestPackVoltage:
 # ===========================================================================
 # 8.  CellStats
 # ===========================================================================
+
 
 class TestCellStats:
     """CellStats.from_voltages() must compute accurate statistics."""
@@ -571,6 +583,7 @@ class TestCellStats:
 # 9.  BMSCore constructor error handling
 # ===========================================================================
 
+
 class TestBMSCoreInit:
     """BMSCore.__init__() must reject invalid configs."""
 
@@ -593,6 +606,7 @@ class TestBMSCoreInit:
 # ===========================================================================
 # 10. Fault injection scenarios (mirrors fi_type_t from bms_fault_injection.h)
 # ===========================================================================
+
 
 class TestFaultInjectionScenarios:
     """Simulate the fault injection types from bms_fault_injection.h."""
@@ -649,6 +663,7 @@ class TestFaultInjectionScenarios:
 # 11. HILResultBlock deserialization (from hil_harness.py)
 # ===========================================================================
 
+
 class TestHILResultBlockDeserialization:
     """Unit tests for HILResultBlock.from_bytes() in hil_harness.py."""
 
@@ -661,10 +676,12 @@ class TestHILResultBlockDeserialization:
         failed: int,
     ) -> bytes:
         import struct
+
         return struct.pack("<5I", magic, pass_mask, fail_mask, total, failed)
 
     def test_passing_result_block(self) -> None:
         from hil_harness import HILResultBlock, MAGIC_PASS
+
         raw = self._build_raw_block(MAGIC_PASS, 0xFF, 0x00, 100, 0)
         block = HILResultBlock.from_bytes(raw)
         assert block.passed is True
@@ -674,6 +691,7 @@ class TestHILResultBlockDeserialization:
 
     def test_failing_result_block(self) -> None:
         from hil_harness import HILResultBlock, MAGIC_FAIL
+
         raw = self._build_raw_block(MAGIC_FAIL, 0x0F, 0xF0, 50, 5)
         block = HILResultBlock.from_bytes(raw)
         assert block.passed is False
@@ -682,11 +700,13 @@ class TestHILResultBlockDeserialization:
 
     def test_truncated_data_raises_value_error(self) -> None:
         from hil_harness import HILResultBlock
+
         with pytest.raises(ValueError, match="too short"):
             HILResultBlock.from_bytes(b"\x00" * 4)  # need 20 bytes
 
     def test_wrong_magic_means_not_passed(self) -> None:
         from hil_harness import HILResultBlock
+
         raw = self._build_raw_block(0xDEADBEEF, 0xFF, 0x00, 10, 0)
         block = HILResultBlock.from_bytes(raw)
         # magic != MAGIC_PASS so passed should be False even with 0 failures

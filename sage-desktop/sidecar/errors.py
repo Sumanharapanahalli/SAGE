@@ -4,6 +4,7 @@ Handlers raise these directly rather than constructing RpcError ad-hoc so
 that error codes stay consistent between modules and match the Rust
 `DesktopError::from_rpc` mapper on the other end of the pipe.
 """
+
 from __future__ import annotations
 
 from rpc import (

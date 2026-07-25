@@ -45,25 +45,31 @@ class CheckpointManager:
             return
 
         # Unwrap DDP to get the raw module's state dict
-        raw_model = model.module if isinstance(model, nn.parallel.DistributedDataParallel) else model
+        raw_model = (
+            model.module
+            if isinstance(model, nn.parallel.DistributedDataParallel)
+            else model
+        )
 
         payload: Dict[str, Any] = {
             "epoch": epoch,
             "model_state_dict": raw_model.state_dict(),
             "optimizer_state_dict": optimizer.state_dict(),
-            "scheduler_state_dict": scheduler.state_dict() if scheduler is not None else None,
+            "scheduler_state_dict": scheduler.state_dict()
+            if scheduler is not None
+            else None,
             "scaler_state_dict": scaler.state_dict() if scaler is not None else None,
             "metrics": metrics,
             "config": config_dict,
         }
 
         suffix = f"_{tag}" if tag else ""
-        tmp_path   = self.dir / f"ckpt_epoch_{epoch:04d}{suffix}.tmp"
+        tmp_path = self.dir / f"ckpt_epoch_{epoch:04d}{suffix}.tmp"
         final_path = self.dir / f"ckpt_epoch_{epoch:04d}{suffix}.pt"
 
         # Atomic write: tmp → rename (survives mid-write crash)
         torch.save(payload, tmp_path)
-        os.replace(tmp_path, final_path)          # atomic on POSIX, best-effort on Windows
+        os.replace(tmp_path, final_path)  # atomic on POSIX, best-effort on Windows
 
         # Update latest symlink (or plain copy of path on systems without symlink support)
         latest = self.dir / "latest.pt"
@@ -102,7 +108,11 @@ class CheckpointManager:
         ckpt = torch.load(ckpt_path, map_location=device)
 
         # Load model — handle both DDP-wrapped and bare module
-        target = model.module if isinstance(model, nn.parallel.DistributedDataParallel) else model
+        target = (
+            model.module
+            if isinstance(model, nn.parallel.DistributedDataParallel)
+            else model
+        )
         target.load_state_dict(ckpt["model_state_dict"])
 
         optimizer.load_state_dict(ckpt["optimizer_state_dict"])
@@ -115,7 +125,7 @@ class CheckpointManager:
 
         epoch = ckpt["epoch"]
         logger.info(f"Resumed at epoch {epoch} — metrics: {ckpt.get('metrics', {})}")
-        return epoch + 1   # resume from next epoch
+        return epoch + 1  # resume from next epoch
 
     # ── Helpers ───────────────────────────────────────────────────────────────
 

@@ -6,6 +6,7 @@ without pulling in ChromaDB / sentence-transformers. One roundtrip
 test exercises a real VectorMemory in minimal mode against a tmp
 directory.
 """
+
 from __future__ import annotations
 
 import sys

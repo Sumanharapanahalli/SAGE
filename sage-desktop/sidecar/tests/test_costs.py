@@ -11,6 +11,7 @@ set_budget tests monkeypatch ``handlers.costs._config_path`` directly
 (mirroring test_yaml_edit.py's ``_solution_path`` injection) so no test
 ever touches the real repo's config/config.yaml.
 """
+
 from __future__ import annotations
 
 import pytest
@@ -24,6 +25,7 @@ from rpc import RpcError
 # summary / daily
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture
 def cost_db(tmp_path, monkeypatch):
     """Fresh llm_costs SQLite DB, injected via cost_tracker._get_db_path."""
@@ -34,7 +36,9 @@ def cost_db(tmp_path, monkeypatch):
     return cost_tracker
 
 
-def _seed(cost_tracker_mod, n=3, model="claude-sonnet-4-6", solution="demo", tenant="acme"):
+def _seed(
+    cost_tracker_mod, n=3, model="claude-sonnet-4-6", solution="demo", tenant="acme"
+):
     for i in range(n):
         cost_tracker_mod.record_usage(
             tenant=tenant,
@@ -157,6 +161,7 @@ def test_daily_wraps_unexpected_errors(cost_db, monkeypatch):
 # ---------------------------------------------------------------------------
 # set_budget
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def wired_config(tmp_path, monkeypatch):

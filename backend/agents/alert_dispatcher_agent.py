@@ -8,19 +8,18 @@ Specialist agent that manages the alert lifecycle:
 
 Wraps AlertService (coordinator + channels) and adds ReAct tracing.
 """
+
 from __future__ import annotations
 
 import logging
 import sqlite3
 import time
-import uuid
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
-from backend.agents.fall_classifier import AlertClassification, FallSeverity
+from backend.agents.fall_classifier import AlertClassification
 from backend.agents.notification_router import CaregiverContact, NotificationRouterAgent
-from backend.services.gps_store import get_gps_store
 
 logger = logging.getLogger(__name__)
 

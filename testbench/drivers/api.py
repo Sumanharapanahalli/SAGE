@@ -24,6 +24,7 @@ Config (testbench.yaml -> suites.api):
     send: {"type": "query", "query": "hello"}
     expect_any: ["content", "response"]
 """
+
 from __future__ import annotations
 
 import json
@@ -54,11 +55,17 @@ def run(cfg: dict) -> dict:
     # Normalize localhost->127.0.0.1: on dual-stack hosts 'localhost' resolves to
     # ::1 (IPv6) first; servers that bind IPv4-only (0.0.0.0) make every urllib
     # request wait ~19s for the IPv6 connect to time out. Forcing IPv4 is instant.
-    base = cfg.get("base_url", "http://localhost:8000").rstrip("/").replace("localhost", "127.0.0.1")
+    base = (
+        cfg.get("base_url", "http://localhost:8000")
+        .rstrip("/")
+        .replace("localhost", "127.0.0.1")
+    )
     checks = []
 
     def ck(name, ok, detail=""):
-        checks.append({"name": name, "status": "PASS" if ok else "FAIL", "detail": detail})
+        checks.append(
+            {"name": name, "status": "PASS" if ok else "FAIL", "detail": detail}
+        )
         return ok
 
     # 1. health
@@ -82,8 +89,12 @@ def run(cfg: dict) -> dict:
         tf = auth.get("token_field", "access_token")
         cred = {ef: f"tb_{uuid.uuid4().hex[:8]}@example.com", pf: "Bench1234!pw"}
         rc, _ = _req("POST", base + auth["register"], cred)
-        ck("auth register", rc in (200, 201, 409, 429),
-           f"HTTP {rc}" + (" (rate-limited/exists — acceptable)" if rc in (409, 429) else ""))
+        ck(
+            "auth register",
+            rc in (200, 201, 409, 429),
+            f"HTTP {rc}"
+            + (" (rate-limited/exists — acceptable)" if rc in (409, 429) else ""),
+        )
         lc, lb = _req("POST", base + auth["login"], cred)
         try:
             token = json.loads(lb).get(tf) if lc == 200 else None
@@ -91,7 +102,11 @@ def run(cfg: dict) -> dict:
             token = None
         ck("auth login -> token", lc == 200 and bool(token), f"HTTP {lc}")
         if token:
-            ck("token is a JWT (3 parts)", token.count(".") == 2, f"{token.count('.')+1} segments")
+            ck(
+                "token is a JWT (3 parts)",
+                token.count(".") == 2,
+                f"{token.count('.') + 1} segments",
+            )
 
     # 4. protected routes (401 anon, 200 with token)
     for path in cfg.get("protected", []):
@@ -119,8 +134,12 @@ def _ws_check(base, ws, ck):
         ck("ws chat", True, "websockets lib absent — skipped")
         return
     # Force IPv4: many dev servers bind 0.0.0.0 and 'localhost'->::1 hangs the ws client.
-    uri = (base.replace("http://", "ws://").replace("https://", "wss://")
-           .replace("localhost", "127.0.0.1") + ws["path"])
+    uri = (
+        base.replace("http://", "ws://")
+        .replace("https://", "wss://")
+        .replace("localhost", "127.0.0.1")
+        + ws["path"]
+    )
     expect = ws.get("expect_any", ["content", "response"])
 
     async def go():
@@ -129,7 +148,9 @@ def _ws_check(base, ws, ck):
             for _ in range(60):
                 msg = json.loads(await asyncio.wait_for(sock.recv(), 20))
                 if not sent and msg.get("type") == "session_id":
-                    await sock.send(json.dumps(ws.get("send", {"type": "query", "query": "hi"})))
+                    await sock.send(
+                        json.dumps(ws.get("send", {"type": "query", "query": "hi"}))
+                    )
                     sent = True
                     continue
                 txt = json.dumps(msg).lower()
@@ -139,6 +160,10 @@ def _ws_check(base, ws, ck):
 
     try:
         msg = asyncio.run(go())
-        ck(f"ws {ws['path']} responds", bool(msg), (str(msg.get("content", ""))[:60] if msg else "no response"))
+        ck(
+            f"ws {ws['path']} responds",
+            bool(msg),
+            (str(msg.get("content", ""))[:60] if msg else "no response"),
+        )
     except Exception as e:  # noqa: BLE001
         ck(f"ws {ws['path']} responds", False, f"{type(e).__name__}: {e}")

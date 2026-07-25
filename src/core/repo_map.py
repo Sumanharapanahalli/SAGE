@@ -12,9 +12,19 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-_SKIP_DIRS = {".venv", "venv", "env", ".git", "__pycache__", "node_modules", ".sage", "dist", "build"}
+_SKIP_DIRS = {
+    ".venv",
+    "venv",
+    "env",
+    ".git",
+    "__pycache__",
+    "node_modules",
+    ".sage",
+    "dist",
+    "build",
+}
 _CLASS_RE = re.compile(r"^class\s+(\w+)", re.MULTILINE)
-_FUNC_RE  = re.compile(r"^def\s+(\w+)", re.MULTILINE)
+_FUNC_RE = re.compile(r"^def\s+(\w+)", re.MULTILINE)
 
 
 def generate_repo_map(root: str, max_files: int = 50) -> str:
@@ -29,7 +39,9 @@ def generate_repo_map(root: str, max_files: int = 50) -> str:
 
     for dirpath, dirnames, filenames in os.walk(root):
         # Prune excluded directories in-place
-        dirnames[:] = [d for d in dirnames if d not in _SKIP_DIRS and not d.startswith(".")]
+        dirnames[:] = [
+            d for d in dirnames if d not in _SKIP_DIRS and not d.startswith(".")
+        ]
 
         for fname in sorted(filenames):
             if not fname.endswith(".py"):
@@ -39,14 +51,14 @@ def generate_repo_map(root: str, max_files: int = 50) -> str:
                 return "\n".join(lines)
 
             fpath = os.path.join(dirpath, fname)
-            rel   = os.path.relpath(fpath, root).replace("\\", "/")
+            rel = os.path.relpath(fpath, root).replace("\\", "/")
             try:
                 src = open(fpath, encoding="utf-8", errors="ignore").read()
             except OSError:
                 continue
 
             classes = _CLASS_RE.findall(src)
-            funcs   = _FUNC_RE.findall(src)
+            funcs = _FUNC_RE.findall(src)
             symbols = ", ".join(classes + funcs)
             if symbols:
                 lines.append(f"- `{rel}`: {symbols}")

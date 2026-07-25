@@ -18,6 +18,7 @@ it first — the running process holds its ``.sage/`` SQLite files open).
 Removal is framework control, not an agent proposal: it is the operator's
 own action and executes immediately (SOUL.md Law 1).
 """
+
 from __future__ import annotations
 
 import logging
@@ -85,7 +86,12 @@ def _resolve_target(name: str) -> Path:
     # before any filesystem call.
     if name != Path(name).name or name in (".", "..") or name.startswith("."):
         raise RpcError(RPC_INVALID_PARAMS, f"invalid solution name: {name!r}")
-    if os.sep in name or (os.altsep and os.altsep in name) or "/" in name or "\\" in name:
+    if (
+        os.sep in name
+        or (os.altsep and os.altsep in name)
+        or "/" in name
+        or "\\" in name
+    ):
         raise RpcError(RPC_INVALID_PARAMS, f"invalid solution name: {name!r}")
 
     root = _solutions_root()

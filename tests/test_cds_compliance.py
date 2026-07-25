@@ -29,13 +29,12 @@ Reference: FDA Clinical Decision Support Software Guidance (January 2026)
 
 import pytest
 import json
-from unittest.mock import Mock, patch, MagicMock
-from datetime import datetime, timezone
 
 
 # ---------------------------------------------------------------------------
 # G-01: CDS Function Classifier
 # ---------------------------------------------------------------------------
+
 
 class TestCDSFunctionClassifier:
     """Tests for classify_cds_function() — maps software functions against all 4 FDA CDS criteria."""
@@ -43,6 +42,7 @@ class TestCDSFunctionClassifier:
     @pytest.fixture
     def classifier(self):
         from src.core.cds_compliance import CDSComplianceFramework
+
         return CDSComplianceFramework()
 
     def test_non_device_cds_all_criteria_pass(self, classifier):
@@ -53,7 +53,13 @@ class TestCDSFunctionClassifier:
             output_type="recommendation",
             intended_user="physician",
             urgency="non_urgent",
-            data_sources=[{"name": "FDA drug labeling", "type": "fda_labeling"}, {"name": "Clinical pharmacology guidelines", "type": "clinical_guideline"}]
+            data_sources=[
+                {"name": "FDA drug labeling", "type": "fda_labeling"},
+                {
+                    "name": "Clinical pharmacology guidelines",
+                    "type": "clinical_guideline",
+                },
+            ],
         )
         assert result["overall_classification"] == "non_device_cds"
         assert result["criterion_1"]["passes"] is True
@@ -69,7 +75,7 @@ class TestCDSFunctionClassifier:
             output_type="recommendation",
             intended_user="radiologist",
             urgency="non_urgent",
-            data_sources=[{"name": "ACR guidelines", "type": "clinical_guideline"}]
+            data_sources=[{"name": "ACR guidelines", "type": "clinical_guideline"}],
         )
         assert result["overall_classification"] == "device"
         assert result["criterion_1"]["passes"] is False
@@ -83,7 +89,7 @@ class TestCDSFunctionClassifier:
             output_type="recommendation",
             intended_user="cardiologist",
             urgency="non_urgent",
-            data_sources=[{"name": "AHA guidelines", "type": "clinical_guideline"}]
+            data_sources=[{"name": "AHA guidelines", "type": "clinical_guideline"}],
         )
         assert result["overall_classification"] == "device"
         assert result["criterion_1"]["passes"] is False
@@ -96,7 +102,9 @@ class TestCDSFunctionClassifier:
             output_type="recommendation",
             intended_user="patient",
             urgency="non_urgent",
-            data_sources=[{"name": "Clinical guidelines", "type": "clinical_guideline"}]
+            data_sources=[
+                {"name": "Clinical guidelines", "type": "clinical_guideline"}
+            ],
         )
         assert result["overall_classification"] == "device"
         assert result["criterion_3"]["passes"] is False
@@ -109,7 +117,12 @@ class TestCDSFunctionClassifier:
             output_type="immediate_directive",
             intended_user="nurse",
             urgency="time_critical",
-            data_sources=[{"name": "Surviving Sepsis Campaign guidelines", "type": "clinical_guideline"}]
+            data_sources=[
+                {
+                    "name": "Surviving Sepsis Campaign guidelines",
+                    "type": "clinical_guideline",
+                }
+            ],
         )
         assert result["overall_classification"] == "device"
         assert result["criterion_4"]["passes"] is False
@@ -122,7 +135,7 @@ class TestCDSFunctionClassifier:
             output_type="definitive_diagnosis",
             intended_user="ophthalmologist",
             urgency="non_urgent",
-            data_sources=[{"name": "AAO guidelines", "type": "clinical_guideline"}]
+            data_sources=[{"name": "AAO guidelines", "type": "clinical_guideline"}],
         )
         assert result["overall_classification"] == "device"
         # Fails both Criterion 1 (image) and Criterion 3 (definitive diagnosis)
@@ -135,7 +148,12 @@ class TestCDSFunctionClassifier:
             output_type="recommendation",
             intended_user="physician",
             urgency="non_urgent",
-            data_sources=[{"name": "ACC/AHA cardiovascular risk guidelines", "type": "clinical_guideline"}]
+            data_sources=[
+                {
+                    "name": "ACC/AHA cardiovascular risk guidelines",
+                    "type": "clinical_guideline",
+                }
+            ],
         )
         assert result["criterion_1"]["passes"] is True
 
@@ -147,14 +165,18 @@ class TestCDSFunctionClassifier:
             output_type="recommendation",
             intended_user="physician",
             urgency="non_urgent",
-            data_sources=[{"name": "FDA drug labeling", "type": "fda_labeling"}]
+            data_sources=[{"name": "FDA drug labeling", "type": "fda_labeling"}],
         )
         for criterion in ["criterion_1", "criterion_2", "criterion_3", "criterion_4"]:
             assert criterion in result
             assert "passes" in result[criterion]
             assert "rationale" in result[criterion]
         assert "overall_classification" in result
-        assert result["overall_classification"] in ("device", "non_device_cds", "enforcement_discretion")
+        assert result["overall_classification"] in (
+            "device",
+            "non_device_cds",
+            "enforcement_discretion",
+        )
 
     def test_single_recommendation_enforcement_discretion(self, classifier):
         """Single recommendation with all other criteria met should get enforcement discretion (2026 update)."""
@@ -164,9 +186,14 @@ class TestCDSFunctionClassifier:
             output_type="single_recommendation",
             intended_user="physician",
             urgency="non_urgent",
-            data_sources=[{"name": "ACC/AHA cholesterol guidelines", "type": "clinical_guideline"}]
+            data_sources=[
+                {"name": "ACC/AHA cholesterol guidelines", "type": "clinical_guideline"}
+            ],
         )
-        assert result["overall_classification"] in ("non_device_cds", "enforcement_discretion")
+        assert result["overall_classification"] in (
+            "non_device_cds",
+            "enforcement_discretion",
+        )
         assert result["criterion_3"]["passes"] is True
 
 
@@ -174,12 +201,14 @@ class TestCDSFunctionClassifier:
 # G-02: Input Data Type Taxonomy
 # ---------------------------------------------------------------------------
 
+
 class TestInputDataTaxonomy:
     """Tests for classify_input_data() — classifies inputs as image/signal/pattern/discrete."""
 
     @pytest.fixture
     def classifier(self):
         from src.core.cds_compliance import CDSComplianceFramework
+
         return CDSComplianceFramework()
 
     def test_image_inputs_detected(self, classifier):
@@ -191,28 +220,36 @@ class TestInputDataTaxonomy:
 
     def test_signal_pattern_detected(self, classifier):
         """Continuous signal patterns must be flagged."""
-        result = classifier.classify_input_data(["ecg_waveform", "cgm_continuous_readings", "eeg_signal"])
+        result = classifier.classify_input_data(
+            ["ecg_waveform", "cgm_continuous_readings", "eeg_signal"]
+        )
         for item in result:
             assert item["data_category"] in ("signal", "pattern")
             assert item["criterion_1_impact"] == "fail"
 
     def test_discrete_measurements_pass(self, classifier):
         """Discrete point-in-time measurements should pass."""
-        result = classifier.classify_input_data(["blood_pressure_single", "temperature", "bmi", "cholesterol_level"])
+        result = classifier.classify_input_data(
+            ["blood_pressure_single", "temperature", "bmi", "cholesterol_level"]
+        )
         for item in result:
             assert item["data_category"] == "discrete"
             assert item["criterion_1_impact"] == "pass"
 
     def test_text_data_passes(self, classifier):
         """Text/structured data (EHR notes, demographics) should pass."""
-        result = classifier.classify_input_data(["patient_demographics", "medication_list", "clinical_notes"])
+        result = classifier.classify_input_data(
+            ["patient_demographics", "medication_list", "clinical_notes"]
+        )
         for item in result:
             assert item["data_category"] in ("text", "structured", "discrete")
             assert item["criterion_1_impact"] == "pass"
 
     def test_mixed_inputs_one_fail_flags_all(self, classifier):
         """If any input is image/signal/pattern, overall assessment should flag it."""
-        result = classifier.classify_input_data(["patient_demographics", "ct_scan", "medication_list"])
+        result = classifier.classify_input_data(
+            ["patient_demographics", "ct_scan", "medication_list"]
+        )
         image_items = [r for r in result if r["criterion_1_impact"] == "fail"]
         assert len(image_items) >= 1
 
@@ -221,39 +258,50 @@ class TestInputDataTaxonomy:
 # G-03: Data Source Provenance Registry
 # ---------------------------------------------------------------------------
 
+
 class TestDataSourceProvenance:
     """Tests for data source tracking and validation."""
 
     @pytest.fixture
     def classifier(self):
         from src.core.cds_compliance import CDSComplianceFramework
+
         return CDSComplianceFramework()
 
     def test_accepted_source_validates(self, classifier):
         """Clinical guidelines should be classified as well-understood and accepted."""
-        result = classifier.validate_data_sources([
-            {"name": "ACC/AHA Cardiovascular Risk Guidelines", "type": "clinical_guideline"},
-            {"name": "FDA Drug Labeling Database", "type": "fda_labeling"},
-        ])
+        result = classifier.validate_data_sources(
+            [
+                {
+                    "name": "ACC/AHA Cardiovascular Risk Guidelines",
+                    "type": "clinical_guideline",
+                },
+                {"name": "FDA Drug Labeling Database", "type": "fda_labeling"},
+            ]
+        )
         assert result["overall_status"] == "accepted"
         for source in result["sources"]:
             assert source["validation_status"] == "well_understood_accepted"
 
     def test_proprietary_source_flagged(self, classifier):
         """Proprietary/novel data sources should be flagged."""
-        result = classifier.validate_data_sources([
-            {"name": "Internal proprietary algorithm v2", "type": "proprietary"},
-        ])
+        result = classifier.validate_data_sources(
+            [
+                {"name": "Internal proprietary algorithm v2", "type": "proprietary"},
+            ]
+        )
         assert result["overall_status"] == "flagged"
         assert result["sources"][0]["validation_status"] == "novel_or_proprietary"
         assert result["sources"][0]["criterion_2_risk"] is True
 
     def test_mixed_sources_flagged(self, classifier):
         """Mix of accepted and novel sources should flag overall."""
-        result = classifier.validate_data_sources([
-            {"name": "AHA Guidelines", "type": "clinical_guideline"},
-            {"name": "Unpublished ML model", "type": "novel"},
-        ])
+        result = classifier.validate_data_sources(
+            [
+                {"name": "AHA Guidelines", "type": "clinical_guideline"},
+                {"name": "Unpublished ML model", "type": "novel"},
+            ]
+        )
         assert result["overall_status"] == "flagged"
 
 
@@ -261,12 +309,14 @@ class TestDataSourceProvenance:
 # G-05: CDS Output Type Classifier
 # ---------------------------------------------------------------------------
 
+
 class TestCDSOutputClassifier:
     """Tests for classifying CDS outputs as recommendation/diagnosis/directive."""
 
     @pytest.fixture
     def classifier(self):
         from src.core.cds_compliance import CDSComplianceFramework
+
         return CDSComplianceFramework()
 
     def test_recommendation_output_passes(self, classifier):
@@ -298,12 +348,14 @@ class TestCDSOutputClassifier:
 # G-08: Transparency & Explainability Layer
 # ---------------------------------------------------------------------------
 
+
 class TestTransparencyLayer:
     """Tests for CDS transparency and explainability."""
 
     @pytest.fixture
     def framework(self):
         from src.core.cds_compliance import CDSComplianceFramework
+
         return CDSComplianceFramework()
 
     def test_generate_explanation_contains_required_fields(self, framework):
@@ -313,7 +365,7 @@ class TestTransparencyLayer:
             inputs_used=["medication_list", "allergy_list"],
             data_sources=[{"name": "FDA Drug Labeling", "type": "fda_labeling"}],
             algorithm_description="Rule-based matching against known interaction database",
-            known_limitations=["Does not cover herbal supplements"]
+            known_limitations=["Does not cover herbal supplements"],
         )
         assert "inputs_summary" in result
         assert "logic_description" in result
@@ -328,7 +380,7 @@ class TestTransparencyLayer:
             inputs_used=["blood_pressure", "cholesterol", "age", "smoking_status"],
             data_sources=[{"name": "ACC/AHA Guidelines", "type": "clinical_guideline"}],
             algorithm_description="Pooled Cohort Equations for 10-year ASCVD risk",
-            known_limitations=["Validated for ages 40-79 only"]
+            known_limitations=["Validated for ages 40-79 only"],
         )
         # Should not contain engineering jargon
         report_text = json.dumps(result).lower()
@@ -340,12 +392,14 @@ class TestTransparencyLayer:
 # G-09, G-10: Automation Bias & Clinical Limitations
 # ---------------------------------------------------------------------------
 
+
 class TestAutomationBiasAndLimitations:
     """Tests for automation bias risk and clinical limitations."""
 
     @pytest.fixture
     def framework(self):
         from src.core.cds_compliance import CDSComplianceFramework
+
         return CDSComplianceFramework()
 
     def test_automation_bias_risk_generated(self, framework):
@@ -353,7 +407,7 @@ class TestAutomationBiasAndLimitations:
         result = framework.assess_automation_bias_risk(
             function_description="Antibiotic recommendation system",
             urgency="non_urgent",
-            decision_impact="treatment_selection"
+            decision_impact="treatment_selection",
         )
         assert result["risk_category"] == "automation_bias"
         assert "mitigation_strategies" in result
@@ -367,7 +421,7 @@ class TestAutomationBiasAndLimitations:
             validated_populations=["adults 40-79"],
             accuracy_metrics={"sensitivity": 0.85, "specificity": 0.90},
             excluded_conditions=["pregnancy", "pediatric"],
-            known_failure_modes=["Rare drug interactions not in database"]
+            known_failure_modes=["Rare drug interactions not in database"],
         )
         assert "accuracy_limitations" in result
         assert "population_limitations" in result
@@ -379,28 +433,36 @@ class TestAutomationBiasAndLimitations:
 # G-12: Automation Bias Warning Labels
 # ---------------------------------------------------------------------------
 
+
 class TestAutomationBiasWarnings:
     """Tests for automation bias warning generation."""
 
     @pytest.fixture
     def framework(self):
         from src.core.cds_compliance import CDSComplianceFramework
+
         return CDSComplianceFramework()
 
     def test_warning_label_generated(self, framework):
         """Must generate explicit automation bias warning text."""
         result = framework.generate_bias_warning_label(
-            function_description="Drug dosing recommendation",
-            intended_user="physician"
+            function_description="Drug dosing recommendation", intended_user="physician"
         )
         assert "warning_text" in result
-        assert "independent" in result["warning_text"].lower() or "review" in result["warning_text"].lower()
-        assert "clinical judgment" in result["warning_text"].lower() or "clinical review" in result["warning_text"].lower()
+        assert (
+            "independent" in result["warning_text"].lower()
+            or "review" in result["warning_text"].lower()
+        )
+        assert (
+            "clinical judgment" in result["warning_text"].lower()
+            or "clinical review" in result["warning_text"].lower()
+        )
 
 
 # ---------------------------------------------------------------------------
 # G-18: FDA CDS Labeling Template
 # ---------------------------------------------------------------------------
+
 
 class TestCDSLabelingTemplate:
     """Tests for FDA-formatted CDS labeling."""
@@ -408,6 +470,7 @@ class TestCDSLabelingTemplate:
     @pytest.fixture
     def framework(self):
         from src.core.cds_compliance import CDSComplianceFramework
+
         return CDSComplianceFramework()
 
     def test_labeling_contains_all_required_elements(self, framework):
@@ -418,9 +481,14 @@ class TestCDSLabelingTemplate:
             intended_users=["cardiologist", "primary care physician"],
             target_population="Adults aged 40-79 without prior cardiovascular events",
             algorithm_summary="Pooled Cohort Equations based on ACC/AHA 2013 guidelines",
-            data_sources=[{"name": "ACC/AHA 2013 Guidelines", "type": "clinical_guideline"}],
+            data_sources=[
+                {"name": "ACC/AHA 2013 Guidelines", "type": "clinical_guideline"}
+            ],
             validation_summary="Validated on 25,000 patients across 4 clinical sites",
-            known_limitations=["Not validated for ages <40 or >79", "Does not account for novel biomarkers"]
+            known_limitations=[
+                "Not validated for ages <40 or >79",
+                "Does not account for novel biomarkers",
+            ],
         )
         assert "intended_use_statement" in result
         assert "intended_users" in result
@@ -441,7 +509,7 @@ class TestCDSLabelingTemplate:
             algorithm_summary="Rule-based matching",
             data_sources=[{"name": "FDA Drug Labels", "type": "fda_labeling"}],
             validation_summary="Validated",
-            known_limitations=[]
+            known_limitations=[],
         )
         ius = result["intended_use_statement"]
         assert "intended for use by" in ius.lower() or "designed to" in ius.lower()
@@ -451,12 +519,14 @@ class TestCDSLabelingTemplate:
 # G-15: Over-Reliance Detection
 # ---------------------------------------------------------------------------
 
+
 class TestOverRelianceDetection:
     """Tests for post-market over-reliance monitoring."""
 
     @pytest.fixture
     def framework(self):
         from src.core.cds_compliance import CDSComplianceFramework
+
         return CDSComplianceFramework()
 
     def test_high_acceptance_rate_flagged(self, framework):
@@ -464,7 +534,7 @@ class TestOverRelianceDetection:
         result = framework.detect_over_reliance(
             total_recommendations=1000,
             accepted_without_modification=970,
-            average_review_time_seconds=5
+            average_review_time_seconds=5,
         )
         assert result["over_reliance_detected"] is True
         assert result["acceptance_rate"] > 0.95
@@ -475,7 +545,7 @@ class TestOverRelianceDetection:
         result = framework.detect_over_reliance(
             total_recommendations=1000,
             accepted_without_modification=750,
-            average_review_time_seconds=45
+            average_review_time_seconds=45,
         )
         assert result["over_reliance_detected"] is False
 
@@ -484,15 +554,18 @@ class TestOverRelianceDetection:
         result = framework.detect_over_reliance(
             total_recommendations=100,
             accepted_without_modification=80,
-            average_review_time_seconds=2
+            average_review_time_seconds=2,
         )
         assert result["over_reliance_detected"] is True
-        assert "review_time" in result.get("alert", "").lower() or result.get("review_time_concern", False)
+        assert "review_time" in result.get("alert", "").lower() or result.get(
+            "review_time_concern", False
+        )
 
 
 # ---------------------------------------------------------------------------
 # G-17: CDS Criterion Re-Evaluation Trigger
 # ---------------------------------------------------------------------------
+
 
 class TestCriterionReEvaluation:
     """Tests for post-change CDS criterion re-evaluation."""
@@ -500,6 +573,7 @@ class TestCriterionReEvaluation:
     @pytest.fixture
     def framework(self):
         from src.core.cds_compliance import CDSComplianceFramework
+
         return CDSComplianceFramework()
 
     def test_reevaluation_after_algorithm_change(self, framework):
@@ -512,7 +586,7 @@ class TestCriterionReEvaluation:
             output_type="recommendation",
             intended_user="physician",
             urgency="non_urgent",
-            data_sources=[{"name": "FDA Drug Labels", "type": "fda_labeling"}]
+            data_sources=[{"name": "FDA Drug Labels", "type": "fda_labeling"}],
         )
         assert "new_classification" in result
         assert "classification_changed" in result
@@ -526,12 +600,14 @@ class TestCriterionReEvaluation:
 # G-13: Clinical Validation Protocol
 # ---------------------------------------------------------------------------
 
+
 class TestClinicalValidationProtocol:
     """Tests for clinical validation protocol generation."""
 
     @pytest.fixture
     def framework(self):
         from src.core.cds_compliance import CDSComplianceFramework
+
         return CDSComplianceFramework()
 
     def test_validation_protocol_generated(self, framework):
@@ -541,7 +617,7 @@ class TestClinicalValidationProtocol:
             target_population="Adults 40-79",
             clinical_endpoints=["10-year ASCVD risk"],
             gold_standard="Framingham Risk Score",
-            demographic_subgroups=["age", "sex", "race"]
+            demographic_subgroups=["age", "sex", "race"],
         )
         assert "protocol_id" in result
         assert "accuracy_metrics" in result
@@ -554,12 +630,14 @@ class TestClinicalValidationProtocol:
 # G-19: Patient Population Criteria
 # ---------------------------------------------------------------------------
 
+
 class TestPatientPopulationCriteria:
     """Tests for patient population inclusion/exclusion criteria."""
 
     @pytest.fixture
     def framework(self):
         from src.core.cds_compliance import CDSComplianceFramework
+
         return CDSComplianceFramework()
 
     def test_population_criteria_generated(self, framework):
@@ -569,7 +647,7 @@ class TestPatientPopulationCriteria:
             age_range={"min": 18, "max": 85},
             included_conditions=["Essential hypertension", "Resistant hypertension"],
             excluded_conditions=["Pregnancy", "Pediatric", "Secondary hypertension"],
-            demographic_coverage=["All races/ethnicities", "Both sexes"]
+            demographic_coverage=["All races/ethnicities", "Both sexes"],
         )
         assert "inclusion_criteria" in result
         assert "exclusion_criteria" in result
@@ -582,12 +660,14 @@ class TestPatientPopulationCriteria:
 # E2E: Full CDS Compliance Pipeline
 # ---------------------------------------------------------------------------
 
+
 class TestCDSCompliancePipelineE2E:
     """End-to-end test: product description → full CDS compliance package."""
 
     @pytest.fixture
     def framework(self):
         from src.core.cds_compliance import CDSComplianceFramework
+
         return CDSComplianceFramework()
 
     def test_full_compliance_package_for_non_device_cds(self, framework):
@@ -601,17 +681,25 @@ class TestCDSCompliancePipelineE2E:
             urgency="non_urgent",
             data_sources=[
                 {"name": "FDA Drug Labeling Database", "type": "fda_labeling"},
-                {"name": "Clinical Pharmacology Guidelines", "type": "clinical_guideline"},
+                {
+                    "name": "Clinical Pharmacology Guidelines",
+                    "type": "clinical_guideline",
+                },
             ],
             algorithm_description="Rule-based matching against FDA-approved interaction database with severity scoring",
-            known_limitations=["Does not cover herbal supplements", "Limited pediatric interaction data"],
+            known_limitations=[
+                "Does not cover herbal supplements",
+                "Limited pediatric interaction data",
+            ],
             target_population="Adults 18+ with 2+ concurrent medications",
-            validation_summary="Validated against 10,000 known interactions with 98.5% sensitivity"
+            validation_summary="Validated against 10,000 known interactions with 98.5% sensitivity",
         )
 
         # Must contain all compliance components
         assert "cds_classification" in package
-        assert package["cds_classification"]["overall_classification"] == "non_device_cds"
+        assert (
+            package["cds_classification"]["overall_classification"] == "non_device_cds"
+        )
 
         assert "input_taxonomy" in package
         assert "data_source_validation" in package
@@ -640,7 +728,7 @@ class TestCDSCompliancePipelineE2E:
             algorithm_description="Deep learning CNN trained on 50,000 annotated CT scans",
             known_limitations=["Not validated for pediatric patients"],
             target_population="Adults with suspected lung nodules",
-            validation_summary="Validated on 5,000 cases"
+            validation_summary="Validated on 5,000 cases",
         )
 
         assert package["cds_classification"]["overall_classification"] == "device"

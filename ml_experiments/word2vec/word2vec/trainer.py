@@ -77,7 +77,9 @@ class Trainer:
         total_params = sum(p.numel() for p in model.parameters())
         logger.info(
             "Model: vocab=%d, dim=%d, params=%d",
-            vocab.size, cfg.embedding_dim, total_params,
+            vocab.size,
+            cfg.embedding_dim,
+            total_params,
         )
 
         # ── 6. Optimiser (SGD — matches original word2vec) ────────────────────
@@ -137,7 +139,10 @@ class Trainer:
                 elapsed = time.time() - epoch_start
                 logger.info(
                     "Epoch %d/%d — avg_loss=%.4f  time=%.1fs",
-                    epoch, cfg.epochs, avg_loss, elapsed,
+                    epoch,
+                    cfg.epochs,
+                    avg_loss,
+                    elapsed,
                 )
                 mlflow.log_metrics(
                     {"epoch/avg_loss": avg_loss, "epoch/elapsed_s": elapsed},
@@ -182,18 +187,18 @@ class Trainer:
     @staticmethod
     def _params_dict(cfg: Word2VecConfig, vocab: Vocabulary, n_pairs: int) -> Dict:
         return {
-            "embedding_dim":        cfg.embedding_dim,
-            "window_size":          cfg.window_size,
-            "num_negatives":        cfg.num_negatives,
-            "neg_sampling_power":   cfg.neg_sampling_power,
-            "subsample_threshold":  cfg.subsample_threshold,
-            "min_count":            cfg.min_count,
-            "max_vocab_size":       cfg.max_vocab_size,
-            "epochs":               cfg.epochs,
-            "batch_size":           cfg.batch_size,
-            "learning_rate":        cfg.learning_rate,
-            "min_lr":               cfg.min_lr,
-            "vocab_size":           vocab.size,
-            "n_training_pairs":     n_pairs,
-            "seed":                 cfg.seed,
+            "embedding_dim": cfg.embedding_dim,
+            "window_size": cfg.window_size,
+            "num_negatives": cfg.num_negatives,
+            "neg_sampling_power": cfg.neg_sampling_power,
+            "subsample_threshold": cfg.subsample_threshold,
+            "min_count": cfg.min_count,
+            "max_vocab_size": cfg.max_vocab_size,
+            "epochs": cfg.epochs,
+            "batch_size": cfg.batch_size,
+            "learning_rate": cfg.learning_rate,
+            "min_lr": cfg.min_lr,
+            "vocab_size": vocab.size,
+            "n_training_pairs": n_pairs,
+            "seed": cfg.seed,
         }

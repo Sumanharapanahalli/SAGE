@@ -5,6 +5,7 @@ Uses a tiny in-memory fake that mirrors the surface of
 without loading the full framework. One happy-path test exercises the
 real class against a tmp YAML file to guard the contract.
 """
+
 from __future__ import annotations
 
 import sys
@@ -38,6 +39,7 @@ class _FakeCtx:
 
     def to_dict(self) -> dict:
         import copy
+
         return copy.deepcopy(self._data)
 
     def get_stats(self) -> dict:

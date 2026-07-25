@@ -26,8 +26,8 @@ logger = logging.getLogger(__name__)
 def _build_url() -> str:
     """Build DSN from environment variables — never from hard-coded values."""
     driver = os.environ.get("DB_DRIVER", "postgresql+psycopg2")
-    user = os.environ["DB_USER"]           # intentionally raise on missing
-    password = os.environ["DB_PASSWORD"]   # intentionally raise on missing
+    user = os.environ["DB_USER"]  # intentionally raise on missing
+    password = os.environ["DB_PASSWORD"]  # intentionally raise on missing
     host = os.environ.get("DB_HOST", "localhost")
     port = os.environ.get("DB_PORT", "5432")
     dbname = os.environ["DB_NAME"]

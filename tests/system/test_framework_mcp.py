@@ -24,7 +24,6 @@ Covers:
 
 import os
 import sqlite3
-import tempfile
 import textwrap
 from unittest.mock import MagicMock, patch
 
@@ -36,6 +35,7 @@ pytestmark = pytest.mark.system
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _patch_solution_dir(tmpdir):
     """Return a context manager that makes project_loader point at tmpdir."""
@@ -59,6 +59,7 @@ def _make_solution_tree(tmpdir):
 # ===========================================================================
 #  1. FILESYSTEM TOOLS — Sandbox Enforcement
 # ===========================================================================
+
 
 class TestFilesystemSandbox:
     """Verify agents cannot escape the solution directory."""
@@ -106,6 +107,7 @@ class TestFilesystemSandbox:
 # ===========================================================================
 #  2. FILESYSTEM TOOLS — CRUD Operations
 # ===========================================================================
+
 
 class TestFilesystemCRUD:
     """Test read/write/list/search against a real temp solution directory."""
@@ -249,12 +251,14 @@ class TestFilesystemCRUD:
 #  3. SQLITE TOOLS — Read-Only Enforcement
 # ===========================================================================
 
+
 class TestSQLiteReadOnly:
     """Verify SQL injection and write attempts are blocked."""
 
     def test_select_allowed(self):
         """SELECT queries must pass the read-only check."""
         from src.mcp_servers.sqlite_tools import _is_read_only
+
         assert _is_read_only("SELECT * FROM events") is True
         assert _is_read_only("select count(*) from events") is True
         assert _is_read_only("PRAGMA table_info(events)") is True
@@ -263,6 +267,7 @@ class TestSQLiteReadOnly:
     def test_writes_blocked(self):
         """INSERT/UPDATE/DELETE/DROP must be rejected."""
         from src.mcp_servers.sqlite_tools import _is_read_only
+
         assert _is_read_only("INSERT INTO events VALUES(1)") is False
         assert _is_read_only("UPDATE events SET x=1") is False
         assert _is_read_only("DELETE FROM events") is False
@@ -272,11 +277,13 @@ class TestSQLiteReadOnly:
     def test_injection_via_subquery_blocked(self):
         """SELECT containing destructive subqueries must be rejected."""
         from src.mcp_servers.sqlite_tools import _is_read_only
+
         assert _is_read_only("SELECT * FROM events; DROP TABLE events") is False
 
     def test_db_path_traversal_blocked(self):
         """Database names with path traversal must be rejected."""
         from src.mcp_servers.sqlite_tools import _validate_db_path
+
         with pytest.raises(ValueError, match="Invalid"):
             _validate_db_path("../../../etc/passwd")
         with pytest.raises(ValueError, match="Invalid"):
@@ -286,6 +293,7 @@ class TestSQLiteReadOnly:
 # ===========================================================================
 #  4. SQLITE TOOLS — Query Operations
 # ===========================================================================
+
 
 class TestSQLiteOperations:
     """Full CRUD tests against a real temporary SQLite database."""
@@ -429,13 +437,17 @@ class TestSQLiteOperations:
 #  5. BROWSER TOOLS — Graceful Degradation
 # ===========================================================================
 
+
 class TestBrowserToolsDegradation:
     """Verify browser tools handle missing Playwright gracefully."""
 
     def test_browse_page_without_playwright(self):
         """browse_page must return available=False when Playwright is missing."""
         from src.mcp_servers import browser_tools
-        with patch.object(browser_tools, "_check_playwright", return_value="playwright not installed"):
+
+        with patch.object(
+            browser_tools, "_check_playwright", return_value="playwright not installed"
+        ):
             result = browser_tools.browse_page("http://example.com")
             assert result["available"] is False
             assert "playwright" in result["reason"].lower()
@@ -443,21 +455,30 @@ class TestBrowserToolsDegradation:
     def test_screenshot_without_playwright(self):
         """screenshot_page must return available=False when Playwright is missing."""
         from src.mcp_servers import browser_tools
-        with patch.object(browser_tools, "_check_playwright", return_value="playwright not installed"):
+
+        with patch.object(
+            browser_tools, "_check_playwright", return_value="playwright not installed"
+        ):
             result = browser_tools.screenshot_page("http://example.com")
             assert result["available"] is False
 
     def test_click_and_extract_without_playwright(self):
         """click_and_extract must return available=False when Playwright is missing."""
         from src.mcp_servers import browser_tools
-        with patch.object(browser_tools, "_check_playwright", return_value="playwright not installed"):
+
+        with patch.object(
+            browser_tools, "_check_playwright", return_value="playwright not installed"
+        ):
             result = browser_tools.click_and_extract("http://example.com", "#btn")
             assert result["available"] is False
 
     def test_fill_form_without_playwright(self):
         """fill_form must return available=False when Playwright is missing."""
         from src.mcp_servers import browser_tools
-        with patch.object(browser_tools, "_check_playwright", return_value="playwright not installed"):
+
+        with patch.object(
+            browser_tools, "_check_playwright", return_value="playwright not installed"
+        ):
             result = browser_tools.fill_form("http://example.com", {"#name": "SAGE"})
             assert result["available"] is False
 
@@ -466,6 +487,7 @@ class TestBrowserToolsDegradation:
 #  6. BROWSER TOOLS — Live Playwright (if available)
 # ===========================================================================
 
+
 @pytest.mark.network
 class TestBrowserToolsLive:
     """Live browser tests — skipped if Playwright is not installed or no network."""
@@ -473,6 +495,7 @@ class TestBrowserToolsLive:
     @pytest.fixture(autouse=True)
     def _check_pw(self):
         from src.mcp_servers.browser_tools import _check_playwright
+
         reason = _check_playwright()
         if reason:
             pytest.skip(f"Playwright not available: {reason}")
@@ -480,6 +503,7 @@ class TestBrowserToolsLive:
     def test_browse_page_real(self):
         """browse_page must fetch a real page and extract text."""
         from src.mcp_servers.browser_tools import browse_page
+
         # Retry once — live network tests can have transient failures
         for attempt in range(2):
             result = browse_page("https://example.com", wait_seconds=2.0)
@@ -492,8 +516,11 @@ class TestBrowserToolsLive:
     def test_browse_page_with_links(self):
         """browse_page with extract_links must return link objects."""
         from src.mcp_servers.browser_tools import browse_page
+
         for attempt in range(2):
-            result = browse_page("https://example.com", extract_links=True, wait_seconds=2.0)
+            result = browse_page(
+                "https://example.com", extract_links=True, wait_seconds=2.0
+            )
             if result.get("success"):
                 break
         assert result["success"] is True, f"Failed after retries: {result.get('error')}"
@@ -503,7 +530,11 @@ class TestBrowserToolsLive:
     def test_screenshot_page_real(self, tmp_path):
         """screenshot_page must create a PNG file."""
         from src.mcp_servers.browser_tools import screenshot_page
-        with patch("src.mcp_servers.browser_tools._get_screenshot_dir", return_value=str(tmp_path)):
+
+        with patch(
+            "src.mcp_servers.browser_tools._get_screenshot_dir",
+            return_value=str(tmp_path),
+        ):
             for attempt in range(2):
                 result = screenshot_page("https://example.com", wait_seconds=2.0)
                 if result.get("success"):
@@ -517,11 +548,13 @@ class TestBrowserToolsLive:
 #  7. MCPRegistry — Framework Tool Discovery
 # ===========================================================================
 
+
 class TestRegistryFrameworkDiscovery:
     """Verify MCPRegistry discovers tools from src/mcp_servers/."""
 
     def _fresh_registry(self):
         from src.integrations.mcp_registry import MCPRegistry
+
         return MCPRegistry()
 
     def test_framework_tools_discovered(self, tmp_path):
@@ -535,8 +568,9 @@ class TestRegistryFrameworkDiscovery:
         assert count > 0
         tool_names = list(reg._tool_map.keys())
         # At minimum, filesystem + sqlite tools should be discovered
-        assert any("file" in n or "read" in n for n in tool_names), \
+        assert any("file" in n or "read" in n for n in tool_names), (
             f"Expected filesystem tools in: {tool_names}"
+        )
 
     def test_framework_and_solution_tools_merged(self, tmp_path):
         """Registry must load both framework and solution tools."""
@@ -559,15 +593,17 @@ class TestRegistryFrameworkDiscovery:
 
         reg = self._fresh_registry()
         with _patch_solution_dir(str(tmp_path)):
-            count = reg.load(force=True)
+            reg.load(force=True)
 
         tool_names = list(reg._tool_map.keys())
         # Framework tools present
-        assert any("file" in n or "read" in n for n in tool_names), \
+        assert any("file" in n or "read" in n for n in tool_names), (
             f"Framework tools missing from: {tool_names}"
+        )
         # Solution tool present
-        assert "domain_specific_tool" in tool_names, \
+        assert "domain_specific_tool" in tool_names, (
             f"Solution tool missing from: {tool_names}"
+        )
 
     def test_solution_tool_overrides_framework(self, tmp_path):
         """Solution tools with same name must override framework tools."""
@@ -604,6 +640,7 @@ class TestRegistryFrameworkDiscovery:
 #  8. MCPRegistry — Invoke → Audit Pipeline
 # ===========================================================================
 
+
 class TestRegistryAuditPipeline:
     """Verify registry invoke() writes to audit log end-to-end."""
 
@@ -615,7 +652,6 @@ class TestRegistryAuditPipeline:
         reg = MCPRegistry()
 
         audit_calls = []
-        original_audit = reg._audit
 
         def capture_audit(*args, **kwargs):
             audit_calls.append((args, kwargs))
@@ -627,7 +663,9 @@ class TestRegistryAuditPipeline:
             # Use file_exists which doesn't need the file to exist
             if "file_exists" in reg._tool_map:
                 with patch.object(reg, "load", return_value=len(reg._tool_map)):
-                    reg.invoke("file_exists", {"path": "test.yaml"}, trace_id="test-trace-001")
+                    reg.invoke(
+                        "file_exists", {"path": "test.yaml"}, trace_id="test-trace-001"
+                    )
 
                 assert len(audit_calls) == 1
                 args, kwargs = audit_calls[0]

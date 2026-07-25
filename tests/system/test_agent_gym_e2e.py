@@ -30,34 +30,42 @@ pytestmark = pytest.mark.system
 # Fixtures
 # ---------------------------------------------------------------------------
 
-MOCK_LLM_RESPONSE = json.dumps({
-    "score": 72,
-    "flaws": ["Minor issue found"],
-    "suggestions": ["Improve error handling"],
-    "missing": [],
-    "security_risks": [],
-    "summary": "Adequate implementation with room for improvement",
-})
+MOCK_LLM_RESPONSE = json.dumps(
+    {
+        "score": 72,
+        "flaws": ["Minor issue found"],
+        "suggestions": ["Improve error handling"],
+        "missing": [],
+        "security_risks": [],
+        "summary": "Adequate implementation with room for improvement",
+    }
+)
 
-MOCK_REFLECTION = json.dumps({
-    "reflection": "I should have added boundary checks for the input range.",
-    "improvement_plan": [
-        "Add input validation at function entry",
-        "Handle edge cases for zero and negative values",
-        "Add unit tests for boundary conditions",
-    ],
-})
+MOCK_REFLECTION = json.dumps(
+    {
+        "reflection": "I should have added boundary checks for the input range.",
+        "improvement_plan": [
+            "Add input validation at function entry",
+            "Handle edge cases for zero and negative values",
+            "Add unit tests for boundary conditions",
+        ],
+    }
+)
 
 
 @pytest.fixture
 def gym_client(tmp_audit_db):
     """System test client with mocked LLM and isolated DBs."""
     from src.core.agent_gym import AgentGym
+
     db_path = os.path.join(tempfile.mkdtemp(), "test_api_gym.db")
     isolated = AgentGym(db_path=db_path)
-    with patch("src.interface.api._get_audit_logger", return_value=tmp_audit_db), \
-         patch("src.core.agent_gym.agent_gym", isolated):
+    with (
+        patch("src.interface.api._get_audit_logger", return_value=tmp_audit_db),
+        patch("src.core.agent_gym.agent_gym", isolated),
+    ):
         from src.interface.api import app
+
         with TestClient(app) as c:
             yield c
 
@@ -78,6 +86,7 @@ def mock_llm():
 def isolated_gym():
     """Create an isolated AgentGym instance with temp DB."""
     from src.core.agent_gym import AgentGym
+
     db_path = os.path.join(tempfile.mkdtemp(), "test_gym.db")
     return AgentGym(db_path=db_path)
 
@@ -86,6 +95,7 @@ def isolated_gym():
 def isolated_catalog():
     """Create an isolated ExerciseCatalog instance with temp DB."""
     from src.core.exercise_catalog import ExerciseCatalog
+
     db_path = os.path.join(tempfile.mkdtemp(), "test_catalog.db")
     return ExerciseCatalog(db_path=db_path)
 
@@ -93,6 +103,7 @@ def isolated_catalog():
 # ===========================================================================
 # 1. Gym API Endpoints
 # ===========================================================================
+
 
 class TestGymAPIEndpoints:
     """Test all gym-related API endpoints via TestClient."""
@@ -102,10 +113,13 @@ class TestGymAPIEndpoints:
         with patch("src.memory.vector_store.vector_memory") as mock_vm:
             mock_vm.add_feedback = MagicMock()
             mock_vm.search = MagicMock(return_value=[])
-            resp = gym_client.post("/gym/train", json={
-                "role": "firmware_engineer",
-                "difficulty": "beginner",
-            })
+            resp = gym_client.post(
+                "/gym/train",
+                json={
+                    "role": "firmware_engineer",
+                    "difficulty": "beginner",
+                },
+            )
 
         assert resp.status_code == 200
         body = resp.json()
@@ -115,9 +129,12 @@ class TestGymAPIEndpoints:
 
     def test_gym_train_nonexistent_role(self, gym_client, mock_llm):
         """Training a nonexistent role fails gracefully."""
-        resp = gym_client.post("/gym/train", json={
-            "role": "nonexistent_role_xyz",
-        })
+        resp = gym_client.post(
+            "/gym/train",
+            json={
+                "role": "nonexistent_role_xyz",
+            },
+        )
         assert resp.status_code == 200
         body = resp.json()
         assert body["status"] == "failed"
@@ -179,10 +196,13 @@ class TestGymAPIEndpoints:
         with patch("src.memory.vector_store.vector_memory") as mock_vm:
             mock_vm.add_feedback = MagicMock()
             mock_vm.search = MagicMock(return_value=[])
-            resp = gym_client.post("/gym/train/batch", json={
-                "roles": ["nonexistent_a", "nonexistent_b"],
-                "max_parallel": 2,
-            })
+            resp = gym_client.post(
+                "/gym/train/batch",
+                json={
+                    "roles": ["nonexistent_a", "nonexistent_b"],
+                    "max_parallel": 2,
+                },
+            )
 
         assert resp.status_code == 200
         body = resp.json()
@@ -200,6 +220,7 @@ class TestGymAPIEndpoints:
 # ===========================================================================
 # 2. Exercise Catalog API
 # ===========================================================================
+
 
 class TestCatalogAPIEndpoints:
     """Test exercise catalog API endpoints."""
@@ -254,8 +275,14 @@ class TestCatalogAPIEndpoints:
         resp = gym_client.get("/gym/catalog")
         body = resp.json()
         expected_domains = [
-            "openfw", "openswe", "openml", "openeda",
-            "opensim", "opendoc", "opendesign", "openstrategy",
+            "openfw",
+            "openswe",
+            "openml",
+            "openeda",
+            "opensim",
+            "opendoc",
+            "opendesign",
+            "openstrategy",
         ]
         for domain in expected_domains:
             assert domain in body["domains"], f"Missing domain: {domain}"
@@ -265,6 +292,7 @@ class TestCatalogAPIEndpoints:
 # ===========================================================================
 # 3. Exercise Catalog — Unit-level
 # ===========================================================================
+
 
 class TestExerciseCatalogIntegration:
     """Integration tests for the exercise catalog system."""
@@ -303,9 +331,25 @@ class TestExerciseCatalogIntegration:
             all_tags.update(ex.tags)
 
         required = [
-            "gpio", "uart", "spi", "i2c", "dma", "timer", "rtos",
-            "watchdog", "adc", "pwm", "power", "safety", "bootloader",
-            "can", "usb", "ethernet", "crypto", "boot", "flash",
+            "gpio",
+            "uart",
+            "spi",
+            "i2c",
+            "dma",
+            "timer",
+            "rtos",
+            "watchdog",
+            "adc",
+            "pwm",
+            "power",
+            "safety",
+            "bootloader",
+            "can",
+            "usb",
+            "ethernet",
+            "crypto",
+            "boot",
+            "flash",
         ]
         missing = [t for t in required if t not in all_tags]
         assert not missing, f"Firmware catalog missing topics: {missing}"
@@ -317,8 +361,16 @@ class TestExerciseCatalogIntegration:
             all_tags.update(ex.tags)
 
         required = [
-            "api", "testing", "database", "security", "auth",
-            "middleware", "cache", "websocket", "events", "distributed",
+            "api",
+            "testing",
+            "database",
+            "security",
+            "auth",
+            "middleware",
+            "cache",
+            "websocket",
+            "events",
+            "distributed",
         ]
         missing = [t for t in required if t not in all_tags]
         assert not missing, f"Software catalog missing topics: {missing}"
@@ -355,6 +407,7 @@ class TestExerciseCatalogIntegration:
     def test_exercise_ids_deterministic(self, isolated_catalog):
         """Same exercise should get the same ID across catalog instances."""
         from src.core.exercise_catalog import ExerciseCatalog
+
         db_path2 = os.path.join(tempfile.mkdtemp(), "cat2.db")
         catalog2 = ExerciseCatalog(db_path=db_path2)
 
@@ -378,17 +431,20 @@ class TestExerciseCatalogIntegration:
 # 4. Glicko-2 Rating System
 # ===========================================================================
 
+
 class TestGlicko2RatingSystem:
     """Test the Glicko-2 rating system behavior."""
 
     def test_rating_increases_on_win(self, isolated_gym):
         from src.core.agent_gym import SkillRating
+
         rating = SkillRating("dev", "swe", rating=1000.0)
         new = isolated_gym._update_rating("dev:swe", rating, 85.0, True)
         assert new > 1000.0, "Rating should increase on win"
 
     def test_rating_decreases_on_loss(self, isolated_gym):
         from src.core.agent_gym import SkillRating
+
         rating = SkillRating("dev", "swe", rating=1200.0)
         new = isolated_gym._update_rating("dev:swe", rating, 15.0, False)
         assert new < 1200.0, "Rating should decrease on loss"
@@ -396,6 +452,7 @@ class TestGlicko2RatingSystem:
     def test_rd_shrinks_with_data(self, isolated_gym):
         """Rating deviation should decrease as more sessions are completed."""
         from src.core.agent_gym import SkillRating
+
         rating = SkillRating("dev", "swe", rating_deviation=350.0)
         initial_rd = rating.rating_deviation
 
@@ -408,6 +465,7 @@ class TestGlicko2RatingSystem:
     def test_confidence_interval(self, isolated_gym):
         """to_dict should include confidence interval."""
         from src.core.agent_gym import SkillRating
+
         rating = SkillRating("dev", "swe", rating=1200.0, rating_deviation=100.0)
         d = rating.to_dict()
         assert "confidence_interval" in d
@@ -417,15 +475,19 @@ class TestGlicko2RatingSystem:
     def test_volatility_changes_on_result(self, isolated_gym):
         """Volatility should change (Glicko-2 σ update) after a result."""
         from src.core.agent_gym import SkillRating
+
         # High-rated agent that fails badly — volatility updates via Glicko-2
         rating = SkillRating("dev", "swe", rating=1800.0, volatility=0.06)
         initial_vol = rating.volatility
         isolated_gym._update_rating("dev:swe", rating, 10.0, False)
-        assert rating.volatility != initial_vol, "Volatility should change after Glicko-2 update"
+        assert rating.volatility != initial_vol, (
+            "Volatility should change after Glicko-2 update"
+        )
 
     def test_rating_clamped(self, isolated_gym):
         """Rating should stay within [100, 3000]."""
         from src.core.agent_gym import SkillRating
+
         # Push very high
         rating = SkillRating("dev", "swe", rating=2900.0)
         for _ in range(20):
@@ -441,6 +503,7 @@ class TestGlicko2RatingSystem:
     def test_streak_tracking(self, isolated_gym):
         """Win/loss streaks should be tracked."""
         from src.core.agent_gym import SkillRating
+
         rating = SkillRating("dev", "swe")
 
         # 3 wins
@@ -458,12 +521,14 @@ class TestGlicko2RatingSystem:
 # 5. Spaced Repetition
 # ===========================================================================
 
+
 class TestSpacedRepetition:
     """Test spaced repetition scheduling for failed exercises."""
 
     def test_failed_exercise_scheduled(self, isolated_gym):
         """Failed exercises should be scheduled for retry."""
         from src.core.agent_gym import SkillRating
+
         rating = SkillRating("dev", "swe")
         isolated_gym._update_rating("dev:swe", rating, 20.0, False, exercise_id="ex-1")
 
@@ -474,6 +539,7 @@ class TestSpacedRepetition:
     def test_passed_exercise_cleared(self, isolated_gym):
         """Passing a failed exercise should clear it from schedule."""
         from src.core.agent_gym import SkillRating
+
         rating = SkillRating("dev", "swe")
 
         # Fail then pass
@@ -486,11 +552,12 @@ class TestSpacedRepetition:
     def test_multiple_failures_increase_interval(self, isolated_gym):
         """Repeated failures should not decrease retry interval."""
         from src.core.agent_gym import SkillRating
+
         rating = SkillRating("dev", "swe")
 
         # Fail the same exercise multiple times
         isolated_gym._update_rating("dev:swe", rating, 20.0, False, exercise_id="ex-1")
-        first_threshold = rating.failed_exercises["ex-1"]
+        rating.failed_exercises["ex-1"]
 
         # Fail again (should still have a scheduled retry)
         isolated_gym._update_rating("dev:swe", rating, 15.0, False, exercise_id="ex-2")
@@ -499,6 +566,7 @@ class TestSpacedRepetition:
     def test_pending_reviews_count(self, isolated_gym):
         """to_dict should show count of pending reviews."""
         from src.core.agent_gym import SkillRating
+
         rating = SkillRating("dev", "swe", sessions=5)
         rating.failed_exercises = {"ex-1": 3, "ex-2": 10}  # ex-1 due, ex-2 not due
 
@@ -510,17 +578,24 @@ class TestSpacedRepetition:
 # 6. Curriculum System
 # ===========================================================================
 
+
 class TestCurriculumSystem:
     """Test curriculum auto-progression (difficulty advancement/demotion)."""
 
     def test_advance_on_high_win_rate(self, isolated_gym):
         """Difficulty should advance when win rate > 70% after minimum sessions."""
         from src.core.agent_gym import SkillRating, TrainingSession
+
         for i in range(5):
             s = TrainingSession(
-                session_id=f"adv-{i}", agent_role="dev", runner_name="openswe",
-                skill_name="swe", exercise_id=f"ex-{i}", difficulty="beginner",
-                status="completed", grade={"score": 85, "passed": True},
+                session_id=f"adv-{i}",
+                agent_role="dev",
+                runner_name="openswe",
+                skill_name="swe",
+                exercise_id=f"ex-{i}",
+                difficulty="beginner",
+                status="completed",
+                grade={"score": 85, "passed": True},
                 started_at=1000.0 + i,
             )
             isolated_gym._db.save_session(s)
@@ -533,11 +608,17 @@ class TestCurriculumSystem:
     def test_demote_on_low_win_rate(self, isolated_gym):
         """Difficulty should demote when win rate < 25% after minimum sessions."""
         from src.core.agent_gym import SkillRating, TrainingSession
+
         for i in range(6):
             s = TrainingSession(
-                session_id=f"dem-{i}", agent_role="dev", runner_name="openswe",
-                skill_name="swe", exercise_id=f"ex-{i}", difficulty="intermediate",
-                status="completed", grade={"score": 15, "passed": False},
+                session_id=f"dem-{i}",
+                agent_role="dev",
+                runner_name="openswe",
+                skill_name="swe",
+                exercise_id=f"ex-{i}",
+                difficulty="intermediate",
+                status="completed",
+                grade={"score": 15, "passed": False},
                 started_at=1000.0 + i,
             )
             isolated_gym._db.save_session(s)
@@ -550,12 +631,18 @@ class TestCurriculumSystem:
     def test_no_advance_below_minimum_sessions(self, isolated_gym):
         """Should not advance with fewer than minimum sessions."""
         from src.core.agent_gym import SkillRating, TrainingSession
+
         # Only 2 sessions (minimum is 3)
         for i in range(2):
             s = TrainingSession(
-                session_id=f"few-{i}", agent_role="dev", runner_name="openswe",
-                skill_name="swe", exercise_id=f"ex-{i}", difficulty="beginner",
-                status="completed", grade={"score": 95, "passed": True},
+                session_id=f"few-{i}",
+                agent_role="dev",
+                runner_name="openswe",
+                skill_name="swe",
+                exercise_id=f"ex-{i}",
+                difficulty="beginner",
+                status="completed",
+                grade={"score": 95, "passed": True},
                 started_at=1000.0 + i,
             )
             isolated_gym._db.save_session(s)
@@ -567,11 +654,17 @@ class TestCurriculumSystem:
     def test_no_advance_past_expert(self, isolated_gym):
         """Should not advance past 'expert' difficulty."""
         from src.core.agent_gym import SkillRating, TrainingSession
+
         for i in range(5):
             s = TrainingSession(
-                session_id=f"exp-{i}", agent_role="dev", runner_name="openswe",
-                skill_name="swe", exercise_id=f"ex-{i}", difficulty="expert",
-                status="completed", grade={"score": 95, "passed": True},
+                session_id=f"exp-{i}",
+                agent_role="dev",
+                runner_name="openswe",
+                skill_name="swe",
+                exercise_id=f"ex-{i}",
+                difficulty="expert",
+                status="completed",
+                grade={"score": 95, "passed": True},
                 started_at=1000.0 + i,
             )
             isolated_gym._db.save_session(s)
@@ -585,12 +678,14 @@ class TestCurriculumSystem:
 # 7. SQLite Persistence
 # ===========================================================================
 
+
 class TestSQLitePersistence:
     """Test that gym data persists across instances."""
 
     def test_ratings_persist(self):
         """Ratings should survive gym restart."""
         from src.core.agent_gym import AgentGym, SkillRating
+
         db_path = os.path.join(tempfile.mkdtemp(), "persist.db")
 
         gym1 = AgentGym(db_path=db_path)
@@ -606,13 +701,19 @@ class TestSQLitePersistence:
     def test_sessions_persist(self):
         """Training sessions should be queryable after restart."""
         from src.core.agent_gym import AgentGym, TrainingSession
+
         db_path = os.path.join(tempfile.mkdtemp(), "persist2.db")
 
         gym1 = AgentGym(db_path=db_path)
         session = TrainingSession(
-            session_id="persist-test", agent_role="dev", runner_name="openswe",
-            skill_name="swe", exercise_id="ex-1", difficulty="intermediate",
-            status="completed", grade={"score": 80, "passed": True},
+            session_id="persist-test",
+            agent_role="dev",
+            runner_name="openswe",
+            skill_name="swe",
+            exercise_id="ex-1",
+            difficulty="intermediate",
+            status="completed",
+            grade={"score": 80, "passed": True},
         )
         gym1._db.save_session(session)
 
@@ -625,15 +726,21 @@ class TestSQLitePersistence:
     def test_analytics_with_data(self):
         """Analytics should work with persisted session data."""
         from src.core.agent_gym import AgentGym, TrainingSession
+
         db_path = os.path.join(tempfile.mkdtemp(), "analytics.db")
         gym = AgentGym(db_path=db_path)
 
         # Create 20 sessions so early/late windows (size 10) are distinct
         for i in range(20):
             s = TrainingSession(
-                session_id=f"ana-{i}", agent_role="dev", runner_name="openswe",
-                skill_name="swe", exercise_id=f"ex-{i % 3}", difficulty="intermediate",
-                status="completed", grade={"score": 40 + i * 3, "passed": i > 5},
+                session_id=f"ana-{i}",
+                agent_role="dev",
+                runner_name="openswe",
+                skill_name="swe",
+                exercise_id=f"ex-{i % 3}",
+                difficulty="intermediate",
+                status="completed",
+                grade={"score": 40 + i * 3, "passed": i > 5},
                 started_at=1000.0 + i,
             )
             gym._db.save_session(s)
@@ -649,6 +756,7 @@ class TestSQLitePersistence:
 # ===========================================================================
 # 8. Full Training Loop (Integration)
 # ===========================================================================
+
 
 class TestFullTrainingLoop:
     """End-to-end training loop with mocked LLM."""
@@ -712,14 +820,24 @@ class TestFullTrainingLoop:
 # 9. Variant Axes Coverage
 # ===========================================================================
 
+
 class TestVariantAxes:
     """Verify variant axis definitions are comprehensive."""
 
     def test_all_domains_have_variant_axes(self):
         """Every domain should have variant axes defined."""
         from src.core.exercise_catalog import VARIANT_AXES
-        expected = ["openfw", "openswe", "openml", "openeda",
-                    "opensim", "opendoc", "opendesign", "openstrategy"]
+
+        expected = [
+            "openfw",
+            "openswe",
+            "openml",
+            "openeda",
+            "opensim",
+            "opendoc",
+            "opendesign",
+            "openstrategy",
+        ]
         for domain in expected:
             assert domain in VARIANT_AXES, f"Missing variant axes for {domain}"
             assert len(VARIANT_AXES[domain]) >= 8, (
@@ -729,6 +847,7 @@ class TestVariantAxes:
     def test_variant_axes_are_strings(self):
         """All variant axes should be non-empty strings."""
         from src.core.exercise_catalog import VARIANT_AXES
+
         for domain, axes in VARIANT_AXES.items():
             for axis in axes:
                 assert isinstance(axis, str) and len(axis) > 0, (

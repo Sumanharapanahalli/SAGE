@@ -46,9 +46,9 @@ NUMERIC_FEATURES: List[str] = [
 ]
 
 CATEGORICAL_FEATURES: List[str] = [
-    "payment_method",   # cash | credit | debit | mobile
-    "merchant_type",    # restaurant | airline | hotel | ...
-    "currency",         # USD | EUR | GBP | ...
+    "payment_method",  # cash | credit | debit | mobile
+    "merchant_type",  # restaurant | airline | hotel | ...
+    "currency",  # USD | EUR | GBP | ...
 ]
 
 TARGET_COLUMN = "category"
@@ -67,6 +67,7 @@ class ReceiptDataset:
 
 
 # ── Synthetic generator ────────────────────────────────────────────────────────
+
 
 def generate_synthetic_data(
     n_samples: int = 5_000,
@@ -88,14 +89,14 @@ def generate_synthetic_data(
 
     if class_weights is None:
         class_weights = {
-            "food_dining":       0.28,
-            "travel_transport":  0.15,
-            "accommodation":     0.10,
-            "office_supplies":   0.12,
-            "entertainment":     0.10,
-            "utilities":         0.10,
-            "healthcare":        0.05,
-            "retail_shopping":   0.10,
+            "food_dining": 0.28,
+            "travel_transport": 0.15,
+            "accommodation": 0.10,
+            "office_supplies": 0.12,
+            "entertainment": 0.10,
+            "utilities": 0.10,
+            "healthcare": 0.05,
+            "retail_shopping": 0.10,
         }
 
     # Normalise weights
@@ -105,20 +106,17 @@ def generate_synthetic_data(
 
     # Per-category amount distributions (mean, std) in USD
     amount_params = {
-        "food_dining":       (25,  20),
-        "travel_transport":  (120, 80),
-        "accommodation":     (180, 120),
-        "office_supplies":   (55,  40),
-        "entertainment":     (60,  50),
-        "utilities":         (90,  30),
-        "healthcare":        (150, 100),
-        "retail_shopping":   (70,  60),
+        "food_dining": (25, 20),
+        "travel_transport": (120, 80),
+        "accommodation": (180, 120),
+        "office_supplies": (55, 40),
+        "entertainment": (60, 50),
+        "utilities": (90, 30),
+        "healthcare": (150, 100),
+        "retail_shopping": (70, 60),
     }
 
-    amounts = np.array([
-        max(1.0, rng.normal(*amount_params[c]))
-        for c in categories
-    ])
+    amounts = np.array([max(1.0, rng.normal(*amount_params[c])) for c in categories])
 
     item_count = rng.integers(1, 15, size=n_samples)
     discount_pct = rng.uniform(0, 0.30, size=n_samples)
@@ -136,43 +134,45 @@ def generate_synthetic_data(
     merchant_tx_count = rng.integers(50, 5_000, size=n_samples)
 
     payment_methods = rng.choice(
-        ["credit", "debit", "cash", "mobile"], size=n_samples, p=[0.45, 0.30, 0.15, 0.10]
+        ["credit", "debit", "cash", "mobile"],
+        size=n_samples,
+        p=[0.45, 0.30, 0.15, 0.10],
     )
 
     merchant_type_map = {
-        "food_dining":       ["restaurant", "cafe", "fast_food"],
-        "travel_transport":  ["airline", "taxi", "car_rental"],
-        "accommodation":     ["hotel", "airbnb", "hostel"],
-        "office_supplies":   ["stationery", "electronics", "printing"],
-        "entertainment":     ["cinema", "theater", "streaming"],
-        "utilities":         ["electricity", "water", "telecom"],
-        "healthcare":        ["pharmacy", "clinic", "hospital"],
-        "retail_shopping":   ["clothing", "grocery", "department_store"],
+        "food_dining": ["restaurant", "cafe", "fast_food"],
+        "travel_transport": ["airline", "taxi", "car_rental"],
+        "accommodation": ["hotel", "airbnb", "hostel"],
+        "office_supplies": ["stationery", "electronics", "printing"],
+        "entertainment": ["cinema", "theater", "streaming"],
+        "utilities": ["electricity", "water", "telecom"],
+        "healthcare": ["pharmacy", "clinic", "hospital"],
+        "retail_shopping": ["clothing", "grocery", "department_store"],
     }
-    merchant_types = np.array([
-        rng.choice(merchant_type_map[c]) for c in categories
-    ])
+    merchant_types = np.array([rng.choice(merchant_type_map[c]) for c in categories])
 
     currencies = rng.choice(
         ["USD", "EUR", "GBP", "CAD"], size=n_samples, p=[0.60, 0.20, 0.12, 0.08]
     )
 
-    df = pd.DataFrame({
-        "amount_usd":                amounts.round(2),
-        "item_count":                item_count,
-        "discount_pct":              discount_pct.round(4),
-        "tip_pct":                   tip_pct.round(4),
-        "hour_of_day":               hour_of_day,
-        "day_of_week":               day_of_week,
-        "is_weekend":                is_weekend,
-        "days_since_last_purchase":  days_since_last,
-        "merchant_avg_ticket":       merchant_avg_ticket.round(2),
-        "merchant_transaction_count": merchant_tx_count,
-        "payment_method":            payment_methods,
-        "merchant_type":             merchant_types,
-        "currency":                  currencies,
-        TARGET_COLUMN:               categories,
-    })
+    df = pd.DataFrame(
+        {
+            "amount_usd": amounts.round(2),
+            "item_count": item_count,
+            "discount_pct": discount_pct.round(4),
+            "tip_pct": tip_pct.round(4),
+            "hour_of_day": hour_of_day,
+            "day_of_week": day_of_week,
+            "is_weekend": is_weekend,
+            "days_since_last_purchase": days_since_last,
+            "merchant_avg_ticket": merchant_avg_ticket.round(2),
+            "merchant_transaction_count": merchant_tx_count,
+            "payment_method": payment_methods,
+            "merchant_type": merchant_types,
+            "currency": currencies,
+            TARGET_COLUMN: categories,
+        }
+    )
 
     logger.info(
         "Generated %d synthetic receipts | class distribution:\n%s",

@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import logging
 import warnings
-from typing import List, Tuple
+from typing import Tuple
 
 import numpy as np
 
@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 def _try_import_pmdarima():
     try:
         import pmdarima as pm
+
         return pm
     except ImportError:
         return None
@@ -31,6 +32,7 @@ def _try_import_pmdarima():
 def _try_import_statsmodels():
     try:
         from statsmodels.tsa.arima.model import ARIMA
+
         return ARIMA
     except ImportError:
         return None

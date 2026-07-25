@@ -22,7 +22,7 @@ import io
 import logging
 import re
 import zipfile
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
@@ -32,30 +32,30 @@ logger = logging.getLogger(__name__)
 
 # Maps canonical type name → leading byte sequence
 MAGIC_BYTES: dict[str, bytes] = {
-    "pdf":  b"%PDF",
-    "zip":  b"PK\x03\x04",
+    "pdf": b"%PDF",
+    "zip": b"PK\x03\x04",
     "zip64_end": b"PK\x06\x06",
-    "gz":   b"\x1f\x8b",
-    "bz2":  b"BZh",
-    "xz":   b"\xfd7zXZ\x00",
-    "rar":  b"Rar!\x1a\x07",
-    "7z":   b"7z\xbc\xaf\x27\x1c",
-    "tar":  b"\x75\x73\x74\x61\x72",  # "ustar" offset 257, approximate
-    "exe":  b"MZ",
-    "elf":  b"\x7fELF",
-    "png":  b"\x89PNG\r\n\x1a\n",
+    "gz": b"\x1f\x8b",
+    "bz2": b"BZh",
+    "xz": b"\xfd7zXZ\x00",
+    "rar": b"Rar!\x1a\x07",
+    "7z": b"7z\xbc\xaf\x27\x1c",
+    "tar": b"\x75\x73\x74\x61\x72",  # "ustar" offset 257, approximate
+    "exe": b"MZ",
+    "elf": b"\x7fELF",
+    "png": b"\x89PNG\r\n\x1a\n",
     "jpeg": b"\xff\xd8\xff",
-    "gif":  b"GIF8",
+    "gif": b"GIF8",
     "webp": b"RIFF",
 }
 
 # Extension → allowed magic type(s).  Only these are accepted at upload time.
 ALLOWED_BY_EXTENSION: dict[str, frozenset[str]] = {
-    ".pdf":  frozenset({"pdf"}),
-    ".png":  frozenset({"png"}),
-    ".jpg":  frozenset({"jpeg"}),
+    ".pdf": frozenset({"pdf"}),
+    ".png": frozenset({"png"}),
+    ".jpg": frozenset({"jpeg"}),
     ".jpeg": frozenset({"jpeg"}),
-    ".gif":  frozenset({"gif"}),
+    ".gif": frozenset({"gif"}),
     ".webp": frozenset({"webp"}),
 }
 
@@ -64,10 +64,10 @@ ALLOWED_BY_EXTENSION: dict[str, frozenset[str]] = {
 # ---------------------------------------------------------------------------
 
 #: Maximum raw upload size (bytes).  Checked before any parsing.
-MAX_FILE_SIZE_BYTES: int = 50 * 1024 * 1024        # 50 MB
+MAX_FILE_SIZE_BYTES: int = 50 * 1024 * 1024  # 50 MB
 
 #: Maximum size for PDF files specifically.
-MAX_PDF_SIZE_BYTES: int = 20 * 1024 * 1024         # 20 MB
+MAX_PDF_SIZE_BYTES: int = 20 * 1024 * 1024  # 20 MB
 
 #: Maximum total uncompressed bytes across all ZIP entries.
 MAX_UNCOMPRESSED_BYTES: int = 1 * 1024 * 1024 * 1024  # 1 GB
@@ -86,17 +86,19 @@ MAX_OCR_TEXT_LENGTH: int = 500_000
 # Result type
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class ValidationResult:
     valid: bool
-    detected_type: str        # e.g. "pdf", "zip", "unknown"
-    declared_extension: str   # e.g. ".pdf"
+    detected_type: str  # e.g. "pdf", "zip", "unknown"
+    declared_extension: str  # e.g. ".pdf"
     error: str = ""
 
 
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
+
 
 def _detect_magic_type(header: bytes) -> str:
     """Return the canonical type name matching the leading bytes, or 'unknown'."""
@@ -133,10 +135,10 @@ def _check_zip_bomb(data: bytes) -> tuple[bool, str]:
 
             # 2. Total uncompressed size from central directory headers
             total_uncompressed = sum(e.file_size for e in entries)
-            total_compressed   = sum(e.compress_size for e in entries)
+            total_compressed = sum(e.compress_size for e in entries)
 
             if total_uncompressed > MAX_UNCOMPRESSED_BYTES:
-                gb = total_uncompressed / (1024 ** 3)
+                gb = total_uncompressed / (1024**3)
                 return False, (
                     f"ZIP would expand to {gb:.2f} GB "
                     f"(limit {MAX_UNCOMPRESSED_BYTES // (1024**3)} GB)"
@@ -165,6 +167,7 @@ def _check_zip_bomb(data: bytes) -> tuple[bool, str]:
 # Public API
 # ---------------------------------------------------------------------------
 
+
 def validate_upload(filename: str, data: bytes) -> ValidationResult:
     """
     Validate an uploaded file before any processing.
@@ -184,7 +187,7 @@ def validate_upload(filename: str, data: bytes) -> ValidationResult:
 
     # 1 — Raw size
     if len(data) > MAX_FILE_SIZE_BYTES:
-        mb = len(data) / (1024 ** 2)
+        mb = len(data) / (1024**2)
         return ValidationResult(
             valid=False,
             detected_type="unknown",
@@ -200,7 +203,9 @@ def validate_upload(filename: str, data: bytes) -> ValidationResult:
     if allowed_magic is not None and detected not in allowed_magic:
         logger.warning(
             "Magic-byte mismatch: filename=%s declared_ext=%s detected_type=%s",
-            filename, ext, detected,
+            filename,
+            ext,
+            detected,
         )
         return ValidationResult(
             valid=False,
@@ -223,7 +228,7 @@ def validate_upload(filename: str, data: bytes) -> ValidationResult:
 
     # 4 — PDF size cap
     if detected == "pdf" and len(data) > MAX_PDF_SIZE_BYTES:
-        mb = len(data) / (1024 ** 2)
+        mb = len(data) / (1024**2)
         return ValidationResult(
             valid=False,
             detected_type=detected,
@@ -235,7 +240,9 @@ def validate_upload(filename: str, data: bytes) -> ValidationResult:
     if detected in {"zip", "zip64_end"}:
         is_safe, bomb_error = _check_zip_bomb(data)
         if not is_safe:
-            logger.warning("ZIP bomb rejected: filename=%s error=%s", filename, bomb_error)
+            logger.warning(
+                "ZIP bomb rejected: filename=%s error=%s", filename, bomb_error
+            )
             return ValidationResult(
                 valid=False,
                 detected_type=detected,
@@ -275,7 +282,8 @@ def sanitise_ocr_text(raw: str) -> str:
     if len(sanitised) > MAX_OCR_TEXT_LENGTH:
         logger.warning(
             "OCR text truncated: original=%d chars, limit=%d",
-            len(sanitised), MAX_OCR_TEXT_LENGTH,
+            len(sanitised),
+            MAX_OCR_TEXT_LENGTH,
         )
         sanitised = sanitised[:MAX_OCR_TEXT_LENGTH]
 

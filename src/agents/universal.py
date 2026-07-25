@@ -18,7 +18,6 @@ Usage:
 import json
 import logging
 import uuid
-from typing import Optional
 
 
 class UniversalAgent:
@@ -42,11 +41,14 @@ class UniversalAgent:
         """Best-effort trace id, falling back to a uuid when the module is unavailable."""
         try:
             from src.modules.trace_id import new as generate_trace_id
+
             return generate_trace_id()
         except Exception:
             return str(uuid.uuid4())
 
-    def _emit_agent_error(self, agent: str, task_id: str, exc: Exception, trace_id: str) -> dict:
+    def _emit_agent_error(
+        self, agent: str, task_id: str, exc: Exception, trace_id: str
+    ) -> dict:
         """Emit a structured agent_error event to the audit logger on failure."""
         event = {
             "event": "agent_error",
@@ -58,6 +60,7 @@ class UniversalAgent:
         }
         try:
             from src.memory.audit_logger import audit_logger
+
             audit_logger.log_event(
                 actor=event["agent"],
                 action_type="agent_error",
@@ -67,13 +70,16 @@ class UniversalAgent:
             )
         except Exception:
             # Never let error reporting mask the original failure.
-            self.logger.critical("Failed to emit agent_error event: %s", json.dumps(event))
+            self.logger.critical(
+                "Failed to emit agent_error event: %s", json.dumps(event)
+            )
         return event
 
     def get_roles(self) -> dict:
         """Return all roles defined in the current solution's prompts.yaml."""
         try:
             from src.core.project_loader import project_config
+
             return project_config.get_prompts().get("roles", {})
         except Exception as e:
             self._emit_agent_error(
@@ -112,12 +118,15 @@ class UniversalAgent:
                 f"Available: {list(roles.keys())}"
             )
 
-        role_name     = role_cfg.get("name", role_id)
-        system_prompt = role_cfg.get("system_prompt", f"You are a {role_name} assistant.")
-        icon          = role_cfg.get("icon", "🤖")
+        role_name = role_cfg.get("name", role_id)
+        system_prompt = role_cfg.get(
+            "system_prompt", f"You are a {role_name} assistant."
+        )
+        icon = role_cfg.get("icon", "🤖")
         # Inject SKILL.md domain knowledge when available
         try:
             from src.core.project_loader import project_config as _pc
+
             _skill = _pc.skill_content
             if _skill:
                 system_prompt = system_prompt + "\n\n## Domain Skills\n" + _skill
@@ -127,6 +136,7 @@ class UniversalAgent:
         # ── Constitution injection (non-blocking) ─────────────────────────
         try:
             from src.core.constitution import get_constitution
+
             _constitution = get_constitution()
             system_prompt = _constitution.inject_into_prompt(system_prompt)
         except Exception:
@@ -153,6 +163,7 @@ confidence: HIGH, MEDIUM, or LOW based on available information
         # ── Long-term memory injection (non-blocking) ──────────────────────
         try:
             from src.memory.long_term_memory import long_term_memory
+
             memories = long_term_memory.recall(query=task, user_id=actor, limit=3)
             if memories:
                 memory_block = "\n".join(f"- {m}" for m in memories)
@@ -163,6 +174,7 @@ confidence: HIGH, MEDIUM, or LOW based on available information
         # ── Collective intelligence injection (non-blocking) ──────────
         try:
             from src.core.collective_memory import get_collective_memory
+
             cm = get_collective_memory()
             collective_hits = cm.search_learnings(query=task, limit=3)
             if collective_hits:
@@ -187,19 +199,19 @@ confidence: HIGH, MEDIUM, or LOW based on available information
         severity = classify_severity(parsed.get("severity", "GREEN"))
 
         result = {
-            "trace_id":        trace_id,
-            "role_id":         role_id,
-            "role_name":       role_name,
-            "icon":            icon,
-            "task":            task,
-            "summary":         parsed.get("summary",         raw[:200]),
-            "analysis":        parsed.get("analysis",        raw),
+            "trace_id": trace_id,
+            "role_id": role_id,
+            "role_name": role_name,
+            "icon": icon,
+            "task": task,
+            "summary": parsed.get("summary", raw[:200]),
+            "analysis": parsed.get("analysis", raw),
             "recommendations": parsed.get("recommendations", []),
-            "next_steps":      parsed.get("next_steps",      []),
-            "severity":        severity,
-            "confidence":      parsed.get("confidence",      "MEDIUM"),
-            "raw_response":    raw,
-            "status":          "pending_review",
+            "next_steps": parsed.get("next_steps", []),
+            "severity": severity,
+            "confidence": parsed.get("confidence", "MEDIUM"),
+            "raw_response": raw,
+            "status": "pending_review",
         }
 
         # ── Audit log ──────────────────────────────────────────────────────
@@ -208,16 +220,20 @@ confidence: HIGH, MEDIUM, or LOW based on available information
                 actor=actor,
                 action_type=f"AGENT_{role_id.upper()}",
                 input_context=task[:500],
-                output_content=json.dumps({
-                    "trace_id":        trace_id,
-                    "summary":         result["summary"],
-                    "severity":        severity,
-                    "confidence":      result["confidence"],
-                    "recommendations": result["recommendations"],
-                }),
+                output_content=json.dumps(
+                    {
+                        "trace_id": trace_id,
+                        "summary": result["summary"],
+                        "severity": severity,
+                        "confidence": result["confidence"],
+                        "recommendations": result["recommendations"],
+                    }
+                ),
             )
         except Exception as e:
-            self._emit_agent_error(agent=role_id, task_id=trace_id, exc=e, trace_id=trace_id)
+            self._emit_agent_error(
+                agent=role_id, task_id=trace_id, exc=e, trace_id=trace_id
+            )
 
         return result
 
@@ -237,13 +253,14 @@ confidence: HIGH, MEDIUM, or LOW based on available information
         """
         # Map parameters to run method
         task = f"[{task_type}] {description}"
-        full_context = f"Workspace: {workspace}\nContext: {context}" if workspace or context else ""
+        full_context = (
+            f"Workspace: {workspace}\nContext: {context}"
+            if workspace or context
+            else ""
+        )
 
         return self.run(
-            role_id=agent_role,
-            task=task,
-            context=full_context,
-            actor=actor
+            role_id=agent_role, task=task, context=full_context, actor=actor
         )
 
 

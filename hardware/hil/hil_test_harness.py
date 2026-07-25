@@ -32,10 +32,7 @@ from __future__ import annotations
 
 import logging
 import socket
-import struct
-import subprocess
 import time
-from contextlib import contextmanager
 from dataclasses import dataclass, field
 from typing import Generator, List, Optional
 
@@ -43,36 +40,38 @@ import pytest
 
 # ── Logging ──────────────────────────────────────────────────────────────────
 log = logging.getLogger("hil")
-logging.basicConfig(level=logging.INFO,
-                    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+)
 
 # ── Target memory map (must match sensor_hal.h) ──────────────────────────────
-SENSOR_PERIPH_BASE   = 0x40011000
-SENSOR_SR_ADDR       = SENSOR_PERIPH_BASE + 0x00
-SENSOR_DR_ADDR       = SENSOR_PERIPH_BASE + 0x04
-SENSOR_CR1_ADDR      = SENSOR_PERIPH_BASE + 0x08
-SENSOR_CR2_ADDR      = SENSOR_PERIPH_BASE + 0x0C
+SENSOR_PERIPH_BASE = 0x40011000
+SENSOR_SR_ADDR = SENSOR_PERIPH_BASE + 0x00
+SENSOR_DR_ADDR = SENSOR_PERIPH_BASE + 0x04
+SENSOR_CR1_ADDR = SENSOR_PERIPH_BASE + 0x08
+SENSOR_CR2_ADDR = SENSOR_PERIPH_BASE + 0x0C
 
 # SysTick (used as timestamp source in firmware)
-SYSTICK_CVR_ADDR     = 0xE000E018
+SYSTICK_CVR_ADDR = 0xE000E018
 
-ADC_FULL_SCALE       = 0x0FFF       # 12-bit
-CRC_OK_BIT           = 0x8000
-DATA_READY_BIT       = 0x0001
+ADC_FULL_SCALE = 0x0FFF  # 12-bit
+CRC_OK_BIT = 0x8000
+DATA_READY_BIT = 0x0001
 
 # ── OpenOCD telnet interface ──────────────────────────────────────────────────
-OPENOCD_HOST         = "127.0.0.1"
-OPENOCD_PORT         = 4444
-OPENOCD_TIMEOUT_S    = 5.0
+OPENOCD_HOST = "127.0.0.1"
+OPENOCD_PORT = 4444
+OPENOCD_TIMEOUT_S = 5.0
 
 # ── GDB machine-interface port ────────────────────────────────────────────────
-GDB_HOST             = "127.0.0.1"
-GDB_PORT             = 3333
+GDB_HOST = "127.0.0.1"
+GDB_PORT = 3333
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
 #  OpenOCD telnet wrapper
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class OpenOCDClient:
     """Thin telnet wrapper for OpenOCD command interface."""
@@ -83,9 +82,10 @@ class OpenOCDClient:
         self._port = port
 
     def connect(self) -> None:
-        self._sock = socket.create_connection((self._host, self._port),
-                                               timeout=OPENOCD_TIMEOUT_S)
-        self._drain()   # discard banner
+        self._sock = socket.create_connection(
+            (self._host, self._port), timeout=OPENOCD_TIMEOUT_S
+        )
+        self._drain()  # discard banner
 
     def close(self) -> None:
         if self._sock is not None:
@@ -96,12 +96,12 @@ class OpenOCDClient:
         assert self._sock is not None, "Not connected"
         payload = (cmd + "\n").encode()
         self._sock.sendall(payload)
-        return self._recv_until(b"\x1a")   # OpenOCD sends 0x1a as prompt
+        return self._recv_until(b"\x1a")  # OpenOCD sends 0x1a as prompt
 
     def _recv_until(self, sentinel: bytes, max_bytes: int = 4096) -> str:
         buf = b""
         while sentinel not in buf:
-            chunk = self._sock.recv(256)   # type: ignore[union-attr]
+            chunk = self._sock.recv(256)  # type: ignore[union-attr]
             if not chunk:
                 break
             buf += chunk
@@ -110,16 +110,16 @@ class OpenOCDClient:
         return buf.decode(errors="replace").strip()
 
     def _drain(self) -> None:
-        self._sock.settimeout(0.5)          # type: ignore[union-attr]
+        self._sock.settimeout(0.5)  # type: ignore[union-attr]
         try:
             while True:
-                data = self._sock.recv(256) # type: ignore[union-attr]
+                data = self._sock.recv(256)  # type: ignore[union-attr]
                 if not data:
                     break
         except OSError:
             pass
         finally:
-            self._sock.settimeout(OPENOCD_TIMEOUT_S) # type: ignore[union-attr]
+            self._sock.settimeout(OPENOCD_TIMEOUT_S)  # type: ignore[union-attr]
 
     # ── Primitives ───────────────────────────────────────────────────────────
 
@@ -158,26 +158,28 @@ class OpenOCDClient:
 #  Sensor stimulus helpers
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 @dataclass
 class SensorStimulus:
     """Physical values to inject; converted to 12-bit ADC words."""
-    velocity_mps: float         = 0.0
-    acceleration_mps2: float    = 0.0
-    yaw_rate_radps: float       = 0.0
-    steering_angle_rad: float   = 0.0
-    throttle_pct: float         = 0.0
-    brake_pressure_kpa: float   = 0.0
+
+    velocity_mps: float = 0.0
+    acceleration_mps2: float = 0.0
+    yaw_rate_radps: float = 0.0
+    steering_angle_rad: float = 0.0
+    throttle_pct: float = 0.0
+    brake_pressure_kpa: float = 0.0
 
     def to_adc_words(self) -> List[int]:
-        VELOCITY_SCALE   = 0.08789
-        ACCEL_SCALE      = 0.03831
-        ACCEL_OFFSET     = 2048
-        YAW_SCALE        = 0.001533
-        YAW_OFFSET       = 2048
-        STEERING_SCALE   = 0.003834
-        STEERING_OFFSET  = 2048
-        THROTTLE_SCALE   = 0.02442
-        BRAKE_SCALE      = 0.09775
+        VELOCITY_SCALE = 0.08789
+        ACCEL_SCALE = 0.03831
+        ACCEL_OFFSET = 2048
+        YAW_SCALE = 0.001533
+        YAW_OFFSET = 2048
+        STEERING_SCALE = 0.003834
+        STEERING_OFFSET = 2048
+        THROTTLE_SCALE = 0.02442
+        BRAKE_SCALE = 0.09775
 
         def clamp(v: int) -> int:
             return max(0, min(ADC_FULL_SCALE, v))
@@ -195,17 +197,19 @@ class SensorStimulus:
 @dataclass
 class ExpectedVehicleState:
     """Acceptance tolerances for mapped vehicle state."""
-    velocity_mps:        tuple[float, float] = (0.0, 0.1)
-    acceleration_mps2:   tuple[float, float] = (0.0, 0.1)
-    yaw_rate_radps:      tuple[float, float] = (0.0, 0.01)
-    steering_angle_rad:  tuple[float, float] = (0.0, 0.01)
-    throttle_pct:        tuple[float, float] = (0.0, 0.5)
-    brake_pressure_kpa:  tuple[float, float] = (0.0, 0.5)
+
+    velocity_mps: tuple[float, float] = (0.0, 0.1)
+    acceleration_mps2: tuple[float, float] = (0.0, 0.1)
+    yaw_rate_radps: tuple[float, float] = (0.0, 0.01)
+    steering_angle_rad: tuple[float, float] = (0.0, 0.01)
+    throttle_pct: tuple[float, float] = (0.0, 0.5)
+    brake_pressure_kpa: tuple[float, float] = (0.0, 0.5)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
 #  Timing measurement
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 @dataclass
 class TimingResult:
@@ -235,6 +239,7 @@ class TimingResult:
 #  pytest fixtures
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 @pytest.fixture(scope="session")
 def openocd() -> Generator[OpenOCDClient, None, None]:
     """Session-scoped OpenOCD connection. Skip if target unavailable."""
@@ -259,9 +264,10 @@ def reset_target(openocd: OpenOCDClient) -> None:
 #  Stimulus injection helper
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def inject_sensor_stimulus(client: OpenOCDClient,
-                            stimulus: SensorStimulus,
-                            data_valid: bool = True) -> None:
+
+def inject_sensor_stimulus(
+    client: OpenOCDClient, stimulus: SensorStimulus, data_valid: bool = True
+) -> None:
     """Write synthesised ADC values to the peripheral registers."""
     adc = stimulus.to_adc_words()
     log.info("Injecting stimulus: %s → ADC %s", stimulus, adc)
@@ -272,9 +278,9 @@ def inject_sensor_stimulus(client: OpenOCDClient,
     # Write each channel into DR (simplified: packed into lower 12 bits,
     # hardware DMA would normally do this; we simulate single-channel read)
     for ch, val in enumerate(adc):
-        dr_val = (val & ADC_FULL_SCALE)
+        dr_val = val & ADC_FULL_SCALE
         if data_valid and ch == len(adc) - 1:
-            dr_val |= CRC_OK_BIT   # set CRC-OK on final word
+            dr_val |= CRC_OK_BIT  # set CRC-OK on final word
         client.write_word(SENSOR_DR_ADDR, dr_val)
 
     # Assert data-ready
@@ -284,6 +290,7 @@ def inject_sensor_stimulus(client: OpenOCDClient,
 # ═══════════════════════════════════════════════════════════════════════════════
 #  HIL_004 — Sensor Data Validation tests
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class TestHIL004SensorDataValidation:
     """
@@ -302,13 +309,16 @@ class TestHIL004SensorDataValidation:
     def test_hil004_01_zero_velocity_stimulus(self, openocd: OpenOCDClient) -> None:
         """Stationary vehicle — all channels at rest position."""
         stimulus = SensorStimulus(
-            velocity_mps=0.0, acceleration_mps2=0.0,
-            yaw_rate_radps=0.0, steering_angle_rad=0.0,
-            throttle_pct=0.0, brake_pressure_kpa=0.0,
+            velocity_mps=0.0,
+            acceleration_mps2=0.0,
+            yaw_rate_radps=0.0,
+            steering_angle_rad=0.0,
+            throttle_pct=0.0,
+            brake_pressure_kpa=0.0,
         )
         inject_sensor_stimulus(openocd, stimulus)
         openocd.resume()
-        time.sleep(0.05)    # allow firmware to process one sample
+        time.sleep(0.05)  # allow firmware to process one sample
 
         # Read back DR word and verify data-ready was consumed
         sr = openocd.read_word(SENSOR_SR_ADDR)
@@ -321,7 +331,7 @@ class TestHIL004SensorDataValidation:
     def test_hil004_02_highway_speed_stimulus(self, openocd: OpenOCDClient) -> None:
         """Highway driving — 100 km/h, slight positive acceleration."""
         stimulus = SensorStimulus(
-            velocity_mps=27.78,         # 100 km/h
+            velocity_mps=27.78,  # 100 km/h
             acceleration_mps2=1.5,
             yaw_rate_radps=0.02,
             steering_angle_rad=0.05,
@@ -343,7 +353,7 @@ class TestHIL004SensorDataValidation:
         """Emergency stop — high deceleration, full brake pressure."""
         stimulus = SensorStimulus(
             velocity_mps=20.0,
-            acceleration_mps2=-9.0,     # hard brake
+            acceleration_mps2=-9.0,  # hard brake
             yaw_rate_radps=0.0,
             steering_angle_rad=0.0,
             throttle_pct=0.0,
@@ -364,7 +374,7 @@ class TestHIL004SensorDataValidation:
         Inject known velocity, read back from firmware-mapped state in RAM,
         verify within ±0.2 m/s tolerance.
         """
-        target_v = 50.0   # m/s
+        target_v = 50.0  # m/s
         stimulus = SensorStimulus(velocity_mps=target_v)
         adc = stimulus.to_adc_words()
 
@@ -377,7 +387,7 @@ class TestHIL004SensorDataValidation:
 
     def test_hil004_05_accel_bipolar_mapping(self, openocd: OpenOCDClient) -> None:
         """Bipolar acceleration: positive and negative values must both map correctly."""
-        ACCEL_SCALE  = 0.03831
+        ACCEL_SCALE = 0.03831
         ACCEL_OFFSET = 2048
 
         for accel_in in [-5.0, 0.0, 5.0, -9.81, 9.81]:
@@ -406,12 +416,13 @@ class TestHIL004SensorDataValidation:
         time.sleep(0.05)
         # Firmware clamps to 100%; test passes if no watchdog reset occurred
         sr = openocd.read_word(SENSOR_SR_ADDR)
-        assert sr is not None   # target still alive
+        assert sr is not None  # target still alive
 
     # ── Step 4: Consistency across multiple iterations ───────────────────────
 
     def test_hil004_08_consistency_stable_conditions(
-            self, openocd: OpenOCDClient) -> None:
+        self, openocd: OpenOCDClient
+    ) -> None:
         """
         Inject identical stimulus 5× and verify reconstructed state is stable
         (Δv ≤ 0.05 m/s between consecutive samples).
@@ -424,7 +435,7 @@ class TestHIL004SensorDataValidation:
         for iteration in range(5):
             inject_sensor_stimulus(openocd, stimulus)
             openocd.resume()
-            time.sleep(0.002)   # 2 ms per iteration at 1 kHz sample rate
+            time.sleep(0.002)  # 2 ms per iteration at 1 kHz sample rate
 
             reconstructed_v = adc_words[0] * VELOCITY_SCALE
             if previous_v is not None:
@@ -445,9 +456,10 @@ class TestHIL004SensorDataValidation:
         assert sr is not None
 
     def test_hil004_10_fault_channel_count_underflow(
-            self, openocd: OpenOCDClient) -> None:
+        self, openocd: OpenOCDClient
+    ) -> None:
         """Inject only 3 channels (below minimum 6) — firmware must reject."""
-        openocd.write_word(SENSOR_CR2_ADDR, 0x0003)    # only 3 channels
+        openocd.write_word(SENSOR_CR2_ADDR, 0x0003)  # only 3 channels
         openocd.write_word(SENSOR_DR_ADDR, CRC_OK_BIT | 0x800)
         openocd.write_word(SENSOR_SR_ADDR, DATA_READY_BIT)
         openocd.resume()
@@ -457,8 +469,7 @@ class TestHIL004SensorDataValidation:
 
     # ── Timing verification ──────────────────────────────────────────────────
 
-    def test_hil004_11_sample_timing_deadline(
-            self, openocd: OpenOCDClient) -> None:
+    def test_hil004_11_sample_timing_deadline(self, openocd: OpenOCDClient) -> None:
         """
         Measure round-trip time for stimulus inject → DR read.
         Must complete within SENSOR_TIMEOUT_MS (10 ms).
@@ -478,7 +489,9 @@ class TestHIL004SensorDataValidation:
 
         log.info(
             "Timing: min=%.2f ms  mean=%.2f ms  max=%.2f ms",
-            timing.min_ms, timing.mean_ms, timing.max_ms,
+            timing.min_ms,
+            timing.mean_ms,
+            timing.max_ms,
         )
         # 10 ms firmware deadline + 5 ms telnet overhead
         timing.assert_within_deadline(deadline_ms=15.0)
@@ -504,10 +517,10 @@ class TestHIL004SensorDataValidation:
         """
         coverage = {
             "AC1_interpretation": [1, 2, 3, 6, 7, 9, 10],
-            "AC2_mapping":        [4, 5, 6, 7],
-            "AC3_consistency":    [8],
-            "AC4_fault_reject":   [9, 10],
-            "AC5_timing":         [11],
+            "AC2_mapping": [4, 5, 6, 7],
+            "AC3_consistency": [8],
+            "AC4_fault_reject": [9, 10],
+            "AC5_timing": [11],
         }
         for ac, tests in coverage.items():
             assert len(tests) >= 1, f"AC {ac} has no test cases"
@@ -519,4 +532,5 @@ class TestHIL004SensorDataValidation:
 # ═══════════════════════════════════════════════════════════════════════════════
 if __name__ == "__main__":
     import sys
+
     sys.exit(pytest.main([__file__, "-v", "--timeout=60"]))

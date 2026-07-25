@@ -19,8 +19,8 @@ Pattern: V-Model Implementation
 """
 
 import logging
-from typing import Dict, List, Optional
-from dataclasses import dataclass, asdict
+from typing import Dict, List
+from dataclasses import dataclass
 from enum import Enum
 import json
 import hashlib
@@ -32,6 +32,7 @@ logger = logging.getLogger(__name__)
 
 class RequirementType(Enum):
     """Types of system requirements following IEEE 15288."""
+
     FUNCTIONAL = "functional"
     PERFORMANCE = "performance"
     INTERFACE = "interface"
@@ -46,6 +47,7 @@ class RequirementType(Enum):
 @dataclass
 class SystemRequirement:
     """Individual system requirement with traceability."""
+
     id: str
     type: RequirementType
     title: str
@@ -63,6 +65,7 @@ class SystemRequirement:
 @dataclass
 class SystemInterface:
     """Interface definition between system components."""
+
     id: str
     name: str
     description: str
@@ -78,6 +81,7 @@ class SystemInterface:
 @dataclass
 class SystemArchitecture:
     """Complete system architecture with all engineering artifacts."""
+
     system_name: str
     requirements: List[SystemRequirement]
     interfaces: List[SystemInterface]
@@ -104,6 +108,7 @@ class SystemsEngineeringFramework:
     def llm(self):
         if self._llm_gateway is None:
             from src.core.llm_gateway import llm_gateway
+
             self._llm_gateway = llm_gateway
         return self._llm_gateway
 
@@ -111,7 +116,9 @@ class SystemsEngineeringFramework:
     # Requirements Engineering (IEEE 15288 Process)
     # -----------------------------------------------------------------------
 
-    def derive_system_requirements(self, product_backlog: Dict) -> List[SystemRequirement]:
+    def derive_system_requirements(
+        self, product_backlog: Dict
+    ) -> List[SystemRequirement]:
         """
         Derive technical system requirements from product backlog user stories.
 
@@ -169,8 +176,8 @@ Generate 15-30 requirements covering all user stories and system qualities."""
             response = self.llm.generate(prompt)
 
             # Extract and parse requirements
-            start_idx = response.find('[')
-            end_idx = response.rfind(']') + 1
+            start_idx = response.find("[")
+            end_idx = response.rfind("]") + 1
             if start_idx >= 0 and end_idx > start_idx:
                 json_str = response[start_idx:end_idx]
                 req_data = json.loads(json_str)
@@ -181,7 +188,7 @@ Generate 15-30 requirements covering all user stories and system qualities."""
                         # Validate and create SystemRequirement
                         req_type = RequirementType(req.get("type", "functional"))
                         requirement = SystemRequirement(
-                            id=req.get("id", f"REQ-{i+1:03d}"),
+                            id=req.get("id", f"REQ-{i + 1:03d}"),
                             type=req_type,
                             title=req.get("title", ""),
                             description=req.get("description", ""),
@@ -192,11 +199,13 @@ Generate 15-30 requirements covering all user stories and system qualities."""
                             verification_method=req.get("verification_method", "test"),
                             verification_criteria=req.get("verification_criteria", []),
                             allocated_to=req.get("allocated_to", "TBD"),
-                            status=req.get("status", "proposed")
+                            status=req.get("status", "proposed"),
                         )
                         requirements.append(requirement)
                     except (ValueError, KeyError) as e:
-                        self.logger.warning("Skipping malformed requirement %d: %s", i, e)
+                        self.logger.warning(
+                            "Skipping malformed requirement %d: %s", i, e
+                        )
 
                 return requirements
 
@@ -206,7 +215,9 @@ Generate 15-30 requirements covering all user stories and system qualities."""
             self.logger.error("Requirements derivation failed: %s", exc)
             return []
 
-    def design_system_architecture(self, requirements: List[SystemRequirement], product_context: Dict) -> Dict:
+    def design_system_architecture(
+        self, requirements: List[SystemRequirement], product_context: Dict
+    ) -> Dict:
         """
         Design system architecture from requirements using structured decomposition.
 
@@ -219,12 +230,14 @@ Generate 15-30 requirements covering all user stories and system qualities."""
         try:
             req_summary = []
             for req in requirements:
-                req_summary.append({
-                    "id": req.id,
-                    "type": req.type.value,
-                    "title": req.title,
-                    "allocated_to": req.allocated_to
-                })
+                req_summary.append(
+                    {
+                        "id": req.id,
+                        "type": req.type.value,
+                        "title": req.title,
+                        "allocated_to": req.allocated_to,
+                    }
+                )
 
             product_name = product_context.get("product_name", "System")
             domain = self._identify_architecture_domain(requirements, product_context)
@@ -302,8 +315,8 @@ Return JSON with:
 
             response = self.llm.generate(prompt)
 
-            start_idx = response.find('{')
-            end_idx = response.rfind('}') + 1
+            start_idx = response.find("{")
+            end_idx = response.rfind("}") + 1
             if start_idx >= 0 and end_idx > start_idx:
                 json_str = response[start_idx:end_idx]
                 return json.loads(json_str)
@@ -314,7 +327,9 @@ Return JSON with:
             self.logger.error("Architecture design failed: %s", exc)
             return {"error": str(exc)}
 
-    def _identify_architecture_domain(self, requirements: List[SystemRequirement], product_context: Dict) -> str:
+    def _identify_architecture_domain(
+        self, requirements: List[SystemRequirement], product_context: Dict
+    ) -> str:
         """Identify the primary architecture domain to guide technology choices."""
         domain_indicators = {
             "web_application": ["web", "browser", "http", "api", "frontend"],
@@ -341,7 +356,9 @@ Return JSON with:
     # Risk Management (ISO 31000 / IEC 62304)
     # -----------------------------------------------------------------------
 
-    def assess_system_risks(self, architecture: Dict, requirements: List[SystemRequirement]) -> List[Dict]:
+    def assess_system_risks(
+        self, architecture: Dict, requirements: List[SystemRequirement]
+    ) -> List[Dict]:
         """
         Perform system risk assessment following ISO 31000 and domain-specific standards.
 
@@ -350,12 +367,18 @@ Return JSON with:
         try:
             arch_summary = {
                 "pattern": architecture.get("architecture_pattern", ""),
-                "subsystems": [sub["name"] for sub in architecture.get("subsystems", [])],
-                "technologies": architecture.get("technology_stack", {})
+                "subsystems": [
+                    sub["name"] for sub in architecture.get("subsystems", [])
+                ],
+                "technologies": architecture.get("technology_stack", {}),
             }
 
-            safety_reqs = [req for req in requirements if req.type == RequirementType.SAFETY]
-            security_reqs = [req for req in requirements if req.type == RequirementType.SECURITY]
+            safety_reqs = [
+                req for req in requirements if req.type == RequirementType.SAFETY
+            ]
+            security_reqs = [
+                req for req in requirements if req.type == RequirementType.SECURITY
+            ]
 
             prompt = f"""As a Systems Risk Engineer, perform comprehensive risk assessment:
 
@@ -399,8 +422,8 @@ Identify 10-20 risks covering all major areas."""
 
             response = self.llm.generate(prompt)
 
-            start_idx = response.find('[')
-            end_idx = response.rfind(']') + 1
+            start_idx = response.find("[")
+            end_idx = response.rfind("]") + 1
             if start_idx >= 0 and end_idx > start_idx:
                 json_str = response[start_idx:end_idx]
                 return json.loads(json_str)
@@ -415,7 +438,9 @@ Identify 10-20 risks covering all major areas."""
     # Verification & Validation Matrix
     # -----------------------------------------------------------------------
 
-    def create_verification_matrix(self, requirements: List[SystemRequirement], architecture: Dict) -> List[Dict]:
+    def create_verification_matrix(
+        self, requirements: List[SystemRequirement], architecture: Dict
+    ) -> List[Dict]:
         """
         Create Requirements Verification Matrix linking requirements to verification methods.
 
@@ -439,30 +464,36 @@ Identify 10-20 risks covering all major areas."""
                 "verification_method": req.verification_method,
                 "verification_level": verification_level,
                 "verification_criteria": req.verification_criteria,
-                "test_type": self._map_verification_to_test_type(req.verification_method, req.type),
+                "test_type": self._map_verification_to_test_type(
+                    req.verification_method, req.type
+                ),
                 "responsible_team": self._map_allocation_to_team(req.allocated_to),
-                "status": "planned"
+                "status": "planned",
             }
 
             verification_matrix.append(matrix_entry)
 
         return verification_matrix
 
-    def _map_verification_to_test_type(self, verification_method: str, req_type: RequirementType) -> str:
+    def _map_verification_to_test_type(
+        self, verification_method: str, req_type: RequirementType
+    ) -> str:
         """Map verification method to specific test type."""
         mapping = {
             "test": {
                 RequirementType.FUNCTIONAL: "functional_test",
                 RequirementType.PERFORMANCE: "performance_test",
                 RequirementType.SECURITY: "security_test",
-                RequirementType.INTERFACE: "interface_test"
+                RequirementType.INTERFACE: "interface_test",
             },
             "analysis": "static_analysis",
             "inspection": "code_review",
-            "demonstration": "user_acceptance_test"
+            "demonstration": "user_acceptance_test",
         }
 
-        if verification_method in mapping and isinstance(mapping[verification_method], dict):
+        if verification_method in mapping and isinstance(
+            mapping[verification_method], dict
+        ):
             return mapping[verification_method].get(req_type, "unit_test")
         else:
             return mapping.get(verification_method, "manual_verification")
@@ -478,7 +509,7 @@ Identify 10-20 risks covering all major areas."""
             "hardware": "hardware",
             "security": "security",
             "integration": "qa",
-            "system": "qa"
+            "system": "qa",
         }
 
         for component, team in team_mapping.items():
@@ -491,8 +522,13 @@ Identify 10-20 risks covering all major areas."""
     # Regulatory Compliance & Traceability Matrices
     # -----------------------------------------------------------------------
 
-    def generate_traceability_matrices(self, backlog: Dict, requirements: List[SystemRequirement],
-                                     architecture: Dict, verification_matrix: List[Dict]) -> Dict:
+    def generate_traceability_matrices(
+        self,
+        backlog: Dict,
+        requirements: List[SystemRequirement],
+        architecture: Dict,
+        verification_matrix: List[Dict],
+    ) -> Dict:
         """
         Generate the 4 regulatory traceability matrices required for compliance.
 
@@ -500,10 +536,18 @@ Identify 10-20 risks covering all major areas."""
         Critical for regulatory submissions and audit compliance.
         """
         matrices = {
-            "user_needs_to_requirements": self._create_un_to_req_matrix(backlog, requirements),
-            "requirements_to_design": self._create_req_to_design_matrix(requirements, architecture),
-            "design_to_verification": self._create_design_to_verification_matrix(architecture, verification_matrix),
-            "verification_to_validation": self._create_verification_to_validation_matrix(verification_matrix, backlog)
+            "user_needs_to_requirements": self._create_un_to_req_matrix(
+                backlog, requirements
+            ),
+            "requirements_to_design": self._create_req_to_design_matrix(
+                requirements, architecture
+            ),
+            "design_to_verification": self._create_design_to_verification_matrix(
+                architecture, verification_matrix
+            ),
+            "verification_to_validation": self._create_verification_to_validation_matrix(
+                verification_matrix, backlog
+            ),
         }
 
         # Generate compliance summary
@@ -511,14 +555,20 @@ Identify 10-20 risks covering all major areas."""
 
         return matrices
 
-    def _create_un_to_req_matrix(self, backlog: Dict, requirements: List[SystemRequirement]) -> List[Dict]:
+    def _create_un_to_req_matrix(
+        self, backlog: Dict, requirements: List[SystemRequirement]
+    ) -> List[Dict]:
         """Matrix 1: User Needs (Stories) → Design Inputs (Requirements)"""
         matrix = []
         user_stories = backlog.get("user_stories", [])
 
         for story in user_stories:
             # Find requirements that trace back to this story
-            linked_requirements = [req for req in requirements if req.source_story_id == story.get("id", "")]
+            linked_requirements = [
+                req
+                for req in requirements
+                if req.source_story_id == story.get("id", "")
+            ]
 
             matrix_entry = {
                 "user_need_id": story.get("id", ""),
@@ -530,18 +580,24 @@ Identify 10-20 risks covering all major areas."""
                         "req_id": req.id,
                         "req_title": req.title,
                         "req_type": req.type.value,
-                        "verification_method": req.verification_method
+                        "verification_method": req.verification_method,
                     }
                     for req in linked_requirements
                 ],
-                "traceability_status": "complete" if linked_requirements else "incomplete",
-                "regulatory_impact": self._assess_regulatory_impact(story, linked_requirements)
+                "traceability_status": "complete"
+                if linked_requirements
+                else "incomplete",
+                "regulatory_impact": self._assess_regulatory_impact(
+                    story, linked_requirements
+                ),
             }
             matrix.append(matrix_entry)
 
         return matrix
 
-    def _create_req_to_design_matrix(self, requirements: List[SystemRequirement], architecture: Dict) -> List[Dict]:
+    def _create_req_to_design_matrix(
+        self, requirements: List[SystemRequirement], architecture: Dict
+    ) -> List[Dict]:
         """Matrix 2: Design Inputs (Requirements) → Design Outputs (Architecture/Code)"""
         matrix = []
         subsystems = architecture.get("subsystems", [])
@@ -563,19 +619,27 @@ Identify 10-20 risks covering all major areas."""
                     {
                         "subsystem_name": sub["name"],
                         "responsibilities": sub.get("responsibilities", []),
-                        "technologies": sub.get("technology_recommendations", [])
+                        "technologies": sub.get("technology_recommendations", []),
                     }
                     for sub in implementing_subsystems
                 ],
-                "design_outputs": self._identify_design_outputs(req, implementing_subsystems),
-                "traceability_status": "complete" if implementing_subsystems else "incomplete",
-                "verification_planned": bool(req.verification_method and req.verification_criteria)
+                "design_outputs": self._identify_design_outputs(
+                    req, implementing_subsystems
+                ),
+                "traceability_status": "complete"
+                if implementing_subsystems
+                else "incomplete",
+                "verification_planned": bool(
+                    req.verification_method and req.verification_criteria
+                ),
             }
             matrix.append(matrix_entry)
 
         return matrix
 
-    def _create_design_to_verification_matrix(self, architecture: Dict, verification_matrix: List[Dict]) -> List[Dict]:
+    def _create_design_to_verification_matrix(
+        self, architecture: Dict, verification_matrix: List[Dict]
+    ) -> List[Dict]:
         """Matrix 3: Design Outputs → Verification Activities"""
         matrix = []
         subsystems = architecture.get("subsystems", [])
@@ -583,10 +647,13 @@ Identify 10-20 risks covering all major areas."""
         for subsystem in subsystems:
             # Find verification activities for this subsystem
             verification_activities = [
-                v for v in verification_matrix
+                v
+                for v in verification_matrix
                 if subsystem["name"].lower() in v.get("responsible_team", "").lower()
-                or any(req_id in subsystem.get("allocated_requirements", [])
-                      for req_id in [v.get("requirement_id", "")])
+                or any(
+                    req_id in subsystem.get("allocated_requirements", [])
+                    for req_id in [v.get("requirement_id", "")]
+                )
             ]
 
             matrix_entry = {
@@ -596,23 +663,26 @@ Identify 10-20 risks covering all major areas."""
                 "allocated_requirements": subsystem.get("allocated_requirements", []),
                 "verification_activities": [
                     {
-                        "verification_id": f"VER-{i+1:03d}",
+                        "verification_id": f"VER-{i + 1:03d}",
                         "requirement_id": v.get("requirement_id", ""),
                         "verification_method": v.get("verification_method", ""),
                         "test_type": v.get("test_type", ""),
                         "verification_criteria": v.get("verification_criteria", []),
-                        "responsible_team": v.get("responsible_team", "")
+                        "responsible_team": v.get("responsible_team", ""),
                     }
                     for i, v in enumerate(verification_activities)
                 ],
-                "verification_coverage": len(verification_activities) / max(len(subsystem.get("allocated_requirements", [])), 1),
-                "verification_status": "planned"
+                "verification_coverage": len(verification_activities)
+                / max(len(subsystem.get("allocated_requirements", [])), 1),
+                "verification_status": "planned",
             }
             matrix.append(matrix_entry)
 
         return matrix
 
-    def _create_verification_to_validation_matrix(self, verification_matrix: List[Dict], backlog: Dict) -> List[Dict]:
+    def _create_verification_to_validation_matrix(
+        self, verification_matrix: List[Dict], backlog: Dict
+    ) -> List[Dict]:
         """Matrix 4: Verification Activities → Validation Activities"""
         matrix = []
         success_metrics = backlog.get("success_metrics", [])
@@ -620,28 +690,38 @@ Identify 10-20 risks covering all major areas."""
 
         for i, verification in enumerate(verification_matrix):
             # Map verification to validation activities
-            validation_activities = self._derive_validation_activities(verification, success_metrics, personas)
+            validation_activities = self._derive_validation_activities(
+                verification, success_metrics, personas
+            )
 
             matrix_entry = {
-                "verification_id": f"VER-{i+1:03d}",
+                "verification_id": f"VER-{i + 1:03d}",
                 "verification_activity": verification.get("verification_method", ""),
                 "requirement_id": verification.get("requirement_id", ""),
                 "validation_activities": validation_activities,
-                "user_acceptance_criteria": self._map_to_user_acceptance(verification, backlog),
+                "user_acceptance_criteria": self._map_to_user_acceptance(
+                    verification, backlog
+                ),
                 "validation_status": "planned",
-                "regulatory_evidence": self._identify_regulatory_evidence(verification)
+                "regulatory_evidence": self._identify_regulatory_evidence(verification),
             }
             matrix.append(matrix_entry)
 
         return matrix
 
-    def _assess_regulatory_impact(self, story: Dict, requirements: List[SystemRequirement]) -> str:
+    def _assess_regulatory_impact(
+        self, story: Dict, requirements: List[SystemRequirement]
+    ) -> str:
         """Assess regulatory impact of user story based on linked requirements."""
         if not requirements:
             return "high"  # Untraced user needs are high risk
 
-        safety_reqs = [req for req in requirements if req.type == RequirementType.SAFETY]
-        security_reqs = [req for req in requirements if req.type == RequirementType.SECURITY]
+        safety_reqs = [
+            req for req in requirements if req.type == RequirementType.SAFETY
+        ]
+        security_reqs = [
+            req for req in requirements if req.type == RequirementType.SECURITY
+        ]
 
         if safety_reqs or security_reqs:
             return "critical"
@@ -650,7 +730,9 @@ Identify 10-20 risks covering all major areas."""
         else:
             return "medium"
 
-    def _identify_design_outputs(self, requirement: SystemRequirement, subsystems: List[Dict]) -> List[str]:
+    def _identify_design_outputs(
+        self, requirement: SystemRequirement, subsystems: List[Dict]
+    ) -> List[str]:
         """Identify specific design outputs (files/artifacts) that implement the requirement."""
         outputs = []
 
@@ -660,13 +742,29 @@ Identify 10-20 risks covering all major areas."""
 
             # Predict likely file outputs based on subsystem type and technology
             if "api" in name or "backend" in name:
-                outputs.extend([f"{name}_service.py", f"{name}_models.py", f"{name}_controllers.py"])
+                outputs.extend(
+                    [
+                        f"{name}_service.py",
+                        f"{name}_models.py",
+                        f"{name}_controllers.py",
+                    ]
+                )
             elif "frontend" in name or "ui" in name:
-                outputs.extend([f"{name}_components.tsx", f"{name}_pages.tsx", f"{name}_styles.css"])
+                outputs.extend(
+                    [
+                        f"{name}_components.tsx",
+                        f"{name}_pages.tsx",
+                        f"{name}_styles.css",
+                    ]
+                )
             elif "database" in name or "data" in name:
-                outputs.extend([f"{name}_schema.sql", f"{name}_migrations/", f"{name}_models.py"])
+                outputs.extend(
+                    [f"{name}_schema.sql", f"{name}_migrations/", f"{name}_models.py"]
+                )
             elif "firmware" in name or "embedded" in name:
-                outputs.extend([f"{name}_main.c", f"{name}_drivers.c", f"{name}_config.h"])
+                outputs.extend(
+                    [f"{name}_main.c", f"{name}_drivers.c", f"{name}_config.h"]
+                )
 
             # Add technology-specific outputs
             for tech in tech_stack:
@@ -677,7 +775,9 @@ Identify 10-20 risks covering all major areas."""
 
         return outputs
 
-    def _derive_validation_activities(self, verification: Dict, success_metrics: List[str], personas: List[Dict]) -> List[Dict]:
+    def _derive_validation_activities(
+        self, verification: Dict, success_metrics: List[str], personas: List[Dict]
+    ) -> List[Dict]:
         """Derive validation activities from verification activities."""
         activities = []
         req_id = verification.get("requirement_id", "")
@@ -689,7 +789,7 @@ Identify 10-20 risks covering all major areas."""
             "performance_test": "performance_validation",
             "security_test": "security_validation",
             "interface_test": "integration_validation",
-            "unit_test": "component_validation"
+            "unit_test": "component_validation",
         }
 
         validation_type = validation_mapping.get(test_type, "user_acceptance_test")
@@ -699,10 +799,14 @@ Identify 10-20 risks covering all major areas."""
             "validation_id": f"VAL-{req_id.split('-')[-1] if req_id else '001'}",
             "validation_type": validation_type,
             "description": f"Validate {validation_type} for {req_id}",
-            "target_personas": [p.get("name", "") for p in personas[:2]],  # Limit to 2 personas
+            "target_personas": [
+                p.get("name", "") for p in personas[:2]
+            ],  # Limit to 2 personas
             "success_criteria": success_metrics[:3],  # Limit to 3 metrics
-            "validation_method": "simulation" if "performance" in validation_type else "user_testing",
-            "regulatory_requirement": self._map_to_regulatory_requirement(test_type)
+            "validation_method": "simulation"
+            if "performance" in validation_type
+            else "user_testing",
+            "regulatory_requirement": self._map_to_regulatory_requirement(test_type),
         }
 
         activities.append(activity)
@@ -715,8 +819,10 @@ Identify 10-20 risks covering all major areas."""
 
         # Find user stories that link to this requirement
         relevant_stories = [
-            story for story in user_stories
-            if req_id in story.get("description", "")  # Simple linkage - could be enhanced
+            story
+            for story in user_stories
+            if req_id
+            in story.get("description", "")  # Simple linkage - could be enhanced
         ]
 
         acceptance_criteria = []
@@ -730,14 +836,37 @@ Identify 10-20 risks covering all major areas."""
         test_type = verification.get("test_type", "")
 
         evidence_mapping = {
-            "functional_test": {"standard": "IEC 62304", "section": "5.6", "evidence": "Software unit verification"},
-            "performance_test": {"standard": "IEC 62304", "section": "5.7", "evidence": "Software integration testing"},
-            "security_test": {"standard": "IEC 27001", "section": "A.14", "evidence": "Security testing"},
-            "interface_test": {"standard": "IEC 62304", "section": "5.7", "evidence": "Interface verification"},
-            "safety_test": {"standard": "ISO 14971", "section": "9", "evidence": "Risk control verification"}
+            "functional_test": {
+                "standard": "IEC 62304",
+                "section": "5.6",
+                "evidence": "Software unit verification",
+            },
+            "performance_test": {
+                "standard": "IEC 62304",
+                "section": "5.7",
+                "evidence": "Software integration testing",
+            },
+            "security_test": {
+                "standard": "IEC 27001",
+                "section": "A.14",
+                "evidence": "Security testing",
+            },
+            "interface_test": {
+                "standard": "IEC 62304",
+                "section": "5.7",
+                "evidence": "Interface verification",
+            },
+            "safety_test": {
+                "standard": "ISO 14971",
+                "section": "9",
+                "evidence": "Risk control verification",
+            },
         }
 
-        return evidence_mapping.get(test_type, {"standard": "IEEE 829", "section": "TBD", "evidence": "Test evidence"})
+        return evidence_mapping.get(
+            test_type,
+            {"standard": "IEEE 829", "section": "TBD", "evidence": "Test evidence"},
+        )
 
     def _map_to_regulatory_requirement(self, test_type: str) -> str:
         """Map test type to regulatory requirement."""
@@ -746,7 +875,7 @@ Identify 10-20 risks covering all major areas."""
             "performance_test": "IEC 62304 §5.7 - Software Integration Testing",
             "security_test": "IEC 27001 A.14 - System Security Testing",
             "interface_test": "IEC 62304 §5.7 - Interface Verification",
-            "safety_test": "ISO 14971 §9 - Risk Control Verification"
+            "safety_test": "ISO 14971 §9 - Risk Control Verification",
         }
         return mapping.get(test_type, "IEEE 829 - Software Test Documentation")
 
@@ -756,32 +885,43 @@ Identify 10-20 risks covering all major areas."""
             "traceability_completeness": {},
             "coverage_analysis": {},
             "regulatory_readiness": {},
-            "audit_findings": []
+            "audit_findings": [],
         }
 
         # Analyze Matrix 1: User Needs → Requirements
         un_matrix = matrices["user_needs_to_requirements"]
-        complete_traces = sum(1 for entry in un_matrix if entry["traceability_status"] == "complete")
+        complete_traces = sum(
+            1 for entry in un_matrix if entry["traceability_status"] == "complete"
+        )
         summary["traceability_completeness"]["user_needs_to_requirements"] = {
             "complete": complete_traces,
             "total": len(un_matrix),
-            "percentage": (complete_traces / len(un_matrix) * 100) if un_matrix else 0
+            "percentage": (complete_traces / len(un_matrix) * 100) if un_matrix else 0,
         }
 
         # Analyze Matrix 2: Requirements → Design
         req_matrix = matrices["requirements_to_design"]
-        complete_designs = sum(1 for entry in req_matrix if entry["traceability_status"] == "complete")
+        complete_designs = sum(
+            1 for entry in req_matrix if entry["traceability_status"] == "complete"
+        )
         summary["traceability_completeness"]["requirements_to_design"] = {
             "complete": complete_designs,
             "total": len(req_matrix),
-            "percentage": (complete_designs / len(req_matrix) * 100) if req_matrix else 0
+            "percentage": (complete_designs / len(req_matrix) * 100)
+            if req_matrix
+            else 0,
         }
 
         # Overall regulatory readiness assessment
-        avg_traceability = sum(
-            summary["traceability_completeness"][key]["percentage"]
-            for key in summary["traceability_completeness"]
-        ) / len(summary["traceability_completeness"]) if summary["traceability_completeness"] else 0
+        avg_traceability = (
+            sum(
+                summary["traceability_completeness"][key]["percentage"]
+                for key in summary["traceability_completeness"]
+            )
+            / len(summary["traceability_completeness"])
+            if summary["traceability_completeness"]
+            else 0
+        )
 
         if avg_traceability >= 95:
             summary["regulatory_readiness"]["status"] = "audit_ready"
@@ -796,11 +936,13 @@ Identify 10-20 risks covering all major areas."""
 
         # Identify audit findings
         if avg_traceability < 100:
-            summary["audit_findings"].append({
-                "finding": "Incomplete traceability",
-                "impact": "Regulatory submission at risk",
-                "recommendation": "Complete all traceability links before submission"
-            })
+            summary["audit_findings"].append(
+                {
+                    "finding": "Incomplete traceability",
+                    "impact": "Regulatory submission at risk",
+                    "recommendation": "Complete all traceability links before submission",
+                }
+            )
 
         return summary
 
@@ -808,8 +950,13 @@ Identify 10-20 risks covering all major areas."""
     # Regulatory Document Generation
     # -----------------------------------------------------------------------
 
-    def generate_regulatory_documents(self, backlog: Dict, requirements: List[SystemRequirement],
-                                    architecture: Dict, traceability_matrices: Dict) -> Dict:
+    def generate_regulatory_documents(
+        self,
+        backlog: Dict,
+        requirements: List[SystemRequirement],
+        architecture: Dict,
+        traceability_matrices: Dict,
+    ) -> Dict:
         """
         Generate regulatory documents required for submissions.
 
@@ -818,23 +965,31 @@ Identify 10-20 risks covering all major areas."""
         documents = {}
 
         # Software Requirements Specification (SRS)
-        documents["srs"] = self._generate_srs(backlog, requirements, traceability_matrices)
+        documents["srs"] = self._generate_srs(
+            backlog, requirements, traceability_matrices
+        )
 
         # Software Architecture Document (SAD)
         documents["sad"] = self._generate_sad(architecture, requirements)
 
         # Verification & Validation Plan
-        documents["vv_plan"] = self._generate_vv_plan(requirements, traceability_matrices)
+        documents["vv_plan"] = self._generate_vv_plan(
+            requirements, traceability_matrices
+        )
 
         # Risk Management File
-        documents["risk_management_file"] = self._generate_risk_management_file(requirements)
+        documents["risk_management_file"] = self._generate_risk_management_file(
+            requirements
+        )
 
         # SOUP Inventory (Software of Unknown Provenance)
         documents["soup_inventory"] = self._generate_soup_inventory(architecture)
 
         return documents
 
-    def _generate_srs(self, backlog: Dict, requirements: List[SystemRequirement], matrices: Dict) -> Dict:
+    def _generate_srs(
+        self, backlog: Dict, requirements: List[SystemRequirement], matrices: Dict
+    ) -> Dict:
         """Generate Software Requirements Specification per IEC 62304 §5.2"""
         return {
             "document_type": "Software Requirements Specification",
@@ -844,8 +999,10 @@ Identify 10-20 risks covering all major areas."""
                 "1_introduction": {
                     "product_name": backlog.get("product_name", ""),
                     "intended_use": backlog.get("vision", ""),
-                    "target_users": [p.get("name", "") for p in backlog.get("personas", [])],
-                    "regulatory_classification": "TBD - Based on risk analysis"
+                    "target_users": [
+                        p.get("name", "") for p in backlog.get("personas", [])
+                    ],
+                    "regulatory_classification": "TBD - Based on risk analysis",
                 },
                 "2_functional_requirements": [
                     {
@@ -853,32 +1010,37 @@ Identify 10-20 risks covering all major areas."""
                         "title": req.title,
                         "description": req.description,
                         "source_story": req.source_story_id,
-                        "acceptance_criteria": req.acceptance_criteria
+                        "acceptance_criteria": req.acceptance_criteria,
                     }
-                    for req in requirements if req.type == RequirementType.FUNCTIONAL
+                    for req in requirements
+                    if req.type == RequirementType.FUNCTIONAL
                 ],
                 "3_performance_requirements": [
                     {
                         "req_id": req.id,
                         "title": req.title,
                         "description": req.description,
-                        "acceptance_criteria": req.acceptance_criteria
+                        "acceptance_criteria": req.acceptance_criteria,
                     }
-                    for req in requirements if req.type == RequirementType.PERFORMANCE
+                    for req in requirements
+                    if req.type == RequirementType.PERFORMANCE
                 ],
                 "4_interface_requirements": [
                     {
                         "req_id": req.id,
                         "title": req.title,
-                        "description": req.description
+                        "description": req.description,
                     }
-                    for req in requirements if req.type == RequirementType.INTERFACE
+                    for req in requirements
+                    if req.type == RequirementType.INTERFACE
                 ],
-                "5_traceability_matrix": matrices.get("user_needs_to_requirements", [])
-            }
+                "5_traceability_matrix": matrices.get("user_needs_to_requirements", []),
+            },
         }
 
-    def _generate_sad(self, architecture: Dict, requirements: List[SystemRequirement]) -> Dict:
+    def _generate_sad(
+        self, architecture: Dict, requirements: List[SystemRequirement]
+    ) -> Dict:
         """Generate Software Architecture Document per IEC 62304 §5.3"""
         return {
             "document_type": "Software Architecture Document",
@@ -887,23 +1049,27 @@ Identify 10-20 risks covering all major areas."""
             "sections": {
                 "1_architecture_overview": {
                     "pattern": architecture.get("architecture_pattern", ""),
-                    "rationale": "Selected for modularity and testability"
+                    "rationale": "Selected for modularity and testability",
                 },
                 "2_subsystem_decomposition": architecture.get("subsystems", []),
                 "3_interface_specifications": architecture.get("interfaces", []),
                 "4_data_flows": architecture.get("data_flows", []),
                 "5_technology_stack": architecture.get("technology_stack", {}),
-                "6_architectural_decisions": architecture.get("architectural_decisions", []),
+                "6_architectural_decisions": architecture.get(
+                    "architectural_decisions", []
+                ),
                 "7_safety_architecture": [
                     req for req in requirements if req.type == RequirementType.SAFETY
                 ],
                 "8_security_architecture": [
                     req for req in requirements if req.type == RequirementType.SECURITY
-                ]
-            }
+                ],
+            },
         }
 
-    def _generate_vv_plan(self, requirements: List[SystemRequirement], matrices: Dict) -> Dict:
+    def _generate_vv_plan(
+        self, requirements: List[SystemRequirement], matrices: Dict
+    ) -> Dict:
         """Generate Verification & Validation Plan per IEC 62304 §5.5"""
         return {
             "document_type": "Verification & Validation Plan",
@@ -912,22 +1078,26 @@ Identify 10-20 risks covering all major areas."""
             "sections": {
                 "1_vv_strategy": {
                     "approach": "V-model with requirements-based testing",
-                    "independence": "Verification performed by different personnel than development"
+                    "independence": "Verification performed by different personnel than development",
                 },
                 "2_verification_activities": matrices.get("design_to_verification", []),
-                "3_validation_activities": matrices.get("verification_to_validation", []),
+                "3_validation_activities": matrices.get(
+                    "verification_to_validation", []
+                ),
                 "4_test_environment": "TBD - Based on intended use environment",
                 "5_acceptance_criteria": "All verification tests pass AND validation demonstrates user needs met",
                 "6_deliverables": [
                     "Verification Test Results",
                     "Validation Test Results",
                     "Traceability Matrices",
-                    "V&V Report"
-                ]
-            }
+                    "V&V Report",
+                ],
+            },
         }
 
-    def _generate_risk_management_file(self, requirements: List[SystemRequirement]) -> Dict:
+    def _generate_risk_management_file(
+        self, requirements: List[SystemRequirement]
+    ) -> Dict:
         """Generate Risk Management File per ISO 14971"""
         return {
             "document_type": "Risk Management File",
@@ -936,9 +1106,21 @@ Identify 10-20 risks covering all major areas."""
             "sections": {
                 "1_risk_policy": "All identified risks shall be reduced to acceptable levels",
                 "2_risk_criteria": {
-                    "severity_scale": ["Negligible", "Minor", "Serious", "Critical", "Catastrophic"],
-                    "probability_scale": ["Remote", "Unlikely", "Possible", "Probable", "Frequent"],
-                    "acceptability_matrix": "Risk Level = Severity × Probability"
+                    "severity_scale": [
+                        "Negligible",
+                        "Minor",
+                        "Serious",
+                        "Critical",
+                        "Catastrophic",
+                    ],
+                    "probability_scale": [
+                        "Remote",
+                        "Unlikely",
+                        "Possible",
+                        "Probable",
+                        "Frequent",
+                    ],
+                    "acceptability_matrix": "Risk Level = Severity × Probability",
                 },
                 "3_hazard_analysis": "TBD - Systematic hazard identification",
                 "4_risk_analysis": "TBD - Risk estimation for each hazard",
@@ -947,8 +1129,8 @@ Identify 10-20 risks covering all major areas."""
                     req for req in requirements if req.type == RequirementType.SAFETY
                 ],
                 "7_residual_risk": "TBD - Post-control risk assessment",
-                "8_risk_monitoring": "Post-market surveillance plan"
-            }
+                "8_risk_monitoring": "Post-market surveillance plan",
+            },
         }
 
     def _generate_soup_inventory(self, architecture: Dict) -> Dict:
@@ -966,11 +1148,11 @@ Identify 10-20 risks covering all major areas."""
                     "supplier": "TBD",
                     "intended_use": "TBD",
                     "anomaly_list": "TBD",
-                    "segregation_analysis": "TBD"
+                    "segregation_analysis": "TBD",
                 }
                 for category in technology_stack.values()
                 for item in (category if isinstance(category, list) else [])
-            ]
+            ],
         }
 
     # -----------------------------------------------------------------------
@@ -993,13 +1175,15 @@ Identify 10-20 risks covering all major areas."""
                 "title": change_request.get("title", ""),
                 "description": change_request.get("description", ""),
                 "justification": change_request.get("justification", ""),
-                "affected_requirements": change_request.get("affected_requirements", []),
+                "affected_requirements": change_request.get(
+                    "affected_requirements", []
+                ),
                 "priority": change_request.get("priority", "medium"),
                 "submitter": change_request.get("submitter", "unknown"),
                 "created_at": timestamp,
                 "status": "pending_review",
                 "workflow_stage": "impact_analysis",
-                "trace_id": f"trace_{uuid.uuid4().hex[:16]}"
+                "trace_id": f"trace_{uuid.uuid4().hex[:16]}",
             }
 
             self.logger.info("Change request initiated: %s", change_id)
@@ -1009,8 +1193,12 @@ Identify 10-20 risks covering all major areas."""
             self.logger.error("Change request initiation failed: %s", exc)
             return {"error": str(exc), "status": "failed"}
 
-    def assess_change_impact(self, change_id: str, affected_requirements: List[str],
-                           requirements: List[SystemRequirement]) -> Dict:
+    def assess_change_impact(
+        self,
+        change_id: str,
+        affected_requirements: List[str],
+        requirements: List[SystemRequirement],
+    ) -> Dict:
         """
         Assess the impact of a change request on the system.
 
@@ -1018,23 +1206,40 @@ Identify 10-20 risks covering all major areas."""
         """
         try:
             # Find affected requirements
-            affected_reqs = [req for req in requirements if req.id in affected_requirements]
+            affected_reqs = [
+                req for req in requirements if req.id in affected_requirements
+            ]
 
             # Analyze subsystem impact
             affected_subsystems = list(set(req.allocated_to for req in affected_reqs))
 
             # Assess regression risk based on requirement types
-            high_risk_types = [RequirementType.SAFETY, RequirementType.SECURITY, RequirementType.COMPLIANCE]
+            high_risk_types = [
+                RequirementType.SAFETY,
+                RequirementType.SECURITY,
+                RequirementType.COMPLIANCE,
+            ]
             has_high_risk = any(req.type in high_risk_types for req in affected_reqs)
 
-            impact_level = "high" if has_high_risk else "medium" if len(affected_subsystems) > 2 else "low"
+            impact_level = (
+                "high"
+                if has_high_risk
+                else "medium"
+                if len(affected_subsystems) > 2
+                else "low"
+            )
 
             # Identify testing impact
             testing_impact = {
-                "verification_tests_affected": len([req for req in affected_reqs if req.verification_method == "test"]),
-                "regression_testing_required": has_high_risk or len(affected_subsystems) > 1,
+                "verification_tests_affected": len(
+                    [req for req in affected_reqs if req.verification_method == "test"]
+                ),
+                "regression_testing_required": has_high_risk
+                or len(affected_subsystems) > 1,
                 "new_test_cases_needed": len(affected_reqs),
-                "validation_testing_required": any("user" in req.source_story_id.lower() for req in affected_reqs)
+                "validation_testing_required": any(
+                    "user" in req.source_story_id.lower() for req in affected_reqs
+                ),
             }
 
             # Documentation updates required
@@ -1053,14 +1258,17 @@ Identify 10-20 risks covering all major areas."""
                 "testing_impact": testing_impact,
                 "documentation_updates": doc_updates,
                 "approval_required": has_high_risk or impact_level == "high",
-                "estimated_effort_days": len(affected_reqs) * 2 + len(affected_subsystems) * 3
+                "estimated_effort_days": len(affected_reqs) * 2
+                + len(affected_subsystems) * 3,
             }
 
         except Exception as exc:
             self.logger.error("Change impact assessment failed: %s", exc)
             return {"error": str(exc), "change_id": change_id}
 
-    def execute_approved_change(self, change_id: str, approval_record: Dict, execution_plan: Dict) -> Dict:
+    def execute_approved_change(
+        self, change_id: str, approval_record: Dict, execution_plan: Dict
+    ) -> Dict:
         """
         Execute an approved change request with full audit trail.
 
@@ -1073,25 +1281,29 @@ Identify 10-20 risks covering all major areas."""
             updated_requirements = []
             for req_update in execution_plan.get("requirements_updates", []):
                 req_id = req_update["requirement_id"]
-                updated_requirements.append({
-                    "requirement_id": req_id,
-                    "change_type": "modification",
-                    "previous_description": "TBD - fetch from current",
-                    "new_description": req_update.get("new_description", ""),
-                    "change_rationale": req_update.get("rationale", ""),
-                    "updated_at": timestamp
-                })
+                updated_requirements.append(
+                    {
+                        "requirement_id": req_id,
+                        "change_type": "modification",
+                        "previous_description": "TBD - fetch from current",
+                        "new_description": req_update.get("new_description", ""),
+                        "change_rationale": req_update.get("rationale", ""),
+                        "updated_at": timestamp,
+                    }
+                )
 
             # Execute verification updates
             updated_verification = []
             for ver_update in execution_plan.get("verification_updates", []):
                 req_id = ver_update["requirement_id"]
-                updated_verification.append({
-                    "requirement_id": req_id,
-                    "additional_tests": ver_update.get("additional_tests", []),
-                    "modified_tests": ver_update.get("modified_tests", []),
-                    "updated_at": timestamp
-                })
+                updated_verification.append(
+                    {
+                        "requirement_id": req_id,
+                        "additional_tests": ver_update.get("additional_tests", []),
+                        "modified_tests": ver_update.get("modified_tests", []),
+                        "updated_at": timestamp,
+                    }
+                )
 
             # Create audit trail entry
             audit_entry = {
@@ -1102,7 +1314,7 @@ Identify 10-20 risks covering all major areas."""
                 "requirements_changed": len(updated_requirements),
                 "verification_changed": len(updated_verification),
                 "documents_updated": execution_plan.get("documentation_updates", []),
-                "compliance_verified": True
+                "compliance_verified": True,
             }
 
             return {
@@ -1114,13 +1326,17 @@ Identify 10-20 risks covering all major areas."""
                 "next_steps": [
                     "Update traceability matrices",
                     "Run regression testing",
-                    "Update regulatory documents"
-                ]
+                    "Update regulatory documents",
+                ],
             }
 
         except Exception as exc:
             self.logger.error("Change execution failed: %s", exc)
-            return {"error": str(exc), "change_id": change_id, "execution_status": "failed"}
+            return {
+                "error": str(exc),
+                "change_id": change_id,
+                "execution_status": "failed",
+            }
 
     def get_change_audit_trail(self, change_id: str) -> Dict:
         """
@@ -1135,20 +1351,35 @@ Identify 10-20 risks covering all major areas."""
                 "change_id": change_id,
                 "timeline": [
                     {"event": "change_initiated", "timestamp": "2024-04-02T10:00:00Z"},
-                    {"event": "impact_assessment_completed", "timestamp": "2024-04-02T11:00:00Z"},
+                    {
+                        "event": "impact_assessment_completed",
+                        "timestamp": "2024-04-02T11:00:00Z",
+                    },
                     {"event": "change_approved", "timestamp": "2024-04-02T14:00:00Z"},
-                    {"event": "change_executed", "timestamp": "2024-04-02T15:00:00Z"}
+                    {"event": "change_executed", "timestamp": "2024-04-02T15:00:00Z"},
                 ],
                 "approvals": [
-                    {"role": "system_architect", "approver": "John Smith", "timestamp": "2024-04-02T14:00:00Z"}
+                    {
+                        "role": "system_architect",
+                        "approver": "John Smith",
+                        "timestamp": "2024-04-02T14:00:00Z",
+                    }
                 ],
                 "requirements_changes": [
-                    {"requirement_id": "REQ-001", "change_type": "modification", "timestamp": "2024-04-02T15:00:00Z"}
+                    {
+                        "requirement_id": "REQ-001",
+                        "change_type": "modification",
+                        "timestamp": "2024-04-02T15:00:00Z",
+                    }
                 ],
                 "verification_changes": [
-                    {"requirement_id": "REQ-001", "change_type": "test_addition", "timestamp": "2024-04-02T15:00:00Z"}
+                    {
+                        "requirement_id": "REQ-001",
+                        "change_type": "test_addition",
+                        "timestamp": "2024-04-02T15:00:00Z",
+                    }
                 ],
-                "regulatory_impact": "Requirements change reviewed for IEC 62304 compliance"
+                "regulatory_impact": "Requirements change reviewed for IEC 62304 compliance",
             }
 
         except Exception as exc:
@@ -1173,12 +1404,12 @@ Identify 10-20 risks covering all major areas."""
             signature_slots = []
             for i, signer in enumerate(signature_request.get("required_signers", [])):
                 slot = {
-                    "slot_id": f"{workflow_id}-{i+1:02d}",
+                    "slot_id": f"{workflow_id}-{i + 1:02d}",
                     "role": signer.get("role", ""),
                     "signer_name": signer.get("name", ""),
                     "status": "pending",
                     "signature_id": None,
-                    "signed_at": None
+                    "signed_at": None,
                 }
                 signature_slots.append(slot)
 
@@ -1187,12 +1418,16 @@ Identify 10-20 risks covering all major areas."""
                 "document_type": signature_request.get("document_type", ""),
                 "document_id": signature_request.get("document_id", ""),
                 "signature_reason": signature_request.get("signature_reason", ""),
-                "compliance_standard": signature_request.get("compliance_standard", "21_CFR_Part_11"),
+                "compliance_standard": signature_request.get(
+                    "compliance_standard", "21_CFR_Part_11"
+                ),
                 "created_at": timestamp,
                 "status": "pending_signatures",
                 "signature_slots": signature_slots,
-                "document_hash": self._generate_document_hash(signature_request.get("document_id", "")),
-                "workflow_creator": signature_request.get("creator", "system")
+                "document_hash": self._generate_document_hash(
+                    signature_request.get("document_id", "")
+                ),
+                "workflow_creator": signature_request.get("creator", "system"),
             }
 
             self.logger.info("Electronic signature workflow created: %s", workflow_id)
@@ -1202,7 +1437,9 @@ Identify 10-20 risks covering all major areas."""
             self.logger.error("Signature workflow creation failed: %s", exc)
             return {"error": str(exc), "status": "failed"}
 
-    def apply_electronic_signature(self, workflow_id: str, signature_data: Dict) -> Dict:
+    def apply_electronic_signature(
+        self, workflow_id: str, signature_data: Dict
+    ) -> Dict:
         """
         Apply electronic signature with full 21 CFR Part 11 compliance.
 
@@ -1213,13 +1450,21 @@ Identify 10-20 risks covering all major areas."""
             timestamp = datetime.now(timezone.utc).isoformat()
 
             # Validate signature data completeness
-            required_fields = ["signer", "role", "password", "signature_meaning", "ip_address"]
-            missing_fields = [field for field in required_fields if not signature_data.get(field)]
+            required_fields = [
+                "signer",
+                "role",
+                "password",
+                "signature_meaning",
+                "ip_address",
+            ]
+            missing_fields = [
+                field for field in required_fields if not signature_data.get(field)
+            ]
 
             if missing_fields:
                 return {
                     "error": f"Missing required fields: {missing_fields}",
-                    "compliant": False
+                    "compliant": False,
                 }
 
             # Generate signature hash for integrity
@@ -1238,7 +1483,7 @@ Identify 10-20 risks covering all major areas."""
                 "signature_hash": signature_hash,
                 "ip_address": signature_data["ip_address"],
                 "compliance_standard": "21_CFR_Part_11",
-                "authentication_method": "password_based"
+                "authentication_method": "password_based",
             }
 
             result = {
@@ -1249,10 +1494,14 @@ Identify 10-20 risks covering all major areas."""
                 "signed_at": timestamp,
                 "compliant": True,
                 "audit_record": audit_record,
-                "integrity_hash": signature_hash
+                "integrity_hash": signature_hash,
             }
 
-            self.logger.info("Electronic signature applied: %s for workflow %s", signature_id, workflow_id)
+            self.logger.info(
+                "Electronic signature applied: %s for workflow %s",
+                signature_id,
+                workflow_id,
+            )
             return result
 
         except Exception as exc:
@@ -1277,18 +1526,18 @@ Identify 10-20 risks covering all major areas."""
                 "hash_verification": {
                     "original_hash": "abc123...",
                     "computed_hash": "abc123...",
-                    "match": True
+                    "match": True,
                 },
                 "chain_of_custody": {
                     "creation_verified": True,
                     "modification_check": True,
-                    "access_log_verified": True
+                    "access_log_verified": True,
                 },
                 "compliance_status": {
                     "cfr_part_11_compliant": True,
                     "audit_trail_complete": True,
-                    "signer_identity_verified": True
-                }
+                    "signer_identity_verified": True,
+                },
             }
 
             return validation
@@ -1316,7 +1565,7 @@ Identify 10-20 risks covering all major areas."""
                         "signature_timestamp": "2024-04-02T10:00:00Z",
                         "signature_meaning": "I approve this document",
                         "document_hash": "abc123...",
-                        "ip_address": "192.168.1.100"
+                        "ip_address": "192.168.1.100",
                     }
                 ],
                 "access_attempts": [
@@ -1324,22 +1573,22 @@ Identify 10-20 risks covering all major areas."""
                         "timestamp": "2024-04-02T09:58:00Z",
                         "user": "john.smith@company.com",
                         "action": "view_document",
-                        "ip_address": "192.168.1.100"
+                        "ip_address": "192.168.1.100",
                     }
                 ],
                 "integrity_checks": [
                     {
                         "timestamp": "2024-04-02T10:00:01Z",
                         "check_type": "hash_verification",
-                        "result": "passed"
+                        "result": "passed",
                     }
                 ],
                 "compliance_verification": {
                     "cfr_part_11_compliant": True,
                     "all_signatures_valid": True,
                     "audit_trail_complete": True,
-                    "electronic_records_preserved": True
-                }
+                    "electronic_records_preserved": True,
+                },
             }
 
             return audit
@@ -1350,14 +1599,20 @@ Identify 10-20 risks covering all major areas."""
 
     def _generate_document_hash(self, document_id: str) -> str:
         """Generate SHA-256 hash of document for integrity verification."""
-        return hashlib.sha256(f"document_{document_id}_{datetime.now().isoformat()}".encode()).hexdigest()
+        return hashlib.sha256(
+            f"document_{document_id}_{datetime.now().isoformat()}".encode()
+        ).hexdigest()
 
     # -----------------------------------------------------------------------
     # V&V Protocol Generation (IEC 62304 §5.5-5.6)
     # -----------------------------------------------------------------------
 
-    def generate_vv_protocol(self, backlog: Dict, requirements: List[SystemRequirement],
-                           risk_analysis: List[Dict]) -> Dict:
+    def generate_vv_protocol(
+        self,
+        backlog: Dict,
+        requirements: List[SystemRequirement],
+        risk_analysis: List[Dict],
+    ) -> Dict:
         """
         Generate comprehensive Verification & Validation Protocol per IEC 62304.
 
@@ -1368,21 +1623,31 @@ Identify 10-20 risks covering all major areas."""
             timestamp = datetime.now(timezone.utc).isoformat()
 
             # Generate verification procedures for each requirement
-            verification_procedures = self.generate_verification_procedures(requirements)
+            verification_procedures = self.generate_verification_procedures(
+                requirements
+            )
 
             # Generate validation procedures from user stories
             user_stories = backlog.get("user_stories", [])
             success_metrics = backlog.get("success_metrics", [])
-            validation_procedures = self.generate_validation_procedures(user_stories, success_metrics)
+            validation_procedures = self.generate_validation_procedures(
+                user_stories, success_metrics
+            )
 
             # Generate test environment specifications
-            test_environment = self._generate_test_environment_specs(requirements, backlog)
+            test_environment = self._generate_test_environment_specs(
+                requirements, backlog
+            )
 
             # Generate acceptance criteria
-            acceptance_criteria = self._generate_protocol_acceptance_criteria(requirements, risk_analysis)
+            acceptance_criteria = self._generate_protocol_acceptance_criteria(
+                requirements, risk_analysis
+            )
 
             # Generate resource requirements
-            resource_requirements = self._generate_resource_requirements(verification_procedures, validation_procedures)
+            resource_requirements = self._generate_resource_requirements(
+                verification_procedures, validation_procedures
+            )
 
             protocol = {
                 "protocol_id": protocol_id,
@@ -1395,13 +1660,15 @@ Identify 10-20 risks covering all major areas."""
                 "test_environment_specs": test_environment,
                 "acceptance_criteria": acceptance_criteria,
                 "resource_requirements": resource_requirements,
-                "risk_mitigation_testing": self._map_risks_to_testing(risk_analysis, requirements),
+                "risk_mitigation_testing": self._map_risks_to_testing(
+                    risk_analysis, requirements
+                ),
                 "regulatory_requirements": [
                     "IEC 62304 §5.5 - Software architectural design",
                     "IEC 62304 §5.6 - Software detailed design",
                     "IEC 62304 §5.7 - Software unit implementation and testing",
-                    "IEC 62304 §5.8 - Software integration and integration testing"
-                ]
+                    "IEC 62304 §5.8 - Software integration and integration testing",
+                ],
             }
 
             self.logger.info("V&V Protocol generated: %s", protocol_id)
@@ -1411,7 +1678,9 @@ Identify 10-20 risks covering all major areas."""
             self.logger.error("V&V Protocol generation failed: %s", exc)
             return {"error": str(exc)}
 
-    def generate_verification_procedures(self, requirements: List[SystemRequirement]) -> List[Dict]:
+    def generate_verification_procedures(
+        self, requirements: List[SystemRequirement]
+    ) -> List[Dict]:
         """
         Generate detailed verification procedures for each system requirement.
 
@@ -1421,7 +1690,7 @@ Identify 10-20 risks covering all major areas."""
             procedures = []
 
             for i, requirement in enumerate(requirements):
-                procedure_id = f"VP-{i+1:03d}"
+                procedure_id = f"VP-{i + 1:03d}"
 
                 # Generate test steps based on requirement type and verification method
                 test_steps = self._generate_test_steps_for_requirement(requirement)
@@ -1429,13 +1698,22 @@ Identify 10-20 risks covering all major areas."""
                 pass_fail_criteria = self._generate_pass_fail_criteria(requirement)
 
                 # Enhanced testing for high-risk requirements
-                test_intensity = "enhanced" if requirement.type in [
-                    RequirementType.SAFETY, RequirementType.SECURITY, RequirementType.COMPLIANCE
-                ] else "standard"
+                test_intensity = (
+                    "enhanced"
+                    if requirement.type
+                    in [
+                        RequirementType.SAFETY,
+                        RequirementType.SECURITY,
+                        RequirementType.COMPLIANCE,
+                    ]
+                    else "standard"
+                )
 
                 test_methods = ["automated_test"]
                 if requirement.type == RequirementType.SECURITY:
-                    test_methods.extend(["penetration_testing", "vulnerability_scanning"])
+                    test_methods.extend(
+                        ["penetration_testing", "vulnerability_scanning"]
+                    )
                 if requirement.type == RequirementType.SAFETY:
                     test_methods.extend(["hazard_testing", "fault_injection"])
 
@@ -1449,9 +1727,12 @@ Identify 10-20 risks covering all major areas."""
                     "test_steps": test_steps,
                     "expected_results": expected_results,
                     "pass_fail_criteria": pass_fail_criteria,
-                    "test_data_requirements": self._generate_test_data_requirements(requirement),
+                    "test_data_requirements": self._generate_test_data_requirements(
+                        requirement
+                    ),
                     "prerequisites": self._generate_test_prerequisites(requirement),
-                    "estimated_duration_hours": len(test_steps) * 0.5 + (2 if test_intensity == "enhanced" else 0)
+                    "estimated_duration_hours": len(test_steps) * 0.5
+                    + (2 if test_intensity == "enhanced" else 0),
                 }
 
                 procedures.append(procedure)
@@ -1462,7 +1743,9 @@ Identify 10-20 risks covering all major areas."""
             self.logger.error("Verification procedure generation failed: %s", exc)
             return []
 
-    def generate_validation_procedures(self, user_stories: List[Dict], success_metrics: List[str]) -> List[Dict]:
+    def generate_validation_procedures(
+        self, user_stories: List[Dict], success_metrics: List[str]
+    ) -> List[Dict]:
         """
         Generate validation procedures that demonstrate user needs are met.
 
@@ -1472,7 +1755,7 @@ Identify 10-20 risks covering all major areas."""
             procedures = []
 
             for i, story in enumerate(user_stories):
-                procedure_id = f"VAL-{i+1:03d}"
+                procedure_id = f"VAL-{i + 1:03d}"
 
                 # Extract persona and user goal from story
                 persona = story.get("persona", "user")
@@ -1480,7 +1763,9 @@ Identify 10-20 risks covering all major areas."""
 
                 # Generate user interaction steps
                 interaction_steps = self._generate_user_interaction_steps(story)
-                success_criteria = self._map_story_to_success_metrics(story, success_metrics)
+                success_criteria = self._map_story_to_success_metrics(
+                    story, success_metrics
+                )
 
                 procedure = {
                     "procedure_id": procedure_id,
@@ -1493,7 +1778,7 @@ Identify 10-20 risks covering all major areas."""
                     "user_acceptance_criteria": story.get("acceptance_criteria", []),
                     "test_environment": "production-like",
                     "real_user_testing": True,
-                    "estimated_duration_hours": len(interaction_steps) * 0.25
+                    "estimated_duration_hours": len(interaction_steps) * 0.25,
                 }
 
                 procedures.append(procedure)
@@ -1506,12 +1791,16 @@ Identify 10-20 risks covering all major areas."""
                     "user_story_title": "Overall System Validation",
                     "persona": "all_users",
                     "validation_scenario": "Validate overall system meets business objectives",
-                    "user_interaction_steps": ["End-to-end system operation", "Performance measurement", "User satisfaction survey"],
+                    "user_interaction_steps": [
+                        "End-to-end system operation",
+                        "Performance measurement",
+                        "User satisfaction survey",
+                    ],
                     "success_criteria": success_metrics,
                     "user_acceptance_criteria": success_metrics,
                     "test_environment": "production",
                     "real_user_testing": True,
-                    "estimated_duration_hours": 8
+                    "estimated_duration_hours": 8,
                 }
                 procedures.append(system_validation)
 
@@ -1521,19 +1810,23 @@ Identify 10-20 risks covering all major areas."""
             self.logger.error("Validation procedure generation failed: %s", exc)
             return []
 
-    def _generate_test_steps_for_requirement(self, requirement: SystemRequirement) -> List[str]:
+    def _generate_test_steps_for_requirement(
+        self, requirement: SystemRequirement
+    ) -> List[str]:
         """Generate detailed test steps for a specific requirement."""
         base_steps = [
             f"Set up test environment for {requirement.allocated_to}",
             f"Prepare test data for {requirement.title}",
             f"Execute test for: {requirement.description}",
             "Verify result against acceptance criteria",
-            "Document test results"
+            "Document test results",
         ]
 
         # Add requirement-type specific steps
         if requirement.type == RequirementType.PERFORMANCE:
-            base_steps.insert(3, "Measure performance metrics (response time, throughput)")
+            base_steps.insert(
+                3, "Measure performance metrics (response time, throughput)"
+            )
         elif requirement.type == RequirementType.SECURITY:
             base_steps.insert(3, "Attempt unauthorized access scenarios")
         elif requirement.type == RequirementType.INTERFACE:
@@ -1546,7 +1839,7 @@ Identify 10-20 risks covering all major areas."""
         return [
             f"System shall behave as specified in {requirement.id}",
             "All acceptance criteria are met",
-            "No unexpected errors or exceptions occur"
+            "No unexpected errors or exceptions occur",
         ] + requirement.acceptance_criteria
 
     def _generate_pass_fail_criteria(self, requirement: SystemRequirement) -> Dict:
@@ -1555,21 +1848,30 @@ Identify 10-20 risks covering all major areas."""
             "pass_criteria": [
                 "All acceptance criteria are met",
                 "No critical defects found",
-                "Performance within specified limits"
-            ] + requirement.verification_criteria,
+                "Performance within specified limits",
+            ]
+            + requirement.verification_criteria,
             "fail_criteria": [
                 "Any acceptance criteria not met",
                 "Critical defects identified",
-                "Performance below specified limits"
-            ]
+                "Performance below specified limits",
+            ],
         }
 
-    def _generate_test_data_requirements(self, requirement: SystemRequirement) -> List[str]:
+    def _generate_test_data_requirements(
+        self, requirement: SystemRequirement
+    ) -> List[str]:
         """Generate test data requirements for a requirement."""
-        data_reqs = ["Valid input test cases", "Invalid input test cases", "Boundary value test cases"]
+        data_reqs = [
+            "Valid input test cases",
+            "Invalid input test cases",
+            "Boundary value test cases",
+        ]
 
         if requirement.type == RequirementType.SECURITY:
-            data_reqs.extend(["Malicious input test cases", "Authentication test credentials"])
+            data_reqs.extend(
+                ["Malicious input test cases", "Authentication test credentials"]
+            )
         elif requirement.type == RequirementType.PERFORMANCE:
             data_reqs.extend(["Load test data sets", "Stress test scenarios"])
 
@@ -1581,7 +1883,7 @@ Identify 10-20 risks covering all major areas."""
             f"Test environment configured for {requirement.allocated_to}",
             "Test data prepared and validated",
             "Required test tools installed and configured",
-            "Dependencies available and functional"
+            "Dependencies available and functional",
         ]
 
     def _extract_user_goal_from_story(self, story: Dict) -> str:
@@ -1599,17 +1901,26 @@ Identify 10-20 risks covering all major areas."""
             "User accesses the system",
             f"User performs action: {story.get('title', 'main action')}",
             "User verifies expected outcome",
-            "User completes workflow successfully"
+            "User completes workflow successfully",
         ]
 
-    def _map_story_to_success_metrics(self, story: Dict, success_metrics: List[str]) -> List[str]:
+    def _map_story_to_success_metrics(
+        self, story: Dict, success_metrics: List[str]
+    ) -> List[str]:
         """Map user story to relevant success metrics."""
         # Simple mapping - in practice would be more sophisticated
-        return [metric for metric in success_metrics if any(
-            word in metric.lower() for word in story.get("title", "").lower().split()
-        )] or ["User can complete the intended task successfully"]
+        return [
+            metric
+            for metric in success_metrics
+            if any(
+                word in metric.lower()
+                for word in story.get("title", "").lower().split()
+            )
+        ] or ["User can complete the intended task successfully"]
 
-    def _generate_test_environment_specs(self, requirements: List[SystemRequirement], backlog: Dict) -> Dict:
+    def _generate_test_environment_specs(
+        self, requirements: List[SystemRequirement], backlog: Dict
+    ) -> Dict:
         """Generate test environment specifications."""
         return {
             "hardware_requirements": "TBD - Based on system architecture",
@@ -1618,61 +1929,71 @@ Identify 10-20 risks covering all major areas."""
             "data_requirements": "Test data sets for all scenarios",
             "security_configuration": "Isolated test environment with production-like security",
             "performance_monitoring": "Performance measurement tools installed",
-            "backup_and_recovery": "Test environment backup procedures defined"
+            "backup_and_recovery": "Test environment backup procedures defined",
         }
 
-    def _generate_protocol_acceptance_criteria(self, requirements: List[SystemRequirement],
-                                             risk_analysis: List[Dict]) -> Dict:
+    def _generate_protocol_acceptance_criteria(
+        self, requirements: List[SystemRequirement], risk_analysis: List[Dict]
+    ) -> Dict:
         """Generate overall protocol acceptance criteria."""
         return {
             "verification_criteria": [
                 "All requirements verified successfully",
                 "100% of verification tests pass",
-                "No high-severity defects remain open"
+                "No high-severity defects remain open",
             ],
             "validation_criteria": [
                 "All user stories validated successfully",
                 "User acceptance criteria met",
-                "Success metrics achieved"
+                "Success metrics achieved",
             ],
             "compliance_criteria": [
                 "IEC 62304 compliance demonstrated",
                 "Risk mitigation verified",
-                "Traceability complete"
-            ]
+                "Traceability complete",
+            ],
         }
 
-    def _generate_resource_requirements(self, verification_procedures: List[Dict],
-                                      validation_procedures: List[Dict]) -> Dict:
+    def _generate_resource_requirements(
+        self, verification_procedures: List[Dict], validation_procedures: List[Dict]
+    ) -> Dict:
         """Generate resource requirements for V&V execution."""
-        total_verification_hours = sum(proc.get("estimated_duration_hours", 2) for proc in verification_procedures)
-        total_validation_hours = sum(proc.get("estimated_duration_hours", 2) for proc in validation_procedures)
+        total_verification_hours = sum(
+            proc.get("estimated_duration_hours", 2) for proc in verification_procedures
+        )
+        total_validation_hours = sum(
+            proc.get("estimated_duration_hours", 2) for proc in validation_procedures
+        )
 
         return {
             "personnel": {
                 "test_engineers": max(2, len(verification_procedures) // 10),
                 "domain_experts": 1,
-                "quality_assurance": 1
+                "quality_assurance": 1,
             },
             "time_estimates": {
                 "verification_hours": total_verification_hours,
                 "validation_hours": total_validation_hours,
-                "total_project_hours": total_verification_hours + total_validation_hours + 40  # +40 for planning/reporting
+                "total_project_hours": total_verification_hours
+                + total_validation_hours
+                + 40,  # +40 for planning/reporting
             },
             "tools_and_equipment": [
                 "Automated testing framework",
                 "Performance monitoring tools",
                 "Test data generation tools",
-                "Defect tracking system"
+                "Defect tracking system",
             ],
             "infrastructure": [
                 "Test environment equivalent to production",
                 "Continuous integration pipeline",
-                "Test result repository"
-            ]
+                "Test result repository",
+            ],
         }
 
-    def _map_risks_to_testing(self, risk_analysis: List[Dict], requirements: List[SystemRequirement]) -> List[Dict]:
+    def _map_risks_to_testing(
+        self, risk_analysis: List[Dict], requirements: List[SystemRequirement]
+    ) -> List[Dict]:
         """Map identified risks to specific testing activities."""
         risk_testing = []
 
@@ -1680,7 +2001,7 @@ Identify 10-20 risks covering all major areas."""
             mitigation_reqs = risk.get("mitigation_requirements", [])
 
             # Find requirements that mitigate this risk
-            mitigating_requirements = [req for req in requirements if req.id in mitigation_reqs]
+            [req for req in requirements if req.id in mitigation_reqs]
 
             risk_test = {
                 "risk_id": risk.get("risk_id", ""),
@@ -1688,7 +2009,9 @@ Identify 10-20 risks covering all major areas."""
                 "risk_level": risk.get("risk_level", "medium"),
                 "mitigation_requirements": mitigation_reqs,
                 "required_test_types": self._determine_test_types_for_risk(risk),
-                "test_intensity": "enhanced" if risk.get("risk_level") == "high" else "standard"
+                "test_intensity": "enhanced"
+                if risk.get("risk_level") == "high"
+                else "standard",
             }
 
             risk_testing.append(risk_test)
@@ -1702,11 +2025,21 @@ Identify 10-20 risks covering all major areas."""
         test_types = ["functional_testing"]
 
         if risk_category == "safety":
-            test_types.extend(["hazard_testing", "fault_injection", "fail_safe_testing"])
+            test_types.extend(
+                ["hazard_testing", "fault_injection", "fail_safe_testing"]
+            )
         elif risk_category == "security":
-            test_types.extend(["penetration_testing", "vulnerability_scanning", "authentication_testing"])
+            test_types.extend(
+                [
+                    "penetration_testing",
+                    "vulnerability_scanning",
+                    "authentication_testing",
+                ]
+            )
         elif risk_category == "performance":
-            test_types.extend(["load_testing", "stress_testing", "performance_monitoring"])
+            test_types.extend(
+                ["load_testing", "stress_testing", "performance_monitoring"]
+            )
         elif risk_category == "usability":
             test_types.extend(["user_acceptance_testing", "accessibility_testing"])
 

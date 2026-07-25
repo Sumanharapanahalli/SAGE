@@ -11,7 +11,7 @@ side-effectful work (file write, config switch, vector store mutation, etc).
 import logging
 import os
 
-from src.core.proposal_store import Proposal, RiskClass
+from src.core.proposal_store import Proposal
 
 logger = logging.getLogger(__name__)
 
@@ -20,14 +20,15 @@ logger = logging.getLogger(__name__)
 # Executor functions — one per action_type
 # ---------------------------------------------------------------------------
 
+
 async def _execute_yaml_edit(proposal: Proposal):
     """Write validated YAML content to a solution config file and reload."""
     import yaml as _yaml
     from src.core.project_loader import project_config, _SOLUTIONS_DIR
 
     file_name = proposal.payload["file"]
-    content   = proposal.payload["content"]
-    solution  = proposal.payload.get("solution", project_config.project_name)
+    content = proposal.payload["content"]
+    solution = proposal.payload.get("solution", project_config.project_name)
 
     # Validate again (belt-and-suspenders)
     _yaml.safe_load(content)
@@ -43,6 +44,7 @@ async def _execute_yaml_edit(proposal: Proposal):
 async def _execute_config_switch(proposal: Proposal):
     """Switch active solution."""
     from src.core.project_loader import project_config
+
     project_name = proposal.payload["project"]
     project_config.reload(project_name)
     logger.info("Config switch executed: project=%s", project_name)
@@ -52,17 +54,22 @@ async def _execute_config_switch(proposal: Proposal):
 async def _execute_llm_switch(proposal: Proposal):
     """Switch LLM provider/model at runtime."""
     from src.core.llm_gateway import (
-        LLMGateway, GeminiCLIProvider, LocalLlamaProvider,
-        ClaudeCodeCLIProvider, ClaudeAPIProvider, OllamaProvider
+        LLMGateway,
+        GeminiCLIProvider,
+        LocalLlamaProvider,
+        ClaudeCodeCLIProvider,
+        ClaudeAPIProvider,
+        OllamaProvider,
     )
     import yaml
 
     req_provider = proposal.payload.get("provider", "gemini")
-    req_model    = proposal.payload.get("model")
+    req_model = proposal.payload.get("model")
 
     config_path = os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-        "config", "config.yaml",
+        "config",
+        "config.yaml",
     )
     with open(config_path) as f:
         cfg = yaml.safe_load(f) or {}
@@ -103,34 +110,77 @@ async def _execute_llm_switch(proposal: Proposal):
                 raw = f.read()
             # Update provider line
             import re
-            raw = re.sub(r'^(\s*provider\s*:\s*).*$', f'\\g<1>"{req_provider}"', raw, flags=re.MULTILINE)
+
+            raw = re.sub(
+                r"^(\s*provider\s*:\s*).*$",
+                f'\\g<1>"{req_provider}"',
+                raw,
+                flags=re.MULTILINE,
+            )
             if req_model:
                 if req_provider == "gemini":
-                    raw = re.sub(r'^(\s*gemini_model\s*:\s*).*$', f'\\g<1>"{req_model}"', raw, flags=re.MULTILINE)
+                    raw = re.sub(
+                        r"^(\s*gemini_model\s*:\s*).*$",
+                        f'\\g<1>"{req_model}"',
+                        raw,
+                        flags=re.MULTILINE,
+                    )
                 elif req_provider in ("claude-code", "claude"):
-                    raw = re.sub(r'^(\s*claude_model\s*:\s*).*$', f'\\g<1>"{req_model}"', raw, flags=re.MULTILINE)
+                    raw = re.sub(
+                        r"^(\s*claude_model\s*:\s*).*$",
+                        f'\\g<1>"{req_model}"',
+                        raw,
+                        flags=re.MULTILINE,
+                    )
                 elif req_provider == "ollama":
-                    raw = re.sub(r'^(\s*ollama_model\s*:\s*).*$', f'\\g<1>"{req_model}"', raw, flags=re.MULTILINE)
+                    raw = re.sub(
+                        r"^(\s*ollama_model\s*:\s*).*$",
+                        f'\\g<1>"{req_model}"',
+                        raw,
+                        flags=re.MULTILINE,
+                    )
             claude_path = proposal.payload.get("claude_path")
             if claude_path and req_provider == "claude-code":
                 # Write or update claude_path line (uncomment if commented)
-                if re.search(r'^\s*#?\s*claude_path\s*:', raw, re.MULTILINE):
-                    raw = re.sub(r'^\s*#?\s*(claude_path\s*:).*$', f'  \\g<1> "{claude_path}"', raw, flags=re.MULTILINE)
+                if re.search(r"^\s*#?\s*claude_path\s*:", raw, re.MULTILINE):
+                    raw = re.sub(
+                        r"^\s*#?\s*(claude_path\s*:).*$",
+                        f'  \\g<1> "{claude_path}"',
+                        raw,
+                        flags=re.MULTILINE,
+                    )
                 else:
-                    raw = re.sub(r'^(\s*claude_model\s*:.*)', f'\\g<1>\n  claude_path: "{claude_path}"', raw, flags=re.MULTILINE)
+                    raw = re.sub(
+                        r"^(\s*claude_model\s*:.*)",
+                        f'\\g<1>\n  claude_path: "{claude_path}"',
+                        raw,
+                        flags=re.MULTILINE,
+                    )
             with open(config_path, "w") as f:
                 f.write(raw)
-            logger.info("config.yaml updated: provider=%s model=%s", req_provider, req_model)
+            logger.info(
+                "config.yaml updated: provider=%s model=%s", req_provider, req_model
+            )
         except Exception as exc:
             logger.warning("Failed to persist LLM default to config.yaml: %s", exc)
 
-    logger.info("LLM switch executed: provider=%s model=%s save_as_default=%s", req_provider, req_model, save_as_default)
-    return {"provider": req_provider, "provider_name": gw.get_provider_name(), "saved_as_default": save_as_default}
+    logger.info(
+        "LLM switch executed: provider=%s model=%s save_as_default=%s",
+        req_provider,
+        req_model,
+        save_as_default,
+    )
+    return {
+        "provider": req_provider,
+        "provider_name": gw.get_provider_name(),
+        "saved_as_default": save_as_default,
+    }
 
 
 async def _execute_config_modules(proposal: Proposal):
     """Update active modules list."""
     from src.core.project_loader import project_config
+
     modules = proposal.payload["modules"]
     project_config.set_active_modules(modules)
     logger.info("Modules update executed: %s", modules)
@@ -140,10 +190,11 @@ async def _execute_config_modules(proposal: Proposal):
 async def _execute_knowledge_add(proposal: Proposal):
     """Add a document to the vector store."""
     from src.memory.vector_store import vector_store
-    text       = proposal.payload["text"]
-    metadata   = proposal.payload.get("metadata", {})
+
+    text = proposal.payload["text"]
+    metadata = proposal.payload.get("metadata", {})
     collection = proposal.payload.get("collection")
-    entry_id   = vector_store.add_entry(text, metadata=metadata, collection=collection)
+    entry_id = vector_store.add_entry(text, metadata=metadata, collection=collection)
     logger.info("Knowledge add executed: entry_id=%s", entry_id)
     return {"entry_id": entry_id}
 
@@ -151,7 +202,8 @@ async def _execute_knowledge_add(proposal: Proposal):
 async def _execute_knowledge_delete(proposal: Proposal):
     """Delete a knowledge entry from the vector store."""
     from src.memory.vector_store import vector_store
-    entry_id   = proposal.payload["entry_id"]
+
+    entry_id = proposal.payload["entry_id"]
     collection = proposal.payload.get("collection")
     vector_store.delete_entry(entry_id, collection=collection)
     logger.info("Knowledge delete executed: entry_id=%s", entry_id)
@@ -161,7 +213,8 @@ async def _execute_knowledge_delete(proposal: Proposal):
 async def _execute_knowledge_import(proposal: Proposal):
     """Bulk-import documents to the vector store."""
     from src.memory.vector_store import vector_store
-    entries    = proposal.payload["entries"]   # list of {text, metadata}
+
+    entries = proposal.payload["entries"]  # list of {text, metadata}
     collection = proposal.payload.get("collection")
     ids = []
     for entry in entries:
@@ -176,9 +229,10 @@ async def _execute_knowledge_import(proposal: Proposal):
 async def _execute_code_plan(proposal: Proposal):
     """Queue an AutoGen code plan after approval."""
     from src.integrations.autogen_runner import autogen_runner
-    task      = proposal.payload["task"]
-    run_id    = proposal.payload.get("run_id")
-    result    = autogen_runner.plan(task, run_id=run_id)
+
+    task = proposal.payload["task"]
+    run_id = proposal.payload.get("run_id")
+    result = autogen_runner.plan(task, run_id=run_id)
     logger.info("Code plan executed: run_id=%s", result.get("run_id"))
     return result
 
@@ -186,6 +240,7 @@ async def _execute_code_plan(proposal: Proposal):
 async def _execute_code_execute(proposal: Proposal):
     """Execute an approved AutoGen code plan in the Docker sandbox."""
     from src.integrations.autogen_runner import autogen_runner
+
     run_id = proposal.payload["run_id"]
     result = autogen_runner.execute(run_id)
     logger.info("Code execute executed: run_id=%s", run_id)
@@ -195,9 +250,10 @@ async def _execute_code_execute(proposal: Proposal):
 async def _execute_mcp_invoke(proposal: Proposal):
     """Invoke an MCP tool after approval."""
     from src.integrations.mcp_registry import mcp_registry
+
     tool_name = proposal.payload["tool_name"]
     arguments = proposal.payload.get("arguments", {})
-    result    = mcp_registry.invoke(tool_name, arguments)
+    result = mcp_registry.invoke(tool_name, arguments)
     logger.info("MCP invoke executed: tool=%s", tool_name)
     return result
 
@@ -205,9 +261,10 @@ async def _execute_mcp_invoke(proposal: Proposal):
 async def _execute_temporal_workflow_start(proposal: Proposal):
     """Start a Temporal durable workflow after approval."""
     from src.integrations.temporal_runner import temporal_runner
+
     workflow_name = proposal.payload["workflow_name"]
-    payload       = proposal.payload.get("payload", {})
-    result        = await temporal_runner.start_workflow(workflow_name, payload)
+    payload = proposal.payload.get("payload", {})
+    result = await temporal_runner.start_workflow(workflow_name, payload)
     logger.info("Temporal workflow started: %s", workflow_name)
     return result
 
@@ -215,9 +272,12 @@ async def _execute_temporal_workflow_start(proposal: Proposal):
 async def _execute_onboarding_generate(proposal: Proposal):
     """Write onboarding-generated YAML files after approval."""
     from src.core.onboarding import generate_solution
+
     params = proposal.payload
     result = generate_solution(**params)
-    logger.info("Onboarding generate executed: solution=%s", params.get("solution_name"))
+    logger.info(
+        "Onboarding generate executed: solution=%s", params.get("solution_name")
+    )
     return result
 
 
@@ -232,9 +292,9 @@ async def _execute_implementation_plan(proposal: Proposal):
     from src.core.proposal_store import get_proposal_store, RiskClass as _RC
     from src.core.queue_manager import task_queue
 
-    steps        = proposal.payload.get("steps", [])
-    plan_trace   = proposal.trace_id
-    queued_ids   = []
+    steps = proposal.payload.get("steps", [])
+    plan_trace = proposal.trace_id
+    queued_ids = []
     diff_proposals = []
 
     for step in steps:
@@ -243,6 +303,7 @@ async def _execute_implementation_plan(proposal: Proposal):
         if task_type == "DEVELOP":
             # Run CodingAgent in a thread (it's synchronous but may be slow)
             from src.agents.coder import coding_agent
+
             loop = asyncio.get_event_loop()
             result = await loop.run_in_executor(
                 None, coding_agent.implement_step, step, plan_trace
@@ -251,21 +312,21 @@ async def _execute_implementation_plan(proposal: Proposal):
             # Create a code_diff proposal for director review
             store = get_proposal_store()
             diff_proposal = store.create(
-                action_type  = "code_diff",
-                risk_class   = _RC.STATEFUL,
-                payload      = {
-                    "summary":       result["summary"],
-                    "diff":          result["diff"],
+                action_type="code_diff",
+                risk_class=_RC.STATEFUL,
+                payload={
+                    "summary": result["summary"],
+                    "diff": result["diff"],
                     "written_files": result["written_files"],
-                    "test_result":   result["test_result"],
-                    "tests_passed":  result["tests_passed"],
+                    "test_result": result["test_result"],
+                    "tests_passed": result["tests_passed"],
                     "plan_trace_id": plan_trace,
-                    "step":          step,
+                    "step": step,
                 },
-                description  = f"Code diff: {step.get('description', 'implementation')[:80]}",
-                reversible   = True,   # rejection reverts via git checkout
-                proposed_by  = "CodingAgent",
-                required_role = "admin",
+                description=f"Code diff: {step.get('description', 'implementation')[:80]}",
+                reversible=True,  # rejection reverts via git checkout
+                proposed_by="CodingAgent",
+                required_role="admin",
             )
             diff_proposals.append(diff_proposal.trace_id)
             logger.info("code_diff proposal created: %s", diff_proposal.trace_id)
@@ -273,6 +334,7 @@ async def _execute_implementation_plan(proposal: Proposal):
             # Create isolated worktree for this code_diff proposal
             try:
                 from src.core.worktree_manager import WorktreeManager
+
                 _wt_mgr = WorktreeManager()
                 _wt_mgr.create(diff_proposal.trace_id)
             except Exception as _wt_exc:
@@ -284,6 +346,7 @@ async def _execute_implementation_plan(proposal: Proposal):
             try:
                 from src.core.queue_manager import _DB_PATH as _QDB
                 import sqlite3 as _sq
+
                 _conn = _sq.connect(_QDB)
                 _conn.row_factory = _sq.Row
                 _row = _conn.execute(
@@ -295,8 +358,17 @@ async def _execute_implementation_plan(proposal: Proposal):
                     task_source = _row["scope"]  # "sage" or "solution"
                 else:
                     # Default: framework-generic task types → sage
-                    _framework_types = {"ANALYZE", "DEVELOP", "REVIEW", "TEST", "PLAN", "DOCUMENT"}
-                    task_source = "sage" if task_type.upper() in _framework_types else "solution"
+                    _framework_types = {
+                        "ANALYZE",
+                        "DEVELOP",
+                        "REVIEW",
+                        "TEST",
+                        "PLAN",
+                        "DOCUMENT",
+                    }
+                    task_source = (
+                        "sage" if task_type.upper() in _framework_types else "solution"
+                    )
             except Exception as _exc:
                 logger.warning("Could not resolve task source scope: %s", _exc)
 
@@ -309,12 +381,15 @@ async def _execute_implementation_plan(proposal: Proposal):
             )
             queued_ids.append(task_id)
 
-    logger.info("Implementation plan executed: %d tasks queued, %d diff proposals created",
-                len(queued_ids), len(diff_proposals))
+    logger.info(
+        "Implementation plan executed: %d tasks queued, %d diff proposals created",
+        len(queued_ids),
+        len(diff_proposals),
+    )
     return {
-        "tasks_queued":     len(queued_ids),
-        "task_ids":         queued_ids,
-        "diff_proposals":   diff_proposals,
+        "tasks_queued": len(queued_ids),
+        "task_ids": queued_ids,
+        "diff_proposals": diff_proposals,
         "diff_proposal_count": len(diff_proposals),
     }
 
@@ -328,9 +403,9 @@ async def _execute_code_diff(proposal: Proposal):
     """
     import subprocess
 
-    diff     = proposal.payload.get("diff", "")
-    summary  = proposal.payload.get("summary", "AI-generated code changes")
-    files    = proposal.payload.get("written_files", [])
+    diff = proposal.payload.get("diff", "")
+    summary = proposal.payload.get("summary", "AI-generated code changes")
+    files = proposal.payload.get("written_files", [])
     tests_ok = proposal.payload.get("tests_passed", False)
 
     if not diff or diff.strip() == "(no changes detected)":
@@ -341,6 +416,7 @@ async def _execute_code_diff(proposal: Proposal):
     # Use isolated worktree if available
     try:
         from src.core.worktree_manager import WorktreeManager
+
         _wt = WorktreeManager()
         _wt_path = _wt.get_path(proposal.trace_id)
         if _wt_path:
@@ -362,8 +438,10 @@ async def _execute_code_diff(proposal: Proposal):
                 r = subprocess.run(["git", "add", "--", rel], cwd=root, timeout=10)
                 staged = staged or r.returncode == 0
             if not staged:
-                return {"committed": False,
-                        "reason": "none of the recorded written_files could be staged"}
+                return {
+                    "committed": False,
+                    "reason": "none of the recorded written_files could be staged",
+                }
         else:
             subprocess.run(["git", "add", "-A"], cwd=root, check=True, timeout=10)
 
@@ -378,7 +456,9 @@ async def _execute_code_diff(proposal: Proposal):
         )
         subprocess.run(
             ["git", "commit", "-m", commit_msg],
-            cwd=root, check=True, timeout=15,
+            cwd=root,
+            check=True,
+            timeout=15,
         )
         logger.info("code_diff committed: trace_id=%s", proposal.trace_id)
         return {"committed": True, "files": files, "summary": summary}
@@ -419,11 +499,17 @@ async def _revert_code_diff(proposal: Proposal):
     if not files:
         # Nothing recorded to revert. Do NOT fall back to a tree-wide wipe — that is exactly
         # the destructive behaviour being removed. Report it so the operator can act.
-        logger.warning("code_diff reject: no written_files recorded for %s — "
-                       "nothing reverted (the agent's changes, if any, remain in the tree)",
-                       proposal.trace_id)
-        return {"reverted": False, "reason": "no written_files recorded; "
-                "nothing reverted to avoid a tree-wide wipe", "files": []}
+        logger.warning(
+            "code_diff reject: no written_files recorded for %s — "
+            "nothing reverted (the agent's changes, if any, remain in the tree)",
+            proposal.trace_id,
+        )
+        return {
+            "reverted": False,
+            "reason": "no written_files recorded; "
+            "nothing reverted to avoid a tree-wide wipe",
+            "files": [],
+        }
 
     root_abs = os.path.abspath(root)
     reverted, skipped = [], []
@@ -437,14 +523,23 @@ async def _revert_code_diff(proposal: Proposal):
             skipped.append(rel)
             continue
         try:
-            existed = subprocess.run(
-                ["git", "cat-file", "-e", f"HEAD:{rel}"],
-                cwd=root, capture_output=True, timeout=10,
-            ).returncode == 0
+            existed = (
+                subprocess.run(
+                    ["git", "cat-file", "-e", f"HEAD:{rel}"],
+                    cwd=root,
+                    capture_output=True,
+                    timeout=10,
+                ).returncode
+                == 0
+            )
             if existed:
                 # The agent modified a tracked file — restore its committed version.
-                subprocess.run(["git", "checkout", "HEAD", "--", rel],
-                               cwd=root, check=True, timeout=10)
+                subprocess.run(
+                    ["git", "checkout", "HEAD", "--", rel],
+                    cwd=root,
+                    check=True,
+                    timeout=10,
+                )
             elif os.path.isfile(target):
                 # The agent created a new file — remove just that one file.
                 os.remove(target)
@@ -453,14 +548,19 @@ async def _revert_code_diff(proposal: Proposal):
             logger.error("code_diff reject: could not revert %s: %s", rel, exc)
             skipped.append(rel)
 
-    logger.info("code_diff reverted %d/%d file(s): trace_id=%s",
-                len(reverted), len(files), proposal.trace_id)
+    logger.info(
+        "code_diff reverted %d/%d file(s): trace_id=%s",
+        len(reverted),
+        len(files),
+        proposal.trace_id,
+    )
     return {"reverted": not skipped, "files": reverted, "skipped": skipped}
 
 
 async def _execute_collective_publish(proposal: Proposal):
     """Write a learning YAML to the collective repo after HITL approval."""
     from src.core.collective_memory import get_collective_memory
+
     cm = get_collective_memory()
     learning = proposal.payload["learning"]
     result = cm._write_and_commit_learning(learning)
@@ -477,16 +577,16 @@ async def _execute_agent_hire(proposal: Proposal):
     from src.core.project_loader import project_config, _SOLUTIONS_DIR
     from src.core.role_generator import role_generator
 
-    p         = proposal.payload
-    role_id   = p["role_id"]
-    solution  = p.get("solution", project_config.project_name)
-    sol_dir   = os.path.join(_SOLUTIONS_DIR, solution)
+    p = proposal.payload
+    role_id = p["role_id"]
+    solution = p.get("solution", project_config.project_name)
+    sol_dir = os.path.join(_SOLUTIONS_DIR, solution)
 
     # ── 1. Update prompts.yaml via RoleGenerator ──────────────────────────
     role_data = {
-        "name":          p["name"],
-        "description":   p["description"],
-        "icon":          p["icon"],
+        "name": p["name"],
+        "description": p["description"],
+        "icon": p["icon"],
         "system_prompt": p["system_prompt"],
     }
     role_generator.add_role_to_yaml(solution, role_id, role_data)
@@ -508,12 +608,18 @@ async def _execute_agent_hire(proposal: Proposal):
             tasks["task_descriptions"][t] = f"Task handled by {p['name']}"
 
         with open(tasks_path, "w", encoding="utf-8") as fh:
-            _yaml.dump(tasks, fh, allow_unicode=True, default_flow_style=False, sort_keys=False)
+            _yaml.dump(
+                tasks, fh, allow_unicode=True, default_flow_style=False, sort_keys=False
+            )
 
     # ── 3. Hot-reload ──────────────────────────────────────────────────────
     project_config.reload(solution)
     logger.info("Agent hired: role_id=%s solution=%s", role_id, solution)
-    return {"role_id": role_id, "solution": solution, "task_types_added": new_task_types}
+    return {
+        "role_id": role_id,
+        "solution": solution,
+        "task_types_added": new_task_types,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -521,28 +627,29 @@ async def _execute_agent_hire(proposal: Proposal):
 # ---------------------------------------------------------------------------
 
 _DISPATCH: dict = {
-    "yaml_edit":                 _execute_yaml_edit,
-    "config_switch":             _execute_config_switch,
-    "llm_switch":                _execute_llm_switch,
-    "config_modules":            _execute_config_modules,
-    "knowledge_add":             _execute_knowledge_add,
-    "knowledge_delete":          _execute_knowledge_delete,
-    "knowledge_import":          _execute_knowledge_import,
-    "code_plan":                 _execute_code_plan,
-    "code_execute":              _execute_code_execute,
-    "mcp_invoke":                _execute_mcp_invoke,
-    "temporal_workflow_start":   _execute_temporal_workflow_start,
-    "onboarding_generate":       _execute_onboarding_generate,
-    "agent_hire":                _execute_agent_hire,
-    "collective_publish":        _execute_collective_publish,
-    "implementation_plan":       _execute_implementation_plan,
-    "code_diff":                 _execute_code_diff,
+    "yaml_edit": _execute_yaml_edit,
+    "config_switch": _execute_config_switch,
+    "llm_switch": _execute_llm_switch,
+    "config_modules": _execute_config_modules,
+    "knowledge_add": _execute_knowledge_add,
+    "knowledge_delete": _execute_knowledge_delete,
+    "knowledge_import": _execute_knowledge_import,
+    "code_plan": _execute_code_plan,
+    "code_execute": _execute_code_execute,
+    "mcp_invoke": _execute_mcp_invoke,
+    "temporal_workflow_start": _execute_temporal_workflow_start,
+    "onboarding_generate": _execute_onboarding_generate,
+    "agent_hire": _execute_agent_hire,
+    "collective_publish": _execute_collective_publish,
+    "implementation_plan": _execute_implementation_plan,
+    "code_diff": _execute_code_diff,
 }
 
 
 # ---------------------------------------------------------------------------
 # Public executor entry point
 # ---------------------------------------------------------------------------
+
 
 async def execute_approved_proposal(proposal: Proposal) -> dict:
     """
@@ -560,12 +667,15 @@ async def execute_approved_proposal(proposal: Proposal) -> dict:
         result = await handler(proposal)
         logger.info(
             "Proposal executed: trace_id=%s action=%s",
-            proposal.trace_id, proposal.action_type,
+            proposal.trace_id,
+            proposal.action_type,
         )
         return result or {}
     except Exception as exc:
         logger.error(
             "Proposal execution failed: trace_id=%s action=%s error=%s",
-            proposal.trace_id, proposal.action_type, exc,
+            proposal.trace_id,
+            proposal.action_type,
+            exc,
         )
         raise

@@ -4,9 +4,11 @@ Nano-module: JSON Extractor
 Extracts clean JSON from LLM output that may contain markdown fences,
 prose, or extra whitespace. Zero dependencies — pure Python.
 """
+
 import json
 import re
 from typing import Any, Optional
+
 
 def extract(text: str) -> Optional[Any]:
     """
@@ -24,7 +26,7 @@ def extract(text: str) -> Optional[Any]:
     except json.JSONDecodeError:
         pass
     # Try to find first {...} or [...]
-    for pattern in (r'\{[\s\S]*\}', r'\[[\s\S]*\]'):
+    for pattern in (r"\{[\s\S]*\}", r"\[[\s\S]*\]"):
         match = re.search(pattern, cleaned)
         if match:
             try:
@@ -32,6 +34,7 @@ def extract(text: str) -> Optional[Any]:
             except json.JSONDecodeError:
                 continue
     return None
+
 
 def extract_or_default(text: str, default: Any) -> Any:
     """Like extract() but returns default instead of None on failure."""

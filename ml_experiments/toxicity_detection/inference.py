@@ -19,11 +19,11 @@ import statistics
 import time
 import warnings
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import torch
 import yaml
-from transformers import AutoModelForSequenceClassification, AutoTokenizer, pipeline
+from transformers import pipeline
 
 warnings.filterwarnings("ignore")
 logging.basicConfig(
@@ -37,6 +37,7 @@ logger = logging.getLogger("toxicity.inference")
 # Config
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 def load_config(path: str) -> Dict[str, Any]:
     with open(path) as fh:
         return yaml.safe_load(fh)
@@ -45,6 +46,7 @@ def load_config(path: str) -> Dict[str, Any]:
 # ─────────────────────────────────────────────────────────────────────────────
 # ToxicityClassifier  — production-ready wrapper
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class ToxicityClassifier:
     """Thin wrapper around HuggingFace pipeline with SLA enforcement."""
@@ -120,15 +122,19 @@ class ToxicityClassifier:
             label = out["label"].lower()
             score = out["score"]
             toxic_prob = score if ("1" in label or "toxic" in label) else 1.0 - score
-            results.append({
-                "text": text[:120],
-                "is_toxic": bool(toxic_prob >= self.threshold),
-                "toxic_probability": round(float(toxic_prob), 4),
-            })
+            results.append(
+                {
+                    "text": text[:120],
+                    "is_toxic": bool(toxic_prob >= self.threshold),
+                    "toxic_probability": round(float(toxic_prob), 4),
+                }
+            )
 
         logger.info(
             "Batch inference: %d samples in %.1f ms (%.2f ms/sample)",
-            len(texts), total_ms, per_sample_ms,
+            len(texts),
+            total_ms,
+            per_sample_ms,
         )
         return results
 
@@ -140,7 +146,11 @@ class ToxicityClassifier:
     ) -> Dict[str, Any]:
         """Measure single-sample latency over N runs."""
         import random
-        texts = [random.choice(self.SAMPLE_TEXTS) for _ in range(benchmark_runs + warmup_runs)]
+
+        texts = [
+            random.choice(self.SAMPLE_TEXTS)
+            for _ in range(benchmark_runs + warmup_runs)
+        ]
 
         # Warm-up (not counted)
         for t in texts[:warmup_runs]:
@@ -152,17 +162,17 @@ class ToxicityClassifier:
             self.pipe(t, truncation=True, max_length=128)
             latencies.append((time.perf_counter() - t0) * 1000)
 
-        sla_violations = sum(1 for l in latencies if l > self.sla_ms)
+        sla_violations = sum(1 for l in latencies if l > self.sla_ms)  # noqa: E741
 
         report = {
             "runs": benchmark_runs,
             "sla_ms": self.sla_ms,
-            "min_ms":    round(min(latencies), 2),
-            "max_ms":    round(max(latencies), 2),
-            "mean_ms":   round(statistics.mean(latencies), 2),
+            "min_ms": round(min(latencies), 2),
+            "max_ms": round(max(latencies), 2),
+            "mean_ms": round(statistics.mean(latencies), 2),
             "median_ms": round(statistics.median(latencies), 2),
-            "p95_ms":    round(sorted(latencies)[int(0.95 * len(latencies))], 2),
-            "p99_ms":    round(sorted(latencies)[int(0.99 * len(latencies))], 2),
+            "p95_ms": round(sorted(latencies)[int(0.95 * len(latencies))], 2),
+            "p99_ms": round(sorted(latencies)[int(0.99 * len(latencies))], 2),
             "sla_violations": sla_violations,
             "sla_violation_rate": round(sla_violations / benchmark_runs, 4),
             "sla_passed": sla_violations == 0,
@@ -171,8 +181,11 @@ class ToxicityClassifier:
         logger.info(
             "Latency benchmark — mean=%.2f ms  p95=%.2f ms  p99=%.2f ms  "
             "SLA violations=%d/%d",
-            report["mean_ms"], report["p95_ms"], report["p99_ms"],
-            sla_violations, benchmark_runs,
+            report["mean_ms"],
+            report["p95_ms"],
+            report["p99_ms"],
+            sla_violations,
+            benchmark_runs,
         )
         return report
 
@@ -181,12 +194,17 @@ class ToxicityClassifier:
 # Entry point
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 def main():
     parser = argparse.ArgumentParser(description="Toxicity model inference & benchmark")
     parser.add_argument("--config", default="config.yaml")
     parser.add_argument("--model_dir", default="artifacts/toxicity_model")
-    parser.add_argument("--text", type=str, default=None, help="Single text to classify")
-    parser.add_argument("--benchmark", action="store_true", help="Run latency benchmark")
+    parser.add_argument(
+        "--text", type=str, default=None, help="Single text to classify"
+    )
+    parser.add_argument(
+        "--benchmark", action="store_true", help="Run latency benchmark"
+    )
     parser.add_argument("--threshold", type=float, default=0.5)
     args = parser.parse_args()
 
@@ -228,7 +246,9 @@ def main():
         for ex in examples:
             r = clf.predict(ex)
             flag = "TOXIC" if r["is_toxic"] else "CLEAN"
-            print(f"  [{flag}] p={r['toxic_probability']:.3f}  {r['latency_ms']}ms  |  {ex[:60]}")
+            print(
+                f"  [{flag}] p={r['toxic_probability']:.3f}  {r['latency_ms']}ms  |  {ex[:60]}"
+            )
 
 
 if __name__ == "__main__":

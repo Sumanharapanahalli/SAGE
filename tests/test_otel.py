@@ -11,15 +11,8 @@ Tests cover:
   6. EventBus span linkage
 """
 
-import importlib
-import os
-import sys
 import threading
 import time
-import types
-from unittest.mock import MagicMock, patch
-
-import pytest
 
 
 # ─── 1. Tracer Module — Initialization ──────────────────────────────
@@ -31,18 +24,21 @@ class TestTracerInit:
     def test_module_imports_without_otel_sdk(self):
         """tracing.py must import cleanly even when opentelemetry is not installed."""
         from src.core import tracing
+
         assert hasattr(tracing, "get_tracer")
         assert hasattr(tracing, "TRACING_AVAILABLE")
 
     def test_get_tracer_returns_object(self):
         """get_tracer() always returns a usable tracer (real or no-op)."""
         from src.core.tracing import get_tracer
+
         tracer = get_tracer("test-component")
         assert tracer is not None
 
     def test_get_tracer_consistent_for_same_name(self):
         """Same component name should return the same tracer instance."""
         from src.core.tracing import get_tracer
+
         t1 = get_tracer("test-same")
         t2 = get_tracer("test-same")
         assert t1 is t2
@@ -50,6 +46,7 @@ class TestTracerInit:
     def test_init_tracing_returns_provider(self):
         """init_tracing() returns a provider (real or no-op) and is idempotent."""
         from src.core.tracing import init_tracing
+
         p1 = init_tracing()
         p2 = init_tracing()
         assert p1 is not None
@@ -65,6 +62,7 @@ class TestSpanCreation:
     def test_start_span_context_manager(self):
         """start_span() works as a context manager and yields a span."""
         from src.core.tracing import get_tracer
+
         tracer = get_tracer("test-spans")
         with tracer.start_as_current_span("test-operation") as span:
             assert span is not None
@@ -72,6 +70,7 @@ class TestSpanCreation:
     def test_span_set_attribute(self):
         """Span attributes can be set without error (real or no-op)."""
         from src.core.tracing import get_tracer
+
         tracer = get_tracer("test-spans")
         with tracer.start_as_current_span("test-attrs") as span:
             # Should not raise even on no-op spans
@@ -81,6 +80,7 @@ class TestSpanCreation:
     def test_span_set_status_on_error(self):
         """Span status can be set to error without raising."""
         from src.core.tracing import get_tracer, StatusCode
+
         tracer = get_tracer("test-spans")
         with tracer.start_as_current_span("test-error") as span:
             span.set_status(StatusCode.ERROR, "something failed")
@@ -88,6 +88,7 @@ class TestSpanCreation:
     def test_span_record_exception(self):
         """record_exception works on spans (real or no-op)."""
         from src.core.tracing import get_tracer
+
         tracer = get_tracer("test-spans")
         with tracer.start_as_current_span("test-exc") as span:
             try:
@@ -105,6 +106,7 @@ class TestTracingConfig:
     def test_disabled_by_default_without_config(self):
         """Without explicit config, tracing should still work (no-op or real)."""
         from src.core.tracing import get_tracer
+
         tracer = get_tracer("test-default")
         # Should produce a usable tracer regardless
         with tracer.start_as_current_span("noop-test") as span:
@@ -113,6 +115,7 @@ class TestTracingConfig:
     def test_init_tracing_with_service_name(self):
         """init_tracing accepts a custom service name."""
         from src.core import tracing
+
         # Reset to allow re-init
         tracing._provider = None
         tracing._tracers.clear()
@@ -132,6 +135,7 @@ class TestLLMGatewaySpans:
     def test_trace_llm_call_creates_span(self):
         """trace_llm_call context manager creates a span with LLM attributes."""
         from src.core.tracing import trace_llm_call
+
         with trace_llm_call(
             provider="gemini",
             model="gemini-2.0-flash",
@@ -146,7 +150,8 @@ class TestLLMGatewaySpans:
 
     def test_trace_llm_call_records_error(self):
         """trace_llm_call records exception if generate fails."""
-        from src.core.tracing import trace_llm_call, StatusCode
+        from src.core.tracing import trace_llm_call
+
         try:
             with trace_llm_call(
                 provider="ollama",
@@ -154,7 +159,7 @@ class TestLLMGatewaySpans:
                 prompt_length=50,
                 system_prompt_length=20,
                 trace_name="test-fail",
-            ) as span:
+            ):
                 raise RuntimeError("LLM timeout")
         except RuntimeError:
             pass  # Expected — the span should have recorded the error
@@ -162,6 +167,7 @@ class TestLLMGatewaySpans:
     def test_trace_llm_call_attributes(self):
         """trace_llm_call sets standard semantic convention attributes."""
         from src.core.tracing import trace_llm_call
+
         with trace_llm_call(
             provider="claude",
             model="claude-sonnet-4-6",
@@ -183,6 +189,7 @@ class TestContextPropagation:
     def test_inject_extract_roundtrip(self):
         """inject_context → extract_context roundtrip preserves trace context."""
         from src.core.tracing import inject_context, extract_context
+
         carrier = {}
         inject_context(carrier)
         ctx = extract_context(carrier)
@@ -192,6 +199,7 @@ class TestContextPropagation:
     def test_inject_into_dict(self):
         """inject_context populates a dict carrier (may be empty if no active span)."""
         from src.core.tracing import inject_context
+
         carrier = {}
         inject_context(carrier)
         assert isinstance(carrier, dict)
@@ -199,6 +207,7 @@ class TestContextPropagation:
     def test_extract_from_empty_carrier(self):
         """extract_context from empty carrier returns a valid (root) context."""
         from src.core.tracing import extract_context
+
         ctx = extract_context({})
         assert ctx is not None
 
@@ -241,6 +250,7 @@ class TestTracingThreadSafety:
     def test_concurrent_get_tracer(self):
         """Multiple threads calling get_tracer simultaneously is safe."""
         from src.core.tracing import get_tracer
+
         tracers = []
         errors = []
 
@@ -251,7 +261,9 @@ class TestTracingThreadSafety:
             except Exception as e:
                 errors.append(e)
 
-        threads = [threading.Thread(target=worker, args=(f"thread-{i}",)) for i in range(10)]
+        threads = [
+            threading.Thread(target=worker, args=(f"thread-{i}",)) for i in range(10)
+        ]
         for t in threads:
             t.start()
         for t in threads:
@@ -263,6 +275,7 @@ class TestTracingThreadSafety:
     def test_concurrent_span_creation(self):
         """Multiple threads creating spans simultaneously is safe."""
         from src.core.tracing import get_tracer
+
         tracer = get_tracer("thread-test")
         errors = []
 

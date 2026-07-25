@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ReflectionResult:
     """Result of a reflection loop."""
+
     reflection_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     iterations: int = 0
     final_score: float = 0.0
@@ -47,10 +48,11 @@ class ReflectionResult:
 @dataclass
 class ReflectionConfig:
     """Configuration for reflection loop."""
+
     max_iterations: int = 3
     acceptance_threshold: float = 0.7
     improvement_threshold: float = 0.05  # min improvement per iteration to continue
-    include_history: bool = True         # inject prior attempts in prompt
+    include_history: bool = True  # inject prior attempts in prompt
 
 
 class ReflectionEngine:
@@ -97,12 +99,15 @@ class ReflectionEngine:
             started_at=datetime.now(timezone.utc).isoformat(),
         )
 
-        self._emit("reflection.started", {
-            "reflection_id": result.reflection_id,
-            "task_id": task_id,
-            "max_iterations": config.max_iterations,
-            "threshold": config.acceptance_threshold,
-        })
+        self._emit(
+            "reflection.started",
+            {
+                "reflection_id": result.reflection_id,
+                "task_id": task_id,
+                "max_iterations": config.max_iterations,
+                "threshold": config.acceptance_threshold,
+            },
+        )
 
         augmented_context = context
         prev_score = 0.0
@@ -114,12 +119,16 @@ class ReflectionEngine:
             try:
                 output = generator(augmented_context)
             except Exception as exc:
-                result.history.append({
-                    "iteration": i + 1,
-                    "error": str(exc),
-                    "score": 0.0,
-                })
-                logger.warning("Reflection generator error at iteration %d: %s", i + 1, exc)
+                result.history.append(
+                    {
+                        "iteration": i + 1,
+                        "error": str(exc),
+                        "score": 0.0,
+                    }
+                )
+                logger.warning(
+                    "Reflection generator error at iteration %d: %s", i + 1, exc
+                )
                 break
 
             # Critique
@@ -130,23 +139,30 @@ class ReflectionEngine:
             except Exception as exc:
                 score = 0.0
                 feedback = f"Critic error: {exc}"
-                logger.warning("Reflection critic error at iteration %d: %s", i + 1, exc)
+                logger.warning(
+                    "Reflection critic error at iteration %d: %s", i + 1, exc
+                )
 
-            result.history.append({
-                "iteration": i + 1,
-                "score": score,
-                "feedback": feedback,
-            })
+            result.history.append(
+                {
+                    "iteration": i + 1,
+                    "score": score,
+                    "feedback": feedback,
+                }
+            )
             result.final_output = output
             result.final_score = score
 
-            self._emit("reflection.iteration", {
-                "reflection_id": result.reflection_id,
-                "iteration": i + 1,
-                "score": score,
-                "accepted": score >= config.acceptance_threshold,
-                "task_id": task_id,
-            })
+            self._emit(
+                "reflection.iteration",
+                {
+                    "reflection_id": result.reflection_id,
+                    "iteration": i + 1,
+                    "score": score,
+                    "accepted": score >= config.acceptance_threshold,
+                    "task_id": task_id,
+                },
+            )
 
             # Accept if above threshold
             if score >= config.acceptance_threshold:
@@ -157,7 +173,8 @@ class ReflectionEngine:
             if i > 0 and (score - prev_score) < config.improvement_threshold:
                 logger.info(
                     "Reflection stopping: no improvement (%.3f → %.3f)",
-                    prev_score, score,
+                    prev_score,
+                    score,
                 )
                 break
 
@@ -187,12 +204,15 @@ class ReflectionEngine:
         result.completed_at = datetime.now(timezone.utc).isoformat()
 
         event_type = "reflection.accepted" if result.accepted else "reflection.rejected"
-        self._emit(event_type, {
-            "reflection_id": result.reflection_id,
-            "iterations": result.iterations,
-            "final_score": result.final_score,
-            "task_id": task_id,
-        })
+        self._emit(
+            event_type,
+            {
+                "reflection_id": result.reflection_id,
+                "iterations": result.iterations,
+                "final_score": result.final_score,
+                "task_id": task_id,
+            },
+        )
 
         with self._lock:
             self._results[result.reflection_id] = result
@@ -223,8 +243,12 @@ class ReflectionEngine:
             "accepted_count": accepted,
             "rejected_count": len(results) - accepted,
             "acceptance_rate": round(accepted / len(results), 3) if results else 0,
-            "avg_iterations": round(sum(r.iterations for r in results) / len(results), 2),
-            "avg_final_score": round(sum(r.final_score for r in results) / len(results), 3),
+            "avg_iterations": round(
+                sum(r.iterations for r in results) / len(results), 2
+            ),
+            "avg_final_score": round(
+                sum(r.final_score for r in results) / len(results), 3
+            ),
         }
 
     def list_recent(self, limit: int = 20) -> list[dict]:
@@ -242,6 +266,7 @@ class ReflectionEngine:
         """Emit event via EventBus (non-blocking)."""
         try:
             from src.core.event_bus import get_event_bus
+
             get_event_bus().publish(event_type, data, source="reflection_engine")
         except Exception:
             pass

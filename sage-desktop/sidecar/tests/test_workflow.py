@@ -10,6 +10,7 @@ Error mapping mirrors handlers.builds's dict-with-"error"-key convention:
     ``{"error": "..."}`` from run/resume/status -> ``RPC_INVALID_PARAMS``
     Python exception -> ``RPC_SIDECAR_ERROR``
 """
+
 from __future__ import annotations
 
 import sys
@@ -99,7 +100,12 @@ def test_run_defaults_state_to_empty_dict(monkeypatch):
 
     def fake_run(name, state):
         captured["state"] = state
-        return {"run_id": "r1", "status": "completed", "workflow_name": name, "result": {}}
+        return {
+            "run_id": "r1",
+            "status": "completed",
+            "workflow_name": name,
+            "result": {},
+        }
 
     monkeypatch.setattr(langgraph_runner, "run", fake_run)
     workflow.run({"workflow_name": "analysis_workflow"})
@@ -167,7 +173,12 @@ def test_resume_defaults_feedback_to_empty_dict(monkeypatch):
 
     def fake_resume(run_id, feedback):
         captured["feedback"] = feedback
-        return {"run_id": run_id, "status": "completed", "workflow_name": "x", "result": {}}
+        return {
+            "run_id": run_id,
+            "status": "completed",
+            "workflow_name": "x",
+            "result": {},
+        }
 
     monkeypatch.setattr(langgraph_runner, "resume", fake_resume)
     workflow.resume({"run_id": "r1"})

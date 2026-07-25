@@ -16,7 +16,6 @@ from pathlib import Path
 
 import joblib
 import numpy as np
-import pandas as pd
 import yaml
 from fairlearn.metrics import (
     MetricFrame,
@@ -57,11 +56,13 @@ def featurize(df, text_cols, num_cols, cat_cols, tfidf, scaler, ohe) -> np.ndarr
     text = df[text_cols].fillna("").agg(" ".join, axis=1)
     num = df[num_cols].fillna(0).astype(float)
     cat = df[cat_cols].fillna("unknown")
-    return np.hstack([
-        tfidf.transform(text).toarray(),
-        scaler.transform(num),
-        ohe.transform(cat),
-    ])
+    return np.hstack(
+        [
+            tfidf.transform(text).toarray(),
+            scaler.transform(num),
+            ohe.transform(cat),
+        ]
+    )
 
 
 def per_class_metrics(y_true, y_pred, classes):
@@ -98,7 +99,8 @@ def evaluate_bias(cfg: dict, artifact_dir: Path = ARTIFACT_DIR) -> dict:
     y_all = le_target.transform(df[target])
 
     _, df_test, _, y_test = train_test_split(
-        df, y_all,
+        df,
+        y_all,
         test_size=cfg["data"]["test_size"],
         stratify=y_all,
         random_state=seed,
@@ -154,8 +156,7 @@ def evaluate_bias(cfg: dict, artifact_dir: Path = ARTIFACT_DIR) -> dict:
                 "demographic_parity_difference": round(float(dp_diff), 4),
                 "equalized_odds_difference": round(float(eo_diff), 4),
                 "per_group_accuracy": {
-                    k: round(float(v), 4)
-                    for k, v in mf.by_group["accuracy"].items()
+                    k: round(float(v), 4) for k, v in mf.by_group["accuracy"].items()
                 },
                 "per_group_selection_rate": {
                     k: round(float(v), 4)
@@ -175,13 +176,14 @@ def evaluate_bias(cfg: dict, artifact_dir: Path = ARTIFACT_DIR) -> dict:
             "Bias [%s] — any_flagged=%s  dp_diffs=%s",
             col,
             any_flagged,
-            {cls: round(group_data[cls]["demographic_parity_difference"], 3)
-             for cls in group_data},
+            {
+                cls: round(group_data[cls]["demographic_parity_difference"], 3)
+                for cls in group_data
+            },
         )
 
     overall_flagged = any(
-        v["any_bias_flagged"]
-        for v in bias_report["sensitive_groups"].values()
+        v["any_bias_flagged"] for v in bias_report["sensitive_groups"].values()
     )
     bias_report["overall_bias_flagged"] = overall_flagged
 
