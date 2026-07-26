@@ -1,3 +1,10 @@
+"""Analyst agent — turns an incoming signal into an analysis proposal.
+
+Searches vector memory for prior context, calls the LLM gateway to reason over
+the task, and emits structured audit events (including agent_error on failure).
+Role-based per SOUL.md; behaviour is driven by the active solution's prompts.
+"""
+
 import json
 import logging
 import uuid

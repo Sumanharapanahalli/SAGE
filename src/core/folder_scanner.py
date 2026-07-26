@@ -1,3 +1,10 @@
+"""Folder scanner — walk a project tree while skipping noise.
+
+Provides directory traversal that ignores VCS/build/runtime dirs (.git,
+node_modules, __pycache__, .venv, .sage, dist, build, .next) and binary/compiled
+file extensions, so callers see only meaningful source files.
+"""
+
 import os
 import logging
 
