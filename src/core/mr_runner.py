@@ -247,9 +247,12 @@ class MRRunner:
                         self.watch.mark_handled(mr_id, key)
                     self.watch.bump_rework(mr_id)
                     self.watch.set_decision(mr_id, decision)
-                self.github.comment(number, "Reworked and pushed: addressed the review "
-                                            "comments; evidence gate is green again.",
-                                    role="dev")
+                self.github.comment(
+                    number,
+                    "Reworked and pushed: addressed the review "
+                    "comments; evidence gate is green again.",
+                    role="dev",
+                )
                 self.store.update(mr_id, state="review")
 
             self.sleep_fn(self.poll_interval)
@@ -410,9 +413,17 @@ def build_default_runner(solution_dir: str, operator: str = "operator"):
         conn.close()
         return sign_event(audit.db_path, eid)
 
-    return MRRunner(store=store, github=GitHubPR(cwd=repo_root), worktree=WorktreeManager(),
-                    code_fn=code_fn, gate_fn=gate_fn, package=mr_package,
-                    record_merge=record_merge, operator=operator, watch=watch), store
+    return MRRunner(
+        store=store,
+        github=GitHubPR(cwd=repo_root),
+        worktree=WorktreeManager(),
+        code_fn=code_fn,
+        gate_fn=gate_fn,
+        package=mr_package,
+        record_merge=record_merge,
+        operator=operator,
+        watch=watch,
+    ), store
 
 
 def resume_open_mrs(runner) -> list:
@@ -435,20 +446,34 @@ def resume_open_mrs(runner) -> list:
         number = row.get("pr_number")
         if not number:
             continue  # never reached review — nothing to watch
-        if runner.watch is not None and not runner.watch.acquire(mr_id, runner.operator):
-            results.append({"mr_id": mr_id, "state": "skipped",
-                            "reason": "watch lease held by another process"})
+        if runner.watch is not None and not runner.watch.acquire(
+            mr_id, runner.operator
+        ):
+            results.append(
+                {
+                    "mr_id": mr_id,
+                    "state": "skipped",
+                    "reason": "watch lease held by another process",
+                }
+            )
             continue
         try:
             path = runner.worktree.get_path(mr_id)
         except Exception:  # noqa: BLE001
             path = None
         if not path:
-            results.append({"mr_id": mr_id, "state": "skipped",
-                            "reason": "worktree not available on this host"})
+            results.append(
+                {
+                    "mr_id": mr_id,
+                    "state": "skipped",
+                    "reason": "worktree not available on this host",
+                }
+            )
             continue
         try:
-            results.append(runner._watch(mr_id, row["work_item"], row["branch"], path, number))
+            results.append(
+                runner._watch(mr_id, row["work_item"], row["branch"], path, number)
+            )
         finally:
             if runner.watch is not None:
                 runner.watch.release(mr_id, runner.operator)

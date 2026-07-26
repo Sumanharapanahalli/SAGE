@@ -59,8 +59,14 @@ class FakeGitHub:
         }
 
     def get_comments(self, number):
-        return [{"id": "c1", "author": "harish", "body": "handle the null case",
-                 "created": "t"}]
+        return [
+            {
+                "id": "c1",
+                "author": "harish",
+                "body": "handle the null case",
+                "created": "t",
+            }
+        ]
 
     def get_reviews(self, number):
         return []
@@ -198,7 +204,9 @@ def test_plain_comment_reworked_exactly_once(tmp_path):
     # only once, however many times we poll (idempotent via the watch store).
     merges = []
     gh = FakeGitHub()  # no decisions -> REVIEW_REQUIRED each poll; one human comment
-    r, store = _runner(tmp_path, gh, gate_sequence=[True, True, True, True], merges=merges)
+    r, store = _runner(
+        tmp_path, gh, gate_sequence=[True, True, True, True], merges=merges
+    )
     mr = store.create("plain comment", "sage/mr-6")
     res = r.run(mr)
     assert res["state"] == "review" and res.get("pending")
@@ -211,14 +219,20 @@ def test_sage_own_comment_is_ignored(tmp_path):
     merges = []
     gh = FakeGitHub()
     gh.get_comments = lambda number: [
-        {"id": "s1", "author": "harish", "body": "[Sage][dev] : Reworked and pushed.",
-         "created": "t"}
+        {
+            "id": "s1",
+            "author": "harish",
+            "body": "[Sage][dev] : Reworked and pushed.",
+            "created": "t",
+        }
     ]
     r, store = _runner(tmp_path, gh, gate_sequence=[True, True], merges=merges)
     mr = store.create("self comment", "sage/mr-7")
     res = r.run(mr)
     assert res["state"] == "review" and res.get("pending")
-    assert [c for c in gh.comments if c["role"] == "dev"] == [], "must not react to itself"
+    assert [c for c in gh.comments if c["role"] == "dev"] == [], (
+        "must not react to itself"
+    )
 
 
 def test_resume_open_mrs_processes_open_reviews(tmp_path):
