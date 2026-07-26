@@ -3575,7 +3575,8 @@ async def analyze_stream(request: Request):
 
     async def _event_stream():
         from src.core.llm_gateway import llm_gateway
-        from src.memory.audit_logger import audit_logger
+
+        audit_logger = _get_audit_logger()
 
         yield _sse_event({"type": "meta", "trace_id": trace_id})
 
@@ -3643,7 +3644,8 @@ async def agent_stream(request: Request):
     async def _agent_event_stream():
         from src.core.llm_gateway import llm_gateway
         from src.core.project_loader import project_config
-        from src.memory.audit_logger import audit_logger
+
+        audit_logger = _get_audit_logger()
 
         yield _sse_event({"type": "meta", "trace_id": trace_id})
 
@@ -6276,7 +6278,8 @@ async def chat(req: ChatRequest):
     """Non-streaming contextual chat. Routes through LLM classifier, returns action or answer."""
     from src.core.project_loader import project_config
     from src.core.chat_router import route as chat_route
-    from src.memory.audit_logger import audit_logger
+
+    audit_logger = _get_audit_logger()
 
     solution = req.solution or (
         project_config.project_name if project_config else "sage"
@@ -6398,7 +6401,8 @@ async def chat(req: ChatRequest):
 async def chat_execute(req: ChatExecuteRequest):
     """Execute a chat-proposed action after human confirmation."""
     from src.core.project_loader import project_config
-    from src.memory.audit_logger import audit_logger
+
+    audit_logger = _get_audit_logger()
 
     solution = req.solution or (
         project_config.project_name if project_config else "sage"
@@ -6549,7 +6553,8 @@ async def chat_execute(req: ChatExecuteRequest):
 async def chat_cancel(req: ChatExecuteRequest):
     """Log a user-cancelled action proposal to the audit trail."""
     from src.core.project_loader import project_config
-    from src.memory.audit_logger import audit_logger
+
+    audit_logger = _get_audit_logger()
 
     solution = req.solution or (
         project_config.project_name if project_config else "sage"
@@ -6579,7 +6584,8 @@ async def chat_cancel(req: ChatExecuteRequest):
 async def clear_chat_history(user_id: str, solution: str = ""):
     """Clear chat history for a user+solution."""
     from src.core.project_loader import project_config
-    from src.memory.audit_logger import audit_logger
+
+    audit_logger = _get_audit_logger()
 
     sol = solution or (project_config.project_name if project_config else "sage")
     count = audit_logger.clear_chat_history(user_id, sol)
