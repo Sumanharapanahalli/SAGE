@@ -6,6 +6,7 @@ Run: python -m pytest tests/system/test_browser_e2e.py -v --tb=short
 """
 
 import json
+import os
 import time
 
 import pytest
@@ -21,6 +22,12 @@ Page = _playwright.Page
 pytestmark = pytest.mark.e2e
 
 
+# Stack URLs are configurable so the suite can point at wherever SAGE actually
+# runs (e.g. :8000 may host an unrelated app). Defaults preserve prior behaviour.
+API = os.environ.get("SAGE_E2E_API", "http://localhost:8000")
+BASE = os.environ.get("SAGE_E2E_BASE", "http://localhost:5173")
+
+
 def _url_up(url: str) -> bool:
     """Fast probe that returns True only if *url* answers within the timeout."""
     try:
@@ -33,26 +40,34 @@ def _url_up(url: str) -> bool:
 
 
 def _backend_up() -> bool:
-    """True only if the SAGE FastAPI backend answers /health on :8000."""
-    return _url_up("http://localhost:8000/health")
+    """True only if the SAGE FastAPI backend answers /health at API."""
+    return _url_up(f"{API}/health")
+
+
+def _backend_is_sage() -> bool:
+    """True only if the backend at API is actually SAGE — probe a route unique to
+    it (/scheduler/status) so we don't run against a different app on the port."""
+    return _url_up(f"{API}/scheduler/status")
 
 
 def _frontend_up() -> bool:
-    """True only if the Vite frontend answers on :5173."""
-    return _url_up("http://localhost:5173/")
+    """True only if the Vite frontend answers at BASE."""
+    return _url_up(f"{BASE}/")
 
 
 @pytest.fixture(scope="session", autouse=True)
 def _require_live_stack():
-    """Skip the whole module unless BOTH backend:8000 and frontend:5173 are
-    reachable — every test here drives a real browser against the live frontend
-    and calls the live backend, so a missing half means the tests cannot pass
-    and must skip (not fail)."""
+    """Skip the whole module unless the SAGE backend AND frontend are reachable —
+    every test here drives a real browser against the live frontend and calls the
+    live backend, so a missing (or wrong) half means the tests cannot pass and
+    must skip (not fail). Override the targets with SAGE_E2E_API / SAGE_E2E_BASE."""
     missing = []
     if not _backend_up():
-        missing.append("backend :8000")
+        missing.append(f"backend {API}")
+    elif not _backend_is_sage():
+        missing.append(f"SAGE backend at {API} (a different app answered)")
     if not _frontend_up():
-        missing.append("frontend :5173")
+        missing.append(f"frontend {BASE}")
     if missing:
         pytest.skip(
             "SAGE live stack not reachable (" + ", ".join(missing) + ") — "
@@ -91,10 +106,6 @@ def page(ctx):
     p = ctx.new_page()
     yield p
     p.close()
-
-
-BASE = "http://localhost:5173"
-API = "http://localhost:8000"
 
 
 # ---------------------------------------------------------------------------
