@@ -335,12 +335,14 @@ class GitHubPR:
                 continue
             author = item.get("author") or {}
             login = author.get("login", "") if isinstance(author, dict) else ""
-            parsed.append({
-                "id": str(item.get("id", "") or ""),
-                "author": str(login or ""),
-                "body": str(item.get("body", "") or ""),
-                "created": str(item.get("createdAt", "") or ""),
-            })
+            parsed.append(
+                {
+                    "id": str(item.get("id", "") or ""),
+                    "author": str(login or ""),
+                    "body": str(item.get("body", "") or ""),
+                    "created": str(item.get("createdAt", "") or ""),
+                }
+            )
         return parsed
 
     # ------------------------------------------------------------------ #

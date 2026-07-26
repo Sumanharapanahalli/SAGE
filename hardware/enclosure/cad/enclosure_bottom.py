@@ -66,7 +66,6 @@ LUG_Z = BOT_H / 2.0  # centred on shell height
 
 
 def build_bottom() -> cq.Workplane:
-
     # ── Outer shell ──────────────────────────────────────────────────────────
     outer = (
         cq.Workplane("XY")

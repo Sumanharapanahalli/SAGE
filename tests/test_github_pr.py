@@ -268,17 +268,35 @@ class TestGetComments:
     def test_parses_comments_array_with_created_at(self):
         payload = {
             "comments": [
-                {"id": "IC_1", "author": {"login": "carol"}, "body": "first",
-                 "createdAt": "2026-01-01T00:00:00Z"},
-                {"id": "IC_2", "author": {"login": "dan"}, "body": "second",
-                 "createdAt": "2026-01-02T00:00:00Z"},
+                {
+                    "id": "IC_1",
+                    "author": {"login": "carol"},
+                    "body": "first",
+                    "createdAt": "2026-01-01T00:00:00Z",
+                },
+                {
+                    "id": "IC_2",
+                    "author": {"login": "dan"},
+                    "body": "second",
+                    "createdAt": "2026-01-02T00:00:00Z",
+                },
             ]
         }
         runner = FakeRunner(default=(0, json.dumps(payload), ""))
         out = _pr(runner).get_comments(9)
         assert out == [
-            {"id": "IC_1", "author": "carol", "body": "first", "created": "2026-01-01T00:00:00Z"},
-            {"id": "IC_2", "author": "dan", "body": "second", "created": "2026-01-02T00:00:00Z"},
+            {
+                "id": "IC_1",
+                "author": "carol",
+                "body": "first",
+                "created": "2026-01-01T00:00:00Z",
+            },
+            {
+                "id": "IC_2",
+                "author": "dan",
+                "body": "second",
+                "created": "2026-01-02T00:00:00Z",
+            },
         ]
         call = runner.call_with("pr", "view")
         argv = call["argv"]
@@ -315,7 +333,10 @@ class TestComment:
         # a body already tagged (e.g. re-posted) is not double-wrapped
         runner = FakeRunner(default=(0, "", ""))
         _pr(runner).comment(7, "[Sage][test] : already tagged", role="dev")
-        assert runner.call_with("pr", "comment")["stdin"] == "[Sage][test] : already tagged"
+        assert (
+            runner.call_with("pr", "comment")["stdin"]
+            == "[Sage][test] : already tagged"
+        )
 
     def test_failure_returns_ok_false_with_stderr(self):
         runner = FakeRunner(default=(1, "", "could not add comment"))

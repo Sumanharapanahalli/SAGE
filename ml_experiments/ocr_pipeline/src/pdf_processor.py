@@ -159,7 +159,6 @@ class PDFProcessor:
         return self._pdf2image.convert_from_path(str(pdf_path), **kwargs)
 
     def _process_page(self, page_num: int, pil_image) -> PageResult:
-
         # PIL → numpy BGR
         raw_np = self._preprocessor.from_pil(pil_image)
 

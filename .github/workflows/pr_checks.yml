@@ -66,7 +66,7 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
           pip install \
-            ruff mypy bandit pip-audit \
+            ruff==0.14.0 mypy bandit pip-audit \
             pytest pytest-cov pytest-asyncio pytest-timeout \
             httpx anyio
 
@@ -92,7 +92,7 @@ jobs:
           restore-keys: pip-${{ env.PYTHON_VERSION }}-
 
       - name: Install lint tools
-        run: pip install ruff
+        run: pip install ruff==0.14.0
 
       - name: ruff check (lint)
         run: ruff check . --output-format=github
