@@ -1,3 +1,11 @@
+"""Audit logger — the compliance record and training signal.
+
+Writes structured, trace_id-tagged events (analysis, approval, rejection,
+feedback) to a per-solution SQLite DB under that solution's ``.sage/`` directory,
+so audit trails never mix between solutions. This log is both the regulated-
+industry compliance guarantee and the ground truth for measuring agent quality.
+"""
+
 import json
 import logging
 import os
