@@ -468,9 +468,10 @@ def _get_planner():
 
 
 def _get_db_path() -> str:
-    from src.memory.audit_logger import audit_logger
-
-    return audit_logger.db_path
+    # Route through _get_audit_logger() (not a direct singleton import) so tests
+    # that patch _get_audit_logger to an isolated DB are honored here too —
+    # otherwise feature-request writes leak into the real .sage DB.
+    return _get_audit_logger().db_path
 
 
 def _get_active_solution() -> str:
