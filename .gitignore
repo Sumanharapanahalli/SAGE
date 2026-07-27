@@ -93,6 +93,11 @@ solutions/*/
 !solutions/medtech
 !solutions/medtech/**
 
+# Step 3 — the reference solutions are tracked, but their per-run .sage/ runtime
+# data (audit log, chroma vector store, gym db) NEVER is. Re-exclude it AFTER the
+# re-includes above, or the `!solutions/<name>/**` rules would drag it back in.
+solutions/*/.sage/
+
 # Node / Web build artefacts
 web/node_modules/
 web/dist/
