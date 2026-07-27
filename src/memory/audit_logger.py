@@ -29,7 +29,15 @@ def _resolve_db_path() -> str:
     The .sage/ directory mirrors the .claude/ convention: it is runtime state
     that lives with the solution, is auto-created on first use, and must be
     gitignored in every solution repository.
+
+    ``SAGE_DB_PATH`` overrides everything below — the test suite sets it (via a
+    session fixture) so no test ever writes to a real .sage/ audit DB, no matter
+    which module imported the singleton directly.
     """
+    override = os.environ.get("SAGE_DB_PATH", "").strip()
+    if override:
+        os.makedirs(os.path.dirname(override), exist_ok=True)
+        return override
     project = os.environ.get("SAGE_PROJECT", "").strip().lower()
     solutions_dir = os.environ.get(
         "SAGE_SOLUTIONS_DIR",

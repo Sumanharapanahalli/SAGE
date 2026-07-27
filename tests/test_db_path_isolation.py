@@ -26,3 +26,15 @@ def test_get_db_path_uses_the_accessor_seam():
     with patch.object(api, "_get_audit_logger", return_value=fake) as mock_acc:
         api._get_db_path()
     mock_acc.assert_called_once()
+
+
+def test_global_audit_db_is_isolated_to_tmp():
+    """The session fixture (_isolate_audit_db) must redirect the shared singleton
+    away from any real .sage DB, so the ~40 direct-import modules can't leak."""
+    import os
+
+    from src.memory.audit_logger import audit_logger
+
+    assert os.environ.get("SAGE_DB_PATH"), "SAGE_DB_PATH override must be set"
+    assert audit_logger.db_path == os.environ["SAGE_DB_PATH"]
+    assert ".sage" not in audit_logger.db_path.replace("sage_audit", "")

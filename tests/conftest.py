@@ -24,6 +24,36 @@ import pytest
 # The container source has its own explicitly Docker-gated tests in tests/test_mcp_docker.py.
 os.environ.setdefault("SAGE_MCP_DOCKER", "0")
 
+
+# ---------------------------------------------------------------------------
+# Global audit-DB isolation — no test may write to a real .sage/ audit DB
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _isolate_audit_db(tmp_path_factory):
+    """Redirect the shared audit_logger singleton to a session-temp SQLite DB.
+
+    ~40 modules do ``from src.memory.audit_logger import audit_logger`` directly
+    (agents, integrations, services) and write through that one shared object,
+    bypassing the ``_get_audit_logger()`` seam that api.py tests patch. Without
+    this, any test exercising them leaks audit rows (and feature requests) into
+    the real .sage/ DB — this is exactly how 61 duplicate rows accumulated. We
+    fix the whole class at the source: point the singleton's ``db_path`` at a
+    temp file for the session and export ``SAGE_DB_PATH`` so any freshly built
+    ``AuditLogger()`` lands in the same isolated place.
+    """
+    db_file = str(tmp_path_factory.mktemp("sage_audit") / "audit_log.db")
+    os.environ["SAGE_DB_PATH"] = db_file
+
+    from src.memory import audit_logger as _al
+
+    _al.audit_logger.db_path = db_file
+    _al.audit_logger._initialize_db()
+    yield
+    os.environ.pop("SAGE_DB_PATH", None)
+
+
 # ---------------------------------------------------------------------------
 # Sample log entries used across multiple test files
 # ---------------------------------------------------------------------------
