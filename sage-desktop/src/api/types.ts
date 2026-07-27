@@ -1077,6 +1077,35 @@ export interface EvalHistoryResult {
   count: number;
 }
 
+// ── Reflect (reflection engine) ─────────────────────────────────────────
+// Bounded self-correction loop: generate -> critique -> refine. Results live
+// in the sidecar's in-process engine, so stats/recent cover THIS session.
+
+export interface ReflectResult {
+  reflection_id: string;
+  iterations: number;
+  final_score: number;
+  accepted: boolean;
+  history: unknown[];
+  started_at: string;
+  completed_at: string;
+  final_output?: unknown;
+}
+
+export interface ReflectStats {
+  total_reflections: number;
+  accepted_count: number;
+  rejected_count: number;
+  acceptance_rate?: number;
+  avg_iterations: number;
+  avg_final_score: number;
+}
+
+export interface ReflectRecentList {
+  reflections: ReflectResult[];
+  count: number;
+}
+
 // ── HIL (Hardware-in-the-Loop) ──────────────────────────────────────────
 // Scope note: HILRunner.flash_firmware() is not ported — it has no
 // endpoint in the web API either. See sidecar/handlers/hil.py's module

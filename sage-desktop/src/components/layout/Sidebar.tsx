@@ -27,6 +27,7 @@ const NAV_ITEMS = [
   { to: "/monitor", label: "Monitor" },
   { to: "/goals", label: "Goals" },
   { to: "/eval", label: "Eval" },
+  { to: "/reflect", label: "Reflect" },
   { to: "/hil", label: "HIL" },
   { to: "/console", label: "Console" },
   { to: "/settings", label: "Settings" },
