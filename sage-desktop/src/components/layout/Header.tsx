@@ -25,6 +25,7 @@ const TITLE_MAP: Record<string, string> = {
   "/monitor": "Monitor",
   "/goals": "Goals",
   "/eval": "Eval",
+  "/reflect": "Reflect",
   "/hil": "Hardware-in-the-Loop",
   "/console": "Live Console",
   "/settings": "Settings",

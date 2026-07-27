@@ -77,6 +77,7 @@ from handlers import (  # noqa: E402
     operator,
     org,
     queue,
+    reflect,
     regulatory,
     skills,
     solutions,
@@ -135,6 +136,10 @@ def _build_dispatcher() -> Dispatcher:
     d.register("eval.list_suites", eval_handler.list_suites)
     d.register("eval.run", eval_handler.run)
     d.register("eval.history", eval_handler.history)
+    d.register("reflect.run", reflect.run)
+    d.register("reflect.stats", reflect.stats)
+    d.register("reflect.recent", reflect.recent)
+    d.register("reflect.get", reflect.get)
     d.register("hil.status", hil.status)
     d.register("hil.connect", hil.connect)
     d.register("hil.run_suite", hil.run_suite)

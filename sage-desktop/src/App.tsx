@@ -27,6 +27,7 @@ import Monitor from "@/pages/Monitor";
 import Onboarding from "@/pages/Onboarding";
 import Organization from "@/pages/Organization";
 import Queue from "@/pages/Queue";
+import Reflect from "@/pages/Reflect";
 import Regulatory from "@/pages/Regulatory";
 import Settings from "@/pages/Settings";
 import SkillsTools from "@/pages/SkillsTools";
@@ -98,6 +99,7 @@ export function App() {
               <Route path="monitor" element={<Monitor />} />
               <Route path="goals" element={<Goals />} />
               <Route path="eval" element={<Eval />} />
+              <Route path="reflect" element={<Reflect />} />
               <Route path="hil" element={<Hil />} />
               <Route path="console" element={<Console />} />
             </Route>

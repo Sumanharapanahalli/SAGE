@@ -46,6 +46,9 @@ import type {
   EvalRunResult,
   EvalSuiteList,
   FeatureRequest,
+  ReflectRecentList,
+  ReflectResult,
+  ReflectStats,
   FeatureRequestScope,
   FeatureRequestStatus,
   FeatureRequestSubmit,
@@ -685,6 +688,29 @@ export const runEval = (suite?: string) =>
 export const getEvalHistory = (suite?: string, limit = 20) =>
   call<EvalHistoryResult>("get_eval_history", { suite, limit });
 
+// ── Reflect (reflection engine) ─────────────────────────────────────────
+
+export const reflectRun = (
+  task: string,
+  context?: string,
+  max_iterations?: number,
+  acceptance_threshold?: number,
+) =>
+  call<ReflectResult>("reflect_run", {
+    task,
+    context,
+    max_iterations,
+    acceptance_threshold,
+  });
+
+export const reflectStats = () => call<ReflectStats>("reflect_stats");
+
+export const reflectRecent = (limit = 20) =>
+  call<ReflectRecentList>("reflect_recent", { limit });
+
+export const reflectGet = (reflection_id: string) =>
+  call<ReflectResult>("reflect_get", { reflection_id });
+
 // ── HIL (Hardware-in-the-Loop) ──────────────────────────────────────────
 // Scope note: flash_firmware() is not exposed here — no endpoint in the
 // web API either. See types.ts's HIL section and
@@ -738,6 +764,9 @@ export type {
   EvalRunResult,
   EvalSuiteList,
   FeatureRequest,
+  ReflectRecentList,
+  ReflectResult,
+  ReflectStats,
   FeatureRequestScope,
   FeatureRequestStatus,
   FeatureRequestSubmit,
