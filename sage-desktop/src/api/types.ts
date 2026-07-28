@@ -1106,6 +1106,27 @@ export interface ReflectRecentList {
   count: number;
 }
 
+export interface ReflectIteration {
+  iteration: number;
+  score: number;
+  feedback: string;
+  output_preview: string;
+}
+
+export interface ReflectStarted {
+  run_id: string;
+  state: string;
+}
+
+export interface ReflectProgress {
+  run_id: string;
+  task: string;
+  state: "running" | "succeeded" | "failed";
+  iterations: ReflectIteration[];
+  result: ReflectResult | null;
+  error: string | null;
+}
+
 // ── HIL (Hardware-in-the-Loop) ──────────────────────────────────────────
 // Scope note: HILRunner.flash_firmware() is not ported — it has no
 // endpoint in the web API either. See sidecar/handlers/hil.py's module

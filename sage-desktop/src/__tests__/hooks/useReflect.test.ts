@@ -3,9 +3,11 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 
 import * as client from "@/api/client";
 import {
+  useReflectProgress,
   useReflectRecent,
   useReflectStats,
   useRunReflection,
+  useStartReflection,
 } from "@/hooks/useReflect";
 import { createTestQueryClient, wrapperWith } from "../helpers/queryWrapper";
 
@@ -78,5 +80,53 @@ describe("useRunReflection", () => {
       undefined,
       undefined,
     );
+  });
+});
+
+describe("useStartReflection", () => {
+  beforeEach(() => vi.resetAllMocks());
+
+  it("starts a background reflection and returns a run_id", async () => {
+    vi.mocked(client.reflectStart).mockResolvedValue({
+      run_id: "run-123",
+      state: "running",
+    });
+    const qc = createTestQueryClient();
+    const { result } = renderHook(() => useStartReflection(), {
+      wrapper: wrapperWith(qc),
+    });
+    result.current.mutate({ task: "draft plan" });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data?.run_id).toBe("run-123");
+  });
+});
+
+describe("useReflectProgress", () => {
+  beforeEach(() => vi.resetAllMocks());
+
+  it("polls progress for a run_id and streams iterations", async () => {
+    vi.mocked(client.reflectProgress).mockResolvedValue({
+      run_id: "run-123",
+      task: "draft plan",
+      state: "succeeded",
+      iterations: [
+        { iteration: 1, score: 0.9, feedback: "good", output_preview: "answer" },
+      ],
+      result: RESULT,
+      error: null,
+    });
+    const qc = createTestQueryClient();
+    const { result } = renderHook(() => useReflectProgress("run-123"), {
+      wrapper: wrapperWith(qc),
+    });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data?.iterations).toHaveLength(1);
+    expect(client.reflectProgress).toHaveBeenCalledWith("run-123");
+  });
+
+  it("does not fetch when run_id is null", () => {
+    const qc = createTestQueryClient();
+    renderHook(() => useReflectProgress(null), { wrapper: wrapperWith(qc) });
+    expect(client.reflectProgress).not.toHaveBeenCalled();
   });
 });

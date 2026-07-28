@@ -35,6 +35,41 @@ pub async fn reflect_run(
 }
 
 #[tauri::command]
+pub async fn reflect_start(
+    task: String,
+    context: Option<String>,
+    max_iterations: Option<i64>,
+    acceptance_threshold: Option<f64>,
+    sidecar: State<'_, RwLock<Sidecar>>,
+) -> Result<Value, DesktopError> {
+    sidecar
+        .read()
+        .await
+        .call(
+            "reflect.start",
+            json!({
+                "task": task,
+                "context": context.unwrap_or_default(),
+                "max_iterations": max_iterations.unwrap_or(3),
+                "acceptance_threshold": acceptance_threshold.unwrap_or(0.7),
+            }),
+        )
+        .await
+}
+
+#[tauri::command]
+pub async fn reflect_progress(
+    run_id: String,
+    sidecar: State<'_, RwLock<Sidecar>>,
+) -> Result<Value, DesktopError> {
+    sidecar
+        .read()
+        .await
+        .call("reflect.progress", json!({ "run_id": run_id }))
+        .await
+}
+
+#[tauri::command]
 pub async fn reflect_stats(sidecar: State<'_, RwLock<Sidecar>>) -> Result<Value, DesktopError> {
     sidecar.read().await.call("reflect.stats", json!({})).await
 }

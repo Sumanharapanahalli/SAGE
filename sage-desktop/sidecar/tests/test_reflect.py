@@ -66,6 +66,38 @@ def test_get_unknown_reflection_raises():
         reflect.get({"reflection_id": "does-not-exist"})
 
 
+def test_start_and_progress_stream_iterations(monkeypatch):
+    import time
+
+    reflect.reset_progress()
+    monkeypatch.setattr(reflect, "_llm_factory", lambda: _FakeLLM(score=0.95))
+    started = reflect.start({"task": "Draft a rollback plan"})
+    run_id = started["run_id"]
+    assert started["state"] == "running"
+
+    # Poll until the background job finishes (fast with the fake LLM).
+    deadline = time.time() + 5
+    prog = reflect.progress({"run_id": run_id})
+    while prog["state"] == "running" and time.time() < deadline:
+        time.sleep(0.02)
+        prog = reflect.progress({"run_id": run_id})
+
+    assert prog["state"] == "succeeded"
+    assert len(prog["iterations"]) >= 1
+    assert prog["iterations"][0]["score"] == 0.95
+    assert prog["result"]["accepted"] is True
+
+
+def test_progress_unknown_run_id_raises():
+    with pytest.raises(RpcError):
+        reflect.progress({"run_id": "nope"})
+
+
+def test_start_requires_task():
+    with pytest.raises(RpcError):
+        reflect.start({"task": ""})
+
+
 def test_parse_critique_tolerates_noise():
     score, feedback = reflect._parse_critique(
         'noise {"score": 0.8, "feedback": "ok"} tail'
