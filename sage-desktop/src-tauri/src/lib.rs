@@ -208,6 +208,8 @@ mod desktop_app {
                 crate::commands::eval::run_eval,
                 crate::commands::eval::get_eval_history,
                 crate::commands::reflect::reflect_run,
+                crate::commands::reflect::reflect_start,
+                crate::commands::reflect::reflect_progress,
                 crate::commands::reflect::reflect_stats,
                 crate::commands::reflect::reflect_recent,
                 crate::commands::reflect::reflect_get,

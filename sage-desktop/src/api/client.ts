@@ -46,8 +46,10 @@ import type {
   EvalRunResult,
   EvalSuiteList,
   FeatureRequest,
+  ReflectProgress,
   ReflectRecentList,
   ReflectResult,
+  ReflectStarted,
   ReflectStats,
   FeatureRequestScope,
   FeatureRequestStatus,
@@ -703,6 +705,22 @@ export const reflectRun = (
     acceptance_threshold,
   });
 
+export const reflectStart = (
+  task: string,
+  context?: string,
+  max_iterations?: number,
+  acceptance_threshold?: number,
+) =>
+  call<ReflectStarted>("reflect_start", {
+    task,
+    context,
+    max_iterations,
+    acceptance_threshold,
+  });
+
+export const reflectProgress = (run_id: string) =>
+  call<ReflectProgress>("reflect_progress", { run_id });
+
 export const reflectStats = () => call<ReflectStats>("reflect_stats");
 
 export const reflectRecent = (limit = 20) =>
@@ -764,8 +782,10 @@ export type {
   EvalRunResult,
   EvalSuiteList,
   FeatureRequest,
+  ReflectProgress,
   ReflectRecentList,
   ReflectResult,
+  ReflectStarted,
   ReflectStats,
   FeatureRequestScope,
   FeatureRequestStatus,

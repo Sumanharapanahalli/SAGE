@@ -137,6 +137,8 @@ def _build_dispatcher() -> Dispatcher:
     d.register("eval.run", eval_handler.run)
     d.register("eval.history", eval_handler.history)
     d.register("reflect.run", reflect.run)
+    d.register("reflect.start", reflect.start)
+    d.register("reflect.progress", reflect.progress)
     d.register("reflect.stats", reflect.stats)
     d.register("reflect.recent", reflect.recent)
     d.register("reflect.get", reflect.get)

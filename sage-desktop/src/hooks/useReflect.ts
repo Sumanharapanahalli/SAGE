@@ -3,8 +3,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import * as client from "@/api/client";
 import type {
   DesktopError,
+  ReflectProgress,
   ReflectRecentList,
   ReflectResult,
+  ReflectStarted,
   ReflectStats,
 } from "@/api/types";
 
@@ -46,3 +48,26 @@ export const useRunReflection = () => {
     },
   });
 };
+
+/** Start a reflection as a background job, returning a run_id to poll. */
+export const useStartReflection = () =>
+  useMutation<ReflectStarted, DesktopError, RunReflectionArgs>({
+    mutationFn: (args) =>
+      client.reflectStart(
+        args.task,
+        args.context,
+        args.maxIterations,
+        args.acceptanceThreshold,
+      ),
+  });
+
+/** Poll a running reflection's live progress (iterations stream in as they
+ * complete). Stops polling once the job is no longer running. */
+export const useReflectProgress = (runId: string | null) =>
+  useQuery<ReflectProgress, DesktopError>({
+    queryKey: ["reflectProgress", runId],
+    enabled: !!runId,
+    queryFn: () => client.reflectProgress(runId as string),
+    refetchInterval: (query) =>
+      query.state.data?.state === "running" ? 800 : false,
+  });
