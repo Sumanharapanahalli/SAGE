@@ -10,16 +10,18 @@ Modes:
   demo    : Run quick demo with mock data to showcase all integrations
 
 Project selection (controls which prompts, task types, and modules are active):
-  --project medtech      Medical device manufacturing (default)
-  --project poseengine   PoseEngine + Flutter ML/mobile project
-  --project <name>       Any project in the projects/ directory
+  --project <name>       A solution in the solutions/ directory
+                         (omit to auto-discover the first available solution)
+
+The framework is domain-blind: it ships no built-in solution and never defaults
+to a specific one. Solutions are tenants that plug in via solutions/<name>/.
 
 Usage:
   python src/main.py [cli|api|monitor|demo] [--project <name>]
-  python src/main.py                         # cli mode, medtech project
+  python src/main.py                         # cli mode, auto-discovered solution
   python src/main.py api --port 8080
-  python src/main.py api --project poseengine
-  SAGE_PROJECT=poseengine python src/main.py api
+  python src/main.py api --project <name>
+  SAGE_PROJECT=<name> python src/main.py api
 """
 
 import argparse
@@ -334,13 +336,12 @@ Modes:
   monitor  Start background monitoring daemon
   demo     Quick demo of all integrations
 
-Projects (in projects/ directory):
-  medtech      Medical device manufacturing (default)
-  poseengine   PoseEngine + Flutter ML/mobile
-  <custom>     Any project you add to projects/
+Solutions (in solutions/ directory):
+  <name>       Any solution you add under solutions/<name>/
+               (auto-discovered when --project is omitted)
 
 Environment variables:
-  SAGE_PROJECT   Override the active project (e.g. SAGE_PROJECT=poseengine)
+  SAGE_PROJECT   Override the active solution (e.g. SAGE_PROJECT=<name>)
         """,
     )
     parser.add_argument(
@@ -353,7 +354,8 @@ Environment variables:
     parser.add_argument(
         "--project",
         default=None,
-        help="Active project name (default: medtech, or SAGE_PROJECT env var)",
+        help="Active solution name (default: SAGE_PROJECT env var, "
+        "else the first auto-discovered solution)",
     )
     parser.add_argument(
         "--host", default="0.0.0.0", help="API server host (api mode only)"
