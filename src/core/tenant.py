@@ -17,7 +17,7 @@ Header: X-SAGE-Tenant (optional)
   - If present: use this value as tenant_id
   - If absent:  use the active solution name (backwards-compatible default)
 
-The tenant ID is a simple string (e.g., "medtech", "team_alpha").
+The tenant ID is a simple string (e.g., a solution name or "team_alpha").
 It is injected into:
   - Vector store collection naming (via VectorMemory._get_collection_name())
   - Audit log rows (metadata.tenant_id)
