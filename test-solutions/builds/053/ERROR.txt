@@ -1,4 +1,0 @@
-Build start failed:
-{
-  "error": "HTTP 500: {\"detail\":\"Planner could not decompose the product description\"}"
-}
