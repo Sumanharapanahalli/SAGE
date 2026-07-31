@@ -220,6 +220,9 @@ def _build_dispatcher() -> Dispatcher:
     # Import an EXISTING codebase rather than describing a new one. scan_folder
     # drafts the YAML triad and writes nothing; save_solution is the separate
     # write step, so the operator reviews before anything lands on disk.
+    # Pre-built team structures, read from config/org_templates.yaml (data
+    # outside src/, so the framework stays domain-blind).
+    d.register("onboarding.org_templates", onboarding.org_templates)
     d.register("onboarding.scan_folder", onboarding.scan_folder)
     d.register("onboarding.save_solution", onboarding.save_solution)
     d.register("builds.start", builds.start)

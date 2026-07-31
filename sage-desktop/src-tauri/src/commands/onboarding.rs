@@ -25,6 +25,7 @@ pub async fn onboarding_generate(
     compliance_standards: Option<Vec<String>>,
     integrations: Option<Vec<String>>,
     parent_solution: Option<String>,
+    org_context: Option<String>,
     sidecar: State<'_, RwLock<Sidecar>>,
 ) -> Result<Value, DesktopError> {
     sidecar
@@ -38,6 +39,7 @@ pub async fn onboarding_generate(
                 "compliance_standards": compliance_standards.unwrap_or_default(),
                 "integrations": integrations.unwrap_or_default(),
                 "parent_solution": parent_solution.unwrap_or_default(),
+                "org_context": org_context.unwrap_or_default(),
             }),
         )
         .await
@@ -77,5 +79,16 @@ pub async fn onboarding_save_solution(
             "onboarding.save_solution",
             json!({ "solution_name": solution_name, "files": files }),
         )
+        .await
+}
+
+#[tauri::command]
+pub async fn onboarding_org_templates(
+    sidecar: State<'_, RwLock<Sidecar>>,
+) -> Result<Value, DesktopError> {
+    sidecar
+        .read()
+        .await
+        .call("onboarding.org_templates", json!({}))
         .await
 }

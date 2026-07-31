@@ -265,6 +265,7 @@ mod desktop_app {
                 crate::commands::switch::switch_solution,
                 crate::commands::switch::unload_solution,
                 crate::commands::onboarding::onboarding_generate,
+                crate::commands::onboarding::onboarding_org_templates,
                 crate::commands::onboarding::onboarding_scan_folder,
                 crate::commands::onboarding::onboarding_save_solution,
                 crate::commands::builds::start_build,

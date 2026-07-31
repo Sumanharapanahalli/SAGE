@@ -463,6 +463,33 @@ export interface OnboardingParams {
   compliance_standards?: string[];
   integrations?: string[];
   parent_solution?: string;
+  /** Prepended to the description before LLM generation — how a chosen org
+   *  template's role brief steers the drafted prompts.yaml. */
+  org_context?: string;
+}
+
+// ── Onboarding: org templates ─────────────────────────────────────────────
+// Pre-built team structures, read from config/org_templates.yaml. Data lives
+// outside src/ so the framework stays domain-blind — adding one is a YAML edit.
+
+export interface OrgTemplateRole {
+  key: string;
+  name: string;
+  description: string;
+}
+
+export interface OrgTemplate {
+  id: string;
+  name: string;
+  description: string;
+  role_count: number;
+  compliance_standards: string[];
+  icon: string;
+  roles: OrgTemplateRole[];
+}
+
+export interface OrgTemplatesResult {
+  templates: OrgTemplate[];
 }
 
 export interface OnboardingResult {

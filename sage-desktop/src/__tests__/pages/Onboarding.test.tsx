@@ -16,6 +16,7 @@ vi.mock("@/api/client", async (importOriginal) => {
     ...actual,
     onboardingGenerate: vi.fn(),
     switchSolution: vi.fn(),
+    fetchOrgTemplates: vi.fn(),
   };
 });
 
@@ -39,7 +40,14 @@ function renderPage() {
 }
 
 describe("Onboarding page", () => {
-  beforeEach(() => vi.resetAllMocks());
+  beforeEach(() => {
+    vi.resetAllMocks();
+    // Ship no templates so OrgTemplateChooser renders nothing here — it would
+    // otherwise add a second role="alert". Set AFTER resetAllMocks, which
+    // clears anything configured in the module factory; leaving it unset makes
+    // the queryFn resolve undefined, which React Query treats as an error.
+    vi.mocked(client.fetchOrgTemplates).mockResolvedValue({ templates: [] });
+  });
 
   it("renders the wizard form", () => {
     renderPage();

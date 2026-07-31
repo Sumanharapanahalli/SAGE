@@ -5,6 +5,20 @@ interface Props {
 }
 
 function describe(err: DesktopError): { title: string; detail: string } {
+  // Not every error reaching here has been through toDesktopError. React Query
+  // raises its own (e.g. "Query data cannot be undefined" when a queryFn
+  // resolves undefined), and those carry no `kind`. Without this guard the
+  // switch below falls through to `undefined`, destructuring it throws, and
+  // the WHOLE PAGE white-screens instead of showing the error.
+  if (!err || typeof (err as { kind?: unknown }).kind !== "string") {
+    const message =
+      err instanceof Error
+        ? err.message
+        : typeof err === "string"
+          ? err
+          : "Unrecognized error";
+    return { title: "Unexpected error", detail: message };
+  }
   switch (err.kind) {
     case "SidecarDown":
       return {

@@ -18,7 +18,7 @@ React vitest), then commit, push branch, `gh pr create --draft`.
 | 2 | Wire dead handler `sidecar/handlers/agentrun.py` (HITL for `agent_hire`) | **DONE** |
 | 3 | Surface agentrun in the UI (Run + Hire tabs on `/agents`) | **DONE** |
 | 4a | Onboarding: scan-folder import of existing codebase | **DONE** |
-| 4b | Onboarding: org-template chooser | TODO |
+| 4b | Onboarding: org-template chooser | **DONE** |
 | 4c | Onboarding: conversational refine loop | TODO |
 | 4d | Onboarding: pre-write ReviewPanel | TODO |
 | 5 | Extend `org.*`: channels CRUD, cross-team routes (writable), solutions CRUD | TODO |
@@ -282,4 +282,42 @@ Other notes:
   `save_solution` returns the path, so `onSaved` now threads both through.
 
 Verified: `make test-desktop` exits 0 — **644 pytest (+19), 27 cargo, 450 vitest (+7)** — plus
+`tsc --noEmit` clean.
+
+### Item 4b — DONE (2026-07-31)
+
+Org-template chooser. Added `onboarding.org_templates` (reads
+`config/org_templates.yaml`, cached, degrades to `[]` if the file is missing), an `org_context`
+passthrough on `onboarding.generate`, the Rust commands, typed client + `useOrgTemplates`, and
+a new `OrgTemplateChooser` component in the Describe flow.
+
+**The web chooser is dead code too.** `web/src/components/onboarding/OrgStructureChooser.tsx`
+is 263 lines and **nothing imports it** — the `/onboarding/org-templates` endpoint exists and
+the component exists, but they were never wired into the web wizard. So there was no reference
+for how a chosen template should reach generation; that had to be designed here.
+
+**How the choice actually takes effect:** `generate_solution` already has an `org_context`
+parameter documented as *"prepended to description before LLM generation"* — exactly the right
+hook. The chooser turns the enabled roles into a brief (`- <key> (<name>): <description>`) and
+passes it as `org_context`, so the drafted prompts.yaml is steered by the template. **No
+framework change was needed.** The template's `compliance_standards` are merged as a *union*
+with whatever the operator typed — a template must not silently drop their entries.
+
+Clicking the selected template again clears it: starting from no template is a valid choice and
+there was otherwise no way back to it.
+
+**A real page-crash bug found and fixed in `ErrorBanner`.** Its `describe()` switch had no
+default branch, so any error whose `kind` is not in the `DesktopError` union returned
+`undefined`, and destructuring `{title, detail}` threw — taking the **whole page** to a white
+screen instead of rendering the error. This is reachable in production, not just in tests:
+React Query raises its own errors (e.g. *"Query data cannot be undefined"* when a queryFn
+resolves undefined, which happens if an RPC returns null) and those never pass through
+`toDesktopError`. Added a guard plus two regression tests. Surfaced because the new chooser is
+the first component on that page to own a `useQuery`.
+
+Note for future iterations: `vi.resetAllMocks()` in a `beforeEach` **clears values configured in
+the `vi.mock` factory**. A query mock must be re-established inside `beforeEach`, or its queryFn
+resolves `undefined` and React Query errors.
+
+Verified: `make test-desktop` exits 0 — **652 pytest (+8), 27 cargo, 459 vitest (+9)** — plus
 `tsc --noEmit` clean.

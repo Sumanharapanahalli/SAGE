@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 
 import { ImportFlow } from "@/components/domain/ImportFlow";
 import { OnboardingWizard } from "@/components/domain/OnboardingWizard";
+import type { OrgChoice } from "@/components/domain/OrgTemplateChooser";
+import { OrgTemplateChooser } from "@/components/domain/OrgTemplateChooser";
 import { ErrorBanner } from "@/components/layout/ErrorBanner";
 import { useOnboardingGenerate } from "@/hooks/useOnboarding";
 import { useSwitchSolution } from "@/hooks/useSolutions";
@@ -16,6 +18,7 @@ export default function Onboarding() {
   // "describe" stays the default: it is the documented path in CLAUDE.md, and
   // importing only makes sense when there is already a codebase to point at.
   const [mode, setMode] = useState<Mode>("describe");
+  const [org, setOrg] = useState<OrgChoice | null>(null);
 
   if (mode === "import") {
     return (
@@ -44,11 +47,27 @@ export default function Onboarding() {
       {/* A failed solution switch (sidecar respawn) is otherwise silent — the
           wizard keeps showing the created-result view. Surface it here. */}
       <ErrorBanner error={swap.error} />
+      <OrgTemplateChooser onChange={setOrg} />
       <OnboardingWizard
         isPending={gen.isPending}
         error={gen.error ?? null}
         result={gen.data ?? null}
-        onGenerate={(p) => gen.mutate(p)}
+        onGenerate={(p) =>
+          gen.mutate({
+            ...p,
+            // The template's role brief steers the drafted prompts.yaml;
+            // generate_solution prepends org_context to the description.
+            org_context: org?.brief || undefined,
+            // Union, not override — the operator's own entries are theirs to
+            // keep, and a template must not silently drop them.
+            compliance_standards: Array.from(
+              new Set([
+                ...(p.compliance_standards ?? []),
+                ...(org?.complianceStandards ?? []),
+              ]),
+            ),
+          })
+        }
         onSwitch={(name, path) => {
           swap.mutate(
             { name, path },

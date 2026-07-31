@@ -1,10 +1,16 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { onboardingGenerate, saveSolution, scanFolder } from "@/api/client";
+import {
+  fetchOrgTemplates,
+  onboardingGenerate,
+  saveSolution,
+  scanFolder,
+} from "@/api/client";
 import type {
   DesktopError,
   OnboardingParams,
   OnboardingResult,
+  OrgTemplatesResult,
   SaveSolutionResult,
   ScanFolderResult,
   SolutionDraftFiles,
@@ -61,5 +67,21 @@ export function useSaveSolution() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: solutionsKey });
     },
+  });
+}
+
+export const orgTemplatesKey = ["orgTemplates"] as const;
+
+/**
+ * Pre-built team structures for the wizard.
+ *
+ * `staleTime: Infinity` — these come from a YAML file the sidecar caches for
+ * its whole lifetime, so re-fetching can never surface anything new.
+ */
+export function useOrgTemplates() {
+  return useQuery<OrgTemplatesResult, DesktopError>({
+    queryKey: orgTemplatesKey,
+    queryFn: () => fetchOrgTemplates(),
+    staleTime: Infinity,
   });
 }

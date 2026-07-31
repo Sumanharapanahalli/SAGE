@@ -127,6 +127,7 @@ import type {
   RemoveSolutionResult,
   OnboardingParams,
   OnboardingResult,
+  OrgTemplatesResult,
   StatusResponse,
   WorkflowListResult,
   WorkflowRunResult,
@@ -208,6 +209,10 @@ export const assessComplianceGap = (
     risk_level,
     completed_tasks,
   });
+
+/** Pre-built team structures offered by the wizard. */
+export const fetchOrgTemplates = () =>
+  call<OrgTemplatesResult>("onboarding_org_templates");
 
 // ── Onboarding: import an existing codebase ───────────────────────────────
 
@@ -929,6 +934,7 @@ export type {
   RemoveSolutionResult,
   OnboardingParams,
   OnboardingResult,
+  OrgTemplatesResult,
   StatusResponse,
   WorkflowListResult,
   WorkflowRunResult,

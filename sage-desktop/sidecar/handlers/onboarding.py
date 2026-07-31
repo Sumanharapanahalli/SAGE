@@ -32,6 +32,9 @@ _logger: Optional[Any] = None
 # import), so there is exactly one place that decides where solutions live.
 _solutions_dir_override: Optional[str] = None
 
+# Loaded once from config/org_templates.yaml. None = not yet loaded.
+_org_templates_cache: Optional[list] = None
+
 # Mirrors api.py's _SAFE_SOLUTION_NAME.
 _SAFE_SOLUTION_NAME = re.compile(r"^[a-zA-Z0-9_-]{1,64}$")
 
@@ -51,6 +54,10 @@ def generate(params: Any):
     if not isinstance(solution_name, str) or not solution_name.strip():
         raise RpcError(RPC_INVALID_PARAMS, "solution_name is required")
 
+    org_context = params.get("org_context") or ""
+    if not isinstance(org_context, str):
+        raise RpcError(RPC_INVALID_PARAMS, "'org_context' must be a string")
+
     if _generate_fn is None:
         raise RpcError(
             RPC_SIDECAR_ERROR,
@@ -64,6 +71,11 @@ def generate(params: Any):
             compliance_standards=params.get("compliance_standards") or [],
             integrations=params.get("integrations") or [],
             parent_solution=params.get("parent_solution") or "",
+            # How a chosen org template reaches generation: the framework
+            # documents org_context as "prepended to description before LLM
+            # generation", so the template's role brief steers the drafted
+            # prompts.yaml without any framework change.
+            org_context=org_context,
         )
     except ValueError as e:
         raise RpcError(RPC_INVALID_PARAMS, f"invalid onboarding input: {e}") from e
@@ -298,3 +310,42 @@ def save_solution(params: Any) -> dict:
         "path": target,
         "files_written": sorted(writable),
     }
+
+
+# ---------- org templates ----------
+
+
+def _org_templates_path() -> str:
+    """config/org_templates.yaml at the framework root.
+
+    From sidecar/handlers/onboarding.py that is four levels up:
+    handlers -> sidecar -> sage-desktop -> <sage root>.
+    """
+    root = os.path.dirname(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    )
+    return os.path.join(root, "config", "org_templates.yaml")
+
+
+def org_templates(params: Any = None) -> dict:
+    """Pre-built team structures the wizard can start from.
+
+    The templates are DATA in config/org_templates.yaml, outside src/ so the
+    framework stays domain-blind (SOUL.md) — adding one is a YAML edit.
+
+    Returns [] rather than raising if the file is missing or unreadable: the
+    wizard works fine without a template, so a packaging slip must not take
+    onboarding down with it.
+    """
+    global _org_templates_cache
+    if _org_templates_cache is None:
+        path = _org_templates_path()
+        try:
+            with open(path, encoding="utf-8") as f:
+                data = _yaml.safe_load(f) or {}
+            templates = data.get("templates", [])
+            _org_templates_cache = templates if isinstance(templates, list) else []
+        except (OSError, _yaml.YAMLError):
+            logger.warning("could not load org templates from %s", path, exc_info=True)
+            _org_templates_cache = []
+    return {"templates": _org_templates_cache}
