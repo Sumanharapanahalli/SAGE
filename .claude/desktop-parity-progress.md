@@ -19,7 +19,7 @@ React vitest), then commit, push branch, `gh pr create --draft`.
 | 3 | Surface agentrun in the UI (Run + Hire tabs on `/agents`) | **DONE** |
 | 4a | Onboarding: scan-folder import of existing codebase | **DONE** |
 | 4b | Onboarding: org-template chooser | **DONE** |
-| 4c | Onboarding: conversational refine loop | TODO |
+| 4c | Onboarding: conversational refine loop | **DONE** |
 | 4d | Onboarding: pre-write ReviewPanel | TODO |
 | 5 | Extend `org.*`: channels CRUD, cross-team routes (writable), solutions CRUD | TODO |
 | 6 | Fix `/organization` ignoring `SAGE_SOLUTIONS_DIR` | TODO |
@@ -320,4 +320,45 @@ the `vi.mock` factory**. A query mock must be re-established inside `beforeEach`
 resolves `undefined` and React Query errors.
 
 Verified: `make test-desktop` exits 0 — **652 pytest (+8), 27 cargo, 459 vitest (+9)** — plus
+`tsc --noEmit` clean.
+
+### Item 4c — DONE (2026-07-31)
+
+Conversational refine loop. Added `onboarding.refine`, the Rust command, `refineSolution` +
+`useRefineSolution`, and a new `ReviewPanel` component that hosts the feedback→refine loop.
+`ImportFlow` now renders it in place of its read-only preview, so refining is reachable from
+the scan flow.
+
+**Which flow "the refine loop" actually is.** Web has two candidates, and only one is real:
+
+- `/onboarding/session`, `/session/{id}/message`, `/session/{id}/generate` — client functions
+  exist, **zero component consumers**. Dead, like the org chooser.
+- `/onboarding/refine` — consumed by `components/onboarding/ReviewPanel.tsx`, which
+  `ImportFlow.tsx:74` renders. This is the live one, so it is what got ported.
+
+**4c and 4d are the same component in web.** `ReviewPanel.tsx` hosts the refine loop *and* the
+pre-write review. Split here as: 4c = the refine RPC + the loop inside a new `ReviewPanel`
+(files still read-only); 4d = make the files editable and add Accept/Start-over, and wire the
+panel into the Describe flow as well. Building the component boundary now avoids doing it twice.
+
+**Same fatal `user_prompt=` bug as 4a**, at api.py:4125 this time — so
+`/onboarding/refine` has never succeeded either, and web's ReviewPanel refine button has always
+returned a misleading 503. The handler calls `prompt=`; `FakeLLM` mirrors the real signature so
+a regression fails loudly. **Two web endpoints now confirmed dead from this one two-word
+mistake** (4081 scan-folder, 4125 refine) — still flagged as an unfixed follow-up in `api.py`.
+
+Deliberate behaviours, each pinned by a test:
+
+- The loop genuinely loops: refine returns the same shape it takes, and the panel feeds the
+  **refined** files into the next call, not the originals.
+- Feedback clears on success only. Clearing on failure would force the operator to retype it;
+  keeping it after success invites re-sending stale feedback against revised drafts.
+- Accept hands back the **current** drafts, refinements included.
+- A failed refine keeps the existing drafts rather than blanking them.
+
+Test note: "old description" appears in both the summary and the rendered YAML, so
+`getByText` throws on multiple matches — `getAllByText(...).length` is the right assertion.
+That duplication is correct UI, not a bug.
+
+Verified: `make test-desktop` exits 0 — **664 pytest (+12), 27 cargo, 468 vitest (+9)** — plus
 `tsc --noEmit` clean.

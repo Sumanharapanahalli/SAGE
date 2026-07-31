@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   fetchOrgTemplates,
   onboardingGenerate,
+  refineSolution,
   saveSolution,
   scanFolder,
 } from "@/api/client";
@@ -83,5 +84,26 @@ export function useOrgTemplates() {
     queryKey: orgTemplatesKey,
     queryFn: () => fetchOrgTemplates(),
     staleTime: Infinity,
+  });
+}
+
+
+interface RefineVars {
+  solution_name: string;
+  current_files: SolutionDraftFiles;
+  feedback: string;
+}
+
+/**
+ * The refine loop: feed the current drafts plus feedback back to the LLM.
+ *
+ * Returns the same shape `useScanFolder` does, so its output is valid input to
+ * the next call — the operator can keep refining. Writes nothing, so nothing
+ * is invalidated.
+ */
+export function useRefineSolution() {
+  return useMutation<ScanFolderResult, DesktopError, RefineVars>({
+    mutationFn: (v) =>
+      refineSolution(v.solution_name, v.current_files, v.feedback),
   });
 }

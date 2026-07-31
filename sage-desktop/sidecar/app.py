@@ -224,6 +224,7 @@ def _build_dispatcher() -> Dispatcher:
     # outside src/, so the framework stays domain-blind).
     d.register("onboarding.org_templates", onboarding.org_templates)
     d.register("onboarding.scan_folder", onboarding.scan_folder)
+    d.register("onboarding.refine", onboarding.refine)
     d.register("onboarding.save_solution", onboarding.save_solution)
     d.register("builds.start", builds.start)
     d.register("builds.list", builds.list_runs)

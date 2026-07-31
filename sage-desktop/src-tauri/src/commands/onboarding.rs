@@ -92,3 +92,24 @@ pub async fn onboarding_org_templates(
         .call("onboarding.org_templates", json!({}))
         .await
 }
+
+#[tauri::command]
+pub async fn onboarding_refine(
+    solution_name: String,
+    current_files: HashMap<String, String>,
+    feedback: String,
+    sidecar: State<'_, RwLock<Sidecar>>,
+) -> Result<Value, DesktopError> {
+    sidecar
+        .read()
+        .await
+        .call(
+            "onboarding.refine",
+            json!({
+                "solution_name": solution_name,
+                "current_files": current_files,
+                "feedback": feedback,
+            }),
+        )
+        .await
+}

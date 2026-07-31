@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import type { SolutionDraftFiles } from "@/api/types";
+import { ReviewPanel } from "@/components/domain/ReviewPanel";
 import { ErrorBanner } from "@/components/layout/ErrorBanner";
 import { useSaveSolution, useScanFolder } from "@/hooks/useOnboarding";
 
@@ -98,54 +99,19 @@ export function ImportFlow({ onSaved }: Props) {
       </button>
 
       {drafts && (
-        <div className="space-y-3 rounded border border-sage-100 p-4">
-          <div className="text-sm font-semibold text-sage-900">
-            Drafted from the codebase — review before saving
-          </div>
-
-          {summary && (
-            <dl className="grid gap-2 text-xs text-sage-700 sm:grid-cols-2">
-              <div>
-                <dt className="text-slate-400">Name</dt>
-                <dd className="text-sage-900">{summary.name || "—"}</dd>
-              </div>
-              <div>
-                <dt className="text-slate-400">Description</dt>
-                <dd className="text-sage-900">{summary.description || "—"}</dd>
-              </div>
-              {summary.task_types.length > 0 && (
-                <div className="sm:col-span-2">
-                  <dt className="text-slate-400">Task types</dt>
-                  <dd className="text-sage-900">
-                    {summary.task_types.map((t) => t.name).join(", ")}
-                  </dd>
-                </div>
-              )}
-            </dl>
-          )}
-
-          {Object.entries(drafts).map(([filename, content]) => (
-            <details key={filename} className="rounded bg-sage-50 p-2">
-              <summary className="cursor-pointer text-xs font-medium text-sage-900">
-                {filename}
-              </summary>
-              <pre className="mt-2 overflow-x-auto text-xs">{content}</pre>
-            </details>
-          ))}
-
-          <button
-            className="rounded bg-sage-500 px-4 py-2 text-sm font-medium text-white hover:bg-sage-600 disabled:opacity-50"
-            disabled={save.isPending}
-            onClick={() =>
-              save.mutate(
-                { solution_name: scan.data!.solution_name, files: drafts },
-                { onSuccess: (r) => onSaved?.(r.solution_name, r.path) },
-              )
-            }
-          >
-            {save.isPending ? "Saving…" : "Save solution"}
-          </button>
-        </div>
+        <ReviewPanel
+          solutionName={scan.data!.solution_name}
+          files={drafts}
+          summary={summary}
+          acceptLabel="Save solution"
+          isAccepting={save.isPending}
+          onAccept={(reviewed) =>
+            save.mutate(
+              { solution_name: scan.data!.solution_name, files: reviewed },
+              { onSuccess: (r) => onSaved?.(r.solution_name, r.path) },
+            )
+          }
+        />
       )}
 
       {save.data && (

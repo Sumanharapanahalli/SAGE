@@ -257,6 +257,60 @@ def scan_folder(params: Any) -> dict:
     return {"solution_name": solution_name, "files": files, "summary": summary}
 
 
+def refine(params: Any) -> dict:
+    """Revise the current drafts from operator feedback.
+
+    Iterable by design: the returned ``files`` are valid input to the next
+    call, so the operator can keep refining until satisfied. Writes nothing —
+    ``save_solution`` remains the only write.
+    """
+    solution_name = _require_str(params, "solution_name")
+    feedback = _require_str(params, "feedback")
+
+    current_files = params.get("current_files")
+    if not isinstance(current_files, dict) or not current_files:
+        raise RpcError(
+            RPC_INVALID_PARAMS, "'current_files' must be a non-empty object"
+        )
+
+    if _llm is None:
+        raise RpcError(RPC_SIDECAR_ERROR, "LLM gateway is not wired")
+
+    system_prompt = (
+        "You are a SAGE solution architect. Refine the provided YAML files based "
+        "on the feedback. Return ONLY a JSON object with keys 'project.yaml', "
+        "'prompts.yaml', 'tasks.yaml' — each value is the full YAML content as a "
+        "string. No other text."
+    )
+    parts = []
+    org = _org_context()
+    if org:
+        parts.append(f"Company context:\n{org}\n")
+    parts.append(f"Solution name: {solution_name}")
+    parts.append(f"Feedback: {feedback}")
+    parts.append(
+        "\nCurrent YAML files:\n"
+        + "\n---\n".join(f"# {k}\n{v}" for k, v in current_files.items())
+    )
+
+    try:
+        # `prompt=`, NOT `user_prompt=` — see scan_folder. api.py:4125 makes
+        # exactly that mistake, so /onboarding/refine has never once succeeded.
+        raw = _llm.generate(prompt="\n\n".join(parts), system_prompt=system_prompt)
+    except Exception as e:  # noqa: BLE001
+        raise RpcError(RPC_SIDECAR_ERROR, f"LLM unavailable: {e}") from e
+
+    files, summary = _parse_generated_files(raw or "")
+
+    _audit(
+        "ONBOARDING_REFINE",
+        input_context=feedback,
+        output_content=str(files.get("project.yaml", ""))[:2000],
+        metadata={"solution_name": solution_name},
+    )
+    return {"solution_name": solution_name, "files": files, "summary": summary}
+
+
 def save_solution(params: Any) -> dict:
     """Write reviewed YAML drafts to <solutions_dir>/<solution_name>/."""
     solution_name = _require_str(params, "solution_name")

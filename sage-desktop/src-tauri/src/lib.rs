@@ -267,6 +267,7 @@ mod desktop_app {
                 crate::commands::onboarding::onboarding_generate,
                 crate::commands::onboarding::onboarding_org_templates,
                 crate::commands::onboarding::onboarding_scan_folder,
+                crate::commands::onboarding::onboarding_refine,
                 crate::commands::onboarding::onboarding_save_solution,
                 crate::commands::builds::start_build,
                 crate::commands::builds::list_builds,

@@ -228,6 +228,18 @@ export const scanFolder = (
     intent,
   });
 
+/** Revise the current drafts from feedback. Iterable, and writes nothing. */
+export const refineSolution = (
+  solution_name: string,
+  current_files: Record<string, string>,
+  feedback: string,
+) =>
+  call<ScanFolderResult>("onboarding_refine", {
+    solution_name,
+    current_files,
+    feedback,
+  });
+
 /** The write step for reviewed drafts. Only the YAML triad is persisted. */
 export const saveSolution = (
   solution_name: string,
