@@ -21,8 +21,8 @@ React vitest), then commit, push branch, `gh pr create --draft`.
 | 4b | Onboarding: org-template chooser | **DONE** |
 | 4c | Onboarding: conversational refine loop | **DONE** |
 | 4d | Onboarding: pre-write ReviewPanel | **DONE** |
-| 5 | Extend `org.*`: channels CRUD, cross-team routes (writable), solutions CRUD | TODO |
-| 6 | Fix `/organization` ignoring `SAGE_SOLUTIONS_DIR` | TODO |
+| 5 | Extend `org.*`: channels CRUD, cross-team routes (writable), solutions CRUD | **DONE** |
+| 6 | Fix `/organization` ignoring `SAGE_SOLUTIONS_DIR` | **DONE** (with item 5) |
 | 7 | Add `/chat` (conversational agent + history) | TODO |
 | 8 | Add `/code` (plan / execute / approve) | TODO |
 | 9 | Add `/orchestrator` (9 orchestrator-intelligence modules) | TODO |
@@ -394,3 +394,36 @@ Verified: `make test-desktop` exits 0 — **667 pytest (+3), 27 cargo, 473 vites
 
 **Item 4 (onboarding) is now complete**: 4a import, 4b org templates, 4c refine loop, 4d
 editable pre-write review.
+
+### Items 5 + 6 — DONE (2026-07-31)
+
+Six new RPCs — `org.{channel_create,channel_delete,route_add,route_delete,solution_set_parent,
+solution_clear_parent}` — plus Rust commands, typed client, hooks, and an editable
+routes/channels UI on `/organization`. The page previously showed cross-team routes read-only.
+
+**Item 6 was a prerequisite, not a separate change.** Channels live in `org.yaml`, but routes
+and parents live in each solution's **own** `project.yaml`. Writing those requires resolving the
+solutions directory — so implementing item 5 against the old hardcoded `<sage_root>/solutions`
+would have deliberately written to the wrong path for any solution mounted elsewhere. The new
+`_solutions_dir()` honours `SAGE_SOLUTIONS_DIR` (either/or with the `<sage_root>/solutions`
+default, matching the framework's own semantics) and is used by `org.yaml` resolution, the
+`OrgLoader` route enrichment, and all six new handlers. The handler docstring, which previously
+documented the gap as accepted, was updated. Two tests cover it directly.
+
+Safety: `solution` arrives from the UI and becomes a path segment, so `_project_yaml_path()`
+resolves and rejects anything escaping the solutions root (`../../etc`). `route_add` is
+idempotent — re-adding an existing target is a no-op, not a duplicate entry.
+
+**A real test-pollution bug found and fixed.** `test_org.py` passed alone but failed six tests in
+a full run. Cause: `app._bootstrap_env` performs a genuine `os.environ[...] = ...` for
+`SAGE_PROJECT` / `SAGE_SOLUTIONS_DIR` / `SAGE_SOLUTION_PATH` every time a test drives
+`app.run()`, and **nothing restores it**. Any later test whose handler honours those vars then
+resolves against a previous test's tmp dir. It was invisible until this change made the org
+handler env-sensitive.
+
+Fixed at the root with an autouse fixture in `tests/conftest.py` that clears those three vars
+before each test and drops anything set during it. This removes a latent ordering-dependent
+failure for every future env-sensitive handler, not just org — worth knowing for items 7-10.
+
+Verified: `make test-desktop` exits 0 — **690 pytest (+23), 27 cargo, 478 vitest (+5)** — plus
+`tsc --noEmit` clean.

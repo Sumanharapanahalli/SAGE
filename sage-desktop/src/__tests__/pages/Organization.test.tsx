@@ -16,6 +16,10 @@ vi.mock("@/api/client", async (importOriginal) => {
     getOrg: vi.fn(),
     updateOrg: vi.fn(),
     reloadOrg: vi.fn(),
+    addOrgRoute: vi.fn(),
+    deleteOrgRoute: vi.fn(),
+    createOrgChannel: vi.fn(),
+    deleteOrgChannel: vi.fn(),
   };
 });
 
@@ -122,5 +126,98 @@ describe("Organization page", () => {
     await waitFor(() =>
       expect(screen.getByText(/no cross-team routes/i)).toBeInTheDocument(),
     );
+  });
+});
+
+// ── Item 5: routes and channels are now writable ────────────────────────────
+
+describe("Organization page — routes and channels", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    vi.mocked(client.getOrg).mockResolvedValue({
+      ...ORG_DATA,
+      org: {
+        ...ORG_DATA.org,
+        knowledge_channels: { alerts: { producers: [], consumers: [] } },
+      },
+    } as never);
+  });
+
+  it("adds a route naming the SOURCE solution, since routes live in its project.yaml", async () => {
+    vi.mocked(client.addOrgRoute).mockResolvedValue({
+      status: "added",
+      solution: "meditation_app",
+      target: "payments",
+    });
+    const user = userEvent.setup();
+    render(<Organization />, { wrapper: wrapperWith(createTestQueryClient()) });
+    await waitFor(() =>
+      expect(screen.getByText(/cross-team routes/i)).toBeInTheDocument(),
+    );
+
+    await user.type(screen.getByLabelText(/from solution/i), "meditation_app");
+    await user.type(screen.getByLabelText(/to solution/i), "payments");
+    await user.click(screen.getByRole("button", { name: /add route/i }));
+
+    await waitFor(() =>
+      expect(client.addOrgRoute).toHaveBeenCalledWith(
+        "meditation_app",
+        "payments",
+      ),
+    );
+  });
+
+  it("removes a route using its source solution", async () => {
+    vi.mocked(client.deleteOrgRoute).mockResolvedValue({
+      status: "removed",
+      solution: "meditation_app",
+      target: "billing",
+    });
+    const user = userEvent.setup();
+    render(<Organization />, { wrapper: wrapperWith(createTestQueryClient()) });
+    await waitFor(() =>
+      expect(screen.getByText(/meditation_app/)).toBeInTheDocument(),
+    );
+
+    await user.click(screen.getAllByRole("button", { name: /remove/i })[0]);
+
+    await waitFor(() =>
+      expect(client.deleteOrgRoute).toHaveBeenCalledWith(
+        "meditation_app",
+        "billing",
+      ),
+    );
+  });
+
+  it("lists existing knowledge channels", async () => {
+    render(<Organization />, { wrapper: wrapperWith(createTestQueryClient()) });
+    await waitFor(() => expect(screen.getByText("alerts")).toBeInTheDocument());
+  });
+
+  it("creates a knowledge channel", async () => {
+    vi.mocked(client.createOrgChannel).mockResolvedValue({
+      status: "created",
+      channel: "incidents",
+    });
+    const user = userEvent.setup();
+    render(<Organization />, { wrapper: wrapperWith(createTestQueryClient()) });
+    await waitFor(() =>
+      expect(screen.getByText(/knowledge channels/i)).toBeInTheDocument(),
+    );
+
+    await user.type(screen.getByLabelText(/channel name/i), "incidents");
+    await user.click(screen.getByRole("button", { name: /add channel/i }));
+
+    await waitFor(() =>
+      expect(client.createOrgChannel).toHaveBeenCalledWith("incidents", [], []),
+    );
+  });
+
+  it("does not add a route until both solutions are named", async () => {
+    render(<Organization />, { wrapper: wrapperWith(createTestQueryClient()) });
+    await waitFor(() =>
+      expect(screen.getByText(/cross-team routes/i)).toBeInTheDocument(),
+    );
+    expect(screen.getByRole("button", { name: /add route/i })).toBeDisabled();
   });
 });

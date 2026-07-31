@@ -94,7 +94,10 @@ import type {
   ApprovedProposal,
   Job,
   Operator,
+  OrgChannelResult,
   OrgData,
+  OrgParentResult,
+  OrgRouteResult,
   OrgReloadResult,
   OrgUpdateResult,
   PlanResult,
@@ -743,6 +746,28 @@ export const updateOrg = (fields: {
   core_values?: string[];
 }) => call<OrgUpdateResult>("org_update", fields);
 
+export const createOrgChannel = (
+  name: string,
+  producers: string[],
+  consumers: string[],
+) =>
+  call<OrgChannelResult>("org_channel_create", { name, producers, consumers });
+
+export const deleteOrgChannel = (name: string) =>
+  call<OrgChannelResult>("org_channel_delete", { name });
+
+export const addOrgRoute = (solution: string, target: string) =>
+  call<OrgRouteResult>("org_route_add", { solution, target });
+
+export const deleteOrgRoute = (solution: string, target: string) =>
+  call<OrgRouteResult>("org_route_delete", { solution, target });
+
+export const setSolutionParent = (solution: string, parent: string) =>
+  call<OrgParentResult>("org_solution_set_parent", { solution, parent });
+
+export const clearSolutionParent = (solution: string) =>
+  call<OrgParentResult>("org_solution_clear_parent", { solution });
+
 export const reloadOrg = () => call<OrgReloadResult>("org_reload");
 
 // ── Monitor ───────────────────────────────────────────────────────────────
@@ -913,7 +938,10 @@ export type {
   ApprovedProposal,
   Job,
   Operator,
+  OrgChannelResult,
   OrgData,
+  OrgParentResult,
+  OrgRouteResult,
   OrgReloadResult,
   OrgUpdateResult,
   PlanResult,

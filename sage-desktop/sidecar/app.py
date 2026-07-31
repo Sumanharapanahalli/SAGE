@@ -129,6 +129,14 @@ def _build_dispatcher() -> Dispatcher:
     d.register("org.get", org.get)
     d.register("org.update", org.update)
     d.register("org.reload", org.reload)
+    # The write half of the org graph. Channels live in org.yaml; routes and
+    # parents live in each solution's own project.yaml.
+    d.register("org.channel_create", org.channel_create)
+    d.register("org.channel_delete", org.channel_delete)
+    d.register("org.route_add", org.route_add)
+    d.register("org.route_delete", org.route_delete)
+    d.register("org.solution_set_parent", org.solution_set_parent)
+    d.register("org.solution_clear_parent", org.solution_clear_parent)
     d.register("skills.list", skills.list)
     d.register("skills.set_visibility", skills.set_visibility)
     d.register("skills.reload", skills.reload)

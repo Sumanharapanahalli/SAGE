@@ -2,7 +2,15 @@ import { useEffect, useState } from "react";
 
 import { toDesktopError } from "@/api/client";
 import { ErrorBanner } from "@/components/layout/ErrorBanner";
-import { useOrg, useReloadOrg, useUpdateOrg } from "@/hooks/useOrg";
+import {
+  useAddOrgRoute,
+  useCreateOrgChannel,
+  useDeleteOrgChannel,
+  useDeleteOrgRoute,
+  useOrg,
+  useReloadOrg,
+  useUpdateOrg,
+} from "@/hooks/useOrg";
 
 /** Operator-owned org identity (name/mission/vision/core_values) that
  * shapes every solution's onboarding and agent context, plus a read-only
@@ -10,7 +18,11 @@ import { useOrg, useReloadOrg, useUpdateOrg } from "@/hooks/useOrg";
  *
  * Channel/solution/route CRUD (org.yaml's producers/consumers graph) is
  * out of scope for this pass — see src/interface/api.py's
- * /org/channels, /org/solutions, /org/routes for the follow-up surface. */
+ * Routes and channels are editable here. Routes live in each solution's own
+ * project.yaml (not org.yaml), so adding one names the SOURCE solution. */
+const inputCls =
+  "mt-1 block rounded border border-sage-200 px-2 py-1 text-sm focus:border-sage-400 focus:outline-none";
+
 export default function Organization() {
   const query = useOrg();
   const update = useUpdateOrg();
@@ -51,6 +63,21 @@ export default function Organization() {
   const saveError = update.error ? toDesktopError(update.error) : null;
   const reloadError = reload.error ? toDesktopError(reload.error) : null;
   const routes = query.data?.routes ?? [];
+  // knowledge_channels is a read-only passthrough on OrgIdentity, so it is not
+  // in the typed shape — read it defensively.
+  const channelNames = Object.keys(
+    ((query.data?.org ?? {}) as { knowledge_channels?: Record<string, unknown> })
+      .knowledge_channels ?? {},
+  );
+
+  const addRoute = useAddOrgRoute();
+  const deleteRoute = useDeleteOrgRoute();
+  const createChannel = useCreateOrgChannel();
+  const deleteChannel = useDeleteOrgChannel();
+
+  const [routeSource, setRouteSource] = useState("");
+  const [routeTarget, setRouteTarget] = useState("");
+  const [channelName, setChannelName] = useState("");
 
   if (query.isLoading) {
     return (
@@ -136,7 +163,7 @@ export default function Organization() {
       <ErrorBanner error={reloadError} />
 
       <div className="rounded border border-sage-100 bg-white p-4">
-        <div className="text-sm font-medium mb-2">Cross-team routes</div>
+        <div className="mb-2 text-sm font-medium">Cross-team routes</div>
         {routes.length === 0 ? (
           <div className="text-sm text-slate-500">
             No cross-team routes declared.
@@ -144,12 +171,106 @@ export default function Organization() {
         ) : (
           <ul className="space-y-1 text-sm">
             {routes.map((r, i) => (
-              <li key={i}>
-                {r.source} → {r.target}
+              <li key={i} className="flex items-center gap-2">
+                <span>
+                  {r.source} → {r.target}
+                </span>
+                <button
+                  className="text-xs text-red-700 hover:underline"
+                  onClick={() =>
+                    deleteRoute.mutate({ solution: r.source, target: r.target })
+                  }
+                >
+                  Remove
+                </button>
               </li>
             ))}
           </ul>
         )}
+
+        <div className="mt-3 flex flex-wrap items-end gap-2">
+          <label className="text-xs text-sage-700">
+            From solution
+            <input
+              className={inputCls}
+              value={routeSource}
+              onChange={(e) => setRouteSource(e.target.value)}
+            />
+          </label>
+          <label className="text-xs text-sage-700">
+            To solution
+            <input
+              className={inputCls}
+              value={routeTarget}
+              onChange={(e) => setRouteTarget(e.target.value)}
+            />
+          </label>
+          <button
+            className="rounded bg-sage-500 px-3 py-2 text-sm font-medium text-white hover:bg-sage-600 disabled:opacity-50"
+            disabled={
+              addRoute.isPending || !routeSource.trim() || !routeTarget.trim()
+            }
+            onClick={() =>
+              addRoute.mutate(
+                { solution: routeSource, target: routeTarget },
+                {
+                  onSuccess: () => {
+                    setRouteSource("");
+                    setRouteTarget("");
+                  },
+                },
+              )
+            }
+          >
+            Add route
+          </button>
+        </div>
+      </div>
+
+      <div className="rounded border border-sage-100 bg-white p-4">
+        <div className="mb-2 text-sm font-medium">Knowledge channels</div>
+        {channelNames.length === 0 ? (
+          <div className="text-sm text-slate-500">
+            No knowledge channels defined.
+          </div>
+        ) : (
+          <ul className="space-y-1 text-sm">
+            {channelNames.map((name) => (
+              <li key={name} className="flex items-center gap-2">
+                <span>{name}</span>
+                <button
+                  className="text-xs text-red-700 hover:underline"
+                  onClick={() => deleteChannel.mutate(name)}
+                >
+                  Remove
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <div className="mt-3 flex flex-wrap items-end gap-2">
+          <label className="text-xs text-sage-700">
+            Channel name
+            <input
+              className={inputCls}
+              value={channelName}
+              onChange={(e) => setChannelName(e.target.value)}
+            />
+          </label>
+          <button
+            className="rounded bg-sage-500 px-3 py-2 text-sm font-medium text-white hover:bg-sage-600 disabled:opacity-50"
+            disabled={createChannel.isPending || !channelName.trim()}
+            onClick={() =>
+              createChannel.mutate(
+                { name: channelName },
+                { onSuccess: () => setChannelName("") },
+              )
+            }
+          >
+            Add channel
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -1133,6 +1133,27 @@ export interface OrgReloadResult {
   status: "reloaded";
 }
 
+// ── Org CRUD ──────────────────────────────────────────────────────────────
+// Channels live in org.yaml; routes and parents live in each solution's own
+// project.yaml, which is why these writes need the solutions dir resolved.
+
+export interface OrgChannelResult {
+  status: "created" | "deleted";
+  channel: string;
+}
+
+export interface OrgRouteResult {
+  status: "added" | "removed";
+  solution: string;
+  target: string;
+}
+
+export interface OrgParentResult {
+  status: "added" | "removed";
+  solution: string;
+  parent?: string;
+}
+
 // ── Monitor ───────────────────────────────────────────────────────────────
 // Mirrors GET /monitor/status and GET /scheduler/status from
 // src/interface/api.py. Both subsystems are legitimately-often-off in the
