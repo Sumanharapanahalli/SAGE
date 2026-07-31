@@ -15,7 +15,7 @@ React vitest), then commit, push branch, `gh pr create --draft`.
 |---|------|--------|
 | 0 | Fix broken `.venv` so `make test-desktop` works | **DONE** |
 | 1 | Wire dead handler `sidecar/handlers/safety.py` + `/safety` page | **DONE** |
-| 2 | Wire dead handler `sidecar/handlers/agentrun.py` (HITL for `agent_hire`) | TODO |
+| 2 | Wire dead handler `sidecar/handlers/agentrun.py` (HITL for `agent_hire`) | **DONE** |
 | 3 | Add `/analyst` and `/developer` pages over agentrun RPCs | TODO |
 | 4a | Onboarding: scan-folder import of existing codebase | TODO |
 | 4b | Onboarding: org-template chooser | TODO |
@@ -136,3 +136,54 @@ Verified: `make test-desktop` exits 0 from the worktree — **618 pytest (+7), 2
 **Still dead after this item:** `handlers/agentrun.py` is the other unimported module. That is
 item 2, and unlike safety it is NOT a pure computation engine — `hire` is a HITL proposal kind
 under SOUL.md Law 1 and must create a real ProposalStore proposal rather than execute.
+
+### Item 2 — DONE (2026-07-31)
+
+Wired `handlers/agentrun.py` (`run`, `hire`, `analyze_jd`, `get_project`). Unlike `safety`, this
+needed real startup injection as well as registration: `_store`, `_project`, and
+`_solution_name` in `_wire_handlers`.
+
+**`agentrun` was dead in TWO layers, not one:**
+
+1. The Python handler was never imported in `app.py` (same as `safety`).
+2. `src-tauri/src/commands/agentrun.rs` **also already existed** but was missing from
+   `commands/mod.rs`, so it never compiled — which is precisely why its RPC names had been
+   allowed to drift to methods that exist nowhere: `agents.run`, `agents.hire`,
+   `agents.analyze_jd`, `config.get_project`. Corrected to the `agentrun.*` names the
+   dispatcher registers. (Keeping `agents.*` would have split one RPC namespace across two
+   handler modules, and `config.get_project` would have opened a `config.*` namespace for a
+   single method.)
+
+**Wiring placement, deliberate:** `agentrun._solution_name` is set unconditionally next to
+`yaml_edit._solution_name`, *not* inside the `ProjectConfig` try-block, so an `agent_hire`
+proposal still names the right solution even if `ProjectConfig` fails to import —
+`proposal_executor._execute_agent_hire` resolves which `prompts.yaml`/`tasks.yaml` to write
+from that value.
+
+**Law 1 coverage.** `test_registration_agentrun.py` drives the real NDJSON loop and asserts a
+`hire` proposal appears in `approvals.list_pending` — i.e. `agentrun._store` is the *same*
+store the inbox reads. A proposal created in some other store would pass all 21 existing unit
+tests while being invisible to the human: an un-approvable HITL gate. Also pinned: `hire`
+leaves `prompts.yaml` byte-identical (hash compared before/after), and `run` persists a real
+proposal where the web API's `POST /agent/run` returns `status:"pending_review"` and stores
+nothing.
+
+**Test-fixture gotcha worth knowing.** `test_registration_activity_regulatory.py` passes a bare
+`tmp_path` as `--solution-path`. That only works for handlers that never read solution YAML:
+`_bootstrap_env` exports `SAGE_SOLUTIONS_DIR` as the solution path's **parent**, so a bare
+tmp_path makes `ProjectConfig` resolve `<tmp>/<solution>/prompts.yaml`, which does not exist —
+yielding zero roles *silently*, with no error. `agentrun` reads `prompts.yaml`, so its fixture
+`shutil.copytree`s the real solution into tmp instead; YAML reads and `.sage/` writes both stay
+inside tmp.
+
+**Impedance mismatch, pinned by a test:** `agent_factory.jd_to_role_config` returns `role_key`,
+but the hire payload takes `role_id`. Item 3's UI must map between them.
+
+Frontend surface added for item 3 (no page yet): `AgentRunResponse` / `AgentRoleDraft` /
+`HireAgentParams` / `ProjectConfigResult` types, four client functions, and `useAgentRun.ts`
+(`useProjectConfig`, `useRunAgent`, `useHireAgent`, `useAnalyzeJobDescription`). `useHireAgent`
+invalidates the approvals inbox but deliberately **not** the roster — the role is not live
+until a human approves, and refreshing the roster would imply it already was.
+
+Verified: `make test-desktop` exits 0 from the worktree — **625 pytest (+7), 27 cargo,
+430 vitest (+6)** — plus `tsc --noEmit` clean.

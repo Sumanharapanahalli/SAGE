@@ -752,6 +752,62 @@ export interface ComplianceGapResult {
   blocking_gaps: string[];
 }
 
+// ── Agent run / hire ──────────────────────────────────────────────────────
+// The execution half of the read-only /agents roster. Both running and hiring
+// resolve to a REAL pending proposal in the same store the Approvals inbox
+// reads — the web API's POST /agent/run returned status:"pending_review" and
+// persisted nothing, so its approval banner was decorative.
+
+export interface AgentRunResponse {
+  /** The agent's own structured output (role-defined; shape varies by role). */
+  result: Record<string, unknown>;
+  /** The pending proposal the run was persisted as. */
+  proposal: Proposal;
+}
+
+/**
+ * A role config extracted from a job description by the LLM.
+ *
+ * NOTE the key is `role_key`, but `hireAgent` takes `role_id` — the framework's
+ * agent_factory and the hire payload disagree on the name, so a caller feeding
+ * this straight into hire must map `role_key` → `role_id`.
+ */
+export interface AgentRoleDraft {
+  role_key: string;
+  name: string;
+  description: string;
+  system_prompt: string;
+  task_types: string[];
+  icon?: string;
+}
+
+export interface HireAgentParams {
+  role_id: string;
+  name: string;
+  system_prompt: string;
+  description?: string;
+  icon?: string;
+  task_types?: string[];
+}
+
+export interface ProjectAgentSummary {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+}
+
+/**
+ * The parsed project.yaml, plus `agents` — the UniversalAgent roles from
+ * prompts.yaml. That is the *runnable* roster, which is narrower than
+ * `agents.list`: the latter is an audit-annotated view that also includes the
+ * four core roles, and `UniversalAgent.run` cannot dispatch to those.
+ */
+export interface ProjectConfigResult {
+  agents: ProjectAgentSummary[];
+  [key: string]: unknown;
+}
+
 // ── Safety (functional safety derivation) ─────────────────────────────────
 // These mirror src/core/functional_safety.py's REAL return shapes. Note the
 // field names: the engine returns `asil`, `sil`, and `required_processes` —

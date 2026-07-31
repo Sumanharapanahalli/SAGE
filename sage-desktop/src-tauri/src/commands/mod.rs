@@ -7,6 +7,7 @@
 //! structured errors propagate to the frontend as typed JSON.
 
 pub mod activity;
+pub mod agentrun;
 pub mod analyze;
 pub mod approvals;
 pub mod audit;

@@ -32,9 +32,13 @@ import type {
   CollectiveStats,
   CollectiveSyncResult,
   CollectiveValidateResult,
+  AgentRoleDraft,
+  AgentRunResponse,
   ComplianceChecklist,
   ComplianceDomainsResult,
   ComplianceGapResult,
+  HireAgentParams,
+  ProjectConfigResult,
   SafetyAsilResult,
   SafetyFmeaEntryInput,
   SafetyFmeaResult,
@@ -202,6 +206,27 @@ export const assessComplianceGap = (
     risk_level,
     completed_tasks,
   });
+
+// ── Agent run / hire ──────────────────────────────────────────────────────
+// The execution half of the read-only /agents roster. Both of the mutating
+// calls resolve to a pending proposal rather than an immediate effect:
+// `runAgent` persists the result for review, and `hireAgent` never writes
+// prompts.yaml/tasks.yaml itself — that happens on approval, in
+// proposal_executor._execute_agent_hire.
+
+export const runAgent = (role_id: string, task: string, context?: string) =>
+  call<AgentRunResponse>("agent_run", { role_id, task, context });
+
+export const hireAgent = (params: HireAgentParams) =>
+  call<Proposal>("agent_hire", params);
+
+export const analyzeJobDescription = (
+  jd_text: string,
+  solution_context?: string,
+) => call<AgentRoleDraft>("agent_analyze_jd", { jd_text, solution_context });
+
+export const getProjectConfig = () =>
+  call<ProjectConfigResult>("config_get_project");
 
 // ── Safety ────────────────────────────────────────────────────────────────
 // The inverse of Compliance: /compliance takes the safety class as an INPUT

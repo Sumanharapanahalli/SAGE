@@ -53,6 +53,7 @@ import jobs  # noqa: E402
 from dispatcher import Dispatcher  # noqa: E402
 from handlers import (  # noqa: E402
     activity,
+    agentrun,
     agents,
     analyze,
     approvals,
@@ -183,6 +184,15 @@ def _build_dispatcher() -> Dispatcher:
     # Built and tested, but never registered until now — the Rust layer and the
     # Agents page have always called it, and always got -32601 back.
     d.register("agents.performance", agents.performance)
+    # agents.* is the read-only roster; agentrun.* is the execution half — the
+    # operator could see which roles exist but never use one. Both `run` and
+    # `hire` persist a REAL proposal into the same store the Approvals inbox
+    # reads (Law 1); `hire` never writes YAML itself — that happens on approval
+    # in proposal_executor._execute_agent_hire.
+    d.register("agentrun.run", agentrun.run)
+    d.register("agentrun.hire", agentrun.hire)
+    d.register("agentrun.analyze_jd", agentrun.analyze_jd)
+    d.register("agentrun.get_project", agentrun.get_project)
     d.register("operator.get", operator.get)
     d.register("operator.set", operator.set)
     d.register("status.get", status.get_status)
@@ -295,6 +305,12 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
     yaml_edit._solution_name = solution_name or None
     yaml_edit._solution_path = solution_path
 
+    # Set unconditionally (not inside the ProjectConfig block below) so an
+    # agent_hire proposal still names the right solution even if ProjectConfig
+    # fails to import — proposal_executor._execute_agent_hire resolves which
+    # prompts.yaml/tasks.yaml to write from this value.
+    agentrun._solution_name = solution_name
+
     solutions._current_name = solution_name
     solutions._current_path = solution_path
     try:
@@ -346,6 +362,10 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
         approvals._store = store
         status._store = store
         analyze._store = store
+        # Same store the Approvals inbox reads — an agent_run/agent_hire
+        # proposal created anywhere else would be an invisible, un-approvable
+        # HITL gate.
+        agentrun._store = store
         backlog._proposal_store = store
         # Make the executor's follow-up proposals land in the SAME store the inbox reads.
         # proposal_executor creates the code_diff review proposal for an approved plan's
@@ -418,6 +438,7 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
 
         pc = ProjectConfig(solution_name)
         agents._project = pc
+        agentrun._project = pc
         status._project = pc
         # eval_runner._get_evals_dir() (and TaskScheduler) read the framework
         # *global* project_config singleton directly rather than an injected
