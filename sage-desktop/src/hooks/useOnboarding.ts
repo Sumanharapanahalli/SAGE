@@ -1,10 +1,13 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { onboardingGenerate } from "@/api/client";
+import { onboardingGenerate, saveSolution, scanFolder } from "@/api/client";
 import type {
   DesktopError,
   OnboardingParams,
   OnboardingResult,
+  SaveSolutionResult,
+  ScanFolderResult,
+  SolutionDraftFiles,
 } from "@/api/types";
 import { solutionsKey } from "@/hooks/useSolutions";
 
@@ -23,6 +26,40 @@ export function useOnboardingGenerate() {
       if (data.status === "created") {
         qc.invalidateQueries({ queryKey: solutionsKey });
       }
+    },
+  });
+}
+
+interface ScanFolderVars {
+  folder_path: string;
+  solution_name: string;
+  intent?: string;
+}
+
+/**
+ * Draft a solution from an existing codebase.
+ *
+ * Writes nothing, so nothing is invalidated here — the solutions list only
+ * changes once `useSaveSolution` runs.
+ */
+export function useScanFolder() {
+  return useMutation<ScanFolderResult, DesktopError, ScanFolderVars>({
+    mutationFn: (v) => scanFolder(v.folder_path, v.solution_name, v.intent),
+  });
+}
+
+interface SaveSolutionVars {
+  solution_name: string;
+  files: SolutionDraftFiles;
+}
+
+/** The write step: persists reviewed drafts, so the picker must re-fetch. */
+export function useSaveSolution() {
+  const qc = useQueryClient();
+  return useMutation<SaveSolutionResult, DesktopError, SaveSolutionVars>({
+    mutationFn: (v) => saveSolution(v.solution_name, v.files),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: solutionsKey });
     },
   });
 }

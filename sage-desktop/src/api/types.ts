@@ -752,6 +752,34 @@ export interface ComplianceGapResult {
   blocking_gaps: string[];
 }
 
+// ── Onboarding: import an existing codebase ───────────────────────────────
+// scan_folder DRAFTS the YAML triad and writes nothing; save_solution is the
+// separate write step, so the operator reviews before anything hits disk.
+
+export interface SolutionDraftSummary {
+  name: string;
+  description: string;
+  task_types: Array<{ name: string; description: string }>;
+  compliance_standards: string[];
+  integrations: string[];
+}
+
+/** Keyed by filename — only project/prompts/tasks.yaml are ever written. */
+export type SolutionDraftFiles = Record<string, string>;
+
+export interface ScanFolderResult {
+  solution_name: string;
+  files: SolutionDraftFiles;
+  summary: SolutionDraftSummary;
+}
+
+export interface SaveSolutionResult {
+  status: string;
+  solution_name: string;
+  path: string;
+  files_written: string[];
+}
+
 // ── Agent run / hire ──────────────────────────────────────────────────────
 // The execution half of the read-only /agents roster. Both running and hiring
 // resolve to a REAL pending proposal in the same store the Approvals inbox

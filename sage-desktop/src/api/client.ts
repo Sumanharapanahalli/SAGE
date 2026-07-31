@@ -39,6 +39,8 @@ import type {
   ComplianceGapResult,
   HireAgentParams,
   ProjectConfigResult,
+  SaveSolutionResult,
+  ScanFolderResult,
   SafetyAsilResult,
   SafetyFmeaEntryInput,
   SafetyFmeaResult,
@@ -206,6 +208,26 @@ export const assessComplianceGap = (
     risk_level,
     completed_tasks,
   });
+
+// ── Onboarding: import an existing codebase ───────────────────────────────
+
+/** Drafts a solution from an existing codebase. Writes nothing. */
+export const scanFolder = (
+  folder_path: string,
+  solution_name: string,
+  intent?: string,
+) =>
+  call<ScanFolderResult>("onboarding_scan_folder", {
+    folder_path,
+    solution_name,
+    intent,
+  });
+
+/** The write step for reviewed drafts. Only the YAML triad is persisted. */
+export const saveSolution = (
+  solution_name: string,
+  files: Record<string, string>,
+) => call<SaveSolutionResult>("onboarding_save_solution", { solution_name, files });
 
 // ── Agent run / hire ──────────────────────────────────────────────────────
 // The execution half of the read-only /agents roster. Both of the mutating

@@ -217,6 +217,11 @@ def _build_dispatcher() -> Dispatcher:
     # Framework control — executes immediately, no proposal queue (Law 1).
     d.register("solutions.remove", solutions.remove)
     d.register("onboarding.generate", onboarding.generate)
+    # Import an EXISTING codebase rather than describing a new one. scan_folder
+    # drafts the YAML triad and writes nothing; save_solution is the separate
+    # write step, so the operator reviews before anything lands on disk.
+    d.register("onboarding.scan_folder", onboarding.scan_folder)
+    d.register("onboarding.save_solution", onboarding.save_solution)
     d.register("builds.start", builds.start)
     d.register("builds.list", builds.list_runs)
     d.register("builds.get", builds.get)
@@ -394,6 +399,9 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
         # The triage feed reads the same DB (raw SQL against db_path); without
         # this injection activity.list raises "audit logger not initialized".
         activity._logger = audit_logger
+        # Importing a codebase and writing a new solution are both real events
+        # in the compliance record (ONBOARDING_SCAN / ONBOARDING_COMPLETE).
+        onboarding._logger = audit_logger
         # Without this the HITL gate leaves no compliance record at all, while
         # Approvals.tsx tells the operator that it does.
         approvals._logger = audit_logger
@@ -454,6 +462,9 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
 
         status._llm = lg
         llm._gateway = lg
+        # scan_folder drafts the YAML triad straight from the gateway rather
+        # than through generate_solution.
+        onboarding._llm = lg
     except Exception as e:  # noqa: BLE001
         logging.warning("LLMGateway unavailable: %s", e)
 

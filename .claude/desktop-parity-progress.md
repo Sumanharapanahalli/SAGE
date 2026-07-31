@@ -17,7 +17,7 @@ React vitest), then commit, push branch, `gh pr create --draft`.
 | 1 | Wire dead handler `sidecar/handlers/safety.py` + `/safety` page | **DONE** |
 | 2 | Wire dead handler `sidecar/handlers/agentrun.py` (HITL for `agent_hire`) | **DONE** |
 | 3 | Surface agentrun in the UI (Run + Hire tabs on `/agents`) | **DONE** |
-| 4a | Onboarding: scan-folder import of existing codebase | TODO |
+| 4a | Onboarding: scan-folder import of existing codebase | **DONE** |
 | 4b | Onboarding: org-template chooser | TODO |
 | 4c | Onboarding: conversational refine loop | TODO |
 | 4d | Onboarding: pre-write ReviewPanel | TODO |
@@ -236,3 +236,50 @@ Verified: `make test-desktop` exits 0 — **625 pytest, 27 cargo, 443 vitest (+1
 
 **Carry-forward:** item 10 (`/mr/*`) is where `web/Developer.tsx`'s real content belongs. There
 is no remaining reason to add a `/analyst` page.
+
+### Item 4a — DONE (2026-07-31)
+
+Import an EXISTING codebase as a solution. Added `onboarding.scan_folder` and
+`onboarding.save_solution`, the Rust commands, typed client + `useScanFolder`/`useSaveSolution`,
+and a new `ImportFlow` component behind an "Import a folder" tab on `/onboarding`
+("Describe it" stays the default — it is the documented path, and importing only makes sense
+when a codebase already exists).
+
+Two RPCs, not one, deliberately: `scan_folder` drafts the YAML triad and **writes nothing**;
+`save_solution` is the separate write. A test pins that scanning leaves the solutions dir empty,
+so the operator always sees the drafts before anything hits disk. (`save_solution` is also what
+4c/4d will need.)
+
+**A THIRD web bug found — and this one is fatal.** `LLMGateway.generate` is
+`generate(prompt, system_prompt=..., ...)` with **no `user_prompt` parameter and no
+`**kwargs`**. But `api.py:4081` (`/onboarding/scan-folder`) and `api.py:4125`
+(`/onboarding/refine`) both call `llm.generate(system_prompt=..., user_prompt=...)`. That raises
+`TypeError` on **every** call, is swallowed by a bare `except Exception`, and is reported to the
+user as HTTP 503 *"Could not reach the LLM."* Both web endpoints are dead on arrival — they have
+never once succeeded, and the error message points at the wrong thing entirely. `api.py:811`
+uses `prompt=` correctly, so it is isolated to these two call sites.
+
+The sidecar calls `prompt=`, and `test_scan_folder_calls_generate_with_prompt` pins it: `FakeLLM`
+mirrors the real signature exactly (no `**kwargs`), so a regression to `user_prompt=` raises
+TypeError in the test instead of silently degrading.
+
+**NOT fixed here:** `src/interface/api.py` is the web interface, outside this loop's desktop
+scope, and touching it would pull in `tests/test_api.py` — a much larger verification surface
+than this iteration's bar. It is a two-word fix (`user_prompt=` → `prompt=`) on both lines.
+**Flagged for the operator as a follow-up.** Item 4c (refine) will hit the same bug at
+api.py:4125 and should likewise implement it correctly rather than port it.
+
+Other notes:
+
+- `_solutions_dir()` reads `src.core.onboarding._SOLUTIONS_DIR` rather than re-deriving the
+  path, so there is exactly one place that decides where solutions live. That module resolves
+  `SAGE_SOLUTIONS_DIR` at import time, and `_bootstrap_env` sets it before any `src.` import.
+- `save_solution` whitelists the three triad filenames (the LLM chooses those keys, so they are
+  untrusted input) and re-checks the realpath against the solutions root — defence in depth
+  against a symlinked solutions dir, on top of the name regex.
+- `tsc --noEmit` earned its place in the bar again: vitest was fully green while
+  `Onboarding.tsx` passed `{name}` to `useSwitchSolution`, which requires `{name, path}`.
+  `save_solution` returns the path, so `onSaved` now threads both through.
+
+Verified: `make test-desktop` exits 0 — **644 pytest (+19), 27 cargo, 450 vitest (+7)** — plus
+`tsc --noEmit` clean.
