@@ -24,7 +24,7 @@ React vitest), then commit, push branch, `gh pr create --draft`.
 | 5 | Extend `org.*`: channels CRUD, cross-team routes (writable), solutions CRUD | **DONE** |
 | 6 | Fix `/organization` ignoring `SAGE_SOLUTIONS_DIR` | **DONE** (with item 5) |
 | 7 | Add `/chat` (conversational agent + history) | **DONE** |
-| 8 | Add `/code` (plan / execute / approve) | TODO |
+| 8 | Add `/code` (plan / execute / approve) | **DONE** |
 | 9 | Add `/orchestrator` (9 orchestrator-intelligence modules) | TODO |
 | 10 | Add remaining `/mr/*` ops (create, review, comment, open, pipeline) | TODO |
 
@@ -461,4 +461,37 @@ so it does *not* carry the `user_prompt=` bug that kills `/onboarding/scan-folde
 `/onboarding/refine`.
 
 Verified: `make test-desktop` exits 0 — **707 pytest (+17), 27 cargo, 486 vitest (+8)** — plus
+`tsc --noEmit` clean.
+
+### Item 8 — DONE (2026-07-31)
+
+`/code` — plan → approve → execute over `src.integrations.autogen_runner`. New
+`handlers/code.py`, five RPCs, Rust commands, typed client, `useCode.ts`, and a `/code` page.
+
+**Not a Law 1a conflict, checked before building.** Law 1a (Merge-Gate) governs *merging*
+agent-written code to `main` — agents own the branch, the human approves the MR, and
+`code_diff`/`implementation_plan` are internal branch steps rather than standalone gates. This
+endpoint governs something different: *executing a generated script right now*. Its approval gate
+is legitimate and, importantly, enforced inside `autogen_runner.execute()` itself — an unapproved
+run is refused by the runner, not merely hidden by the UI. A test pins that.
+
+**One addition with no web equivalent: `code.sandbox_status`.** `autogen_runner` runs code in
+`docker run --rm --network none`, but falls back to a **local subprocess with no isolation** when
+Docker is unavailable (autogen_runner.py:200-201). The web API only reveals that in the *execute
+result* — i.e. after the generated code has already run on the operator's machine. The desktop
+page queries isolation on mount and shows a red `role="alert"` banner *above* the approve button,
+so the operator knows what they are authorising while deciding. Pinned by a test asserting the
+warning appears before any Approve button exists.
+
+`autogen_runner` signals failure by returning `{"error": ...}` rather than raising, so `_unwrap()`
+checks every call — otherwise a refused execution would look like success.
+
+Known limitation, matching the web API: the runner keeps runs in memory, so a sidecar restart
+loses pending plans. Acceptable — an un-executed plan is cheap to regenerate.
+
+Test note: `/hi/` matched both the stdout and the drafted `print('hi')`, and the plan text
+overlapped the typed task. Assertions now key off unambiguous anchors (the Approve button, the
+`exit 0` line).
+
+Verified: `make test-desktop` exits 0 — **724 pytest (+17), 27 cargo, 494 vitest (+8)** — plus
 `tsc --noEmit` clean.

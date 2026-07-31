@@ -1133,6 +1133,48 @@ export interface OrgReloadResult {
   status: "reloaded";
 }
 
+// ── Code (sandboxed execution) ────────────────────────────────────────────
+// plan -> approve -> execute. The approval gate is enforced by the runner, not
+// just the UI. `CodeSandboxStatus` has no web equivalent: it reports isolation
+// BEFORE approval, because the runner falls back to an unisolated local
+// subprocess when Docker is missing.
+
+export interface CodePlanResult {
+  run_id: string;
+  status: string;
+  plan: string;
+  code: string;
+}
+
+export interface CodeApproveResult {
+  run_id: string;
+  status: string;
+}
+
+export interface CodeExecuteResult {
+  run_id: string;
+  status: string;
+  output: {
+    stdout?: string;
+    stderr?: string;
+    returncode?: number;
+    sandbox?: string;
+    warning?: string;
+  };
+}
+
+export interface CodeStatusResult {
+  run_id: string;
+  status: string;
+}
+
+export interface CodeSandboxStatus {
+  docker_available: boolean;
+  sandbox: string;
+  isolated: boolean;
+  warning?: string;
+}
+
 // ── Chat ──────────────────────────────────────────────────────────────────
 // An ACTION never executes: the sidecar turns it into a pending proposal for
 // the Approvals inbox, so `proposal` is non-null exactly when type==="action".

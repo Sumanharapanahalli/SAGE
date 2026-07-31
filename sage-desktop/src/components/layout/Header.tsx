@@ -4,6 +4,7 @@ const TITLE_MAP: Record<string, string> = {
   "/home": "Solutions",
   "/analyze": "Analyze",
   "/chat": "Chat",
+  "/code": "Code Execution",
   "/approvals": "Approvals",
   "/agents": "Agents",
   "/audit": "Audit",

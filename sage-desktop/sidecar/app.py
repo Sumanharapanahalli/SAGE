@@ -57,6 +57,7 @@ from handlers import (  # noqa: E402
     agents,
     analyze,
     chat,
+    code as code_handler,
     approvals,
     audit,
     backlog,
@@ -114,6 +115,14 @@ def _build_dispatcher() -> Dispatcher:
     # Conversational agent. An ACTION never executes here — it becomes a real
     # proposal in the same inbox as everything else (Law 1). The web's
     # /chat/execute runs it directly on a chat-UI confirm.
+    # Sandboxed code execution. NOT the Merge-Gate path (Law 1a governs
+    # merging agent code); this gates RUNNING a generated script, and the
+    # runner itself refuses an unapproved run.
+    d.register("code.plan", code_handler.plan)
+    d.register("code.approve", code_handler.approve)
+    d.register("code.execute", code_handler.execute)
+    d.register("code.status", code_handler.status)
+    d.register("code.sandbox_status", code_handler.sandbox_status)
     d.register("chat.send", chat.send)
     d.register("chat.list_conversations", chat.list_conversations)
     d.register("chat.get_conversation", chat.get_conversation)
@@ -489,6 +498,13 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
         project_config.reload(solution_name)
     except Exception as e:  # noqa: BLE001
         logging.warning("ProjectConfig unavailable: %s", e)
+
+    try:
+        from src.integrations.autogen_runner import autogen_runner
+
+        code_handler._runner = autogen_runner
+    except Exception as e:  # noqa: BLE001
+        logging.warning("autogen_runner unavailable: %s", e)
 
     try:
         from src.core.llm_gateway import llm_gateway as lg

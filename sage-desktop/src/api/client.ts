@@ -22,6 +22,11 @@ import type {
   BuildRunDetail,
   BuildRunSummary,
   ChatClearResult,
+  CodeApproveResult,
+  CodeExecuteResult,
+  CodePlanResult,
+  CodeSandboxStatus,
+  CodeStatusResult,
   ChatConversationResult,
   ChatConversationsResult,
   ChatDeleteResult,
@@ -195,6 +200,23 @@ export const getStatus = () => call<StatusResponse>("get_status");
 
 export const analyzeLog = (log_entry: string) =>
   call<Proposal>("analyze_run", { log_entry });
+
+// ── Code (sandboxed execution) ────────────────────────────────────────────
+
+export const codePlan = (task: string) =>
+  call<CodePlanResult>("code_plan", { task });
+
+export const codeApprove = (run_id: string, comment?: string) =>
+  call<CodeApproveResult>("code_approve", { run_id, comment });
+
+export const codeExecute = (run_id: string) =>
+  call<CodeExecuteResult>("code_execute", { run_id });
+
+export const codeStatus = (run_id: string) =>
+  call<CodeStatusResult>("code_status", { run_id });
+
+export const codeSandboxStatus = () =>
+  call<CodeSandboxStatus>("code_sandbox_status");
 
 // ── Chat ──────────────────────────────────────────────────────────────────
 
@@ -927,6 +949,11 @@ export type {
   BuildRunDetail,
   BuildRunSummary,
   ChatClearResult,
+  CodeApproveResult,
+  CodeExecuteResult,
+  CodePlanResult,
+  CodeSandboxStatus,
+  CodeStatusResult,
   ChatConversationResult,
   ChatConversationsResult,
   ChatDeleteResult,
