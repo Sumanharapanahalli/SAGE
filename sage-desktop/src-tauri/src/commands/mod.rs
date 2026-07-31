@@ -30,6 +30,7 @@ pub mod knowledge;
 pub mod knowledgesync;
 pub mod logs;
 pub mod monitor;
+pub mod mr;
 pub mod operator;
 pub mod orchestrator;
 pub mod org;

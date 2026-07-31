@@ -27,6 +27,7 @@ describe("Header", () => {
     ["/analyze", /analyze/i],
     ["/chat", /chat/i],
     ["/code", /code execution/i],
+    ["/merge-requests", /merge requests/i],
     ["/orchestrator", /orchestrator intelligence/i],
     ["/home", /solutions/i],
     ["/compliance", /compliance/i],

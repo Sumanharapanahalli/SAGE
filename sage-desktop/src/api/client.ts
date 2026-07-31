@@ -23,6 +23,11 @@ import type {
   BuildRunSummary,
   ChatClearResult,
   CodeApproveResult,
+  MrCommentResult,
+  MrConfig,
+  MrListResult,
+  MrPipelineResult,
+  MrReviewStarted,
   OrchestratorRecent,
   OrchestratorStats,
   CodeExecuteResult,
@@ -202,6 +207,34 @@ export const getStatus = () => call<StatusResponse>("get_status");
 
 export const analyzeLog = (log_entry: string) =>
   call<Proposal>("analyze_run", { log_entry });
+
+// ── Merge requests (GitLab) ───────────────────────────────────────────────
+
+export const mrConfig = () => call<MrConfig>("mr_config");
+
+export const listOpenMrs = (project_id: number) =>
+  call<MrListResult>("mr_list_open", { project_id });
+
+export const mrPipeline = (project_id: number, mr_iid: number) =>
+  call<MrPipelineResult>("mr_pipeline", { project_id, mr_iid });
+
+/** Returns a job_id — poll jobs.status. */
+export const reviewMr = (project_id: number, mr_iid: number) =>
+  call<MrReviewStarted>("mr_review", { project_id, mr_iid });
+
+/** Files a proposal; does NOT open the merge request. */
+export const proposeMr = (
+  project_id: number,
+  issue_iid: number,
+  source_branch?: string,
+) =>
+  call<Proposal>("mr_propose_create", { project_id, issue_iid, source_branch });
+
+export const commentOnMr = (
+  project_id: number,
+  mr_iid: number,
+  comment: string,
+) => call<MrCommentResult>("mr_comment", { project_id, mr_iid, comment });
 
 // ── Orchestrator ──────────────────────────────────────────────────────────
 
@@ -960,6 +993,11 @@ export type {
   BuildRunSummary,
   ChatClearResult,
   CodeApproveResult,
+  MrCommentResult,
+  MrConfig,
+  MrListResult,
+  MrPipelineResult,
+  MrReviewStarted,
   OrchestratorRecent,
   OrchestratorStats,
   CodeExecuteResult,

@@ -26,7 +26,7 @@ React vitest), then commit, push branch, `gh pr create --draft`.
 | 7 | Add `/chat` (conversational agent + history) | **DONE** |
 | 8 | Add `/code` (plan / execute / approve) | **DONE** |
 | 9 | Add `/orchestrator` (9 orchestrator-intelligence modules) | **DONE** |
-| 10 | Add remaining `/mr/*` ops (create, review, comment, open, pipeline) | TODO |
+| 10 | Add remaining `/mr/*` ops (create, review, comment, open, pipeline) | **DONE** |
 
 Deliberately **out of scope** (deferred with reasons, do not port): Integrations/connectors
 (OAuth redirect flows), Auth/access-control (single-operator app), Distillation (niche),
@@ -528,4 +528,39 @@ A real bug caught by the tests: `useOrchestratorRecent` fired on mount with an e
 string, which the sidecar rejects. Now gated on `enabled: module.length > 0`.
 
 Verified: `make test-desktop` exits 0 — **741 pytest (+17), 27 cargo, 501 vitest (+7)** — plus
+`tsc --noEmit` clean.
+
+### Item 10 — DONE (2026-07-31)
+
+`/merge-requests` — GitLab MR operations. **`handlers/mr.py` already existed, fully written and
+320 lines long, but was never imported in `app.py`** — a THIRD dead handler module after
+`safety.py` and `agentrun.py`. So this item was mostly wiring plus the UI, not new logic.
+
+The existing handler was better designed than a straight port would have been, and it was kept
+as-is. Two divergences from the web API that it already implemented:
+
+1. **`POST /mr/create` opens the merge request immediately** — an LLM-drafted, irreversible write
+   to a shared external system with no human in the loop. `mr.propose_create` instead files a
+   real proposal (`action_type="mr_create"`, `RiskClass.EXTERNAL`, `reversible=False`) and only
+   the approved-proposal executor POSTs. It registers that executor into
+   `proposal_executor._DISPATCH` at import (a plain registry, so this needs no `src/` edit).
+   The page says "Queued for approval… nothing has been created in GitLab", pinned by a test.
+2. **`review` is backgrounded** via `jobs.submit` — `review_merge_request` is a multi-round ReAct
+   loop, and running it inline would freeze the sidecar's serial dispatch (including the 5s
+   status polls) for minutes.
+
+`comment` is deliberately NOT gated: the operator clicking Post *is* the decision. Law 1 gates
+agent proposals, not the human's own actions — same rationale as `knowledge.add`.
+
+Distinct from `mergegate.*`, which is SAGE's own Merge-Gate (Law 1a). These are two different
+systems sharing a phrase; they sit alongside each other, exactly as the backlog said.
+
+Test note: an assertion that the PAT never reaches the UI initially false-positived, because
+`"tok"` is a substring of `"has_token"`. It now uses a distinctive sentinel value.
+
+**Follow-up found, not in scope:** `mergegate.*` (start/status/list) is registered but has **no
+desktop UI at all** — nothing in `src/` references it. Given Law 1a makes the MR the human gate
+for code, that is a real gap worth its own item.
+
+Verified: `make test-desktop` exits 0 — **767 pytest (+26), 27 cargo, 509 vitest (+8)** — plus
 `tsc --noEmit` clean.

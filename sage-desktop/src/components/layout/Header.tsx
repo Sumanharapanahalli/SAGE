@@ -14,6 +14,7 @@ const TITLE_MAP: Record<string, string> = {
   "/status": "Status",
   "/queue": "Task queue",
   "/builds": "Builds",
+  "/merge-requests": "Merge Requests",
   "/backlog": "Backlog",
   "/onboarding": "New solution",
   "/yaml": "Edit YAML",

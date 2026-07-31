@@ -1133,6 +1133,38 @@ export interface OrgReloadResult {
   status: "reloaded";
 }
 
+// ── Merge requests (GitLab) ───────────────────────────────────────────────
+// Distinct from SAGE's own Merge-Gate. `proposeMr` does NOT open the MR — it
+// files an EXTERNAL, non-reversible proposal; only the approved executor POSTs.
+
+export interface MrConfig {
+  configured: boolean;
+  gitlab_url: string;
+  has_token: boolean;
+  default_project_id: string;
+  message: string;
+}
+
+export interface MrListResult {
+  merge_requests: Array<Record<string, unknown>>;
+}
+
+export interface MrPipelineResult {
+  status?: string;
+  [key: string]: unknown;
+}
+
+/** review is a multi-round ReAct loop, so it runs as a background job. */
+export interface MrReviewStarted {
+  job_id: string;
+  project_id: number;
+  mr_iid: number;
+}
+
+export interface MrCommentResult {
+  [key: string]: unknown;
+}
+
 // ── Orchestrator ──────────────────────────────────────────────────────────
 // Read-only observability over the 9 intelligence modules. `unavailable` names
 // the modules that could not be loaded, so the UI can say "not active" rather

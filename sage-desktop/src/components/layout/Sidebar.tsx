@@ -17,6 +17,7 @@ const NAV_ITEMS = [
   { to: "/status", label: "Status" },
   { to: "/queue", label: "Queue" },
   { to: "/builds", label: "Builds" },
+  { to: "/merge-requests", label: "Merge Requests" },
   { to: "/backlog", label: "Backlog" },
   { to: "/yaml", label: "YAML" },
   { to: "/constitution", label: "Constitution" },

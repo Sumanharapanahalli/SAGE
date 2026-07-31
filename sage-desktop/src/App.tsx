@@ -25,6 +25,7 @@ import Goals from "@/pages/Goals";
 import Hil from "@/pages/Hil";
 import Home from "@/pages/Home";
 import Knowledge from "@/pages/Knowledge";
+import MergeRequests from "@/pages/MergeRequests";
 import Monitor from "@/pages/Monitor";
 import Onboarding from "@/pages/Onboarding";
 import Orchestrator from "@/pages/Orchestrator";
@@ -95,6 +96,7 @@ export function App() {
               <Route path="queue" element={<Queue />} />
               <Route path="backlog" element={<Backlog />} />
               <Route path="builds" element={<Builds />} />
+              <Route path="merge-requests" element={<MergeRequests />} />
               <Route path="yaml" element={<YamlEdit />} />
               <Route path="constitution" element={<Constitution />} />
               <Route path="knowledge" element={<Knowledge />} />

@@ -76,6 +76,7 @@ from handlers import (  # noqa: E402
     llm,
     logs,
     monitor,
+    mr,
     onboarding,
     operator,
     orchestrator,
@@ -122,6 +123,17 @@ def _build_dispatcher() -> Dispatcher:
     # Read-only observability over the 9 intelligence modules. The router's
     # mutating routes (spawn / tools.execute / budget) are not surfaced, and
     # events/stream is out of scope under the streaming exclusion.
+    # GitLab merge requests via the DeveloperAgent. Distinct from mergegate.*,
+    # which is SAGE's OWN Merge-Gate (Law 1a) — these two sit alongside each
+    # other. propose_create files an EXTERNAL proposal instead of opening the
+    # MR, because the web endpoint's immediate LLM-drafted write to a shared
+    # GitLab is exactly what RiskClass.EXTERNAL exists for.
+    d.register("mr.config", mr.config)
+    d.register("mr.list_open", mr.list_open)
+    d.register("mr.pipeline", mr.pipeline)
+    d.register("mr.review", mr.review)
+    d.register("mr.propose_create", mr.propose_create)
+    d.register("mr.comment", mr.comment)
     d.register("orchestrator.stats", orchestrator.stats)
     d.register("orchestrator.recent", orchestrator.recent)
     d.register("code.plan", code_handler.plan)
@@ -409,6 +421,7 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
         # HITL gate.
         agentrun._store = store
         chat._proposal_store = store
+        mr._store = store
         backlog._proposal_store = store
         # Make the executor's follow-up proposals land in the SAME store the inbox reads.
         # proposal_executor creates the code_diff review proposal for an approved plan's
