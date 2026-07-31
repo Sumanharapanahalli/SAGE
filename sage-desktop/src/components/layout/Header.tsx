@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 const TITLE_MAP: Record<string, string> = {
   "/home": "Solutions",
   "/analyze": "Analyze",
+  "/chat": "Chat",
   "/approvals": "Approvals",
   "/agents": "Agents",
   "/audit": "Audit",

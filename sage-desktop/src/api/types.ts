@@ -1133,6 +1133,52 @@ export interface OrgReloadResult {
   status: "reloaded";
 }
 
+// ── Chat ──────────────────────────────────────────────────────────────────
+// An ACTION never executes: the sidecar turns it into a pending proposal for
+// the Approvals inbox, so `proposal` is non-null exactly when type==="action".
+
+export interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+export interface ChatConversation {
+  id: string;
+  user_id: string;
+  solution: string;
+  role_id: string;
+  role_name: string;
+  title: string;
+  messages: ChatMessage[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ChatSendResult {
+  conversation_id: string;
+  reply: string;
+  type: "answer" | "action";
+  action: string | null;
+  proposal: Proposal | null;
+}
+
+export interface ChatConversationsResult {
+  conversations: ChatConversation[];
+}
+
+export interface ChatConversationResult {
+  conversation: ChatConversation;
+}
+
+export interface ChatDeleteResult {
+  status: "deleted";
+  conversation_id: string;
+}
+
+export interface ChatClearResult {
+  deleted: number;
+}
+
 // ── Org CRUD ──────────────────────────────────────────────────────────────
 // Channels live in org.yaml; routes and parents live in each solution's own
 // project.yaml, which is why these writes need the solutions dir resolved.

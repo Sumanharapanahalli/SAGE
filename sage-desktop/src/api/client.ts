@@ -21,6 +21,11 @@ import type {
   BatchApproveResult,
   BuildRunDetail,
   BuildRunSummary,
+  ChatClearResult,
+  ChatConversationResult,
+  ChatConversationsResult,
+  ChatDeleteResult,
+  ChatSendResult,
   CheckActionResult,
   CollectiveGetResult,
   CollectiveHelpCreateResult,
@@ -190,6 +195,27 @@ export const getStatus = () => call<StatusResponse>("get_status");
 
 export const analyzeLog = (log_entry: string) =>
   call<Proposal>("analyze_run", { log_entry });
+
+// ── Chat ──────────────────────────────────────────────────────────────────
+
+export const chatSend = (
+  message: string,
+  conversation_id?: string,
+  page_context?: string,
+) =>
+  call<ChatSendResult>("chat_send", { message, conversation_id, page_context });
+
+export const listConversations = () =>
+  call<ChatConversationsResult>("chat_list_conversations");
+
+export const getConversation = (conversation_id: string) =>
+  call<ChatConversationResult>("chat_get_conversation", { conversation_id });
+
+export const deleteConversation = (conversation_id: string) =>
+  call<ChatDeleteResult>("chat_delete_conversation", { conversation_id });
+
+export const clearChatHistory = () =>
+  call<ChatClearResult>("chat_clear_history");
 
 // ── Compliance ────────────────────────────────────────────────────────────
 // Assessment tooling on top of the audit RECORD already on desktop — lets a
@@ -900,6 +926,11 @@ export type {
   BatchApproveResult,
   BuildRunDetail,
   BuildRunSummary,
+  ChatClearResult,
+  ChatConversationResult,
+  ChatConversationsResult,
+  ChatDeleteResult,
+  ChatSendResult,
   CheckActionResult,
   ConstitutionData,
   ConstitutionState,

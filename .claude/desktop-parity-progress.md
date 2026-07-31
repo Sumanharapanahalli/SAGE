@@ -23,7 +23,7 @@ React vitest), then commit, push branch, `gh pr create --draft`.
 | 4d | Onboarding: pre-write ReviewPanel | **DONE** |
 | 5 | Extend `org.*`: channels CRUD, cross-team routes (writable), solutions CRUD | **DONE** |
 | 6 | Fix `/organization` ignoring `SAGE_SOLUTIONS_DIR` | **DONE** (with item 5) |
-| 7 | Add `/chat` (conversational agent + history) | TODO |
+| 7 | Add `/chat` (conversational agent + history) | **DONE** |
 | 8 | Add `/code` (plan / execute / approve) | TODO |
 | 9 | Add `/orchestrator` (9 orchestrator-intelligence modules) | TODO |
 | 10 | Add remaining `/mr/*` ops (create, review, comment, open, pipeline) | TODO |
@@ -426,4 +426,39 @@ before each test and drops anything set during it. This removes a latent orderin
 failure for every future env-sensitive handler, not just org — worth knowing for items 7-10.
 
 Verified: `make test-desktop` exits 0 — **690 pytest (+23), 27 cargo, 478 vitest (+5)** — plus
+`tsc --noEmit` clean.
+
+### Item 7 — DONE (2026-07-31)
+
+`/chat` — conversational agent plus history. New `handlers/chat.py` over
+`src.core.chat_router` and a solution-scoped `ChatStore`
+(`<solution>/.sage/chat_conversations.db`; the web API keeps one framework-global chat DB beside
+the audit log). Five RPCs (`chat.{send,list_conversations,get_conversation,delete_conversation,
+clear_history}`), Rust commands, typed client, `useChat.ts`, and a `/chat` page with a
+conversation sidebar.
+
+**`POST /chat/execute` is deliberately NOT ported, and this is the important divergence.** The
+web API executes a chat-proposed action directly, gated only by a confirm button in the chat UI.
+Here, when the router returns `type: "action"`, the handler persists a **real ProposalStore
+proposal** (`action_type: "chat_action"`, `RiskClass.STATEFUL`) and the operator decides in the
+Approvals inbox — same store, queue and audit trail as every other agent proposal (Law 1; the
+pattern already used by `analyze.run` and `agentrun.run`).
+
+That is both safer and *smaller*: `/chat/execute` reimplements ~150 lines of action dispatch that
+`proposal_executor` already owns, so porting it would have put execution logic in a second place.
+The UI banner says "Action queued for approval… nothing has run", pinned by a test — claiming it
+ran would be false.
+
+Only actions create proposals; a plain answer must not spam the inbox (also tested). `chat.send`
+invalidates the approvals cache only when a proposal came back, so the sidebar badge moves the
+moment chat queues something.
+
+Streaming stays deferred as agreed — `POST /chat` is explicitly the non-streaming path, which is
+what this mirrors.
+
+Note: `chat_router.route` calls `llm_gateway.generate(prompt, system_prompt=...)` **positionally**,
+so it does *not* carry the `user_prompt=` bug that kills `/onboarding/scan-folder` and
+`/onboarding/refine`.
+
+Verified: `make test-desktop` exits 0 — **707 pytest (+17), 27 cargo, 486 vitest (+8)** — plus
 `tsc --noEmit` clean.

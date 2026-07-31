@@ -56,6 +56,7 @@ from handlers import (  # noqa: E402
     agentrun,
     agents,
     analyze,
+    chat,
     approvals,
     audit,
     backlog,
@@ -110,6 +111,14 @@ def _build_dispatcher() -> Dispatcher:
     d = Dispatcher()
     d.register("handshake", handshake.handshake)
     d.register("analyze.run", analyze.run)
+    # Conversational agent. An ACTION never executes here — it becomes a real
+    # proposal in the same inbox as everything else (Law 1). The web's
+    # /chat/execute runs it directly on a chat-UI confirm.
+    d.register("chat.send", chat.send)
+    d.register("chat.list_conversations", chat.list_conversations)
+    d.register("chat.get_conversation", chat.get_conversation)
+    d.register("chat.delete_conversation", chat.delete_conversation)
+    d.register("chat.clear_history", chat.clear_history)
     d.register("compliance.domains", compliance.domains)
     d.register("compliance.flags", compliance.flags)
     d.register("compliance.checklist", compliance.checklist)
@@ -327,6 +336,7 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
     # fails to import — proposal_executor._execute_agent_hire resolves which
     # prompts.yaml/tasks.yaml to write from this value.
     agentrun._solution_name = solution_name
+    chat._solution_name = solution_name
 
     solutions._current_name = solution_name
     solutions._current_path = solution_path
@@ -383,6 +393,7 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
         # proposal created anywhere else would be an invisible, un-approvable
         # HITL gate.
         agentrun._store = store
+        chat._proposal_store = store
         backlog._proposal_store = store
         # Make the executor's follow-up proposals land in the SAME store the inbox reads.
         # proposal_executor creates the code_diff review proposal for an approved plan's
@@ -447,6 +458,15 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
         logging.warning("GoalsStore unavailable: %s", e)
 
     try:
+        from src.stores.chat_store import ChatStore
+
+        # Solution-scoped, like every other store — the web API keeps one
+        # framework-global chat DB beside the audit log.
+        chat._store = ChatStore(str(sage_dir / "chat_conversations.db"))
+    except Exception as e:  # noqa: BLE001
+        logging.warning("GoalsStore unavailable: %s", e)
+
+    try:
         from src.core.eval_runner import EvalRunner
 
         eval_handler._runner = EvalRunner(db_path=str(sage_dir / "eval_runs.db"))
@@ -459,6 +479,7 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
         pc = ProjectConfig(solution_name)
         agents._project = pc
         agentrun._project = pc
+        chat._project = pc
         status._project = pc
         # eval_runner._get_evals_dir() (and TaskScheduler) read the framework
         # *global* project_config singleton directly rather than an injected

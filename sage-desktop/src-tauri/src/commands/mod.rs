@@ -16,6 +16,7 @@ pub mod status;
 pub mod llm;
 pub mod backlog;
 pub mod builds;
+pub mod chat;
 pub mod collective;
 pub mod compliance;
 pub mod constitution;

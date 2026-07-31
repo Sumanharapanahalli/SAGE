@@ -13,6 +13,7 @@ import { Approvals } from "@/pages/Approvals";
 import { Audit } from "@/pages/Audit";
 import Backlog from "@/pages/Backlog";
 import Builds from "@/pages/Builds";
+import Chat from "@/pages/Chat";
 import Collective from "@/pages/Collective";
 import Compliance from "@/pages/Compliance";
 import Console from "@/pages/Console";
@@ -80,6 +81,7 @@ export function App() {
             <Route path="settings" element={<Settings />} />
             <Route element={<RequireSolution />}>
               <Route path="analyze" element={<Analyze />} />
+              <Route path="chat" element={<Chat />} />
               <Route path="approvals" element={<Approvals />} />
               <Route path="agents" element={<Agents />} />
               <Route path="audit" element={<Audit />} />

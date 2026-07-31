@@ -6,6 +6,7 @@ import { useCurrentSolution } from "@/hooks/useSolutions";
 
 const NAV_ITEMS = [
   { to: "/analyze", label: "Analyze" },
+  { to: "/chat", label: "Chat" },
   { to: "/approvals", label: "Approvals" },
   { to: "/agents", label: "Agents" },
   { to: "/audit", label: "Audit" },
