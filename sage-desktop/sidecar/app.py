@@ -78,6 +78,7 @@ from handlers import (  # noqa: E402
     monitor,
     onboarding,
     operator,
+    orchestrator,
     org,
     queue,
     reflect,
@@ -118,6 +119,11 @@ def _build_dispatcher() -> Dispatcher:
     # Sandboxed code execution. NOT the Merge-Gate path (Law 1a governs
     # merging agent code); this gates RUNNING a generated script, and the
     # runner itself refuses an unapproved run.
+    # Read-only observability over the 9 intelligence modules. The router's
+    # mutating routes (spawn / tools.execute / budget) are not surfaced, and
+    # events/stream is out of scope under the streaming exclusion.
+    d.register("orchestrator.stats", orchestrator.stats)
+    d.register("orchestrator.recent", orchestrator.recent)
     d.register("code.plan", code_handler.plan)
     d.register("code.approve", code_handler.approve)
     d.register("code.execute", code_handler.execute)

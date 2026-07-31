@@ -179,6 +179,8 @@ mod desktop_app {
                 crate::commands::status::handshake,
                 crate::commands::status::get_status,
                 crate::commands::analyze::analyze_run,
+                crate::commands::orchestrator::orchestrator_stats,
+                crate::commands::orchestrator::orchestrator_recent,
                 crate::commands::code::code_plan,
                 crate::commands::code::code_approve,
                 crate::commands::code::code_execute,

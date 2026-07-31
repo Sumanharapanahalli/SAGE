@@ -27,6 +27,7 @@ import Home from "@/pages/Home";
 import Knowledge from "@/pages/Knowledge";
 import Monitor from "@/pages/Monitor";
 import Onboarding from "@/pages/Onboarding";
+import Orchestrator from "@/pages/Orchestrator";
 import Organization from "@/pages/Organization";
 import Queue from "@/pages/Queue";
 import Reflect from "@/pages/Reflect";
@@ -84,6 +85,7 @@ export function App() {
               <Route path="analyze" element={<Analyze />} />
               <Route path="chat" element={<Chat />} />
               <Route path="code" element={<Code />} />
+              <Route path="orchestrator" element={<Orchestrator />} />
               <Route path="approvals" element={<Approvals />} />
               <Route path="agents" element={<Agents />} />
               <Route path="audit" element={<Audit />} />

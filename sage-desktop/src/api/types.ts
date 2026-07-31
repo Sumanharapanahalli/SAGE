@@ -1133,6 +1133,22 @@ export interface OrgReloadResult {
   status: "reloaded";
 }
 
+// ── Orchestrator ──────────────────────────────────────────────────────────
+// Read-only observability over the 9 intelligence modules. `unavailable` names
+// the modules that could not be loaded, so the UI can say "not active" rather
+// than render a misleading row of zeroes.
+
+export interface OrchestratorStats {
+  modules: Record<string, Record<string, unknown>>;
+  unavailable: string[];
+}
+
+export interface OrchestratorRecent {
+  module: string;
+  items: Array<Record<string, unknown>>;
+  available: boolean;
+}
+
 // ── Code (sandboxed execution) ────────────────────────────────────────────
 // plan -> approve -> execute. The approval gate is enforced by the runner, not
 // just the UI. `CodeSandboxStatus` has no web equivalent: it reports isolation

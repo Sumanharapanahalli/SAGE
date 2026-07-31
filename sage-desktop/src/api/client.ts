@@ -23,6 +23,8 @@ import type {
   BuildRunSummary,
   ChatClearResult,
   CodeApproveResult,
+  OrchestratorRecent,
+  OrchestratorStats,
   CodeExecuteResult,
   CodePlanResult,
   CodeSandboxStatus,
@@ -200,6 +202,14 @@ export const getStatus = () => call<StatusResponse>("get_status");
 
 export const analyzeLog = (log_entry: string) =>
   call<Proposal>("analyze_run", { log_entry });
+
+// ── Orchestrator ──────────────────────────────────────────────────────────
+
+export const orchestratorStats = () =>
+  call<OrchestratorStats>("orchestrator_stats");
+
+export const orchestratorRecent = (module: string, limit?: number) =>
+  call<OrchestratorRecent>("orchestrator_recent", { module, limit });
 
 // ── Code (sandboxed execution) ────────────────────────────────────────────
 
@@ -950,6 +960,8 @@ export type {
   BuildRunSummary,
   ChatClearResult,
   CodeApproveResult,
+  OrchestratorRecent,
+  OrchestratorStats,
   CodeExecuteResult,
   CodePlanResult,
   CodeSandboxStatus,

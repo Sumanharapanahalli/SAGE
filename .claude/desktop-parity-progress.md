@@ -25,7 +25,7 @@ React vitest), then commit, push branch, `gh pr create --draft`.
 | 6 | Fix `/organization` ignoring `SAGE_SOLUTIONS_DIR` | **DONE** (with item 5) |
 | 7 | Add `/chat` (conversational agent + history) | **DONE** |
 | 8 | Add `/code` (plan / execute / approve) | **DONE** |
-| 9 | Add `/orchestrator` (9 orchestrator-intelligence modules) | TODO |
+| 9 | Add `/orchestrator` (9 orchestrator-intelligence modules) | **DONE** |
 | 10 | Add remaining `/mr/*` ops (create, review, comment, open, pipeline) | TODO |
 
 Deliberately **out of scope** (deferred with reasons, do not port): Integrations/connectors
@@ -494,4 +494,38 @@ overlapped the typed task. Assertions now key off unambiguous anchors (the Appro
 `exit 0` line).
 
 Verified: `make test-desktop` exits 0 — **724 pytest (+17), 27 cargo, 494 vitest (+8)** — plus
+`tsc --noEmit` clean.
+
+### Item 9 — DONE (2026-07-31)
+
+`/orchestrator` — observability across the nine intelligence modules. New
+`handlers/orchestrator.py`, two RPCs, Rust commands, typed client, `useOrchestrator.ts`, and a
+tile-grid page.
+
+**Where the endpoints actually live.** `/orchestrator/*` is not in `api.py` — it is a separate
+`APIRouter` in `src/interface/routes/orchestrator.py`, included via `app.include_router`. The
+original audit's `@app.` grep therefore missed it (and the other 13 route modules), which means
+the "155 endpoints" figure from that audit undercounts the real web surface. Worth remembering if
+anyone re-derives parity from that number.
+
+**Two RPCs, not ~25 endpoints.** `/orchestrator/stats` is already an aggregate over all nine
+modules, and the six "recent list" routes differ only in which singleton they call and what the
+reader is named (`list_recent` / `list_spawns` / `get_history` / `list_records` / `list_results`),
+so they collapse into one parameterised `recent(module)`.
+
+**Read-only, deliberately.** Every client function `web/src/pages/Orchestrator.tsx` imports is a
+fetch, so the page is a dashboard. The router's mutating routes (`POST /orchestrator/spawn`,
+`/tools/execute`, `/budget`) are not surfaced — driving the orchestrator is a different feature
+from watching it, and each would need its own Law 1 answer. `/orchestrator/events/stream` is out
+of scope under the standing streaming exclusion; `events/history` gives the same data by polling.
+
+Unavailable modules are labelled **"not active"** rather than shown as zeroes — these subsystems
+are legitimately idle on a desktop install, and a row of zeroes reads as "ran, did nothing".
+`stats` returns an explicit `unavailable` list so the UI can tell the two apart, and one missing
+module never blanks the page.
+
+A real bug caught by the tests: `useOrchestratorRecent` fired on mount with an empty module
+string, which the sidecar rejects. Now gated on `enabled: module.length > 0`.
+
+Verified: `make test-desktop` exits 0 — **741 pytest (+17), 27 cargo, 501 vitest (+7)** — plus
 `tsc --noEmit` clean.

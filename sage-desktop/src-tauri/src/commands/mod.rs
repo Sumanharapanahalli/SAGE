@@ -31,6 +31,7 @@ pub mod knowledgesync;
 pub mod logs;
 pub mod monitor;
 pub mod operator;
+pub mod orchestrator;
 pub mod org;
 pub mod queue;
 pub mod reflect;
