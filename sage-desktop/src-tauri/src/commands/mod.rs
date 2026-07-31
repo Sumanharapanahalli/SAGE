@@ -32,6 +32,7 @@ pub mod org;
 pub mod queue;
 pub mod reflect;
 pub mod regulatory;
+pub mod safety;
 pub mod onboarding;
 pub mod skills;
 pub mod solutions;

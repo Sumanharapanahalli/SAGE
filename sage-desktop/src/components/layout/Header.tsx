@@ -18,6 +18,7 @@ const TITLE_MAP: Record<string, string> = {
   "/knowledge": "Knowledge",
   "/collective": "Collective Intelligence",
   "/compliance": "Compliance",
+  "/safety": "Functional Safety",
   "/costs": "Costs",
   "/workflows": "Workflows",
   "/skills": "Skills & Tools",

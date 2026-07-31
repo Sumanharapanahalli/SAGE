@@ -14,7 +14,7 @@ React vitest), then commit, push branch, `gh pr create --draft`.
 | # | Item | Status |
 |---|------|--------|
 | 0 | Fix broken `.venv` so `make test-desktop` works | **DONE** |
-| 1 | Wire dead handler `sidecar/handlers/safety.py` + `/safety` page | TODO |
+| 1 | Wire dead handler `sidecar/handlers/safety.py` + `/safety` page | **DONE** |
 | 2 | Wire dead handler `sidecar/handlers/agentrun.py` (HITL for `agent_hire`) | TODO |
 | 3 | Add `/analyst` and `/developer` pages over agentrun RPCs | TODO |
 | 4a | Onboarding: scan-folder import of existing codebase | TODO |
@@ -45,6 +45,28 @@ streaming (`/agent/stream`, `/analyze/stream`).
 All loop work happens in the worktree `.claude/worktrees/desktop-parity` on branch
 `worktree-desktop-parity`. This file lives there too — the session's working directory was
 switched into the worktree, so later iterations find it at the same relative path.
+
+**Run tests from the worktree, not the main checkout** — otherwise you verify unmodified code.
+A fresh worktree has neither `node_modules` nor `.venv`, and the Makefile resolves
+`VENV_DIR := .venv` relative to CWD, so both are symlinked to the main checkout's copies:
+
+    ln -sfn <repo>/sage-desktop/node_modules <worktree>/sage-desktop/node_modules
+    ln -sfn <repo>/.venv                     <worktree>/.venv
+
+Re-create them if a later iteration finds `make test-desktop` failing with "vite not found"
+or a missing pytest. If `package.json` ever changes, re-run `npm install` in the main
+checkout instead of symlinking.
+
+**Careful: only `.venv` is gitignored.** `sage-desktop/.gitignore` ignores `node_modules/`
+*with a trailing slash*, which matches directories only — a **symlink is not a directory**, so
+`git add -A` happily stages it. It was caught here before pushing; the path is now in
+`.git/info/exclude` (local, deliberately not a repo `.gitignore` change — the trailing-slash
+rule is correct for a real `npm install`, and this symlink is loop tooling, not a repo
+concern). Verify with `git status --short` before every commit that no symlink is staged.
+
+`npm run test` (vitest) does **not** typecheck. Run `npm run typecheck` (`tsc --noEmit`)
+as well before committing — a type error still ships a green vitest run but breaks
+`make desktop-dev`.
 
 ## Notes
 
@@ -79,3 +101,38 @@ fails, invoke `.venv/bin/python3 -m pytest` directly) is now **obsolete**. Use
 `make test-desktop` normally.
 
 **Known fragility:** any future move of the repo directory reintroduces this exact problem.
+
+### Item 1 — DONE (2026-07-31)
+
+Wired `handlers/safety.py` (`fmea`, `fta`, `asil`, `sil`, `iec62304`) and added the `/safety`
+page. The handler was fully written and unit-tested but never imported in `app.py`, so it was
+absent from `_build_dispatcher` and every call returned -32601. `test_safety.py` could not
+catch that — it imports the handler module directly and never crosses the dispatcher.
+
+New `tests/test_registration_safety.py` closes that blind spot by driving the REAL NDJSON
+event loop, the same approach `test_registration_activity_regulatory.py` already used for the
+identical bug class. It failed with -32601 on all five methods before the fix.
+
+**Two web-UI bugs deliberately NOT copied** (both pinned by tests so they can't creep in):
+
+1. **FTA tree shape.** `web/src/pages/SafetyAnalysis.tsx:46` posts a FLAT `gates` list.
+   `calculate_fta()` walks a NESTED tree (`{top_event, gate, children:[...]}`) and cannot read
+   a flat list — it silently returns probability `0.0` and no cut sets. Desktop sends the
+   nested tree. Every leaf carries BOTH `event` and `probability`, because the engine keys the
+   probability roll-up off one and the cut sets off the other.
+2. **Result field names.** The engine returns `asil`, `sil`, `safety_class`,
+   `required_processes`. The web page reads `asil_level ?? classification` (line 311) and
+   `sil_level ?? classification` (line 347) — *none* of which the engine ever emits, so the
+   web ASIL and SIL tabs render blank. Desktop reads the real names.
+
+Layers touched: `sidecar/app.py` (import + 5 registrations), new
+`src-tauri/src/commands/safety.rs` + `mod.rs` + `lib.rs` invoke_handler, `api/types.ts`,
+`api/client.ts`, new `hooks/useSafety.ts`, new `pages/Safety.tsx`, `App.tsx`, `Sidebar.tsx`,
+`Header.tsx`.
+
+Verified: `make test-desktop` exits 0 from the worktree — **618 pytest (+7), 27 cargo,
+424 vitest (+8)** — plus `tsc --noEmit` clean.
+
+**Still dead after this item:** `handlers/agentrun.py` is the other unimported module. That is
+item 2, and unlike safety it is NOT a pure computation engine — `hire` is a HITL proposal kind
+under SOUL.md Law 1 and must create a real ProposalStore proposal rather than execute.

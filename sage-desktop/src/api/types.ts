@@ -752,6 +752,87 @@ export interface ComplianceGapResult {
   blocking_gaps: string[];
 }
 
+// ── Safety (functional safety derivation) ─────────────────────────────────
+// These mirror src/core/functional_safety.py's REAL return shapes. Note the
+// field names: the engine returns `asil`, `sil`, and `required_processes` —
+// the web UI's safety page reads `asil_level`/`sil_level`/`requirements`,
+// none of which the engine ever emits, which is why its ASIL and SIL tabs
+// render blank. Do not copy those names here.
+
+export interface SafetyFmeaEntryInput {
+  component: string;
+  failure_mode: string;
+  effect: string;
+  severity: number;
+  occurrence: number;
+  detection: number;
+}
+
+export interface SafetyFmeaEntry extends SafetyFmeaEntryInput {
+  id: string;
+  rpn: number;
+  risk_level: string;
+  action_required: boolean;
+}
+
+export interface SafetyFmeaResult {
+  entries: SafetyFmeaEntry[];
+  summary: {
+    total_entries: number;
+    critical_count: number;
+    high_count: number;
+    max_rpn: number;
+    action_items: number;
+  };
+  generated_at: string;
+}
+
+/**
+ * A fault-tree node: either a gate with children, or a leaf event.
+ *
+ * A leaf must carry BOTH `event` and `probability` — the engine keys the
+ * probability roll-up off one and the minimal cut sets off the other, so
+ * omitting either silently degrades one of the two results (0.0 / []).
+ */
+export interface SafetyFtaNode {
+  top_event?: string;
+  gate?: "AND" | "OR";
+  children?: SafetyFtaNode[];
+  event?: string;
+  probability?: number;
+}
+
+export interface SafetyFtaResult {
+  top_event: string;
+  probability: number;
+  minimal_cut_sets: string[][];
+  single_point_failures: string[][];
+  generated_at: string;
+}
+
+export interface SafetyAsilResult {
+  asil: string;
+  severity: string;
+  exposure: string;
+  controllability: string;
+  description: string;
+  standard: string;
+}
+
+export interface SafetySilResult {
+  sil: number;
+  pfh: number;
+  description: string;
+  standard: string;
+}
+
+export interface SafetyIec62304Result {
+  safety_class: string;
+  description: string;
+  required_processes: string[];
+  standard: string;
+}
+
 // ── Costs (T1-004) ────────────────────────────────────────────────────────
 
 export interface CostByModel {

@@ -20,6 +20,7 @@ const NAV_ITEMS = [
   { to: "/knowledge", label: "Knowledge" },
   { to: "/collective", label: "Collective" },
   { to: "/compliance", label: "Compliance" },
+  { to: "/safety", label: "Safety" },
   { to: "/costs", label: "Costs" },
   { to: "/workflows", label: "Workflows" },
   { to: "/skills", label: "Skills & Tools" },

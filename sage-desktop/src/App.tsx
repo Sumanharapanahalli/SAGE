@@ -29,6 +29,7 @@ import Organization from "@/pages/Organization";
 import Queue from "@/pages/Queue";
 import Reflect from "@/pages/Reflect";
 import Regulatory from "@/pages/Regulatory";
+import Safety from "@/pages/Safety";
 import Settings from "@/pages/Settings";
 import SkillsTools from "@/pages/SkillsTools";
 import { Status } from "@/pages/Status";
@@ -93,6 +94,7 @@ export function App() {
               <Route path="knowledge" element={<Knowledge />} />
               <Route path="collective" element={<Collective />} />
               <Route path="compliance" element={<Compliance />} />
+              <Route path="safety" element={<Safety />} />
               <Route path="costs" element={<Costs />} />
               <Route path="workflows" element={<Workflows />} />
               <Route path="skills" element={<SkillsTools />} />

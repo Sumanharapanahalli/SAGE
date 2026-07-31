@@ -35,6 +35,13 @@ import type {
   ComplianceChecklist,
   ComplianceDomainsResult,
   ComplianceGapResult,
+  SafetyAsilResult,
+  SafetyFmeaEntryInput,
+  SafetyFmeaResult,
+  SafetyFtaNode,
+  SafetyFtaResult,
+  SafetyIec62304Result,
+  SafetySilResult,
   ConstitutionData,
   ConstitutionState,
   ConstitutionUpdateResult,
@@ -195,6 +202,37 @@ export const assessComplianceGap = (
     risk_level,
     completed_tasks,
   });
+
+// ── Safety ────────────────────────────────────────────────────────────────
+// The inverse of Compliance: /compliance takes the safety class as an INPUT
+// (which checklist do I owe for CLASS_C?); these DERIVE it (what class/ASIL/
+// SIL does this hazard imply?).
+
+export const runFmea = (entries: SafetyFmeaEntryInput[]) =>
+  call<SafetyFmeaResult>("safety_fmea", { entries });
+
+/** `tree` must be the NESTED fault tree, not a flat gate list. */
+export const runFta = (tree: SafetyFtaNode) =>
+  call<SafetyFtaResult>("safety_fta", { tree });
+
+export const classifyAsil = (
+  severity: string,
+  exposure: string,
+  controllability: string,
+) =>
+  call<SafetyAsilResult>("safety_asil", {
+    severity,
+    exposure,
+    controllability,
+  });
+
+export const classifySil = (probability_dangerous_failure_per_hour: number) =>
+  call<SafetySilResult>("safety_sil", {
+    probability_dangerous_failure_per_hour,
+  });
+
+export const classifyIec62304 = (risk_level: string) =>
+  call<SafetyIec62304Result>("safety_iec62304", { risk_level });
 
 // ── Approvals ─────────────────────────────────────────────────────────────
 

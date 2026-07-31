@@ -79,6 +79,7 @@ from handlers import (  # noqa: E402
     queue,
     reflect,
     regulatory,
+    safety,
     skills,
     solutions,
     status,
@@ -112,6 +113,15 @@ def _build_dispatcher() -> Dispatcher:
     d.register("compliance.flags", compliance.flags)
     d.register("compliance.checklist", compliance.checklist)
     d.register("compliance.gap_assessment", compliance.gap_assessment)
+    # safety.* complements compliance.*: /compliance takes the safety class as
+    # an INPUT (which checklist do I owe for CLASS_C?), safety.* DERIVES it
+    # (what class/ASIL/SIL does this hazard imply?). Stateless engine — nothing
+    # for _wire_handlers to inject.
+    d.register("safety.fmea", safety.fmea)
+    d.register("safety.fta", safety.fta)
+    d.register("safety.asil", safety.asil)
+    d.register("safety.sil", safety.sil)
+    d.register("safety.iec62304", safety.iec62304)
     d.register("costs.summary", costs.summary)
     d.register("costs.daily", costs.daily)
     d.register("costs.set_budget", costs.set_budget)

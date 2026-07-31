@@ -27,6 +27,7 @@ describe("Header", () => {
     ["/analyze", /analyze/i],
     ["/home", /solutions/i],
     ["/compliance", /compliance/i],
+    ["/safety", /functional safety/i],
     ["/costs", /costs/i],
     ["/workflows", /workflows/i],
     ["/skills", /skills/i],
