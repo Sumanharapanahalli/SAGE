@@ -154,7 +154,9 @@ describe("useAnalyzeJobDescription", () => {
       name: "Level Balancer",
       description: "Balances difficulty",
       system_prompt: "You tune difficulty curves.",
-      task_types: ["balance_review"],
+      // agent_factory prompts the LLM for {name, description} objects — NOT
+      // the plain strings agentrun.hire accepts. See normalizeTaskTypes.
+      task_types: [{ name: "BALANCE_REVIEW", description: "review balance" }],
     });
     const qc = createTestQueryClient();
     const spy = vi.spyOn(qc, "invalidateQueries");

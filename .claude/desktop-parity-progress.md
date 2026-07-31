@@ -16,7 +16,7 @@ React vitest), then commit, push branch, `gh pr create --draft`.
 | 0 | Fix broken `.venv` so `make test-desktop` works | **DONE** |
 | 1 | Wire dead handler `sidecar/handlers/safety.py` + `/safety` page | **DONE** |
 | 2 | Wire dead handler `sidecar/handlers/agentrun.py` (HITL for `agent_hire`) | **DONE** |
-| 3 | Add `/analyst` and `/developer` pages over agentrun RPCs | TODO |
+| 3 | Surface agentrun in the UI (Run + Hire tabs on `/agents`) | **DONE** |
 | 4a | Onboarding: scan-folder import of existing codebase | TODO |
 | 4b | Onboarding: org-template chooser | TODO |
 | 4c | Onboarding: conversational refine loop | TODO |
@@ -187,3 +187,52 @@ until a human approves, and refreshing the roster would imply it already was.
 
 Verified: `make test-desktop` exits 0 from the worktree — **625 pytest (+7), 27 cargo,
 430 vitest (+6)** — plus `tsc --noEmit` clean.
+
+### Item 3 — DONE (2026-07-31), scope corrected
+
+**The backlog's two named references were both wrong**, verified before building:
+
+- `web/src/pages/Analyst.tsx` (52 lines) is a log-analysis form → proposal card → approve
+  buttons. It uses **no** agentrun endpoint. Desktop's existing `/analyze` page already does
+  exactly this, and does it better (a real ProposalStore proposal vs the web `/analyze`
+  endpoint's disconnected in-memory pending dict). A `/analyst` page would have been a pure
+  duplicate, so none was built.
+- `web/src/pages/Developer.tsx` (34 lines) is `MRCreateForm` + `MRReviewPanel` +
+  `OpenMRsList` — i.e. the `/mr/*` operations, which are **backlog item 10**. It uses no
+  agentrun endpoint either. Building it here would have pre-empted item 10.
+
+All three agentrun consumers actually live in **`web/src/pages/Agents.tsx`** (`hireAgent`:227,
+`analyzeJd`:258, `runAgent`:522). So item 3's *intent* — put a UI on the newly-wired RPCs — was
+met by adding **Run** and **Hire** tabs to the existing `/agents` page, matching where the web
+app puts them. No new route, no new nav entry.
+
+**A real contract bug found and fixed.** `agent_factory` prompts the LLM for `task_types` as
+OBJECTS (`{name, description}` — agent_factory.py:31), but `agentrun.hire` validates
+`all(isinstance(t, str))` and rejects the entire payload otherwise. So an analyze→hire pipe
+fails unless the UI maps between them. Item 2's `AgentRoleDraft.task_types: string[]` was
+therefore wrong; it is now `Array<AgentTaskTypeDraft | string>` (widened because this is
+unvalidated LLM output — the prompt asks for objects, nothing enforces it). New
+`lib/taskTypes.ts::normalizeTaskTypes` handles both shapes and drops unusable entries rather
+than emitting `undefined`; web's bare `t.name` (Agents.tsx:262) would yield `[undefined]` on a
+string array and poison the whole hire.
+
+Other deliberate choices:
+
+- The Run tab's role list comes from `useProjectConfig` (prompts.yaml `roles:`), **not**
+  `useAgents`. The latter is audit-annotated and also includes the four core roles, which
+  `UniversalAgent.run` cannot dispatch to — offering one guarantees an "unknown role" error.
+- Tabs render always; the roster's loading/error/empty states moved *inside* the Roster tab.
+  Previously the page early-returned on an empty roster, which would have hidden the Hire tab
+  in exactly the situation an operator most needs it (a solution with no agents yet).
+- Both success banners say **"Awaiting human approval"** and the hire one states explicitly
+  that nothing was written to prompts.yaml. Under Law 1 the role does not exist until approved,
+  so any "created" copy would be false. Pinned by a test asserting `/role created/i` is absent.
+- No `<Link>` to `/approvals`: the page currently renders without a Router in its tests, and
+  adding one would have meant editing the four pre-existing roster tests. The sidebar's
+  Approvals badge already increments (both mutations invalidate `approvalsKey`).
+
+Verified: `make test-desktop` exits 0 — **625 pytest, 27 cargo, 443 vitest (+13)** — plus
+`tsc --noEmit` clean.
+
+**Carry-forward:** item 10 (`/mr/*`) is where `web/Developer.tsx`'s real content belongs. There
+is no remaining reason to add a `/analyst` page.

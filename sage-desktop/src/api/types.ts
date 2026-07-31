@@ -765,19 +765,33 @@ export interface AgentRunResponse {
   proposal: Proposal;
 }
 
+/** A task type as `agent_factory` asks the LLM to emit it. */
+export interface AgentTaskTypeDraft {
+  name: string;
+  description?: string;
+}
+
 /**
  * A role config extracted from a job description by the LLM.
  *
- * NOTE the key is `role_key`, but `hireAgent` takes `role_id` — the framework's
- * agent_factory and the hire payload disagree on the name, so a caller feeding
- * this straight into hire must map `role_key` → `role_id`.
+ * Two mismatches with `HireAgentParams`, so a draft can NEVER be fed straight
+ * into `hireAgent`:
+ *
+ *  - the key is `role_key` here but `role_id` there;
+ *  - `task_types` is a list of OBJECTS here (agent_factory prompts the LLM for
+ *    `{name, description}`) but a list of plain STRINGS there — `agentrun.hire`
+ *    rejects anything else with "'task_types' must be a list of strings".
+ *
+ * The element type is widened to `| string` because this is unvalidated LLM
+ * output: the prompt asks for objects, but nothing enforces it. Use
+ * `normalizeTaskTypes` rather than reaching for `.name` directly.
  */
 export interface AgentRoleDraft {
   role_key: string;
   name: string;
   description: string;
   system_prompt: string;
-  task_types: string[];
+  task_types: Array<AgentTaskTypeDraft | string>;
   icon?: string;
 }
 

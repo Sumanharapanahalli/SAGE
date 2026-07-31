@@ -19,11 +19,15 @@ import { approvalsKey } from "@/hooks/useApprovals";
 export const projectConfigKey = ["projectConfig"] as const;
 
 /** The runnable roster (UniversalAgent roles from prompts.yaml) plus the
- * parsed project.yaml. Narrower than `agents.list` — see ProjectConfigResult. */
-export function useProjectConfig() {
+ * parsed project.yaml. Narrower than `agents.list` — see ProjectConfigResult.
+ *
+ * `enabled` lets a caller hold the fetch back until the surface that needs it
+ * is actually on screen. */
+export function useProjectConfig(enabled = true) {
   return useQuery<ProjectConfigResult, DesktopError>({
     queryKey: projectConfigKey,
     queryFn: () => getProjectConfig(),
+    enabled,
   });
 }
 
