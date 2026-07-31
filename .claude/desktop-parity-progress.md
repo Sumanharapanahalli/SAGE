@@ -564,3 +564,63 @@ for code, that is a real gap worth its own item.
 
 Verified: `make test-desktop` exits 0 — **767 pytest (+26), 27 cargo, 509 vitest (+8)** — plus
 `tsc --noEmit` clean.
+
+---
+
+## Backlog complete — final summary (2026-07-31)
+
+All 11 items DONE. Final verification: `make test-desktop` exits 0 —
+**767 pytest, 27 cargo, 509 vitest** — plus `tsc --noEmit` clean. Started at 611/27/416, so the
+run added **156 sidecar, 93 React** tests and no Rust regressions.
+
+### What the loop actually found
+
+The headline is not the features — it is that **large parts of this app were already written and
+simply never connected**, and that several web features have never worked at all.
+
+**Three dead handler modules**, each fully written and unit-tested but never imported in
+`app.py`, so every call returned -32601:
+- `safety.py` (item 1) — 5 methods
+- `agentrun.py` (item 2) — 4 methods, dead in TWO layers: the Rust command module also existed
+  but was missing from `commands/mod.rs`, so it never compiled, which is why its RPC names had
+  drifted to methods that exist nowhere
+- `mr.py` (item 10) — 6 methods, 320 lines
+
+Their unit tests all passed, because each imports its handler directly and never crosses the
+dispatcher. The `test_registration_*.py` pattern closes that blind spot.
+
+**Four genuine web bugs, none reproduced here** (all pinned by tests):
+1. `SafetyAnalysis.tsx:46` posts a FLAT `gates` list to an FTA engine that walks a nested tree —
+   silently yields probability 0.0 and no cut sets.
+2. The same page reads `asil_level` / `sil_level`, which the engine never emits — its ASIL and
+   SIL tabs render blank.
+3. **`api.py:4081` and `:4125` call `llm.generate(user_prompt=...)`, but `LLMGateway.generate`
+   takes `prompt` and has no `**kwargs`.** Both raise TypeError on every call, swallowed and
+   reported as 503 "Could not reach the LLM" — so `/onboarding/scan-folder` and
+   `/onboarding/refine` have **never once succeeded**. Still unfixed in `api.py`; a two-word fix.
+4. `ErrorBanner.describe()` had no default branch, so any untagged error (e.g. React Query's own)
+   white-screened the whole page. Fixed, since desktop shares that component.
+
+**Three dead components in web** with no importer: `OrgStructureChooser.tsx` (263 lines),
+`ImportFlow`'s org-template path, and the `/onboarding/session` client trio (zero consumers).
+
+**Two latent test bugs** fixed at the root: `_bootstrap_env` leaked `SAGE_*` env vars across the
+whole suite (ordering-dependent failures), and `vi.resetAllMocks()` silently clears values set in
+a `vi.mock` factory.
+
+### Deliberate divergences, all Law-1 driven
+
+Desktop turns agent actions into REAL proposals where web executes them directly:
+`agentrun.run`/`hire`, `chat` actions, and `mr.propose_create` (EXTERNAL, irreversible). Web's
+`POST /agent/run` returns `status:"pending_review"` and persists nothing — its approval banner is
+decorative.
+
+### Still open
+
+- `api.py`'s `user_prompt=` bug (2 lines) — outside desktop scope, flagged each time it appeared.
+- `mergegate.*` is registered but has **no desktop UI**; Law 1a makes the MR the human gate for
+  code, so this deserves its own item.
+- A true pre-write review in the Describe onboarding flow needs a draft-only `generate_solution`
+  (framework change).
+- Deferred throughout by agreement: Integrations/connectors, Auth/access-control, Distillation,
+  streaming.
