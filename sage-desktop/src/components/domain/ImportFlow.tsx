@@ -105,6 +105,13 @@ export function ImportFlow({ onSaved }: Props) {
           summary={summary}
           acceptLabel="Save solution"
           isAccepting={save.isPending}
+          // Discards the drafts and returns to the folder form. `save` is
+          // reset too, so a previous success banner does not linger over a
+          // fresh scan.
+          onStartOver={() => {
+            scan.reset();
+            save.reset();
+          }}
           onAccept={(reviewed) =>
             save.mutate(
               { solution_name: scan.data!.solution_name, files: reviewed },

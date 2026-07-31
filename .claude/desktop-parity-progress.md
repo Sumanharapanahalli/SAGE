@@ -20,7 +20,7 @@ React vitest), then commit, push branch, `gh pr create --draft`.
 | 4a | Onboarding: scan-folder import of existing codebase | **DONE** |
 | 4b | Onboarding: org-template chooser | **DONE** |
 | 4c | Onboarding: conversational refine loop | **DONE** |
-| 4d | Onboarding: pre-write ReviewPanel | TODO |
+| 4d | Onboarding: pre-write ReviewPanel | **DONE** |
 | 5 | Extend `org.*`: channels CRUD, cross-team routes (writable), solutions CRUD | TODO |
 | 6 | Fix `/organization` ignoring `SAGE_SOLUTIONS_DIR` | TODO |
 | 7 | Add `/chat` (conversational agent + history) | TODO |
@@ -362,3 +362,35 @@ That duplication is correct UI, not a bug.
 
 Verified: `make test-desktop` exits 0 — **664 pytest (+12), 27 cargo, 468 vitest (+9)** — plus
 `tsc --noEmit` clean.
+
+### Item 4d — DONE (2026-07-31)
+
+Pre-write review. The drafted YAML triad is now **editable** in `ReviewPanel` — the LLM's output
+is a draft, and the operator is the last line of defence before it becomes a real solution.
+Hand edits flow into both Accept and Refine, so feedback always applies to what is on screen.
+Added an optional `onStartOver` (rendered only when the caller passes it) wired in `ImportFlow`
+to discard the drafts and reset the save state.
+
+**A genuine pre-write review is only possible in the Import flow.** `generate_solution`
+(src/core/onboarding.py:318) creates `<solutions_dir>/<name>/` as part of generating, so by the
+time the Describe flow could show a review, the solution is already on disk. The Import flow is
+the one with a real gap between draft and write (`scan_folder` → review → `save_solution`), and
+that is where the panel sits. Wiring it into Describe would require a draft-only generate — a
+framework change, out of scope here. **Recorded as a known limitation, not silently skipped.**
+
+**Editable files made a missing validation reachable, so it was added.** `save_solution` wrote
+whatever it was handed; a hand-edited syntax error would produce a solution the framework cannot
+load, failing much later and far from the cause. It now `yaml.safe_load`s **every** file before
+writing **any** — all-or-nothing, because a half-written solution is worse than none — and names
+the offending file in the error, since the operator has three open at once. Web's
+`/onboarding/save-solution` has no such check.
+
+Test note: the file name appears in both the `<summary>` and the field label, which made
+`getByText` ambiguous. Fixed with `aria-label` on the textarea rather than a second visible
+node — same accessibility, one match per query.
+
+Verified: `make test-desktop` exits 0 — **667 pytest (+3), 27 cargo, 473 vitest (+5)** — plus
+`tsc --noEmit` clean.
+
+**Item 4 (onboarding) is now complete**: 4a import, 4b org templates, 4c refine loop, 4d
+editable pre-write review.

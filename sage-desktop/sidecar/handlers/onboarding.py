@@ -335,6 +335,19 @@ def save_solution(params: Any) -> dict:
             f"'files' must contain at least one of: {', '.join(_TRIAD)}",
         )
 
+    # The review panel lets the operator hand-edit these before saving, so a
+    # syntax error is now reachable. Writing one produces a solution the
+    # framework cannot load, and that failure surfaces much later and far from
+    # its cause. Validate ALL files before writing ANY — a half-written
+    # solution is worse than none.
+    for name, content in sorted(writable.items()):
+        try:
+            _yaml.safe_load(content)
+        except _yaml.YAMLError as e:
+            raise RpcError(
+                RPC_INVALID_PARAMS, f"{name} is not valid YAML: {e}"
+            ) from e
+
     root = os.path.realpath(_solutions_dir())
     target = os.path.join(root, solution_name)
     # Defence in depth: the regex already forbids separators and dots, but a

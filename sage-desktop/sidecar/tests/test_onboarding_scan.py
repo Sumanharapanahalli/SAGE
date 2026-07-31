@@ -266,3 +266,45 @@ def test_save_solution_requires_files(wired):
 def test_save_solution_logs_an_audit_event(wired):
     onb.save_solution({"solution_name": "imported", "files": GENERATED})
     assert wired["logger"].events[0]["action_type"] == "ONBOARDING_COMPLETE"
+
+
+# ---------- save_solution: YAML validity ----------
+# Item 4d makes the drafted files editable in the review panel, so a hand-edit
+# can now introduce a syntax error. Writing that to disk produces a solution
+# the framework cannot load, and the failure surfaces much later and far from
+# the cause — so validate at the boundary.
+
+
+def test_save_solution_rejects_unparseable_yaml(wired):
+    with pytest.raises(RpcError) as e:
+        onb.save_solution(
+            {
+                "solution_name": "imported",
+                "files": {**GENERATED, "project.yaml": "name: [unclosed\n"},
+            }
+        )
+    assert e.value.code == INVALID_PARAMS
+    # The operator has three files open; the message must say which one.
+    assert "project.yaml" in str(e.value.message)
+
+
+def test_save_solution_writes_nothing_when_one_file_is_invalid(wired):
+    """All-or-nothing: a half-written solution is worse than none."""
+    with pytest.raises(RpcError):
+        onb.save_solution(
+            {
+                "solution_name": "imported",
+                "files": {**GENERATED, "tasks.yaml": "task_types: [oops\n"},
+            }
+        )
+    assert not (wired["solutions"] / "imported").exists()
+
+
+def test_save_solution_accepts_valid_edited_yaml(wired):
+    edited = {**GENERATED, "project.yaml": "name: imported\ndescription: edited\n"}
+    out = onb.save_solution({"solution_name": "imported", "files": edited})
+    assert out["status"] == "saved"
+    written = (wired["solutions"] / "imported" / "project.yaml").read_text(
+        encoding="utf-8"
+    )
+    assert "edited" in written

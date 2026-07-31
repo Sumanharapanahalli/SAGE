@@ -36,7 +36,10 @@ const REFINED = {
   summary: { ...SUMMARY, description: "a much better description" },
 };
 
-function renderPanel(onAccept = vi.fn()) {
+function renderPanel(
+  onAccept = vi.fn(),
+  extra: { onStartOver?: () => void } = {},
+) {
   render(
     <QueryClientProvider client={createTestQueryClient()}>
       <ReviewPanel
@@ -46,6 +49,7 @@ function renderPanel(onAccept = vi.fn()) {
         onAccept={onAccept}
         acceptLabel="Save solution"
         isAccepting={false}
+        {...extra}
       />
     </QueryClientProvider>,
   );
@@ -179,5 +183,68 @@ describe("ReviewPanel", () => {
     );
     // A failed refine must not lose the drafts the operator already has.
     expect(screen.getAllByText(/old description/).length).toBeGreaterThan(0);
+  });
+
+  // ── Item 4d: editable pre-write review ──────────────────────────────────
+
+  it("exposes each drafted file as an editable field", async () => {
+    const user = userEvent.setup();
+    renderPanel();
+    // The panel collapses files behind <details>; open project.yaml.
+    await user.click(screen.getByText("project.yaml"));
+    expect(screen.getByLabelText("project.yaml")).toHaveValue(
+      FILES["project.yaml"],
+    );
+  });
+
+  it("accepts the operator's hand edits, not the original draft", async () => {
+    const user = userEvent.setup();
+    const { onAccept } = renderPanel();
+
+    await user.click(screen.getByText("project.yaml"));
+    const field = screen.getByLabelText("project.yaml");
+    await user.clear(field);
+    await user.type(field, "name: handedited");
+    await user.click(screen.getByRole("button", { name: /save solution/i }));
+
+    expect(onAccept).toHaveBeenCalledWith(
+      expect.objectContaining({ "project.yaml": "name: handedited" }),
+    );
+  });
+
+  it("sends hand edits into refine, so feedback applies to what is on screen", async () => {
+    vi.mocked(client.refineSolution).mockResolvedValue(REFINED);
+    const user = userEvent.setup();
+    renderPanel();
+
+    await user.click(screen.getByText("project.yaml"));
+    const field = screen.getByLabelText("project.yaml");
+    await user.clear(field);
+    await user.type(field, "name: handedited");
+
+    await user.type(screen.getByLabelText(/feedback/i), "tidy it");
+    await user.click(screen.getByRole("button", { name: /refine/i }));
+
+    await waitFor(() =>
+      expect(vi.mocked(client.refineSolution).mock.calls[0][1]).toEqual(
+        expect.objectContaining({ "project.yaml": "name: handedited" }),
+      ),
+    );
+  });
+
+  it("offers Start over only when the caller can handle it", async () => {
+    renderPanel();
+    expect(
+      screen.queryByRole("button", { name: /start over/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("calls onStartOver so the operator can discard the drafts", async () => {
+    const onStartOver = vi.fn();
+    const user = userEvent.setup();
+    renderPanel(vi.fn(), { onStartOver });
+
+    await user.click(screen.getByRole("button", { name: /start over/i }));
+    expect(onStartOver).toHaveBeenCalled();
   });
 });

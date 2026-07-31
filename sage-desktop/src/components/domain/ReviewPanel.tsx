@@ -26,6 +26,8 @@ interface Props {
   onAccept: (files: SolutionDraftFiles) => void;
   acceptLabel: string;
   isAccepting: boolean;
+  /** Omit to hide the Start-over button — not every caller can discard. */
+  onStartOver?: () => void;
 }
 
 const inputCls =
@@ -38,6 +40,7 @@ export function ReviewPanel({
   onAccept,
   acceptLabel,
   isAccepting,
+  onStartOver,
 }: Props) {
   const refine = useRefineSolution();
 
@@ -100,12 +103,27 @@ export function ReviewPanel({
         </dl>
       )}
 
+      {/* Editable, not a preview: the LLM's YAML is a draft, and the operator
+          is the last line of defence before it becomes a real solution. The
+          sidecar validates every file parses before writing any of them. */}
       {Object.entries(draftFiles).map(([filename, content]) => (
         <details key={filename} className="rounded bg-sage-50 p-2">
           <summary className="cursor-pointer text-xs font-medium text-sage-900">
             {filename}
           </summary>
-          <pre className="mt-2 overflow-x-auto text-xs">{content}</pre>
+          {/* aria-label rather than a visible <label>: the <summary> already
+              shows the filename, and a second node with the same text makes
+              getByText ambiguous for no user-facing gain. */}
+          <textarea
+            aria-label={filename}
+            className="mt-2 w-full rounded border border-sage-200 bg-white p-2 font-mono text-xs"
+            rows={10}
+            spellCheck={false}
+            value={content}
+            onChange={(e) =>
+              setDraftFiles((prev) => ({ ...prev, [filename]: e.target.value }))
+            }
+          />
         </details>
       ))}
 
@@ -135,6 +153,15 @@ export function ReviewPanel({
         >
           {isAccepting ? "Saving…" : acceptLabel}
         </button>
+        {onStartOver && (
+          <button
+            className="ml-auto rounded px-3 py-2 text-sm text-sage-700 hover:bg-sage-50"
+            disabled={isAccepting || refine.isPending}
+            onClick={onStartOver}
+          >
+            Start over
+          </button>
+        )}
       </div>
     </div>
   );
