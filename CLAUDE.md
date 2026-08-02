@@ -17,8 +17,11 @@ Agents surface signals, search compounding memory, propose actions, wait for hum
 ```bash
 make venv               # Create .venv and install all deps (first time)
 make venv-minimal       # Low-RAM machine — skips ChromaDB/embeddings
-make run PROJECT=xxx    # Start FastAPI backend on :8000
-make ui                 # Start Vite frontend on :5173
+make web                # Start BOTH halves of the web UI + open a browser
+                        # (interactive solution picker; one Ctrl+C stops both)
+make web-shortcut       # Add "SAGE Web" to the applications menu / desktop
+make run PROJECT=xxx    # Start FastAPI backend on :8000  (one half only)
+make ui                 # Start Vite frontend on :5173    (one half only)
 make test               # Framework unit tests
 make test-all           # Framework + all solution tests
 
