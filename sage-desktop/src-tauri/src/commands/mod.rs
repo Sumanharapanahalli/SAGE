@@ -7,6 +7,7 @@
 //! structured errors propagate to the frontend as typed JSON.
 
 pub mod activity;
+pub mod agentrun;
 pub mod analyze;
 pub mod approvals;
 pub mod audit;
@@ -15,6 +16,8 @@ pub mod status;
 pub mod llm;
 pub mod backlog;
 pub mod builds;
+pub mod chat;
+pub mod code;
 pub mod collective;
 pub mod compliance;
 pub mod constitution;
@@ -27,11 +30,14 @@ pub mod knowledge;
 pub mod knowledgesync;
 pub mod logs;
 pub mod monitor;
+pub mod mr;
 pub mod operator;
+pub mod orchestrator;
 pub mod org;
 pub mod queue;
 pub mod reflect;
 pub mod regulatory;
+pub mod safety;
 pub mod onboarding;
 pub mod skills;
 pub mod solutions;

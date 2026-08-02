@@ -48,7 +48,7 @@ else
 endif
 
 .PHONY: venv venv-minimal install install-dev install-ui install-minimal \
-        run api cli monitor demo ui \
+        run api cli monitor demo ui web web-shortcut \
         test test-unit test-solution test-medtech test-medtech-team \
         test-meditation-app test-four-in-a-line \
         test-compliance test-all test-api \
@@ -120,6 +120,22 @@ demo:
 ui:
 	@echo "Starting web UI at http://localhost:5173"
 	cd web && npm run dev
+
+# Both halves of the web interface in one command, with a shared shutdown.
+# `run` and `ui` each block a terminal and neither stops the other, so the
+# usual way to end up with an orphaned uvicorn holding :8000 is to close the
+# wrong window. See start-web.sh --help.
+#
+# Forward PROJECT only when it was given on the command line: the file-level
+# default is `iot_medical`, which is not a real solution here, and passing it
+# would turn `make web` into an error instead of the interactive picker.
+PROJECT_ARG := $(if $(filter command line,$(origin PROJECT)),$(PROJECT),)
+web:
+	@./start-web.sh $(PROJECT_ARG)
+
+# Put "SAGE Web" in the applications menu and on the desktop.
+web-shortcut:
+	@./start-web.sh --install-shortcut
 
 # ------------------------------------------------------------------------------
 # Tests (always use venv pytest)
@@ -316,6 +332,8 @@ help:
 	@echo "  make install-ui              Install Node.js deps for web UI"
 	@echo ""
 	@echo "Run:"
+	@echo "  make web [PROJECT=starter]   Start API + UI together, one Ctrl+C stops both"
+	@echo "  make web-shortcut            Add 'SAGE Web' to the applications menu/desktop"
 	@echo "  make run [PROJECT=starter]   Start FastAPI backend (:8000)"
 	@echo "  make ui                      Start React web UI (:5173)"
 	@echo "  make cli [PROJECT=...]       Interactive CLI"

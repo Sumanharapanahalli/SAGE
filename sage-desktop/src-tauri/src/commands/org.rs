@@ -45,3 +45,90 @@ pub async fn org_update(
 pub async fn org_reload(sidecar: State<'_, RwLock<Sidecar>>) -> Result<Value, DesktopError> {
     sidecar.read().await.call("org.reload", json!({})).await
 }
+
+#[tauri::command]
+pub async fn org_channel_create(
+    sidecar: State<'_, RwLock<Sidecar>>,
+    name: String,
+    producers: Option<Vec<String>>,
+    consumers: Option<Vec<String>>,
+) -> Result<Value, DesktopError> {
+    sidecar
+        .read()
+        .await
+        .call(
+            "org.channel_create",
+            json!({
+                "name": name,
+                "producers": producers.unwrap_or_default(),
+                "consumers": consumers.unwrap_or_default(),
+            }),
+        )
+        .await
+}
+
+#[tauri::command]
+pub async fn org_channel_delete(
+    sidecar: State<'_, RwLock<Sidecar>>,
+    name: String,
+) -> Result<Value, DesktopError> {
+    sidecar
+        .read()
+        .await
+        .call("org.channel_delete", json!({ "name": name }))
+        .await
+}
+
+#[tauri::command]
+pub async fn org_route_add(
+    sidecar: State<'_, RwLock<Sidecar>>,
+    solution: String,
+    target: String,
+) -> Result<Value, DesktopError> {
+    sidecar
+        .read()
+        .await
+        .call("org.route_add", json!({ "solution": solution, "target": target }))
+        .await
+}
+
+#[tauri::command]
+pub async fn org_route_delete(
+    sidecar: State<'_, RwLock<Sidecar>>,
+    solution: String,
+    target: String,
+) -> Result<Value, DesktopError> {
+    sidecar
+        .read()
+        .await
+        .call("org.route_delete", json!({ "solution": solution, "target": target }))
+        .await
+}
+
+#[tauri::command]
+pub async fn org_solution_set_parent(
+    sidecar: State<'_, RwLock<Sidecar>>,
+    solution: String,
+    parent: String,
+) -> Result<Value, DesktopError> {
+    sidecar
+        .read()
+        .await
+        .call(
+            "org.solution_set_parent",
+            json!({ "solution": solution, "parent": parent }),
+        )
+        .await
+}
+
+#[tauri::command]
+pub async fn org_solution_clear_parent(
+    sidecar: State<'_, RwLock<Sidecar>>,
+    solution: String,
+) -> Result<Value, DesktopError> {
+    sidecar
+        .read()
+        .await
+        .call("org.solution_clear_parent", json!({ "solution": solution }))
+        .await
+}

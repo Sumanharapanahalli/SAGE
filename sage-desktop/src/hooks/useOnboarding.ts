@@ -1,10 +1,20 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { onboardingGenerate } from "@/api/client";
+import {
+  fetchOrgTemplates,
+  onboardingGenerate,
+  refineSolution,
+  saveSolution,
+  scanFolder,
+} from "@/api/client";
 import type {
   DesktopError,
   OnboardingParams,
   OnboardingResult,
+  OrgTemplatesResult,
+  SaveSolutionResult,
+  ScanFolderResult,
+  SolutionDraftFiles,
 } from "@/api/types";
 import { solutionsKey } from "@/hooks/useSolutions";
 
@@ -24,5 +34,76 @@ export function useOnboardingGenerate() {
         qc.invalidateQueries({ queryKey: solutionsKey });
       }
     },
+  });
+}
+
+interface ScanFolderVars {
+  folder_path: string;
+  solution_name: string;
+  intent?: string;
+}
+
+/**
+ * Draft a solution from an existing codebase.
+ *
+ * Writes nothing, so nothing is invalidated here — the solutions list only
+ * changes once `useSaveSolution` runs.
+ */
+export function useScanFolder() {
+  return useMutation<ScanFolderResult, DesktopError, ScanFolderVars>({
+    mutationFn: (v) => scanFolder(v.folder_path, v.solution_name, v.intent),
+  });
+}
+
+interface SaveSolutionVars {
+  solution_name: string;
+  files: SolutionDraftFiles;
+}
+
+/** The write step: persists reviewed drafts, so the picker must re-fetch. */
+export function useSaveSolution() {
+  const qc = useQueryClient();
+  return useMutation<SaveSolutionResult, DesktopError, SaveSolutionVars>({
+    mutationFn: (v) => saveSolution(v.solution_name, v.files),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: solutionsKey });
+    },
+  });
+}
+
+export const orgTemplatesKey = ["orgTemplates"] as const;
+
+/**
+ * Pre-built team structures for the wizard.
+ *
+ * `staleTime: Infinity` — these come from a YAML file the sidecar caches for
+ * its whole lifetime, so re-fetching can never surface anything new.
+ */
+export function useOrgTemplates() {
+  return useQuery<OrgTemplatesResult, DesktopError>({
+    queryKey: orgTemplatesKey,
+    queryFn: () => fetchOrgTemplates(),
+    staleTime: Infinity,
+  });
+}
+
+
+interface RefineVars {
+  solution_name: string;
+  current_files: SolutionDraftFiles;
+  feedback: string;
+}
+
+/**
+ * The refine loop: feed the current drafts plus feedback back to the LLM.
+ *
+ * Returns the same shape `useScanFolder` does, so its output is valid input to
+ * the next call — the operator can keep refining. Writes nothing, so nothing
+ * is invalidated.
+ */
+export function useRefineSolution() {
+  return useMutation<ScanFolderResult, DesktopError, RefineVars>({
+    mutationFn: (v) =>
+      refineSolution(v.solution_name, v.current_files, v.feedback),
   });
 }

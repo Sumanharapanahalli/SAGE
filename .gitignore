@@ -145,3 +145,6 @@ vscode-extension/package-lock.json
 !web/src/lib/
 !web/src/lib/**
 
+
+# Runtime logs from start-web.sh
+.sage-logs/

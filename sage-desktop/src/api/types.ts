@@ -463,6 +463,33 @@ export interface OnboardingParams {
   compliance_standards?: string[];
   integrations?: string[];
   parent_solution?: string;
+  /** Prepended to the description before LLM generation — how a chosen org
+   *  template's role brief steers the drafted prompts.yaml. */
+  org_context?: string;
+}
+
+// ── Onboarding: org templates ─────────────────────────────────────────────
+// Pre-built team structures, read from config/org_templates.yaml. Data lives
+// outside src/ so the framework stays domain-blind — adding one is a YAML edit.
+
+export interface OrgTemplateRole {
+  key: string;
+  name: string;
+  description: string;
+}
+
+export interface OrgTemplate {
+  id: string;
+  name: string;
+  description: string;
+  role_count: number;
+  compliance_standards: string[];
+  icon: string;
+  roles: OrgTemplateRole[];
+}
+
+export interface OrgTemplatesResult {
+  templates: OrgTemplate[];
 }
 
 export interface OnboardingResult {
@@ -752,6 +779,185 @@ export interface ComplianceGapResult {
   blocking_gaps: string[];
 }
 
+// ── Onboarding: import an existing codebase ───────────────────────────────
+// scan_folder DRAFTS the YAML triad and writes nothing; save_solution is the
+// separate write step, so the operator reviews before anything hits disk.
+
+export interface SolutionDraftSummary {
+  name: string;
+  description: string;
+  task_types: Array<{ name: string; description: string }>;
+  compliance_standards: string[];
+  integrations: string[];
+}
+
+/** Keyed by filename — only project/prompts/tasks.yaml are ever written. */
+export type SolutionDraftFiles = Record<string, string>;
+
+export interface ScanFolderResult {
+  solution_name: string;
+  files: SolutionDraftFiles;
+  summary: SolutionDraftSummary;
+}
+
+export interface SaveSolutionResult {
+  status: string;
+  solution_name: string;
+  path: string;
+  files_written: string[];
+}
+
+// ── Agent run / hire ──────────────────────────────────────────────────────
+// The execution half of the read-only /agents roster. Both running and hiring
+// resolve to a REAL pending proposal in the same store the Approvals inbox
+// reads — the web API's POST /agent/run returned status:"pending_review" and
+// persisted nothing, so its approval banner was decorative.
+
+export interface AgentRunResponse {
+  /** The agent's own structured output (role-defined; shape varies by role). */
+  result: Record<string, unknown>;
+  /** The pending proposal the run was persisted as. */
+  proposal: Proposal;
+}
+
+/** A task type as `agent_factory` asks the LLM to emit it. */
+export interface AgentTaskTypeDraft {
+  name: string;
+  description?: string;
+}
+
+/**
+ * A role config extracted from a job description by the LLM.
+ *
+ * Two mismatches with `HireAgentParams`, so a draft can NEVER be fed straight
+ * into `hireAgent`:
+ *
+ *  - the key is `role_key` here but `role_id` there;
+ *  - `task_types` is a list of OBJECTS here (agent_factory prompts the LLM for
+ *    `{name, description}`) but a list of plain STRINGS there — `agentrun.hire`
+ *    rejects anything else with "'task_types' must be a list of strings".
+ *
+ * The element type is widened to `| string` because this is unvalidated LLM
+ * output: the prompt asks for objects, but nothing enforces it. Use
+ * `normalizeTaskTypes` rather than reaching for `.name` directly.
+ */
+export interface AgentRoleDraft {
+  role_key: string;
+  name: string;
+  description: string;
+  system_prompt: string;
+  task_types: Array<AgentTaskTypeDraft | string>;
+  icon?: string;
+}
+
+export interface HireAgentParams {
+  role_id: string;
+  name: string;
+  system_prompt: string;
+  description?: string;
+  icon?: string;
+  task_types?: string[];
+}
+
+export interface ProjectAgentSummary {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+}
+
+/**
+ * The parsed project.yaml, plus `agents` — the UniversalAgent roles from
+ * prompts.yaml. That is the *runnable* roster, which is narrower than
+ * `agents.list`: the latter is an audit-annotated view that also includes the
+ * four core roles, and `UniversalAgent.run` cannot dispatch to those.
+ */
+export interface ProjectConfigResult {
+  agents: ProjectAgentSummary[];
+  [key: string]: unknown;
+}
+
+// ── Safety (functional safety derivation) ─────────────────────────────────
+// These mirror src/core/functional_safety.py's REAL return shapes. Note the
+// field names: the engine returns `asil`, `sil`, and `required_processes` —
+// the web UI's safety page reads `asil_level`/`sil_level`/`requirements`,
+// none of which the engine ever emits, which is why its ASIL and SIL tabs
+// render blank. Do not copy those names here.
+
+export interface SafetyFmeaEntryInput {
+  component: string;
+  failure_mode: string;
+  effect: string;
+  severity: number;
+  occurrence: number;
+  detection: number;
+}
+
+export interface SafetyFmeaEntry extends SafetyFmeaEntryInput {
+  id: string;
+  rpn: number;
+  risk_level: string;
+  action_required: boolean;
+}
+
+export interface SafetyFmeaResult {
+  entries: SafetyFmeaEntry[];
+  summary: {
+    total_entries: number;
+    critical_count: number;
+    high_count: number;
+    max_rpn: number;
+    action_items: number;
+  };
+  generated_at: string;
+}
+
+/**
+ * A fault-tree node: either a gate with children, or a leaf event.
+ *
+ * A leaf must carry BOTH `event` and `probability` — the engine keys the
+ * probability roll-up off one and the minimal cut sets off the other, so
+ * omitting either silently degrades one of the two results (0.0 / []).
+ */
+export interface SafetyFtaNode {
+  top_event?: string;
+  gate?: "AND" | "OR";
+  children?: SafetyFtaNode[];
+  event?: string;
+  probability?: number;
+}
+
+export interface SafetyFtaResult {
+  top_event: string;
+  probability: number;
+  minimal_cut_sets: string[][];
+  single_point_failures: string[][];
+  generated_at: string;
+}
+
+export interface SafetyAsilResult {
+  asil: string;
+  severity: string;
+  exposure: string;
+  controllability: string;
+  description: string;
+  standard: string;
+}
+
+export interface SafetySilResult {
+  sil: number;
+  pfh: number;
+  description: string;
+  standard: string;
+}
+
+export interface SafetyIec62304Result {
+  safety_class: string;
+  description: string;
+  required_processes: string[];
+  standard: string;
+}
+
 // ── Costs (T1-004) ────────────────────────────────────────────────────────
 
 export interface CostByModel {
@@ -925,6 +1131,163 @@ export interface OrgUpdateResult {
 
 export interface OrgReloadResult {
   status: "reloaded";
+}
+
+// ── Merge requests (GitLab) ───────────────────────────────────────────────
+// Distinct from SAGE's own Merge-Gate. `proposeMr` does NOT open the MR — it
+// files an EXTERNAL, non-reversible proposal; only the approved executor POSTs.
+
+export interface MrConfig {
+  configured: boolean;
+  gitlab_url: string;
+  has_token: boolean;
+  default_project_id: string;
+  message: string;
+}
+
+export interface MrListResult {
+  merge_requests: Array<Record<string, unknown>>;
+}
+
+export interface MrPipelineResult {
+  status?: string;
+  [key: string]: unknown;
+}
+
+/** review is a multi-round ReAct loop, so it runs as a background job. */
+export interface MrReviewStarted {
+  job_id: string;
+  project_id: number;
+  mr_iid: number;
+}
+
+export interface MrCommentResult {
+  [key: string]: unknown;
+}
+
+// ── Orchestrator ──────────────────────────────────────────────────────────
+// Read-only observability over the 9 intelligence modules. `unavailable` names
+// the modules that could not be loaded, so the UI can say "not active" rather
+// than render a misleading row of zeroes.
+
+export interface OrchestratorStats {
+  modules: Record<string, Record<string, unknown>>;
+  unavailable: string[];
+}
+
+export interface OrchestratorRecent {
+  module: string;
+  items: Array<Record<string, unknown>>;
+  available: boolean;
+}
+
+// ── Code (sandboxed execution) ────────────────────────────────────────────
+// plan -> approve -> execute. The approval gate is enforced by the runner, not
+// just the UI. `CodeSandboxStatus` has no web equivalent: it reports isolation
+// BEFORE approval, because the runner falls back to an unisolated local
+// subprocess when Docker is missing.
+
+export interface CodePlanResult {
+  run_id: string;
+  status: string;
+  plan: string;
+  code: string;
+}
+
+export interface CodeApproveResult {
+  run_id: string;
+  status: string;
+}
+
+export interface CodeExecuteResult {
+  run_id: string;
+  status: string;
+  output: {
+    stdout?: string;
+    stderr?: string;
+    returncode?: number;
+    sandbox?: string;
+    warning?: string;
+  };
+}
+
+export interface CodeStatusResult {
+  run_id: string;
+  status: string;
+}
+
+export interface CodeSandboxStatus {
+  docker_available: boolean;
+  sandbox: string;
+  isolated: boolean;
+  warning?: string;
+}
+
+// ── Chat ──────────────────────────────────────────────────────────────────
+// An ACTION never executes: the sidecar turns it into a pending proposal for
+// the Approvals inbox, so `proposal` is non-null exactly when type==="action".
+
+export interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+export interface ChatConversation {
+  id: string;
+  user_id: string;
+  solution: string;
+  role_id: string;
+  role_name: string;
+  title: string;
+  messages: ChatMessage[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ChatSendResult {
+  conversation_id: string;
+  reply: string;
+  type: "answer" | "action";
+  action: string | null;
+  proposal: Proposal | null;
+}
+
+export interface ChatConversationsResult {
+  conversations: ChatConversation[];
+}
+
+export interface ChatConversationResult {
+  conversation: ChatConversation;
+}
+
+export interface ChatDeleteResult {
+  status: "deleted";
+  conversation_id: string;
+}
+
+export interface ChatClearResult {
+  deleted: number;
+}
+
+// ── Org CRUD ──────────────────────────────────────────────────────────────
+// Channels live in org.yaml; routes and parents live in each solution's own
+// project.yaml, which is why these writes need the solutions dir resolved.
+
+export interface OrgChannelResult {
+  status: "created" | "deleted";
+  channel: string;
+}
+
+export interface OrgRouteResult {
+  status: "added" | "removed";
+  solution: string;
+  target: string;
+}
+
+export interface OrgParentResult {
+  status: "added" | "removed";
+  solution: string;
+  parent?: string;
 }
 
 // ── Monitor ───────────────────────────────────────────────────────────────

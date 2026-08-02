@@ -4078,7 +4078,11 @@ async def onboarding_scan_folder(req: ScanFolderRequest):
 
     llm = _get_llm_gateway()
     try:
-        raw = llm.generate(system_prompt=system_prompt, user_prompt=user_prompt)
+        # `prompt=`, not `user_prompt=`: LLMGateway.generate's first parameter is
+        # `prompt` and it takes no **kwargs, so `user_prompt=` raised TypeError on
+        # EVERY call — swallowed below and reported to the user as a misleading
+        # 503 "Could not reach the LLM". Both endpoints had never once succeeded.
+        raw = llm.generate(prompt=user_prompt, system_prompt=system_prompt)
     except Exception as exc:
         logger.error("LLM error in scan-folder: %s", exc)
         raise HTTPException(
@@ -4122,7 +4126,11 @@ async def onboarding_refine(req: RefineRequest):
 
     llm = _get_llm_gateway()
     try:
-        raw = llm.generate(system_prompt=system_prompt, user_prompt=user_prompt)
+        # `prompt=`, not `user_prompt=`: LLMGateway.generate's first parameter is
+        # `prompt` and it takes no **kwargs, so `user_prompt=` raised TypeError on
+        # EVERY call — swallowed below and reported to the user as a misleading
+        # 503 "Could not reach the LLM". Both endpoints had never once succeeded.
+        raw = llm.generate(prompt=user_prompt, system_prompt=system_prompt)
     except Exception as exc:
         logger.error("LLM error in refine: %s", exc)
         raise HTTPException(

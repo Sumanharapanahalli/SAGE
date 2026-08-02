@@ -13,6 +13,8 @@ import { Approvals } from "@/pages/Approvals";
 import { Audit } from "@/pages/Audit";
 import Backlog from "@/pages/Backlog";
 import Builds from "@/pages/Builds";
+import Chat from "@/pages/Chat";
+import Code from "@/pages/Code";
 import Collective from "@/pages/Collective";
 import Compliance from "@/pages/Compliance";
 import Console from "@/pages/Console";
@@ -23,12 +25,15 @@ import Goals from "@/pages/Goals";
 import Hil from "@/pages/Hil";
 import Home from "@/pages/Home";
 import Knowledge from "@/pages/Knowledge";
+import MergeRequests from "@/pages/MergeRequests";
 import Monitor from "@/pages/Monitor";
 import Onboarding from "@/pages/Onboarding";
+import Orchestrator from "@/pages/Orchestrator";
 import Organization from "@/pages/Organization";
 import Queue from "@/pages/Queue";
 import Reflect from "@/pages/Reflect";
 import Regulatory from "@/pages/Regulatory";
+import Safety from "@/pages/Safety";
 import Settings from "@/pages/Settings";
 import SkillsTools from "@/pages/SkillsTools";
 import { Status } from "@/pages/Status";
@@ -79,6 +84,9 @@ export function App() {
             <Route path="settings" element={<Settings />} />
             <Route element={<RequireSolution />}>
               <Route path="analyze" element={<Analyze />} />
+              <Route path="chat" element={<Chat />} />
+              <Route path="code" element={<Code />} />
+              <Route path="orchestrator" element={<Orchestrator />} />
               <Route path="approvals" element={<Approvals />} />
               <Route path="agents" element={<Agents />} />
               <Route path="audit" element={<Audit />} />
@@ -88,11 +96,13 @@ export function App() {
               <Route path="queue" element={<Queue />} />
               <Route path="backlog" element={<Backlog />} />
               <Route path="builds" element={<Builds />} />
+              <Route path="merge-requests" element={<MergeRequests />} />
               <Route path="yaml" element={<YamlEdit />} />
               <Route path="constitution" element={<Constitution />} />
               <Route path="knowledge" element={<Knowledge />} />
               <Route path="collective" element={<Collective />} />
               <Route path="compliance" element={<Compliance />} />
+              <Route path="safety" element={<Safety />} />
               <Route path="costs" element={<Costs />} />
               <Route path="workflows" element={<Workflows />} />
               <Route path="skills" element={<SkillsTools />} />

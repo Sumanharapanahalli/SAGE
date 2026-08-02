@@ -1,10 +1,15 @@
-//! Agent-run commands — proxy to `agents.run` / `agents.hire` /
-//! `agents.analyze_jd` / `config.get_project` on the sidecar.
+//! Agent-run commands — proxy to `agentrun.*` on the sidecar.
 //!
 //! The `agents::*` module is the read-only roster. This one is the execution
 //! half: running a role produces a REAL pending proposal (Law 1 — the web
 //! API's `POST /agent/run` persisted nothing), and hiring a role only ever
 //! produces an `agent_hire` proposal, never a YAML write.
+//!
+//! This module was written but left out of `commands/mod.rs`, so it never
+//! compiled — which is why its RPC names (`agents.run`, `agents.hire`,
+//! `agents.analyze_jd`, `config.get_project`) could drift to methods the
+//! sidecar never registered without anything failing. They are corrected to
+//! the `agentrun.*` names `_build_dispatcher` actually registers.
 
 use serde_json::{json, Value};
 use tauri::State;
@@ -24,7 +29,7 @@ pub async fn agent_run(
         .read()
         .await
         .call(
-            "agents.run",
+            "agentrun.run",
             json!({
                 "role_id": role_id,
                 "task": task,
@@ -49,7 +54,7 @@ pub async fn agent_hire(
         .read()
         .await
         .call(
-            "agents.hire",
+            "agentrun.hire",
             json!({
                 "role_id": role_id,
                 "name": name,
@@ -72,7 +77,7 @@ pub async fn agent_analyze_jd(
         .read()
         .await
         .call(
-            "agents.analyze_jd",
+            "agentrun.analyze_jd",
             json!({
                 "jd_text": jd_text,
                 "solution_context": solution_context.unwrap_or_default(),
@@ -88,6 +93,6 @@ pub async fn config_get_project(
     sidecar
         .read()
         .await
-        .call("config.get_project", json!({}))
+        .call("agentrun.get_project", json!({}))
         .await
 }

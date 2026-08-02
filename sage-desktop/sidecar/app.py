@@ -53,8 +53,11 @@ import jobs  # noqa: E402
 from dispatcher import Dispatcher  # noqa: E402
 from handlers import (  # noqa: E402
     activity,
+    agentrun,
     agents,
     analyze,
+    chat,
+    code as code_handler,
     approvals,
     audit,
     backlog,
@@ -73,12 +76,15 @@ from handlers import (  # noqa: E402
     llm,
     logs,
     monitor,
+    mr,
     onboarding,
     operator,
+    orchestrator,
     org,
     queue,
     reflect,
     regulatory,
+    safety,
     skills,
     solutions,
     status,
@@ -108,16 +114,65 @@ def _build_dispatcher() -> Dispatcher:
     d = Dispatcher()
     d.register("handshake", handshake.handshake)
     d.register("analyze.run", analyze.run)
+    # Conversational agent. An ACTION never executes here — it becomes a real
+    # proposal in the same inbox as everything else (Law 1). The web's
+    # /chat/execute runs it directly on a chat-UI confirm.
+    # Sandboxed code execution. NOT the Merge-Gate path (Law 1a governs
+    # merging agent code); this gates RUNNING a generated script, and the
+    # runner itself refuses an unapproved run.
+    # Read-only observability over the 9 intelligence modules. The router's
+    # mutating routes (spawn / tools.execute / budget) are not surfaced, and
+    # events/stream is out of scope under the streaming exclusion.
+    # GitLab merge requests via the DeveloperAgent. Distinct from mergegate.*,
+    # which is SAGE's OWN Merge-Gate (Law 1a) — these two sit alongside each
+    # other. propose_create files an EXTERNAL proposal instead of opening the
+    # MR, because the web endpoint's immediate LLM-drafted write to a shared
+    # GitLab is exactly what RiskClass.EXTERNAL exists for.
+    d.register("mr.config", mr.config)
+    d.register("mr.list_open", mr.list_open)
+    d.register("mr.pipeline", mr.pipeline)
+    d.register("mr.review", mr.review)
+    d.register("mr.propose_create", mr.propose_create)
+    d.register("mr.comment", mr.comment)
+    d.register("orchestrator.stats", orchestrator.stats)
+    d.register("orchestrator.recent", orchestrator.recent)
+    d.register("code.plan", code_handler.plan)
+    d.register("code.approve", code_handler.approve)
+    d.register("code.execute", code_handler.execute)
+    d.register("code.status", code_handler.status)
+    d.register("code.sandbox_status", code_handler.sandbox_status)
+    d.register("chat.send", chat.send)
+    d.register("chat.list_conversations", chat.list_conversations)
+    d.register("chat.get_conversation", chat.get_conversation)
+    d.register("chat.delete_conversation", chat.delete_conversation)
+    d.register("chat.clear_history", chat.clear_history)
     d.register("compliance.domains", compliance.domains)
     d.register("compliance.flags", compliance.flags)
     d.register("compliance.checklist", compliance.checklist)
     d.register("compliance.gap_assessment", compliance.gap_assessment)
+    # safety.* complements compliance.*: /compliance takes the safety class as
+    # an INPUT (which checklist do I owe for CLASS_C?), safety.* DERIVES it
+    # (what class/ASIL/SIL does this hazard imply?). Stateless engine — nothing
+    # for _wire_handlers to inject.
+    d.register("safety.fmea", safety.fmea)
+    d.register("safety.fta", safety.fta)
+    d.register("safety.asil", safety.asil)
+    d.register("safety.sil", safety.sil)
+    d.register("safety.iec62304", safety.iec62304)
     d.register("costs.summary", costs.summary)
     d.register("costs.daily", costs.daily)
     d.register("costs.set_budget", costs.set_budget)
     d.register("org.get", org.get)
     d.register("org.update", org.update)
     d.register("org.reload", org.reload)
+    # The write half of the org graph. Channels live in org.yaml; routes and
+    # parents live in each solution's own project.yaml.
+    d.register("org.channel_create", org.channel_create)
+    d.register("org.channel_delete", org.channel_delete)
+    d.register("org.route_add", org.route_add)
+    d.register("org.route_delete", org.route_delete)
+    d.register("org.solution_set_parent", org.solution_set_parent)
+    d.register("org.solution_clear_parent", org.solution_clear_parent)
     d.register("skills.list", skills.list)
     d.register("skills.set_visibility", skills.set_visibility)
     d.register("skills.reload", skills.reload)
@@ -173,6 +228,15 @@ def _build_dispatcher() -> Dispatcher:
     # Built and tested, but never registered until now — the Rust layer and the
     # Agents page have always called it, and always got -32601 back.
     d.register("agents.performance", agents.performance)
+    # agents.* is the read-only roster; agentrun.* is the execution half — the
+    # operator could see which roles exist but never use one. Both `run` and
+    # `hire` persist a REAL proposal into the same store the Approvals inbox
+    # reads (Law 1); `hire` never writes YAML itself — that happens on approval
+    # in proposal_executor._execute_agent_hire.
+    d.register("agentrun.run", agentrun.run)
+    d.register("agentrun.hire", agentrun.hire)
+    d.register("agentrun.analyze_jd", agentrun.analyze_jd)
+    d.register("agentrun.get_project", agentrun.get_project)
     d.register("operator.get", operator.get)
     d.register("operator.set", operator.set)
     d.register("status.get", status.get_status)
@@ -197,6 +261,15 @@ def _build_dispatcher() -> Dispatcher:
     # Framework control — executes immediately, no proposal queue (Law 1).
     d.register("solutions.remove", solutions.remove)
     d.register("onboarding.generate", onboarding.generate)
+    # Import an EXISTING codebase rather than describing a new one. scan_folder
+    # drafts the YAML triad and writes nothing; save_solution is the separate
+    # write step, so the operator reviews before anything lands on disk.
+    # Pre-built team structures, read from config/org_templates.yaml (data
+    # outside src/, so the framework stays domain-blind).
+    d.register("onboarding.org_templates", onboarding.org_templates)
+    d.register("onboarding.scan_folder", onboarding.scan_folder)
+    d.register("onboarding.refine", onboarding.refine)
+    d.register("onboarding.save_solution", onboarding.save_solution)
     d.register("builds.start", builds.start)
     d.register("builds.list", builds.list_runs)
     d.register("builds.get", builds.get)
@@ -285,6 +358,13 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
     yaml_edit._solution_name = solution_name or None
     yaml_edit._solution_path = solution_path
 
+    # Set unconditionally (not inside the ProjectConfig block below) so an
+    # agent_hire proposal still names the right solution even if ProjectConfig
+    # fails to import — proposal_executor._execute_agent_hire resolves which
+    # prompts.yaml/tasks.yaml to write from this value.
+    agentrun._solution_name = solution_name
+    chat._solution_name = solution_name
+
     solutions._current_name = solution_name
     solutions._current_path = solution_path
     try:
@@ -336,6 +416,12 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
         approvals._store = store
         status._store = store
         analyze._store = store
+        # Same store the Approvals inbox reads — an agent_run/agent_hire
+        # proposal created anywhere else would be an invisible, un-approvable
+        # HITL gate.
+        agentrun._store = store
+        chat._proposal_store = store
+        mr._store = store
         backlog._proposal_store = store
         # Make the executor's follow-up proposals land in the SAME store the inbox reads.
         # proposal_executor creates the code_diff review proposal for an approved plan's
@@ -364,6 +450,9 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
         # The triage feed reads the same DB (raw SQL against db_path); without
         # this injection activity.list raises "audit logger not initialized".
         activity._logger = audit_logger
+        # Importing a codebase and writing a new solution are both real events
+        # in the compliance record (ONBOARDING_SCAN / ONBOARDING_COMPLETE).
+        onboarding._logger = audit_logger
         # Without this the HITL gate leaves no compliance record at all, while
         # Approvals.tsx tells the operator that it does.
         approvals._logger = audit_logger
@@ -397,6 +486,15 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
         logging.warning("GoalsStore unavailable: %s", e)
 
     try:
+        from src.stores.chat_store import ChatStore
+
+        # Solution-scoped, like every other store — the web API keeps one
+        # framework-global chat DB beside the audit log.
+        chat._store = ChatStore(str(sage_dir / "chat_conversations.db"))
+    except Exception as e:  # noqa: BLE001
+        logging.warning("GoalsStore unavailable: %s", e)
+
+    try:
         from src.core.eval_runner import EvalRunner
 
         eval_handler._runner = EvalRunner(db_path=str(sage_dir / "eval_runs.db"))
@@ -408,6 +506,8 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
 
         pc = ProjectConfig(solution_name)
         agents._project = pc
+        agentrun._project = pc
+        chat._project = pc
         status._project = pc
         # eval_runner._get_evals_dir() (and TaskScheduler) read the framework
         # *global* project_config singleton directly rather than an injected
@@ -419,10 +519,20 @@ def _wire_handlers(solution_name: str, solution_path: Optional[Path]) -> None:
         logging.warning("ProjectConfig unavailable: %s", e)
 
     try:
+        from src.integrations.autogen_runner import autogen_runner
+
+        code_handler._runner = autogen_runner
+    except Exception as e:  # noqa: BLE001
+        logging.warning("autogen_runner unavailable: %s", e)
+
+    try:
         from src.core.llm_gateway import llm_gateway as lg
 
         status._llm = lg
         llm._gateway = lg
+        # scan_folder drafts the YAML triad straight from the gateway rather
+        # than through generate_solution.
+        onboarding._llm = lg
     except Exception as e:  # noqa: BLE001
         logging.warning("LLMGateway unavailable: %s", e)
 

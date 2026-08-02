@@ -1,26 +1,27 @@
 {
+  "_comment": [
+    "The previous entries pointed at @anthropic-ai/mcp-server-{filesystem,playwright,sqlite},",
+    "none of which exist on npm — so all three servers failed to start silently and no",
+    "filesystem/playwright/sqlite tools were ever available. The filesystem path was also",
+    "stale (/home/shetty/sandbox/SAGE). Package names below are the real ones; the",
+    "filesystem root is '.' so it resolves to whichever checkout you open, not one machine's.",
+    "Both browser servers work without a claude.ai sign-in — pick either. Note neither can",
+    "drive sage-desktop: Tauri renders in a native WebView with no CDP endpoint, so use",
+    "`make desktop-dev` for that. They do drive the web UI (make ui) fine.",
+    "MCP servers load at startup — restart Claude Code after changing this file."
+  ],
   "mcpServers": {
-    "filesystem": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@anthropic-ai/mcp-server-filesystem@latest",
-        "/home/shetty/sandbox/SAGE"
-      ]
-    },
     "playwright": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@anthropic-ai/mcp-server-playwright@latest"
-      ]
+      "args": ["-y", "@playwright/mcp@latest"]
     },
-    "sqlite": {
+    "chrome-devtools": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@anthropic-ai/mcp-server-sqlite@latest"
-      ]
+      "args": ["-y", "chrome-devtools-mcp@latest"]
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem@latest", "."]
     }
   }
 }

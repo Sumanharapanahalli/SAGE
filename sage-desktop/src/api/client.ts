@@ -21,6 +21,23 @@ import type {
   BatchApproveResult,
   BuildRunDetail,
   BuildRunSummary,
+  ChatClearResult,
+  CodeApproveResult,
+  MrCommentResult,
+  MrConfig,
+  MrListResult,
+  MrPipelineResult,
+  MrReviewStarted,
+  OrchestratorRecent,
+  OrchestratorStats,
+  CodeExecuteResult,
+  CodePlanResult,
+  CodeSandboxStatus,
+  CodeStatusResult,
+  ChatConversationResult,
+  ChatConversationsResult,
+  ChatDeleteResult,
+  ChatSendResult,
   CheckActionResult,
   CollectiveGetResult,
   CollectiveHelpCreateResult,
@@ -32,9 +49,22 @@ import type {
   CollectiveStats,
   CollectiveSyncResult,
   CollectiveValidateResult,
+  AgentRoleDraft,
+  AgentRunResponse,
   ComplianceChecklist,
   ComplianceDomainsResult,
   ComplianceGapResult,
+  HireAgentParams,
+  ProjectConfigResult,
+  SaveSolutionResult,
+  ScanFolderResult,
+  SafetyAsilResult,
+  SafetyFmeaEntryInput,
+  SafetyFmeaResult,
+  SafetyFtaNode,
+  SafetyFtaResult,
+  SafetyIec62304Result,
+  SafetySilResult,
   ConstitutionData,
   ConstitutionState,
   ConstitutionUpdateResult,
@@ -81,7 +111,10 @@ import type {
   ApprovedProposal,
   Job,
   Operator,
+  OrgChannelResult,
   OrgData,
+  OrgParentResult,
+  OrgRouteResult,
   OrgReloadResult,
   OrgUpdateResult,
   PlanResult,
@@ -114,6 +147,7 @@ import type {
   RemoveSolutionResult,
   OnboardingParams,
   OnboardingResult,
+  OrgTemplatesResult,
   StatusResponse,
   WorkflowListResult,
   WorkflowRunResult,
@@ -174,6 +208,80 @@ export const getStatus = () => call<StatusResponse>("get_status");
 export const analyzeLog = (log_entry: string) =>
   call<Proposal>("analyze_run", { log_entry });
 
+// ── Merge requests (GitLab) ───────────────────────────────────────────────
+
+export const mrConfig = () => call<MrConfig>("mr_config");
+
+export const listOpenMrs = (project_id: number) =>
+  call<MrListResult>("mr_list_open", { project_id });
+
+export const mrPipeline = (project_id: number, mr_iid: number) =>
+  call<MrPipelineResult>("mr_pipeline", { project_id, mr_iid });
+
+/** Returns a job_id — poll jobs.status. */
+export const reviewMr = (project_id: number, mr_iid: number) =>
+  call<MrReviewStarted>("mr_review", { project_id, mr_iid });
+
+/** Files a proposal; does NOT open the merge request. */
+export const proposeMr = (
+  project_id: number,
+  issue_iid: number,
+  source_branch?: string,
+) =>
+  call<Proposal>("mr_propose_create", { project_id, issue_iid, source_branch });
+
+export const commentOnMr = (
+  project_id: number,
+  mr_iid: number,
+  comment: string,
+) => call<MrCommentResult>("mr_comment", { project_id, mr_iid, comment });
+
+// ── Orchestrator ──────────────────────────────────────────────────────────
+
+export const orchestratorStats = () =>
+  call<OrchestratorStats>("orchestrator_stats");
+
+export const orchestratorRecent = (module: string, limit?: number) =>
+  call<OrchestratorRecent>("orchestrator_recent", { module, limit });
+
+// ── Code (sandboxed execution) ────────────────────────────────────────────
+
+export const codePlan = (task: string) =>
+  call<CodePlanResult>("code_plan", { task });
+
+export const codeApprove = (run_id: string, comment?: string) =>
+  call<CodeApproveResult>("code_approve", { run_id, comment });
+
+export const codeExecute = (run_id: string) =>
+  call<CodeExecuteResult>("code_execute", { run_id });
+
+export const codeStatus = (run_id: string) =>
+  call<CodeStatusResult>("code_status", { run_id });
+
+export const codeSandboxStatus = () =>
+  call<CodeSandboxStatus>("code_sandbox_status");
+
+// ── Chat ──────────────────────────────────────────────────────────────────
+
+export const chatSend = (
+  message: string,
+  conversation_id?: string,
+  page_context?: string,
+) =>
+  call<ChatSendResult>("chat_send", { message, conversation_id, page_context });
+
+export const listConversations = () =>
+  call<ChatConversationsResult>("chat_list_conversations");
+
+export const getConversation = (conversation_id: string) =>
+  call<ChatConversationResult>("chat_get_conversation", { conversation_id });
+
+export const deleteConversation = (conversation_id: string) =>
+  call<ChatDeleteResult>("chat_delete_conversation", { conversation_id });
+
+export const clearChatHistory = () =>
+  call<ChatClearResult>("chat_clear_history");
+
 // ── Compliance ────────────────────────────────────────────────────────────
 // Assessment tooling on top of the audit RECORD already on desktop — lets a
 // compliance operator check conformance (domain checklists, gap assessment)
@@ -195,6 +303,94 @@ export const assessComplianceGap = (
     risk_level,
     completed_tasks,
   });
+
+/** Pre-built team structures offered by the wizard. */
+export const fetchOrgTemplates = () =>
+  call<OrgTemplatesResult>("onboarding_org_templates");
+
+// ── Onboarding: import an existing codebase ───────────────────────────────
+
+/** Drafts a solution from an existing codebase. Writes nothing. */
+export const scanFolder = (
+  folder_path: string,
+  solution_name: string,
+  intent?: string,
+) =>
+  call<ScanFolderResult>("onboarding_scan_folder", {
+    folder_path,
+    solution_name,
+    intent,
+  });
+
+/** Revise the current drafts from feedback. Iterable, and writes nothing. */
+export const refineSolution = (
+  solution_name: string,
+  current_files: Record<string, string>,
+  feedback: string,
+) =>
+  call<ScanFolderResult>("onboarding_refine", {
+    solution_name,
+    current_files,
+    feedback,
+  });
+
+/** The write step for reviewed drafts. Only the YAML triad is persisted. */
+export const saveSolution = (
+  solution_name: string,
+  files: Record<string, string>,
+) => call<SaveSolutionResult>("onboarding_save_solution", { solution_name, files });
+
+// ── Agent run / hire ──────────────────────────────────────────────────────
+// The execution half of the read-only /agents roster. Both of the mutating
+// calls resolve to a pending proposal rather than an immediate effect:
+// `runAgent` persists the result for review, and `hireAgent` never writes
+// prompts.yaml/tasks.yaml itself — that happens on approval, in
+// proposal_executor._execute_agent_hire.
+
+export const runAgent = (role_id: string, task: string, context?: string) =>
+  call<AgentRunResponse>("agent_run", { role_id, task, context });
+
+export const hireAgent = (params: HireAgentParams) =>
+  call<Proposal>("agent_hire", params);
+
+export const analyzeJobDescription = (
+  jd_text: string,
+  solution_context?: string,
+) => call<AgentRoleDraft>("agent_analyze_jd", { jd_text, solution_context });
+
+export const getProjectConfig = () =>
+  call<ProjectConfigResult>("config_get_project");
+
+// ── Safety ────────────────────────────────────────────────────────────────
+// The inverse of Compliance: /compliance takes the safety class as an INPUT
+// (which checklist do I owe for CLASS_C?); these DERIVE it (what class/ASIL/
+// SIL does this hazard imply?).
+
+export const runFmea = (entries: SafetyFmeaEntryInput[]) =>
+  call<SafetyFmeaResult>("safety_fmea", { entries });
+
+/** `tree` must be the NESTED fault tree, not a flat gate list. */
+export const runFta = (tree: SafetyFtaNode) =>
+  call<SafetyFtaResult>("safety_fta", { tree });
+
+export const classifyAsil = (
+  severity: string,
+  exposure: string,
+  controllability: string,
+) =>
+  call<SafetyAsilResult>("safety_asil", {
+    severity,
+    exposure,
+    controllability,
+  });
+
+export const classifySil = (probability_dangerous_failure_per_hour: number) =>
+  call<SafetySilResult>("safety_sil", {
+    probability_dangerous_failure_per_hour,
+  });
+
+export const classifyIec62304 = (risk_level: string) =>
+  call<SafetyIec62304Result>("safety_iec62304", { risk_level });
 
 // ── Approvals ─────────────────────────────────────────────────────────────
 
@@ -641,6 +837,28 @@ export const updateOrg = (fields: {
   core_values?: string[];
 }) => call<OrgUpdateResult>("org_update", fields);
 
+export const createOrgChannel = (
+  name: string,
+  producers: string[],
+  consumers: string[],
+) =>
+  call<OrgChannelResult>("org_channel_create", { name, producers, consumers });
+
+export const deleteOrgChannel = (name: string) =>
+  call<OrgChannelResult>("org_channel_delete", { name });
+
+export const addOrgRoute = (solution: string, target: string) =>
+  call<OrgRouteResult>("org_route_add", { solution, target });
+
+export const deleteOrgRoute = (solution: string, target: string) =>
+  call<OrgRouteResult>("org_route_delete", { solution, target });
+
+export const setSolutionParent = (solution: string, parent: string) =>
+  call<OrgParentResult>("org_solution_set_parent", { solution, parent });
+
+export const clearSolutionParent = (solution: string) =>
+  call<OrgParentResult>("org_solution_clear_parent", { solution });
+
 export const reloadOrg = () => call<OrgReloadResult>("org_reload");
 
 // ── Monitor ───────────────────────────────────────────────────────────────
@@ -773,6 +991,23 @@ export type {
   BatchApproveResult,
   BuildRunDetail,
   BuildRunSummary,
+  ChatClearResult,
+  CodeApproveResult,
+  MrCommentResult,
+  MrConfig,
+  MrListResult,
+  MrPipelineResult,
+  MrReviewStarted,
+  OrchestratorRecent,
+  OrchestratorStats,
+  CodeExecuteResult,
+  CodePlanResult,
+  CodeSandboxStatus,
+  CodeStatusResult,
+  ChatConversationResult,
+  ChatConversationsResult,
+  ChatDeleteResult,
+  ChatSendResult,
   CheckActionResult,
   ConstitutionData,
   ConstitutionState,
@@ -811,7 +1046,10 @@ export type {
   ApprovedProposal,
   Job,
   Operator,
+  OrgChannelResult,
   OrgData,
+  OrgParentResult,
+  OrgRouteResult,
   OrgReloadResult,
   OrgUpdateResult,
   PlanResult,
@@ -844,6 +1082,7 @@ export type {
   RemoveSolutionResult,
   OnboardingParams,
   OnboardingResult,
+  OrgTemplatesResult,
   StatusResponse,
   WorkflowListResult,
   WorkflowRunResult,

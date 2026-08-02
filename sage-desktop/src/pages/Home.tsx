@@ -24,6 +24,10 @@ export default function Home() {
   const [filter, setFilter] = useState("");
   // Name of the solution whose remove-confirmation panel is open (one at a time).
   const [removing, setRemoving] = useState<string | null>(null);
+  // Name of the solution the operator just clicked, so the pending panel can
+  // say which one is loading. Mutation vars would also carry it, but this
+  // survives the auto-reopen path where nothing was clicked.
+  const [picked, setPicked] = useState<string | null>(null);
   const triedAutoLoad = useRef(false);
 
   // Auto-reopen the last used solution once, only if none is active yet.
@@ -51,6 +55,7 @@ export default function Home() {
   }, [switchSolution.isSuccess, switchSolution.data]);
 
   const handlePick = (s: SolutionRef) => {
+    setPicked(s.name);
     switchSolution.mutate({ name: s.name, path: s.path });
   };
 
@@ -69,11 +74,36 @@ export default function Home() {
     s.name.toLowerCase().includes(filter.toLowerCase()),
   );
 
-  if (triedAutoLoad.current && switchSolution.isPending) {
-    const last = getLastSolution();
+  // Loading a solution respawns the sidecar, which measured 5.5–8.8 s
+  // (ChromaDB + a sentence-transformers model load + HuggingFace metadata
+  // requests) against 0.2 s with no solution. The write lock is held across
+  // all of it, so nothing else in the app responds either. This panel is the
+  // ONLY thing distinguishing that from a dead button — it previously
+  // rendered for the auto-reopen path alone (`triedAutoLoad.current`), so a
+  // first-run manual click got a dimmed button and nothing else.
+  if (switchSolution.isPending) {
+    const reopening = picked === null;
+    const name =
+      picked ?? getLastSolution()?.name ?? "your last solution";
     return (
-      <div className="p-6 text-sm text-slate-500">
-        Reopening {last?.name ?? "your last solution"}…
+      <div
+        role="status"
+        aria-live="polite"
+        className="mx-auto flex max-w-3xl flex-col gap-2 p-6"
+      >
+        <div className="flex items-center gap-3 text-sm text-sage-900">
+          <span
+            aria-hidden="true"
+            className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-sage-300 border-t-sage-700"
+          />
+          <span className="font-medium">
+            {reopening ? "Reopening" : "Loading"} {name}…
+          </span>
+        </div>
+        <p className="text-xs text-slate-600">
+          Starting this solution&apos;s agent runtime. This takes several
+          seconds — the vector memory and its embedding model load first.
+        </p>
       </div>
     );
   }
